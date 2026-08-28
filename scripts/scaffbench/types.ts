@@ -61,11 +61,14 @@ export type PrerequisiteCommand = {
   whenConfigFound?: readonly string[];
 };
 
+export type SpecDifficulty = 1 | 2 | 3;
+
 export type BenchmarkSpec = {
   id: string;
   introducedAt: string;
   title: string;
   lane: "core" | "extended";
+  difficulty: SpecDifficulty;
   family:
     | "typescript"
     | "rust"
@@ -187,9 +190,16 @@ export type RunProvenance = {
   specOrderSeed: number;
 };
 
+export type TopUpRecord = {
+  trials: number;
+  specs: string[];
+  recordedAt: string;
+};
+
 export type RunProtocol = {
   repeats: number;
   seed: number;
+  topUps?: TopUpRecord[];
 };
 
 export type OutcomeEvidence = {
@@ -255,7 +265,9 @@ export type ScaffbenchOptions = {
   efforts: Effort[];
   paths: CreationPath[];
   specs: string[];
+  specsExplicit?: boolean;
   repeats: number;
+  topUp?: number;
   outDir: string;
   maxBudgetUsd: string;
   skipValidation: boolean;
@@ -298,6 +310,7 @@ export type SummaryAggregate = {
   acceptancePercent?: number;
   commandDisciplinePercent: number;
   index: number;
+  specScore: number;
   avgDurationMs: number;
   medianDurationMs: number;
   p95DurationMs: number;

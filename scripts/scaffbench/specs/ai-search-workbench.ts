@@ -7,6 +7,7 @@ export const AiSearchWorkbenchSpec: BenchmarkSpec = {
   introducedAt: "2026-08-21",
   title: "AI search workbench with split semantic/full-text search on the Vite+ toolchain",
   lane: "core",
+  difficulty: 2,
   family: "typescript",
   supportedByBetterFullstack: true,
   requirements: [

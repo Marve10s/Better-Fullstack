@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 
-import { readFileSync, writeFileSync } from "node:fs";
-
-import { publicationEligibility } from "@scaffbench/summary";
-import { CORE_SPEC_IDS, providerForModel } from "@scaffbench/index";
 import type { RunResult, SummaryAggregate } from "@scaffbench/types";
+
+import { CORE_SPEC_IDS, providerForModel } from "@scaffbench/index";
+import { publicationEligibility } from "@scaffbench/summary";
+import { readFileSync, writeFileSync } from "node:fs";
 
 const RUN_SOURCES: readonly string[] = [];
 
@@ -12,12 +12,14 @@ const MODEL_LABELS: Record<string, string> = {
   "gpt-5.6-sol": "GPT-5.6 Sol",
   "gpt-5.6-terra": "GPT-5.6 Terra",
   "gpt-5.6-luna": "GPT-5.6 Luna",
+  // Ran behind opencode's "Ox Alpha Free" stealth alias; the model is GLM 5.3 Flash.
+  "opencode/x-preview-f-free": "GLM 5.3 Flash",
 };
 
 const PROTOCOL = {
   suiteVersion: "3.0",
   harnessVersion: "3.1.0",
-  validationCacheVersion: 8,
+  validationCacheVersion: 9,
   promptVersion: "2026-08-21-scaffbench-3.1",
   resourceProfileId: "low-2w-v1",
 } as const;
@@ -88,7 +90,7 @@ function assertCohort(summary: Summary, dir: string) {
   }
   if (summary.options.qualityGate !== true || summary.options.noQualityGate === true) {
     throw new Error(
-      `${dir}: the board metric is the Full tier, so the source run must have quality gates ON ` +
+      `${dir}: the index scores lint and format, so the source run must have quality gates ON ` +
         "(this run recorded --no-quality-gate)",
     );
   }
@@ -108,33 +110,41 @@ function assertValidated(results: readonly RunResult[], dir: string, effort: str
     if (result.validation.qualityGateRequested !== true) {
       throw new Error(`${dir}: ${result.id} was validated without quality gates`);
     }
-    if ((result.provenance?.configuredTrials ?? 0) !== 1) {
-      throw new Error(
-        `${dir}: ${result.id} records configuredTrials=` +
-          `${String(result.provenance?.configuredTrials)}; the board is pass@1`,
-      );
-    }
   }
-  const bySpec = new Map<string, number>();
-  for (const result of results) bySpec.set(result.specId, (bySpec.get(result.specId) ?? 0) + 1);
-  const missing = CORE_SPECS.filter((id) => !bySpec.has(id));
+  const trialsBySpec = new Map<string, number[]>();
+  for (const result of results) {
+    trialsBySpec.set(result.specId, [...(trialsBySpec.get(result.specId) ?? []), result.trial]);
+  }
+  const missing = CORE_SPECS.filter((id) => !trialsBySpec.has(id));
   if (missing.length > 0) {
     throw new Error(`${dir} (${effort}): no trial for ${missing.join(", ")}`);
   }
-  const duplicated = [...bySpec.entries()].filter(([, count]) => count !== 1);
-  if (duplicated.length > 0) {
+  const ragged = [...trialsBySpec.entries()].filter(([, trials]) =>
+    [...trials].sort((a, b) => a - b).some((trial, index) => trial !== index + 1),
+  );
+  if (ragged.length > 0) {
     throw new Error(
-      `${dir} (${effort}): expected exactly one trial per spec, got ` +
-        duplicated.map(([id, count]) => `${id}×${count}`).join(", "),
+      `${dir} (${effort}): trials must be numbered 1..n per spec, got ` +
+        ragged.map(([id, trials]) => `${id}:${trials.join("/")}`).join(", "),
     );
   }
+  return new Map([...trialsBySpec].map(([id, trials]) => [id, trials.length]));
 }
 
-function specResult(cell: SummaryAggregate | undefined): string {
-  if (!cell || cell.scoredRuns === 0) return "inconclusive";
-  if (cell.qualityPassCount > 0) return "full";
-  if (cell.passCount > 0) return "core";
-  return "fail";
+function specCell(cell: SummaryAggregate | undefined) {
+  return {
+    trials: cell?.runs ?? 0,
+    scored: cell?.scoredRuns ?? 0,
+    core: cell?.passCount ?? 0,
+    quality: cell?.qualityPassCount ?? 0,
+    score: cell && cell.scoredRuns > 0 ? cell.specScore : null,
+  };
+}
+
+function topUpKind(trialCounts: ReadonlyMap<string, number>) {
+  const distinct = new Set(trialCounts.values());
+  if (distinct.size > 1) return "partial" as const;
+  return Math.max(...distinct) > 1 ? ("uniform" as const) : ("none" as const);
 }
 
 export function buildRows(runSources: readonly string[]) {
@@ -149,12 +159,13 @@ export function buildRows(runSources: readonly string[]) {
   const rows: Record<string, unknown>[] = [];
   const seenTreatments = new Set<string>();
   const qualityGateFlags: boolean[] = [];
-  const configuredTrials = new Set<number>();
+  const launchRepeats = new Set<number>();
   let generatedAt = "";
 
   for (const dir of runSources) {
     const summary = JSON.parse(readFileSync(`${dir}/summary.json`, "utf8")) as Summary;
     assertCohort(summary, dir);
+    launchRepeats.add(summary.options.repeats);
     const recordedPaths = summary.options.paths ?? ["prompt"];
     if (recordedPaths.length !== 1 || recordedPaths[0] !== "prompt") {
       throw new Error(
@@ -175,10 +186,10 @@ export function buildRows(runSources: readonly string[]) {
       if (seenTreatments.has(key)) throw new Error(`${key}: published by more than one run dir`);
       seenTreatments.add(key);
       const effortResults = promptResults.filter((result) => result.effort === effort);
-      assertValidated(effortResults, dir, effort);
+      const trialCounts = assertValidated(effortResults, dir, effort);
+      const topUp = topUpKind(trialCounts);
       for (const result of effortResults) {
         qualityGateFlags.push(result.validation.qualityGateRequested === true);
-        configuredTrials.add(result.provenance?.configuredTrials ?? 0);
       }
 
       const leaderboard = summary.aggregates.leaderboard.find(
@@ -194,9 +205,16 @@ export function buildRows(runSources: readonly string[]) {
           .map((cell) => [cell.specId ?? "", cell]),
       );
       const results = Object.fromEntries(
-        specIds.map((specId) => [specId, specResult(cellsBySpec.get(specId))]),
+        specIds.map((specId) => [specId, specCell(cellsBySpec.get(specId))]),
       );
-      const outcomes = Object.values(results);
+      const scoredCells = Object.values(results).filter((cell) => cell.scored > 0);
+      const macroPassRate = (
+        count: (cell: { scored: number; core: number; quality: number }) => number,
+      ) => scoredCells.reduce((sum, cell) => sum + count(cell) / cell.scored, 0);
+      const qualityRate = macroPassRate((cell) => cell.quality);
+      const coreRate = macroPassRate((cell) => cell.core);
+      const scoredSpecs = scoredCells.length;
+      const pct = (rate: number) => (scoredSpecs > 0 ? Math.round((100 * rate) / scoredSpecs) : 0);
       const costs = effortResults
         .map((result) => result.claude.totalCostUsd)
         .filter((value): value is number => typeof value === "number");
@@ -207,12 +225,16 @@ export function buildRows(runSources: readonly string[]) {
         label: prettyModel(model),
         provider: providerForModel(model),
         effort,
-        eligibility: publicationEligibility(effortResults),
-        fullPasses: outcomes.filter((outcome) => outcome === "full").length,
-        corePasses: outcomes.filter((outcome) => outcome === "full" || outcome === "core").length,
-        scoredSpecs: outcomes.filter((outcome) => outcome !== "inconclusive").length,
+        eligibility: topUp === "partial" ? "exploratory" : publicationEligibility(effortResults),
+        trials: Math.max(...trialCounts.values()),
+        topUp,
+        qualityPasses: Number(qualityRate.toFixed(1)),
+        corePasses: Number(coreRate.toFixed(1)),
+        qualityPassPct: pct(qualityRate),
+        corePassPct: pct(coreRate),
+        scoredSpecs,
         wiredPct: Math.round(leaderboard.stackPercent),
-        scaffIndex: Math.round(leaderboard.index),
+        index: Math.round(leaderboard.index),
         totalCostUsd: costs.length > 0 ? Number(costs.reduce((a, b) => a + b, 0).toFixed(1)) : null,
         avgOutTokens: leaderboard.avgOutputTokens ?? null,
         medianMinutes:
@@ -225,22 +247,23 @@ export function buildRows(runSources: readonly string[]) {
   }
 
   rows.sort((a, b) => {
-    const fullDelta = (b.fullPasses as number) - (a.fullPasses as number);
-    return fullDelta !== 0 ? fullDelta : (b.scaffIndex as number) - (a.scaffIndex as number);
+    const indexDelta = (b.index as number) - (a.index as number);
+    return indexDelta !== 0
+      ? indexDelta
+      : (b.qualityPassPct as number) - (a.qualityPassPct as number);
   });
 
   const qualityGates = qualityGateFlags.length > 0 && qualityGateFlags.every(Boolean);
-  if (configuredTrials.size !== 1) {
-    throw new Error(
-      `published rows disagree on trials per spec (${[...configuredTrials].join(", ")})`,
-    );
+  if (launchRepeats.size !== 1) {
+    throw new Error(`published rows disagree on launch repeats (${[...launchRepeats].join(", ")})`);
   }
-  const trialsPerSpec = [...configuredTrials][0]!;
-  return { rows, generatedAt, qualityGates, trialsPerSpec };
+  const launchRepeatsValue = [...launchRepeats][0]!;
+  const trialsPerSpec = Math.max(launchRepeatsValue, ...rows.map((row) => row.trials as number));
+  return { rows, generatedAt, qualityGates, launchRepeats: launchRepeatsValue, trialsPerSpec };
 }
 
 function main() {
-  const { rows, generatedAt, qualityGates, trialsPerSpec } = buildRows(RUN_SOURCES);
+  const { rows, generatedAt, qualityGates, launchRepeats, trialsPerSpec } = buildRows(RUN_SOURCES);
 
   const target = "apps/web/src/components/scaffbench/scaffbench-3-data.ts";
   const current = readFileSync(target, "utf8");
@@ -253,7 +276,13 @@ function main() {
 
 export type Scaffbench3Provider = "claude" | "codex" | "opencode" | "kilo" | "agy" | "pi";
 
-export type Scaffbench3SpecResult = "full" | "core" | "fail" | "inconclusive";
+export type Scaffbench3SpecCell = {
+  trials: number;
+  scored: number;
+  core: number;
+  quality: number;
+  score: number | null;
+};
 
 export type Scaffbench3Spec = {
   id: string;
@@ -270,19 +299,31 @@ export type Scaffbench3Row = {
   provider: Scaffbench3Provider;
   effort: string;
   eligibility: "ranked" | "exploratory";
-  fullPasses: number;
+  trials: number;
+  topUp: "none" | "uniform" | "partial";
+  qualityPasses: number;
   corePasses: number;
+  qualityPassPct: number;
+  corePassPct: number;
   scoredSpecs: number;
   wiredPct: number;
-  scaffIndex: number;
+  index: number;
   totalCostUsd: number | null;
   avgOutTokens: number | null;
   medianMinutes: number | null;
-  results: Record<string, Scaffbench3SpecResult>;
+  results: Record<string, Scaffbench3SpecCell>;
 };
 
 export const SCAFFBENCH3_META = ${JSON.stringify(
-    { ...PROTOCOL, trialsPerSpec, path: "prompt", qualityGates, generatedAt, preview: false },
+    {
+      ...PROTOCOL,
+      launchRepeats,
+      trialsPerSpec,
+      path: "prompt",
+      qualityGates,
+      generatedAt,
+      preview: false,
+    },
     null,
     2,
   )} as const;

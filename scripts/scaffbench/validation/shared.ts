@@ -19,6 +19,12 @@ export const PROJECT_WALK_SKIP_DIRECTORIES = new Set([
   "build",
   ".next",
   ".expo",
+  ".svelte-kit",
+  ".output",
+  ".nuxt",
+  ".vercel",
+  ".turbo",
+  ".wrangler",
   "coverage",
 ]);
 

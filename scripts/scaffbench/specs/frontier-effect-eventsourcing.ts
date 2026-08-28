@@ -6,6 +6,7 @@ export const FrontierEffectEventsourcingSpec: BenchmarkSpec = {
   title:
     "Frontier: TypeScript Effect service with event-sourcing/CQRS and tRPC-over-WebSocket subscriptions",
   lane: "core",
+  difficulty: 3,
   family: "typescript",
   supportedByBetterFullstack: false,
   paths: ["prompt"],

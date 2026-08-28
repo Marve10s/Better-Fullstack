@@ -4,88 +4,68 @@ import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { TbArrowRight as ArrowRight } from "react-icons/tb";
 
-import type { ScaffbenchModel } from "@/components/home/scaffbench-2-data";
-
 import { ProviderLogo, type ProviderLogoId } from "@/components/home/provider-marks";
-import { SCAFFBENCH21_CELLS, SCAFFBENCH21_MODELS } from "@/components/home/scaffbench-2-1-data";
+import { SCAFFBENCH3_CELLS, SCAFFBENCH3_MODELS } from "@/components/home/scaffbench-3-board-data";
+import { isFreeModel, type ScaffbenchVendor } from "@/components/home/scaffbench-types";
 import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
-// The teaser tells the MCP story: the same agent scaffolding through our MCP
-// tools vs. hand-writing every file from the prompt. We surface the model that
-// gains the most from the MCP path (its Prompt-only vs. MCP Core pass@1, plus the
-// token/step reduction that makes it cheaper and faster). Numbers come straight
-// from the committed v2.1 run data, so they can't drift from the full leaderboard.
-const PROVIDER_LOGO: Partial<Record<ScaffbenchModel["provider"], ProviderLogoId>> = {
-  claude: "anthropic",
-  codex: "openai",
-  agy: "google",
+// The teaser shows the leading row of the live ScaffBench 3 board: how often the
+// model's project builds, against its ScaffBench Index, the graded and
+// difficulty-weighted score the leaderboard sorts by. Numbers come straight from
+// the committed run data, so they can't drift from the full leaderboard.
+const VENDOR_LOGO: Partial<Record<ScaffbenchVendor, ProviderLogoId>> = {
+  anthropic: "anthropic",
+  openai: "openai",
+  google: "google",
+  zai: "zai",
 };
 
-function isFreeProvider(provider: ScaffbenchModel["provider"]): boolean {
-  return provider === "opencode" || provider === "kilo";
+function mean(values: readonly number[]): number {
+  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : Number.NaN;
 }
 
-type PathStat = { pass: number; tokens: number; steps: number };
-
-function mean(a: readonly number[]): number {
-  return a.length ? a.reduce((x, y) => x + y, 0) / a.length : NaN;
-}
-
-function aggregate(modelKey: string, path: "prompt" | "mcp"): PathStat | null {
-  const cells = SCAFFBENCH21_CELLS.filter(
-    (cell) => cell.modelKey === modelKey && cell.path === path && cell.scored,
-  );
-  if (cells.length === 0) return null;
-  const passing = cells.filter((cell) => cell.corePass).length;
-  const tokens = cells.map((c) => c.outTokens).filter((v): v is number => v !== null);
-  const steps = cells.map((c) => c.steps).filter((v): v is number => v !== null);
-  return {
-    pass: Math.round((100 * passing) / cells.length),
-    tokens: mean(tokens),
-    steps: mean(steps),
-  };
-}
-
-type McpHighlight = {
+type BoardLeader = {
   label: string;
-  isFree: boolean;
   logo?: ProviderLogoId;
-  prompt: PathStat;
-  mcp: PathStat;
-  tokenFactor: number;
-  stepFactor: number;
+  isFree: boolean;
+  core: number;
+  score: number;
+  costUsd: number | null;
+  minutes: number | null;
 };
 
-// The model whose MCP path most outscores its prompt path - the sharpest proof
-// that the tools, not the model, close the gap.
-function computeMcpHighlight(): McpHighlight | null {
-  let best: McpHighlight | null = null;
-  for (const model of SCAFFBENCH21_MODELS) {
-    const prompt = aggregate(model.key, "prompt");
-    const mcp = aggregate(model.key, "mcp");
-    if (!prompt || !mcp) continue;
-    const uplift = mcp.pass - prompt.pass;
-    if (best && uplift <= best.mcp.pass - best.prompt.pass) continue;
-    const provider = model.provider as ScaffbenchModel["provider"];
-    best = {
+function computeLeader(): BoardLeader | null {
+  let best: BoardLeader | null = null;
+  for (const model of SCAFFBENCH3_MODELS) {
+    const scored = SCAFFBENCH3_CELLS.filter((cell) => cell.modelKey === model.key && cell.scored);
+    if (scored.length === 0 || model.eligibility !== "ranked") continue;
+    const trials = scored.reduce((sum, cell) => sum + cell.scoredTrials, 0);
+    const costs = scored.map((cell) => cell.costUsd).filter((v): v is number => v !== null);
+    const durations = scored
+      .map((cell) => cell.durationMs)
+      .filter((v): v is number => v !== null && v > 0);
+    const leader: BoardLeader = {
       label: model.label,
-      isFree: isFreeProvider(provider),
-      logo: PROVIDER_LOGO[provider],
-      prompt,
-      mcp,
-      tokenFactor:
-        Number.isFinite(prompt.tokens) && mcp.tokens > 0
-          ? Math.round(prompt.tokens / mcp.tokens)
-          : 0,
-      stepFactor:
-        Number.isFinite(prompt.steps) && mcp.steps > 0 ? Math.round(prompt.steps / mcp.steps) : 0,
+      logo: VENDOR_LOGO[model.vendor],
+      isFree: isFreeModel(model),
+      core: Math.round((100 * scored.reduce((sum, c) => sum + c.passCount, 0)) / trials),
+      score: model.sortIndex,
+      costUsd: costs.length > 0 ? mean(costs) : null,
+      minutes: durations.length > 0 ? mean(durations) / 60000 : null,
     };
+    if (
+      !best ||
+      leader.score > best.score ||
+      (leader.score === best.score && leader.core > best.core)
+    ) {
+      best = leader;
+    }
   }
   return best;
 }
 
-const HIGHLIGHT = computeMcpHighlight();
+const LEADER = computeLeader();
 
 const cardReveal = { opacity: 0, y: 16 } as const;
 const cardShown = { opacity: 1, y: 0 } as const;
@@ -104,7 +84,7 @@ export default function BenchmarkTeaser() {
             {m.benchmarkTeaserTitle()}
           </h2>
           <p className="mt-5 max-w-md text-pretty text-base text-muted-foreground sm:text-lg">
-            {m.benchmarkTeaserMcpBody()}
+            {m.llmBenchmarkDescription()}
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
@@ -123,13 +103,13 @@ export default function BenchmarkTeaser() {
           </div>
         </div>
 
-        {HIGHLIGHT ? <McpUpliftCard highlight={HIGHLIGHT} /> : null}
+        {LEADER ? <BoardLeaderCard leader={LEADER} /> : null}
       </div>
     </section>
   );
 }
 
-function McpUpliftCard({ highlight }: { highlight: McpHighlight }) {
+function BoardLeaderCard({ leader }: { leader: BoardLeader }) {
   return (
     <motion.div
       initial={cardReveal}
@@ -139,28 +119,34 @@ function McpUpliftCard({ highlight }: { highlight: McpHighlight }) {
       className="rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] p-5 text-[#1b1a17] [color-scheme:light] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0] dark:[color-scheme:dark] sm:p-6"
     >
       <div className="mb-5 flex items-center justify-between gap-3">
-        <span className="flex min-w-0 items-center gap-1.5">
-          <ProviderLogo logo={highlight.logo} />
-          <span className="truncate font-mono text-sm font-bold">{highlight.label}</span>
+        <span className="flex min-w-0 items-center gap-2">
+          <ProviderLogo logo={leader.logo} />
+          <span className="font-mono text-sm font-bold">{leader.label}</span>
         </span>
-        {highlight.isFree ? (
-          <span className="shrink-0 rounded-full border border-[#e1e0d8] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[#71706a] dark:border-[rgba(237,235,228,0.14)] dark:text-[#8f8d84]">
-            free model
-          </span>
-        ) : null}
+        <span className="shrink-0 rounded-full border border-[#e1e0d8] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[#71706a] dark:border-[rgba(237,235,228,0.14)] dark:text-[#8f8d84]">
+          {leader.isFree ? "free model" : "leading model"}
+        </span>
       </div>
 
       <div className="space-y-3">
-        <UpliftBar label="Prompt only" pass={highlight.prompt.pass} accent="muted" />
-        <UpliftBar label="With MCP" pass={highlight.mcp.pass} accent="lime" />
+        <PassBar label="Builds" pass={leader.core} accent="muted" />
+        <PassBar label="Index" pass={leader.score} accent="lime" />
       </div>
       <p className="mt-2 text-right font-mono text-[10px] uppercase tracking-[0.14em] text-[#71706a] dark:text-[#8f8d84]">
-        Core pass@1
+        Over 13 specs
       </p>
 
       <div className="mt-5 grid grid-cols-2 gap-3 border-t border-[#e1e0d8] pt-5 dark:border-[rgba(237,235,228,0.10)]">
-        <StatTile factor={highlight.tokenFactor} unit="fewer tokens" />
-        <StatTile factor={highlight.stepFactor} unit="fewer steps" />
+        <StatTile
+          value={
+            leader.costUsd === null || leader.costUsd === 0 ? "-" : `$${leader.costUsd.toFixed(2)}`
+          }
+          unit="avg cost per project"
+        />
+        <StatTile
+          value={leader.minutes === null ? "-" : `${Math.round(leader.minutes)}m`}
+          unit="avg time per project"
+        />
       </div>
     </motion.div>
   );
@@ -169,7 +155,7 @@ function McpUpliftCard({ highlight }: { highlight: McpHighlight }) {
 const BAR_TRACK: CSSProperties = { backgroundColor: "var(--bar-track)" };
 const CARD_VARS = "[--bar-track:#ececec] dark:[--bar-track:#edebe414]";
 
-function UpliftBar({
+function PassBar({
   label,
   pass,
   accent,
@@ -211,10 +197,10 @@ function UpliftBar({
   );
 }
 
-function StatTile({ factor, unit }: { factor: number; unit: string }) {
+function StatTile({ value, unit }: { value: string; unit: string }) {
   return (
     <div className="rounded-lg bg-[#f1efe7] px-3 py-2.5 dark:bg-[rgba(237,235,228,0.05)]">
-      <p className="font-mono text-xl font-bold tabular-nums">{factor > 1 ? `${factor}×` : "-"}</p>
+      <p className="font-mono text-xl font-bold tabular-nums">{value}</p>
       <p className="mt-0.5 text-xs text-[#71706a] dark:text-[#8f8d84]">{unit}</p>
     </div>
   );

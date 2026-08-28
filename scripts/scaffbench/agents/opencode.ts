@@ -65,6 +65,7 @@ export function parseOpencodeResult(stdout: string): any | null {
   let sawStep = false;
   let sawTool = false;
   let sawAssistantText = false;
+  let lastStepTokens = 0;
   let stepReason: string | undefined;
   let errorReason: string | undefined;
   for (const line of stdout.split("\n")) {
@@ -93,7 +94,8 @@ export function parseOpencodeResult(stdout: string): any | null {
     }
     if (part?.type === "step-finish" || part?.type === "step_finish") {
       sawStep = true;
-      outputTokens += (part.tokens?.output ?? 0) + (part.tokens?.reasoning ?? 0);
+      lastStepTokens = (part.tokens?.output ?? 0) + (part.tokens?.reasoning ?? 0);
+      outputTokens += lastStepTokens;
       if (typeof part.cost === "number") cost += part.cost;
       if (typeof part.reason === "string") stepReason = part.reason;
     }
@@ -107,7 +109,9 @@ export function parseOpencodeResult(stdout: string): any | null {
     ? `error:${errorReason}`
     : stepReason === "unknown" && outputTokens === 0 && !sawTool && !sawAssistantText
       ? "opencode-unknown-zero-usage-no-tools"
-      : stepReason;
+      : stepReason === "unknown" && lastStepTokens === 0 && sawTool && outputTokens > 0
+        ? "opencode-unknown-zero-usage-step"
+        : stepReason;
   return {
     type: "result",
     usage: sawStep ? { output_tokens: outputTokens } : undefined,

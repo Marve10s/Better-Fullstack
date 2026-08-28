@@ -17,10 +17,6 @@ function currentContentLocale(): ContentLocale {
 }
 
 const TITLE_TRANSLATIONS: Record<string, LocalizedText> = {
-  "blog:scaffbench": {
-    es: "ScaffBench: midiendo agentes de codigo en scaffolding fullstack real",
-    zh: "ScaffBench：在真实全栈脚手架任务中衡量编程代理",
-  },
   "guide:": {
     es: "Guias de starters fullstack",
     zh: "全栈应用 Starter 指南",
@@ -156,10 +152,6 @@ const TITLE_TRANSLATIONS: Record<string, LocalizedText> = {
 };
 
 const DESCRIPTION_TRANSLATIONS: Record<string, LocalizedText> = {
-  "blog:scaffbench": {
-    es: "102 ejecuciones en Claude Code, Codex CLI, Gemini CLI, Kilo y opencode: quince modelos y tres rutas de creacion. Medimos tiempo, tokens de salida, coste y si el proyecto generado realmente instala y compila.",
-    zh: "102 次运行，覆盖 Claude Code、Codex CLI、Gemini CLI、Kilo 和 opencode：十五个模型，三种创建路径。我们衡量耗时、输出 token、成本，以及生成项目是否真的能安装并构建。",
-  },
   "guide:": {
     es: "Guias practicas de Better Fullstack para proyectos starter de TypeScript, React Native, Rust, Python, Go, Java e IA.",
     zh: "面向 TypeScript、React Native、Rust、Python、Go、Java 和 AI starter 项目的 Better Fullstack 实用指南。",

@@ -5,6 +5,7 @@ export const DotnetBlazorCqrsSpec: BenchmarkSpec = {
   introducedAt: "2026-08-21",
   title: ".NET Blazor app with Dapper, Duende IdentityServer, and HotChocolate GraphQL",
   lane: "core",
+  difficulty: 2,
   family: "dotnet",
   supportedByBetterFullstack: true,
   requirements: [

@@ -1,10 +1,4 @@
 import * as BunContext from "@effect/platform-bun/BunContext";
-import { describe, expect, it } from "bun:test";
-import * as Effect from "effect/Effect";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-
 import {
   aggregateResults,
   agentLabelForModel,
@@ -36,6 +30,11 @@ import {
   type RunResult,
   type StepResult,
 } from "@scaffbench/index";
+import { describe, expect, it } from "bun:test";
+import * as Effect from "effect/Effect";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const aiSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "ai-search-workbench")!;
 const dotnetSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "multi-dotnet-ops")!;
@@ -807,7 +806,7 @@ describe("ScaffBench 2 composite index", () => {
       macroPassRate: 50,
       stackPercent: 80,
       commandDisciplinePercent: 50,
-      index: 58,
+      index: 46,
       medianDurationMs: 1000,
       p95DurationMs: 3000,
     });

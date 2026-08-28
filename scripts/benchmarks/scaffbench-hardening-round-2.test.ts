@@ -1,11 +1,4 @@
 import * as BunContext from "@effect/platform-bun/BunContext";
-import { describe, expect, it } from "bun:test";
-import * as Effect from "effect/Effect";
-import { existsSync } from "node:fs";
-import { chmod, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import path from "node:path";
-
 import {
   CORE_SPEC_IDS,
   SCAFFBENCH_2_SPECS,
@@ -27,6 +20,8 @@ import {
   formatCheckCommand,
   hasTransientNetworkSignature,
   parseArgs,
+  recordedRunProtocol,
+  topUpSpecSelection,
   parseClaudeResult,
   parseCodexResult,
   parseOpencodeResult,
@@ -42,10 +37,13 @@ import {
   type ScaffbenchOptions,
   type StepResult,
 } from "@scaffbench/index";
-
 import { buildRows } from "@scripts/benchmarks/build-scaffbench-3-data";
-import { buildPublishedCells } from "@scripts/benchmarks/build-scaffbench-2-1-data";
-import { normalizeExistingCell } from "@scripts/benchmarks/splice-scaffbench-2-1";
+import { describe, expect, it } from "bun:test";
+import * as Effect from "effect/Effect";
+import { existsSync } from "node:fs";
+import { chmod, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
 const aiSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "ai-search-workbench")!;
 const cargoSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "rust-leptos-axum")!;
@@ -137,76 +135,6 @@ async function withFakePath<A>(directory: string, action: () => Promise<A>) {
 }
 
 describe("ScaffBench hardening round 2", () => {
-  it("A counts a scored stepless failure and rejects aggregate mismatches", () => {
-    const results = [
-      run({
-        id: "failed-no-project",
-        trial: 1,
-        outcome: "model-failure",
-        projectDir: null,
-        validation: { projectExists: false, qualityGateRequested: false, steps: {} },
-      }),
-      run({ id: "pass-2", trial: 2, outcome: "success" }),
-      run({ id: "pass-3", trial: 3, outcome: "success" }),
-    ];
-    const aggregate = {
-      model: "gpt-5.6-sol",
-      effort: "high",
-      path: "prompt",
-      specId: aiSpec.id,
-      runs: 3,
-      scoredRuns: 3,
-      passCount: 2,
-      qualityScoredRuns: 0,
-      qualityPassCount: 0,
-      stackPercent: 100,
-      commandDisciplinePercent: 100,
-      avgOutputTokens: 10,
-      medianDurationMs: 10,
-    };
-    const summary = {
-      options: options(),
-      results,
-      aggregates: { bySpecCell: [aggregate] },
-    };
-
-    expect(buildPublishedCells(summary, "/missing")[0]).toMatchObject({
-      trials: 3,
-      scoredTrials: 3,
-      passCount: 2,
-      passRate: 67,
-      passAny: true,
-      passAll: false,
-    });
-    expect(() =>
-      buildPublishedCells(
-        {
-          ...summary,
-          aggregates: { bySpecCell: [{ ...aggregate, passCount: 3 }] },
-        },
-        "/mismatch",
-      ),
-    ).toThrow(/passCount/i);
-  });
-
-  it("B preserves null quality through splice normalization", () => {
-    const normalized = normalizeExistingCell({
-      modelKey: "m|high",
-      path: "prompt",
-      spec: "s",
-      scored: true,
-      corePass: true,
-      fullPass: null,
-      wiredPct: 100,
-      cmdPct: 100,
-      costUsd: null,
-      outTokens: null,
-      steps: 1,
-    } as never);
-    expect(normalized.qualityPassCount).toBeNull();
-    expect(normalized.qualityPassRate).toBeNull();
-  });
-
   it("C snapshots a non-contradictory install policy for every path mode", () => {
     const snapshot: Record<string, string[]> = {};
     for (const pathMode of ["prompt", "mcp"] as const) {
@@ -383,10 +311,7 @@ describe("ScaffBench hardening round 2", () => {
         path.join(dir, "All.sln"),
         'Project("{A}") = "Included", "src\\\\Included.csproj", "{B}"\nEndProject\n',
       );
-      await executable(
-        path.join(bin, "dotnet"),
-        'echo "$PWD :: $*" >> "$SCAFFBENCH_TEST_LOG"',
-      );
+      await executable(path.join(bin, "dotnet"), 'echo "$PWD :: $*" >> "$SCAFFBENCH_TEST_LOG"');
       process.env.SCAFFBENCH_TEST_LOG = log;
       const validation = await withFakePath(bin, () =>
         effectPromise(validateProject(dotnetSpec, dir, options(dir))),
@@ -424,9 +349,7 @@ describe("ScaffBench hardening round 2", () => {
       const validation = await effectPromise(
         validateProject(aiSpec, dir, { ...options(dir), qualityGate: true }),
       );
-      expect(
-        Object.keys(validation.steps).some((key) => key.includes("paraglide")),
-      ).toBe(false);
+      expect(Object.keys(validation.steps).some((key) => key.includes("paraglide"))).toBe(false);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -461,10 +384,7 @@ describe("ScaffBench hardening round 2", () => {
       await mkdir(bin);
       await mkdir(path.join(cargoDir, "crates", "member"), { recursive: true });
       await mkdir(path.join(cargoDir, "tools", "broken"), { recursive: true });
-      await writeFile(
-        path.join(cargoDir, "Cargo.toml"),
-        '[workspace]\nmembers = ["crates/*"]\n',
-      );
+      await writeFile(path.join(cargoDir, "Cargo.toml"), '[workspace]\nmembers = ["crates/*"]\n');
       await writeFile(
         path.join(cargoDir, "crates", "member", "Cargo.toml"),
         '[package]\nname="member"\nversion="0.1.0"\n',
@@ -716,6 +636,23 @@ describe("ScaffBench hardening round 2", () => {
     }
   });
 
+  it("H2 installs before a prerequisite and puts node_modules/.bin on its PATH", async () => {
+    const dir = await tempDirectory("sb-r2-prereq-");
+    try {
+      await writeFile(path.join(dir, "package.json"), JSON.stringify({ name: "prereq-fixture" }));
+      await mkdir(path.join(dir, "node_modules", ".bin"), { recursive: true });
+      await executable(path.join(dir, "node_modules", ".bin", "fake-gen"), "echo generated");
+      const spec: BenchmarkSpec = { ...aiSpec, prerequisiteCommands: [{ command: ["fake-gen"] }] };
+      const validation = (await effectPromise(
+        (validateProject as any)(spec, dir, options(dir), { deadlineMs: 60_000 }),
+      )) as RunResult["validation"];
+      expect(validation.steps["prerequisite:01:fake-gen:install"]?.exitCode).toBe(0);
+      expect(validation.steps["prerequisite:01:fake-gen"]?.exitCode).toBe(0);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it("I always suffixes run IDs and prevents same-spec cross-round adjacency", () => {
     expect(buildRunId(aiSpec, "gpt-5.6-sol", "high", "prompt", 1, 1)).toEndWith("-r01");
     const specs = [aiSpec, goSpec];
@@ -744,9 +681,9 @@ describe("ScaffBench hardening round 2", () => {
       trial: 1,
       outcome: "success",
     });
-    expect(
-      findCompletedTrial([legacy], aiSpec, "gpt-5.6-sol", "high", "prompt", 1)?.id,
-    ).toBe(legacy.id);
+    expect(findCompletedTrial([legacy], aiSpec, "gpt-5.6-sol", "high", "prompt", 1)?.id).toBe(
+      legacy.id,
+    );
     expect(() =>
       assertResumeProtocol({
         recorded: { repeats: 1, seed: 99 },
@@ -863,7 +800,10 @@ describe("ScaffBench hardening round 2", () => {
     try {
       await mkdir(bin);
       await mkdir(path.join(dir, "src", "pip"), { recursive: true });
-      await writeFile(path.join(dir, "pyproject.toml"), '[project]\nname="demo"\nversion="0.1.0"\n');
+      await writeFile(
+        path.join(dir, "pyproject.toml"),
+        '[project]\nname="demo"\nversion="0.1.0"\n',
+      );
       await writeFile(
         path.join(dir, "src", "pip", "__init__.py"),
         "import scaffbench_dependency_that_does_not_exist\n",
@@ -901,9 +841,9 @@ describe("ScaffBench hardening round 2", () => {
       "frontier-polyglot-proto": "2026-08-21",
       "frontier-effect-eventsourcing": "2026-08-21",
     };
-    expect(Object.fromEntries(SCAFFBENCH_2_SPECS.map((spec) => [spec.id, spec.introducedAt]))).toEqual(
-      expected,
-    );
+    expect(
+      Object.fromEntries(SCAFFBENCH_2_SPECS.map((spec) => [spec.id, spec.introducedAt])),
+    ).toEqual(expected);
   });
 
   it("O executes Expo install before export in the actual validation plan", async () => {
@@ -936,7 +876,7 @@ describe("ScaffBench hardening round 2", () => {
 const PUBLISH_PROVENANCE = {
   suiteVersion: "3.0",
   harnessVersion: "3.1.0",
-  validationCacheVersion: 8,
+  validationCacheVersion: 9,
   promptVersion: "2026-08-21-scaffbench-3.1",
   resourceProfileId: "low-2w-v1",
   agentAdapter: "codex",
@@ -952,7 +892,13 @@ function publishableResults(model: string, effort: RunResult["effort"]): RunResu
       model,
       effort,
       provenance: { ...PUBLISH_PROVENANCE },
-      claude: { exitCode: 0, timedOut: false, durationMs: 60_000, outputTokens: 10, totalCostUsd: 1 },
+      claude: {
+        exitCode: 0,
+        timedOut: false,
+        durationMs: 60_000,
+        outputTokens: 10,
+        totalCostUsd: 1,
+      },
       validation: {
         projectExists: true,
         qualityGateRequested: true,
@@ -967,8 +913,9 @@ async function writePublishableRun(
   model: string,
   efforts: readonly RunResult["effort"][],
   mutate: (summary: Record<string, any>) => void = () => {},
+  extend: (results: RunResult[]) => RunResult[] = (results) => results,
 ) {
-  const results = efforts.flatMap((effort) => publishableResults(model, effort));
+  const results = extend(efforts.flatMap((effort) => publishableResults(model, effort)));
   const summary: Record<string, any> = {
     harnessVersion: "3.1.0",
     generatedAt: "2026-08-21T12:00:00.000Z",
@@ -1024,9 +971,9 @@ describe("ScaffBench hardening round 3", () => {
       await writeSummary(dir, [run()], options(dir), [aiSpec], {});
       const entries = await readdir(dir);
       expect(entries.filter((name) => name.includes(".tmp-"))).toEqual([]);
-      expect(JSON.parse(await readFile(path.join(dir, "summary.json"), "utf8")).results).toHaveLength(
-        1,
-      );
+      expect(
+        JSON.parse(await readFile(path.join(dir, "summary.json"), "utf8")).results,
+      ).toHaveLength(1);
 
       await writeFile(path.join(dir, "summary.json"), '{"results": [{"id": "truncat');
       const failure = await effectPromise(
@@ -1152,7 +1099,7 @@ describe("ScaffBench hardening round 3", () => {
       const { rows, qualityGates, trialsPerSpec } = buildRows([dir]);
       expect(rows.map((row) => row.key).sort()).toEqual(["gpt-5.6-sol|high", "gpt-5.6-sol|low"]);
       expect(rows.every((row) => row.totalCostUsd === CORE_SPEC_IDS.length)).toBe(true);
-      expect(rows.every((row) => row.fullPasses === CORE_SPEC_IDS.length)).toBe(true);
+      expect(rows.every((row) => row.qualityPasses === CORE_SPEC_IDS.length)).toBe(true);
       expect(qualityGates).toBe(true);
       expect(trialsPerSpec).toBe(1);
 
@@ -1180,6 +1127,115 @@ describe("ScaffBench hardening round 3", () => {
       }
     } finally {
       await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("Y parses --top-up as an extension of a recorded out-dir", () => {
+    expect(parseArgs(["--top-up", "3", "--out-dir", "x"])).toMatchObject({
+      topUp: 3,
+      repeats: 1,
+      specsExplicit: false,
+    });
+    expect(
+      parseArgs(["--top-up", "3", "--out-dir", "x", "--specs", "go-realtime-api"]).specsExplicit,
+    ).toBe(true);
+    expect(() => parseArgs(["--top-up", "3", "--out-dir", "x", "--validate-existing"])).toThrow(
+      /cannot be combined/,
+    );
+    expect(() => parseArgs(["--top-up", "3", "--out-dir", "x", "--write-matrix-only"])).toThrow(
+      /cannot be combined/,
+    );
+    expect(() => parseArgs(["--top-up", "1", "--out-dir", "x"])).toThrow(/at least 2/);
+    expect(() => parseArgs(["--top-up", "3", "--repeats", "3", "--out-dir", "x"])).toThrow(
+      /cannot be combined/,
+    );
+    expect(() => parseArgs(["--top-up", "3"])).toThrow(/needs --out-dir/);
+
+    const recorded = [aiSpec.id, goSpec.id];
+    expect(topUpSpecSelection([...CORE_SPEC_IDS], recorded)).toEqual(recorded);
+    expect(topUpSpecSelection([goSpec.id], recorded)).toEqual([goSpec.id]);
+    expect(() => topUpSpecSelection([aiSpec.id, cargoSpec.id], recorded)).toThrow(
+      /not in this out-dir/,
+    );
+
+    const topUps = [{ trials: 3, specs: [aiSpec.id], recordedAt: "2026-08-27T00:00:00.000Z" }];
+    expect(
+      recordedRunProtocol({ metadata: { runProtocol: { repeats: 1, seed: 9, topUps } } }),
+    ).toEqual({ repeats: 1, seed: 9, topUps });
+    expect(recordedRunProtocol({ metadata: { runProtocol: { repeats: 1, seed: 9 } } })).toEqual({
+      repeats: 1,
+      seed: 9,
+    });
+  });
+
+  it("Z publishes topped-up rows as per-spec rates and demotes partial top-ups", async () => {
+    const secondTrial =
+      (specIds: readonly string[], failBuild: boolean) => (results: RunResult[]) => [
+        ...results,
+        ...results
+          .filter((result) => specIds.includes(result.specId))
+          .map((result) => ({
+            ...result,
+            id: result.id.replace(/-r01$/, "-r02"),
+            trial: 2,
+            provenance: { ...PUBLISH_PROVENANCE, configuredTrials: 2 },
+            validation: failBuild
+              ? { ...result.validation, steps: { build: step({ exitCode: 1 }) } }
+              : result.validation,
+          })),
+      ];
+    const uniform = await tempDirectory("sb-r3-topup-uniform-");
+    const partial = await tempDirectory("sb-r3-topup-partial-");
+    const ragged = await tempDirectory("sb-r3-topup-ragged-");
+    try {
+      await writePublishableRun(
+        uniform,
+        "gpt-5.6-sol",
+        ["high"],
+        () => {},
+        secondTrial(CORE_SPEC_IDS, true),
+      );
+      const [row] = buildRows([uniform]).rows;
+      expect(row).toMatchObject({
+        topUp: "uniform",
+        trials: 2,
+        eligibility: "ranked",
+        qualityPasses: 6.5,
+        corePasses: 6.5,
+        qualityPassPct: 50,
+        scoredSpecs: 13,
+      });
+      expect((row!.results as Record<string, unknown>)[aiSpec.id]).toEqual({
+        trials: 2,
+        scored: 2,
+        core: 1,
+        quality: 1,
+        score: 50,
+      });
+
+      await writePublishableRun(
+        partial,
+        "gpt-5.6-sol",
+        ["high"],
+        () => {},
+        secondTrial([aiSpec.id], false),
+      );
+      expect(buildRows([partial]).rows[0]).toMatchObject({
+        topUp: "partial",
+        trials: 2,
+        eligibility: "exploratory",
+        qualityPasses: 13,
+      });
+
+      await writePublishableRun(ragged, "gpt-5.6-sol", ["high"], (summary) => {
+        summary.results[0].trial = 3;
+        summary.results[0].id = summary.results[0].id.replace(/-r01$/, "-r03");
+      });
+      expect(() => buildRows([ragged])).toThrow(/numbered 1\.\.n/);
+    } finally {
+      await rm(uniform, { recursive: true, force: true });
+      await rm(partial, { recursive: true, force: true });
+      await rm(ragged, { recursive: true, force: true });
     }
   });
 
@@ -1215,7 +1271,12 @@ describe("ScaffBench hardening round 3", () => {
       expect((await scoreArtifact(minimalSpec, dir)).misses).toContain("forbidden:analytics");
 
       for (const [specId, file, contents, marker] of [
-        ["elixir-broadway-absinthe", "mix.exs", "{:bcrypt_elixir, \"~> 3.0\"}", "forbidden:phx-gen-auth"],
+        [
+          "elixir-broadway-absinthe",
+          "mix.exs",
+          '{:bcrypt_elixir, "~> 3.0"}',
+          "forbidden:phx-gen-auth",
+        ],
         ["rust-leptos-axum", "Cargo.toml", 'yew = "0.23"', "forbidden:yew"],
         [
           "java-spring-jooq-keycloak",
@@ -1223,7 +1284,12 @@ describe("ScaffBench hardening round 3", () => {
           "UserDetailsService userDetailsService()",
           "forbidden:in-app-auth",
         ],
-        ["dotnet-blazor-cqrs", "Program.cs", "builder.Services.AddControllersWithViews();", "forbidden:mvc"],
+        [
+          "dotnet-blazor-cqrs",
+          "Program.cs",
+          "builder.Services.AddControllersWithViews();",
+          "forbidden:mvc",
+        ],
       ] as const) {
         const specDir = await tempDirectory("sb-r3-trap-");
         try {

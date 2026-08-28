@@ -1,46 +1,50 @@
 # ScaffBench reports
 
-ScaffBench measures how well AI coding agents **start real full-stack projects** — not edit existing
-code, but scaffold a working project from scratch. The core question across every version: *does the
-generated project actually install and build?*
+ScaffBench measures how well AI coding agents **start real full-stack projects**. Not edit existing
+code, but scaffold a working project from scratch. The core question: does the generated project
+actually install and build?
 
-This directory holds the open-sourced run reports, organized by benchmark version.
+This directory holds the open-sourced run reports for the current suite. Reports from suites 1, 2,
+and 2.1 were removed when suite 3.0 reset the protocol. Their numbers are not comparable to 3.0
+results, so keeping them here invited apples-to-oranges reading. Recover them from git history if
+you need them.
 
 ```
 benchmarks/
-  v1/     cross-vendor build-pass sweep (reconstructed — see below)
-  v2/     5-spec depth benchmark, 3 creation paths, June 2026
-  v2.1/   13-spec expanded suite across 8 ecosystems, prompt path
+  <model>-<effort>/  one folder per published run of suite 3.0
 ```
 
-Each version folder contains:
+Each run folder contains:
 
-- **`<model>-<effort>/summary.json`** — one report per run: the aggregate leaderboard, per-spec cells
-  (`bySpecCell`), and per-run results (validation steps, wired-libraries score, cost, tokens).
-- **`<model>-<effort>/summary.md`** — a human-readable version of the same.
-- **`specs.json`** — the spec definitions for that version (the projects each model was asked to build).
+- **`summary.json`**: the aggregate leaderboard, per-spec cells (`bySpecCell`), and per-run results
+  (validation steps, wired-libraries score, cost, tokens).
+- **`summary.md`**: a human-readable version of the same.
 
-## What's *not* here
+## What's not here
 
-The raw generated projects and their build artifacts (`node_modules`, cargo/target, .venv, etc.) run to
-~16 GB and stay out of the repo. These reports are the **scored summaries** — the numbers, not the
-gigabytes. v1's raw artifacts are no longer retained, so `v1/` is **reconstructed** from the published
-aggregate results and labeled as such.
+The raw generated projects and their build artifacts (`node_modules`, cargo/target, .venv) run to
+roughly 16 GB and stay out of the repo. These reports are the scored summaries. The numbers, not the
+gigabytes.
 
 ## How runs are scored
 
-- **CORE pass@1** — the headline: does the project install, build, type-check, and native-compile
-  (`cargo check`, `go build`, `dotnet build`, `mvn`, `mix`)? Everything hinges on this.
-- **Wired libraries** — did the agent actually *use* the libraries the spec calls for, scored against
-  the dependencies / imports / files present in the generated tree (not just names it mentioned)?
-- **Run outcome** — every run is `success`, `model-failure`, or `infra-inconclusive`. Toolchain stalls
-  and un-measurable runs are excluded from the rate; a generation timeout counts as a model failure
-  (as in SWE-bench).
+- **Core pass@1**: does the project install, build, type-check, and native-compile (`cargo check`,
+  `go build`, `dotnet build`, `mvn`, `mix`)? Everything hinges on this.
+- **Quality pass@1**: Core plus lint and format green on a clean machine. Tests run and are
+  reported, but they do not affect any score.
+- **Wired libraries**: did the agent actually use the libraries the spec calls for? Scored against
+  the dependencies, imports, and files present in the generated tree, not names it mentioned.
+  Trap and restraint markers (a forbidden ORM, a forbidden build tool) live in the same score.
+- **Index** (0-100): the headline and the board's sort key. Every spec earns a graded score, 0.6 for a Core pass,
+  0.2 for the share of lint and format gates green, and 0.2 for wired libraries. Tests are not
+  scored, since the harness can only run the tests the model wrote. The index is the mean of those
+  scores weighted by spec difficulty (1 easy, 2 hard, 3 frontier, pinned in each spec), times 100.
+  Cost, time, and lines of code are shown beside the index and never enter it.
+- **Run outcome**: every run is `success`, `model-failure`, or `infra-inconclusive`. Toolchain stalls
+  and un-measurable runs are excluded from the rate. A generation timeout counts as a model failure,
+  as in SWE-bench.
 
-## Creation paths
+Suite 3.0 scores the prompt path only: no scaffolder, the agent hand-writes every file. That is the
+purest measure of raw capability.
 
-- **prompt** — no scaffolder; the agent hand-writes every file. The purest measure of raw capability.
-- **mcp** — the agent scaffolds through the Better-Fullstack MCP tools.
-- **cli** — the agent composes the Better-Fullstack CLI command.
-
-See the [ScaffBench blog posts](https://better-fullstack.com/blog/scaffbench) for the write-ups.
+The live board is at [better-fullstack.com/benchmark](https://better-fullstack.com/benchmark).

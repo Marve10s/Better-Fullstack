@@ -5,6 +5,7 @@ export const JavaSpringJooqKeycloakSpec: BenchmarkSpec = {
   introducedAt: "2026-08-21",
   title: "Java Spring Boot API with jOOQ, Keycloak, GraphQL, and property/architecture tests",
   lane: "core",
+  difficulty: 1,
   family: "java",
   supportedByBetterFullstack: true,
   requirements: [

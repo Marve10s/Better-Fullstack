@@ -516,7 +516,6 @@
   "runCtaTitle": "Mira cómo se compara tu ejecución",
   "runCtaDesc": "Tus resultados se mostrarán en el mismo formato que la tabla de clasificación. ¿Obtuviste algo interesante? Abre un pull request con tu informe.",
   "runCtaLeaderboard": "Ver la tabla de clasificación",
-  "runCtaWriteup": "Lee el artículo.",
   "llmRunItYourself": "Ejecútalo tú mismo",
   "navBenchmark": "Benchmark",
   "benchmarkTeaserTitle": "¿Qué tan buenos son los modelos de IA construyendo tus proyectos?",

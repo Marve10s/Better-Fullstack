@@ -1,10 +1,4 @@
 import * as BunContext from "@effect/platform-bun/BunContext";
-import { describe, expect, it } from "bun:test";
-import * as Effect from "effect/Effect";
-import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import path from "node:path";
-
 import {
   CALIBRATION_WEAK_MODEL,
   CLAUDE_TIMEOUT_MS,
@@ -30,7 +24,9 @@ import {
   generationTimeoutMs,
   hasTransientNetworkSignature,
   hashProjectSource,
-  indexWeightsForPath,
+  SCAFFBENCH_SPEC_SCORE_WEIGHTS,
+  specDifficulty,
+  specScore,
   parseArgs,
   parseClaudeResult,
   parseCodexResult,
@@ -56,14 +52,11 @@ import {
   type ScaffbenchOptions,
   type StepResult,
 } from "@scaffbench/index";
-
-import {
-  buildPublishedCells,
-  discriminationRows,
-  resultTrialKey,
-  type PublishedCell,
-} from "@scripts/benchmarks/build-scaffbench-2-1-data";
-import { fullPass, scaffbenchIndex } from "@scripts/benchmarks/build-scaffbench-data";
+import { describe, expect, it } from "bun:test";
+import * as Effect from "effect/Effect";
+import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
 const aiSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "ai-search-workbench")!;
 const goSpec = SCAFFBENCH_2_SPECS.find((spec) => spec.id === "go-realtime-api")!;
@@ -169,6 +162,38 @@ describe("ScaffBench hardening 1: evidence-backed classification", () => {
       ].join("\n"),
     );
     expect(parsed?.terminal_reason).toBe("opencode-unknown-zero-usage-no-tools");
+    const midFlight = parseOpencodeResult(
+      [
+        `{"sessionID":"s2"}`,
+        `{"part":{"type":"tool","tool":"bash","state":{"input":{"command":"ls"}}}}`,
+        `{"part":{"type":"step-finish","reason":"tool-calls","tokens":{"output":588,"reasoning":0},"cost":0}}`,
+        `{"part":{"type":"step-finish","reason":"unknown","tokens":{"output":0,"reasoning":0},"cost":0}}`,
+      ].join("\n"),
+    );
+    expect(midFlight?.terminal_reason).toBe("opencode-unknown-zero-usage-step");
+    expect(
+      classifyOutcome(
+        run({
+          projectDir: null,
+          claude: {
+            exitCode: 0,
+            timedOut: false,
+            durationMs: 1,
+            outputTokens: 588,
+            terminalReason: midFlight.terminal_reason,
+          },
+          validation: { projectExists: false, qualityGateRequested: false, steps: {} },
+        }),
+      ),
+    ).toBe("provider-infra");
+    const finished = parseOpencodeResult(
+      [
+        `{"sessionID":"s3"}`,
+        `{"part":{"type":"step-finish","reason":"tool-calls","tokens":{"output":500,"reasoning":0},"cost":0}}`,
+        `{"part":{"type":"step-finish","reason":"stop","tokens":{"output":0,"reasoning":0},"cost":0}}`,
+      ].join("\n"),
+    );
+    expect(finished?.terminal_reason).toBe("stop");
     expect(
       classifyOutcome(
         run({
@@ -282,7 +307,7 @@ describe("ScaffBench hardening 1: evidence-backed classification", () => {
       },
     });
     expect(classifyOutcome(advisoryTimeout)).toBe("success");
-    expect(qualityPassed(advisoryTimeout)).toBe(false);
+    expect(qualityPassed(advisoryTimeout)).toBe(true);
   });
 
   it("1f separates project exit 127 from a spawn-level missing toolchain and records its code", async () => {
@@ -371,17 +396,56 @@ describe("ScaffBench hardening 2: timeout and accounting", () => {
 });
 
 describe("ScaffBench hardening 3: scoring", () => {
-  it("3a uses prompt and assisted path-specific weights everywhere", () => {
-    expect(indexWeightsForPath("prompt")).toEqual({
-      validation: 0.75,
-      wiredLibs: 0.25,
-      discipline: 0,
+  it("3a grades a spec as core, lint/format share, and stack; tests carry no weight", () => {
+    expect(SCAFFBENCH_SPEC_SCORE_WEIGHTS).toEqual({ core: 0.6, quality: 0.2, stack: 0.2 });
+    const lintRedTestsRed = run({
+      validation: {
+        projectExists: true,
+        qualityGateRequested: true,
+        steps: {
+          build: step(),
+          lint: step({ exitCode: 1 }),
+          format: step(),
+          test: step({ exitCode: 1 }),
+        },
+      },
+      stackScore: { matched: 1, total: 2, percent: 50, misses: ["x"] },
     });
-    expect(scaffbenchIndex("prompt", 50, 80, 0)).toBe(57.5);
-    expect(scaffbenchIndex("mcp", 50, 80, 50)).toBe(57.5);
+    const graded = specScore(lintRedTestsRed);
+    expect(graded).toMatchObject({ core: 1, quality: 0.5, stack: 0.5 });
+    expect(graded.score).toBeCloseTo(0.8, 10);
+
+    const failedBuild = run({
+      validation: {
+        projectExists: true,
+        qualityGateRequested: true,
+        steps: {
+          build: step({ exitCode: 1 }),
+          "not-run:lint": step({ exitCode: null, status: "skip" }),
+          "not-run:format": step({ exitCode: null, status: "skip" }),
+        },
+      },
+    });
+    expect(specScore(failedBuild)).toMatchObject({ core: 0, quality: 0, stack: 1 });
   });
 
-  it("3b gates a zero-validation prompt cell at exactly 25% of wired mean", () => {
+  it("3a2 weights the index by pinned spec difficulty, not by spec count", () => {
+    const easyPass = run({ id: "easy", specId: "go-realtime-api" });
+    const frontierFail = run({
+      id: "frontier",
+      specId: "frontier-polyglot-proto",
+      validation: {
+        projectExists: true,
+        qualityGateRequested: false,
+        steps: { build: step({ exitCode: 1 }) },
+      },
+    });
+    expect(specDifficulty("go-realtime-api")).toBe(1);
+    expect(specDifficulty("frontier-polyglot-proto")).toBe(3);
+    expect(aggregateResults([easyPass, frontierFail]).leaderboard[0]?.index).toBe(35);
+  });
+
+  it("3b keeps only the stack share for a failed build", () => {
     const failed = run({
       validation: {
         projectExists: true,
@@ -391,7 +455,7 @@ describe("ScaffBench hardening 3: scoring", () => {
       stackScore: { matched: 1, total: 1, percent: 100, misses: [] },
       toolCompliance: { score: 2, total: 2, checks: [] },
     });
-    expect(aggregateResults([failed]).leaderboard[0]?.index).toBe(25);
+    expect(aggregateResults([failed]).leaderboard[0]?.index).toBe(20);
   });
 
   it("3c computes wired and discipline components over the same scored trials", () => {
@@ -419,53 +483,10 @@ describe("ScaffBench hardening 3: scoring", () => {
   it("3d represents an unrequested quality gate as na/null, never pass", () => {
     const unrequested = run();
     expect(qualityPassed(unrequested)).toBe("na");
-    expect(fullPass(unrequested)).toBeNull();
   });
 });
 
 describe("ScaffBench hardening 4: trial integrity", () => {
-  it("4a keys every trial and publishes aggregate repeat statistics", () => {
-    const results = [run({ id: "a", trial: 1 }), run({ id: "b", trial: 2 })];
-    results[1]!.validation = {
-      projectExists: true,
-      qualityGateRequested: false,
-      steps: { build: step({ exitCode: 1 }) },
-    };
-    expect(new Set(results.map(resultTrialKey)).size).toBe(2);
-    const summary = {
-      options: options(),
-      results,
-      aggregates: {
-        bySpecCell: [
-          {
-            model: "gpt-5.6-sol",
-            effort: "high",
-            path: "prompt",
-            specId: aiSpec.id,
-            scoredRuns: 2,
-            passCount: 1,
-            qualityScoredRuns: 0,
-            qualityPassCount: 0,
-            stackPercent: 50,
-            commandDisciplinePercent: 100,
-            avgOutputTokens: 10,
-            medianDurationMs: 10,
-          },
-        ],
-      },
-    };
-    const cell = buildPublishedCells(summary, "/missing")[0]!;
-    expect(cell).toMatchObject({
-      trials: 2,
-      scoredTrials: 2,
-      passCount: 1,
-      passRate: 50,
-      passAny: true,
-      passAll: false,
-      corePass: false,
-    });
-  });
-
   it("4b interleaves repeat rounds and uses a deterministic seeded shuffle", () => {
     const specs = [aiSpec, goSpec];
     const schedule = buildGenerationSchedule(
@@ -495,9 +516,7 @@ describe("ScaffBench hardening 4: trial integrity", () => {
   });
 
   it("4c ranks a single-trial row now that MIN_RANKED_TRIALS is 1", () => {
-    const single = [
-      run({ id: "solo", trial: 1, provenance: provenance({ configuredTrials: 1 }) }),
-    ];
+    const single = [run({ id: "solo", trial: 1, provenance: provenance({ configuredTrials: 1 }) })];
     expect(publicationEligibility(single)).toBe("ranked");
     expect(
       publicationEligibility([
@@ -599,12 +618,7 @@ describe("ScaffBench hardening 5: validator v4", () => {
     ).toMatchObject({ command: "npx", args: ["expo", "export", "--platform", "web"] });
     expect(expoExportCommand({ dependencies: { expo: "^55" } })?.args).toEqual(["expo", "export"]);
     const denied = await effectPromise(
-      runCommand(
-        "/bin/sh",
-        ["-c", "echo 'expo command denied' >&2; exit 126"],
-        process.cwd(),
-        500,
-      ),
+      runCommand("/bin/sh", ["-c", "echo 'expo command denied' >&2; exit 126"], process.cwd(), 500),
     );
     expect(denied.exitCode).toBe(126);
     expect(denied.stderrTail).toContain("expo command denied");
@@ -756,43 +770,6 @@ describe("ScaffBench hardening 6: opt-in batch-4 features", () => {
       [aiSpec, goSpec],
     );
     expect(cohorts[0]).toMatchObject({ specs: 2, scoredRuns: 2, passCount: 1, passRate: 50 });
-  });
-
-  it("6d reports per-spec model spread and flags ceiling/floor specs", () => {
-    const cell = (spec: string, modelKey: string, passRate: number): PublishedCell => ({
-      modelKey,
-      path: "prompt",
-      spec,
-      scored: true,
-      corePass: passRate === 100,
-      fullPass: null,
-      trials: 1,
-      scoredTrials: 1,
-      passCount: passRate > 0 ? 1 : 0,
-      passRate,
-      passAny: passRate > 0,
-      passAll: passRate === 100,
-      qualityPassCount: null,
-      qualityPassRate: null,
-      wiredPct: 0,
-      cmdPct: 0,
-      costUsd: null,
-      outTokens: null,
-      steps: 0,
-      durationMs: null,
-      lines: null,
-    });
-    const rows = discriminationRows([
-      cell("ceiling", "a", 100),
-      cell("ceiling", "b", 100),
-      cell("floor", "a", 0),
-      cell("floor", "b", 0),
-      cell("spread", "a", 100),
-      cell("spread", "b", 0),
-    ]);
-    expect(rows.find((row) => row.spec === "ceiling")?.flag).toBe("ceiling");
-    expect(rows.find((row) => row.spec === "floor")?.flag).toBe("floor");
-    expect(rows.find((row) => row.spec === "spread")?.spread).toBe(100);
   });
 });
 

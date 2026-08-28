@@ -5,6 +5,7 @@ export const MultiTsGoGrpcSpec: BenchmarkSpec = {
   introducedAt: "2026-08-21",
   title: "Multi-ecosystem app: Nuxt (Vue) frontend with a Go Chi + gRPC backend",
   lane: "core",
+  difficulty: 2,
   family: "multi-ecosystem",
   supportedByBetterFullstack: true,
   requirements: [
