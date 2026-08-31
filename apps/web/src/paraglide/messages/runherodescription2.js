@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Runherodescription2Inputs */
 
 const en_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The harness is open source. Clone it, point it at any agent — Claude Code, Codex, opencode, Kilo, or Antigravity for Gemini — and it scaffolds each spec, then scores whether the generated project actually installs and builds. Runs work with a logged-in CLI or a plain API key.`)
+	return /** @type {LocalizedString} */ (`The harness is open source. Clone it, point it at any agent - Claude Code, Codex, opencode, Kilo, or Antigravity for Gemini - and it scaffolds each spec, then scores whether the generated project actually installs and builds. Runs work with a logged-in CLI or a plain API key.`)
 };
 
 const es_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) => LocalizedString} */ () => {
@@ -14,7 +14,7 @@ const es_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) =>
 };
 
 const zh_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`该框架是开源的。克隆它，并将其指向任何代理——Claude Code、Codex、opencode、Kilo 或 Antigravity for Gemini——它就会为每个规范生成脚手架，然后评估生成的项目是否能够实际安装和构建。它支持使用已登录的 CLI 或纯 API 密钥运行。`)
+	return /** @type {LocalizedString} */ (`该框架是开源的。克隆它，并将其指向任何代理--Claude Code、Codex、opencode、Kilo 或 Antigravity for Gemini--它就会为每个规范生成脚手架，然后评估生成的项目是否能够实际安装和构建。它支持使用已登录的 CLI 或纯 API 密钥运行。`)
 };
 
 const ja_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) => LocalizedString} */ () => {
@@ -26,7 +26,7 @@ const ko_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) =>
 };
 
 const zh_hant1_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`該框架是開源的。複製它，並將其指向任何代理程式——Claude Code、Codex、opencode、Kilo 或 Antigravity for Gemini——它就會為每個規範生成腳手架，然後評估生成的專案是否能夠實際安裝和建置。它支援使用已登入的 CLI 或純 API 金鑰運行。`)
+	return /** @type {LocalizedString} */ (`該框架是開源的。複製它，並將其指向任何代理程式--Claude Code、Codex、opencode、Kilo 或 Antigravity for Gemini--它就會為每個規範生成腳手架，然後評估生成的專案是否能夠實際安裝和建置。它支援使用已登入的 CLI 或純 API 金鑰運行。`)
 };
 
 const de_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) => LocalizedString} */ () => {
@@ -38,13 +38,13 @@ const fr_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) =>
 };
 
 const uk_runherodescription2 = /** @type {(inputs: Runherodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Harness має відкритий код. Клонуйте його, підключіть будь-якого агента — Claude Code, Codex, opencode, Kilo або Antigravity для Gemini — і він згенерує кожну специфікацію, а потім перевірить, чи встановлюється та збирається проєкт. Працює з авторизованим CLI або звичайним API-ключем.`)
+	return /** @type {LocalizedString} */ (`Harness має відкритий код. Клонуйте його, підключіть будь-якого агента - Claude Code, Codex, opencode, Kilo або Antigravity для Gemini - і він згенерує кожну специфікацію, а потім перевірить, чи встановлюється та збирається проєкт. Працює з авторизованим CLI або звичайним API-ключем.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "The harness is open source. Clone it, point it at any agent — Claude Code, Codex, opencode, Kilo, or Antigravity for Gemini — and it scaffolds each spec, the..." |
+* | "The harness is open source. Clone it, point it at any agent - Claude Code, Codex, opencode, Kilo, or Antigravity for Gemini - and it scaffolds each spec, the..." |
 *
 * @param {Runherodescription2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

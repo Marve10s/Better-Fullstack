@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Runauthclidesc3Inputs */
 
 const en_runauthclidesc3 = /** @type {(inputs: Runauthclidesc3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Use an agent CLI you're already signed into (subscription / OAuth). Log in once, then the harness drives it — no keys in your environment.`)
+	return /** @type {LocalizedString} */ (`Use an agent CLI you're already signed into (subscription / OAuth). Log in once, then the harness drives it - no keys in your environment.`)
 };
 
 const es_runauthclidesc3 = /** @type {(inputs: Runauthclidesc3Inputs) => LocalizedString} */ () => {
@@ -14,7 +14,7 @@ const es_runauthclidesc3 = /** @type {(inputs: Runauthclidesc3Inputs) => Localiz
 };
 
 const zh_runauthclidesc3 = /** @type {(inputs: Runauthclidesc3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`使用你已登录的代理 CLI（订阅/OAuth）。只需登录一次，然后该框架即可驱动它——你的环境中无需任何密钥。`)
+	return /** @type {LocalizedString} */ (`使用你已登录的代理 CLI（订阅/OAuth）。只需登录一次，然后该框架即可驱动它--你的环境中无需任何密钥。`)
 };
 
 const ja_runauthclidesc3 = /** @type {(inputs: Runauthclidesc3Inputs) => LocalizedString} */ () => {
@@ -26,7 +26,7 @@ const ko_runauthclidesc3 = /** @type {(inputs: Runauthclidesc3Inputs) => Localiz
 };
 
 const zh_hant1_runauthclidesc3 = /** @type {(inputs: Runauthclidesc3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`使用你已登入的代理程式 CLI（訂閱/OAuth）。只需登入一次，然後該框架即可驅動它——你的環境中無需任何金鑰。`)
+	return /** @type {LocalizedString} */ (`使用你已登入的代理程式 CLI（訂閱/OAuth）。只需登入一次，然後該框架即可驅動它--你的環境中無需任何金鑰。`)
 };
 
 const de_runauthclidesc3 = /** @type {(inputs: Runauthclidesc3Inputs) => LocalizedString} */ () => {
@@ -38,13 +38,13 @@ const fr_runauthclidesc3 = /** @type {(inputs: Runauthclidesc3Inputs) => Localiz
 };
 
 const uk_runauthclidesc3 = /** @type {(inputs: Runauthclidesc3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Використовуйте agent CLI, у який ви вже ввійшли (підписка / OAuth). Увійдіть один раз, а далі harness керує запуском — без ключів у середовищі.`)
+	return /** @type {LocalizedString} */ (`Використовуйте agent CLI, у який ви вже ввійшли (підписка / OAuth). Увійдіть один раз, а далі harness керує запуском - без ключів у середовищі.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Use an agent CLI you're already signed into (subscription / OAuth). Log in once, then the harness drives it — no keys in your environment." |
+* | "Use an agent CLI you're already signed into (subscription / OAuth). Log in once, then the harness drives it - no keys in your environment." |
 *
 * @param {Runauthclidesc3Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Campaignstepruncopy3Inputs */
 
 const en_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Start the generated development server in an isolated browser runtime—not a simulated preview.`)
+	return /** @type {LocalizedString} */ (`Start the generated development server in an isolated browser runtime-not a simulated preview.`)
 };
 
 const es_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
@@ -14,7 +14,7 @@ const es_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) 
 };
 
 const zh_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`在隔离的浏览器运行时中启动生成的开发服务器——不是模拟预览。`)
+	return /** @type {LocalizedString} */ (`在隔离的浏览器运行时中启动生成的开发服务器--不是模拟预览。`)
 };
 
 const ja_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
@@ -26,7 +26,7 @@ const ko_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) 
 };
 
 const zh_hant1_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`在隔離的瀏覽器執行環境中啟動產生的開發伺服器——不是模擬預覽。`)
+	return /** @type {LocalizedString} */ (`在隔離的瀏覽器執行環境中啟動產生的開發伺服器--不是模擬預覽。`)
 };
 
 const de_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
@@ -34,17 +34,17 @@ const de_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) 
 };
 
 const fr_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Lancez le serveur de développement généré dans un runtime navigateur isolé — pas un aperçu simulé.`)
+	return /** @type {LocalizedString} */ (`Lancez le serveur de développement généré dans un runtime navigateur isolé - pas un aperçu simulé.`)
 };
 
 const uk_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Запустіть згенерований дев-сервер в ізольованому браузерному середовищі — це не симульоване превʼю.`)
+	return /** @type {LocalizedString} */ (`Запустіть згенерований дев-сервер в ізольованому браузерному середовищі - це не симульоване превʼю.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Start the generated development server in an isolated browser runtime—not a simulated preview." |
+* | "Start the generated development server in an isolated browser runtime-not a simulated preview." |
 *
 * @param {Campaignstepruncopy3Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

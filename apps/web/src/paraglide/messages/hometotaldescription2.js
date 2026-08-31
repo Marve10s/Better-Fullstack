@@ -38,7 +38,7 @@ const fr_hometotaldescription2 = /** @type {(inputs: Hometotaldescription2Inputs
 };
 
 const uk_hometotaldescription2 = /** @type {(inputs: Hometotaldescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Помножте це на кожну базу даних, CSS-фреймворк і AI SDK — і отримаєте більше комбінацій, ніж піщинок.`)
+	return /** @type {LocalizedString} */ (`Помножте це на кожну базу даних, CSS-фреймворк і AI SDK - і отримаєте більше комбінацій, ніж піщинок.`)
 };
 
 /**

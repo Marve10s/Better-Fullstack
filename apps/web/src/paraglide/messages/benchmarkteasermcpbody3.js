@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Benchmarkteasermcpbody3Inputs */
 
 const en_benchmarkteasermcpbody3 = /** @type {(inputs: Benchmarkteasermcpbody3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The difference is our MCP. Point any coding agent at Better-Fullstack's tools and even a small free model builds almost everything — with a fraction of the tokens and steps.`)
+	return /** @type {LocalizedString} */ (`The difference is our MCP. Point any coding agent at Better-Fullstack's tools and even a small free model builds almost everything - with a fraction of the tokens and steps.`)
 };
 
 const es_benchmarkteasermcpbody3 = /** @type {(inputs: Benchmarkteasermcpbody3Inputs) => LocalizedString} */ () => {
@@ -38,13 +38,13 @@ const fr_benchmarkteasermcpbody3 = /** @type {(inputs: Benchmarkteasermcpbody3In
 };
 
 const uk_benchmarkteasermcpbody3 = /** @type {(inputs: Benchmarkteasermcpbody3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Різниця — у нашому MCP. Спрямуйте будь-якого агента для коду на інструменти Better-Fullstack, і навіть маленька безкоштовна модель збудує майже все — з часткою токенів і кроків.`)
+	return /** @type {LocalizedString} */ (`Різниця - у нашому MCP. Спрямуйте будь-якого агента для коду на інструменти Better-Fullstack, і навіть маленька безкоштовна модель збудує майже все - з часткою токенів і кроків.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "The difference is our MCP. Point any coding agent at Better-Fullstack's tools and even a small free model builds almost everything — with a fraction of the t..." |
+* | "The difference is our MCP. Point any coding agent at Better-Fullstack's tools and even a small free model builds almost everything - with a fraction of the t..." |
 *
 * @param {Benchmarkteasermcpbody3Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
