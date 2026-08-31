@@ -26,7 +26,10 @@ import {
   getStarterTracksResult,
 } from "@/commands/stack/starter-tracks";
 import { historyHandler } from "@/commands/system/history";
-import { INSTALL_AGENT_INPUT_IDS } from "@/commands/system/install-core";
+import {
+  INSTALL_AGENT_INPUT_IDS,
+  type InstallReceipt,
+} from "@/commands/system/install-core";
 import { telemetryHandler } from "@/commands/system/telemetry";
 import { BUILDER_URL } from "@/constants";
 import { CreateCommandInputSchema, CreateCommandOptionsSchema } from "@/create-command-input";
@@ -203,6 +206,11 @@ const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   (sum, metadata) => sum + metadata.options.length,
   0,
 );
+
+function statusFromInstallResult(result: InstallReceipt | undefined) {
+  if (result?.targets.some((target) => target.status === "cancelled")) return "cancelled";
+  return statusFromCommandResult(result);
+}
 
 const AddCommandInputSchema = CreateCommandOptionsSchema.omit({
   template: true,
@@ -391,7 +399,7 @@ export const router = os.router({
       await withCommandTelemetry("install", () => installCommand(input), {
         source: "cli-flags",
         mode: input.dryRun ? "dry-run" : input.uninstall ? "uninstall" : "install",
-        resultStatus: statusFromCommandResult,
+        resultStatus: statusFromInstallResult,
         resultDetails: (result) => ({
           capabilityCount: result.summary.requested,
           issueCount: result.summary.failed,

@@ -903,6 +903,32 @@ async function commandTarget(
     }
     readding = entryState === "missing";
   }
+  if (!uninstall && ownership === undefined) {
+    const entryState = await commandConfigEntryState(definition, configPath);
+    if (entryState === "matching") {
+      return {
+        id: stateKey,
+        name: `${definition.name} MCP`,
+        capability: "mcp",
+        status: "unchanged",
+        changed: false,
+        detected: detected.detected,
+        path: configPath,
+        message: "matching entry already existed",
+        operations: [],
+      };
+    }
+    if (entryState === "modified") {
+      return failureReceipt(
+        stateKey,
+        `${definition.name} MCP`,
+        "mcp",
+        `A different better-fullstack entry already exists in ${configPath}; left the user-owned entry unchanged.`,
+        detected.detected,
+        { path: configPath },
+      );
+    }
+  }
   if (!detected.binaryPath) {
     return failureReceipt(
       stateKey,
@@ -1061,7 +1087,7 @@ async function jsonTarget(
 
     const createdFile = !exists;
     const current = exists ? await readFile(path, "utf8") : undefined;
-    const result = current
+    const result = current !== undefined
       ? addJsonEntry(current, path, definition.parentKey, definition.value)
       : {
           content: emptyConfigContent(definition.parentKey, definition.value),
@@ -1205,10 +1231,10 @@ async function installSkillFiles(
     try {
       await rename(temporaryPath, path);
     } catch (error) {
-      await rename(previousPath, path);
+      await rename(previousPath, path).catch(() => {});
       throw error;
     }
-    await rm(previousPath, { recursive: true });
+    await rm(previousPath, { recursive: true }).catch(() => {});
   } finally {
     if (await pathExists(temporaryPath)) await rm(temporaryPath, { recursive: true });
   }

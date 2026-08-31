@@ -478,6 +478,61 @@ describe("bfs install", () => {
     ]);
   });
 
+  it("does not claim or alter pre-existing command-backed entries", async () => {
+    await createExecutable("claude");
+    const configPath = join(homeDirectory, ".claude.json");
+    const statePath = join(homeDirectory, ".config", "better-fullstack", "install-state.json");
+    const matching = `${JSON.stringify(
+      {
+        mcpServers: {
+          "better-fullstack": {
+            command: "npx",
+            args: ["-y", "create-better-fullstack@latest", "mcp"],
+          },
+        },
+      },
+      null,
+      2,
+    )}\n`;
+    await writeFile(configPath, matching);
+    let commandRuns = 0;
+    const commandEnvironment = environment({
+      runCommand: async () => {
+        commandRuns += 1;
+      },
+    });
+
+    const install = await runInstall(
+      { only: "mcp", agents: ["claude"] },
+      commandEnvironment,
+    );
+    expect(install.targets.find((target) => target.id === "mcp:claude")).toMatchObject({
+      status: "unchanged",
+      changed: false,
+      message: "matching entry already existed",
+    });
+    expect(commandRuns).toBe(0);
+    await expect(readFile(statePath, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+
+    await runInstall(
+      { only: "mcp", agents: ["claude"], uninstall: true },
+      commandEnvironment,
+    );
+    expect(await readFile(configPath, "utf8")).toBe(matching);
+    expect(commandRuns).toBe(0);
+
+    const modified = matching.replace('"npx"', '"user-mcp"');
+    await writeFile(configPath, modified);
+    const conflict = await runInstall(
+      { only: "mcp", agents: ["claude"] },
+      commandEnvironment,
+    );
+    expect(conflict.success).toBe(false);
+    expect(conflict.targets[0]?.message).toContain("user-owned entry unchanged");
+    expect(await readFile(configPath, "utf8")).toBe(modified);
+    expect(commandRuns).toBe(0);
+  });
+
   it("re-adds command-backed MCP entries removed after installation", async () => {
     const [claudePath, codexPath, geminiPath] = await Promise.all([
       createExecutable("claude"),
@@ -766,6 +821,21 @@ describe("bfs install", () => {
     expect(receipt.success).toBe(false);
     expect(receipt.summary.failed).toBe(1);
     expect(await readFile(configPath, "utf8")).toBe(invalid);
+    expect((await readdir(join(homeDirectory, ".cursor"))).sort()).toEqual(["mcp.json"]);
+  });
+
+  it("refuses to overwrite an existing zero-byte JSON config", async () => {
+    const configPath = join(homeDirectory, ".cursor", "mcp.json");
+    await mkdir(join(homeDirectory, ".cursor"), { recursive: true });
+    await writeFile(configPath, "");
+
+    const receipt = await runInstall({ only: "mcp", agents: ["cursor"] }, environment());
+
+    expect(receipt.success).toBe(false);
+    expect(receipt.targets[0]?.message).toBe(
+      `Config is not valid JSON; left it unchanged: ${configPath}`,
+    );
+    expect(await readFile(configPath, "utf8")).toBe("");
     expect((await readdir(join(homeDirectory, ".cursor"))).sort()).toEqual(["mcp.json"]);
   });
 });
