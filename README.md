@@ -1,73 +1,37 @@
-<!--
-```text
-██████╗ ███████╗████████╗████████╗███████╗██████╗
-██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
-██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
-██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
-██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
-╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
-███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
-██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-█████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
-██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
-```
--->
-
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/apps/web/public/og/better-fullstack-terminal-preview-1200x630.png" alt="Better Fullstack terminal-style preview showing CLI scaffolding output" width="100%" />
+<p>
+<a href="https://better-fullstack.dev"><img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/apps/web/public/favicon/favicon.svg" width="72" height="72" alt="Better Fullstack" align="middle"></a>
+&nbsp;&nbsp;&nbsp;
+<img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/arrow-right.svg" width="40" height="40" alt="to" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/typescript/3178C6" width="44" height="44" alt="TypeScript" title="TypeScript" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/react/61DAFB" width="44" height="44" alt="React Native" title="React Native" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/rust/DEA584" width="44" height="44" alt="Rust" title="Rust" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/go/00ADD8" width="44" height="44" alt="Go" title="Go" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/python/3776AB" width="44" height="44" alt="Python" title="Python" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/apps/web/public/icon/java.svg" width="44" height="44" alt="Java" title="Java" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/dotnet/512BD4" width="44" height="44" alt=".NET" title=".NET" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/elixir/8A63A8" width="44" height="44" alt="Elixir" title="Elixir" align="middle">
+</p>
 
-<br>
-
-**Scaffold configured fullstack projects in TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir. Pick the Stack Parts, then inspect the generated result and its evidence.**
-
-<br>
-
-[![Version](https://img.shields.io/npm/v/create-better-fullstack?style=for-the-badge&colorA=18181B&colorB=28CF8D)](https://www.npmjs.com/package/create-better-fullstack)
-&nbsp;
-[![Downloads](https://img.shields.io/npm/dm/create-better-fullstack?style=for-the-badge&colorA=18181B&colorB=28CF8D)](https://www.npmjs.com/package/create-better-fullstack)
-&nbsp;
-[![License](https://img.shields.io/github/license/Marve10s/Better-Fullstack?style=for-the-badge&colorA=18181B&colorB=28CF8D)](LICENSE)
+Scaffold fullstack projects from a catalog of Stack Parts.<br>
+Use the CLI, the Stack Builder in your browser, or an MCP server for AI agents.
 
 </div>
 
 <br>
 
-## Why Better Fullstack?
+## Quick start
 
-Most scaffolding tools lock you into one framework and one opinion. Better Fullstack doesn't.
-
-- **Broad stack catalog.** Frontend, backend, database, ORM, auth, API layer, payments, AI, DevOps, and more
-- **Multi-ecosystem projects.** Compose web, mobile, and backend stacks across TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir
-- **Visual builder.** Configure your stack in the browser, get a ready-to-run CLI command
-- **Lifecycle-aware.** Create, add, update, check, and generate from the recorded `bts.jsonc` project model
-- **Compatibility-checked.** The planner rejects or adjusts invalid selections before files are generated
-
-<br>
-
-## ⚡ Quick Start
-
-<table>
-<tr>
-<td width="50%">
-
-### 🌐 Web Builder (Recommended)
-
-Configure your stack visually, pick every option from a UI, preview your choices, and get a ready-to-run command.
-
-### **[Open the App Builder →](https://better-fullstack.dev/new)**
-
-</td>
-<td width="50%">
-
-### 💻 CLI
-
-```bash
-npm create better-fullstack@latest
-```
+Run one of these commands to scaffold a new project:
 
 ```bash
 bun create better-fullstack@latest
@@ -78,76 +42,53 @@ pnpm create better-fullstack@latest
 ```
 
 ```bash
-npx create-better-fullstack@latest
+npm create better-fullstack@latest
 ```
 
 ```bash
 yarn create better-fullstack@latest
 ```
 
-</td>
-</tr>
-</table>
+The Stack Builder runs in your browser and hands you the command to copy, or a ZIP download: **[Open the App Builder →](https://better-fullstack.dev/new)**
 
 <br>
 
-## 🤖 AI Agents
+## Why Better Fullstack
 
-One command connects every supported coding agent and editor on your machine to the Better Fullstack MCP server and installs both skills:
+- **Mix languages in one project.** Multi-Ecosystem mode composes frontend, backend, database, and mobile parts from different languages, like a TypeScript frontend with a Go backend.
+- **Build without installing anything.** The Stack Builder runs in the browser and downloads your project as a ZIP. No Node.js and no terminal required.
+- **Validated before files are written.** The CLI and the builder share one compatibility engine, so invalid combinations are rejected or adjusted before any file is written.
+- **Recorded in `bts.jsonc`.** Every project stores its configuration in `bts.jsonc` and `bts.lock.json`, so `add`, `update`, and `check` can extend and repair what was generated later.
+
+<br>
+
+## AI agents
+
+Connect your AI coding agents to Better Fullstack with one command:
 
 ```bash
 npx create-better-fullstack@latest install
 ```
 
-It detects Claude Code, Codex CLI, Gemini CLI, OpenCode, Cursor, Windsurf, and Zed, backs up every config file before touching it, and supports `--dry-run`, `--only mcp|skills`, `--agent`, `--json`, and `--uninstall`. See the [`install` reference](https://better-fullstack.dev/docs/cli/install).
-
-Manual setups when the installer does not cover your agent:
-
-- **Claude Code plugin**: `claude plugin marketplace add Marve10s/Better-Fullstack`, then `claude plugin install better-fullstack@better-fullstack`
-- **Codex plugin catalog**, `.agents/plugins/marketplace.json`
-- **Any MCP client**, `npx -y create-better-fullstack@latest mcp`
-- **Docs**, [better-fullstack.dev/docs/ai/overview](https://better-fullstack.dev/docs/ai/overview)
+After install, supported agents scaffold projects through the MCP server, 2.6x faster than hand-writing in ScaffBench; see the [AI docs](https://better-fullstack.dev/docs/ai/overview) for setup.
 
 <br>
 
-Ask any agent to build your stack, the **skill** runs the scaffold workflow, and the **MCP** exposes `bfs_*` tools (check compatibility, plan, create) to any client.
+## Community
 
-<br>
-
-## 🤝 Contributing
-
-See the [Contributing Guide](.github/CONTRIBUTING.md). Open an issue before starting work on new features.
-
-```bash
-git clone https://github.com/Marve10s/Better-Fullstack.git && cd Better-Fullstack
-bun install
-bun dev:cli    # CLI development
-bun dev:web    # Website development
-```
-
-<br>
-
-## 💬 Community
-
-[![X](https://img.shields.io/badge/X-@MARVELOUSBC-18181B?style=for-the-badge&logo=x&logoColor=white)](https://x.com/MARVELOUSBC)
+[![X](https://img.shields.io/badge/X-@MARVELOUSBC-1b1a17?style=flat-square&logo=x&logoColor=white)](https://x.com/MARVELOUSBC)
 &nbsp;
-[![Telegram](https://img.shields.io/badge/Telegram-Chat-18181B?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/TheCr1nge)
+[![Telegram](https://img.shields.io/badge/Telegram-chat-1b1a17?style=flat-square&logo=telegram&logoColor=white)](https://t.me/TheCr1nge)
 &nbsp;
-[![GitHub](https://img.shields.io/badge/GitHub-Marve10s-18181B?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Marve10s)
+[![GitHub](https://img.shields.io/badge/GitHub-Marve10s-1b1a17?style=flat-square&logo=github&logoColor=white)](https://github.com/Marve10s)
 
-Got questions or feedback? Open a [GitHub issue](https://github.com/Marve10s/Better-Fullstack/issues) or reach out on socials.
+If you find a bug or want to contribute, open a [GitHub issue](https://github.com/Marve10s/Better-Fullstack/issues) or read the [Contributing Guide](.github/CONTRIBUTING.md).
 
-<br>
+If Better Fullstack saves you time, consider sponsoring:
 
-## 💛 Sponsors
-
-If Better Fullstack saves you time, consider supporting:
-
-[![GitHub Sponsors](https://img.shields.io/badge/GitHub_Sponsors-Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/Marve10s)
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub_Sponsors-sponsor-EA4AAA?style=flat-square&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/Marve10s)
 &nbsp;
-[![Patreon](https://img.shields.io/badge/Patreon-Support-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/c/marve10s)
-
-<br>
+[![Patreon](https://img.shields.io/badge/Patreon-support-F96854?style=flat-square&logo=patreon&logoColor=white)](https://www.patreon.com/c/marve10s)
 
 <!--
 Star History is hidden while GitHub restricts stargazer data to repo admins and
@@ -155,7 +96,7 @@ collaborators, which makes the chart render an error placard instead of a graph:
 https://star-history.com/blog/github-stargazer-api-restriction
 Restore this block once the API is public again.
 
-## 📈 Star History
+## Star history
 
 <div align="center">
   <a href="https://star-history.com/#Marve10s/Better-Fullstack&Date">
