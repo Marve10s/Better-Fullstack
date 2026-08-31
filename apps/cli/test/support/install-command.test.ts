@@ -1,5 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { chmod, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -21,13 +30,13 @@ async function createExecutable(name: string) {
   return path;
 }
 
-async function createSkillSources() {
+async function createSkillSources(root = skillSourceDirectory, marker = "") {
   for (const name of ["scaffold-project", "add-to-project"]) {
-    const directory = join(skillSourceDirectory, name);
+    const directory = join(root, name);
     await mkdir(directory, { recursive: true });
     await writeFile(
       join(directory, "SKILL.md"),
-      `---\nname: ${name}\ndescription: Test skill\n---\n\n# ${name}\n`,
+      `---\nname: ${name}\ndescription: Test skill\n---\n\n# ${name}\n${marker}`,
     );
   }
 }
@@ -96,6 +105,30 @@ describe("bfs install", () => {
     });
     expect(agents.find((agent) => agent.id === "cursor")?.detected).toBe(true);
     expect(agents.find((agent) => agent.id === "codex")?.detected).toBe(false);
+  });
+
+  it("resolves bundled skills from the published dist layout without a repository fallback", async () => {
+    const moduleDirectory = join(testDirectory, "published-package", "dist");
+    await createSkillSources(join(moduleDirectory, "skills"), "Published bundle marker\n");
+
+    const receipt = await runInstall(
+      { only: "skills", agents: ["codex"] },
+      environment({ moduleDir: moduleDirectory, skillSourceDir: undefined }),
+    );
+
+    expect(receipt.success).toBe(true);
+    expect(
+      await readFile(
+        join(
+          homeDirectory,
+          ".agents",
+          "skills",
+          "better-fullstack-scaffold-project",
+          "SKILL.md",
+        ),
+        "utf8",
+      ),
+    ).toContain("Published bundle marker");
   });
 
   it("merges JSON without reordering or rewriting unrelated keys", async () => {
@@ -232,6 +265,43 @@ describe("bfs install", () => {
     expect(await snapshotDirectory(homeDirectory)).toEqual(before);
   });
 
+  it("aborts before changing targets when the ownership receipt path is not writable", async () => {
+    await createExecutable("claude");
+    const configPath = join(homeDirectory, ".claude.json");
+    const original = '{\n  "mcpServers": {}\n}\n';
+    await writeFile(configPath, original);
+    const outsideStateDirectory = join(testDirectory, "outside-state");
+    await mkdir(outsideStateDirectory);
+    await mkdir(join(homeDirectory, ".config"));
+    await symlink(
+      outsideStateDirectory,
+      join(homeDirectory, ".config", "better-fullstack"),
+      "dir",
+    );
+    let commandRuns = 0;
+
+    const receipt = await runInstall(
+      { only: "mcp", agents: ["claude"] },
+      environment({
+        runCommand: async () => {
+          commandRuns += 1;
+        },
+      }),
+    );
+
+    expect(receipt.success).toBe(false);
+    expect(receipt.targets).toHaveLength(1);
+    expect(receipt.targets[0]).toMatchObject({
+      id: "state-preflight",
+      status: "failed",
+      changed: false,
+    });
+    expect(receipt.targets[0]?.message).toContain("No targets were changed");
+    expect(commandRuns).toBe(0);
+    expect(await readFile(configPath, "utf8")).toBe(original);
+    expect(await readdir(outsideStateDirectory)).toEqual([]);
+  });
+
   it("uses the documented user-scoped CLI commands", async () => {
     const binaries = await Promise.all([
       createExecutable("claude"),
@@ -319,6 +389,80 @@ describe("bfs install", () => {
         args: ["mcp", "remove", "--scope", "user", "better-fullstack"],
       },
     ]);
+  });
+
+  it("re-adds command-backed MCP entries removed after installation", async () => {
+    const [claudePath, codexPath, geminiPath] = await Promise.all([
+      createExecutable("claude"),
+      createExecutable("codex"),
+      createExecutable("gemini"),
+    ]);
+    const configPaths = {
+      claude: join(homeDirectory, ".claude.json"),
+      codex: join(homeDirectory, ".codex", "config.toml"),
+      gemini: join(homeDirectory, ".gemini", "settings.json"),
+    };
+    const commandRuns: string[] = [];
+    const commandEnvironment = environment({
+      runCommand: async (command, args) => {
+        if (args[1] !== "add") return;
+        commandRuns.push(command);
+        if (command === codexPath) {
+          await mkdir(join(homeDirectory, ".codex"), { recursive: true });
+          await writeFile(
+            configPaths.codex,
+            '[mcp_servers.better-fullstack]\ncommand = "npx"\nargs = ["-y", "create-better-fullstack@latest", "mcp"]\n',
+          );
+          return;
+        }
+        const path = command === claudePath ? configPaths.claude : configPaths.gemini;
+        await mkdir(command === claudePath ? homeDirectory : join(homeDirectory, ".gemini"), {
+          recursive: true,
+        });
+        await writeFile(
+          path,
+          `${JSON.stringify({ mcpServers: { "better-fullstack": { command: "npx" } } }, null, 2)}\n`,
+        );
+      },
+    });
+
+    await runInstall(
+      { only: "mcp", agents: ["claude", "codex", "gemini"] },
+      commandEnvironment,
+    );
+    await writeFile(configPaths.claude, '{\n  "mcpServers": {}\n}\n');
+    await writeFile(configPaths.codex, 'model = "gpt-5"\n');
+    await writeFile(configPaths.gemini, '{\n  "mcpServers": {}\n}\n');
+
+    const second = await runInstall(
+      { only: "mcp", agents: ["claude", "codex", "gemini"] },
+      commandEnvironment,
+    );
+
+    expect(commandRuns).toEqual([
+      claudePath,
+      codexPath,
+      geminiPath,
+      claudePath,
+      codexPath,
+      geminiPath,
+    ]);
+    for (const id of ["claude", "codex", "gemini"]) {
+      expect(second.targets.find((target) => target.id === `mcp:${id}`)).toMatchObject({
+        status: "installed",
+        changed: true,
+      });
+      expect(second.targets.find((target) => target.id === `mcp:${id}`)?.message).toContain(
+        "re-added",
+      );
+    }
+
+    const third = await runInstall(
+      { only: "mcp", agents: ["claude", "codex", "gemini"] },
+      commandEnvironment,
+    );
+    expect(commandRuns).toHaveLength(6);
+    expect(third.targets.every((target) => target.status === "unchanged")).toBe(true);
   });
 
   it("restores config bytes and removes only owned skill folders on uninstall", async () => {

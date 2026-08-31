@@ -151,6 +151,7 @@ export interface InstallEnvironmentOverrides {
   homeDir?: string;
   path?: string;
   platform?: NodeJS.Platform;
+  moduleDir?: string;
   now?: () => Date;
   stdinIsTTY?: boolean;
   skillSourceDir?: string;
@@ -401,9 +402,10 @@ export async function detectInstallAgents(
   ];
 }
 
-function defaultSkillSourceDir() {
-  const moduleDirectory = dirname(fileURLToPath(import.meta.url));
-  const bundled = join(moduleDirectory, "plugin", "skills");
+function defaultSkillSourceDir(
+  moduleDirectory = dirname(fileURLToPath(import.meta.url)),
+) {
+  const bundled = join(moduleDirectory, "skills");
   const repository = resolve(moduleDirectory, "../../../../../plugin/skills");
   return { bundled, repository };
 }
@@ -412,7 +414,7 @@ async function resolveEnvironment(
   overrides: InstallEnvironmentOverrides,
 ): Promise<ResolvedInstallEnvironment> {
   const homeDir = resolve(overrides.homeDir ?? homedir());
-  const sourceCandidates = defaultSkillSourceDir();
+  const sourceCandidates = defaultSkillSourceDir(overrides.moduleDir);
   const skillSourceDir = overrides.skillSourceDir
     ? resolve(overrides.skillSourceDir)
     : (await pathExists(sourceCandidates.bundled))
@@ -477,6 +479,22 @@ async function writeState(environment: ResolvedInstallEnvironment, state: Instal
   await rename(temporaryPath, path);
 }
 
+async function preflightStateWrite(environment: ResolvedInstallEnvironment) {
+  const path = statePath(environment);
+  await assertWritePathInHome(environment.homeDir, path);
+  const directory = dirname(path);
+  await mkdir(directory, { recursive: true });
+  const temporaryPath = join(directory, `.install-state-preflight-${randomUUID()}.tmp`);
+  await assertWritePathInHome(environment.homeDir, temporaryPath);
+  let created = false;
+  try {
+    await writeFile(temporaryPath, "", { flag: "wx", mode: 0o600 });
+    created = true;
+  } finally {
+    if (created) await rm(temporaryPath);
+  }
+}
+
 function timestampSuffix(date: Date) {
   return date.toISOString().replaceAll(":", "-");
 }
@@ -498,6 +516,24 @@ async function validateJsonFile(path: string) {
     parseConfigObject(await readFile(path, "utf8"), path);
   } catch {
     throw new Error(`Config is not valid JSON; left it unchanged: ${path}`);
+  }
+}
+
+function codexConfigHasMcpEntry(content: string) {
+  return /^\s*\[\s*mcp_servers\s*\.\s*(?:better-fullstack|"better-fullstack"|'better-fullstack')\s*\]\s*(?:#.*)?$/m.test(
+    content,
+  );
+}
+
+async function commandConfigHasMcpEntry(definition: CommandDefinition, path: string) {
+  try {
+    const content = await readFile(path, "utf8");
+    if (definition.configFormat === "toml") return codexConfigHasMcpEntry(content);
+    const parsed = parseConfigObject(content, path);
+    const servers = parsed.mcpServers;
+    return isRecord(servers) && Object.hasOwn(servers, "better-fullstack");
+  } catch {
+    return false;
   }
 }
 
@@ -744,6 +780,7 @@ async function commandTarget(
   let failureDetails: Partial<
     Pick<InstallTargetReceipt, "path" | "backupPath" | "command" | "operations">
   > = { path: configPath };
+  let readding = false;
 
   if (uninstall && ownership === undefined) {
     return {
@@ -767,16 +804,19 @@ async function commandTarget(
         detected.detected,
       );
     }
-    return {
-      id: stateKey,
-      name: `${definition.name} MCP`,
-      capability: "mcp",
-      status: "unchanged",
-      changed: false,
-      detected: detected.detected,
-      message: "already installed",
-      operations: [],
-    };
+    if (await commandConfigHasMcpEntry(definition, configPath)) {
+      return {
+        id: stateKey,
+        name: `${definition.name} MCP`,
+        capability: "mcp",
+        status: "unchanged",
+        changed: false,
+        detected: detected.detected,
+        message: "already installed",
+        operations: [],
+      };
+    }
+    readding = true;
   }
   if (!detected.binaryPath) {
     return failureReceipt(
@@ -819,7 +859,7 @@ async function commandTarget(
       path: configPath,
       backupPath: backup,
       command,
-      message: operationMessage(operations),
+      message: readding ? `re-added; ${operationMessage(operations)}` : operationMessage(operations),
       operations,
     };
   } catch (error) {
@@ -1263,6 +1303,8 @@ export async function runInstall(
     if (input.uninstall && ownedIds.has(agent.id)) return true;
     return agent.detected;
   });
+  const selectedAgentIds = selected.map((agent) => agent.id);
+  const installsSkills = shouldInstallSkills(selectedAgentIds, state, input);
 
   if (!input.dryRun && environment.stdinIsTTY && environment.confirm) {
     const confirmed = await environment.confirm(selectionSummary(selected, input));
@@ -1278,9 +1320,27 @@ export async function runInstall(
       };
       return buildReceipt(
         input,
-        selected.map((agent) => agent.id),
+        selectedAgentIds,
         [target],
       );
+    }
+  }
+
+  const hasTargetWork = (input.only !== "skills" && selected.length > 0) || installsSkills;
+  if (!input.dryRun && hasTargetWork) {
+    try {
+      await preflightStateWrite(environment);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      const target = failureReceipt(
+        "state-preflight",
+        "Install ownership receipt",
+        "state",
+        `Cannot prepare the install ownership receipt. No targets were changed. ${reason}`,
+        undefined,
+        { path: statePath(environment) },
+      );
+      return buildReceipt(input, selectedAgentIds, [target]);
     }
   }
 
@@ -1298,13 +1358,7 @@ export async function runInstall(
     }
   }
 
-  if (
-    shouldInstallSkills(
-      selected.map((agent) => agent.id),
-      state,
-      input,
-    )
-  ) {
+  if (installsSkills) {
     for (const definition of SKILL_DEFINITIONS) {
       targets.push(await skillTarget(definition, ".agents", state, environment, input));
       targets.push(await skillTarget(definition, ".claude", state, environment, input));
@@ -1332,14 +1386,27 @@ export async function runInstall(
       try {
         await writeState(environment, state);
       } catch (error) {
-        targets.push(failureReceipt("state-write", "Install ownership receipt", "state", error));
+        const reason = error instanceof Error ? error.message : String(error);
+        const backupPaths = [
+          ...new Set(
+            targets.flatMap((target) => (target.backupPath ? [target.backupPath] : [])),
+          ),
+        ];
+        targets.push(
+          failureReceipt(
+            "state-write",
+            "Install ownership receipt",
+            "state",
+            `Could not save install ownership after changing targets. Backups created in this run: ${backupPaths.length > 0 ? backupPaths.join(", ") : "none"}. ${reason}`,
+          ),
+        );
       }
     }
   }
 
   return buildReceipt(
     input,
-    selected.map((agent) => agent.id),
+    selectedAgentIds,
     targets,
   );
 }
