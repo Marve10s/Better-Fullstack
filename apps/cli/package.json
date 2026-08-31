@@ -168,7 +168,7 @@
     "trpc-cli": "^0.12.1",
     "ts-morph": "^27.0.2",
     "yaml": "^2.9.0",
-    "zod": "4.4.3"
+    "zod": "4.5.2"
   },
   "devDependencies": {
     "@better-fullstack/project-lifecycle": "workspace:*",

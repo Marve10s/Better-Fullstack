@@ -81,6 +81,6 @@
     "lint": "oxlint ."
   },
   "dependencies": {
-    "create-better-fullstack": "^2.6.3"
+    "create-better-fullstack": "^2.6.2"
   }
 }
