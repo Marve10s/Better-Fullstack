@@ -1,23 +1,25 @@
 <div align="center">
 
 <p>
-<a href="https://better-fullstack.dev"><img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/apps/web/public/favicon/favicon.svg" width="48" height="48" alt="Better Fullstack" align="middle"></a>
-&nbsp;&nbsp; <b>→</b> &nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/typescript/3178C6" width="32" height="32" alt="TypeScript" title="TypeScript" align="middle">
-&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/react/61DAFB" width="32" height="32" alt="React Native" title="React Native" align="middle">
-&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/rust/DEA584" width="32" height="32" alt="Rust" title="Rust" align="middle">
-&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/go/00ADD8" width="32" height="32" alt="Go" title="Go" align="middle">
-&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/python/3776AB" width="32" height="32" alt="Python" title="Python" align="middle">
-&nbsp;&nbsp;
-<img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/apps/web/public/icon/java.svg" width="32" height="32" alt="Java" title="Java" align="middle">
-&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/dotnet/512BD4" width="32" height="32" alt=".NET" title=".NET" align="middle">
-&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/elixir/8A63A8" width="32" height="32" alt="Elixir" title="Elixir" align="middle">
+<a href="https://better-fullstack.dev"><img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/apps/web/public/favicon/favicon.svg" width="72" height="72" alt="Better Fullstack" align="middle"></a>
+&nbsp;&nbsp;&nbsp;
+<img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/arrow-right.svg" width="40" height="40" alt="to" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/typescript/3178C6" width="44" height="44" alt="TypeScript" title="TypeScript" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/react/61DAFB" width="44" height="44" alt="React Native" title="React Native" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/rust/DEA584" width="44" height="44" alt="Rust" title="Rust" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/go/00ADD8" width="44" height="44" alt="Go" title="Go" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/python/3776AB" width="44" height="44" alt="Python" title="Python" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/apps/web/public/icon/java.svg" width="44" height="44" alt="Java" title="Java" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/dotnet/512BD4" width="44" height="44" alt=".NET" title=".NET" align="middle">
+&nbsp;&nbsp;&nbsp;
+<img src="https://cdn.simpleicons.org/elixir/8A63A8" width="44" height="44" alt="Elixir" title="Elixir" align="middle">
 </p>
 
 Scaffold fullstack projects from a catalog of Stack Parts.<br>
