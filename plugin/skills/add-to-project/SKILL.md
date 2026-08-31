@@ -33,3 +33,10 @@ metadata or guess which template files belong to a capability.
   explicit.
 - Set installs disabled unless the user asks for dependency installation.
 - Do not start a dev server.
+
+## CLI-only fallback
+
+If the Better Fullstack MCP tools are unavailable, inspect the current flags with
+`npx -y create-better-fullstack@latest add --help`, then run the explicit add command with
+`--project-dir <path> --dry-run --no-install`. Review that preview before rerunning without
+`--dry-run`. Do not guess option names or hand-edit generated stack metadata.

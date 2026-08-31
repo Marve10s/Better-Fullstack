@@ -1,0 +1,87 @@
+---
+title: Install for Coding Agents
+description: Detect local coding agents and editors, then install Better Fullstack MCP and skills safely in one run.
+translationStatus: pending
+updated: 2026-08-31
+---
+
+`install` connects Better Fullstack to the supported coding-agent CLIs and editors detected on your
+machine. It installs the MCP server and the two Better Fullstack skills in one run:
+
+```bash
+npx create-better-fullstack@latest install
+```
+
+The command prompts once in an interactive terminal. It runs without prompts when stdin is not a
+TTY; pass `--yes` to skip the prompt explicitly.
+
+## Detected targets
+
+| Target      | Detection                                      | MCP setup                                                                     |
+| ----------- | ---------------------------------------------- | ----------------------------------------------------------------------------- |
+| Claude Code | `claude` on `PATH`                             | `claude mcp add --scope user ...`                                             |
+| Codex CLI   | `codex` on `PATH`                              | `codex mcp add ...`                                                           |
+| Gemini CLI  | `gemini` on `PATH`                             | `gemini mcp add --scope user ...`                                             |
+| OpenCode    | `opencode` or its global config                | Merges `better-fullstack` into `~/.config/opencode/opencode.json` under `mcp` |
+| Cursor      | Cursor on `PATH`, the app, or `~/.cursor`      | Merges into `~/.cursor/mcp.json` under `mcpServers`                           |
+| Windsurf    | Windsurf on `PATH`, the app, or its config dir | Merges into `~/.codeium/windsurf/mcp_config.json` under `mcpServers`          |
+| Zed         | Zed on `PATH`, the app, or its config dir      | Merges into `settings.json` under `context_servers`                           |
+
+Zed uses `~/.zed/settings.json` on macOS and `~/.config/zed/settings.json` on Linux. If the legacy
+Linux-style path already exists on macOS, the installer preserves and updates that file.
+
+The skills are copied, not symlinked, into both compatibility locations:
+
+- `~/.agents/skills/better-fullstack-scaffold-project`
+- `~/.agents/skills/better-fullstack-add-to-project`
+- `~/.claude/skills/better-fullstack-scaffold-project`
+- `~/.claude/skills/better-fullstack-add-to-project`
+
+## Flags
+
+| Flag             | Behavior                                                                    |
+| ---------------- | --------------------------------------------------------------------------- |
+| `--only mcp`     | Install or uninstall only MCP connections.                                  |
+| `--only skills`  | Install or uninstall only the skill folders.                                |
+| `--agent <name>` | Restrict targets. Repeat for several agents.                                |
+| `--dry-run`      | Print every command and file operation without writing or running commands. |
+| `--json`         | Print the versioned machine-readable receipt.                               |
+| `--uninstall`    | Remove only MCP entries and skill folders recorded as installer-owned.      |
+| `--yes`          | Skip the interactive confirmation.                                          |
+
+Agent names are `claude`, `codex`, `gemini`, `opencode`, `cursor`, `windsurf`, and `zed`.
+`claude-code` and `gemini-cli` are accepted aliases.
+
+```bash
+# Preview only Cursor and Codex
+npx create-better-fullstack@latest install --agent cursor --agent codex --dry-run
+
+# Install skills without touching MCP configuration
+npx create-better-fullstack@latest install --only skills --agent codex --yes
+
+# Remove only setup previously owned by this command
+npx create-better-fullstack@latest install --uninstall
+```
+
+## Safety and receipts
+
+Existing JSON is parsed strictly before any change. Invalid JSON, a conflicting
+`better-fullstack` entry, or a modified installer-owned skill folder is reported and left
+untouched. Before an existing config changes, the command writes a timestamped backup beside it.
+Localized JSON edits keep unrelated keys in their existing order and preserve their source bytes
+where possible.
+
+The ownership receipt lives at `~/.config/better-fullstack/install-state.json`. It records target
+ownership and content hashes, not config contents or secrets. It is what lets `--uninstall` leave
+matching setup that existed before `bfs install` alone. Paths and config contents are never sent in
+telemetry.
+
+Human output contains one line per target followed by a `Try:` prompt. `--json` returns the same
+result as a versioned object with selection, target operations, and summary fields. A partial
+success exits zero; the command exits non-zero only when every requested target fails.
+
+## Manual fallback
+
+If a target cannot run this installer, use the per-client commands and config examples in
+[MCP Server](/docs/ai/mcp/#manual-setup). The two installed skills also include a CLI-only workflow
+for agents that cannot reach the MCP server.

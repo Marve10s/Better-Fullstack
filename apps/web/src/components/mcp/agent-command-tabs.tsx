@@ -37,7 +37,7 @@ export const AGENT_TABS: readonly AgentTab[] = [
     label: "Claude Code",
     iconSlug: "claudecode",
     command:
-      "claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp",
+      "claude mcp add --scope user better-fullstack -- npx -y create-better-fullstack@latest mcp",
     shell: true,
   },
   {
@@ -51,7 +51,8 @@ export const AGENT_TABS: readonly AgentTab[] = [
     id: "gemini-cli",
     label: "Gemini CLI",
     iconSlug: "googlegemini",
-    command: "gemini mcp add better-fullstack npx -y create-better-fullstack@latest mcp",
+    command:
+      "gemini mcp add --scope user better-fullstack npx -y create-better-fullstack@latest mcp",
     shell: true,
   },
   {
@@ -86,7 +87,7 @@ export const AGENT_TABS: readonly AgentTab[] = [
     iconSlug: "opencode",
     mono: true,
     command: LOCAL_SNIPPET,
-    target: "opencode.json (mcp)",
+    target: "~/.config/opencode/opencode.json (mcp)",
     shell: false,
   },
   {
@@ -135,8 +136,8 @@ export const AGENT_TABS: readonly AgentTab[] = [
     iconSlug: "zedindustries",
     mono: true,
     command:
-      '"better-fullstack": { "command": { "path": "npx", "args": ["-y", "create-better-fullstack@latest", "mcp"] } }',
-    target: "settings.json (context_servers)",
+      '"better-fullstack": { "command": "npx", "args": ["-y", "create-better-fullstack@latest", "mcp"] }',
+    target: "~/.zed/settings.json (context_servers)",
     shell: false,
   },
 ] as const;

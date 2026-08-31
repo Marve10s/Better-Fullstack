@@ -2,19 +2,28 @@
 title: AI Agents
 description: How coding agents drive Better Fullstack through the MCP server, the agent plugin, the agent skill, or explicit CLI flags.
 translationStatus: pending
-updated: 2026-08-22
+updated: 2026-08-31
 ---
 
-Better Fullstack gives coding agents four ways to reach the generator. All of them run the same code, so pick the narrowest one your agent supports.
+Start with the automatic installer. It detects supported coding-agent CLIs and editors, registers
+the MCP server, and copies both Better Fullstack skills:
+
+```bash
+npx create-better-fullstack@latest install
+```
+
+All integration paths run the same generator code. Use the manual choices below when automatic
+installation is unavailable or you want a narrower setup.
 
 ## Choose an integration
 
-| Integration                        | Includes                                             | Best for                                                                  |
-| ---------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------- |
-| [MCP server](/docs/ai/mcp/)        | Structured tools and resources over stdio              | Clients that need schema lookup, validation, planning, and guarded writes   |
-| Agent plugin                       | The MCP server and two skills in one portable bundle   | Agents with plugin or marketplace support                                   |
-| [Agent skill](#agent-skill)        | A CLI-driven scaffold workflow                         | Agents with shell access and no MCP connection                              |
-| Explicit CLI flags                 | Nothing to install                                     | Any agent that can run a command                                            |
+| Integration                         | Includes                                           | Best for                            |
+| ----------------------------------- | -------------------------------------------------- | ----------------------------------- |
+| [`bfs install`](/docs/cli/install/) | MCP and two skills for every detected target       | The default machine setup           |
+| [MCP server](/docs/ai/mcp/)         | Structured tools and resources over stdio          | Manual client setup or MCP-only use |
+| Agent plugin                        | The MCP server and two skills in a portable bundle | Agents with marketplace support     |
+| [Agent skill](#agent-skill)         | A CLI-driven scaffold and update workflow          | Agents with shell access and no MCP |
+| Explicit CLI flags                  | Nothing to install                                 | Any agent that can run a command    |
 
 ## Preferred workflow
 
@@ -70,7 +79,16 @@ npm create better-fullstack@latest my-app -- \
 
 The skill teaches an agent to use the CLI instead of hand-writing starter files. It maps a requested stack to graph parts, dry-runs, scaffolds without install or Git side effects, then reports follow-up commands.
 
-The skill lives in this repository at `.agents/skills/better-fullstack`. The repository holds internal skills too, so install only this one:
+`bfs install` copies the `scaffold-project` and `add-to-project` skills to `~/.agents/skills/` and
+`~/.claude/skills/`. Install only those folders with:
+
+```bash
+npx create-better-fullstack@latest install --only skills
+```
+
+As a manual fallback, the repository also has a broader CLI workflow skill at
+`.agents/skills/better-fullstack`. The repository holds internal skills too, so select only this
+one when using the standalone skills installer:
 
 <PMTabs
   npm="npx skills@latest add Marve10s/Better-Fullstack --skill better-fullstack --agent codex --global --yes"

@@ -93,13 +93,17 @@ yarn create better-fullstack@latest
 
 ## 🤖 AI Agents
 
-Install the Claude Code plugin bundle:
+One command connects every supported coding agent and editor on your machine to the Better Fullstack MCP server and installs both skills:
 
 ```bash
-claude plugin marketplace add Marve10s/Better-Fullstack
-claude plugin install better-fullstack@better-fullstack
+npx create-better-fullstack@latest install
 ```
 
+It detects Claude Code, Codex CLI, Gemini CLI, OpenCode, Cursor, Windsurf, and Zed, backs up every config file before touching it, and supports `--dry-run`, `--only mcp|skills`, `--agent`, `--json`, and `--uninstall`. See the [`install` reference](https://better-fullstack.dev/docs/cli/install).
+
+Manual setups when the installer does not cover your agent:
+
+- **Claude Code plugin**: `claude plugin marketplace add Marve10s/Better-Fullstack`, then `claude plugin install better-fullstack@better-fullstack`
 - **Codex plugin catalog**, `.agents/plugins/marketplace.json`
 - **Any MCP client**, `npx -y create-better-fullstack@latest mcp`
 - **Docs**, [better-fullstack.dev/docs/ai/overview](https://better-fullstack.dev/docs/ai/overview)

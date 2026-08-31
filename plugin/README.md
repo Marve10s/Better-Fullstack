@@ -18,6 +18,17 @@ The portable manifest uses the open Agent Plugins 1.0 format. Compatible clients
 from `skills/` and the MCP server from `mcp.json`. The client-specific Codex and Claude manifests
 remain in place for clients that have not adopted the portable format.
 
+## Install
+
+The CLI detects supported agents and editors, connects the MCP server, and copies both skills:
+
+```bash
+npx create-better-fullstack@latest install
+```
+
+Use `--dry-run` to inspect every command and file first. The client-specific plugin and MCP setup
+below remains available as a manual fallback.
+
 ## How Agents Should Use It
 
 1. Resolve the user's intent and pick sensible defaults only when the request is underspecified.
@@ -27,7 +38,7 @@ remain in place for clients that have not adopted the portable format.
 5. Call `bfs_create_project` or `bfs_apply_stack_update` only after the plan matches the request.
 6. Keep installs disabled during agent scaffolding and report the exact install/test/dev commands.
 
-## Claude Code
+## Manual Claude Code plugin install
 
 Add this repository as a Claude Code plugin marketplace, then install the plugin:
 
@@ -41,12 +52,12 @@ You can also install it from Claude Code's interactive `/plugin` flow.
 Claude Code namespaces the bundled skills as `better-fullstack:scaffold-project` and
 `better-fullstack:add-to-project`.
 
-## Codex
+## Manual Codex plugin install
 
 Use the repo marketplace catalog at `.agents/plugins/marketplace.json`. It points at this
 shared plugin bundle through the repo-root relative `./plugin` source.
 
-## MCP Server Only
+## Manual MCP server setup
 
 Any MCP client can run:
 

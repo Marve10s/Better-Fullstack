@@ -62,6 +62,7 @@ export const Route = createFileRoute("/mcp")({
 });
 
 const ACCENT_TEXT = "text-black dark:text-[#C6E853]";
+const AUTO_INSTALL_COMMAND = "npx create-better-fullstack@latest install";
 
 interface Agent {
   id: string;
@@ -85,7 +86,7 @@ const AGENTS: readonly Agent[] = [
     shell: true,
     iconSlug: "claudecode",
     config:
-      "claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp",
+      "claude mcp add --scope user better-fullstack -- npx -y create-better-fullstack@latest mcp",
   },
   {
     id: "codex",
@@ -118,7 +119,8 @@ const AGENTS: readonly Agent[] = [
     file: "terminal",
     shell: true,
     iconSlug: "googlegemini",
-    config: "gemini mcp add better-fullstack npx -y create-better-fullstack@latest mcp",
+    config:
+      "gemini mcp add --scope user better-fullstack npx -y create-better-fullstack@latest mcp",
   },
   {
     id: "cursor",
@@ -235,17 +237,15 @@ const AGENTS: readonly Agent[] = [
   {
     id: "zed",
     name: "Zed",
-    file: "settings.json",
+    file: "~/.zed/settings.json",
     shell: false,
     iconSlug: "zedindustries",
     mono: true,
     config: `{
   "context_servers": {
     "better-fullstack": {
-      "command": {
-        "path": "npx",
-        "args": ["-y", "create-better-fullstack@latest", "mcp"]
-      }
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
     }
   }
 }`,
@@ -559,7 +559,19 @@ function StatCell({
 function AgentInstallCard() {
   const [agentId, setAgentId] = useState<string>(AGENTS[0].id);
   const [copied, setCopied] = useState(false);
+  const [autoCopied, setAutoCopied] = useState(false);
   const agent = AGENTS.find((a) => a.id === agentId) ?? AGENTS[0];
+
+  const copyAutoInstall = useCallback(() => {
+    navigator.clipboard.writeText(AUTO_INSTALL_COMMAND).then(
+      () => {
+        setAutoCopied(true);
+        window.setTimeout(() => setAutoCopied(false), 1600);
+        return;
+      },
+      () => {},
+    );
+  }, []);
 
   const copyConfig = useCallback(() => {
     const config = AGENTS.find((a) => a.id === agentId)?.config ?? "";
@@ -581,6 +593,37 @@ function AgentInstallCard() {
   return (
     <div className="mt-3">
       <div className="overflow-hidden rounded-md border border-border bg-card">
+        <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/30 px-4 py-2">
+          <span className="truncate font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            terminal
+          </span>
+          <button
+            type="button"
+            onClick={copyAutoInstall}
+            aria-label={m.mcpCopyAgentConfiguration({ agent: "Better Fullstack" })}
+            className={cn(
+              "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors active:translate-y-[1px]",
+              autoCopied
+                ? "text-lime-700 dark:text-[#C6E853]"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {autoCopied ? <Check className="size-4" /> : <Copy className="size-4" />}
+          </button>
+        </div>
+        <pre className="overflow-x-auto px-4 py-4">
+          <code className="font-mono text-xs leading-relaxed">
+            <span className="text-lime-700 dark:text-[#C6E853]">$ </span>
+            {AUTO_INSTALL_COMMAND}
+          </code>
+        </pre>
+      </div>
+
+      <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+        {m.mcpRunTerminal()}
+      </p>
+
+      <div className="mt-4 overflow-hidden rounded-md border border-border bg-card">
         <div className="flex flex-wrap border-b border-border">
           {AGENTS.map((a) => (
             <AgentTabButton key={a.id} agent={a} active={agentId === a.id} onSelect={selectAgent} />

@@ -15,6 +15,7 @@ export default defineConfig({
   outDir: "dist",
   dts: true,
   noExternal: ["@better-fullstack/project-lifecycle"],
+  copy: [{ from: "../../plugin/skills", to: "dist/skills", flatten: false }],
   outputOptions: {
     banner: "#!/usr/bin/env node",
   },
