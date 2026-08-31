@@ -519,21 +519,80 @@ async function validateJsonFile(path: string) {
   }
 }
 
-function codexConfigHasMcpEntry(content: string) {
-  return /^\s*\[\s*mcp_servers\s*\.\s*(?:better-fullstack|"better-fullstack"|'better-fullstack')\s*\]\s*(?:#.*)?$/m.test(
-    content,
-  );
+type CommandConfigEntryState = "matching" | "missing" | "modified";
+
+function managedCommandMatches(value: unknown) {
+  if (!isRecord(value) || value.command !== MCP_COMMAND[0] || !Array.isArray(value.args)) {
+    return false;
+  }
+  return hashesEqual(value.args, MCP_COMMAND.slice(1));
 }
 
-async function commandConfigHasMcpEntry(definition: CommandDefinition, path: string) {
+function parseTomlString(value: string) {
+  if (value.startsWith("'")) return value.slice(1, -1);
   try {
-    const content = await readFile(path, "utf8");
-    if (definition.configFormat === "toml") return codexConfigHasMcpEntry(content);
+    const parsed: unknown = JSON.parse(value);
+    return typeof parsed === "string" ? parsed : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function parseTomlStringArray(value: string) {
+  const inner = value.slice(1, -1);
+  const tokens = [...inner.matchAll(/"(?:\\.|[^"\\])*"|'[^']*'/g)];
+  const remainder = inner
+    .replace(/"(?:\\.|[^"\\])*"|'[^']*'/g, "")
+    .replace(/#[^\r\n]*/g, "");
+  if (!/^[\s,]*$/.test(remainder)) return undefined;
+  const parsed = tokens.map((token) => parseTomlString(token[0]));
+  return parsed.every((item): item is string => item !== undefined) ? parsed : undefined;
+}
+
+function codexConfigEntryState(content: string): CommandConfigEntryState {
+  const header = /^[ \t]*\[[ \t]*mcp_servers[ \t]*\.[ \t]*(?:better-fullstack|"better-fullstack"|'better-fullstack')[ \t]*\][ \t]*(?:#.*)?\r?$/gm.exec(
+    content,
+  );
+  if (!header) return "missing";
+  const following = content.slice(header.index + header[0].length);
+  const nextHeader = /^[ \t]*\[{1,2}[^\r\n]+/m.exec(following);
+  const body = following.slice(0, nextHeader?.index);
+  const commandMatches = [
+    ...body.matchAll(
+      /^[ \t]*command[ \t]*=[ \t]*("(?:\\.|[^"\\])*"|'[^']*')[ \t]*(?:#.*)?\r?$/gm,
+    ),
+  ];
+  const argsMatches = [
+    ...body.matchAll(
+      /^[ \t]*args[ \t]*=[ \t]*(\[(?:[^\]"']|"(?:\\.|[^"\\])*"|'[^']*')*\])[ \t]*(?:#.*)?\r?$/gm,
+    ),
+  ];
+  if (commandMatches.length !== 1 || argsMatches.length !== 1) return "modified";
+  const command = parseTomlString(commandMatches[0]?.[1] ?? "");
+  const args = parseTomlStringArray(argsMatches[0]?.[1] ?? "");
+  return command === MCP_COMMAND[0] && hashesEqual(args, MCP_COMMAND.slice(1))
+    ? "matching"
+    : "modified";
+}
+
+async function commandConfigEntryState(
+  definition: CommandDefinition,
+  path: string,
+): Promise<CommandConfigEntryState> {
+  let content: string;
+  try {
+    content = await readFile(path, "utf8");
+  } catch {
+    return "missing";
+  }
+  if (definition.configFormat === "toml") return codexConfigEntryState(content);
+  try {
     const parsed = parseConfigObject(content, path);
     const servers = parsed.mcpServers;
-    return isRecord(servers) && Object.hasOwn(servers, "better-fullstack");
+    if (!isRecord(servers) || !Object.hasOwn(servers, "better-fullstack")) return "missing";
+    return managedCommandMatches(servers["better-fullstack"]) ? "matching" : "modified";
   } catch {
-    return false;
+    return "modified";
   }
 }
 
@@ -794,7 +853,7 @@ async function commandTarget(
       operations: [],
     };
   }
-  if (!uninstall && ownership !== undefined) {
+  if (ownership !== undefined) {
     if (ownership.kind !== "command") {
       return failureReceipt(
         stateKey,
@@ -804,7 +863,19 @@ async function commandTarget(
         detected.detected,
       );
     }
-    if (await commandConfigHasMcpEntry(definition, configPath)) {
+    const entryState = await commandConfigEntryState(definition, configPath);
+    if (entryState === "modified") {
+      return failureReceipt(
+        stateKey,
+        `${definition.name} MCP`,
+        "mcp",
+        `The better-fullstack entry in ${configPath} was modified by the user; left it unchanged.`,
+        detected.detected,
+        { path: configPath },
+      );
+    }
+    if (entryState === "missing" && uninstall) {
+      delete state.targets[stateKey];
       return {
         id: stateKey,
         name: `${definition.name} MCP`,
@@ -812,11 +883,25 @@ async function commandTarget(
         status: "unchanged",
         changed: false,
         detected: detected.detected,
+        path: configPath,
+        message: "entry was already absent; removed stale ownership",
+        operations: [],
+      };
+    }
+    if (entryState === "matching" && !uninstall) {
+      return {
+        id: stateKey,
+        name: `${definition.name} MCP`,
+        capability: "mcp",
+        status: "unchanged",
+        changed: false,
+        detected: detected.detected,
+        path: configPath,
         message: "already installed",
         operations: [],
       };
     }
-    readding = true;
+    readding = entryState === "missing";
   }
   if (!detected.binaryPath) {
     return failureReceipt(
@@ -888,7 +973,10 @@ async function jsonTarget(
   const stateKey = `mcp:${definition.id}`;
   const ownership = state.targets[stateKey];
   const uninstall = input.uninstall ?? false;
-  const path = definition.path(environment);
+  const path =
+    ownership?.kind === "json"
+      ? resolve(environment.homeDir, ownership.path)
+      : definition.path(environment);
   let failureDetails: Partial<Pick<InstallTargetReceipt, "path" | "backupPath" | "operations">> = {
     path,
   };
@@ -1097,6 +1185,35 @@ async function writeSkillFiles(
   }
 }
 
+async function installSkillFiles(
+  path: string,
+  files: SkillFile[],
+  environment: ResolvedInstallEnvironment,
+  replacing: boolean,
+) {
+  const temporaryPath = `${path}.better-fullstack-tmp-${randomUUID()}`;
+  const previousPath = `${path}.better-fullstack-previous-${randomUUID()}`;
+  await assertWritePathInHome(environment.homeDir, temporaryPath);
+  await assertWritePathInHome(environment.homeDir, previousPath);
+  try {
+    await writeSkillFiles(temporaryPath, files, environment);
+    if (!replacing) {
+      await rename(temporaryPath, path);
+      return;
+    }
+    await rename(path, previousPath);
+    try {
+      await rename(temporaryPath, path);
+    } catch (error) {
+      await rename(previousPath, path);
+      throw error;
+    }
+    await rm(previousPath, { recursive: true });
+  } finally {
+    if (await pathExists(temporaryPath)) await rm(temporaryPath, { recursive: true });
+  }
+}
+
 async function skillTarget(
   definition: SkillDefinition,
   rootName: ".agents" | ".claude",
@@ -1174,6 +1291,7 @@ async function skillTarget(
     if (!(await pathExists(source))) throw new Error(`Bundled skill source is missing: ${source}`);
     const files = await readSkillFiles(source, definition.installedName);
     const expectedHash = hashSkillFiles(files);
+    let updating = false;
     if (targetExists) {
       const currentHash = await installedSkillHash(path);
       if (currentHash === expectedHash) {
@@ -1188,18 +1306,20 @@ async function skillTarget(
           operations: [],
         };
       }
-      throw new Error(`A different skill folder already exists; left it unchanged: ${path}`);
+      if (!ownership || ownership.kind !== "skill") {
+        throw new Error(`A different skill folder already exists; left it unchanged: ${path}`);
+      }
+      if (currentHash !== ownership.contentHash) {
+        throw new Error(`Skill files changed after install; left them unchanged: ${path}`);
+      }
+      updating = true;
     }
-    const operations: InstallOperation[] = [{ type: "write", value: `write ${path}` }];
+    const operations: InstallOperation[] = [
+      { type: "write", value: `${updating ? "update" : "write"} ${path}` },
+    ];
     failureDetails = { path, operations };
     if (!input.dryRun) {
-      const temporaryPath = `${path}.better-fullstack-tmp-${randomUUID()}`;
-      try {
-        await writeSkillFiles(temporaryPath, files, environment);
-        await rename(temporaryPath, path);
-      } finally {
-        if (await pathExists(temporaryPath)) await rm(temporaryPath, { recursive: true });
-      }
+      await installSkillFiles(path, files, environment, updating);
     }
     state.targets[stateKey] = {
       kind: "skill",
@@ -1213,7 +1333,7 @@ async function skillTarget(
       status: input.dryRun ? "planned" : "installed",
       changed: true,
       path,
-      message: operationMessage(operations),
+      message: updating ? `updated; ${operationMessage(operations)}` : operationMessage(operations),
       operations,
     };
   } catch (error) {
@@ -1428,12 +1548,15 @@ function buildReceipt(
   const requested = actionable.filter((target) => target.status !== "cancelled").length;
   const changed = actionable.filter((target) => target.changed).length;
   const unchanged = actionable.filter((target) => target.status === "unchanged").length;
+  const stateWriteFailed = targets.some(
+    (target) => target.id === "state-write" && target.status === "failed",
+  );
   return {
     schemaVersion: 1,
     command: "install",
     action: input.uninstall ? "uninstall" : "install",
     dryRun: input.dryRun ?? false,
-    success: cancelled || requested === 0 || failed < requested,
+    success: !stateWriteFailed && (cancelled || requested === 0 || failed < requested),
     selection: {
       only: input.only ?? "all",
       agents,

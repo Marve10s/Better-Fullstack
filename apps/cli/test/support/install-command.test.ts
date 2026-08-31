@@ -205,6 +205,37 @@ describe("bfs install", () => {
     expect(await readFile(configPath, "utf8")).toBe(original);
   });
 
+  it("keeps using the owned Zed settings path when the preferred macOS path changes", async () => {
+    const legacyPath = join(homeDirectory, ".config", "zed", "settings.json");
+    const macPath = join(homeDirectory, ".zed", "settings.json");
+    const legacyOriginal = '{\n  "theme": "legacy",\n  "context_servers": {}\n}\n';
+    const macOriginal = '{\n  "theme": "new-location",\n  "context_servers": {}\n}\n';
+    await mkdir(join(homeDirectory, ".config", "zed"), { recursive: true });
+    await writeFile(legacyPath, legacyOriginal);
+    const macEnvironment = environment({ platform: "darwin" });
+
+    await runInstall({ only: "mcp", agents: ["zed"] }, macEnvironment);
+    const installedLegacy = await readFile(legacyPath, "utf8");
+    await mkdir(join(homeDirectory, ".zed"), { recursive: true });
+    await writeFile(macPath, macOriginal);
+
+    const second = await runInstall({ only: "mcp", agents: ["zed"] }, macEnvironment);
+    expect(second.targets.find((target) => target.id === "mcp:zed")).toMatchObject({
+      status: "unchanged",
+      path: legacyPath,
+    });
+    expect(await readFile(legacyPath, "utf8")).toBe(installedLegacy);
+    expect(await readFile(macPath, "utf8")).toBe(macOriginal);
+
+    const uninstall = await runInstall(
+      { only: "mcp", agents: ["zed"], uninstall: true },
+      macEnvironment,
+    );
+    expect(uninstall.targets.find((target) => target.id === "mcp:zed")?.path).toBe(legacyPath);
+    expect(await readFile(legacyPath, "utf8")).toBe(legacyOriginal);
+    expect(await readFile(macPath, "utf8")).toBe(macOriginal);
+  });
+
   it("creates a timestamped backup before changing an existing config", async () => {
     const configPath = join(homeDirectory, ".config", "opencode", "opencode.json");
     const original = '{\n  "theme": "system"\n}\n';
@@ -302,6 +333,31 @@ describe("bfs install", () => {
     expect(await readdir(outsideStateDirectory)).toEqual([]);
   });
 
+  it("fails the overall receipt when ownership cannot be saved after a target changes", async () => {
+    await createExecutable("claude");
+    const configPath = join(homeDirectory, ".claude.json");
+    const original = '{\n  "mcpServers": {}\n}\n';
+    await writeFile(configPath, original);
+    const stateDirectory = join(homeDirectory, ".config", "better-fullstack");
+    const backupPath = `${configPath}.better-fullstack-backup-2026-08-31T12-34-56.789Z`;
+
+    const receipt = await runInstall(
+      { only: "mcp", agents: ["claude"] },
+      environment({
+        runCommand: async () => {
+          await rm(stateDirectory, { recursive: true });
+          await writeFile(stateDirectory, "block state writes");
+        },
+      }),
+    );
+    const stateFailure = receipt.targets.find((target) => target.id === "state-write");
+
+    expect(receipt.success).toBe(false);
+    expect(stateFailure).toMatchObject({ status: "failed", changed: false });
+    expect(stateFailure?.message).toContain(backupPath);
+    expect(await readFile(backupPath, "utf8")).toBe(original);
+  });
+
   it("uses the documented user-scoped CLI commands", async () => {
     const binaries = await Promise.all([
       createExecutable("claude"),
@@ -315,6 +371,37 @@ describe("bfs install", () => {
       environment({
         runCommand: async (command, args) => {
           commands.push({ command, args });
+          if (args[1] !== "add") return;
+          if (command === binaries[1]) {
+            await mkdir(join(homeDirectory, ".codex"), { recursive: true });
+            await writeFile(
+              join(homeDirectory, ".codex", "config.toml"),
+              '[mcp_servers.better-fullstack]\ncommand = "npx"\nargs = ["-y", "create-better-fullstack@latest", "mcp"]\n',
+            );
+            return;
+          }
+          const path =
+            command === binaries[0]
+              ? join(homeDirectory, ".claude.json")
+              : join(homeDirectory, ".gemini", "settings.json");
+          await mkdir(command === binaries[0] ? homeDirectory : join(homeDirectory, ".gemini"), {
+            recursive: true,
+          });
+          await writeFile(
+            path,
+            `${JSON.stringify(
+              {
+                mcpServers: {
+                  "better-fullstack": {
+                    command: "npx",
+                    args: ["-y", "create-better-fullstack@latest", "mcp"],
+                  },
+                },
+              },
+              null,
+              2,
+            )}\n`,
+          );
         },
       }),
     );
@@ -421,7 +508,18 @@ describe("bfs install", () => {
         });
         await writeFile(
           path,
-          `${JSON.stringify({ mcpServers: { "better-fullstack": { command: "npx" } } }, null, 2)}\n`,
+          `${JSON.stringify(
+            {
+              mcpServers: {
+                "better-fullstack": {
+                  command: "npx",
+                  args: ["-y", "create-better-fullstack@latest", "mcp"],
+                },
+              },
+            },
+            null,
+            2,
+          )}\n`,
         );
       },
     });
@@ -465,6 +563,79 @@ describe("bfs install", () => {
     expect(third.targets.every((target) => target.status === "unchanged")).toBe(true);
   });
 
+  it("leaves user-modified command-backed entries untouched", async () => {
+    await createExecutable("claude");
+    const configPath = join(homeDirectory, ".claude.json");
+    const statePath = join(homeDirectory, ".config", "better-fullstack", "install-state.json");
+    const commands: string[][] = [];
+    const commandEnvironment = environment({
+      runCommand: async (_command, args) => {
+        commands.push(args);
+        if (args[1] !== "add") return;
+        await writeFile(
+          configPath,
+          `${JSON.stringify(
+            {
+              mcpServers: {
+                "better-fullstack": {
+                  command: "npx",
+                  args: ["-y", "create-better-fullstack@latest", "mcp"],
+                },
+              },
+            },
+            null,
+            2,
+          )}\n`,
+        );
+      },
+    });
+
+    await runInstall({ only: "mcp", agents: ["claude"] }, commandEnvironment);
+    const modified = `${JSON.stringify(
+      {
+        mcpServers: {
+          "better-fullstack": {
+            command: "custom-mcp",
+            args: ["--user-owned"],
+          },
+        },
+      },
+      null,
+      2,
+    )}\n`;
+    await writeFile(configPath, modified);
+
+    const reinstall = await runInstall(
+      { only: "mcp", agents: ["claude"] },
+      commandEnvironment,
+    );
+    const uninstall = await runInstall(
+      { only: "mcp", agents: ["claude"], uninstall: true },
+      commandEnvironment,
+    );
+
+    expect(reinstall.success).toBe(false);
+    expect(uninstall.success).toBe(false);
+    expect(reinstall.targets[0]?.message).toContain("modified by the user");
+    expect(uninstall.targets[0]?.message).toContain("modified by the user");
+    expect(commands).toHaveLength(1);
+    expect(await readFile(configPath, "utf8")).toBe(modified);
+    expect(await readFile(statePath, "utf8")).toContain('"mcp:claude"');
+
+    await writeFile(configPath, '{\n  "mcpServers": {}\n}\n');
+    const missingUninstall = await runInstall(
+      { only: "mcp", agents: ["claude"], uninstall: true },
+      commandEnvironment,
+    );
+    expect(missingUninstall.targets.find((target) => target.id === "mcp:claude")).toMatchObject({
+      status: "unchanged",
+      changed: false,
+      message: "entry was already absent; removed stale ownership",
+    });
+    expect(commands).toHaveLength(1);
+    await expect(readFile(statePath, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
   it("restores config bytes and removes only owned skill folders on uninstall", async () => {
     const configPath = join(homeDirectory, ".cursor", "mcp.json");
     const original =
@@ -494,6 +665,45 @@ describe("bfs install", () => {
     await expect(
       readFile(join(homeDirectory, ".config", "better-fullstack", "install-state.json"), "utf8"),
     ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("upgrades unmodified managed skills and leaves user-edited skills alone", async () => {
+    await runInstall({ only: "skills", agents: ["codex"] }, environment());
+    const managedPath = join(
+      homeDirectory,
+      ".agents",
+      "skills",
+      "better-fullstack-scaffold-project",
+      "SKILL.md",
+    );
+    const editedPath = join(
+      homeDirectory,
+      ".claude",
+      "skills",
+      "better-fullstack-scaffold-project",
+      "SKILL.md",
+    );
+    const editedContent = `${await readFile(editedPath, "utf8")}User edit\n`;
+    await writeFile(editedPath, editedContent);
+    await createSkillSources(skillSourceDirectory, "New managed version\n");
+
+    const receipt = await runInstall(
+      { only: "skills", agents: ["codex"] },
+      environment(),
+    );
+    const updated = receipt.targets.find(
+      (target) => target.id === "skill:agents:scaffold-project",
+    );
+    const userEdited = receipt.targets.find(
+      (target) => target.id === "skill:claude:scaffold-project",
+    );
+
+    expect(updated).toMatchObject({ status: "installed", changed: true });
+    expect(updated?.message).toContain("updated");
+    expect(await readFile(managedPath, "utf8")).toContain("New managed version");
+    expect(userEdited).toMatchObject({ status: "failed", changed: false });
+    expect(userEdited?.message).toContain("Skill files changed after install");
+    expect(await readFile(editedPath, "utf8")).toBe(editedContent);
   });
 
   it("is idempotent after a successful install", async () => {
