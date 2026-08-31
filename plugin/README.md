@@ -55,7 +55,7 @@ Claude Code namespaces the bundled skills as `better-fullstack:scaffold-project`
 ## Manual Codex plugin install
 
 Use the repo marketplace catalog at `.agents/plugins/marketplace.json`. It points at this
-shared plugin bundle through the repo-root relative `./plugin` source.
+shared plugin bundle through the repo-root-relative `./plugin` source.
 
 ## Manual MCP server setup
 

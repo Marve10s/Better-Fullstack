@@ -204,7 +204,7 @@ const AGENTS: readonly Agent[] = [
   {
     id: "opencode",
     name: "OpenCode",
-    file: "opencode.json",
+    file: "~/.config/opencode/opencode.json",
     shell: false,
     iconSlug: "opencode",
     mono: true,
@@ -600,7 +600,7 @@ function AgentInstallCard() {
           <button
             type="button"
             onClick={copyAutoInstall}
-            aria-label={m.mcpCopyAgentConfiguration({ agent: "Better Fullstack" })}
+            aria-label={m.navCopyInstallCommand()}
             className={cn(
               "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors active:translate-y-[1px]",
               autoCopied

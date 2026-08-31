@@ -889,7 +889,6 @@ async function jsonTarget(
   const ownership = state.targets[stateKey];
   const uninstall = input.uninstall ?? false;
   const path = definition.path(environment);
-  const exists = await pathExists(path);
   let failureDetails: Partial<Pick<InstallTargetReceipt, "path" | "backupPath" | "operations">> = {
     path,
   };
@@ -910,6 +909,7 @@ async function jsonTarget(
 
   try {
     await assertWritePathInHome(environment.homeDir, path);
+    const exists = await pathExists(path);
     if (uninstall) {
       if (!ownership || ownership.kind !== "json") {
         throw new Error(`Install ownership for ${definition.name} is inconsistent.`);
