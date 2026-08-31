@@ -24,6 +24,7 @@ const NON_SCAFFOLD_COMMANDS = new Set([
   "evidence",
   "gen",
   "history",
+  "install",
   "mcp",
   "recommend",
   "recovery",

@@ -28,6 +28,7 @@ describe("docs navigation", () => {
     const ecosystemsMeta = await readJson<{ pages: string[] }>("ecosystems/meta.json");
     expect(cliMeta.pages).toEqual([
       "index",
+      "install",
       "create",
       "add",
       "update",
@@ -43,6 +44,7 @@ describe("docs navigation", () => {
   it("keeps linked milestone docs backed by MDX files", async () => {
     await expectDocPage("choosing-a-stack.mdx");
     await expectDocPage("cli/index.mdx");
+    await expectDocPage("cli/install.mdx");
     await expectDocPage("cli/update.mdx");
     await expectDocPage("cli/gen.mdx");
     await expectDocPage("cli/experimental.mdx");

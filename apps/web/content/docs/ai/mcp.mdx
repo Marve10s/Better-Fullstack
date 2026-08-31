@@ -2,10 +2,20 @@
 title: MCP Server
 description: Connect Better Fullstack to Claude Code, Cursor, Codex, VS Code, and other MCP clients, and call its tools safely.
 translationStatus: pending
-updated: 2026-08-22
+updated: 2026-08-31
 ---
 
 The `mcp` command starts the Better Fullstack MCP server over stdio. Agents use it to discover stacks, inspect schemas, validate compatibility, preview generated files, create projects, and evolve existing ones through structured tool calls instead of guessing CLI flags.
+
+Install the server and both Better Fullstack skills for every supported agent detected on your
+machine:
+
+```bash
+npx create-better-fullstack@latest install
+```
+
+See [`install`](/docs/cli/install/) for target detection, dry runs, JSON receipts, and uninstall.
+The launcher commands below start the server directly and remain useful for manual setup.
 
 <PMTabs
   npm="npx -y create-better-fullstack@latest mcp"
@@ -18,21 +28,21 @@ The `mcp` command starts the Better Fullstack MCP server over stdio. Agents use 
 The server negotiates both the 2025 MCP protocol family and MCP 2026-07-28 without client-specific flags. Modern clients get the stateless-core request model with cache hints; older clients continue through legacy initialization.
 </Callout>
 
-## Setup
+## Manual setup
 
 <McpClientTabs />
 
 One-line commands for agents reading this as Markdown:
 
 ```bash
-claude mcp add --transport stdio better-fullstack -- npx -y create-better-fullstack@latest mcp
+claude mcp add --scope user better-fullstack -- npx -y create-better-fullstack@latest mcp
 codex mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp
-gemini mcp add better-fullstack npx -y create-better-fullstack@latest mcp
+gemini mcp add --scope user better-fullstack npx -y create-better-fullstack@latest mcp
 kimi mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp
 code --add-mcp '{"name":"better-fullstack","command":"npx","args":["-y","create-better-fullstack@latest","mcp"]}'
 ```
 
-Clients that read a config file (Cursor, Claude Desktop, Zed, Windsurf, Goose) take the same stdio server:
+Cursor, Windsurf, Claude Desktop, and other clients using `mcpServers` take the same stdio server:
 
 ```json
 {
@@ -45,7 +55,38 @@ Clients that read a config file (Cursor, Claude Desktop, Zed, Windsurf, Goose) t
 }
 ```
 
-Cursor reads `.cursor/mcp.json`, VS Code uses `servers`, Zed uses `context_servers`, and opencode plus Kilo Code use `mcp` with `"type": "local"`. Swap the launcher per package manager:
+Cursor's global file is `~/.cursor/mcp.json`; Windsurf uses
+`~/.codeium/windsurf/mcp_config.json`. OpenCode's global
+`~/.config/opencode/opencode.json` uses a different shape:
+
+```json
+{
+  "mcp": {
+    "better-fullstack": {
+      "type": "local",
+      "command": ["npx", "-y", "create-better-fullstack@latest", "mcp"],
+      "enabled": true
+    }
+  }
+}
+```
+
+Zed uses `context_servers` in `~/.zed/settings.json` on macOS and
+`~/.config/zed/settings.json` on Linux:
+
+```json
+{
+  "context_servers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}
+```
+
+VS Code uses `servers`; Kilo Code follows OpenCode's `mcp` shape. Swap the launcher per package
+manager:
 
 | Package manager | `command` | `args`                                             |
 | --------------- | --------- | -------------------------------------------------- |
@@ -62,7 +103,9 @@ command = "npx"
 args = ["-y", "create-better-fullstack@latest", "mcp"]
 ```
 
-If your agent supports plugins, the [agent plugin](/docs/ai/overview/#agent-plugin) installs this server and two skills in one step. If it has shell access but no MCP connection, the [agent skill](/docs/ai/overview/#agent-skill) is lighter.
+The automatic installer copies two skills alongside the MCP connection. The
+[agent plugin](/docs/ai/overview/#agent-plugin) remains available for plugin marketplaces, and the
+[agent skill](/docs/ai/overview/#agent-skill) documents the CLI-only path.
 
 ## Resources
 
@@ -99,35 +142,35 @@ Call the live guidance and schema tools instead of trusting prose; the schema is
 
 ### Existing-project lifecycle
 
-| Tool                                 | Purpose                                                                              |
-| ------------------------------------ | ------------------------------------------------------------------------------------ |
-| `bfs_get_project_status`             | Read-only recognition, dependency/env diagnostics, provenance, upgrade summary.      |
-| `bfs_check_project`                  | Executes every generated target; build tools may write locks, caches, or artifacts.  |
-| `bfs_plan_doctor_fix`                | Plans canonical graph/config drift repair and returns a current-state review token.  |
-| `bfs_apply_doctor_fix`               | Applies the unchanged config repair in one recoverable transaction.                  |
-| `bfs_plan_project_adoption`          | Infers likely Stack Parts and uncertainty without writing a baseline.                |
-| `bfs_confirm_project_adoption`       | Creates an unverified baseline only with the exact current-state token.              |
-| `bfs_plan_project_update`            | Categorizes current-template drift and returns a bounded review token when eligible. |
-| `bfs_apply_project_update`           | Applies token-bound files transactionally with provenance-aware safeguards.          |
-| `bfs_list_project_recovery_points`   | Lists recovery IDs, lifecycle status, integrity, and current restore safety.         |
-| `bfs_get_project_recovery_point`     | Shows and validates one recovery point without writing.                              |
-| `bfs_verify_project_recovery_point`  | Rechecks one recovery point against its backups and current project state.           |
+| Tool                                 | Purpose                                                                                           |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `bfs_get_project_status`             | Read-only recognition, dependency/env diagnostics, provenance, upgrade summary.                   |
+| `bfs_check_project`                  | Executes every generated target; build tools may write locks, caches, or artifacts.               |
+| `bfs_plan_doctor_fix`                | Plans canonical graph/config drift repair and returns a current-state review token.               |
+| `bfs_apply_doctor_fix`               | Applies the unchanged config repair in one recoverable transaction.                               |
+| `bfs_plan_project_adoption`          | Infers likely Stack Parts and uncertainty without writing a baseline.                             |
+| `bfs_confirm_project_adoption`       | Creates an unverified baseline only with the exact current-state token.                           |
+| `bfs_plan_project_update`            | Categorizes current-template drift and returns a bounded review token when eligible.              |
+| `bfs_apply_project_update`           | Applies token-bound files transactionally with provenance-aware safeguards.                       |
+| `bfs_list_project_recovery_points`   | Lists recovery IDs, lifecycle status, integrity, and current restore safety.                      |
+| `bfs_get_project_recovery_point`     | Shows and validates one recovery point without writing.                                           |
+| `bfs_verify_project_recovery_point`  | Rechecks one recovery point against its backups and current project state.                        |
 | `bfs_prune_project_recovery_points`  | Previews retention and returns a token; apply deletes only the reviewed eligible terminal points. |
-| `bfs_recover_project_transaction`    | Restores every bound path of a transaction exactly once.                             |
-| `bfs_plan_part_removal`              | Plans exact non-primary capability removal and returns a review token.               |
-| `bfs_apply_part_removal`             | Applies a reviewed removal in a recoverable transaction.                             |
-| `bfs_plan_primary_role_replacement`  | Plans exact Primary Role replacement, owner rewiring, and migration boundaries.      |
-| `bfs_apply_primary_role_replacement` | Applies the reviewed replacement with its token and architecture acknowledgement.    |
-| `bfs_plan_stack_update`              | Plans broad stack changes against `bts.jsonc`.                                       |
-| `bfs_apply_stack_update`             | Applies a reviewed stack update, preserving user-edited generated files.             |
-| `bfs_plan_addition`                  | Plans focused Stack Part or deploy additions.                                        |
-| `bfs_add_feature`                    | Applies focused Stack Part or deploy additions after review.                         |
-| `bfs_plan_gen`                       | Plans an in-project resource or route with exact file bodies and preimage hashes.    |
-| `bfs_apply_gen`                      | Applies the unchanged generation token in one recovery transaction.                  |
-| `bfs_check_recipes`                  | Validates recipe-owned files and managed entries without executing code.             |
-| `bfs_get_recipe_history`             | Correlates local recipe records with recovery transactions.                          |
-| `bfs_plan_registry_add`              | Plans a local capability pack, including files, dependencies, and metadata merges.   |
-| `bfs_apply_registry_add`             | Applies the unchanged local-pack token without running a package manager.            |
+| `bfs_recover_project_transaction`    | Restores every bound path of a transaction exactly once.                                          |
+| `bfs_plan_part_removal`              | Plans exact non-primary capability removal and returns a review token.                            |
+| `bfs_apply_part_removal`             | Applies a reviewed removal in a recoverable transaction.                                          |
+| `bfs_plan_primary_role_replacement`  | Plans exact Primary Role replacement, owner rewiring, and migration boundaries.                   |
+| `bfs_apply_primary_role_replacement` | Applies the reviewed replacement with its token and architecture acknowledgement.                 |
+| `bfs_plan_stack_update`              | Plans broad stack changes against `bts.jsonc`.                                                    |
+| `bfs_apply_stack_update`             | Applies a reviewed stack update, preserving user-edited generated files.                          |
+| `bfs_plan_addition`                  | Plans focused Stack Part or deploy additions.                                                     |
+| `bfs_add_feature`                    | Applies focused Stack Part or deploy additions after review.                                      |
+| `bfs_plan_gen`                       | Plans an in-project resource or route with exact file bodies and preimage hashes.                 |
+| `bfs_apply_gen`                      | Applies the unchanged generation token in one recovery transaction.                               |
+| `bfs_check_recipes`                  | Validates recipe-owned files and managed entries without executing code.                          |
+| `bfs_get_recipe_history`             | Correlates local recipe records with recovery transactions.                                       |
+| `bfs_plan_registry_add`              | Plans a local capability pack, including files, dependencies, and metadata merges.                |
+| `bfs_apply_registry_add`             | Applies the unchanged local-pack token without running a package manager.                         |
 
 Planning, creation, and addition responses include graph metadata (`graphSummary`, `effectiveStack`, `stackPartSpecs`) alongside the generated file or mutation summary.
 

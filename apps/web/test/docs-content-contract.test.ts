@@ -48,6 +48,7 @@ const PENDING_TRANSLATION_PATHS = [
   "content/docs/cli/experimental.mdx",
   "content/docs/cli/gen.mdx",
   "content/docs/cli/index.mdx",
+  "content/docs/cli/install.mdx",
   "content/docs/cli/telemetry.mdx",
   "content/docs/cli/update.mdx",
   "content/docs/ecosystems/index.mdx",

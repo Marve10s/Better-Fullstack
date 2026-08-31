@@ -75,7 +75,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   ga4: { type: "si", slug: "googleanalytics", hex: "E37400" },
   "vercel-analytics": { type: "si", slug: "vercel", hex: "000000" },
   paypal: { type: "si", slug: "paypal", hex: "003087" },
-  xendit: { type: "local", src: "https://www.xendit.co/favicon.ico" },
+  xendit: { type: "local", src: "https://github.com/xendit.png" },
   medusa: { type: "si", slug: "medusa", hex: "000000" },
   electron: { type: "si", slug: "electron", hex: "47848F" },
   capacitor: { type: "si", slug: "capacitor", hex: "119EFF" },

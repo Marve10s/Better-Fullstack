@@ -12,6 +12,7 @@ The CLI exposes a project lifecycle: create, evolve, refresh, diagnose, generate
 | Command         | Purpose                                                                                              |
 | --------------- | ---------------------------------------------------------------------------------------------------- |
 | `create`        | Scaffold a new project from a stack configuration. This is the default command.                      |
+| `install`       | Connect detected coding agents and editors to Better Fullstack MCP and skills.                       |
 | `add`           | Add supported tooling, deployment settings, or stack capabilities to an existing project.            |
 | `remove`        | Plan and apply removal of one exact non-primary stack capability.                                    |
 | `replace`       | Plan and apply replacement of one exact frontend, backend, mobile, or database Primary Role.         |
@@ -33,7 +34,9 @@ The CLI exposes a project lifecycle: create, evolve, refresh, diagnose, generate
 | `evidence`      | Inspect option evidence, freshness, maturity, owners, recipes, and limitations without writing.      |
 | `telemetry`     | Inspect, enable, or disable anonymous CLI telemetry.                                                 |
 
-Most people need four of these day to day: `create`, `add`, `check`, and `history`. Agents use `mcp`.
+Most people need four of these day-to-day: `create`, `add`, `check`, and `history`. Run
+[`install`](/docs/cli/install/) once to connect supported agents; `mcp` is the server command it
+registers.
 
 The first persistent [`gen` recipe](/docs/cli/gen/) adds a complete tRPC, Drizzle, and SQLite CRUD
 slice. It uses exact review tokens, managed-region ownership, one recovery transaction, generated

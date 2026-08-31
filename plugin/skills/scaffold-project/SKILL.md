@@ -46,6 +46,13 @@ framework folders, auth wiring, database wiring, or generated project structure.
 - Python API: `ecosystem: "python"`, then choose `pythonWebFramework` and related Python fields
 - Rust API: `ecosystem: "rust"`, then choose `rustWebFramework` and related Rust fields
 
+## CLI-only fallback
+
+If the Better Fullstack MCP tools are unavailable, inspect the current flags with
+`npx -y create-better-fullstack@latest create --help`, then run the explicit scaffold command with
+`--dry-run --no-install --no-git`. Review that preview before rerunning without `--dry-run`. Do not
+guess option names or hand-write the scaffold.
+
 ## Final Response
 
 Say what command/tool path was used, what compatibility adjustments were made, where the project was

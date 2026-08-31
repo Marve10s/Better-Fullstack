@@ -1086,7 +1086,7 @@ export const TECH_OPTIONS: Record<
       id: "xendit",
       name: "Xendit",
       description: "Payment Sessions for Southeast Asian payment methods and currencies",
-      icon: "https://www.xendit.co/favicon.ico",
+      icon: "https://github.com/xendit.png",
       color: "from-blue-500 to-indigo-700",
       default: false,
     },

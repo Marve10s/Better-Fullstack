@@ -26,6 +26,10 @@ import {
   getStarterTracksResult,
 } from "@/commands/stack/starter-tracks";
 import { historyHandler } from "@/commands/system/history";
+import {
+  INSTALL_AGENT_INPUT_IDS,
+  type InstallReceipt,
+} from "@/commands/system/install-core";
 import { telemetryHandler } from "@/commands/system/telemetry";
 import { BUILDER_URL } from "@/constants";
 import { CreateCommandInputSchema, CreateCommandOptionsSchema } from "@/create-command-input";
@@ -203,6 +207,11 @@ const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   0,
 );
 
+function statusFromInstallResult(result: InstallReceipt | undefined) {
+  if (result?.targets.some((target) => target.status === "cancelled")) return "cancelled";
+  return statusFromCommandResult(result);
+}
+
 const AddCommandInputSchema = CreateCommandOptionsSchema.omit({
   template: true,
   shape: true,
@@ -354,6 +363,48 @@ export const router = os.router({
         },
         { source: "cli-flags" },
       );
+    }),
+  install: os
+    .meta({
+      description:
+        "Install or uninstall Better Fullstack MCP and skills for detected coding agents and editors",
+    })
+    .input(
+      z.object({
+        only: z
+          .enum(["mcp", "skills"])
+          .optional()
+          .describe("Install only the MCP connection or only the skills"),
+        agent: z
+          .array(z.enum(INSTALL_AGENT_INPUT_IDS))
+          .optional()
+          .default([])
+          .describe("Restrict installation to an agent; repeat for more than one"),
+        dryRun: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe("Print every planned file and command without changing anything"),
+        json: z.boolean().optional().default(false).describe("Output a machine-readable receipt"),
+        uninstall: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe("Remove only entries and skill folders created by this command"),
+        yes: z.boolean().optional().default(false).describe("Skip the confirmation prompt"),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const { installCommand } = await import("@/commands/system/install.js");
+      await withCommandTelemetry("install", () => installCommand(input), {
+        source: "cli-flags",
+        mode: input.dryRun ? "dry-run" : input.uninstall ? "uninstall" : "install",
+        resultStatus: statusFromInstallResult,
+        resultDetails: (result) => ({
+          capabilityCount: result.summary.requested,
+          issueCount: result.summary.failed,
+        }),
+      });
     }),
   add: os
     .meta({
