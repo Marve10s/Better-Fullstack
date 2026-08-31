@@ -1,11 +1,7 @@
-import { describe, expect, test } from "bun:test";
-import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { basename, join } from "node:path";
-
 import {
   CROSS_VERSION_UPGRADE_EVIDENCE_TYPE,
+  injectManagedUserEdit,
+  protectedCategory,
   runCrossVersionUpgradeQualification,
 } from "@scripts/release/cross-version-upgrade";
 import {
@@ -15,7 +11,16 @@ import {
   type UpgradeFixtureBundle,
   type UpgradeFixtureFile,
 } from "@scripts/release/release-fixture";
-import { RELEASE_TOOLCHAINS, type ReleaseManifest, type ReleasePackage } from "@scripts/release/release-state";
+import {
+  RELEASE_TOOLCHAINS,
+  type ReleaseManifest,
+  type ReleasePackage,
+} from "@scripts/release/release-state";
+import { describe, expect, test } from "bun:test";
+import { createHash } from "node:crypto";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { basename, join } from "node:path";
 
 const SOURCE_VERSION = "2.0.0";
 const SOURCE_SHA = "a".repeat(40);
@@ -62,7 +67,14 @@ function sourceBundle(createdAt: string): UpgradeFixtureBundle {
   return validateUpgradeFixtureBundle({
     cases: REQUIRED_UPGRADE_FIXTURE_CASE_IDS.map((id) => {
       const user = fixtureFile("a-user.ts", `export const source = "${id}";\n`);
-      const managed = fixtureFile("z-managed.ts", `export const generated = "old-${id}";\n`);
+      const managedUserEdit = fixtureFile(
+        "y-managed.ts",
+        `export const editable = "old-${id}";\n`,
+      );
+      const managed = fixtureFile(
+        "z-managed.ts",
+        `export const generated = "old-${id}";\n`,
+      );
       const config = fixtureFile(
         "bts.jsonc",
         `${JSON.stringify({ version: SOURCE_VERSION, ecosystem: id })}\n`,
@@ -71,17 +83,25 @@ function sourceBundle(createdAt: string): UpgradeFixtureBundle {
         "bts.lock.json",
         `${JSON.stringify({
           version: "2",
-          provenance: { state: "verified", createdWith: lifecycle, current: lifecycle },
+          provenance: {
+            state: "verified",
+            createdWith: lifecycle,
+            current: lifecycle,
+          },
           history: [],
-          hashes: { "a-user.ts": user.sha256, "z-managed.ts": managed.sha256 },
+          hashes: {
+            "a-user.ts": user.sha256,
+            "y-managed.ts": managedUserEdit.sha256,
+            "z-managed.ts": managed.sha256,
+          },
         })}\n`,
       );
       return {
         command: [`create-better-fullstack@${SOURCE_VERSION}`, `fixture-${id}`],
         configSha256: config.sha256,
         ecosystem: id,
-        files: [user, config, manifest, managed].sort((left, right) =>
-          left.path.localeCompare(right.path),
+        files: [user, config, manifest, managedUserEdit, managed].sort(
+          (left, right) => left.path.localeCompare(right.path),
         ),
         id,
         lifecycle,
@@ -92,7 +112,11 @@ function sourceBundle(createdAt: string): UpgradeFixtureBundle {
     }),
     createdAt,
     fixtureType: UPGRADE_FIXTURE_TYPE,
-    release: { packages: packageProvenance, sourceSha: SOURCE_SHA, version: SOURCE_VERSION },
+    release: {
+      packages: packageProvenance,
+      sourceSha: SOURCE_SHA,
+      version: SOURCE_VERSION,
+    },
     schemaVersion: 1,
   });
 }
@@ -108,14 +132,17 @@ const token = "c".repeat(64);
 const recoveryId = "123e4567-e89b-42d3-a456-426614174000";
 
 if (action === "update" && !args.includes("--apply")) {
+  const editable = await readFile(join(projectDir, "y-managed.ts"), "utf8");
+  const hasUserEdit = editable.includes("Better Fullstack cross-version user edit");
   console.log(JSON.stringify({
     ok: true,
     actionable: ["z-managed.ts"],
     conflicts: [],
+    files: [{ path: "y-managed.ts" }, { path: "z-managed.ts" }],
     manual: [],
     reviewToken: token,
-    summary: { drift: 1, userEdited: 1 },
-    userEdited: ["a-user.ts"],
+    summary: { drift: 1, userEdited: hasUserEdit ? 1 : 0 },
+    userEdited: hasUserEdit ? ["y-managed.ts"] : [],
     lifecycle: {
       provenance: {
         source: { cli: "${SOURCE_VERSION}" },
@@ -133,7 +160,13 @@ if (action === "update" && !args.includes("--apply")) {
 } else if (action === "recovery" && args[1] === "apply") {
   const recoveryDir = join(projectDir, ".bts", "recovery", recoveryId);
   await writeFile(join(projectDir, "z-managed.ts"), await readFile(join(recoveryDir, "z-managed.ts")));
-  console.log(JSON.stringify({ ok: true }));
+  console.log(JSON.stringify({
+    success: true,
+    action: "apply",
+    projectDir,
+    transaction: { id: recoveryId, files: ["z-managed.ts"] },
+    lifecycle: { recovery: { available: true, transactionId: recoveryId } },
+  }));
 } else {
   console.error("unsupported fake CLI command");
   process.exit(1);
@@ -156,14 +189,24 @@ async function packPackage(
       ? { bin: { "create-better-fullstack": "dist/cli.mjs" } }
       : {}),
   };
-  await writeFile(join(packageRoot, "package.json"), `${JSON.stringify(packageJson)}\n`);
+  await writeFile(
+    join(packageRoot, "package.json"),
+    `${JSON.stringify(packageJson)}\n`,
+  );
   for (const [path, content] of Object.entries(files)) {
     const target = join(packageRoot, path);
     await mkdir(join(target, ".."), { recursive: true });
     await writeFile(target, content);
   }
   const subprocess = Bun.spawn(
-    ["npm", "pack", "--ignore-scripts", "--json", "--pack-destination", artifactDirectory],
+    [
+      "npm",
+      "pack",
+      "--ignore-scripts",
+      "--json",
+      "--pack-destination",
+      artifactDirectory,
+    ],
     { cwd: packageRoot, stderr: "pipe", stdout: "pipe" },
   );
   const [stdout, stderr, exitCode] = await Promise.all([
@@ -187,11 +230,18 @@ async function packPackage(
   };
 }
 
-async function targetManifest(root: string): Promise<{ manifest: ReleaseManifest; path: string }> {
+async function targetManifest(
+  root: string,
+): Promise<{ manifest: ReleaseManifest; path: string }> {
   const artifactDirectory = join(root, "target-artifacts");
   await mkdir(artifactDirectory);
   const packages = [
-    await packPackage(root, artifactDirectory, "@better-fullstack/template-generator", {}),
+    await packPackage(
+      root,
+      artifactDirectory,
+      "@better-fullstack/template-generator",
+      {},
+    ),
     await packPackage(root, artifactDirectory, "create-better-fullstack", {
       "dist/cli.mjs": FAKE_CLI,
     }),
@@ -244,18 +294,53 @@ describe("cross-version upgrade qualification", () => {
       expect(report.evidenceType).toBe(CROSS_VERSION_UPGRADE_EVIDENCE_TYPE);
       expect(report.overallSuccess).toBe(true);
       expect(report.recoveredCaseCount).toBe(8);
-      expect(report.cases.every((entry) => entry.userEdit?.protectedAs === "user-edited")).toBe(
-        true,
-      );
-      expect(report.cases.every((entry) => entry.build.verified === false)).toBe(true);
+      expect(
+        report.cases.every(
+          (entry) => entry.userEdit?.protectedAs === "user-edited",
+        ),
+      ).toBe(true);
+      expect(
+        report.cases.every((entry) => entry.userEdit?.path === "y-managed.ts"),
+      ).toBe(true);
+      expect(
+        report.cases.every((entry) => entry.build.verified === false),
+      ).toBe(true);
       expect(JSON.parse(await readFile(outputPath, "utf8"))).toEqual(report);
     } finally {
       await rm(root, { force: true, recursive: true });
     }
   }, 30_000);
 
+  test("injects only a managed text candidate and returns null without one", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "bfs-cross-version-user-edit-test-"),
+    );
+    try {
+      await writeFile(join(root, "README.md"), "unmanaged\n");
+      await writeFile(
+        join(root, "managed.ts"),
+        "export const managed = true;\n",
+      );
+      await writeFile(join(root, "managed.bin"), Buffer.from([0, 1, 2]));
+
+      const injected = await injectManagedUserEdit(root, ["managed.ts"]);
+
+      expect(injected?.path).toBe("managed.ts");
+      expect(await readFile(join(root, "README.md"), "utf8")).toBe(
+        "unmanaged\n",
+      );
+      expect(
+        await injectManagedUserEdit(root, ["managed.bin", "missing.ts"]),
+      ).toBeNull();
+    } finally {
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+
   test("rejects a source fixture not bound to the release receipt", async () => {
-    const root = await mkdtemp(join(tmpdir(), "bfs-cross-version-receipt-test-"));
+    const root = await mkdtemp(
+      join(tmpdir(), "bfs-cross-version-receipt-test-"),
+    );
     try {
       const bundle = sourceBundle(new Date().toISOString());
       const fixturePath = join(root, "upgrade-fixture.v1.json");
@@ -289,5 +374,34 @@ describe("cross-version upgrade qualification", () => {
     } finally {
       await rm(root, { force: true, recursive: true });
     }
+  });
+});
+
+describe("protectedCategory", () => {
+  const basePlan = {
+    actionable: [],
+    conflicts: [],
+    files: [{ path: "kept.ts" }],
+    manual: [],
+    userEdited: [],
+  };
+
+  test("classifies a tracked user edit", () => {
+    expect(
+      protectedCategory({ ...basePlan, userEdited: ["kept.ts"] }, "kept.ts"),
+    ).toBe("user-edited");
+  });
+
+  test("treats a file the re-plan dropped and apply cannot write as protected", () => {
+    expect(protectedCategory(basePlan, "README.md")).toBe("dropped-from-plan");
+  });
+
+  test("still fails when an unprotected edit remains actionable", () => {
+    expect(() =>
+      protectedCategory(
+        { ...basePlan, actionable: [{ path: "kept.ts" }] },
+        "kept.ts",
+      ),
+    ).toThrow("was not protected from apply");
   });
 });
