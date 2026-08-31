@@ -1,6 +1,6 @@
 {
   "name": "@better-fullstack/project-lifecycle",
-  "version": "2.6.2",
+  "version": "2.7.0",
   "private": true,
   "description": "Transactional project lifecycle contracts and recovery for Better Fullstack",
   "license": "MIT",

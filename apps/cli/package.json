@@ -1,6 +1,6 @@
 {
   "name": "create-better-fullstack",
-  "version": "2.6.2",
+  "version": "2.7.0",
   "description": "Scaffold configurable fullstack projects in TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir through a visual builder, CLI, and MCP server.",
   "keywords": [
     "ai-agent",
