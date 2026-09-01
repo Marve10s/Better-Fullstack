@@ -1,0 +1,30 @@
+import { sql } from "drizzle-orm";
+{{#if (or (isBetterAuth auth) (eq auth "nextauth"))}}
+import { sqliteTable, integer, text, index } from "drizzle-orm/sqlite-core";
+
+import { {{#if (isBetterAuth auth)}}user{{else}}users{{/if}} } from "./auth";
+{{else}}
+import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
+{{/if}}
+
+export const task = sqliteTable(
+  "task",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    title: text("title").notNull(),
+    completed: integer("completed", { mode: "boolean" }).default(false).notNull(),
+    {{#if (or (isBetterAuth auth) (eq auth "nextauth"))}}
+    userId: text("user_id")
+      .notNull()
+      .references(() => {{#if (isBetterAuth auth)}}user{{else}}users{{/if}}.id, { onDelete: "cascade" }),
+    {{/if}}
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  }{{#if (or (isBetterAuth auth) (eq auth "nextauth"))}},
+  (table) => [index("task_user_id_idx").on(table.userId)]{{/if}}
+);

@@ -47,6 +47,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: tanstack-ro
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -112,6 +114,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: next-self-f
   "packages/db/src/index.ts",
   "packages/db/src/schema/auth.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -155,6 +159,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: astro-react
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -198,6 +204,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: nuxt-standa
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -250,6 +258,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: solid-start
   "packages/db/src/index.ts",
   "packages/db/src/schema/auth.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -363,6 +373,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: hono-bun-or
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -428,6 +440,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: hono-openap
   "packages/db/src/index.ts",
   "packages/db/src/schema/auth.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -492,6 +506,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: hono-apollo
   "packages/db/src/index.ts",
   "packages/db/src/schema/auth.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -572,6 +588,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: typescript-
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -633,6 +651,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: xendit-sign
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -773,6 +793,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: better-auth
   "packages/db/src/index.ts",
   "packages/db/src/schema/auth.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -879,6 +901,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: self-next-c
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -933,6 +957,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: self-tansta
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -1101,6 +1127,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: algolia-sea
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -1159,6 +1187,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: opensearch-
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -1217,6 +1247,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: nango-integ
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -1275,6 +1307,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: medusa-ecom
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -1335,6 +1369,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: cms-keystat
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -1395,6 +1431,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: i18n-paragl
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -1453,6 +1491,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: ai-cli-root
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -1511,6 +1551,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: nx-root-too
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -1608,6 +1650,8 @@ exports[`Template Snapshots File Structure Snapshots file structure: native-reac
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
+  "packages/db/src/schema/task.ts",
+  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -1731,7 +1775,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: java-spring
 
 exports[`Template Snapshots Key File Content Snapshots key files: tanstack-router-minimal 1`] = `
 {
-  "fileCount": 57,
+  "fileCount": 59,
   "files": [
     {
       "content": "[exists]",
@@ -2014,52 +2058,139 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+function TaskPanel() {
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
 
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
+  const tasks = useQuery({
+    ...trpc.tasks.list.queryOptions(),
+  });
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+
+  const create = useMutation({
+    ...trpc.tasks.create.mutationOptions(),
+    onSuccess: () => {
+      setTitle("");
+      return invalidate();
+    },
+  });
+  const setCompleted = useMutation({
+    ...trpc.tasks.setCompleted.mutationOptions(),
+    onSuccess: invalidate,
+  });
+  const remove = useMutation({
+    ...trpc.tasks.remove.mutationOptions(),
+    onSuccess: invalidate,
+  });
+
+
+  return (
+    <div className="space-y-4">
+      <form
+        className="flex gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const next = title.trim();
+          if (next) create.mutate({ title: next });
+        }}
+      >
+        <input
+          aria-label="Task title"
+          className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="Write your first task"
+          value={title}
+        />
+        <button
+          className="h-9 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          disabled={!title.trim() || create.isPending}
+          type="submit"
+        >
+          Add
+        </button>
+      </form>
+
+      {tasks.isPending ? (
+        <p className="text-sm text-muted-foreground">Loading tasks...</p>
+      ) : tasks.data && tasks.data.length > 0 ? (
+        <ul className="divide-y rounded-md border">
+          {tasks.data.map((item) => (
+            <li className="flex items-center gap-3 px-3 py-2" key={item.id}>
+              <input
+                aria-label={\`Mark \${item.title} complete\`}
+                checked={item.completed}
+                onChange={(event) =>
+                  setCompleted.mutate({ completed: event.target.checked, id: item.id })
+                }
+                type="checkbox"
+              />
+              <span
+                className={
+                  item.completed ? "flex-1 text-sm line-through opacity-60" : "flex-1 text-sm"
+                }
+              >
+                {item.title}
+              </span>
+              <button
+                aria-label={\`Delete \${item.title}\`}
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => remove.mutate({ id: item.id })}
+                type="button"
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
+          No tasks yet. Add one above, then reload the page. It is stored in your database.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function HomeComponent() {
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-tanstack-router-minimal</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and hono, sqlite through drizzle.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <TaskPanel />
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -2273,6 +2404,14 @@ export const publicProcedure = t.procedure;
   publicProcedure,
   router,
 } from "../index";
+import { z } from "zod";
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+} from "@snapshot-tanstack-router-minimal/db/tasks";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -2284,6 +2423,18 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
+  }),
+  tasks: router({
+    list: publicProcedure.query(() => listTasks()),
+    create: publicProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ input }) => createTask(input.title)),
+    setCompleted: publicProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ input }) => setTaskCompleted(input.id, input.completed)),
+    remove: publicProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ input }) => deleteTask(input.id)),
   }),
 });
 export type AppRouter = typeof appRouter;
@@ -2433,6 +2584,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -2440,6 +2592,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -2523,7 +2683,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: next-self-fullstack 1`] = `
 {
-  "fileCount": 66,
+  "fileCount": 68,
   "files": [
     {
       "content": "[exists]",
@@ -2942,6 +3102,14 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   protectedProcedure, publicProcedure,
   router,
 } from "../index";
+import { z } from "zod";
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+} from "@snapshot-next-self-fullstack/db/tasks";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -2953,6 +3121,20 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
+  }),
+  tasks: router({
+    list: protectedProcedure.query(({ ctx }) => listTasks(ctx.session.user.id)),
+    create: protectedProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ ctx, input }) => createTask(ctx.session.user.id, input.title)),
+    setCompleted: protectedProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ ctx, input }) =>
+        setTaskCompleted(ctx.session.user.id, input.id, input.completed),
+      ),
+    remove: protectedProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ ctx, input }) => deleteTask(ctx.session.user.id, input.id)),
   }),
   privateData: protectedProcedure.query(({ ctx }) => {
     return {
@@ -3285,6 +3467,7 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -3292,6 +3475,14 @@ export const accountRelations = relations(account, ({ one }) => ({
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -3376,7 +3567,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 exports[`Template Snapshots Key File Content Snapshots key files: astro-react-integration 1`] = `
 {
-  "fileCount": 43,
+  "fileCount": 45,
   "files": [
     {
       "content": "[exists]",
@@ -3782,6 +3973,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -3789,6 +3981,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -3871,7 +4071,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: nuxt-standalone 1`] = `
 {
-  "fileCount": 43,
+  "fileCount": 45,
   "files": [
     {
       "content": "[exists]",
@@ -4316,6 +4516,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -4323,6 +4524,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -4407,7 +4616,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: solid-start-v2-fullstack 1`] = `
 {
-  "fileCount": 52,
+  "fileCount": 54,
   "files": [
     {
       "content": "[exists]",
@@ -5170,6 +5379,7 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -5177,6 +5387,14 @@ export const accountRelations = relations(account, ({ one }) => ({
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -5544,52 +5762,46 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
-import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
 
 function HomeComponent() {
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-express-node-trpc</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and express, postgres through prisma.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <p className="text-sm text-muted-foreground">
+          This stack has no database-backed task API yet. Replace this panel with your first
+          feature, or scaffold one with <code>bfs gen resource task</code>.
+        </p>
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -6022,7 +6234,7 @@ export default prisma;
 
 exports[`Template Snapshots Key File Content Snapshots key files: hono-bun-orpc 1`] = `
 {
-  "fileCount": 57,
+  "fileCount": 59,
   "files": [
     {
       "content": "[exists]",
@@ -6345,52 +6557,46 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "@/utils/orpc";
-import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
 
 function HomeComponent() {
   const healthCheck = useQuery(orpc.healthCheck.queryOptions());
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-hono-bun-orpc</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and hono, sqlite through drizzle.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <p className="text-sm text-muted-foreground">
+          This stack has no database-backed task API yet. Replace this panel with your first
+          feature, or scaffold one with <code>bfs gen resource task</code>.
+        </p>
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -6754,6 +6960,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -6761,6 +6968,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -6844,7 +7059,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: hono-openapi 1`] = `
 {
-  "fileCount": 66,
+  "fileCount": 68,
   "files": [
     {
       "content": "[exists]",
@@ -7202,28 +7417,12 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
-import { env } from "@snapshot-hono-openapi/env/web";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
 
 function HomeComponent() {
   const [healthCheck, setHealthCheck] = useState({ isLoading: true, data: false });
@@ -7242,25 +7441,34 @@ function HomeComponent() {
   }, []);
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-hono-openapi</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and hono, sqlite through drizzle, Better Auth.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <p className="text-sm text-muted-foreground">
+          This stack has no database-backed task API yet. Replace this panel with your first
+          feature, or scaffold one with <code>bfs gen resource task</code>.
+        </p>
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -7904,6 +8112,7 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -7911,6 +8120,14 @@ export const accountRelations = relations(account, ({ one }) => ({
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -7994,7 +8211,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 exports[`Template Snapshots Key File Content Snapshots key files: hono-apollo-server 1`] = `
 {
-  "fileCount": 65,
+  "fileCount": 67,
   "files": [
     {
       "content": "[exists]",
@@ -8296,28 +8513,12 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
-import { graphqlFetch } from "@/utils/graphql";
 import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
 
 function HomeComponent() {
   const healthCheck = useQuery({
@@ -8326,25 +8527,34 @@ function HomeComponent() {
   });
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-hono-apollo-server</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and hono, sqlite through drizzle, Better Auth.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <p className="text-sm text-muted-foreground">
+          This stack has no database-backed task API yet. Replace this panel with your first
+          feature, or scaffold one with <code>bfs gen resource task</code>.
+        </p>
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -8996,6 +9206,7 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -9003,6 +9214,14 @@ export const accountRelations = relations(account, ({ one }) => ({
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -9086,7 +9305,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 exports[`Template Snapshots Key File Content Snapshots key files: better-auth-full 1`] = `
 {
-  "fileCount": 67,
+  "fileCount": 69,
   "files": [
     {
       "content": "[exists]",
@@ -9396,52 +9615,163 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
+import { Link } from "@tanstack/react-router";
+
+import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+function TaskPanel() {
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
+  const { data: session, isPending: sessionPending } = authClient.useSession();
 
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
+  const tasks = useQuery({
+    ...trpc.tasks.list.queryOptions(),
+    enabled: Boolean(session),
+  });
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+
+  const create = useMutation({
+    ...trpc.tasks.create.mutationOptions(),
+    onSuccess: () => {
+      setTitle("");
+      return invalidate();
+    },
+  });
+  const setCompleted = useMutation({
+    ...trpc.tasks.setCompleted.mutationOptions(),
+    onSuccess: invalidate,
+  });
+  const remove = useMutation({
+    ...trpc.tasks.remove.mutationOptions(),
+    onSuccess: invalidate,
+  });
+
+  if (sessionPending) {
+    return <p className="text-sm text-muted-foreground">Checking your session...</p>;
+  }
+
+  if (!session) {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          Tasks are stored per account. Sign in to create your first one.
+        </p>
+        <Link
+          to="/login"
+          className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
+        >
+          Sign in
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <form
+        className="flex gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const next = title.trim();
+          if (next) create.mutate({ title: next });
+        }}
+      >
+        <input
+          aria-label="Task title"
+          className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="Write your first task"
+          value={title}
+        />
+        <button
+          className="h-9 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          disabled={!title.trim() || create.isPending}
+          type="submit"
+        >
+          Add
+        </button>
+      </form>
+
+      {tasks.isPending ? (
+        <p className="text-sm text-muted-foreground">Loading tasks...</p>
+      ) : tasks.data && tasks.data.length > 0 ? (
+        <ul className="divide-y rounded-md border">
+          {tasks.data.map((item) => (
+            <li className="flex items-center gap-3 px-3 py-2" key={item.id}>
+              <input
+                aria-label={\`Mark \${item.title} complete\`}
+                checked={item.completed}
+                onChange={(event) =>
+                  setCompleted.mutate({ completed: event.target.checked, id: item.id })
+                }
+                type="checkbox"
+              />
+              <span
+                className={
+                  item.completed ? "flex-1 text-sm line-through opacity-60" : "flex-1 text-sm"
+                }
+              >
+                {item.title}
+              </span>
+              <button
+                aria-label={\`Delete \${item.title}\`}
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => remove.mutate({ id: item.id })}
+                type="button"
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
+          No tasks yet. Add one above, then reload the page. It is stored in your database.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function HomeComponent() {
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-better-auth-full</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and hono, postgres through drizzle, Better Auth.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <TaskPanel />
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -9682,6 +10012,14 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   protectedProcedure, publicProcedure,
   router,
 } from "../index";
+import { z } from "zod";
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+} from "@snapshot-better-auth-full/db/tasks";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -9693,6 +10031,20 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
+  }),
+  tasks: router({
+    list: protectedProcedure.query(({ ctx }) => listTasks(ctx.session.user.id)),
+    create: protectedProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ ctx, input }) => createTask(ctx.session.user.id, input.title)),
+    setCompleted: protectedProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ ctx, input }) =>
+        setTaskCompleted(ctx.session.user.id, input.id, input.completed),
+      ),
+    remove: protectedProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ ctx, input }) => deleteTask(ctx.session.user.id, input.id)),
   }),
   privateData: protectedProcedure.query(({ ctx }) => {
     return {
@@ -10031,6 +10383,7 @@ export const accountRelations = relations(account, ({ one }) => ({
     {
       "content": 
 "export * from "./auth";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -10038,6 +10391,14 @@ export const accountRelations = relations(account, ({ one }) => ({
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -10307,51 +10668,46 @@ if (!rootElement.innerHTML) {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
+
 import { api } from "@snapshot-convex-clerk/backend/convex/_generated/api";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
 
 function HomeComponent() {
   const healthCheck = useQuery(api.healthCheck.get);
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-          <div className="flex items-center gap-2">
-            <div
-              className={\`h-2 w-2 rounded-full \${healthCheck === "OK" ? "bg-green-500" : healthCheck === undefined ? "bg-orange-400" : "bg-red-500"}\`}
-            />
-            <span className="text-sm text-muted-foreground">
-              {healthCheck === undefined
-                ? "Checking..."
-                : healthCheck === "OK"
-                  ? "Connected"
-                  : "Error"}
-            </span>
-          </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-convex-clerk</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and convex.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <p className="text-sm text-muted-foreground">
+          This stack has no database-backed task API yet. Replace this panel with your first
+          feature, or scaffold one with <code>bfs gen resource task</code>.
+        </p>
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+        <span
+          className={\`h-2 w-2 rounded-full \${healthCheck === "OK" ? "bg-green-500" : healthCheck === undefined ? "bg-orange-400" : "bg-red-500"}\`}
+        />
+        <span>
+          {healthCheck === undefined
+            ? "Checking API..."
+            : healthCheck === "OK"
+              ? "API connected"
+              : "API error"}
+        </span>
+      </footer>
     </div>
   );
 }
@@ -10656,7 +11012,7 @@ export default defineSchema({});
 
 exports[`Template Snapshots Key File Content Snapshots key files: self-next-clerk 1`] = `
 {
-  "fileCount": 57,
+  "fileCount": 59,
   "files": [
     {
       "content": "[exists]",
@@ -11032,6 +11388,14 @@ export const publicProcedure = t.procedure;
   publicProcedure,
   router,
 } from "../index";
+import { z } from "zod";
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+} from "@snapshot-self-next-clerk/db/tasks";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -11043,6 +11407,18 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
+  }),
+  tasks: router({
+    list: publicProcedure.query(() => listTasks()),
+    create: publicProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ input }) => createTask(input.title)),
+    setCompleted: publicProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ input }) => setTaskCompleted(input.id, input.completed)),
+    remove: publicProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ input }) => deleteTask(input.id)),
   }),
 });
 export type AppRouter = typeof appRouter;
@@ -11192,6 +11568,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -11199,6 +11576,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -11283,7 +11668,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-start-clerk 1`] = `
 {
-  "fileCount": 53,
+  "fileCount": 55,
   "files": [
     {
       "content": "[exists]",
@@ -11895,6 +12280,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -11902,6 +12288,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -12266,52 +12660,46 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
-import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
 
 function HomeComponent() {
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-mongodb-mongoose</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and hono, mongodb through mongoose.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <p className="text-sm text-muted-foreground">
+          This stack has no database-backed task API yet. Replace this panel with your first
+          feature, or scaffold one with <code>bfs gen resource task</code>.
+        </p>
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -13005,52 +13393,46 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
-import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
 
 function HomeComponent() {
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-postgres-prisma</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and hono, postgres through prisma.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <p className="text-sm text-muted-foreground">
+          This stack has no database-backed task API yet. Replace this panel with your first
+          feature, or scaffold one with <code>bfs gen resource task</code>.
+        </p>
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -13483,7 +13865,7 @@ export default prisma;
 
 exports[`Template Snapshots Key File Content Snapshots key files: algolia-search-hono 1`] = `
 {
-  "fileCount": 58,
+  "fileCount": 60,
   "files": [
     {
       "content": "[exists]",
@@ -13771,52 +14153,139 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+function TaskPanel() {
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
 
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
+  const tasks = useQuery({
+    ...trpc.tasks.list.queryOptions(),
+  });
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+
+  const create = useMutation({
+    ...trpc.tasks.create.mutationOptions(),
+    onSuccess: () => {
+      setTitle("");
+      return invalidate();
+    },
+  });
+  const setCompleted = useMutation({
+    ...trpc.tasks.setCompleted.mutationOptions(),
+    onSuccess: invalidate,
+  });
+  const remove = useMutation({
+    ...trpc.tasks.remove.mutationOptions(),
+    onSuccess: invalidate,
+  });
+
+
+  return (
+    <div className="space-y-4">
+      <form
+        className="flex gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const next = title.trim();
+          if (next) create.mutate({ title: next });
+        }}
+      >
+        <input
+          aria-label="Task title"
+          className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="Write your first task"
+          value={title}
+        />
+        <button
+          className="h-9 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          disabled={!title.trim() || create.isPending}
+          type="submit"
+        >
+          Add
+        </button>
+      </form>
+
+      {tasks.isPending ? (
+        <p className="text-sm text-muted-foreground">Loading tasks...</p>
+      ) : tasks.data && tasks.data.length > 0 ? (
+        <ul className="divide-y rounded-md border">
+          {tasks.data.map((item) => (
+            <li className="flex items-center gap-3 px-3 py-2" key={item.id}>
+              <input
+                aria-label={\`Mark \${item.title} complete\`}
+                checked={item.completed}
+                onChange={(event) =>
+                  setCompleted.mutate({ completed: event.target.checked, id: item.id })
+                }
+                type="checkbox"
+              />
+              <span
+                className={
+                  item.completed ? "flex-1 text-sm line-through opacity-60" : "flex-1 text-sm"
+                }
+              >
+                {item.title}
+              </span>
+              <button
+                aria-label={\`Delete \${item.title}\`}
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => remove.mutate({ id: item.id })}
+                type="button"
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
+          No tasks yet. Add one above, then reload the page. It is stored in your database.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function HomeComponent() {
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-algolia-search-hono</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and hono, sqlite through drizzle.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <TaskPanel />
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -14030,6 +14499,14 @@ export const publicProcedure = t.procedure;
   publicProcedure,
   router,
 } from "../index";
+import { z } from "zod";
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+} from "@snapshot-algolia-search-hono/db/tasks";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -14041,6 +14518,18 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
+  }),
+  tasks: router({
+    list: publicProcedure.query(() => listTasks()),
+    create: publicProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ input }) => createTask(input.title)),
+    setCompleted: publicProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ input }) => setTaskCompleted(input.id, input.completed)),
+    remove: publicProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ input }) => deleteTask(input.id)),
   }),
 });
 export type AppRouter = typeof appRouter;
@@ -14190,6 +14679,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -14197,6 +14687,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -14280,7 +14778,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: opensearch-search-hono 1`] = `
 {
-  "fileCount": 58,
+  "fileCount": 60,
   "files": [
     {
       "content": "[exists]",
@@ -14568,52 +15066,139 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+function TaskPanel() {
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
 
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
+  const tasks = useQuery({
+    ...trpc.tasks.list.queryOptions(),
+  });
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+
+  const create = useMutation({
+    ...trpc.tasks.create.mutationOptions(),
+    onSuccess: () => {
+      setTitle("");
+      return invalidate();
+    },
+  });
+  const setCompleted = useMutation({
+    ...trpc.tasks.setCompleted.mutationOptions(),
+    onSuccess: invalidate,
+  });
+  const remove = useMutation({
+    ...trpc.tasks.remove.mutationOptions(),
+    onSuccess: invalidate,
+  });
+
+
+  return (
+    <div className="space-y-4">
+      <form
+        className="flex gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const next = title.trim();
+          if (next) create.mutate({ title: next });
+        }}
+      >
+        <input
+          aria-label="Task title"
+          className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="Write your first task"
+          value={title}
+        />
+        <button
+          className="h-9 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          disabled={!title.trim() || create.isPending}
+          type="submit"
+        >
+          Add
+        </button>
+      </form>
+
+      {tasks.isPending ? (
+        <p className="text-sm text-muted-foreground">Loading tasks...</p>
+      ) : tasks.data && tasks.data.length > 0 ? (
+        <ul className="divide-y rounded-md border">
+          {tasks.data.map((item) => (
+            <li className="flex items-center gap-3 px-3 py-2" key={item.id}>
+              <input
+                aria-label={\`Mark \${item.title} complete\`}
+                checked={item.completed}
+                onChange={(event) =>
+                  setCompleted.mutate({ completed: event.target.checked, id: item.id })
+                }
+                type="checkbox"
+              />
+              <span
+                className={
+                  item.completed ? "flex-1 text-sm line-through opacity-60" : "flex-1 text-sm"
+                }
+              >
+                {item.title}
+              </span>
+              <button
+                aria-label={\`Delete \${item.title}\`}
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => remove.mutate({ id: item.id })}
+                type="button"
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
+          No tasks yet. Add one above, then reload the page. It is stored in your database.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function HomeComponent() {
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-opensearch-search-hono</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and hono, sqlite through drizzle.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <TaskPanel />
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -14827,6 +15412,14 @@ export const publicProcedure = t.procedure;
   publicProcedure,
   router,
 } from "../index";
+import { z } from "zod";
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+} from "@snapshot-opensearch-search-hono/db/tasks";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -14838,6 +15431,18 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
+  }),
+  tasks: router({
+    list: publicProcedure.query(() => listTasks()),
+    create: publicProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ input }) => createTask(input.title)),
+    setCompleted: publicProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ input }) => setTaskCompleted(input.id, input.completed)),
+    remove: publicProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ input }) => deleteTask(input.id)),
   }),
 });
 export type AppRouter = typeof appRouter;
@@ -14987,6 +15592,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -14994,6 +15600,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -15077,7 +15691,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: cms-keystatic-next 1`] = `
 {
-  "fileCount": 60,
+  "fileCount": 62,
   "files": [
     {
       "content": "[exists]",
@@ -15467,6 +16081,14 @@ export const publicProcedure = t.procedure;
   publicProcedure,
   router,
 } from "../index";
+import { z } from "zod";
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+} from "@snapshot-cms-keystatic-next/db/tasks";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -15478,6 +16100,18 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
+  }),
+  tasks: router({
+    list: publicProcedure.query(() => listTasks()),
+    create: publicProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ input }) => createTask(input.title)),
+    setCompleted: publicProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ input }) => setTaskCompleted(input.id, input.completed)),
+    remove: publicProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ input }) => deleteTask(input.id)),
   }),
 });
 export type AppRouter = typeof appRouter;
@@ -15627,6 +16261,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -15634,6 +16269,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -15718,7 +16361,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: i18n-paraglide-tanstack-router 1`] = `
 {
-  "fileCount": 60,
+  "fileCount": 62,
   "files": [
     {
       "content": "[exists]",
@@ -16014,52 +16657,139 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+function TaskPanel() {
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
 
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
+  const tasks = useQuery({
+    ...trpc.tasks.list.queryOptions(),
+  });
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+
+  const create = useMutation({
+    ...trpc.tasks.create.mutationOptions(),
+    onSuccess: () => {
+      setTitle("");
+      return invalidate();
+    },
+  });
+  const setCompleted = useMutation({
+    ...trpc.tasks.setCompleted.mutationOptions(),
+    onSuccess: invalidate,
+  });
+  const remove = useMutation({
+    ...trpc.tasks.remove.mutationOptions(),
+    onSuccess: invalidate,
+  });
+
+
+  return (
+    <div className="space-y-4">
+      <form
+        className="flex gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const next = title.trim();
+          if (next) create.mutate({ title: next });
+        }}
+      >
+        <input
+          aria-label="Task title"
+          className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="Write your first task"
+          value={title}
+        />
+        <button
+          className="h-9 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          disabled={!title.trim() || create.isPending}
+          type="submit"
+        >
+          Add
+        </button>
+      </form>
+
+      {tasks.isPending ? (
+        <p className="text-sm text-muted-foreground">Loading tasks...</p>
+      ) : tasks.data && tasks.data.length > 0 ? (
+        <ul className="divide-y rounded-md border">
+          {tasks.data.map((item) => (
+            <li className="flex items-center gap-3 px-3 py-2" key={item.id}>
+              <input
+                aria-label={\`Mark \${item.title} complete\`}
+                checked={item.completed}
+                onChange={(event) =>
+                  setCompleted.mutate({ completed: event.target.checked, id: item.id })
+                }
+                type="checkbox"
+              />
+              <span
+                className={
+                  item.completed ? "flex-1 text-sm line-through opacity-60" : "flex-1 text-sm"
+                }
+              >
+                {item.title}
+              </span>
+              <button
+                aria-label={\`Delete \${item.title}\`}
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => remove.mutate({ id: item.id })}
+                type="button"
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
+          No tasks yet. Add one above, then reload the page. It is stored in your database.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function HomeComponent() {
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-i18n-paraglide-tanstack-router</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and hono, sqlite through drizzle.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <TaskPanel />
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -16279,6 +17009,14 @@ export const publicProcedure = t.procedure;
   publicProcedure,
   router,
 } from "../index";
+import { z } from "zod";
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+} from "@snapshot-i18n-paraglide-tanstack-router/db/tasks";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -16290,6 +17028,18 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
+  }),
+  tasks: router({
+    list: publicProcedure.query(() => listTasks()),
+    create: publicProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ input }) => createTask(input.title)),
+    setCompleted: publicProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ input }) => setTaskCompleted(input.id, input.completed)),
+    remove: publicProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ input }) => deleteTask(input.id)),
   }),
 });
 export type AppRouter = typeof appRouter;
@@ -16439,6 +17189,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -16446,6 +17197,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -16529,7 +17288,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: ai-cli-root-tooling 1`] = `
 {
-  "fileCount": 58,
+  "fileCount": 60,
   "files": [
     {
       "content": "[exists]",
@@ -16816,52 +17575,139 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+function TaskPanel() {
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
 
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
+  const tasks = useQuery({
+    ...trpc.tasks.list.queryOptions(),
+  });
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+
+  const create = useMutation({
+    ...trpc.tasks.create.mutationOptions(),
+    onSuccess: () => {
+      setTitle("");
+      return invalidate();
+    },
+  });
+  const setCompleted = useMutation({
+    ...trpc.tasks.setCompleted.mutationOptions(),
+    onSuccess: invalidate,
+  });
+  const remove = useMutation({
+    ...trpc.tasks.remove.mutationOptions(),
+    onSuccess: invalidate,
+  });
+
+
+  return (
+    <div className="space-y-4">
+      <form
+        className="flex gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const next = title.trim();
+          if (next) create.mutate({ title: next });
+        }}
+      >
+        <input
+          aria-label="Task title"
+          className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="Write your first task"
+          value={title}
+        />
+        <button
+          className="h-9 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          disabled={!title.trim() || create.isPending}
+          type="submit"
+        >
+          Add
+        </button>
+      </form>
+
+      {tasks.isPending ? (
+        <p className="text-sm text-muted-foreground">Loading tasks...</p>
+      ) : tasks.data && tasks.data.length > 0 ? (
+        <ul className="divide-y rounded-md border">
+          {tasks.data.map((item) => (
+            <li className="flex items-center gap-3 px-3 py-2" key={item.id}>
+              <input
+                aria-label={\`Mark \${item.title} complete\`}
+                checked={item.completed}
+                onChange={(event) =>
+                  setCompleted.mutate({ completed: event.target.checked, id: item.id })
+                }
+                type="checkbox"
+              />
+              <span
+                className={
+                  item.completed ? "flex-1 text-sm line-through opacity-60" : "flex-1 text-sm"
+                }
+              >
+                {item.title}
+              </span>
+              <button
+                aria-label={\`Delete \${item.title}\`}
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => remove.mutate({ id: item.id })}
+                type="button"
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
+          No tasks yet. Add one above, then reload the page. It is stored in your database.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function HomeComponent() {
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-ai-cli-root-tooling</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and hono, sqlite through drizzle.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <TaskPanel />
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -17081,6 +17927,14 @@ export const publicProcedure = t.procedure;
   publicProcedure,
   router,
 } from "../index";
+import { z } from "zod";
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+} from "@snapshot-ai-cli-root-tooling/db/tasks";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -17092,6 +17946,18 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
+  }),
+  tasks: router({
+    list: publicProcedure.query(() => listTasks()),
+    create: publicProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ input }) => createTask(input.title)),
+    setCompleted: publicProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ input }) => setTaskCompleted(input.id, input.completed)),
+    remove: publicProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ input }) => deleteTask(input.id)),
   }),
 });
 export type AppRouter = typeof appRouter;
@@ -17241,6 +18107,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -17248,6 +18115,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -17331,7 +18206,7 @@ export const db = drizzle({ client, schema });
 
 exports[`Template Snapshots Key File Content Snapshots key files: nx-root-tooling 1`] = `
 {
-  "fileCount": 58,
+  "fileCount": 60,
   "files": [
     {
       "content": "[exists]",
@@ -17614,52 +18489,139 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+function TaskPanel() {
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
 
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
+  const tasks = useQuery({
+    ...trpc.tasks.list.queryOptions(),
+  });
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+
+  const create = useMutation({
+    ...trpc.tasks.create.mutationOptions(),
+    onSuccess: () => {
+      setTitle("");
+      return invalidate();
+    },
+  });
+  const setCompleted = useMutation({
+    ...trpc.tasks.setCompleted.mutationOptions(),
+    onSuccess: invalidate,
+  });
+  const remove = useMutation({
+    ...trpc.tasks.remove.mutationOptions(),
+    onSuccess: invalidate,
+  });
+
+
+  return (
+    <div className="space-y-4">
+      <form
+        className="flex gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const next = title.trim();
+          if (next) create.mutate({ title: next });
+        }}
+      >
+        <input
+          aria-label="Task title"
+          className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="Write your first task"
+          value={title}
+        />
+        <button
+          className="h-9 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          disabled={!title.trim() || create.isPending}
+          type="submit"
+        >
+          Add
+        </button>
+      </form>
+
+      {tasks.isPending ? (
+        <p className="text-sm text-muted-foreground">Loading tasks...</p>
+      ) : tasks.data && tasks.data.length > 0 ? (
+        <ul className="divide-y rounded-md border">
+          {tasks.data.map((item) => (
+            <li className="flex items-center gap-3 px-3 py-2" key={item.id}>
+              <input
+                aria-label={\`Mark \${item.title} complete\`}
+                checked={item.completed}
+                onChange={(event) =>
+                  setCompleted.mutate({ completed: event.target.checked, id: item.id })
+                }
+                type="checkbox"
+              />
+              <span
+                className={
+                  item.completed ? "flex-1 text-sm line-through opacity-60" : "flex-1 text-sm"
+                }
+              >
+                {item.title}
+              </span>
+              <button
+                aria-label={\`Delete \${item.title}\`}
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => remove.mutate({ id: item.id })}
+                type="button"
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
+          No tasks yet. Add one above, then reload the page. It is stored in your database.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function HomeComponent() {
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-            <div className="flex items-center gap-2">
-              <div
-                className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-nx-root-tooling</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router and hono, sqlite through drizzle.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <TaskPanel />
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={\`h-2 w-2 rounded-full \${healthCheck.data ? "bg-green-500" : "bg-red-500"}\`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+      </footer>
     </div>
   );
 }
@@ -17878,6 +18840,14 @@ export const publicProcedure = t.procedure;
   publicProcedure,
   router,
 } from "../index";
+import { z } from "zod";
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+} from "@snapshot-nx-root-tooling/db/tasks";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -17889,6 +18859,18 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
+  }),
+  tasks: router({
+    list: publicProcedure.query(() => listTasks()),
+    create: publicProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ input }) => createTask(input.title)),
+    setCompleted: publicProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ input }) => setTaskCompleted(input.id, input.completed)),
+    remove: publicProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ input }) => deleteTask(input.id)),
   }),
 });
 export type AppRouter = typeof appRouter;
@@ -18038,6 +19020,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -18045,6 +19028,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -18295,32 +19286,28 @@ export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = \`
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- \`;
 
 function HomeComponent() {
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">snapshot-frontend-only-no-backend</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        <p className="text-sm text-muted-foreground">
+          This stack has no database-backed task API yet. Replace this panel with your first
+          feature, or scaffold one with <code>bfs gen resource task</code>.
+        </p>
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+      </footer>
     </div>
   );
 }
@@ -18533,7 +19520,7 @@ export default defineConfig({
 
 exports[`Template Snapshots Key File Content Snapshots key files: native-react-native 1`] = `
 {
-  "fileCount": 67,
+  "fileCount": 69,
   "files": [
     {
       "content": "[exists]",
@@ -19109,6 +20096,14 @@ export const publicProcedure = t.procedure;
   publicProcedure,
   router,
 } from "../index";
+import { z } from "zod";
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+} from "@snapshot-native-react-native/db/tasks";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -19120,6 +20115,18 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
+  }),
+  tasks: router({
+    list: publicProcedure.query(() => listTasks()),
+    create: publicProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ input }) => createTask(input.title)),
+    setCompleted: publicProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ input }) => setTaskCompleted(input.id, input.completed)),
+    remove: publicProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ input }) => deleteTask(input.id)),
   }),
 });
 export type AppRouter = typeof appRouter;
@@ -19269,6 +20276,7 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
+export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -19276,6 +20284,14 @@ export const db = drizzle({ client, schema });
 "
 ,
       "path": "packages/db/src/schema/index.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/schema/task.ts",
+    },
+    {
+      "content": "[exists]",
+      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 

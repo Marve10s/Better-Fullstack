@@ -29,6 +29,16 @@ import {
   {{#if (isBetterAuth auth)}}protectedProcedure, {{/if}}publicProcedure,
   router,
 } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
+{{#if (eq orm "drizzle")}}
+import { z } from "zod";
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+} from "@{{projectName}}/db/tasks";
+{{/if}}
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -41,6 +51,35 @@ export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
+  {{#if (eq orm "drizzle")}}
+  tasks: router({
+    {{#if (isBetterAuth auth)}}
+    list: protectedProcedure.query(({ ctx }) => listTasks(ctx.session.user.id)),
+    create: protectedProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ ctx, input }) => createTask(ctx.session.user.id, input.title)),
+    setCompleted: protectedProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ ctx, input }) =>
+        setTaskCompleted(ctx.session.user.id, input.id, input.completed),
+      ),
+    remove: protectedProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ ctx, input }) => deleteTask(ctx.session.user.id, input.id)),
+    {{else}}
+    list: publicProcedure.query(() => listTasks()),
+    create: publicProcedure
+      .input(z.object({ title: z.string().trim().min(1).max(255) }))
+      .mutation(({ input }) => createTask(input.title)),
+    setCompleted: publicProcedure
+      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
+      .mutation(({ input }) => setTaskCompleted(input.id, input.completed)),
+    remove: publicProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(({ input }) => deleteTask(input.id)),
+    {{/if}}
+  }),
+  {{/if}}
   {{#if (isBetterAuth auth)}}
   privateData: protectedProcedure.query(({ ctx }) => {
     return {

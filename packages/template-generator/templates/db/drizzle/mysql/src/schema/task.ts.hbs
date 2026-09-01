@@ -1,0 +1,27 @@
+{{#if (or (isBetterAuth auth) (eq auth "nextauth"))}}
+import { boolean, index, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
+
+import { {{#if (isBetterAuth auth)}}user{{else}}users{{/if}} } from "./auth";
+{{else}}
+import { boolean, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
+{{/if}}
+
+export const task = mysqlTable(
+  "task",
+  {
+    id: serial("id").primaryKey(),
+    title: varchar("title", { length: 255 }).notNull(),
+    completed: boolean("completed").default(false).notNull(),
+    {{#if (or (isBetterAuth auth) (eq auth "nextauth"))}}
+    userId: varchar("user_id", { length: {{#if (isBetterAuth auth)}}36{{else}}255{{/if}} })
+      .notNull()
+      .references(() => {{#if (isBetterAuth auth)}}user{{else}}users{{/if}}.id, { onDelete: "cascade" }),
+    {{/if}}
+    createdAt: timestamp("created_at", { fsp: 3 }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { fsp: 3 })
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  }{{#if (or (isBetterAuth auth) (eq auth "nextauth"))}},
+  (table) => [index("task_user_id_idx").on(table.userId)]{{/if}}
+);

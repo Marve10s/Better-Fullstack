@@ -1,45 +1,162 @@
-import { createFileRoute } from "@tanstack/react-router";
 {{#if (eq backend "convex")}}
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
-import { api } from "@{{ projectName }}/backend/convex/_generated/api";
-{{else if (eq api "orpc")}}
-import { orpc } from "@/utils/orpc";
-import { useQuery } from "@tanstack/react-query";
-{{else if (eq api "trpc")}}
-import { trpc } from "@/utils/trpc";
-import { useQuery } from "@tanstack/react-query";
+
+import { api } from "@{{projectName}}/backend/convex/_generated/api";
+{{else}}
+import { createFileRoute } from "@tanstack/react-router";
+{{#if (or (eq api "orpc") (eq api "trpc"))}}
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 {{else if (eq api "ts-rest")}}
 import { tsr } from "@/utils/ts-rest";
-{{else if (eq api "garph")}}
-import { query, resolved } from "@/utils/garph";
-import { useQuery } from "@tanstack/react-query";
-{{else if (or (eq api "graphql-yoga") (eq api "apollo-server"))}}
-import { graphqlFetch } from "@/utils/graphql";
+{{else if (or (eq api "garph") (eq api "graphql-yoga") (eq api "apollo-server"))}}
 import { useQuery } from "@tanstack/react-query";
 {{else if (eq api "openapi")}}
-import { env } from "@{{projectName}}/env/web";
 import { useEffect, useState } from "react";
+{{/if}}
+{{#if (eq api "orpc")}}
+import { orpc } from "@/utils/orpc";
+{{else if (eq api "trpc")}}
+import { trpc } from "@/utils/trpc";
+{{/if}}
+{{/if}}
+{{#if (and (eq orm "drizzle") (eq api "trpc") (not (eq backend "convex")))}}
+import { useState } from "react";
+
+{{#if (isBetterAuth auth)}}
+import { Link } from "@tanstack/react-router";
+
+import { authClient } from "@/lib/auth-client";
+{{/if}}
 {{/if}}
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-const TITLE_TEXT = `
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+{{#if (and (eq orm "drizzle") (eq api "trpc") (not (eq backend "convex")))}}
+function TaskPanel() {
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
+  {{#if (isBetterAuth auth)}}
+  const { data: session, isPending: sessionPending } = authClient.useSession();
+  {{/if}}
 
- ███████╗██╗   ██╗██╗     ██╗     ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ██╔════╝██║   ██║██║     ██║     ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
- █████╗  ██║   ██║██║     ██║     ███████╗   ██║   ███████║██║     █████╔╝
- ██╔══╝  ██║   ██║██║     ██║     ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
- ██║     ╚██████╔╝███████╗███████╗███████║   ██║   ██║  ██║╚██████╗██║  ██╗
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- `;
+  const tasks = useQuery({
+    ...trpc.tasks.list.queryOptions(),
+    {{#if (isBetterAuth auth)}}
+    enabled: Boolean(session),
+    {{/if}}
+  });
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+
+  const create = useMutation({
+    ...trpc.tasks.create.mutationOptions(),
+    onSuccess: () => {
+      setTitle("");
+      return invalidate();
+    },
+  });
+  const setCompleted = useMutation({
+    ...trpc.tasks.setCompleted.mutationOptions(),
+    onSuccess: invalidate,
+  });
+  const remove = useMutation({
+    ...trpc.tasks.remove.mutationOptions(),
+    onSuccess: invalidate,
+  });
+
+  {{#if (isBetterAuth auth)}}
+  if (sessionPending) {
+    return <p className="text-sm text-muted-foreground">Checking your session...</p>;
+  }
+
+  if (!session) {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          Tasks are stored per account. Sign in to create your first one.
+        </p>
+        <Link
+          to="/login"
+          className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
+        >
+          Sign in
+        </Link>
+      </div>
+    );
+  }
+  {{/if}}
+
+  return (
+    <div className="space-y-4">
+      <form
+        className="flex gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const next = title.trim();
+          if (next) create.mutate({ title: next });
+        }}
+      >
+        <input
+          aria-label="Task title"
+          className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="Write your first task"
+          value={title}
+        />
+        <button
+          className="h-9 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          disabled={!title.trim() || create.isPending}
+          type="submit"
+        >
+          Add
+        </button>
+      </form>
+
+      {tasks.isPending ? (
+        <p className="text-sm text-muted-foreground">Loading tasks...</p>
+      ) : tasks.data && tasks.data.length > 0 ? (
+        <ul className="divide-y rounded-md border">
+          {tasks.data.map((item) => (
+            <li className="flex items-center gap-3 px-3 py-2" key={item.id}>
+              <input
+                aria-label={`Mark ${item.title} complete`}
+                checked={item.completed}
+                onChange={(event) =>
+                  setCompleted.mutate({ completed: event.target.checked, id: item.id })
+                }
+                type="checkbox"
+              />
+              <span
+                className={
+                  item.completed ? "flex-1 text-sm line-through opacity-60" : "flex-1 text-sm"
+                }
+              >
+                {item.title}
+              </span>
+              <button
+                aria-label={`Delete ${item.title}`}
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => remove.mutate({ id: item.id })}
+                type="button"
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
+          No tasks yet. Add one above, then reload the page. It is stored in your database.
+        </p>
+      )}
+    </div>
+  );
+}
+{{/if}}
 
 function HomeComponent() {
   {{#if (eq backend "convex")}}
@@ -78,42 +195,53 @@ function HomeComponent() {
   {{/if}}
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-          {{#if (eq backend "convex")}}
-          <div className="flex items-center gap-2">
-            <div
-              className={`h-2 w-2 rounded-full ${healthCheck === "OK" ? "bg-green-500" : healthCheck === undefined ? "bg-orange-400" : "bg-red-500"}`}
-            />
-            <span className="text-sm text-muted-foreground">
-              {healthCheck === undefined
-                ? "Checking..."
-                : healthCheck === "OK"
-                  ? "Connected"
-                  : "Error"}
-            </span>
-          </div>
-          {{else}}
-            {{#unless (eq api "none")}}
-            <div className="flex items-center gap-2">
-              <div
-                className={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}
-              />
-              <span className="text-sm text-muted-foreground">
-                {healthCheck.isLoading
-                  ? "Checking..."
-                  : healthCheck.data
-                    ? "Connected"
-                    : "Disconnected"}
-              </span>
-            </div>
-            {{/unless}}
-          {{/if}}
-        </section>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">{{projectName}}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          TanStack Router{{#unless (eq backend "none")}} and {{backend}}{{/unless}}{{#unless (eq database "none")}}, {{database}} through {{orm}}{{/unless}}{{#if (isBetterAuth auth)}}, Better Auth{{/if}}.
+        </p>
+      </header>
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 font-medium">Tasks</h2>
+        {{#if (and (eq orm "drizzle") (eq api "trpc") (not (eq backend "convex")))}}
+        <TaskPanel />
+        {{else}}
+        <p className="text-sm text-muted-foreground">
+          This stack has no database-backed task API yet. Replace this panel with your first
+          feature, or scaffold one with <code>bfs gen resource task</code>.
+        </p>
+        {{/if}}
+      </section>
+
+      <footer className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+        {{#if (eq backend "convex")}}
+        <span
+          className={`h-2 w-2 rounded-full ${healthCheck === "OK" ? "bg-green-500" : healthCheck === undefined ? "bg-orange-400" : "bg-red-500"}`}
+        />
+        <span>
+          {healthCheck === undefined
+            ? "Checking API..."
+            : healthCheck === "OK"
+              ? "API connected"
+              : "API error"}
+        </span>
+        {{else}}
+          {{#unless (eq api "none")}}
+          <span
+            className={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}
+          />
+          <span>
+            {healthCheck.isLoading
+              ? "Checking API..."
+              : healthCheck.data
+                ? "API connected"
+                : "API disconnected"}
+          </span>
+          {{/unless}}
+        {{/if}}
+      </footer>
     </div>
   );
 }
