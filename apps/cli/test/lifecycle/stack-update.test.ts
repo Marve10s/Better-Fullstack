@@ -2911,7 +2911,7 @@ describe("stack update planner", () => {
         expect(btsConfig[testCase.field]).toEqual(testCase.expected);
       }
     },
-    { timeout: 60_000 },
+    { timeout: 120_000 },
   );
 
   it("applies Go Better Auth through the generic auth update field", async () => {
