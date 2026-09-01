@@ -6,15 +6,15 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Campaignsharedescription2Inputs */
 
 const en_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Send the exact configuration—not a generic homepage—so someone else can inspect, run and download it.`)
+	return /** @type {LocalizedString} */ (`Send the exact configuration - not a generic homepage - so someone else can inspect, run and download it.`)
 };
 
 const es_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Envía la configuración exacta —no una portada genérica— para que otra persona pueda inspeccionarla, ejecutarla y descargarla.`)
+	return /** @type {LocalizedString} */ (`Envía la configuración exacta - no una portada genérica - para que otra persona pueda inspeccionarla, ejecutarla y descargarla.`)
 };
 
 const zh_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`发送精确的配置——而不是一个通用主页——让对方可以直接查看、运行并下载它。`)
+	return /** @type {LocalizedString} */ (`发送精确的配置--而不是一个通用主页--让对方可以直接查看、运行并下载它。`)
 };
 
 const ja_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
@@ -26,7 +26,7 @@ const ko_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescriptio
 };
 
 const zh_hant1_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`傳送精確的組態——而不是一個通用首頁——讓對方可以直接檢視、執行並下載它。`)
+	return /** @type {LocalizedString} */ (`傳送精確的組態--而不是一個通用首頁--讓對方可以直接檢視、執行並下載它。`)
 };
 
 const de_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
@@ -34,17 +34,17 @@ const de_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescriptio
 };
 
 const fr_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Envoyez la configuration exacte — pas une page d'accueil générique — pour que quelqu'un d'autre puisse l'inspecter, l'exécuter et la télécharger.`)
+	return /** @type {LocalizedString} */ (`Envoyez la configuration exacte - pas une page d'accueil générique - pour que quelqu'un d'autre puisse l'inspecter, l'exécuter et la télécharger.`)
 };
 
 const uk_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Надішліть точну конфігурацію — а не типову головну сторінку, — щоб інша людина могла її переглянути, запустити й завантажити.`)
+	return /** @type {LocalizedString} */ (`Надішліть точну конфігурацію - а не типову головну сторінку, - щоб інша людина могла її переглянути, запустити й завантажити.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Send the exact configuration—not a generic homepage—so someone else can inspect, run and download it." |
+* | "Send the exact configuration - not a generic homepage - so someone else can inspect, run and download it." |
 *
 * @param {Campaignsharedescription2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

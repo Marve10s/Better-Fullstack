@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Llmbenchmarkdescription2Inputs */
 
 const en_llmbenchmarkdescription2 = /** @type {(inputs: Llmbenchmarkdescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Measuring coding agents on real fullstack scaffolding tasks — time, tokens, cost, and whether the result actually builds.`)
+	return /** @type {LocalizedString} */ (`Measuring coding agents on real fullstack scaffolding tasks - time, tokens, cost, and whether the result actually builds.`)
 };
 
 const es_llmbenchmarkdescription2 = /** @type {(inputs: Llmbenchmarkdescription2Inputs) => LocalizedString} */ () => {
@@ -44,7 +44,7 @@ const uk_llmbenchmarkdescription2 = /** @type {(inputs: Llmbenchmarkdescription2
 /**
 * | output |
 * | --- |
-* | "Measuring coding agents on real fullstack scaffolding tasks — time, tokens, cost, and whether the result actually builds." |
+* | "Measuring coding agents on real fullstack scaffolding tasks - time, tokens, cost, and whether the result actually builds." |
 *
 * @param {Llmbenchmarkdescription2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

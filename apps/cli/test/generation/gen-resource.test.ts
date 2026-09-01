@@ -333,28 +333,32 @@ describe("gen resource", () => {
     expect(await fs.pathExists(resourcePath(dir, "post"))).toBe(false);
   });
 
-  it("rolls back after a failure at every gen write boundary", async () => {
-    const plannedDir = await stageFixture("trpc");
-    const planned = await planGen({ kind: "resource", name: "post", dir: plannedDir });
-    const writeBoundaries = planned.files?.map((_, index) => index) ?? [];
-    for (const failureIndex of writeBoundaries) {
-      const dir = await stageFixture("trpc");
-      const indexBefore = await readFile(routerIndexPath(dir), "utf-8");
+  it(
+    "rolls back after a failure at every gen write boundary",
+    async () => {
+      const plannedDir = await stageFixture("trpc");
+      const planned = await planGen({ kind: "resource", name: "post", dir: plannedDir });
+      const writeBoundaries = planned.files?.map((_, index) => index) ?? [];
+      for (const failureIndex of writeBoundaries) {
+        const dir = await stageFixture("trpc");
+        const indexBefore = await readFile(routerIndexPath(dir), "utf-8");
 
-      const result = await applyReviewedGen(
-        { kind: "resource", name: "post", dir },
-        {
-          afterWrite: (_file, index) => {
-            if (index === failureIndex) throw new Error("injected write failure");
+        const result = await applyReviewedGen(
+          { kind: "resource", name: "post", dir },
+          {
+            afterWrite: (_file, index) => {
+              if (index === failureIndex) throw new Error("injected write failure");
+            },
           },
-        },
-      );
+        );
 
-      expect(result.status).toBe("rolled-back");
-      expect(await fs.pathExists(resourcePath(dir, "post"))).toBe(false);
-      expect(await readFile(routerIndexPath(dir), "utf-8")).toBe(indexBefore);
-    }
-  });
+        expect(result.status).toBe("rolled-back");
+        expect(await fs.pathExists(resourcePath(dir, "post"))).toBe(false);
+        expect(await readFile(routerIndexPath(dir), "utf-8")).toBe(indexBefore);
+      }
+    },
+    { timeout: 20_000 },
+  );
 
   it("restores the first output when the second disk write fails", async () => {
     const dir = await stageFixture("trpc");

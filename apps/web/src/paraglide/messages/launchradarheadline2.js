@@ -38,7 +38,7 @@ const fr_launchradarheadline2 = /** @type {(inputs: Launchradarheadline2Inputs) 
 };
 
 const uk_launchradarheadline2 = /** @type {(inputs: Launchradarheadline2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} нових варіантів стека — вже в білдері.`)
+	return /** @type {LocalizedString} */ (`${i?.count} нових варіантів стека - вже в білдері.`)
 };
 
 /**

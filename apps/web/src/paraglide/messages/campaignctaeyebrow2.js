@@ -38,7 +38,7 @@ const fr_campaignctaeyebrow2 = /** @type {(inputs: Campaignctaeyebrow2Inputs) =>
 };
 
 const uk_campaignctaeyebrow2 = /** @type {(inputs: Campaignctaeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ваш наступний проєкт — за один клік`)
+	return /** @type {LocalizedString} */ (`Ваш наступний проєкт - за один клік`)
 };
 
 /**
