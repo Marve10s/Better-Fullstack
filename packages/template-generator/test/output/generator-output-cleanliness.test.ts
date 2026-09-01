@@ -1,12 +1,12 @@
 import { parseStackPartSpecs, type ProjectConfig } from "@better-fullstack/types";
+import { makeConfig } from "@test/_fixtures/config-factory";
 import { describe, expect, it } from "bun:test";
 
 import type { VirtualFile, VirtualNode } from "@/types";
 
+import { dependencyVersionMap } from "@/dependencies/add-deps";
 import { generateVirtualProject } from "@/generator";
 import { EMBEDDED_TEMPLATES } from "@/templates.generated";
-import { dependencyVersionMap } from "@/dependencies/add-deps";
-import { makeConfig } from "@test/_fixtures/config-factory";
 
 function listFiles(node: VirtualNode): VirtualFile[] {
   return node.type === "file" ? [node] : node.children.flatMap(listFiles);
@@ -55,6 +55,23 @@ describe("generated output cleanliness", () => {
         .map((file) => file.path);
 
       expect(emptyFiles).toEqual([]);
+    });
+  }
+
+  for (const database of ["redis", "edgedb"] as const) {
+    it(`does not expose the ORM sentinel for ${database}`, async () => {
+      const result = await generateVirtualProject({
+        config: makeConfig({ database, orm: "none" }),
+        templates: EMBEDDED_TEMPLATES,
+      });
+
+      expect(result.success).toBe(true);
+      const route = listFiles(result.tree!.root).find((file) =>
+        file.path.endsWith("apps/web/src/routes/index.tsx"),
+      );
+
+      expect(route?.content).toContain(`TanStack Router and hono, ${database}.`);
+      expect(route?.content).not.toContain(`${database} through none`);
     });
   }
 

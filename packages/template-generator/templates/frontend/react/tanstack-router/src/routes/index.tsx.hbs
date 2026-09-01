@@ -232,7 +232,7 @@ function HomeComponent() {
       <header className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">{{projectName}}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          TanStack Router{{#unless (eq backend "none")}} and {{backend}}{{/unless}}{{#unless (eq database "none")}}, {{database}} through {{orm}}{{/unless}}{{#if (isBetterAuth auth)}}, Better Auth{{/if}}.
+          TanStack Router{{#unless (eq backend "none")}} and {{backend}}{{/unless}}{{#unless (eq database "none")}}, {{database}}{{#unless (eq orm "none")}} through {{orm}}{{/unless}}{{/unless}}{{#if (isBetterAuth auth)}}, Better Auth{{/if}}.
         </p>
       </header>
 
