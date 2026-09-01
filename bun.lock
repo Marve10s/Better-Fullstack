@@ -179,7 +179,7 @@
         "create-bfs": "cli.js",
       },
       "dependencies": {
-        "create-better-fullstack": "^2.6.2",
+        "create-better-fullstack": "^2.6.3",
       },
     },
     "packages/project-lifecycle": {
@@ -199,7 +199,7 @@
       "name": "@better-fullstack/template-generator",
       "version": "2.6.3",
       "dependencies": {
-        "@better-fullstack/types": "^2.6.2",
+        "@better-fullstack/types": "^2.6.3",
         "handlebars": "^4.7.9",
         "pathe": "^2.0.3",
         "ts-morph": "^27.0.2",

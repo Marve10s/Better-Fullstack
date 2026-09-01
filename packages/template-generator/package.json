@@ -63,7 +63,7 @@
     "sync-versions:fix": "bun scripts/sync-template-versions.ts --fix"
   },
   "dependencies": {
-    "@better-fullstack/types": "^2.6.2",
+    "@better-fullstack/types": "^2.6.3",
     "handlebars": "^4.7.9",
     "pathe": "^2.0.3",
     "ts-morph": "^27.0.2",
