@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Campaignstepruncopy3Inputs */
 
 const en_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Start the generated development server in an isolated browser runtime-not a simulated preview.`)
+	return /** @type {LocalizedString} */ (`Start the generated development server in an isolated browser runtime - not a simulated preview.`)
 };
 
 const es_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) => LocalizedString} */ () => {
@@ -44,7 +44,7 @@ const uk_campaignstepruncopy3 = /** @type {(inputs: Campaignstepruncopy3Inputs) 
 /**
 * | output |
 * | --- |
-* | "Start the generated development server in an isolated browser runtime-not a simulated preview." |
+* | "Start the generated development server in an isolated browser runtime - not a simulated preview." |
 *
 * @param {Campaignstepruncopy3Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

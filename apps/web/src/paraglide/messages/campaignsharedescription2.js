@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Campaignsharedescription2Inputs */
 
 const en_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Send the exact configuration-not a generic homepage-so someone else can inspect, run and download it.`)
+	return /** @type {LocalizedString} */ (`Send the exact configuration - not a generic homepage - so someone else can inspect, run and download it.`)
 };
 
 const es_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Envía la configuración exacta -no una portada genérica- para que otra persona pueda inspeccionarla, ejecutarla y descargarla.`)
+	return /** @type {LocalizedString} */ (`Envía la configuración exacta - no una portada genérica - para que otra persona pueda inspeccionarla, ejecutarla y descargarla.`)
 };
 
 const zh_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescription2Inputs) => LocalizedString} */ () => {
@@ -44,7 +44,7 @@ const uk_campaignsharedescription2 = /** @type {(inputs: Campaignsharedescriptio
 /**
 * | output |
 * | --- |
-* | "Send the exact configuration-not a generic homepage-so someone else can inspect, run and download it." |
+* | "Send the exact configuration - not a generic homepage - so someone else can inspect, run and download it." |
 *
 * @param {Campaignsharedescription2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
