@@ -733,6 +733,7 @@ export const dependencyVersionMap = {
 
   // RedwoodJS
   "@redwoodjs/core": "^8.9.0",
+  "@redwoodjs/context": "^8.9.0",
   "@redwoodjs/web": "^8.9.0",
   "@redwoodjs/api": "^8.9.0",
   "@redwoodjs/router": "^8.9.0",

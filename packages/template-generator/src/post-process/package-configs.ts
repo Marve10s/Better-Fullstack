@@ -143,15 +143,21 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   const hasNativeWorkspace = vfs.fileExists("apps/native/package.json");
   const hasDocsWorkspace = vfs.fileExists("apps/docs/package.json");
 
-  if (graphBackend && hasWebWorkspace) {
+  const hasRedwood = config.frontend.includes("redwood");
+
+  if (hasRedwood) {
+    scripts.dev = "rw --no-telemetry dev";
+  } else if (graphBackend && hasWebWorkspace) {
     scripts.dev = pmConfig.filter("web", "dev");
   } else if (graphBackend && !hasNativeWorkspace) {
     scripts.dev = graphBackend.devCommand;
   } else {
     scripts.dev = pmConfig.dev;
   }
-  scripts.build = pmConfig.build;
-  scripts["check-types"] = pmConfig.checkTypes;
+  scripts.build = hasRedwood ? "rw --no-telemetry build" : pmConfig.build;
+  scripts["check-types"] = hasRedwood
+    ? "rw-gen && node node_modules/typescript/bin/tsc --noEmit --project web/tsconfig.json && node node_modules/typescript/bin/tsc --noEmit --project api/tsconfig.json"
+    : pmConfig.checkTypes;
 
   if (hasWebWorkspace) {
     scripts["dev:web"] = pmConfig.filter("web", "dev");

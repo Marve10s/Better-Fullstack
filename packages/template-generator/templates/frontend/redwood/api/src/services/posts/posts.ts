@@ -20,7 +20,10 @@ export const createPost: MutationResolvers["createPost"] = ({ input }) => {
 
 export const updatePost: MutationResolvers["updatePost"] = ({ id, input }) => {
   return db.post.update({
-    data: input,
+    data: {
+      ...(input.title !== null ? { title: input.title } : {}),
+      ...(input.body !== null ? { body: input.body } : {}),
+    },
     where: { id },
   });
 };

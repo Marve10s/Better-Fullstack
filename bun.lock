@@ -47,8 +47,8 @@
         "create-better-fullstack": "dist/cli.mjs",
       },
       "dependencies": {
-        "@better-fullstack/template-generator": "^2.6.2",
-        "@better-fullstack/types": "^2.6.2",
+        "@better-fullstack/template-generator": "^2.6.3",
+        "@better-fullstack/types": "^2.6.3",
         "@clack/core": "^0.5.0",
         "@clack/prompts": "^1.7.0",
         "@modelcontextprotocol/server": "^2.0.0",

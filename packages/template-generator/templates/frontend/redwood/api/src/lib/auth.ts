@@ -7,6 +7,8 @@
  */
 import type { Decoded } from "@redwoodjs/api";
 
+import { context } from "@redwoodjs/context";
+
 /**
  * Represents the user attributes returned by the decoding the
  * Authentication provider's JWT token together with any additional
@@ -33,11 +35,18 @@ export const getCurrentUser = async (
   }
 
   // Add your custom user lookup logic here
-  return {
-    id: decoded.sub || decoded.id || "user",
-    email: decoded.email,
-    roles: decoded.roles || [],
-  };
+  const id =
+    typeof decoded.sub === "string"
+      ? decoded.sub
+      : typeof decoded.id === "string"
+        ? decoded.id
+        : "user";
+  const email = typeof decoded.email === "string" ? decoded.email : undefined;
+  const roles = Array.isArray(decoded.roles)
+    ? decoded.roles.filter((role): role is string => typeof role === "string")
+    : [];
+
+  return { id, email, roles };
 };
 
 /**
