@@ -147,6 +147,10 @@ function TaskPanel() {
 
       {tasks.isPending ? (
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
+      ) : tasks.isError ? (
+        <p className="text-sm text-destructive" role="alert">
+          Could not load tasks. Run the database migration, then reload. ({tasks.error.message})
+        </p>
       ) : tasks.data && tasks.data.length > 0 ? (
         <ul className="divide-y rounded-md border">
           {tasks.data.map((item) => (
@@ -239,7 +243,7 @@ function HomeComponent() {
         {{else}}
         <p className="text-sm text-muted-foreground">
           This stack has no database-backed task API yet. Replace this panel with your first
-          feature, or scaffold one with <code>bfs gen resource task</code>.
+          feature.
         </p>
         {{/if}}
       </section>
