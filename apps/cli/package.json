@@ -151,8 +151,8 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@better-fullstack/template-generator": "^2.6.2",
-    "@better-fullstack/types": "^2.6.2",
+    "@better-fullstack/template-generator": "^2.6.3",
+    "@better-fullstack/types": "^2.6.3",
     "@clack/core": "^0.5.0",
     "@clack/prompts": "^1.7.0",
     "@modelcontextprotocol/server": "^2.0.0",
@@ -168,7 +168,7 @@
     "trpc-cli": "^0.12.1",
     "ts-morph": "^27.0.2",
     "yaml": "^2.9.0",
-    "zod": "4.4.3"
+    "zod": "4.5.2"
   },
   "devDependencies": {
     "@better-fullstack/project-lifecycle": "workspace:*",

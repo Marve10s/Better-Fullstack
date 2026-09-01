@@ -13,6 +13,7 @@ import { join } from "node:path";
 
 const STEP_TIMEOUT_MS = 300_000; // 5 minutes per step
 const NUXT_INSTALL_TIMEOUT_MS = 900_000; // Nuxt dependency resolution is materially heavier.
+const REGISTRY_PROPAGATION_RETRY_DELAYS_MS = [20_000, 40_000] as const;
 
 export type StepResult = {
   step: string;
@@ -29,6 +30,11 @@ export type StepResult = {
 
 type RunStepOptions = {
   timeoutMs?: number;
+};
+
+type RegistryRetryOptions = {
+  delaysMs?: readonly number[];
+  sleep?: (durationMs: number) => Promise<void>;
 };
 
 export type VerifyOptions = {
@@ -166,6 +172,51 @@ async function runStep(
   }
 }
 
+function isRegistryPropagationFailure(result: StepResult) {
+  const output = `${result.stderr ?? ""}\n${result.stdout ?? ""}`;
+  return (
+    !result.success &&
+    /No version matching .+ found for specifier .+\(but package exists\)/is.test(output)
+  );
+}
+
+export async function runWithRegistryPropagationRetry(
+  run: () => Promise<StepResult>,
+  options?: RegistryRetryOptions,
+): Promise<StepResult> {
+  const delaysMs = options?.delaysMs ?? REGISTRY_PROPAGATION_RETRY_DELAYS_MS;
+  const sleep = options?.sleep ?? Bun.sleep;
+  const attempts: StepResult[] = [];
+  let elapsedMs = 0;
+
+  for (let attempt = 0; ; attempt++) {
+    // oxlint-disable-next-line no-await-in-loop -- each retry depends on the prior registry result
+    const result = await run();
+    attempts.push(result);
+    elapsedMs += result.durationMs;
+
+    const delayMs = delaysMs[attempt];
+    if (result.success || delayMs === undefined || !isRegistryPropagationFailure(result)) {
+      const retrySummary =
+        attempts.length > 1 ? `Registry propagation attempts: ${attempts.length}.` : "";
+      const stdout = retrySummary
+        ? [result.stdout?.slice(-(3999 - retrySummary.length)), retrySummary]
+            .filter(Boolean)
+            .join("\n")
+        : result.stdout;
+      return {
+        ...result,
+        durationMs: elapsedMs,
+        stdout,
+      };
+    }
+
+    // oxlint-disable-next-line no-await-in-loop -- registry propagation requires a bounded delay
+    await sleep(delayMs);
+    elapsedMs += delayMs;
+  }
+}
+
 function getTypeScriptInstallTimeoutMs(config?: ProjectConfig): number {
   const frontend = Array.isArray(config?.frontend) ? config.frontend : [];
   return frontend.includes("nuxt") ? NUXT_INSTALL_TIMEOUT_MS : STEP_TIMEOUT_MS;
@@ -291,9 +342,11 @@ export async function verifyTypeScript(
   const isConvex = existsSync(join(projectDir, "packages", "backend", "convex"));
 
   steps.push(
-    await runStep("install", "bun", ["install"], projectDir, {
-      timeoutMs: getTypeScriptInstallTimeoutMs(options?.config),
-    }),
+    await runWithRegistryPropagationRetry(() =>
+      runStep("install", "bun", ["install"], projectDir, {
+        timeoutMs: getTypeScriptInstallTimeoutMs(options?.config),
+      }),
+    ),
   );
   if (!steps.at(-1)!.success) return wrapResult("typescript", comboName, projectDir, steps);
 
