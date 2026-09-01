@@ -1,0 +1,29 @@
+{{#if (or (isBetterAuth auth) (eq auth "none"))}}
+{{#if (isBetterAuth auth)}}
+import { boolean, index, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
+
+import { user } from "./auth{{#if (eq backend "adonisjs")}}.js{{/if}}";
+{{else}}
+import { boolean, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
+{{/if}}
+
+export const task = mysqlTable(
+  "task",
+  {
+    id: serial("id").primaryKey(),
+    title: varchar("title", { length: 255 }).notNull(),
+    completed: boolean("completed").default(false).notNull(),
+    {{#if (isBetterAuth auth)}}
+    userId: varchar("user_id", { length: 36 })
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    {{/if}}
+    createdAt: timestamp("created_at", { fsp: 3 }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { fsp: 3 })
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  }{{#if (isBetterAuth auth)}},
+  (table) => [index("task_user_id_idx").on(table.userId)]{{/if}}
+);
+{{/if}}

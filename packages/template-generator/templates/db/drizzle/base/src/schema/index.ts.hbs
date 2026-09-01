@@ -1,7 +1,10 @@
 {{#if (or (isBetterAuth auth) (eq auth "nextauth"))}}
-export * from "./auth";
+export * from "./auth{{#if (eq backend "adonisjs")}}.js{{/if}}";
 {{else}}
-export * from "./example";
+export * from "./example{{#if (eq backend "adonisjs")}}.js{{/if}}";
+{{/if}}
+{{#if (or (isBetterAuth auth) (eq auth "none"))}}
+export * from "./task{{#if (eq backend "adonisjs")}}.js{{/if}}";
 {{/if}}
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>

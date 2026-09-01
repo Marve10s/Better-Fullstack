@@ -66,6 +66,19 @@ export function getInstallArgs(packageManager: PackageManager): string[] {
   return ["install"];
 }
 
+export function getInstallRetryArgs(
+  packageManager: PackageManager,
+  error: unknown,
+): string[] | null {
+  if (packageManager !== "bun") return null;
+
+  const stderr = (error as { stderr?: unknown })?.stderr;
+  const output = typeof stderr === "string" ? stderr : toErrorMessage(error);
+  return /No version matching .+ found for specifier .+\(but package exists\)/is.test(output)
+    ? ["install", "--force"]
+    : null;
+}
+
 export async function installDependencies({
   projectDir,
   packageManager,
@@ -81,14 +94,23 @@ export async function installDependencies({
     s.start(`Running ${packageManager} install...`);
 
     const installArgs = getInstallArgs(packageManager);
-    await $({
-      cwd: projectDir,
-      env: {
-        ...process.env,
-        ...getInstallEnvironment(packageManager),
-      },
-      stderr: ["inherit", "pipe"],
-    })`${packageManager} ${installArgs}`;
+    const runInstall = async (args: string[]) =>
+      $({
+        cwd: projectDir,
+        env: {
+          ...process.env,
+          ...getInstallEnvironment(packageManager),
+        },
+        stderr: ["inherit", "pipe"],
+      })`${packageManager} ${args}`;
+
+    try {
+      await runInstall(installArgs);
+    } catch (error) {
+      const retryArgs = getInstallRetryArgs(packageManager, error);
+      if (!retryArgs) throw error;
+      await runInstall(retryArgs);
+    }
 
     s.stop("Dependencies installed successfully");
     return { step, success: true };

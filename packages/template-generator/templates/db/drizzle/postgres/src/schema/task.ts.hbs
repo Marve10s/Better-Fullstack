@@ -1,0 +1,29 @@
+{{#if (or (isBetterAuth auth) (eq auth "none"))}}
+{{#if (isBetterAuth auth)}}
+import { boolean, index, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+
+import { user } from "./auth{{#if (eq backend "adonisjs")}}.js{{/if}}";
+{{else}}
+import { boolean, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+{{/if}}
+
+export const task = pgTable(
+  "task",
+  {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    completed: boolean("completed").default(false).notNull(),
+    {{#if (isBetterAuth auth)}}
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    {{/if}}
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  }{{#if (isBetterAuth auth)}},
+  (table) => [index("task_user_id_idx").on(table.userId)]{{/if}}
+);
+{{/if}}
