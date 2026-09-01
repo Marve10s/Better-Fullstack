@@ -111,6 +111,8 @@ async function main(): Promise<void> {
 
   // Update package versions
   packageJson.version = newVersion;
+  packageJson.dependencies["@better-fullstack/template-generator"] = `^${newVersion}`;
+  packageJson.dependencies["@better-fullstack/types"] = `^${newVersion}`;
   await writeFile(CLI_PACKAGE_JSON_PATH, `${JSON.stringify(packageJson, null, 2)}\n`);
 
   // Update alias package version

@@ -1,7 +1,6 @@
+import { expectError, expectSuccess, runTRPCTest, type TestConfig } from "@test/support/test-utils";
 import { describe, expect, it } from "bun:test";
 import { execa } from "execa";
-
-import { expectError, expectSuccess, runTRPCTest, type TestConfig } from "@test/support/test-utils";
 
 const hasDeno = Boolean(Bun.which("deno"));
 const freshRuntimeSmokeTimeoutMs = 180_000;
@@ -267,7 +266,9 @@ describe("Frontend Configurations", () => {
       });
 
       expectSuccess(result);
-      expect(await Bun.file(`${result.projectDir}/apps/web/test/smoke.test.ts`).exists()).toBe(true);
+      expect(await Bun.file(`${result.projectDir}/apps/web/test/smoke.test.ts`).exists()).toBe(
+        true,
+      );
       expect(await Bun.file(`${result.projectDir}/apps/web/package.json`).text()).toContain(
         "mocha --import=tsx",
       );
@@ -360,6 +361,34 @@ describe("Frontend Configurations", () => {
       });
 
       expectSuccess(result);
+      if (!result.projectDir) throw new Error("Expected generated Redwood project directory");
+
+      const rootPackage = await Bun.file(`${result.projectDir}/package.json`).json();
+      const apiPackage = await Bun.file(`${result.projectDir}/api/package.json`).json();
+      const webPackage = await Bun.file(`${result.projectDir}/web/package.json`).json();
+      const viteConfig = await Bun.file(`${result.projectDir}/web/vite.config.ts`).text();
+      const bunConfig = await Bun.file(`${result.projectDir}/bunfig.toml`).text();
+      const redwoodConfig = await Bun.file(`${result.projectDir}/redwood.toml`).text();
+
+      expect(rootPackage.scripts).toMatchObject({
+        build: "rw --no-telemetry build",
+        "check-types":
+          "rw-gen && node node_modules/typescript/bin/tsc --noEmit --project web/tsconfig.json && node node_modules/typescript/bin/tsc --noEmit --project api/tsconfig.json",
+        dev: "rw --no-telemetry dev",
+      });
+      expect(rootPackage.devDependencies).toMatchObject({
+        typescript: expect.any(String),
+      });
+      expect(webPackage.dependencies).toMatchObject({
+        react: "18.3.1",
+        "react-dom": "18.3.1",
+      });
+      expect(apiPackage.dependencies).toMatchObject({
+        "@redwoodjs/context": "^8.9.0",
+      });
+      expect(viteConfig).toContain('import redwood from "@redwoodjs/vite"');
+      expect(bunConfig).toContain('linker = "hoisted"');
+      expect(redwoodConfig).toContain("versionUpdates = []");
     });
 
     it("should fail RedwoodJS with tRPC API", async () => {

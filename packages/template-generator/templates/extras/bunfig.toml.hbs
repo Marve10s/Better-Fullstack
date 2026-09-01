@@ -1,6 +1,6 @@
 [install]
-{{#if (or (includes frontend "nuxt"))}}
-linker = "hoisted" # having issues with Nuxt when linker is isolated
+{{#if (or (includes frontend "nuxt") (includes frontend "redwood"))}}
+linker = "hoisted" # Nuxt and Redwood rely on dependencies hoisted by their official installers
 {{else}}
 linker = "isolated"
 {{/if}}

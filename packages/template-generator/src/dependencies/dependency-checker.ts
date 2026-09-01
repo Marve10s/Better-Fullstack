@@ -267,6 +267,7 @@ export const ECOSYSTEM_GROUPS: Record<string, string[]> = {
   ],
   redwood: [
     "@redwoodjs/core",
+    "@redwoodjs/context",
     "@redwoodjs/web",
     "@redwoodjs/api",
     "@redwoodjs/router",

@@ -13,6 +13,13 @@ const codexManifestPath = join(pluginDir, ".codex-plugin", "plugin.json");
 const claudeManifestPath = join(pluginDir, ".claude-plugin", "plugin.json");
 const legacyMcpPath = join(pluginDir, ".mcp.json");
 const cliPackageJsonPath = join(rootDir, "apps", "cli", "package.json");
+const templateGeneratorPackageJsonPath = join(
+  rootDir,
+  "packages",
+  "template-generator",
+  "package.json",
+);
+const typesPackageJsonPath = join(rootDir, "packages", "types", "package.json");
 const codexMarketplacePath = join(rootDir, ".agents", "plugins", "marketplace.json");
 const claudeMarketplacePath = join(rootDir, ".claude-plugin", "marketplace.json");
 
@@ -178,6 +185,21 @@ assertString(cliPackageJson.version, "cliPackage.version");
 assert(
   codexManifest.version === cliPackageJson.version,
   "plugin manifest versions must match apps/cli/package.json version",
+);
+const cliDependencies = cliPackageJson.dependencies as JsonObject | undefined;
+assert(cliDependencies, "cliPackage.dependencies must be an object");
+const templateGeneratorPackageJson = readJson(templateGeneratorPackageJsonPath);
+const typesPackageJson = readJson(typesPackageJsonPath);
+assertString(templateGeneratorPackageJson.version, "templateGeneratorPackage.version");
+assertString(typesPackageJson.version, "typesPackage.version");
+assert(
+  cliDependencies["@better-fullstack/template-generator"] ===
+    `^${templateGeneratorPackageJson.version}`,
+  "cliPackage @better-fullstack/template-generator range must match its package version",
+);
+assert(
+  cliDependencies["@better-fullstack/types"] === `^${typesPackageJson.version}`,
+  "cliPackage @better-fullstack/types range must match its package version",
 );
 
 const pluginInterface = codexManifest.interface as JsonObject | undefined;
