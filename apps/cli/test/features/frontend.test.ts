@@ -376,6 +376,9 @@ describe("Frontend Configurations", () => {
           "rw-gen && node node_modules/typescript/bin/tsc --noEmit --project web/tsconfig.json && node node_modules/typescript/bin/tsc --noEmit --project api/tsconfig.json",
         dev: "rw --no-telemetry dev",
       });
+      expect(rootPackage.devDependencies).toMatchObject({
+        typescript: expect.any(String),
+      });
       expect(webPackage.dependencies).toMatchObject({
         react: "18.3.1",
         "react-dom": "18.3.1",

@@ -155,6 +155,8 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     scripts.dev = pmConfig.dev;
   }
   scripts.build = hasRedwood ? "rw --no-telemetry build" : pmConfig.build;
+  // Workspace dependency processing installs TypeScript directly at the root,
+  // so this path works with isolated and hoisted package-manager linkers.
   scripts["check-types"] = hasRedwood
     ? "rw-gen && node node_modules/typescript/bin/tsc --noEmit --project web/tsconfig.json && node node_modules/typescript/bin/tsc --noEmit --project api/tsconfig.json"
     : pmConfig.checkTypes;
