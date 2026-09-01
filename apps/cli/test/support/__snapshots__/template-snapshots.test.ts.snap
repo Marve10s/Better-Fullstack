@@ -588,8 +588,6 @@ exports[`Template Snapshots File Structure Snapshots file structure: typescript-
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
-  "packages/db/src/schema/task.ts",
-  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -901,8 +899,6 @@ exports[`Template Snapshots File Structure Snapshots file structure: self-next-c
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
-  "packages/db/src/schema/task.ts",
-  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -957,8 +953,6 @@ exports[`Template Snapshots File Structure Snapshots file structure: self-tansta
   "packages/db/src/index.ts",
   "packages/db/src/schema/example.ts",
   "packages/db/src/schema/index.ts",
-  "packages/db/src/schema/task.ts",
-  "packages/db/src/tasks.ts",
   "packages/db/tsconfig.json",
   "packages/env/package.json",
   "packages/env/src/native.ts",
@@ -2059,9 +2053,9 @@ if (!rootElement.innerHTML) {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/utils/trpc";
 import { useState } from "react";
 
+import { trpc } from "@/utils/trpc";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -2094,6 +2088,8 @@ function TaskPanel() {
     onSuccess: invalidate,
   });
 
+  const mutationError = create.error ?? setCompleted.error ?? remove.error;
+
 
   return (
     <div className="space-y-4">
@@ -2108,6 +2104,7 @@ function TaskPanel() {
         <input
           aria-label="Task title"
           className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          maxLength={255}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Write your first task"
           value={title}
@@ -2120,6 +2117,12 @@ function TaskPanel() {
           Add
         </button>
       </form>
+
+      {mutationError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {mutationError.message}
+        </p>
+      ) : null}
 
       {tasks.isPending ? (
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
@@ -5762,7 +5765,8 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+
 import { trpc } from "@/utils/trpc";
 
 export const Route = createFileRoute("/")({
@@ -6557,7 +6561,8 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/")({
@@ -7418,6 +7423,8 @@ if (!rootElement.innerHTML) {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+
+import { env } from "@snapshot-hono-openapi/env/web";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -8514,6 +8521,8 @@ if (!rootElement.innerHTML) {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+
+import { graphqlFetch } from "@/utils/graphql";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -9616,12 +9625,11 @@ if (!rootElement.innerHTML) {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/utils/trpc";
-import { useState } from "react";
-
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
+import { trpc } from "@/utils/trpc";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -9631,10 +9639,17 @@ function TaskPanel() {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const { data: session, isPending: sessionPending } = authClient.useSession();
+  const userId = session?.user.id;
+
+  // Drop cached rows whenever the signed-in user changes so one session never
+  // shows another session's tasks.
+  useEffect(() => {
+    queryClient.removeQueries({ queryKey: trpc.tasks.list.queryKey() });
+  }, [queryClient, userId]);
 
   const tasks = useQuery({
     ...trpc.tasks.list.queryOptions(),
-    enabled: Boolean(session),
+    enabled: Boolean(userId),
   });
 
   const invalidate = () =>
@@ -9656,11 +9671,13 @@ function TaskPanel() {
     onSuccess: invalidate,
   });
 
+  const mutationError = create.error ?? setCompleted.error ?? remove.error;
+
   if (sessionPending) {
     return <p className="text-sm text-muted-foreground">Checking your session...</p>;
   }
 
-  if (!session) {
+  if (!userId) {
     return (
       <div className="space-y-3">
         <p className="text-sm text-muted-foreground">
@@ -9689,6 +9706,7 @@ function TaskPanel() {
         <input
           aria-label="Task title"
           className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          maxLength={255}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Write your first task"
           value={title}
@@ -9701,6 +9719,12 @@ function TaskPanel() {
           Add
         </button>
       </form>
+
+      {mutationError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {mutationError.message}
+        </p>
+      ) : null}
 
       {tasks.isPending ? (
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
@@ -11012,7 +11036,7 @@ export default defineSchema({});
 
 exports[`Template Snapshots Key File Content Snapshots key files: self-next-clerk 1`] = `
 {
-  "fileCount": 59,
+  "fileCount": 57,
   "files": [
     {
       "content": "[exists]",
@@ -11388,14 +11412,6 @@ export const publicProcedure = t.procedure;
   publicProcedure,
   router,
 } from "../index";
-import { z } from "zod";
-
-import {
-  createTask,
-  deleteTask,
-  listTasks,
-  setTaskCompleted,
-} from "@snapshot-self-next-clerk/db/tasks";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -11407,18 +11423,6 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
-  }),
-  tasks: router({
-    list: publicProcedure.query(() => listTasks()),
-    create: publicProcedure
-      .input(z.object({ title: z.string().trim().min(1).max(255) }))
-      .mutation(({ input }) => createTask(input.title)),
-    setCompleted: publicProcedure
-      .input(z.object({ id: z.number().int(), completed: z.boolean() }))
-      .mutation(({ input }) => setTaskCompleted(input.id, input.completed)),
-    remove: publicProcedure
-      .input(z.object({ id: z.number().int() }))
-      .mutation(({ input }) => deleteTask(input.id)),
   }),
 });
 export type AppRouter = typeof appRouter;
@@ -11568,7 +11572,6 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
-export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -11576,14 +11579,6 @@ export * from "./task";
 "
 ,
       "path": "packages/db/src/schema/index.ts",
-    },
-    {
-      "content": "[exists]",
-      "path": "packages/db/src/schema/task.ts",
-    },
-    {
-      "content": "[exists]",
-      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -11668,7 +11663,7 @@ export * from "./task";
 
 exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-start-clerk 1`] = `
 {
-  "fileCount": 55,
+  "fileCount": 53,
   "files": [
     {
       "content": "[exists]",
@@ -12280,7 +12275,6 @@ export const db = drizzle({ client, schema });
     {
       "content": 
 "export * from "./example";
-export * from "./task";
 
 // <better-fullstack:recipe-schema-exports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
 
@@ -12288,14 +12282,6 @@ export * from "./task";
 "
 ,
       "path": "packages/db/src/schema/index.ts",
-    },
-    {
-      "content": "[exists]",
-      "path": "packages/db/src/schema/task.ts",
-    },
-    {
-      "content": "[exists]",
-      "path": "packages/db/src/tasks.ts",
     },
     {
       "content": 
@@ -12660,7 +12646,8 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+
 import { trpc } from "@/utils/trpc";
 
 export const Route = createFileRoute("/")({
@@ -13393,7 +13380,8 @@ if (!rootElement.innerHTML) {
     {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+
 import { trpc } from "@/utils/trpc";
 
 export const Route = createFileRoute("/")({
@@ -14154,9 +14142,9 @@ if (!rootElement.innerHTML) {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/utils/trpc";
 import { useState } from "react";
 
+import { trpc } from "@/utils/trpc";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -14189,6 +14177,8 @@ function TaskPanel() {
     onSuccess: invalidate,
   });
 
+  const mutationError = create.error ?? setCompleted.error ?? remove.error;
+
 
   return (
     <div className="space-y-4">
@@ -14203,6 +14193,7 @@ function TaskPanel() {
         <input
           aria-label="Task title"
           className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          maxLength={255}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Write your first task"
           value={title}
@@ -14215,6 +14206,12 @@ function TaskPanel() {
           Add
         </button>
       </form>
+
+      {mutationError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {mutationError.message}
+        </p>
+      ) : null}
 
       {tasks.isPending ? (
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
@@ -15067,9 +15064,9 @@ if (!rootElement.innerHTML) {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/utils/trpc";
 import { useState } from "react";
 
+import { trpc } from "@/utils/trpc";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -15102,6 +15099,8 @@ function TaskPanel() {
     onSuccess: invalidate,
   });
 
+  const mutationError = create.error ?? setCompleted.error ?? remove.error;
+
 
   return (
     <div className="space-y-4">
@@ -15116,6 +15115,7 @@ function TaskPanel() {
         <input
           aria-label="Task title"
           className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          maxLength={255}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Write your first task"
           value={title}
@@ -15128,6 +15128,12 @@ function TaskPanel() {
           Add
         </button>
       </form>
+
+      {mutationError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {mutationError.message}
+        </p>
+      ) : null}
 
       {tasks.isPending ? (
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
@@ -16658,9 +16664,9 @@ if (!rootElement.innerHTML) {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/utils/trpc";
 import { useState } from "react";
 
+import { trpc } from "@/utils/trpc";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -16693,6 +16699,8 @@ function TaskPanel() {
     onSuccess: invalidate,
   });
 
+  const mutationError = create.error ?? setCompleted.error ?? remove.error;
+
 
   return (
     <div className="space-y-4">
@@ -16707,6 +16715,7 @@ function TaskPanel() {
         <input
           aria-label="Task title"
           className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          maxLength={255}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Write your first task"
           value={title}
@@ -16719,6 +16728,12 @@ function TaskPanel() {
           Add
         </button>
       </form>
+
+      {mutationError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {mutationError.message}
+        </p>
+      ) : null}
 
       {tasks.isPending ? (
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
@@ -17576,9 +17591,9 @@ if (!rootElement.innerHTML) {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/utils/trpc";
 import { useState } from "react";
 
+import { trpc } from "@/utils/trpc";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -17611,6 +17626,8 @@ function TaskPanel() {
     onSuccess: invalidate,
   });
 
+  const mutationError = create.error ?? setCompleted.error ?? remove.error;
+
 
   return (
     <div className="space-y-4">
@@ -17625,6 +17642,7 @@ function TaskPanel() {
         <input
           aria-label="Task title"
           className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          maxLength={255}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Write your first task"
           value={title}
@@ -17637,6 +17655,12 @@ function TaskPanel() {
           Add
         </button>
       </form>
+
+      {mutationError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {mutationError.message}
+        </p>
+      ) : null}
 
       {tasks.isPending ? (
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
@@ -18490,9 +18514,9 @@ if (!rootElement.innerHTML) {
       "content": 
 "import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/utils/trpc";
 import { useState } from "react";
 
+import { trpc } from "@/utils/trpc";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -18525,6 +18549,8 @@ function TaskPanel() {
     onSuccess: invalidate,
   });
 
+  const mutationError = create.error ?? setCompleted.error ?? remove.error;
+
 
   return (
     <div className="space-y-4">
@@ -18539,6 +18565,7 @@ function TaskPanel() {
         <input
           aria-label="Task title"
           className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          maxLength={255}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Write your first task"
           value={title}
@@ -18551,6 +18578,12 @@ function TaskPanel() {
           Add
         </button>
       </form>
+
+      {mutationError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {mutationError.message}
+        </p>
+      ) : null}
 
       {tasks.isPending ? (
         <p className="text-sm text-muted-foreground">Loading tasks...</p>

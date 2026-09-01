@@ -1,11 +1,12 @@
-import { {{#if (or (isBetterAuth auth) (eq auth "nextauth"))}}and, {{/if}}desc, eq } from "drizzle-orm";
+{{#if (or (isBetterAuth auth) (eq auth "none"))}}
+import { {{#if (isBetterAuth auth)}}and, {{/if}}desc, eq } from "drizzle-orm";
 
 import { db } from "./index";
 import { task } from "./schema/task";
 
 export type Task = typeof task.$inferSelect;
 
-{{#if (or (isBetterAuth auth) (eq auth "nextauth"))}}
+{{#if (isBetterAuth auth)}}
 export function listTasks(userId: string) {
   return db
     .select()
@@ -60,4 +61,5 @@ export async function setTaskCompleted(id: number, completed: boolean) {
 export async function deleteTask(id: number) {
   await db.delete(task).where(eq(task.id, id));
 }
+{{/if}}
 {{/if}}

@@ -29,7 +29,7 @@ import {
   {{#if (isBetterAuth auth)}}protectedProcedure, {{/if}}publicProcedure,
   router,
 } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
-{{#if (eq orm "drizzle")}}
+{{#if (and (eq orm "drizzle") (or (isBetterAuth auth) (eq auth "none")))}}
 import { z } from "zod";
 
 import {
@@ -51,7 +51,7 @@ export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
     return "OK";
   }),
-  {{#if (eq orm "drizzle")}}
+  {{#if (and (eq orm "drizzle") (or (isBetterAuth auth) (eq auth "none")))}}
   tasks: router({
     {{#if (isBetterAuth auth)}}
     list: protectedProcedure.query(({ ctx }) => listTasks(ctx.session.user.id)),

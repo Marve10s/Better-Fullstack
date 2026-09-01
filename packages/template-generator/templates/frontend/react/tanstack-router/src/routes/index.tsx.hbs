@@ -5,28 +5,41 @@ import { useQuery } from "convex/react";
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
 {{else}}
 import { createFileRoute } from "@tanstack/react-router";
-{{#if (or (eq api "orpc") (eq api "trpc"))}}
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-{{else if (eq api "ts-rest")}}
-import { tsr } from "@/utils/ts-rest";
-{{else if (or (eq api "garph") (eq api "graphql-yoga") (eq api "apollo-server"))}}
-import { useQuery } from "@tanstack/react-query";
-{{else if (eq api "openapi")}}
-import { useEffect, useState } from "react";
-{{/if}}
 {{#if (eq api "orpc")}}
+import { useQuery } from "@tanstack/react-query";
+
 import { orpc } from "@/utils/orpc";
 {{else if (eq api "trpc")}}
-import { trpc } from "@/utils/trpc";
-{{/if}}
-{{/if}}
-{{#if (and (eq orm "drizzle") (eq api "trpc") (not (eq backend "convex")))}}
-import { useState } from "react";
-
+{{#if (and (eq orm "drizzle") (or (isBetterAuth auth) (eq auth "none")))}}
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 {{#if (isBetterAuth auth)}}
 import { Link } from "@tanstack/react-router";
+{{/if}}
+import { {{#if (isBetterAuth auth)}}useEffect, {{/if}}useState } from "react";
 
+{{#if (isBetterAuth auth)}}
 import { authClient } from "@/lib/auth-client";
+{{/if}}
+import { trpc } from "@/utils/trpc";
+{{else}}
+import { useQuery } from "@tanstack/react-query";
+
+import { trpc } from "@/utils/trpc";
+{{/if}}
+{{else if (eq api "ts-rest")}}
+import { tsr } from "@/utils/ts-rest";
+{{else if (eq api "garph")}}
+import { useQuery } from "@tanstack/react-query";
+
+import { query, resolved } from "@/utils/garph";
+{{else if (or (eq api "graphql-yoga") (eq api "apollo-server"))}}
+import { useQuery } from "@tanstack/react-query";
+
+import { graphqlFetch } from "@/utils/graphql";
+{{else if (eq api "openapi")}}
+import { useEffect, useState } from "react";
+
+import { env } from "@{{projectName}}/env/web";
 {{/if}}
 {{/if}}
 
@@ -34,18 +47,25 @@ export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-{{#if (and (eq orm "drizzle") (eq api "trpc") (not (eq backend "convex")))}}
+{{#if (and (eq api "trpc") (eq orm "drizzle") (or (isBetterAuth auth) (eq auth "none")))}}
 function TaskPanel() {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   {{#if (isBetterAuth auth)}}
   const { data: session, isPending: sessionPending } = authClient.useSession();
+  const userId = session?.user.id;
+
+  // Drop cached rows whenever the signed-in user changes so one session never
+  // shows another session's tasks.
+  useEffect(() => {
+    queryClient.removeQueries({ queryKey: trpc.tasks.list.queryKey() });
+  }, [queryClient, userId]);
   {{/if}}
 
   const tasks = useQuery({
     ...trpc.tasks.list.queryOptions(),
     {{#if (isBetterAuth auth)}}
-    enabled: Boolean(session),
+    enabled: Boolean(userId),
     {{/if}}
   });
 
@@ -68,12 +88,14 @@ function TaskPanel() {
     onSuccess: invalidate,
   });
 
+  const mutationError = create.error ?? setCompleted.error ?? remove.error;
+
   {{#if (isBetterAuth auth)}}
   if (sessionPending) {
     return <p className="text-sm text-muted-foreground">Checking your session...</p>;
   }
 
-  if (!session) {
+  if (!userId) {
     return (
       <div className="space-y-3">
         <p className="text-sm text-muted-foreground">
@@ -103,6 +125,7 @@ function TaskPanel() {
         <input
           aria-label="Task title"
           className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
+          maxLength={255}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Write your first task"
           value={title}
@@ -115,6 +138,12 @@ function TaskPanel() {
           Add
         </button>
       </form>
+
+      {mutationError ? (
+        <p className="text-sm text-destructive" role="alert">
+          {mutationError.message}
+        </p>
+      ) : null}
 
       {tasks.isPending ? (
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
@@ -205,7 +234,7 @@ function HomeComponent() {
 
       <section className="rounded-lg border p-4">
         <h2 className="mb-3 font-medium">Tasks</h2>
-        {{#if (and (eq orm "drizzle") (eq api "trpc") (not (eq backend "convex")))}}
+        {{#if (and (eq api "trpc") (eq orm "drizzle") (or (isBetterAuth auth) (eq auth "none")))}}
         <TaskPanel />
         {{else}}
         <p className="text-sm text-muted-foreground">

@@ -1,7 +1,8 @@
-{{#if (or (isBetterAuth auth) (eq auth "nextauth"))}}
+{{#if (or (isBetterAuth auth) (eq auth "none"))}}
+{{#if (isBetterAuth auth)}}
 import { boolean, index, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
-import { {{#if (isBetterAuth auth)}}user{{else}}users{{/if}} } from "./auth";
+import { user } from "./auth";
 {{else}}
 import { boolean, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 {{/if}}
@@ -12,16 +13,17 @@ export const task = pgTable(
     id: serial("id").primaryKey(),
     title: text("title").notNull(),
     completed: boolean("completed").default(false).notNull(),
-    {{#if (or (isBetterAuth auth) (eq auth "nextauth"))}}
+    {{#if (isBetterAuth auth)}}
     userId: text("user_id")
       .notNull()
-      .references(() => {{#if (isBetterAuth auth)}}user{{else}}users{{/if}}.id, { onDelete: "cascade" }),
+      .references(() => user.id, { onDelete: "cascade" }),
     {{/if}}
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
-  }{{#if (or (isBetterAuth auth) (eq auth "nextauth"))}},
+  }{{#if (isBetterAuth auth)}},
   (table) => [index("task_user_id_idx").on(table.userId)]{{/if}}
 );
+{{/if}}
