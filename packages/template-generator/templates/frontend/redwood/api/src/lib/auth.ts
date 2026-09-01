@@ -42,9 +42,12 @@ export const getCurrentUser = async (
         ? decoded.id
         : "user";
   const email = typeof decoded.email === "string" ? decoded.email : undefined;
-  const roles = Array.isArray(decoded.roles)
-    ? decoded.roles.filter((role): role is string => typeof role === "string")
-    : [];
+  const roles =
+    typeof decoded.roles === "string"
+      ? [decoded.roles]
+      : Array.isArray(decoded.roles)
+        ? decoded.roles.filter((role): role is string => typeof role === "string")
+        : [];
 
   return { id, email, roles };
 };
