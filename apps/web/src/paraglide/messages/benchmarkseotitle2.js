@@ -6,45 +6,45 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Benchmarkseotitle2Inputs */
 
 const en_benchmarkseotitle2 = /** @type {(inputs: Benchmarkseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ScaffBench — How good are AI models at building your projects?`)
+	return /** @type {LocalizedString} */ (`ScaffBench - How good are AI models at building your projects?`)
 };
 
 const es_benchmarkseotitle2 = /** @type {(inputs: Benchmarkseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ScaffBench — ¿Qué tan buenos son los modelos de IA construyendo tus proyectos?`)
+	return /** @type {LocalizedString} */ (`ScaffBench - ¿Qué tan buenos son los modelos de IA construyendo tus proyectos?`)
 };
 
 const zh_benchmarkseotitle2 = /** @type {(inputs: Benchmarkseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ScaffBench — AI 模型构建你的项目有多强？`)
+	return /** @type {LocalizedString} */ (`ScaffBench - AI 模型构建你的项目有多强？`)
 };
 
 const ja_benchmarkseotitle2 = /** @type {(inputs: Benchmarkseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ScaffBench — AIモデルはあなたのプロジェクトをどれだけうまく構築できるか？`)
+	return /** @type {LocalizedString} */ (`ScaffBench - AIモデルはあなたのプロジェクトをどれだけうまく構築できるか？`)
 };
 
 const ko_benchmarkseotitle2 = /** @type {(inputs: Benchmarkseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ScaffBench — AI 모델은 당신의 프로젝트를 얼마나 잘 만들까요?`)
+	return /** @type {LocalizedString} */ (`ScaffBench - AI 모델은 당신의 프로젝트를 얼마나 잘 만들까요?`)
 };
 
 const zh_hant1_benchmarkseotitle2 = /** @type {(inputs: Benchmarkseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ScaffBench — AI 模型建構你的專案有多強？`)
+	return /** @type {LocalizedString} */ (`ScaffBench - AI 模型建構你的專案有多強？`)
 };
 
 const de_benchmarkseotitle2 = /** @type {(inputs: Benchmarkseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ScaffBench — Wie gut bauen KI-Modelle deine Projekte?`)
+	return /** @type {LocalizedString} */ (`ScaffBench - Wie gut bauen KI-Modelle deine Projekte?`)
 };
 
 const fr_benchmarkseotitle2 = /** @type {(inputs: Benchmarkseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ScaffBench — Les modèles d'IA sont-ils vraiment bons pour créer vos projets ?`)
+	return /** @type {LocalizedString} */ (`ScaffBench - Les modèles d'IA sont-ils vraiment bons pour créer vos projets ?`)
 };
 
 const uk_benchmarkseotitle2 = /** @type {(inputs: Benchmarkseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ScaffBench — Наскільки добре моделі ШІ створюють ваші проєкти?`)
+	return /** @type {LocalizedString} */ (`ScaffBench - Наскільки добре моделі ШІ створюють ваші проєкти?`)
 };
 
 /**
 * | output |
 * | --- |
-* | "ScaffBench — How good are AI models at building your projects?" |
+* | "ScaffBench - How good are AI models at building your projects?" |
 *
 * @param {Benchmarkseotitle2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

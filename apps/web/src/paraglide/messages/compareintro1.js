@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ optionCount: NonNullable<unknown>, ecosystemCount: NonNullable<unknown> }} Compareintro1Inputs */
 
 const en_compareintro1 = /** @type {(inputs: Compareintro1Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Most scaffolding tools handle one framework and one opinion. Better Fullstack gives you ${i?.optionCount} options across ${i?.ecosystemCount} ecosystems — frontend, backend, database, auth, payments, AI, and deployment — all preconfigured and ready to run.`)
+	return /** @type {LocalizedString} */ (`Most scaffolding tools handle one framework and one opinion. Better Fullstack gives you ${i?.optionCount} options across ${i?.ecosystemCount} ecosystems - frontend, backend, database, auth, payments, AI, and deployment - all preconfigured and ready to run.`)
 };
 
 const es_compareintro1 = /** @type {(inputs: Compareintro1Inputs) => LocalizedString} */ (i) => {
@@ -38,13 +38,13 @@ const fr_compareintro1 = /** @type {(inputs: Compareintro1Inputs) => LocalizedSt
 };
 
 const uk_compareintro1 = /** @type {(inputs: Compareintro1Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Більшість інструментів скафолдингу працюють з одним фреймворком і одним набором припущень. Better Fullstack дає ${i?.optionCount} опцій у ${i?.ecosystemCount} екосистемах — фронтенд, бекенд, база даних, автентифікація, платежі, ШІ та деплой — усе вже налаштовано й готове до запуску.`)
+	return /** @type {LocalizedString} */ (`Більшість інструментів скафолдингу працюють з одним фреймворком і одним набором припущень. Better Fullstack дає ${i?.optionCount} опцій у ${i?.ecosystemCount} екосистемах - фронтенд, бекенд, база даних, автентифікація, платежі, ШІ та деплой - усе вже налаштовано й готове до запуску.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Most scaffolding tools handle one framework and one opinion. Better Fullstack gives you {optionCount} options across {ecosystemCount} ecosystems — frontend, ..." |
+* | "Most scaffolding tools handle one framework and one opinion. Better Fullstack gives you {optionCount} options across {ecosystemCount} ecosystems - frontend, ..." |
 *
 * @param {Compareintro1Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

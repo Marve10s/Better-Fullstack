@@ -38,7 +38,7 @@ const fr_campaignstepdownloadcopy3 = /** @type {(inputs: Campaignstepdownloadcop
 };
 
 const uk_campaignstepdownloadcopy3 = /** @type {(inputs: Campaignstepdownloadcopy3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Завантажте звичайний ZIP, коли будете готові. Better Fullstack — не ваше сховище коду.`)
+	return /** @type {LocalizedString} */ (`Завантажте звичайний ZIP, коли будете готові. Better Fullstack - не ваше сховище коду.`)
 };
 
 /**

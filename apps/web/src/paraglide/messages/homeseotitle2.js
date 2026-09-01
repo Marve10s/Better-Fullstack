@@ -6,27 +6,27 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Homeseotitle2Inputs */
 
 const en_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack — Scaffold Production-Ready Fullstack Apps in Seconds`)
+	return /** @type {LocalizedString} */ (`Better Fullstack - Scaffold Production-Ready Fullstack Apps in Seconds`)
 };
 
 const es_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack — Crea apps fullstack listas para producción en segundos`)
+	return /** @type {LocalizedString} */ (`Better Fullstack - Crea apps fullstack listas para producción en segundos`)
 };
 
 const zh_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack — 几秒内生成可用于生产的全栈应用`)
+	return /** @type {LocalizedString} */ (`Better Fullstack - 几秒内生成可用于生产的全栈应用`)
 };
 
 const ja_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack — 本番環境に対応したフルスタックアプリを数秒でスキャフォールド`)
+	return /** @type {LocalizedString} */ (`Better Fullstack - 本番環境に対応したフルスタックアプリを数秒でスキャフォールド`)
 };
 
 const ko_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack — 몇 초 만에 프로덕션 준비가 완료된 풀스택 앱 스캐폴딩`)
+	return /** @type {LocalizedString} */ (`Better Fullstack - 몇 초 만에 프로덕션 준비가 완료된 풀스택 앱 스캐폴딩`)
 };
 
 const zh_hant1_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack — 幾秒內產生可用於生產的全端應用`)
+	return /** @type {LocalizedString} */ (`Better Fullstack - 幾秒內產生可用於生產的全端應用`)
 };
 
 const de_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedString} */ () => {
@@ -34,17 +34,17 @@ const de_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedSt
 };
 
 const fr_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack — Échafaudez des applications Fullstack prêtes pour la production en quelques secondes`)
+	return /** @type {LocalizedString} */ (`Better Fullstack - Échafaudez des applications Fullstack prêtes pour la production en quelques secondes`)
 };
 
 const uk_homeseotitle2 = /** @type {(inputs: Homeseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack — фулстек-застосунки для продакшену за кілька секунд`)
+	return /** @type {LocalizedString} */ (`Better Fullstack - фулстек-застосунки для продакшену за кілька секунд`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Better Fullstack — Scaffold Production-Ready Fullstack Apps in Seconds" |
+* | "Better Fullstack - Scaffold Production-Ready Fullstack Apps in Seconds" |
 *
 * @param {Homeseotitle2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

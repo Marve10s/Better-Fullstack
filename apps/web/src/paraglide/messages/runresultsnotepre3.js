@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Runresultsnotepre3Inputs */
 
 const en_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Results — a leaderboard, per-spec pass, wired-libraries, and cost — land in the output directory, in the same shape as the `)
+	return /** @type {LocalizedString} */ (`Results - a leaderboard, per-spec pass, wired-libraries, and cost - land in the output directory, in the same shape as the `)
 };
 
 const es_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => LocalizedString} */ () => {
@@ -14,7 +14,7 @@ const es_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => L
 };
 
 const zh_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`结果——包括排行榜、每个规范的通过情况、已连接的库以及成本——都会保存到输出目录，格式参照`)
+	return /** @type {LocalizedString} */ (`结果--包括排行榜、每个规范的通过情况、已连接的库以及成本--都会保存到输出目录，格式参照`)
 };
 
 const ja_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => LocalizedString} */ () => {
@@ -26,7 +26,7 @@ const ko_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => L
 };
 
 const zh_hant1_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`結果——排行榜、各規範的通過情況、已串接的函式庫以及成本——都會落在輸出目錄中，格式比照 `)
+	return /** @type {LocalizedString} */ (`結果--排行榜、各規範的通過情況、已串接的函式庫以及成本--都會落在輸出目錄中，格式比照 `)
 };
 
 const de_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => LocalizedString} */ () => {
@@ -34,17 +34,17 @@ const de_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => L
 };
 
 const fr_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Les résultats — un classement, un passage par spécification, les bibliothèques câblées et le coût — sont enregistrés dans le répertoire de sortie, sous la même forme que le `)
+	return /** @type {LocalizedString} */ (`Les résultats - un classement, un passage par spécification, les bibliothèques câblées et le coût - sont enregistrés dans le répertoire de sortie, sous la même forme que le `)
 };
 
 const uk_runresultsnotepre3 = /** @type {(inputs: Runresultsnotepre3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Результати — leaderboard, проходження за специфікаціями, підключені бібліотеки й вартість — потрапляють у вихідний каталог у тому самому форматі, що й`)
+	return /** @type {LocalizedString} */ (`Результати - leaderboard, проходження за специфікаціями, підключені бібліотеки й вартість - потрапляють у вихідний каталог у тому самому форматі, що й`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Results — a leaderboard, per-spec pass, wired-libraries, and cost — land in the output directory, in the same shape as the" |
+* | "Results - a leaderboard, per-spec pass, wired-libraries, and cost - land in the output directory, in the same shape as the" |
 *
 * @param {Runresultsnotepre3Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

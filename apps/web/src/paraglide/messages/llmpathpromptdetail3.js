@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Llmpathpromptdetail3Inputs */
 
 const en_llmpathpromptdetail3 = /** @type {(inputs: Llmpathpromptdetail3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`no Better-Fullstack — agent hand-writes every file`)
+	return /** @type {LocalizedString} */ (`no Better-Fullstack - agent hand-writes every file`)
 };
 
 const es_llmpathpromptdetail3 = /** @type {(inputs: Llmpathpromptdetail3Inputs) => LocalizedString} */ () => {
@@ -18,11 +18,11 @@ const zh_llmpathpromptdetail3 = /** @type {(inputs: Llmpathpromptdetail3Inputs) 
 };
 
 const ja_llmpathpromptdetail3 = /** @type {(inputs: Llmpathpromptdetail3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better-Fullstack なし — エージェントがすべてのファイルを手書きします`)
+	return /** @type {LocalizedString} */ (`Better-Fullstack なし - エージェントがすべてのファイルを手書きします`)
 };
 
 const ko_llmpathpromptdetail3 = /** @type {(inputs: Llmpathpromptdetail3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better-Fullstack 없음 — 에이전트가 모든 파일을 직접 작성합니다.`)
+	return /** @type {LocalizedString} */ (`Better-Fullstack 없음 - 에이전트가 모든 파일을 직접 작성합니다.`)
 };
 
 const zh_hant1_llmpathpromptdetail3 = /** @type {(inputs: Llmpathpromptdetail3Inputs) => LocalizedString} */ () => {
@@ -34,17 +34,17 @@ const de_llmpathpromptdetail3 = /** @type {(inputs: Llmpathpromptdetail3Inputs) 
 };
 
 const fr_llmpathpromptdetail3 = /** @type {(inputs: Llmpathpromptdetail3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`pas de Better-Fullstack — l'agent écrit manuellement chaque fichier`)
+	return /** @type {LocalizedString} */ (`pas de Better-Fullstack - l'agent écrit manuellement chaque fichier`)
 };
 
 const uk_llmpathpromptdetail3 = /** @type {(inputs: Llmpathpromptdetail3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`без Better Fullstack — агент вручну пише кожен файл`)
+	return /** @type {LocalizedString} */ (`без Better Fullstack - агент вручну пише кожен файл`)
 };
 
 /**
 * | output |
 * | --- |
-* | "no Better-Fullstack — agent hand-writes every file" |
+* | "no Better-Fullstack - agent hand-writes every file" |
 *
 * @param {Llmpathpromptdetail3Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

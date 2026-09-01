@@ -38,7 +38,7 @@ const fr_mcptipfrontendarray3 = /** @type {(inputs: Mcptipfrontendarray3Inputs) 
 };
 
 const uk_mcptipfrontendarray3 = /** @type {(inputs: Mcptipfrontendarray3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`фронтенд — це масив: кілька фронтендів в одному монорепо`)
+	return /** @type {LocalizedString} */ (`фронтенд - це масив: кілька фронтендів в одному монорепо`)
 };
 
 /**
