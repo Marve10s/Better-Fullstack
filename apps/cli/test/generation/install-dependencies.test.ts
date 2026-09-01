@@ -8,6 +8,7 @@ import { setupDatabase } from "@/helpers/core/db-setup";
 import {
   getInstallArgs,
   getInstallEnvironment,
+  getInstallRetryArgs,
   installDependencies,
 } from "@/helpers/core/install-dependencies";
 
@@ -35,6 +36,22 @@ describe("getInstallArgs", () => {
     expect(getInstallArgs("npm")).toEqual(["install"]);
     expect(getInstallArgs("bun")).toEqual(["install"]);
     expect(getInstallArgs("yarn")).toEqual(["install"]);
+  });
+});
+
+describe("getInstallRetryArgs", () => {
+  it("refreshes Bun metadata after a registry propagation miss", () => {
+    const error = {
+      stderr:
+        'error: No version matching "4.0.71" found for specifier "@ai-sdk/gateway" (but package exists)',
+    };
+
+    expect(getInstallRetryArgs("bun", error)).toEqual(["install", "--force"]);
+    expect(getInstallRetryArgs("npm", error)).toBeNull();
+  });
+
+  it("does not retry unrelated Bun install failures", () => {
+    expect(getInstallRetryArgs("bun", new Error("network unavailable"))).toBeNull();
   });
 });
 
