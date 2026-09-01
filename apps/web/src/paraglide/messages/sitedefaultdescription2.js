@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ optionCount: NonNullable<unknown>, ecosystems: NonNullable<unknown> }} Sitedefaultdescription2Inputs */
 
 const en_sitedefaultdescription2 = /** @type {(inputs: Sitedefaultdescription2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Scaffold production-ready fullstack apps in seconds. Pick your stack from ${i?.optionCount} options across ${i?.ecosystems} — frameworks, databases, auth, payments, AI, and deployment — all wired together by one CLI.`)
+	return /** @type {LocalizedString} */ (`Scaffold production-ready fullstack apps in seconds. Pick your stack from ${i?.optionCount} options across ${i?.ecosystems} - frameworks, databases, auth, payments, AI, and deployment - all wired together by one CLI.`)
 };
 
 const es_sitedefaultdescription2 = /** @type {(inputs: Sitedefaultdescription2Inputs) => LocalizedString} */ (i) => {
@@ -34,17 +34,17 @@ const de_sitedefaultdescription2 = /** @type {(inputs: Sitedefaultdescription2In
 };
 
 const fr_sitedefaultdescription2 = /** @type {(inputs: Sitedefaultdescription2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Échafaudez des applications fullstack prêtes pour la production en quelques secondes. Choisissez votre pile parmi les options ${i?.optionCount} sur ${i?.ecosystems} — frameworks, bases de données, authentification, paiements, AI et déploiement — le tout relié par un seul CLI.`)
+	return /** @type {LocalizedString} */ (`Échafaudez des applications fullstack prêtes pour la production en quelques secondes. Choisissez votre pile parmi les options ${i?.optionCount} sur ${i?.ecosystems} - frameworks, bases de données, authentification, paiements, AI et déploiement - le tout relié par un seul CLI.`)
 };
 
 const uk_sitedefaultdescription2 = /** @type {(inputs: Sitedefaultdescription2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`За кілька секунд згенеруйте фулстек-застосунок, готовий до продакшену. Оберіть стек із ${i?.optionCount} опцій у ${i?.ecosystems}: фреймворки, бази даних, автентифікація, платежі, ШІ та деплой — усе зібрано одним CLI.`)
+	return /** @type {LocalizedString} */ (`За кілька секунд згенеруйте фулстек-застосунок, готовий до продакшену. Оберіть стек із ${i?.optionCount} опцій у ${i?.ecosystems}: фреймворки, бази даних, автентифікація, платежі, ШІ та деплой - усе зібрано одним CLI.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Scaffold production-ready fullstack apps in seconds. Pick your stack from {optionCount} options across {ecosystems} — frameworks, databases, auth, payments, ..." |
+* | "Scaffold production-ready fullstack apps in seconds. Pick your stack from {optionCount} options across {ecosystems} - frameworks, databases, auth, payments, ..." |
 *
 * @param {Sitedefaultdescription2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

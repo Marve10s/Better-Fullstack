@@ -38,7 +38,7 @@ const fr_llmagentdescription2 = /** @type {(inputs: Llmagentdescription2Inputs) 
 };
 
 const uk_llmagentdescription2 = /** @type {(inputs: Llmagentdescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Один MCP-сервер і всі spec-to-scaffold інструменти, які використовував бенчмарк. Оберіть агента, вставте команду — готово.`)
+	return /** @type {LocalizedString} */ (`Один MCP-сервер і всі spec-to-scaffold інструменти, які використовував бенчмарк. Оберіть агента, вставте команду - готово.`)
 };
 
 /**

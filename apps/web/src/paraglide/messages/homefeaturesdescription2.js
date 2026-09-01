@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ ecosystemNames: NonNullable<unknown>, ecosystemCount: NonNullable<unknown> }} Homefeaturesdescription2Inputs */
 
 const en_homefeaturesdescription2 = /** @type {(inputs: Homefeaturesdescription2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystemNames} — one CLI scaffolds production-ready apps across all ${i?.ecosystemCount}. Pick your ecosystem, pick your stack.`)
+	return /** @type {LocalizedString} */ (`${i?.ecosystemNames} - one CLI scaffolds production-ready apps across all ${i?.ecosystemCount}. Pick your ecosystem, pick your stack.`)
 };
 
 const es_homefeaturesdescription2 = /** @type {(inputs: Homefeaturesdescription2Inputs) => LocalizedString} */ (i) => {
@@ -18,11 +18,11 @@ const zh_homefeaturesdescription2 = /** @type {(inputs: Homefeaturesdescription2
 };
 
 const ja_homefeaturesdescription2 = /** @type {(inputs: Homefeaturesdescription2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystemNames} — 1 つの CLI が、${i?.ecosystemCount} つすべてで実稼働対応のアプリをスキャフォールドします。エコシステムを選び、スタックを選ぶ。`)
+	return /** @type {LocalizedString} */ (`${i?.ecosystemNames} - 1 つの CLI が、${i?.ecosystemCount} つすべてで実稼働対応のアプリをスキャフォールドします。エコシステムを選び、スタックを選ぶ。`)
 };
 
 const ko_homefeaturesdescription2 = /** @type {(inputs: Homefeaturesdescription2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystemNames} — 하나의 CLI로 ${i?.ecosystemCount}개 생태계 전체에 걸쳐 프로덕션 준비가 완료된 앱을 스캐폴드합니다. 생태계를 선택하고 스택을 선택하세요.`)
+	return /** @type {LocalizedString} */ (`${i?.ecosystemNames} - 하나의 CLI로 ${i?.ecosystemCount}개 생태계 전체에 걸쳐 프로덕션 준비가 완료된 앱을 스캐폴드합니다. 생태계를 선택하고 스택을 선택하세요.`)
 };
 
 const zh_hant1_homefeaturesdescription2 = /** @type {(inputs: Homefeaturesdescription2Inputs) => LocalizedString} */ (i) => {
@@ -34,17 +34,17 @@ const de_homefeaturesdescription2 = /** @type {(inputs: Homefeaturesdescription2
 };
 
 const fr_homefeaturesdescription2 = /** @type {(inputs: Homefeaturesdescription2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystemNames} — un CLI échafaude des applications prêtes pour la production dans les ${i?.ecosystemCount} écosystèmes. Choisissez votre écosystème, choisissez votre pile.`)
+	return /** @type {LocalizedString} */ (`${i?.ecosystemNames} - un CLI échafaude des applications prêtes pour la production dans les ${i?.ecosystemCount} écosystèmes. Choisissez votre écosystème, choisissez votre pile.`)
 };
 
 const uk_homefeaturesdescription2 = /** @type {(inputs: Homefeaturesdescription2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystemNames} — один CLI генерує продакшен-готові застосунки для всіх ${i?.ecosystemCount} екосистем. Оберіть екосистему, оберіть стек.`)
+	return /** @type {LocalizedString} */ (`${i?.ecosystemNames} - один CLI генерує продакшен-готові застосунки для всіх ${i?.ecosystemCount} екосистем. Оберіть екосистему, оберіть стек.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "{ecosystemNames} — one CLI scaffolds production-ready apps across all {ecosystemCount}. Pick your ecosystem, pick your stack." |
+* | "{ecosystemNames} - one CLI scaffolds production-ready apps across all {ecosystemCount}. Pick your ecosystem, pick your stack." |
 *
 * @param {Homefeaturesdescription2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

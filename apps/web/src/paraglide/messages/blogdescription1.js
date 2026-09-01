@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Blogdescription1Inputs */
 
 const en_blogdescription1 = /** @type {(inputs: Blogdescription1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Benchmarks, releases, and what we learn building a fullstack scaffolder — written up with the data attached.`)
+	return /** @type {LocalizedString} */ (`Benchmarks, releases, and what we learn building a fullstack scaffolder - written up with the data attached.`)
 };
 
 const es_blogdescription1 = /** @type {(inputs: Blogdescription1Inputs) => LocalizedString} */ () => {
@@ -18,7 +18,7 @@ const zh_blogdescription1 = /** @type {(inputs: Blogdescription1Inputs) => Local
 };
 
 const ja_blogdescription1 = /** @type {(inputs: Blogdescription1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ベンチマーク、リリース、およびフルスタック スキャフォールダーの構築で学んだこと — データが添付されて書かれています。`)
+	return /** @type {LocalizedString} */ (`ベンチマーク、リリース、およびフルスタック スキャフォールダーの構築で学んだこと - データが添付されて書かれています。`)
 };
 
 const ko_blogdescription1 = /** @type {(inputs: Blogdescription1Inputs) => LocalizedString} */ () => {
@@ -38,13 +38,13 @@ const fr_blogdescription1 = /** @type {(inputs: Blogdescription1Inputs) => Local
 };
 
 const uk_blogdescription1 = /** @type {(inputs: Blogdescription1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Бенчмарки, релізи й висновки з розробки фулстек-скафолдера — з даними поруч.`)
+	return /** @type {LocalizedString} */ (`Бенчмарки, релізи й висновки з розробки фулстек-скафолдера - з даними поруч.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Benchmarks, releases, and what we learn building a fullstack scaffolder — written up with the data attached." |
+* | "Benchmarks, releases, and what we learn building a fullstack scaffolder - written up with the data attached." |
 *
 * @param {Blogdescription1Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

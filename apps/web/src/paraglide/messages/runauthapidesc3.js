@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Runauthapidesc3Inputs */
 
 const en_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prefer an API key? Export the provider key and the same agent CLI bills against it — no subscription needed. We publish subscription-driven runs; API runs are untested but supported.`)
+	return /** @type {LocalizedString} */ (`Prefer an API key? Export the provider key and the same agent CLI bills against it - no subscription needed. We publish subscription-driven runs; API runs are untested but supported.`)
 };
 
 const es_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => LocalizedString} */ () => {
@@ -14,7 +14,7 @@ const es_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => Localiz
 };
 
 const zh_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`更倾向于使用 API 密钥？导出提供商密钥，即可使用同一代理 CLI 进行计费——无需订阅。我们发布基于订阅的运行结果；API 方式的运行未经测试，但同样受支持。`)
+	return /** @type {LocalizedString} */ (`更倾向于使用 API 密钥？导出提供商密钥，即可使用同一代理 CLI 进行计费--无需订阅。我们发布基于订阅的运行结果；API 方式的运行未经测试，但同样受支持。`)
 };
 
 const ja_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => LocalizedString} */ () => {
@@ -26,7 +26,7 @@ const ko_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => Localiz
 };
 
 const zh_hant1_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`更傾向於使用 API 金鑰？匯出提供者金鑰，即可使用相同代理 CLI 進行計費—無需訂閱。我們提供訂閱驅動的運行服務；API 運行服務未經測試，但我們提供支援。`)
+	return /** @type {LocalizedString} */ (`更傾向於使用 API 金鑰？匯出提供者金鑰，即可使用相同代理 CLI 進行計費-無需訂閱。我們提供訂閱驅動的運行服務；API 運行服務未經測試，但我們提供支援。`)
 };
 
 const de_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => LocalizedString} */ () => {
@@ -38,13 +38,13 @@ const fr_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => Localiz
 };
 
 const uk_runauthapidesc3 = /** @type {(inputs: Runauthapidesc3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Бажаєте ключ API? Експортуйте ключ постачальника, і той самий агент CLI виставляє рахунки за нього — підписка не потрібна. Ми публікуємо прогони за підпискою; прогони через API не перевірені, але підтримуються.`)
+	return /** @type {LocalizedString} */ (`Бажаєте ключ API? Експортуйте ключ постачальника, і той самий агент CLI виставляє рахунки за нього - підписка не потрібна. Ми публікуємо прогони за підпискою; прогони через API не перевірені, але підтримуються.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Prefer an API key? Export the provider key and the same agent CLI bills against it — no subscription needed. We publish subscription-driven runs; API runs ar..." |
+* | "Prefer an API key? Export the provider key and the same agent CLI bills against it - no subscription needed. We publish subscription-driven runs; API runs ar..." |
 *
 * @param {Runauthapidesc3Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

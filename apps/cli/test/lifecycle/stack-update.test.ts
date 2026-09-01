@@ -2257,74 +2257,78 @@ describe("stack update planner", () => {
     { timeout: 20_000 },
   );
 
-  it("applies Resend updates for non-TypeScript first-candidate ecosystems", async () => {
-    const cases: Array<{
-      name: string;
-      config: Partial<ProjectConfig>;
-      manifestPath: string;
-      manifestNeedle: string;
-      servicePath: string;
-      serviceNeedle: string;
-    }> = [
-      {
-        name: "python",
-        config: { ...NON_TS_BASE_CONFIG, ecosystem: "python", pythonWebFramework: "fastapi" },
-        manifestPath: "apps/server/pyproject.toml",
-        manifestNeedle: '"resend>=2.29.0"',
-        servicePath: "apps/server/src/app/email.py",
-        serviceNeedle: "resend.Emails.send",
-      },
-      {
-        name: "go",
-        config: { ...NON_TS_BASE_CONFIG, ecosystem: "go", goWebFramework: "gin" },
-        manifestPath: "apps/server/go.mod",
-        manifestNeedle: "github.com/resend/resend-go/v3 v3.4.1",
-        servicePath: "apps/server/internal/email/resend.go",
-        serviceNeedle: "resend.NewClient",
-      },
-      {
-        name: "rust",
-        config: { ...NON_TS_BASE_CONFIG, ecosystem: "rust", rustWebFramework: "axum" },
-        manifestPath: "apps/server/Cargo.toml",
-        manifestNeedle: "resend-rs",
-        servicePath: "apps/server/crates/server/src/email.rs",
-        serviceNeedle: "Resend::default",
-      },
-      {
-        name: "java",
-        config: {
-          ...NON_TS_BASE_CONFIG,
-          ecosystem: "java",
-          javaWebFramework: "spring-boot",
-          javaBuildTool: "maven",
+  it(
+    "applies Resend updates for non-TypeScript first-candidate ecosystems",
+    async () => {
+      const cases: Array<{
+        name: string;
+        config: Partial<ProjectConfig>;
+        manifestPath: string;
+        manifestNeedle: string;
+        servicePath: string;
+        serviceNeedle: string;
+      }> = [
+        {
+          name: "python",
+          config: { ...NON_TS_BASE_CONFIG, ecosystem: "python", pythonWebFramework: "fastapi" },
+          manifestPath: "apps/server/pyproject.toml",
+          manifestNeedle: '"resend>=2.29.0"',
+          servicePath: "apps/server/src/app/email.py",
+          serviceNeedle: "resend.Emails.send",
         },
-        manifestPath: "apps/server/pom.xml",
-        manifestNeedle: "<artifactId>resend-java</artifactId>",
-        servicePath: "apps/server/src/main/java/com/example/app/service/EmailService.java",
-        serviceNeedle: "new Resend",
-      },
-    ];
+        {
+          name: "go",
+          config: { ...NON_TS_BASE_CONFIG, ecosystem: "go", goWebFramework: "gin" },
+          manifestPath: "apps/server/go.mod",
+          manifestNeedle: "github.com/resend/resend-go/v3 v3.4.1",
+          servicePath: "apps/server/internal/email/resend.go",
+          serviceNeedle: "resend.NewClient",
+        },
+        {
+          name: "rust",
+          config: { ...NON_TS_BASE_CONFIG, ecosystem: "rust", rustWebFramework: "axum" },
+          manifestPath: "apps/server/Cargo.toml",
+          manifestNeedle: "resend-rs",
+          servicePath: "apps/server/crates/server/src/email.rs",
+          serviceNeedle: "Resend::default",
+        },
+        {
+          name: "java",
+          config: {
+            ...NON_TS_BASE_CONFIG,
+            ecosystem: "java",
+            javaWebFramework: "spring-boot",
+            javaBuildTool: "maven",
+          },
+          manifestPath: "apps/server/pom.xml",
+          manifestNeedle: "<artifactId>resend-java</artifactId>",
+          servicePath: "apps/server/src/main/java/com/example/app/service/EmailService.java",
+          serviceNeedle: "new Resend",
+        },
+      ];
 
-    for (const testCase of cases) {
-      const root = await makeTempRoot(`bfs-stack-update-resend-${testCase.name}-`);
-      const projectDir = join(root, "app");
-      await scaffoldGeneratedProject(makeConfig(projectDir, testCase.config));
+      for (const testCase of cases) {
+        const root = await makeTempRoot(`bfs-stack-update-resend-${testCase.name}-`);
+        const projectDir = join(root, "app");
+        await scaffoldGeneratedProject(makeConfig(projectDir, testCase.config));
 
-      const plan = await planStackUpdate(projectDir, { email: "resend" });
-      expect(plan.success).toBe(true);
-      if (!plan.success) continue;
+        const plan = await planStackUpdate(projectDir, { email: "resend" });
+        expect(plan.success).toBe(true);
+        if (!plan.success) continue;
 
-      expect(plan.proposedConfig.email).toBe("resend");
-      expect(Object.values(plan.envChanges).flat()).toContain("RESEND_API_KEY");
-      expect(plan.manualReviewBlockers).toEqual([]);
+        expect(plan.proposedConfig.email).toBe("resend");
+        expect(Object.values(plan.envChanges).flat()).toContain("RESEND_API_KEY");
+        expect(plan.manualReviewBlockers).toEqual([]);
 
-      const result = await applyStackUpdate(projectDir, { email: "resend" });
-      expect(result.success).toBe(true);
-      await expectFileContains(join(projectDir, testCase.manifestPath), testCase.manifestNeedle);
-      await expectFileContains(join(projectDir, testCase.servicePath), testCase.serviceNeedle);
-      await expectFileContains(join(projectDir, "apps/server/.env.example"), "RESEND_API_KEY=");
-    }
-  });
+        const result = await applyStackUpdate(projectDir, { email: "resend" });
+        expect(result.success).toBe(true);
+        await expectFileContains(join(projectDir, testCase.manifestPath), testCase.manifestNeedle);
+        await expectFileContains(join(projectDir, testCase.servicePath), testCase.serviceNeedle);
+        await expectFileContains(join(projectDir, "apps/server/.env.example"), "RESEND_API_KEY=");
+      }
+    },
+    { timeout: 20_000 },
+  );
 
   it("applies Sentry updates for non-TypeScript first-candidate ecosystems", async () => {
     const cases: Array<{

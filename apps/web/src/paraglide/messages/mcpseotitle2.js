@@ -6,27 +6,27 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Mcpseotitle2Inputs */
 
 const en_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`MCP Server — AI Agent Integration | Better Fullstack`)
+	return /** @type {LocalizedString} */ (`MCP Server - AI Agent Integration | Better Fullstack`)
 };
 
 const es_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Servidor MCP — Integración con agentes de IA | Better Fullstack`)
+	return /** @type {LocalizedString} */ (`Servidor MCP - Integración con agentes de IA | Better Fullstack`)
 };
 
 const zh_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`MCP 服务器 — AI 代理集成 | Better Fullstack`)
+	return /** @type {LocalizedString} */ (`MCP 服务器 - AI 代理集成 | Better Fullstack`)
 };
 
 const ja_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`MCP サーバー — AI エージェントの統合 | Better Fullstack`)
+	return /** @type {LocalizedString} */ (`MCP サーバー - AI エージェントの統合 | Better Fullstack`)
 };
 
 const ko_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`MCP 서버 — AI 에이전트 통합 | Better Fullstack`)
+	return /** @type {LocalizedString} */ (`MCP 서버 - AI 에이전트 통합 | Better Fullstack`)
 };
 
 const zh_hant1_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`MCP 伺服器 — AI 代理程式整合 | Better Fullstack`)
+	return /** @type {LocalizedString} */ (`MCP 伺服器 - AI 代理程式整合 | Better Fullstack`)
 };
 
 const de_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedString} */ () => {
@@ -34,17 +34,17 @@ const de_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedStri
 };
 
 const fr_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Serveur MCP — Intégration d'agents AI | Better Fullstack`)
+	return /** @type {LocalizedString} */ (`Serveur MCP - Intégration d'agents AI | Better Fullstack`)
 };
 
 const uk_mcpseotitle2 = /** @type {(inputs: Mcpseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`MCP-сервер — інтеграція з AI-агентами | Better Fullstack`)
+	return /** @type {LocalizedString} */ (`MCP-сервер - інтеграція з AI-агентами | Better Fullstack`)
 };
 
 /**
 * | output |
 * | --- |
-* | "MCP Server — AI Agent Integration \| Better Fullstack" |
+* | "MCP Server - AI Agent Integration \| Better Fullstack" |
 *
 * @param {Mcpseotitle2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

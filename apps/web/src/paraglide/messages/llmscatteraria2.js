@@ -38,7 +38,7 @@ const fr_llmscatteraria2 = /** @type {(inputs: Llmscatteraria2Inputs) => Localiz
 };
 
 const uk_llmscatteraria2 = /** @type {(inputs: Llmscatteraria2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Scatter chart бенчмарку: кожна точка — одна модель і шлях створення`)
+	return /** @type {LocalizedString} */ (`Scatter chart бенчмарку: кожна точка - одна модель і шлях створення`)
 };
 
 /**

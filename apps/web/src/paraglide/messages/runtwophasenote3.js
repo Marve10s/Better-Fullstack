@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Runtwophasenote3Inputs */
 
 const en_runtwophasenote3 = /** @type {(inputs: Runtwophasenote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prefer to keep validation clean? Split it into two phases — generate everything first, then validate on its own:`)
+	return /** @type {LocalizedString} */ (`Prefer to keep validation clean? Split it into two phases - generate everything first, then validate on its own:`)
 };
 
 const es_runtwophasenote3 = /** @type {(inputs: Runtwophasenote3Inputs) => LocalizedString} */ () => {
@@ -14,7 +14,7 @@ const es_runtwophasenote3 = /** @type {(inputs: Runtwophasenote3Inputs) => Local
 };
 
 const zh_runtwophasenote3 = /** @type {(inputs: Runtwophasenote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`想要保持验证过程的简洁性？那就把它分成两个阶段——先生成所有内容，然后再单独进行验证：`)
+	return /** @type {LocalizedString} */ (`想要保持验证过程的简洁性？那就把它分成两个阶段--先生成所有内容，然后再单独进行验证：`)
 };
 
 const ja_runtwophasenote3 = /** @type {(inputs: Runtwophasenote3Inputs) => LocalizedString} */ () => {
@@ -44,7 +44,7 @@ const uk_runtwophasenote3 = /** @type {(inputs: Runtwophasenote3Inputs) => Local
 /**
 * | output |
 * | --- |
-* | "Prefer to keep validation clean? Split it into two phases — generate everything first, then validate on its own:" |
+* | "Prefer to keep validation clean? Split it into two phases - generate everything first, then validate on its own:" |
 *
 * @param {Runtwophasenote3Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
