@@ -15,12 +15,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 {{#if (isBetterAuth auth)}}
 import { Link } from "@tanstack/react-router";
 {{/if}}
-import { {{#if (isBetterAuth auth)}}useEffect, {{/if}}useState } from "react";
+import { useState } from "react";
 
 {{#if (isBetterAuth auth)}}
 import { authClient } from "@/lib/auth-client";
 {{/if}}
-import { trpc } from "@/utils/trpc";
+import { trpc{{#if (isBetterAuth auth)}}, trpcClient{{/if}} } from "@/utils/trpc";
 {{else}}
 import { useQuery } from "@tanstack/react-query";
 
@@ -55,22 +55,22 @@ function TaskPanel() {
   const { data: session, isPending: sessionPending } = authClient.useSession();
   const userId = session?.user.id;
 
-  // Drop cached rows whenever the signed-in user changes so one session never
-  // shows another session's tasks.
-  useEffect(() => {
-    queryClient.removeQueries({ queryKey: trpc.tasks.list.queryKey() });
-  }, [queryClient, userId]);
-  {{/if}}
+  // The user id is part of the cache key, so a session change can never render
+  // rows that were fetched for the previous account.
+  const tasksQueryKey = ["tasks", "list", userId] as const;
 
   const tasks = useQuery({
-    ...trpc.tasks.list.queryOptions(),
-    {{#if (isBetterAuth auth)}}
+    queryKey: tasksQueryKey,
+    queryFn: () => trpcClient.tasks.list.query(),
     enabled: Boolean(userId),
-    {{/if}}
   });
+  {{else}}
+  const tasksQueryKey = trpc.tasks.list.queryKey();
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+  const tasks = useQuery(trpc.tasks.list.queryOptions());
+  {{/if}}
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: tasksQueryKey });
 
   const create = useMutation({
     ...trpc.tasks.create.mutationOptions(),

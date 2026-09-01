@@ -2064,13 +2064,11 @@ export const Route = createFileRoute("/")({
 function TaskPanel() {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
+  const tasksQueryKey = trpc.tasks.list.queryKey();
 
-  const tasks = useQuery({
-    ...trpc.tasks.list.queryOptions(),
-  });
+  const tasks = useQuery(trpc.tasks.list.queryOptions());
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: tasksQueryKey });
 
   const create = useMutation({
     ...trpc.tasks.create.mutationOptions(),
@@ -9630,10 +9628,10 @@ if (!rootElement.innerHTML) {
 "import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
-import { trpc } from "@/utils/trpc";
+import { trpc, trpcClient } from "@/utils/trpc";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -9645,19 +9643,17 @@ function TaskPanel() {
   const { data: session, isPending: sessionPending } = authClient.useSession();
   const userId = session?.user.id;
 
-  // Drop cached rows whenever the signed-in user changes so one session never
-  // shows another session's tasks.
-  useEffect(() => {
-    queryClient.removeQueries({ queryKey: trpc.tasks.list.queryKey() });
-  }, [queryClient, userId]);
+  // The user id is part of the cache key, so a session change can never render
+  // rows that were fetched for the previous account.
+  const tasksQueryKey = ["tasks", "list", userId] as const;
 
   const tasks = useQuery({
-    ...trpc.tasks.list.queryOptions(),
+    queryKey: tasksQueryKey,
+    queryFn: () => trpcClient.tasks.list.query(),
     enabled: Boolean(userId),
   });
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: tasksQueryKey });
 
   const create = useMutation({
     ...trpc.tasks.create.mutationOptions(),
@@ -14161,13 +14157,11 @@ export const Route = createFileRoute("/")({
 function TaskPanel() {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
+  const tasksQueryKey = trpc.tasks.list.queryKey();
 
-  const tasks = useQuery({
-    ...trpc.tasks.list.queryOptions(),
-  });
+  const tasks = useQuery(trpc.tasks.list.queryOptions());
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: tasksQueryKey });
 
   const create = useMutation({
     ...trpc.tasks.create.mutationOptions(),
@@ -15087,13 +15081,11 @@ export const Route = createFileRoute("/")({
 function TaskPanel() {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
+  const tasksQueryKey = trpc.tasks.list.queryKey();
 
-  const tasks = useQuery({
-    ...trpc.tasks.list.queryOptions(),
-  });
+  const tasks = useQuery(trpc.tasks.list.queryOptions());
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: tasksQueryKey });
 
   const create = useMutation({
     ...trpc.tasks.create.mutationOptions(),
@@ -16691,13 +16683,11 @@ export const Route = createFileRoute("/")({
 function TaskPanel() {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
+  const tasksQueryKey = trpc.tasks.list.queryKey();
 
-  const tasks = useQuery({
-    ...trpc.tasks.list.queryOptions(),
-  });
+  const tasks = useQuery(trpc.tasks.list.queryOptions());
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: tasksQueryKey });
 
   const create = useMutation({
     ...trpc.tasks.create.mutationOptions(),
@@ -17622,13 +17612,11 @@ export const Route = createFileRoute("/")({
 function TaskPanel() {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
+  const tasksQueryKey = trpc.tasks.list.queryKey();
 
-  const tasks = useQuery({
-    ...trpc.tasks.list.queryOptions(),
-  });
+  const tasks = useQuery(trpc.tasks.list.queryOptions());
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: tasksQueryKey });
 
   const create = useMutation({
     ...trpc.tasks.create.mutationOptions(),
@@ -18549,13 +18537,11 @@ export const Route = createFileRoute("/")({
 function TaskPanel() {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
+  const tasksQueryKey = trpc.tasks.list.queryKey();
 
-  const tasks = useQuery({
-    ...trpc.tasks.list.queryOptions(),
-  });
+  const tasks = useQuery(trpc.tasks.list.queryOptions());
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: trpc.tasks.list.queryKey() });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: tasksQueryKey });
 
   const create = useMutation({
     ...trpc.tasks.create.mutationOptions(),
