@@ -1,8 +1,8 @@
 {{#if (or (isBetterAuth auth) (eq auth "none"))}}
 import { {{#if (isBetterAuth auth)}}and, {{/if}}desc, eq } from "drizzle-orm";
 
-import { db } from "./index";
-import { task } from "./schema/task";
+import { db } from "./index{{#if (eq backend "adonisjs")}}.js{{/if}}";
+import { task } from "./schema/task{{#if (eq backend "adonisjs")}}.js{{/if}}";
 
 export type Task = typeof task.$inferSelect;
 

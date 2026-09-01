@@ -2128,7 +2128,7 @@ function TaskPanel() {
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
       ) : tasks.isError ? (
         <p className="text-sm text-destructive" role="alert">
-          Could not load tasks. Run the database migration, then reload. ({tasks.error.message})
+          Could not load tasks: {tasks.error.message}
         </p>
       ) : tasks.data && tasks.data.length > 0 ? (
         <ul className="divide-y rounded-md border">
@@ -9734,7 +9734,7 @@ function TaskPanel() {
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
       ) : tasks.isError ? (
         <p className="text-sm text-destructive" role="alert">
-          Could not load tasks. Run the database migration, then reload. ({tasks.error.message})
+          Could not load tasks: {tasks.error.message}
         </p>
       ) : tasks.data && tasks.data.length > 0 ? (
         <ul className="divide-y rounded-md border">
@@ -14225,7 +14225,7 @@ function TaskPanel() {
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
       ) : tasks.isError ? (
         <p className="text-sm text-destructive" role="alert">
-          Could not load tasks. Run the database migration, then reload. ({tasks.error.message})
+          Could not load tasks: {tasks.error.message}
         </p>
       ) : tasks.data && tasks.data.length > 0 ? (
         <ul className="divide-y rounded-md border">
@@ -15151,7 +15151,7 @@ function TaskPanel() {
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
       ) : tasks.isError ? (
         <p className="text-sm text-destructive" role="alert">
-          Could not load tasks. Run the database migration, then reload. ({tasks.error.message})
+          Could not load tasks: {tasks.error.message}
         </p>
       ) : tasks.data && tasks.data.length > 0 ? (
         <ul className="divide-y rounded-md border">
@@ -16755,7 +16755,7 @@ function TaskPanel() {
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
       ) : tasks.isError ? (
         <p className="text-sm text-destructive" role="alert">
-          Could not load tasks. Run the database migration, then reload. ({tasks.error.message})
+          Could not load tasks: {tasks.error.message}
         </p>
       ) : tasks.data && tasks.data.length > 0 ? (
         <ul className="divide-y rounded-md border">
@@ -17686,7 +17686,7 @@ function TaskPanel() {
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
       ) : tasks.isError ? (
         <p className="text-sm text-destructive" role="alert">
-          Could not load tasks. Run the database migration, then reload. ({tasks.error.message})
+          Could not load tasks: {tasks.error.message}
         </p>
       ) : tasks.data && tasks.data.length > 0 ? (
         <ul className="divide-y rounded-md border">
@@ -18613,7 +18613,7 @@ function TaskPanel() {
         <p className="text-sm text-muted-foreground">Loading tasks...</p>
       ) : tasks.isError ? (
         <p className="text-sm text-destructive" role="alert">
-          Could not load tasks. Run the database migration, then reload. ({tasks.error.message})
+          Could not load tasks: {tasks.error.message}
         </p>
       ) : tasks.data && tasks.data.length > 0 ? (
         <ul className="divide-y rounded-md border">

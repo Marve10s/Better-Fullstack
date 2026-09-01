@@ -2,7 +2,7 @@
 {{#if (isBetterAuth auth)}}
 import { boolean, index, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
-import { user } from "./auth";
+import { user } from "./auth{{#if (eq backend "adonisjs")}}.js{{/if}}";
 {{else}}
 import { boolean, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 {{/if}}

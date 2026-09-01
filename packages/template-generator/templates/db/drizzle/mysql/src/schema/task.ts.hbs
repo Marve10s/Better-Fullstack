@@ -2,7 +2,7 @@
 {{#if (isBetterAuth auth)}}
 import { boolean, index, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
 
-import { user } from "./auth";
+import { user } from "./auth{{#if (eq backend "adonisjs")}}.js{{/if}}";
 {{else}}
 import { boolean, mysqlTable, serial, timestamp, varchar } from "drizzle-orm/mysql-core";
 {{/if}}
