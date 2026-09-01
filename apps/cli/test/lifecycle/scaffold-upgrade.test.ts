@@ -449,6 +449,77 @@ describe("scaffold-upgrade engine", () => {
     expect(await readFile(join(dir, previousPath))).toEqual(before);
   });
 
+  it("keeps a legacy root .NET layout buildable by requiring a manual layout migration", async () => {
+    const dir = await makeTempDir();
+    const config = makeConfig(dir, {
+      frontend: ["none"],
+      backend: "none",
+      runtime: "none",
+      api: "none",
+      database: "sqlite",
+      orm: "none",
+      ecosystem: "dotnet",
+      dotnetWebFramework: "aspnet-minimal",
+      dotnetOrm: "ef-core",
+      dotnetAuth: "none",
+      dotnetApi: "minimal-api",
+      dotnetTesting: ["xunit"],
+      dotnetJobQueue: "none",
+      dotnetRealtime: "none",
+      dotnetObservability: ["health-checks"],
+      dotnetValidation: "none",
+      dotnetCaching: "none",
+      dotnetDeploy: "none",
+      dotnetLibraries: [],
+    });
+    await scaffoldWithBaseline(dir, config);
+
+    const manifest = await readScaffoldManifest(dir);
+    expect(manifest).not.toBeNull();
+    const serverPaths = Object.keys(manifest!.hashes)
+      .filter((filePath) => filePath.startsWith("apps/server/"))
+      .sort();
+    expect(serverPaths).toContain("apps/server/Program.cs");
+
+    for (const serverPath of serverPaths) {
+      const rootPath = serverPath.slice("apps/server/".length);
+      // oxlint-disable-next-line no-await-in-loop -- fixture paths are relocated deterministically
+      await mkdir(dirname(join(dir, rootPath)), { recursive: true });
+      // oxlint-disable-next-line no-await-in-loop -- fixture paths are relocated deterministically
+      await cp(join(dir, serverPath), join(dir, rootPath), { force: true });
+      manifest!.hashes[rootPath] = manifest!.hashes[serverPath]!;
+      delete manifest!.hashes[serverPath];
+      if (manifest!.modes?.[serverPath] !== undefined) {
+        manifest!.modes[rootPath] = manifest!.modes[serverPath];
+        delete manifest!.modes[serverPath];
+      }
+      if (manifest!.baselines?.[serverPath] !== undefined) {
+        manifest!.baselines[rootPath] = manifest!.baselines[serverPath];
+        delete manifest!.baselines[serverPath];
+      }
+    }
+    await rm(join(dir, "apps"), { force: true, recursive: true });
+    await writeScaffoldManifest(dir, manifest!);
+    const rootProgramBefore = await readFile(join(dir, "Program.cs"));
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    const serverEntries = plan.files.filter((file) => file.path.startsWith("apps/server/"));
+    expect(serverEntries.length).toBeGreaterThan(0);
+    expect(serverEntries.every((file) => file.category === "manual")).toBe(true);
+    expect(serverEntries.every((file) => file.reason?.includes("migrate") === true)).toBe(true);
+    expect(plan.actionable.some((filePath) => filePath.startsWith("apps/server/"))).toBe(false);
+    expect(plan.newFiles.some((filePath) => filePath.startsWith("apps/server/"))).toBe(false);
+
+    const applied = await applyAcknowledged(dir);
+    assertSuccess(applied);
+    expect(applied.applied.added.some((filePath) => filePath.startsWith("apps/server/"))).toBe(
+      false,
+    );
+    expect(await readFile(join(dir, "Program.cs"))).toEqual(rootProgramBefore);
+    await expect(readFile(join(dir, "apps/server/Program.cs"))).rejects.toThrow();
+  });
+
   it("flags a conflict when both the template and the local copy changed", async () => {
     const dir = await makeTempDir();
     await scaffoldWithBaseline(dir, makeConfig(dir));
