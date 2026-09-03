@@ -10,35 +10,35 @@ const en_fixprooflegendheading2 = /** @type {(inputs: Fixprooflegendheading2Inpu
 };
 
 const es_fixprooflegendheading2 = /** @type {(inputs: Fixprooflegendheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Legend`)
+	return /** @type {LocalizedString} */ (`Leyenda`)
 };
 
 const zh_fixprooflegendheading2 = /** @type {(inputs: Fixprooflegendheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Legend`)
+	return /** @type {LocalizedString} */ (`图例`)
 };
 
 const ja_fixprooflegendheading2 = /** @type {(inputs: Fixprooflegendheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Legend`)
+	return /** @type {LocalizedString} */ (`凡例`)
 };
 
 const ko_fixprooflegendheading2 = /** @type {(inputs: Fixprooflegendheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Legend`)
+	return /** @type {LocalizedString} */ (`범례`)
 };
 
 const zh_hant1_fixprooflegendheading2 = /** @type {(inputs: Fixprooflegendheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Legend`)
+	return /** @type {LocalizedString} */ (`圖例`)
 };
 
 const de_fixprooflegendheading2 = /** @type {(inputs: Fixprooflegendheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Legend`)
+	return /** @type {LocalizedString} */ (`Legende`)
 };
 
 const fr_fixprooflegendheading2 = /** @type {(inputs: Fixprooflegendheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Legend`)
+	return /** @type {LocalizedString} */ (`Légende`)
 };
 
 const uk_fixprooflegendheading2 = /** @type {(inputs: Fixprooflegendheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Legend`)
+	return /** @type {LocalizedString} */ (`Легенда`)
 };
 
 /**

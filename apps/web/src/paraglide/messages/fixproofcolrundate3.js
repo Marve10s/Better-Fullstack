@@ -10,35 +10,35 @@ const en_fixproofcolrundate3 = /** @type {(inputs: Fixproofcolrundate3Inputs) =>
 };
 
 const es_fixproofcolrundate3 = /** @type {(inputs: Fixproofcolrundate3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Run date`)
+	return /** @type {LocalizedString} */ (`Fecha de ejecución`)
 };
 
 const zh_fixproofcolrundate3 = /** @type {(inputs: Fixproofcolrundate3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Run date`)
+	return /** @type {LocalizedString} */ (`运行日期`)
 };
 
 const ja_fixproofcolrundate3 = /** @type {(inputs: Fixproofcolrundate3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Run date`)
+	return /** @type {LocalizedString} */ (`実行日`)
 };
 
 const ko_fixproofcolrundate3 = /** @type {(inputs: Fixproofcolrundate3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Run date`)
+	return /** @type {LocalizedString} */ (`실행 날짜`)
 };
 
 const zh_hant1_fixproofcolrundate3 = /** @type {(inputs: Fixproofcolrundate3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Run date`)
+	return /** @type {LocalizedString} */ (`執行日期`)
 };
 
 const de_fixproofcolrundate3 = /** @type {(inputs: Fixproofcolrundate3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Run date`)
+	return /** @type {LocalizedString} */ (`Laufdatum`)
 };
 
 const fr_fixproofcolrundate3 = /** @type {(inputs: Fixproofcolrundate3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Run date`)
+	return /** @type {LocalizedString} */ (`Date d'exécution`)
 };
 
 const uk_fixproofcolrundate3 = /** @type {(inputs: Fixproofcolrundate3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Run date`)
+	return /** @type {LocalizedString} */ (`Дата запуску`)
 };
 
 /**

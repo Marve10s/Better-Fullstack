@@ -10,35 +10,35 @@ const en_fixproofgradedoftotal3 = /** @type {(inputs: Fixproofgradedoftotal3Inpu
 };
 
 const es_fixproofgradedoftotal3 = /** @type {(inputs: Fixproofgradedoftotal3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.graded} of ${i?.total}`)
+	return /** @type {LocalizedString} */ (`${i?.graded} de ${i?.total}`)
 };
 
 const zh_fixproofgradedoftotal3 = /** @type {(inputs: Fixproofgradedoftotal3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.graded} of ${i?.total}`)
+	return /** @type {LocalizedString} */ (`${i?.total} 个中的 ${i?.graded} 个`)
 };
 
 const ja_fixproofgradedoftotal3 = /** @type {(inputs: Fixproofgradedoftotal3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.graded} of ${i?.total}`)
+	return /** @type {LocalizedString} */ (`${i?.total} 件中 ${i?.graded} 件`)
 };
 
 const ko_fixproofgradedoftotal3 = /** @type {(inputs: Fixproofgradedoftotal3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.graded} of ${i?.total}`)
+	return /** @type {LocalizedString} */ (`${i?.total}개 중 ${i?.graded}개`)
 };
 
 const zh_hant1_fixproofgradedoftotal3 = /** @type {(inputs: Fixproofgradedoftotal3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.graded} of ${i?.total}`)
+	return /** @type {LocalizedString} */ (`${i?.total} 個中的 ${i?.graded} 個`)
 };
 
 const de_fixproofgradedoftotal3 = /** @type {(inputs: Fixproofgradedoftotal3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.graded} of ${i?.total}`)
+	return /** @type {LocalizedString} */ (`${i?.graded} von ${i?.total}`)
 };
 
 const fr_fixproofgradedoftotal3 = /** @type {(inputs: Fixproofgradedoftotal3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.graded} of ${i?.total}`)
+	return /** @type {LocalizedString} */ (`${i?.graded} sur ${i?.total}`)
 };
 
 const uk_fixproofgradedoftotal3 = /** @type {(inputs: Fixproofgradedoftotal3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.graded} of ${i?.total}`)
+	return /** @type {LocalizedString} */ (`${i?.graded} з ${i?.total}`)
 };
 
 /**

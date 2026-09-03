@@ -10,35 +10,35 @@ const en_fixproofoutcomeexcludednote3 = /** @type {(inputs: Fixproofoutcomeexclu
 };
 
 const es_fixproofoutcomeexcludednote3 = /** @type {(inputs: Fixproofoutcomeexcludednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`A provider quota error voided the run, so it counts for neither index.`)
+	return /** @type {LocalizedString} */ (`Un error de cuota del proveedor anuló la ejecución, así que no cuenta para ninguno de los dos índices.`)
 };
 
 const zh_fixproofoutcomeexcludednote3 = /** @type {(inputs: Fixproofoutcomeexcludednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`A provider quota error voided the run, so it counts for neither index.`)
+	return /** @type {LocalizedString} */ (`供应商配额报错让这次运行作废，因此它不计入任何一个指数。`)
 };
 
 const ja_fixproofoutcomeexcludednote3 = /** @type {(inputs: Fixproofoutcomeexcludednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`A provider quota error voided the run, so it counts for neither index.`)
+	return /** @type {LocalizedString} */ (`プロバイダーのクォータエラーで実行が無効になったため、どちらの指数にも数えません。`)
 };
 
 const ko_fixproofoutcomeexcludednote3 = /** @type {(inputs: Fixproofoutcomeexcludednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`A provider quota error voided the run, so it counts for neither index.`)
+	return /** @type {LocalizedString} */ (`제공업체 할당량 오류로 실행이 무효가 되어 두 지수 어디에도 넣지 않습니다.`)
 };
 
 const zh_hant1_fixproofoutcomeexcludednote3 = /** @type {(inputs: Fixproofoutcomeexcludednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`A provider quota error voided the run, so it counts for neither index.`)
+	return /** @type {LocalizedString} */ (`供應商配額報錯讓這次執行作廢，因此它不計入任何一個指數。`)
 };
 
 const de_fixproofoutcomeexcludednote3 = /** @type {(inputs: Fixproofoutcomeexcludednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`A provider quota error voided the run, so it counts for neither index.`)
+	return /** @type {LocalizedString} */ (`Ein Kontingentfehler des Anbieters hat den Lauf ungültig gemacht, er zählt daher für keinen der beiden Indizes.`)
 };
 
 const fr_fixproofoutcomeexcludednote3 = /** @type {(inputs: Fixproofoutcomeexcludednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`A provider quota error voided the run, so it counts for neither index.`)
+	return /** @type {LocalizedString} */ (`Une erreur de quota du fournisseur a annulé l'exécution : elle ne compte pour aucun des deux indices.`)
 };
 
 const uk_fixproofoutcomeexcludednote3 = /** @type {(inputs: Fixproofoutcomeexcludednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`A provider quota error voided the run, so it counts for neither index.`)
+	return /** @type {LocalizedString} */ (`Помилка квоти провайдера анулювала запуск, тому він не йде в жоден з індексів.`)
 };
 
 /**

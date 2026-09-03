@@ -10,35 +10,35 @@ const en_fixproofcolmodel2 = /** @type {(inputs: Fixproofcolmodel2Inputs) => Loc
 };
 
 const es_fixproofcolmodel2 = /** @type {(inputs: Fixproofcolmodel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Model`)
+	return /** @type {LocalizedString} */ (`Modelo`)
 };
 
 const zh_fixproofcolmodel2 = /** @type {(inputs: Fixproofcolmodel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Model`)
+	return /** @type {LocalizedString} */ (`模型`)
 };
 
 const ja_fixproofcolmodel2 = /** @type {(inputs: Fixproofcolmodel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Model`)
+	return /** @type {LocalizedString} */ (`モデル`)
 };
 
 const ko_fixproofcolmodel2 = /** @type {(inputs: Fixproofcolmodel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Model`)
+	return /** @type {LocalizedString} */ (`모델`)
 };
 
 const zh_hant1_fixproofcolmodel2 = /** @type {(inputs: Fixproofcolmodel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Model`)
+	return /** @type {LocalizedString} */ (`模型`)
 };
 
 const de_fixproofcolmodel2 = /** @type {(inputs: Fixproofcolmodel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Model`)
+	return /** @type {LocalizedString} */ (`Modell`)
 };
 
 const fr_fixproofcolmodel2 = /** @type {(inputs: Fixproofcolmodel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Model`)
+	return /** @type {LocalizedString} */ (`Modèle`)
 };
 
 const uk_fixproofcolmodel2 = /** @type {(inputs: Fixproofcolmodel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Model`)
+	return /** @type {LocalizedString} */ (`Модель`)
 };
 
 /**

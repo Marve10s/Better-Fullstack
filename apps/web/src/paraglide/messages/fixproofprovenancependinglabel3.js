@@ -10,35 +10,35 @@ const en_fixproofprovenancependinglabel3 = /** @type {(inputs: Fixproofprovenanc
 };
 
 const es_fixproofprovenancependinglabel3 = /** @type {(inputs: Fixproofprovenancependinglabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Three tasks are pending`)
+	return /** @type {LocalizedString} */ (`Tres tareas están pendientes`)
 };
 
 const zh_fixproofprovenancependinglabel3 = /** @type {(inputs: Fixproofprovenancependinglabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Three tasks are pending`)
+	return /** @type {LocalizedString} */ (`三个任务待运行`)
 };
 
 const ja_fixproofprovenancependinglabel3 = /** @type {(inputs: Fixproofprovenancependinglabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Three tasks are pending`)
+	return /** @type {LocalizedString} */ (`3 つのタスクは保留中です`)
 };
 
 const ko_fixproofprovenancependinglabel3 = /** @type {(inputs: Fixproofprovenancependinglabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Three tasks are pending`)
+	return /** @type {LocalizedString} */ (`세 태스크는 대기 중입니다`)
 };
 
 const zh_hant1_fixproofprovenancependinglabel3 = /** @type {(inputs: Fixproofprovenancependinglabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Three tasks are pending`)
+	return /** @type {LocalizedString} */ (`三個任務待執行`)
 };
 
 const de_fixproofprovenancependinglabel3 = /** @type {(inputs: Fixproofprovenancependinglabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Three tasks are pending`)
+	return /** @type {LocalizedString} */ (`Drei Aufgaben stehen aus`)
 };
 
 const fr_fixproofprovenancependinglabel3 = /** @type {(inputs: Fixproofprovenancependinglabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Three tasks are pending`)
+	return /** @type {LocalizedString} */ (`Trois tâches sont en attente`)
 };
 
 const uk_fixproofprovenancependinglabel3 = /** @type {(inputs: Fixproofprovenancependinglabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Three tasks are pending`)
+	return /** @type {LocalizedString} */ (`Три задачі в очікуванні`)
 };
 
 /**

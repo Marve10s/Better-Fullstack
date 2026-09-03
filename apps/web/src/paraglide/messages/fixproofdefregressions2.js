@@ -10,35 +10,35 @@ const en_fixproofdefregressions2 = /** @type {(inputs: Fixproofdefregressions2In
 };
 
 const es_fixproofdefregressions2 = /** @type {(inputs: Fixproofdefregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Graded runs where the package's existing test suite stopped passing.`)
+	return /** @type {LocalizedString} */ (`Ejecuciones evaluadas en las que la suite de pruebas existente del paquete dejó de pasar.`)
 };
 
 const zh_fixproofdefregressions2 = /** @type {(inputs: Fixproofdefregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Graded runs where the package's existing test suite stopped passing.`)
+	return /** @type {LocalizedString} */ (`评测运行中，包自带的测试套件不再通过的那些。`)
 };
 
 const ja_fixproofdefregressions2 = /** @type {(inputs: Fixproofdefregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Graded runs where the package's existing test suite stopped passing.`)
+	return /** @type {LocalizedString} */ (`パッケージ既存のテストスイートが通らなくなった採点済みの実行です。`)
 };
 
 const ko_fixproofdefregressions2 = /** @type {(inputs: Fixproofdefregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Graded runs where the package's existing test suite stopped passing.`)
+	return /** @type {LocalizedString} */ (`패키지의 기존 테스트 스위트가 더 이상 통과하지 않게 된 채점 실행입니다.`)
 };
 
 const zh_hant1_fixproofdefregressions2 = /** @type {(inputs: Fixproofdefregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Graded runs where the package's existing test suite stopped passing.`)
+	return /** @type {LocalizedString} */ (`評測執行中，套件自帶的測試套件不再通過的那些。`)
 };
 
 const de_fixproofdefregressions2 = /** @type {(inputs: Fixproofdefregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Graded runs where the package's existing test suite stopped passing.`)
+	return /** @type {LocalizedString} */ (`Bewertete Läufe, in denen die vorhandene Test-Suite des Pakets nicht mehr bestanden wurde.`)
 };
 
 const fr_fixproofdefregressions2 = /** @type {(inputs: Fixproofdefregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Graded runs where the package's existing test suite stopped passing.`)
+	return /** @type {LocalizedString} */ (`Exécutions évaluées où la suite de tests existante du paquet a cessé de passer.`)
 };
 
 const uk_fixproofdefregressions2 = /** @type {(inputs: Fixproofdefregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Graded runs where the package's existing test suite stopped passing.`)
+	return /** @type {LocalizedString} */ (`Оцінені запуски, де наявний набір тестів пакета перестав проходити.`)
 };
 
 /**

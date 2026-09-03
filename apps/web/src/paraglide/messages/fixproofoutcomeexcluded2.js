@@ -10,35 +10,35 @@ const en_fixproofoutcomeexcluded2 = /** @type {(inputs: Fixproofoutcomeexcluded2
 };
 
 const es_fixproofoutcomeexcluded2 = /** @type {(inputs: Fixproofoutcomeexcluded2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Excluded`)
+	return /** @type {LocalizedString} */ (`Excluida`)
 };
 
 const zh_fixproofoutcomeexcluded2 = /** @type {(inputs: Fixproofoutcomeexcluded2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Excluded`)
+	return /** @type {LocalizedString} */ (`已排除`)
 };
 
 const ja_fixproofoutcomeexcluded2 = /** @type {(inputs: Fixproofoutcomeexcluded2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Excluded`)
+	return /** @type {LocalizedString} */ (`除外`)
 };
 
 const ko_fixproofoutcomeexcluded2 = /** @type {(inputs: Fixproofoutcomeexcluded2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Excluded`)
+	return /** @type {LocalizedString} */ (`제외`)
 };
 
 const zh_hant1_fixproofoutcomeexcluded2 = /** @type {(inputs: Fixproofoutcomeexcluded2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Excluded`)
+	return /** @type {LocalizedString} */ (`已排除`)
 };
 
 const de_fixproofoutcomeexcluded2 = /** @type {(inputs: Fixproofoutcomeexcluded2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Excluded`)
+	return /** @type {LocalizedString} */ (`Ausgeschlossen`)
 };
 
 const fr_fixproofoutcomeexcluded2 = /** @type {(inputs: Fixproofoutcomeexcluded2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Excluded`)
+	return /** @type {LocalizedString} */ (`Exclue`)
 };
 
 const uk_fixproofoutcomeexcluded2 = /** @type {(inputs: Fixproofoutcomeexcluded2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Excluded`)
+	return /** @type {LocalizedString} */ (`Виключено`)
 };
 
 /**

@@ -10,35 +10,35 @@ const en_fixproofsourcepublic2 = /** @type {(inputs: Fixproofsourcepublic2Inputs
 };
 
 const es_fixproofsourcepublic2 = /** @type {(inputs: Fixproofsourcepublic2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Public repository`)
+	return /** @type {LocalizedString} */ (`Repositorio público`)
 };
 
 const zh_fixproofsourcepublic2 = /** @type {(inputs: Fixproofsourcepublic2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Public repository`)
+	return /** @type {LocalizedString} */ (`公开仓库`)
 };
 
 const ja_fixproofsourcepublic2 = /** @type {(inputs: Fixproofsourcepublic2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Public repository`)
+	return /** @type {LocalizedString} */ (`公開リポジトリ`)
 };
 
 const ko_fixproofsourcepublic2 = /** @type {(inputs: Fixproofsourcepublic2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Public repository`)
+	return /** @type {LocalizedString} */ (`공개 저장소`)
 };
 
 const zh_hant1_fixproofsourcepublic2 = /** @type {(inputs: Fixproofsourcepublic2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Public repository`)
+	return /** @type {LocalizedString} */ (`公開倉庫`)
 };
 
 const de_fixproofsourcepublic2 = /** @type {(inputs: Fixproofsourcepublic2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Public repository`)
+	return /** @type {LocalizedString} */ (`Öffentliches Repository`)
 };
 
 const fr_fixproofsourcepublic2 = /** @type {(inputs: Fixproofsourcepublic2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Public repository`)
+	return /** @type {LocalizedString} */ (`Dépôt public`)
 };
 
 const uk_fixproofsourcepublic2 = /** @type {(inputs: Fixproofsourcepublic2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Public repository`)
+	return /** @type {LocalizedString} */ (`Публічний репозиторій`)
 };
 
 /**

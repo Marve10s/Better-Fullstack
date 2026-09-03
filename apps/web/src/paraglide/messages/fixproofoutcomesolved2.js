@@ -10,35 +10,35 @@ const en_fixproofoutcomesolved2 = /** @type {(inputs: Fixproofoutcomesolved2Inpu
 };
 
 const es_fixproofoutcomesolved2 = /** @type {(inputs: Fixproofoutcomesolved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved`)
+	return /** @type {LocalizedString} */ (`Resuelta`)
 };
 
 const zh_fixproofoutcomesolved2 = /** @type {(inputs: Fixproofoutcomesolved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved`)
+	return /** @type {LocalizedString} */ (`已解决`)
 };
 
 const ja_fixproofoutcomesolved2 = /** @type {(inputs: Fixproofoutcomesolved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved`)
+	return /** @type {LocalizedString} */ (`解決`)
 };
 
 const ko_fixproofoutcomesolved2 = /** @type {(inputs: Fixproofoutcomesolved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved`)
+	return /** @type {LocalizedString} */ (`해결`)
 };
 
 const zh_hant1_fixproofoutcomesolved2 = /** @type {(inputs: Fixproofoutcomesolved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved`)
+	return /** @type {LocalizedString} */ (`已解決`)
 };
 
 const de_fixproofoutcomesolved2 = /** @type {(inputs: Fixproofoutcomesolved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved`)
+	return /** @type {LocalizedString} */ (`Gelöst`)
 };
 
 const fr_fixproofoutcomesolved2 = /** @type {(inputs: Fixproofoutcomesolved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved`)
+	return /** @type {LocalizedString} */ (`Résolue`)
 };
 
 const uk_fixproofoutcomesolved2 = /** @type {(inputs: Fixproofoutcomesolved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved`)
+	return /** @type {LocalizedString} */ (`Вирішено`)
 };
 
 /**

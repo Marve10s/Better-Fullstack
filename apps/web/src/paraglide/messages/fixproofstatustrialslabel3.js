@@ -10,35 +10,35 @@ const en_fixproofstatustrialslabel3 = /** @type {(inputs: Fixproofstatustrialsla
 };
 
 const es_fixproofstatustrialslabel3 = /** @type {(inputs: Fixproofstatustrialslabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials per task`)
+	return /** @type {LocalizedString} */ (`Intentos por tarea`)
 };
 
 const zh_fixproofstatustrialslabel3 = /** @type {(inputs: Fixproofstatustrialslabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials per task`)
+	return /** @type {LocalizedString} */ (`每个任务的试验次数`)
 };
 
 const ja_fixproofstatustrialslabel3 = /** @type {(inputs: Fixproofstatustrialslabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials per task`)
+	return /** @type {LocalizedString} */ (`タスクあたりの試行数`)
 };
 
 const ko_fixproofstatustrialslabel3 = /** @type {(inputs: Fixproofstatustrialslabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials per task`)
+	return /** @type {LocalizedString} */ (`태스크당 시도`)
 };
 
 const zh_hant1_fixproofstatustrialslabel3 = /** @type {(inputs: Fixproofstatustrialslabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials per task`)
+	return /** @type {LocalizedString} */ (`每個任務的試驗次數`)
 };
 
 const de_fixproofstatustrialslabel3 = /** @type {(inputs: Fixproofstatustrialslabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials per task`)
+	return /** @type {LocalizedString} */ (`Versuche pro Aufgabe`)
 };
 
 const fr_fixproofstatustrialslabel3 = /** @type {(inputs: Fixproofstatustrialslabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials per task`)
+	return /** @type {LocalizedString} */ (`Essais par tâche`)
 };
 
 const uk_fixproofstatustrialslabel3 = /** @type {(inputs: Fixproofstatustrialslabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials per task`)
+	return /** @type {LocalizedString} */ (`Спроб на задачу`)
 };
 
 /**

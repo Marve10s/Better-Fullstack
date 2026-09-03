@@ -10,35 +10,35 @@ const en_fixproofprovenancevoidedlabel3 = /** @type {(inputs: Fixproofprovenance
 };
 
 const es_fixproofprovenancevoidedlabel3 = /** @type {(inputs: Fixproofprovenancevoidedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`One run was voided`)
+	return /** @type {LocalizedString} */ (`Una ejecución quedó anulada`)
 };
 
 const zh_fixproofprovenancevoidedlabel3 = /** @type {(inputs: Fixproofprovenancevoidedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`One run was voided`)
+	return /** @type {LocalizedString} */ (`一次运行被作废`)
 };
 
 const ja_fixproofprovenancevoidedlabel3 = /** @type {(inputs: Fixproofprovenancevoidedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`One run was voided`)
+	return /** @type {LocalizedString} */ (`1 回の実行を無効にしました`)
 };
 
 const ko_fixproofprovenancevoidedlabel3 = /** @type {(inputs: Fixproofprovenancevoidedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`One run was voided`)
+	return /** @type {LocalizedString} */ (`한 번의 실행은 무효 처리했습니다`)
 };
 
 const zh_hant1_fixproofprovenancevoidedlabel3 = /** @type {(inputs: Fixproofprovenancevoidedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`One run was voided`)
+	return /** @type {LocalizedString} */ (`一次執行被作廢`)
 };
 
 const de_fixproofprovenancevoidedlabel3 = /** @type {(inputs: Fixproofprovenancevoidedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`One run was voided`)
+	return /** @type {LocalizedString} */ (`Ein Lauf wurde ungültig`)
 };
 
 const fr_fixproofprovenancevoidedlabel3 = /** @type {(inputs: Fixproofprovenancevoidedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`One run was voided`)
+	return /** @type {LocalizedString} */ (`Une exécution a été annulée`)
 };
 
 const uk_fixproofprovenancevoidedlabel3 = /** @type {(inputs: Fixproofprovenancevoidedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`One run was voided`)
+	return /** @type {LocalizedString} */ (`Один запуск анульовано`)
 };
 
 /**

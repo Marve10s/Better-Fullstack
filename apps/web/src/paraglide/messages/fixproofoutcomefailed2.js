@@ -10,35 +10,35 @@ const en_fixproofoutcomefailed2 = /** @type {(inputs: Fixproofoutcomefailed2Inpu
 };
 
 const es_fixproofoutcomefailed2 = /** @type {(inputs: Fixproofoutcomefailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Failed`)
+	return /** @type {LocalizedString} */ (`Fallida`)
 };
 
 const zh_fixproofoutcomefailed2 = /** @type {(inputs: Fixproofoutcomefailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Failed`)
+	return /** @type {LocalizedString} */ (`失败`)
 };
 
 const ja_fixproofoutcomefailed2 = /** @type {(inputs: Fixproofoutcomefailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Failed`)
+	return /** @type {LocalizedString} */ (`失敗`)
 };
 
 const ko_fixproofoutcomefailed2 = /** @type {(inputs: Fixproofoutcomefailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Failed`)
+	return /** @type {LocalizedString} */ (`실패`)
 };
 
 const zh_hant1_fixproofoutcomefailed2 = /** @type {(inputs: Fixproofoutcomefailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Failed`)
+	return /** @type {LocalizedString} */ (`失敗`)
 };
 
 const de_fixproofoutcomefailed2 = /** @type {(inputs: Fixproofoutcomefailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Failed`)
+	return /** @type {LocalizedString} */ (`Fehlgeschlagen`)
 };
 
 const fr_fixproofoutcomefailed2 = /** @type {(inputs: Fixproofoutcomefailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Failed`)
+	return /** @type {LocalizedString} */ (`Échec`)
 };
 
 const uk_fixproofoutcomefailed2 = /** @type {(inputs: Fixproofoutcomefailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Failed`)
+	return /** @type {LocalizedString} */ (`Провал`)
 };
 
 /**

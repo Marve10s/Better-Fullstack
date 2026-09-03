@@ -10,35 +10,35 @@ const en_fixproofcoltrials2 = /** @type {(inputs: Fixproofcoltrials2Inputs) => L
 };
 
 const es_fixproofcoltrials2 = /** @type {(inputs: Fixproofcoltrials2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials`)
+	return /** @type {LocalizedString} */ (`Intentos`)
 };
 
 const zh_fixproofcoltrials2 = /** @type {(inputs: Fixproofcoltrials2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials`)
+	return /** @type {LocalizedString} */ (`试验次数`)
 };
 
 const ja_fixproofcoltrials2 = /** @type {(inputs: Fixproofcoltrials2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials`)
+	return /** @type {LocalizedString} */ (`試行数`)
 };
 
 const ko_fixproofcoltrials2 = /** @type {(inputs: Fixproofcoltrials2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials`)
+	return /** @type {LocalizedString} */ (`시도`)
 };
 
 const zh_hant1_fixproofcoltrials2 = /** @type {(inputs: Fixproofcoltrials2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials`)
+	return /** @type {LocalizedString} */ (`試驗次數`)
 };
 
 const de_fixproofcoltrials2 = /** @type {(inputs: Fixproofcoltrials2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials`)
+	return /** @type {LocalizedString} */ (`Versuche`)
 };
 
 const fr_fixproofcoltrials2 = /** @type {(inputs: Fixproofcoltrials2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials`)
+	return /** @type {LocalizedString} */ (`Essais`)
 };
 
 const uk_fixproofcoltrials2 = /** @type {(inputs: Fixproofcoltrials2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trials`)
+	return /** @type {LocalizedString} */ (`Спроби`)
 };
 
 /**

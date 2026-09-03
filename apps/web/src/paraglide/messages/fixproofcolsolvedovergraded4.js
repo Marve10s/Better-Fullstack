@@ -10,35 +10,35 @@ const en_fixproofcolsolvedovergraded4 = /** @type {(inputs: Fixproofcolsolvedove
 };
 
 const es_fixproofcolsolvedovergraded4 = /** @type {(inputs: Fixproofcolsolvedovergraded4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved / graded`)
+	return /** @type {LocalizedString} */ (`Resueltas / evaluadas`)
 };
 
 const zh_fixproofcolsolvedovergraded4 = /** @type {(inputs: Fixproofcolsolvedovergraded4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved / graded`)
+	return /** @type {LocalizedString} */ (`已解决 / 已评测`)
 };
 
 const ja_fixproofcolsolvedovergraded4 = /** @type {(inputs: Fixproofcolsolvedovergraded4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved / graded`)
+	return /** @type {LocalizedString} */ (`解決 / 採点`)
 };
 
 const ko_fixproofcolsolvedovergraded4 = /** @type {(inputs: Fixproofcolsolvedovergraded4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved / graded`)
+	return /** @type {LocalizedString} */ (`해결 / 채점`)
 };
 
 const zh_hant1_fixproofcolsolvedovergraded4 = /** @type {(inputs: Fixproofcolsolvedovergraded4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved / graded`)
+	return /** @type {LocalizedString} */ (`已解決 / 已評測`)
 };
 
 const de_fixproofcolsolvedovergraded4 = /** @type {(inputs: Fixproofcolsolvedovergraded4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved / graded`)
+	return /** @type {LocalizedString} */ (`Gelöst / bewertet`)
 };
 
 const fr_fixproofcolsolvedovergraded4 = /** @type {(inputs: Fixproofcolsolvedovergraded4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved / graded`)
+	return /** @type {LocalizedString} */ (`Résolues / évaluées`)
 };
 
 const uk_fixproofcolsolvedovergraded4 = /** @type {(inputs: Fixproofcolsolvedovergraded4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Solved / graded`)
+	return /** @type {LocalizedString} */ (`Вирішено / оцінено`)
 };
 
 /**

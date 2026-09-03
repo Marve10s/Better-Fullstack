@@ -10,35 +10,35 @@ const en_fixproofstatusgradedlabel3 = /** @type {(inputs: Fixproofstatusgradedla
 };
 
 const es_fixproofstatusgradedlabel3 = /** @type {(inputs: Fixproofstatusgradedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tasks graded`)
+	return /** @type {LocalizedString} */ (`Tareas evaluadas`)
 };
 
 const zh_fixproofstatusgradedlabel3 = /** @type {(inputs: Fixproofstatusgradedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tasks graded`)
+	return /** @type {LocalizedString} */ (`已评测任务`)
 };
 
 const ja_fixproofstatusgradedlabel3 = /** @type {(inputs: Fixproofstatusgradedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tasks graded`)
+	return /** @type {LocalizedString} */ (`採点済みタスク`)
 };
 
 const ko_fixproofstatusgradedlabel3 = /** @type {(inputs: Fixproofstatusgradedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tasks graded`)
+	return /** @type {LocalizedString} */ (`채점한 태스크`)
 };
 
 const zh_hant1_fixproofstatusgradedlabel3 = /** @type {(inputs: Fixproofstatusgradedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tasks graded`)
+	return /** @type {LocalizedString} */ (`已評測任務`)
 };
 
 const de_fixproofstatusgradedlabel3 = /** @type {(inputs: Fixproofstatusgradedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tasks graded`)
+	return /** @type {LocalizedString} */ (`Bewertete Aufgaben`)
 };
 
 const fr_fixproofstatusgradedlabel3 = /** @type {(inputs: Fixproofstatusgradedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tasks graded`)
+	return /** @type {LocalizedString} */ (`Tâches évaluées`)
 };
 
 const uk_fixproofstatusgradedlabel3 = /** @type {(inputs: Fixproofstatusgradedlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tasks graded`)
+	return /** @type {LocalizedString} */ (`Оцінено задач`)
 };
 
 /**

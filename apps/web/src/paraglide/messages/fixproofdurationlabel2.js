@@ -10,35 +10,35 @@ const en_fixproofdurationlabel2 = /** @type {(inputs: Fixproofdurationlabel2Inpu
 };
 
 const es_fixproofdurationlabel2 = /** @type {(inputs: Fixproofdurationlabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agent time`)
+	return /** @type {LocalizedString} */ (`Tiempo del agente`)
 };
 
 const zh_fixproofdurationlabel2 = /** @type {(inputs: Fixproofdurationlabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agent time`)
+	return /** @type {LocalizedString} */ (`代理用时`)
 };
 
 const ja_fixproofdurationlabel2 = /** @type {(inputs: Fixproofdurationlabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agent time`)
+	return /** @type {LocalizedString} */ (`エージェントの作業時間`)
 };
 
 const ko_fixproofdurationlabel2 = /** @type {(inputs: Fixproofdurationlabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agent time`)
+	return /** @type {LocalizedString} */ (`에이전트 작업 시간`)
 };
 
 const zh_hant1_fixproofdurationlabel2 = /** @type {(inputs: Fixproofdurationlabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agent time`)
+	return /** @type {LocalizedString} */ (`代理程式用時`)
 };
 
 const de_fixproofdurationlabel2 = /** @type {(inputs: Fixproofdurationlabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agent time`)
+	return /** @type {LocalizedString} */ (`Agentenzeit`)
 };
 
 const fr_fixproofdurationlabel2 = /** @type {(inputs: Fixproofdurationlabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agent time`)
+	return /** @type {LocalizedString} */ (`Temps de l'agent`)
 };
 
 const uk_fixproofdurationlabel2 = /** @type {(inputs: Fixproofdurationlabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agent time`)
+	return /** @type {LocalizedString} */ (`Час агента`)
 };
 
 /**

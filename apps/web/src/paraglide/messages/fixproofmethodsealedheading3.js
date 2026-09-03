@@ -10,35 +10,35 @@ const en_fixproofmethodsealedheading3 = /** @type {(inputs: Fixproofmethodsealed
 };
 
 const es_fixproofmethodsealedheading3 = /** @type {(inputs: Fixproofmethodsealedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Why the tasks stay sealed`)
+	return /** @type {LocalizedString} */ (`Por qué las tareas siguen selladas`)
 };
 
 const zh_fixproofmethodsealedheading3 = /** @type {(inputs: Fixproofmethodsealedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Why the tasks stay sealed`)
+	return /** @type {LocalizedString} */ (`任务为什么保持封闭`)
 };
 
 const ja_fixproofmethodsealedheading3 = /** @type {(inputs: Fixproofmethodsealedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Why the tasks stay sealed`)
+	return /** @type {LocalizedString} */ (`タスクを封印しておく理由`)
 };
 
 const ko_fixproofmethodsealedheading3 = /** @type {(inputs: Fixproofmethodsealedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Why the tasks stay sealed`)
+	return /** @type {LocalizedString} */ (`태스크를 봉인해 두는 이유`)
 };
 
 const zh_hant1_fixproofmethodsealedheading3 = /** @type {(inputs: Fixproofmethodsealedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Why the tasks stay sealed`)
+	return /** @type {LocalizedString} */ (`任務為什麼保持封閉`)
 };
 
 const de_fixproofmethodsealedheading3 = /** @type {(inputs: Fixproofmethodsealedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Why the tasks stay sealed`)
+	return /** @type {LocalizedString} */ (`Warum die Aufgaben versiegelt bleiben`)
 };
 
 const fr_fixproofmethodsealedheading3 = /** @type {(inputs: Fixproofmethodsealedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Why the tasks stay sealed`)
+	return /** @type {LocalizedString} */ (`Pourquoi les tâches restent scellées`)
 };
 
 const uk_fixproofmethodsealedheading3 = /** @type {(inputs: Fixproofmethodsealedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Why the tasks stay sealed`)
+	return /** @type {LocalizedString} */ (`Чому задачі лишаються закритими`)
 };
 
 /**

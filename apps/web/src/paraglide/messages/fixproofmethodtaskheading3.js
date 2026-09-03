@@ -10,35 +10,35 @@ const en_fixproofmethodtaskheading3 = /** @type {(inputs: Fixproofmethodtaskhead
 };
 
 const es_fixproofmethodtaskheading3 = /** @type {(inputs: Fixproofmethodtaskheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Task anatomy`)
+	return /** @type {LocalizedString} */ (`Anatomía de una tarea`)
 };
 
 const zh_fixproofmethodtaskheading3 = /** @type {(inputs: Fixproofmethodtaskheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Task anatomy`)
+	return /** @type {LocalizedString} */ (`任务的构成`)
 };
 
 const ja_fixproofmethodtaskheading3 = /** @type {(inputs: Fixproofmethodtaskheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Task anatomy`)
+	return /** @type {LocalizedString} */ (`タスクの構成`)
 };
 
 const ko_fixproofmethodtaskheading3 = /** @type {(inputs: Fixproofmethodtaskheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Task anatomy`)
+	return /** @type {LocalizedString} */ (`태스크의 구성`)
 };
 
 const zh_hant1_fixproofmethodtaskheading3 = /** @type {(inputs: Fixproofmethodtaskheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Task anatomy`)
+	return /** @type {LocalizedString} */ (`任務的構成`)
 };
 
 const de_fixproofmethodtaskheading3 = /** @type {(inputs: Fixproofmethodtaskheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Task anatomy`)
+	return /** @type {LocalizedString} */ (`Aufbau einer Aufgabe`)
 };
 
 const fr_fixproofmethodtaskheading3 = /** @type {(inputs: Fixproofmethodtaskheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Task anatomy`)
+	return /** @type {LocalizedString} */ (`Anatomie d'une tâche`)
 };
 
 const uk_fixproofmethodtaskheading3 = /** @type {(inputs: Fixproofmethodtaskheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Task anatomy`)
+	return /** @type {LocalizedString} */ (`Будова задачі`)
 };
 
 /**

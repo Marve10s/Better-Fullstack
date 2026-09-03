@@ -18,11 +18,11 @@ const zh_fixproofcolharness2 = /** @type {(inputs: Fixproofcolharness2Inputs) =>
 };
 
 const ja_fixproofcolharness2 = /** @type {(inputs: Fixproofcolharness2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Harness`)
+	return /** @type {LocalizedString} */ (`ハーネス`)
 };
 
 const ko_fixproofcolharness2 = /** @type {(inputs: Fixproofcolharness2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Harness`)
+	return /** @type {LocalizedString} */ (`하네스`)
 };
 
 const zh_hant1_fixproofcolharness2 = /** @type {(inputs: Fixproofcolharness2Inputs) => LocalizedString} */ () => {

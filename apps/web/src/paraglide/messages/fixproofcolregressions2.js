@@ -10,35 +10,35 @@ const en_fixproofcolregressions2 = /** @type {(inputs: Fixproofcolregressions2In
 };
 
 const es_fixproofcolregressions2 = /** @type {(inputs: Fixproofcolregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Regressions`)
+	return /** @type {LocalizedString} */ (`Regresiones`)
 };
 
 const zh_fixproofcolregressions2 = /** @type {(inputs: Fixproofcolregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Regressions`)
+	return /** @type {LocalizedString} */ (`回归`)
 };
 
 const ja_fixproofcolregressions2 = /** @type {(inputs: Fixproofcolregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Regressions`)
+	return /** @type {LocalizedString} */ (`リグレッション`)
 };
 
 const ko_fixproofcolregressions2 = /** @type {(inputs: Fixproofcolregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Regressions`)
+	return /** @type {LocalizedString} */ (`회귀`)
 };
 
 const zh_hant1_fixproofcolregressions2 = /** @type {(inputs: Fixproofcolregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Regressions`)
+	return /** @type {LocalizedString} */ (`迴歸`)
 };
 
 const de_fixproofcolregressions2 = /** @type {(inputs: Fixproofcolregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Regressions`)
+	return /** @type {LocalizedString} */ (`Regressionen`)
 };
 
 const fr_fixproofcolregressions2 = /** @type {(inputs: Fixproofcolregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Regressions`)
+	return /** @type {LocalizedString} */ (`Régressions`)
 };
 
 const uk_fixproofcolregressions2 = /** @type {(inputs: Fixproofcolregressions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Regressions`)
+	return /** @type {LocalizedString} */ (`Регресії`)
 };
 
 /**

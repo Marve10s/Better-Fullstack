@@ -10,35 +10,35 @@ const en_fixproofdefinitionaria2 = /** @type {(inputs: Fixproofdefinitionaria2In
 };
 
 const es_fixproofdefinitionaria2 = /** @type {(inputs: Fixproofdefinitionaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`What does ${i?.column} mean?`)
+	return /** @type {LocalizedString} */ (`¿Qué significa ${i?.column}?`)
 };
 
 const zh_fixproofdefinitionaria2 = /** @type {(inputs: Fixproofdefinitionaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`What does ${i?.column} mean?`)
+	return /** @type {LocalizedString} */ (`${i?.column} 是什么意思？`)
 };
 
 const ja_fixproofdefinitionaria2 = /** @type {(inputs: Fixproofdefinitionaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`What does ${i?.column} mean?`)
+	return /** @type {LocalizedString} */ (`${i?.column} の意味は？`)
 };
 
 const ko_fixproofdefinitionaria2 = /** @type {(inputs: Fixproofdefinitionaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`What does ${i?.column} mean?`)
+	return /** @type {LocalizedString} */ (`${i?.column}의 의미는 무엇인가요?`)
 };
 
 const zh_hant1_fixproofdefinitionaria2 = /** @type {(inputs: Fixproofdefinitionaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`What does ${i?.column} mean?`)
+	return /** @type {LocalizedString} */ (`${i?.column} 是什麼意思？`)
 };
 
 const de_fixproofdefinitionaria2 = /** @type {(inputs: Fixproofdefinitionaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`What does ${i?.column} mean?`)
+	return /** @type {LocalizedString} */ (`Was bedeutet ${i?.column}?`)
 };
 
 const fr_fixproofdefinitionaria2 = /** @type {(inputs: Fixproofdefinitionaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`What does ${i?.column} mean?`)
+	return /** @type {LocalizedString} */ (`Que signifie ${i?.column} ?`)
 };
 
 const uk_fixproofdefinitionaria2 = /** @type {(inputs: Fixproofdefinitionaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`What does ${i?.column} mean?`)
+	return /** @type {LocalizedString} */ (`Що означає ${i?.column}?`)
 };
 
 /**

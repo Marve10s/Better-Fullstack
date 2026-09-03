@@ -10,35 +10,35 @@ const en_fixproofoutcomesolvednote3 = /** @type {(inputs: Fixproofoutcomesolvedn
 };
 
 const es_fixproofoutcomesolvednote3 = /** @type {(inputs: Fixproofoutcomesolvednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Every hidden check passed and nothing regressed.`)
+	return /** @type {LocalizedString} */ (`Pasaron todas las comprobaciones ocultas y nada se rompió.`)
 };
 
 const zh_fixproofoutcomesolvednote3 = /** @type {(inputs: Fixproofoutcomesolvednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Every hidden check passed and nothing regressed.`)
+	return /** @type {LocalizedString} */ (`所有隐藏检查都通过，也没有任何回归。`)
 };
 
 const ja_fixproofoutcomesolvednote3 = /** @type {(inputs: Fixproofoutcomesolvednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Every hidden check passed and nothing regressed.`)
+	return /** @type {LocalizedString} */ (`すべての非公開チェックに合格し、リグレッションもありませんでした。`)
 };
 
 const ko_fixproofoutcomesolvednote3 = /** @type {(inputs: Fixproofoutcomesolvednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Every hidden check passed and nothing regressed.`)
+	return /** @type {LocalizedString} */ (`모든 비공개 검사를 통과했고 회귀도 없었습니다.`)
 };
 
 const zh_hant1_fixproofoutcomesolvednote3 = /** @type {(inputs: Fixproofoutcomesolvednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Every hidden check passed and nothing regressed.`)
+	return /** @type {LocalizedString} */ (`所有隱藏檢查都通過，也沒有任何迴歸。`)
 };
 
 const de_fixproofoutcomesolvednote3 = /** @type {(inputs: Fixproofoutcomesolvednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Every hidden check passed and nothing regressed.`)
+	return /** @type {LocalizedString} */ (`Jede verborgene Prüfung wurde bestanden und es gab keine Regression.`)
 };
 
 const fr_fixproofoutcomesolvednote3 = /** @type {(inputs: Fixproofoutcomesolvednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Every hidden check passed and nothing regressed.`)
+	return /** @type {LocalizedString} */ (`Toutes les vérifications cachées sont passées et rien n'a régressé.`)
 };
 
 const uk_fixproofoutcomesolvednote3 = /** @type {(inputs: Fixproofoutcomesolvednote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Every hidden check passed and nothing regressed.`)
+	return /** @type {LocalizedString} */ (`Усі приховані перевірки пройшли, і нічого не зламалося.`)
 };
 
 /**

@@ -10,35 +10,35 @@ const en_fixproofoutcomepending2 = /** @type {(inputs: Fixproofoutcomepending2In
 };
 
 const es_fixproofoutcomepending2 = /** @type {(inputs: Fixproofoutcomepending2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pending`)
+	return /** @type {LocalizedString} */ (`Pendiente`)
 };
 
 const zh_fixproofoutcomepending2 = /** @type {(inputs: Fixproofoutcomepending2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pending`)
+	return /** @type {LocalizedString} */ (`待运行`)
 };
 
 const ja_fixproofoutcomepending2 = /** @type {(inputs: Fixproofoutcomepending2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pending`)
+	return /** @type {LocalizedString} */ (`保留中`)
 };
 
 const ko_fixproofoutcomepending2 = /** @type {(inputs: Fixproofoutcomepending2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pending`)
+	return /** @type {LocalizedString} */ (`대기 중`)
 };
 
 const zh_hant1_fixproofoutcomepending2 = /** @type {(inputs: Fixproofoutcomepending2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pending`)
+	return /** @type {LocalizedString} */ (`待執行`)
 };
 
 const de_fixproofoutcomepending2 = /** @type {(inputs: Fixproofoutcomepending2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pending`)
+	return /** @type {LocalizedString} */ (`Ausstehend`)
 };
 
 const fr_fixproofoutcomepending2 = /** @type {(inputs: Fixproofoutcomepending2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pending`)
+	return /** @type {LocalizedString} */ (`En attente`)
 };
 
 const uk_fixproofoutcomepending2 = /** @type {(inputs: Fixproofoutcomepending2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pending`)
+	return /** @type {LocalizedString} */ (`В очікуванні`)
 };
 
 /**

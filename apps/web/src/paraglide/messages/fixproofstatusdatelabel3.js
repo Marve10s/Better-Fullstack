@@ -10,27 +10,27 @@ const en_fixproofstatusdatelabel3 = /** @type {(inputs: Fixproofstatusdatelabel3
 };
 
 const es_fixproofstatusdatelabel3 = /** @type {(inputs: Fixproofstatusdatelabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Date`)
+	return /** @type {LocalizedString} */ (`Fecha`)
 };
 
 const zh_fixproofstatusdatelabel3 = /** @type {(inputs: Fixproofstatusdatelabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Date`)
+	return /** @type {LocalizedString} */ (`日期`)
 };
 
 const ja_fixproofstatusdatelabel3 = /** @type {(inputs: Fixproofstatusdatelabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Date`)
+	return /** @type {LocalizedString} */ (`日付`)
 };
 
 const ko_fixproofstatusdatelabel3 = /** @type {(inputs: Fixproofstatusdatelabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Date`)
+	return /** @type {LocalizedString} */ (`날짜`)
 };
 
 const zh_hant1_fixproofstatusdatelabel3 = /** @type {(inputs: Fixproofstatusdatelabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Date`)
+	return /** @type {LocalizedString} */ (`日期`)
 };
 
 const de_fixproofstatusdatelabel3 = /** @type {(inputs: Fixproofstatusdatelabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Date`)
+	return /** @type {LocalizedString} */ (`Datum`)
 };
 
 const fr_fixproofstatusdatelabel3 = /** @type {(inputs: Fixproofstatusdatelabel3Inputs) => LocalizedString} */ () => {
@@ -38,7 +38,7 @@ const fr_fixproofstatusdatelabel3 = /** @type {(inputs: Fixproofstatusdatelabel3
 };
 
 const uk_fixproofstatusdatelabel3 = /** @type {(inputs: Fixproofstatusdatelabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Date`)
+	return /** @type {LocalizedString} */ (`Дата`)
 };
 
 /**

@@ -10,35 +10,35 @@ const en_fixproofsourceprivate2 = /** @type {(inputs: Fixproofsourceprivate2Inpu
 };
 
 const es_fixproofsourceprivate2 = /** @type {(inputs: Fixproofsourceprivate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Private repository`)
+	return /** @type {LocalizedString} */ (`Repositorio privado`)
 };
 
 const zh_fixproofsourceprivate2 = /** @type {(inputs: Fixproofsourceprivate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Private repository`)
+	return /** @type {LocalizedString} */ (`私有仓库`)
 };
 
 const ja_fixproofsourceprivate2 = /** @type {(inputs: Fixproofsourceprivate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Private repository`)
+	return /** @type {LocalizedString} */ (`非公開リポジトリ`)
 };
 
 const ko_fixproofsourceprivate2 = /** @type {(inputs: Fixproofsourceprivate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Private repository`)
+	return /** @type {LocalizedString} */ (`비공개 저장소`)
 };
 
 const zh_hant1_fixproofsourceprivate2 = /** @type {(inputs: Fixproofsourceprivate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Private repository`)
+	return /** @type {LocalizedString} */ (`私有倉庫`)
 };
 
 const de_fixproofsourceprivate2 = /** @type {(inputs: Fixproofsourceprivate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Private repository`)
+	return /** @type {LocalizedString} */ (`Privates Repository`)
 };
 
 const fr_fixproofsourceprivate2 = /** @type {(inputs: Fixproofsourceprivate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Private repository`)
+	return /** @type {LocalizedString} */ (`Dépôt privé`)
 };
 
 const uk_fixproofsourceprivate2 = /** @type {(inputs: Fixproofsourceprivate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Private repository`)
+	return /** @type {LocalizedString} */ (`Приватний репозиторій`)
 };
 
 /**

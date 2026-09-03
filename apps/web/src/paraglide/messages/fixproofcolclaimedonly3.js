@@ -10,35 +10,35 @@ const en_fixproofcolclaimedonly3 = /** @type {(inputs: Fixproofcolclaimedonly3In
 };
 
 const es_fixproofcolclaimedonly3 = /** @type {(inputs: Fixproofcolclaimedonly3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Claimed, not done`)
+	return /** @type {LocalizedString} */ (`Declarado, no hecho`)
 };
 
 const zh_fixproofcolclaimedonly3 = /** @type {(inputs: Fixproofcolclaimedonly3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Claimed, not done`)
+	return /** @type {LocalizedString} */ (`只是声称，并未完成`)
 };
 
 const ja_fixproofcolclaimedonly3 = /** @type {(inputs: Fixproofcolclaimedonly3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Claimed, not done`)
+	return /** @type {LocalizedString} */ (`主張のみ、未実施`)
 };
 
 const ko_fixproofcolclaimedonly3 = /** @type {(inputs: Fixproofcolclaimedonly3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Claimed, not done`)
+	return /** @type {LocalizedString} */ (`주장만 하고 안 함`)
 };
 
 const zh_hant1_fixproofcolclaimedonly3 = /** @type {(inputs: Fixproofcolclaimedonly3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Claimed, not done`)
+	return /** @type {LocalizedString} */ (`只是聲稱，並未完成`)
 };
 
 const de_fixproofcolclaimedonly3 = /** @type {(inputs: Fixproofcolclaimedonly3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Claimed, not done`)
+	return /** @type {LocalizedString} */ (`Behauptet, nicht erledigt`)
 };
 
 const fr_fixproofcolclaimedonly3 = /** @type {(inputs: Fixproofcolclaimedonly3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Claimed, not done`)
+	return /** @type {LocalizedString} */ (`Annoncé, pas fait`)
 };
 
 const uk_fixproofcolclaimedonly3 = /** @type {(inputs: Fixproofcolclaimedonly3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Claimed, not done`)
+	return /** @type {LocalizedString} */ (`Заявлено, не зроблено`)
 };
 
 /**

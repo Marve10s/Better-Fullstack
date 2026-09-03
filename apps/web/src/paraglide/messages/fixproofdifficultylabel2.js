@@ -10,35 +10,35 @@ const en_fixproofdifficultylabel2 = /** @type {(inputs: Fixproofdifficultylabel2
 };
 
 const es_fixproofdifficultylabel2 = /** @type {(inputs: Fixproofdifficultylabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Difficulty`)
+	return /** @type {LocalizedString} */ (`Dificultad`)
 };
 
 const zh_fixproofdifficultylabel2 = /** @type {(inputs: Fixproofdifficultylabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Difficulty`)
+	return /** @type {LocalizedString} */ (`难度`)
 };
 
 const ja_fixproofdifficultylabel2 = /** @type {(inputs: Fixproofdifficultylabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Difficulty`)
+	return /** @type {LocalizedString} */ (`難易度`)
 };
 
 const ko_fixproofdifficultylabel2 = /** @type {(inputs: Fixproofdifficultylabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Difficulty`)
+	return /** @type {LocalizedString} */ (`난이도`)
 };
 
 const zh_hant1_fixproofdifficultylabel2 = /** @type {(inputs: Fixproofdifficultylabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Difficulty`)
+	return /** @type {LocalizedString} */ (`難度`)
 };
 
 const de_fixproofdifficultylabel2 = /** @type {(inputs: Fixproofdifficultylabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Difficulty`)
+	return /** @type {LocalizedString} */ (`Schwierigkeit`)
 };
 
 const fr_fixproofdifficultylabel2 = /** @type {(inputs: Fixproofdifficultylabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Difficulty`)
+	return /** @type {LocalizedString} */ (`Difficulté`)
 };
 
 const uk_fixproofdifficultylabel2 = /** @type {(inputs: Fixproofdifficultylabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Difficulty`)
+	return /** @type {LocalizedString} */ (`Складність`)
 };
 
 /**

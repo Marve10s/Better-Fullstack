@@ -10,35 +10,35 @@ const en_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inpu
 };
 
 const es_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`real issues.`)
+	return /** @type {LocalizedString} */ (`errores reales.`)
 };
 
 const zh_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`real issues.`)
+	return /** @type {LocalizedString} */ (`评测你的代理。`)
 };
 
 const ja_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`real issues.`)
+	return /** @type {LocalizedString} */ (`実際の不具合。`)
 };
 
 const ko_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`real issues.`)
+	return /** @type {LocalizedString} */ (`실제 이슈.`)
 };
 
 const zh_hant1_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`real issues.`)
+	return /** @type {LocalizedString} */ (`評測你的代理程式。`)
 };
 
 const de_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`real issues.`)
+	return /** @type {LocalizedString} */ (`echten Fehlern.`)
 };
 
 const fr_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`real issues.`)
+	return /** @type {LocalizedString} */ (`des bugs réels.`)
 };
 
 const uk_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`real issues.`)
+	return /** @type {LocalizedString} */ (`реальних помилках.`)
 };
 
 /**

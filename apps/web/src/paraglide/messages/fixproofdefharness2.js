@@ -10,35 +10,35 @@ const en_fixproofdefharness2 = /** @type {(inputs: Fixproofdefharness2Inputs) =>
 };
 
 const es_fixproofdefharness2 = /** @type {(inputs: Fixproofdefharness2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The agent CLI that drove the model.`)
+	return /** @type {LocalizedString} */ (`La CLI de agente que condujo el modelo.`)
 };
 
 const zh_fixproofdefharness2 = /** @type {(inputs: Fixproofdefharness2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The agent CLI that drove the model.`)
+	return /** @type {LocalizedString} */ (`驱动模型的代理 CLI。`)
 };
 
 const ja_fixproofdefharness2 = /** @type {(inputs: Fixproofdefharness2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The agent CLI that drove the model.`)
+	return /** @type {LocalizedString} */ (`モデルを動かしたエージェント CLI です。`)
 };
 
 const ko_fixproofdefharness2 = /** @type {(inputs: Fixproofdefharness2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The agent CLI that drove the model.`)
+	return /** @type {LocalizedString} */ (`모델을 구동한 에이전트 CLI입니다.`)
 };
 
 const zh_hant1_fixproofdefharness2 = /** @type {(inputs: Fixproofdefharness2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The agent CLI that drove the model.`)
+	return /** @type {LocalizedString} */ (`驅動模型的代理程式 CLI。`)
 };
 
 const de_fixproofdefharness2 = /** @type {(inputs: Fixproofdefharness2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The agent CLI that drove the model.`)
+	return /** @type {LocalizedString} */ (`Das Agenten-CLI, das das Modell gesteuert hat.`)
 };
 
 const fr_fixproofdefharness2 = /** @type {(inputs: Fixproofdefharness2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The agent CLI that drove the model.`)
+	return /** @type {LocalizedString} */ (`La CLI d'agent qui a piloté le modèle.`)
 };
 
 const uk_fixproofdefharness2 = /** @type {(inputs: Fixproofdefharness2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The agent CLI that drove the model.`)
+	return /** @type {LocalizedString} */ (`CLI агента, який керував моделлю.`)
 };
 
 /**

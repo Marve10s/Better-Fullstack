@@ -10,35 +10,35 @@ const en_fixproofprovenancevalidationlabel3 = /** @type {(inputs: Fixproofproven
 };
 
 const es_fixproofprovenancevalidationlabel3 = /** @type {(inputs: Fixproofprovenancevalidationlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The tests were validated first`)
+	return /** @type {LocalizedString} */ (`Las pruebas se validaron primero`)
 };
 
 const zh_fixproofprovenancevalidationlabel3 = /** @type {(inputs: Fixproofprovenancevalidationlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The tests were validated first`)
+	return /** @type {LocalizedString} */ (`测试先经过验证`)
 };
 
 const ja_fixproofprovenancevalidationlabel3 = /** @type {(inputs: Fixproofprovenancevalidationlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The tests were validated first`)
+	return /** @type {LocalizedString} */ (`テストは先に検証しました`)
 };
 
 const ko_fixproofprovenancevalidationlabel3 = /** @type {(inputs: Fixproofprovenancevalidationlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The tests were validated first`)
+	return /** @type {LocalizedString} */ (`테스트를 먼저 검증했습니다`)
 };
 
 const zh_hant1_fixproofprovenancevalidationlabel3 = /** @type {(inputs: Fixproofprovenancevalidationlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The tests were validated first`)
+	return /** @type {LocalizedString} */ (`測試先經過驗證`)
 };
 
 const de_fixproofprovenancevalidationlabel3 = /** @type {(inputs: Fixproofprovenancevalidationlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The tests were validated first`)
+	return /** @type {LocalizedString} */ (`Die Tests wurden zuerst validiert`)
 };
 
 const fr_fixproofprovenancevalidationlabel3 = /** @type {(inputs: Fixproofprovenancevalidationlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The tests were validated first`)
+	return /** @type {LocalizedString} */ (`Les tests ont d'abord été validés`)
 };
 
 const uk_fixproofprovenancevalidationlabel3 = /** @type {(inputs: Fixproofprovenancevalidationlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The tests were validated first`)
+	return /** @type {LocalizedString} */ (`Тести спершу перевірили`)
 };
 
 /**

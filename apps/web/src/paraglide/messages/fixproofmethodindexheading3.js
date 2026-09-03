@@ -10,35 +10,35 @@ const en_fixproofmethodindexheading3 = /** @type {(inputs: Fixproofmethodindexhe
 };
 
 const es_fixproofmethodindexheading3 = /** @type {(inputs: Fixproofmethodindexheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The two indexes`)
+	return /** @type {LocalizedString} */ (`Los dos índices`)
 };
 
 const zh_fixproofmethodindexheading3 = /** @type {(inputs: Fixproofmethodindexheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The two indexes`)
+	return /** @type {LocalizedString} */ (`两个指数`)
 };
 
 const ja_fixproofmethodindexheading3 = /** @type {(inputs: Fixproofmethodindexheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The two indexes`)
+	return /** @type {LocalizedString} */ (`2 つの指数`)
 };
 
 const ko_fixproofmethodindexheading3 = /** @type {(inputs: Fixproofmethodindexheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The two indexes`)
+	return /** @type {LocalizedString} */ (`두 지수`)
 };
 
 const zh_hant1_fixproofmethodindexheading3 = /** @type {(inputs: Fixproofmethodindexheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The two indexes`)
+	return /** @type {LocalizedString} */ (`兩個指數`)
 };
 
 const de_fixproofmethodindexheading3 = /** @type {(inputs: Fixproofmethodindexheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The two indexes`)
+	return /** @type {LocalizedString} */ (`Die beiden Indizes`)
 };
 
 const fr_fixproofmethodindexheading3 = /** @type {(inputs: Fixproofmethodindexheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The two indexes`)
+	return /** @type {LocalizedString} */ (`Les deux indices`)
 };
 
 const uk_fixproofmethodindexheading3 = /** @type {(inputs: Fixproofmethodindexheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The two indexes`)
+	return /** @type {LocalizedString} */ (`Два індекси`)
 };
 
 /**

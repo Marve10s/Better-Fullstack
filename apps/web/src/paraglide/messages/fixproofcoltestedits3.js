@@ -10,35 +10,35 @@ const en_fixproofcoltestedits3 = /** @type {(inputs: Fixproofcoltestedits3Inputs
 };
 
 const es_fixproofcoltestedits3 = /** @type {(inputs: Fixproofcoltestedits3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Test edits reverted`)
+	return /** @type {LocalizedString} */ (`Cambios en pruebas revertidos`)
 };
 
 const zh_fixproofcoltestedits3 = /** @type {(inputs: Fixproofcoltestedits3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Test edits reverted`)
+	return /** @type {LocalizedString} */ (`已还原的测试改动`)
 };
 
 const ja_fixproofcoltestedits3 = /** @type {(inputs: Fixproofcoltestedits3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Test edits reverted`)
+	return /** @type {LocalizedString} */ (`差し戻したテスト変更`)
 };
 
 const ko_fixproofcoltestedits3 = /** @type {(inputs: Fixproofcoltestedits3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Test edits reverted`)
+	return /** @type {LocalizedString} */ (`되돌린 테스트 수정`)
 };
 
 const zh_hant1_fixproofcoltestedits3 = /** @type {(inputs: Fixproofcoltestedits3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Test edits reverted`)
+	return /** @type {LocalizedString} */ (`已還原的測試改動`)
 };
 
 const de_fixproofcoltestedits3 = /** @type {(inputs: Fixproofcoltestedits3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Test edits reverted`)
+	return /** @type {LocalizedString} */ (`Test-Änderungen zurückgesetzt`)
 };
 
 const fr_fixproofcoltestedits3 = /** @type {(inputs: Fixproofcoltestedits3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Test edits reverted`)
+	return /** @type {LocalizedString} */ (`Modifications de tests annulées`)
 };
 
 const uk_fixproofcoltestedits3 = /** @type {(inputs: Fixproofcoltestedits3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Test edits reverted`)
+	return /** @type {LocalizedString} */ (`Скасовані зміни в тестах`)
 };
 
 /**

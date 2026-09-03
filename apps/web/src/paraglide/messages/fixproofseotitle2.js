@@ -10,35 +10,35 @@ const en_fixproofseotitle2 = /** @type {(inputs: Fixproofseotitle2Inputs) => Loc
 };
 
 const es_fixproofseotitle2 = /** @type {(inputs: Fixproofseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof: sealed coding-agent benchmark`)
+	return /** @type {LocalizedString} */ (`Fixproof: benchmark sellado para agentes de programación`)
 };
 
 const zh_fixproofseotitle2 = /** @type {(inputs: Fixproofseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof: sealed coding-agent benchmark`)
+	return /** @type {LocalizedString} */ (`Fixproof：封闭式编程代理基准测试`)
 };
 
 const ja_fixproofseotitle2 = /** @type {(inputs: Fixproofseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof: sealed coding-agent benchmark`)
+	return /** @type {LocalizedString} */ (`Fixproof: 封印されたコーディングエージェントのベンチマーク`)
 };
 
 const ko_fixproofseotitle2 = /** @type {(inputs: Fixproofseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof: sealed coding-agent benchmark`)
+	return /** @type {LocalizedString} */ (`Fixproof: 봉인된 코딩 에이전트 벤치마크`)
 };
 
 const zh_hant1_fixproofseotitle2 = /** @type {(inputs: Fixproofseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof: sealed coding-agent benchmark`)
+	return /** @type {LocalizedString} */ (`Fixproof：封閉式程式代理基準測試`)
 };
 
 const de_fixproofseotitle2 = /** @type {(inputs: Fixproofseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof: sealed coding-agent benchmark`)
+	return /** @type {LocalizedString} */ (`Fixproof: versiegelter Benchmark für Coding-Agenten`)
 };
 
 const fr_fixproofseotitle2 = /** @type {(inputs: Fixproofseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof: sealed coding-agent benchmark`)
+	return /** @type {LocalizedString} */ (`Fixproof : benchmark scellé pour agents de codage`)
 };
 
 const uk_fixproofseotitle2 = /** @type {(inputs: Fixproofseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof: sealed coding-agent benchmark`)
+	return /** @type {LocalizedString} */ (`Fixproof: закритий бенчмарк для агентів для коду`)
 };
 
 /**

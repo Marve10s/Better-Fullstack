@@ -10,35 +10,35 @@ const en_fixproofoutcomependingnote3 = /** @type {(inputs: Fixproofoutcomependin
 };
 
 const es_fixproofoutcomependingnote3 = /** @type {(inputs: Fixproofoutcomependingnote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Not run yet.`)
+	return /** @type {LocalizedString} */ (`Todavía no se ha ejecutado.`)
 };
 
 const zh_fixproofoutcomependingnote3 = /** @type {(inputs: Fixproofoutcomependingnote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Not run yet.`)
+	return /** @type {LocalizedString} */ (`尚未运行。`)
 };
 
 const ja_fixproofoutcomependingnote3 = /** @type {(inputs: Fixproofoutcomependingnote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Not run yet.`)
+	return /** @type {LocalizedString} */ (`まだ実行していません。`)
 };
 
 const ko_fixproofoutcomependingnote3 = /** @type {(inputs: Fixproofoutcomependingnote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Not run yet.`)
+	return /** @type {LocalizedString} */ (`아직 실행하지 않았습니다.`)
 };
 
 const zh_hant1_fixproofoutcomependingnote3 = /** @type {(inputs: Fixproofoutcomependingnote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Not run yet.`)
+	return /** @type {LocalizedString} */ (`尚未執行。`)
 };
 
 const de_fixproofoutcomependingnote3 = /** @type {(inputs: Fixproofoutcomependingnote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Not run yet.`)
+	return /** @type {LocalizedString} */ (`Noch nicht ausgeführt.`)
 };
 
 const fr_fixproofoutcomependingnote3 = /** @type {(inputs: Fixproofoutcomependingnote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Not run yet.`)
+	return /** @type {LocalizedString} */ (`Pas encore exécutée.`)
 };
 
 const uk_fixproofoutcomependingnote3 = /** @type {(inputs: Fixproofoutcomependingnote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Not run yet.`)
+	return /** @type {LocalizedString} */ (`Ще не запускали.`)
 };
 
 /**

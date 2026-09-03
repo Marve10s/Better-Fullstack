@@ -10,35 +10,35 @@ const en_fixproofprovenanceheading2 = /** @type {(inputs: Fixproofprovenancehead
 };
 
 const es_fixproofprovenanceheading2 = /** @type {(inputs: Fixproofprovenanceheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How these numbers were produced`)
+	return /** @type {LocalizedString} */ (`Cómo se produjeron estas cifras`)
 };
 
 const zh_fixproofprovenanceheading2 = /** @type {(inputs: Fixproofprovenanceheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How these numbers were produced`)
+	return /** @type {LocalizedString} */ (`这些数字是怎么来的`)
 };
 
 const ja_fixproofprovenanceheading2 = /** @type {(inputs: Fixproofprovenanceheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How these numbers were produced`)
+	return /** @type {LocalizedString} */ (`この数値の作り方`)
 };
 
 const ko_fixproofprovenanceheading2 = /** @type {(inputs: Fixproofprovenanceheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How these numbers were produced`)
+	return /** @type {LocalizedString} */ (`이 수치를 만든 방법`)
 };
 
 const zh_hant1_fixproofprovenanceheading2 = /** @type {(inputs: Fixproofprovenanceheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How these numbers were produced`)
+	return /** @type {LocalizedString} */ (`這些數字是怎麼來的`)
 };
 
 const de_fixproofprovenanceheading2 = /** @type {(inputs: Fixproofprovenanceheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How these numbers were produced`)
+	return /** @type {LocalizedString} */ (`Wie diese Zahlen entstanden sind`)
 };
 
 const fr_fixproofprovenanceheading2 = /** @type {(inputs: Fixproofprovenanceheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How these numbers were produced`)
+	return /** @type {LocalizedString} */ (`Comment ces chiffres ont été produits`)
 };
 
 const uk_fixproofprovenanceheading2 = /** @type {(inputs: Fixproofprovenanceheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How these numbers were produced`)
+	return /** @type {LocalizedString} */ (`Як отримано ці числа`)
 };
 
 /**

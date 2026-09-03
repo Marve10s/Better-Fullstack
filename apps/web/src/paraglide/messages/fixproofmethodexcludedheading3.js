@@ -10,35 +10,35 @@ const en_fixproofmethodexcludedheading3 = /** @type {(inputs: Fixproofmethodexcl
 };
 
 const es_fixproofmethodexcludedheading3 = /** @type {(inputs: Fixproofmethodexcludedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What is excluded`)
+	return /** @type {LocalizedString} */ (`Qué queda excluido`)
 };
 
 const zh_fixproofmethodexcludedheading3 = /** @type {(inputs: Fixproofmethodexcludedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What is excluded`)
+	return /** @type {LocalizedString} */ (`哪些会被排除`)
 };
 
 const ja_fixproofmethodexcludedheading3 = /** @type {(inputs: Fixproofmethodexcludedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What is excluded`)
+	return /** @type {LocalizedString} */ (`除外するもの`)
 };
 
 const ko_fixproofmethodexcludedheading3 = /** @type {(inputs: Fixproofmethodexcludedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What is excluded`)
+	return /** @type {LocalizedString} */ (`제외하는 것`)
 };
 
 const zh_hant1_fixproofmethodexcludedheading3 = /** @type {(inputs: Fixproofmethodexcludedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What is excluded`)
+	return /** @type {LocalizedString} */ (`哪些會被排除`)
 };
 
 const de_fixproofmethodexcludedheading3 = /** @type {(inputs: Fixproofmethodexcludedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What is excluded`)
+	return /** @type {LocalizedString} */ (`Was ausgeschlossen wird`)
 };
 
 const fr_fixproofmethodexcludedheading3 = /** @type {(inputs: Fixproofmethodexcludedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What is excluded`)
+	return /** @type {LocalizedString} */ (`Ce qui est exclu`)
 };
 
 const uk_fixproofmethodexcludedheading3 = /** @type {(inputs: Fixproofmethodexcludedheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What is excluded`)
+	return /** @type {LocalizedString} */ (`Що виключено`)
 };
 
 /**

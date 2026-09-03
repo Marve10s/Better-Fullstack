@@ -10,35 +10,35 @@ const en_fixproofsourcelabel2 = /** @type {(inputs: Fixproofsourcelabel2Inputs) 
 };
 
 const es_fixproofsourcelabel2 = /** @type {(inputs: Fixproofsourcelabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Source`)
+	return /** @type {LocalizedString} */ (`Origen`)
 };
 
 const zh_fixproofsourcelabel2 = /** @type {(inputs: Fixproofsourcelabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Source`)
+	return /** @type {LocalizedString} */ (`来源`)
 };
 
 const ja_fixproofsourcelabel2 = /** @type {(inputs: Fixproofsourcelabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Source`)
+	return /** @type {LocalizedString} */ (`出所`)
 };
 
 const ko_fixproofsourcelabel2 = /** @type {(inputs: Fixproofsourcelabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Source`)
+	return /** @type {LocalizedString} */ (`출처`)
 };
 
 const zh_hant1_fixproofsourcelabel2 = /** @type {(inputs: Fixproofsourcelabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Source`)
+	return /** @type {LocalizedString} */ (`來源`)
 };
 
 const de_fixproofsourcelabel2 = /** @type {(inputs: Fixproofsourcelabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Source`)
+	return /** @type {LocalizedString} */ (`Quelle`)
 };
 
 const fr_fixproofsourcelabel2 = /** @type {(inputs: Fixproofsourcelabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Source`)
+	return /** @type {LocalizedString} */ (`Origine`)
 };
 
 const uk_fixproofsourcelabel2 = /** @type {(inputs: Fixproofsourcelabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Source`)
+	return /** @type {LocalizedString} */ (`Джерело`)
 };
 
 /**

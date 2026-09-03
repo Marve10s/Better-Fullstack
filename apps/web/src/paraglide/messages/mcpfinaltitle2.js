@@ -10,35 +10,35 @@ const en_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => Localized
 };
 
 const es_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Grade your agent on`)
+	return /** @type {LocalizedString} */ (`Evalúa tu agente con`)
 };
 
 const zh_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Grade your agent on`)
+	return /** @type {LocalizedString} */ (`在真实问题上`)
 };
 
 const ja_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Grade your agent on`)
+	return /** @type {LocalizedString} */ (`エージェントを採点するのは`)
 };
 
 const ko_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Grade your agent on`)
+	return /** @type {LocalizedString} */ (`에이전트를 채점하는 기준은`)
 };
 
 const zh_hant1_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Grade your agent on`)
+	return /** @type {LocalizedString} */ (`在真實問題上`)
 };
 
 const de_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Grade your agent on`)
+	return /** @type {LocalizedString} */ (`Bewerten Sie Ihren Agenten an`)
 };
 
 const fr_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Grade your agent on`)
+	return /** @type {LocalizedString} */ (`Évaluez votre agent sur`)
 };
 
 const uk_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Grade your agent on`)
+	return /** @type {LocalizedString} */ (`Оцініть свого агента на`)
 };
 
 /**

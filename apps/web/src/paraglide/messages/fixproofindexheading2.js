@@ -10,35 +10,35 @@ const en_fixproofindexheading2 = /** @type {(inputs: Fixproofindexheading2Inputs
 };
 
 const es_fixproofindexheading2 = /** @type {(inputs: Fixproofindexheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Index bars`)
+	return /** @type {LocalizedString} */ (`Barras de índice`)
 };
 
 const zh_fixproofindexheading2 = /** @type {(inputs: Fixproofindexheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Index bars`)
+	return /** @type {LocalizedString} */ (`指数条`)
 };
 
 const ja_fixproofindexheading2 = /** @type {(inputs: Fixproofindexheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Index bars`)
+	return /** @type {LocalizedString} */ (`指数バー`)
 };
 
 const ko_fixproofindexheading2 = /** @type {(inputs: Fixproofindexheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Index bars`)
+	return /** @type {LocalizedString} */ (`지수 막대`)
 };
 
 const zh_hant1_fixproofindexheading2 = /** @type {(inputs: Fixproofindexheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Index bars`)
+	return /** @type {LocalizedString} */ (`指數條`)
 };
 
 const de_fixproofindexheading2 = /** @type {(inputs: Fixproofindexheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Index bars`)
+	return /** @type {LocalizedString} */ (`Indexbalken`)
 };
 
 const fr_fixproofindexheading2 = /** @type {(inputs: Fixproofindexheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Index bars`)
+	return /** @type {LocalizedString} */ (`Barres d'indice`)
 };
 
 const uk_fixproofindexheading2 = /** @type {(inputs: Fixproofindexheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Index bars`)
+	return /** @type {LocalizedString} */ (`Смуги індексів`)
 };
 
 /**

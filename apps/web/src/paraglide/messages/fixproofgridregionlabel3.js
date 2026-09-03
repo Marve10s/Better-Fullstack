@@ -10,35 +10,35 @@ const en_fixproofgridregionlabel3 = /** @type {(inputs: Fixproofgridregionlabel3
 };
 
 const es_fixproofgridregionlabel3 = /** @type {(inputs: Fixproofgridregionlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof task grid`)
+	return /** @type {LocalizedString} */ (`Cuadrícula de tareas de Fixproof`)
 };
 
 const zh_fixproofgridregionlabel3 = /** @type {(inputs: Fixproofgridregionlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof task grid`)
+	return /** @type {LocalizedString} */ (`Fixproof 任务网格`)
 };
 
 const ja_fixproofgridregionlabel3 = /** @type {(inputs: Fixproofgridregionlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof task grid`)
+	return /** @type {LocalizedString} */ (`Fixproof タスクグリッド`)
 };
 
 const ko_fixproofgridregionlabel3 = /** @type {(inputs: Fixproofgridregionlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof task grid`)
+	return /** @type {LocalizedString} */ (`Fixproof 태스크 그리드`)
 };
 
 const zh_hant1_fixproofgridregionlabel3 = /** @type {(inputs: Fixproofgridregionlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof task grid`)
+	return /** @type {LocalizedString} */ (`Fixproof 任務網格`)
 };
 
 const de_fixproofgridregionlabel3 = /** @type {(inputs: Fixproofgridregionlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof task grid`)
+	return /** @type {LocalizedString} */ (`Fixproof-Aufgabenraster`)
 };
 
 const fr_fixproofgridregionlabel3 = /** @type {(inputs: Fixproofgridregionlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof task grid`)
+	return /** @type {LocalizedString} */ (`Grille des tâches Fixproof`)
 };
 
 const uk_fixproofgridregionlabel3 = /** @type {(inputs: Fixproofgridregionlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixproof task grid`)
+	return /** @type {LocalizedString} */ (`Сітка задач Fixproof`)
 };
 
 /**

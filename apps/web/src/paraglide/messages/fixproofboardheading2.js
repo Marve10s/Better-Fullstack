@@ -10,35 +10,35 @@ const en_fixproofboardheading2 = /** @type {(inputs: Fixproofboardheading2Inputs
 };
 
 const es_fixproofboardheading2 = /** @type {(inputs: Fixproofboardheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Board`)
+	return /** @type {LocalizedString} */ (`Tabla`)
 };
 
 const zh_fixproofboardheading2 = /** @type {(inputs: Fixproofboardheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Board`)
+	return /** @type {LocalizedString} */ (`榜单`)
 };
 
 const ja_fixproofboardheading2 = /** @type {(inputs: Fixproofboardheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Board`)
+	return /** @type {LocalizedString} */ (`ボード`)
 };
 
 const ko_fixproofboardheading2 = /** @type {(inputs: Fixproofboardheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Board`)
+	return /** @type {LocalizedString} */ (`보드`)
 };
 
 const zh_hant1_fixproofboardheading2 = /** @type {(inputs: Fixproofboardheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Board`)
+	return /** @type {LocalizedString} */ (`榜單`)
 };
 
 const de_fixproofboardheading2 = /** @type {(inputs: Fixproofboardheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Board`)
+	return /** @type {LocalizedString} */ (`Rangliste`)
 };
 
 const fr_fixproofboardheading2 = /** @type {(inputs: Fixproofboardheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Board`)
+	return /** @type {LocalizedString} */ (`Tableau`)
 };
 
 const uk_fixproofboardheading2 = /** @type {(inputs: Fixproofboardheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Board`)
+	return /** @type {LocalizedString} */ (`Таблиця`)
 };
 
 /**

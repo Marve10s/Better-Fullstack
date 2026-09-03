@@ -10,35 +10,35 @@ const en_fixproofcheckslabel2 = /** @type {(inputs: Fixproofcheckslabel2Inputs) 
 };
 
 const es_fixproofcheckslabel2 = /** @type {(inputs: Fixproofcheckslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Checks passed`)
+	return /** @type {LocalizedString} */ (`Comprobaciones superadas`)
 };
 
 const zh_fixproofcheckslabel2 = /** @type {(inputs: Fixproofcheckslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Checks passed`)
+	return /** @type {LocalizedString} */ (`通过的检查`)
 };
 
 const ja_fixproofcheckslabel2 = /** @type {(inputs: Fixproofcheckslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Checks passed`)
+	return /** @type {LocalizedString} */ (`合格したチェック`)
 };
 
 const ko_fixproofcheckslabel2 = /** @type {(inputs: Fixproofcheckslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Checks passed`)
+	return /** @type {LocalizedString} */ (`통과한 검사`)
 };
 
 const zh_hant1_fixproofcheckslabel2 = /** @type {(inputs: Fixproofcheckslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Checks passed`)
+	return /** @type {LocalizedString} */ (`通過的檢查`)
 };
 
 const de_fixproofcheckslabel2 = /** @type {(inputs: Fixproofcheckslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Checks passed`)
+	return /** @type {LocalizedString} */ (`Bestandene Prüfungen`)
 };
 
 const fr_fixproofcheckslabel2 = /** @type {(inputs: Fixproofcheckslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Checks passed`)
+	return /** @type {LocalizedString} */ (`Vérifications passées`)
 };
 
 const uk_fixproofcheckslabel2 = /** @type {(inputs: Fixproofcheckslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Checks passed`)
+	return /** @type {LocalizedString} */ (`Пройдені перевірки`)
 };
 
 /**

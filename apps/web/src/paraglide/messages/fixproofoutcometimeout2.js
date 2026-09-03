@@ -10,35 +10,35 @@ const en_fixproofoutcometimeout2 = /** @type {(inputs: Fixproofoutcometimeout2In
 };
 
 const es_fixproofoutcometimeout2 = /** @type {(inputs: Fixproofoutcometimeout2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Timeout`)
+	return /** @type {LocalizedString} */ (`Tiempo agotado`)
 };
 
 const zh_fixproofoutcometimeout2 = /** @type {(inputs: Fixproofoutcometimeout2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Timeout`)
+	return /** @type {LocalizedString} */ (`超时`)
 };
 
 const ja_fixproofoutcometimeout2 = /** @type {(inputs: Fixproofoutcometimeout2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Timeout`)
+	return /** @type {LocalizedString} */ (`タイムアウト`)
 };
 
 const ko_fixproofoutcometimeout2 = /** @type {(inputs: Fixproofoutcometimeout2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Timeout`)
+	return /** @type {LocalizedString} */ (`시간 초과`)
 };
 
 const zh_hant1_fixproofoutcometimeout2 = /** @type {(inputs: Fixproofoutcometimeout2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Timeout`)
+	return /** @type {LocalizedString} */ (`逾時`)
 };
 
 const de_fixproofoutcometimeout2 = /** @type {(inputs: Fixproofoutcometimeout2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Timeout`)
+	return /** @type {LocalizedString} */ (`Zeitüberschreitung`)
 };
 
 const fr_fixproofoutcometimeout2 = /** @type {(inputs: Fixproofoutcometimeout2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Timeout`)
+	return /** @type {LocalizedString} */ (`Délai dépassé`)
 };
 
 const uk_fixproofoutcometimeout2 = /** @type {(inputs: Fixproofoutcometimeout2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Timeout`)
+	return /** @type {LocalizedString} */ (`Тайм-аут`)
 };
 
 /**

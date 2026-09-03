@@ -10,35 +10,35 @@ const en_fixproofsortaria2 = /** @type {(inputs: Fixproofsortaria2Inputs) => Loc
 };
 
 const es_fixproofsortaria2 = /** @type {(inputs: Fixproofsortaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Sort by ${i?.column}`)
+	return /** @type {LocalizedString} */ (`Ordenar por ${i?.column}`)
 };
 
 const zh_fixproofsortaria2 = /** @type {(inputs: Fixproofsortaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Sort by ${i?.column}`)
+	return /** @type {LocalizedString} */ (`按 ${i?.column} 排序`)
 };
 
 const ja_fixproofsortaria2 = /** @type {(inputs: Fixproofsortaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Sort by ${i?.column}`)
+	return /** @type {LocalizedString} */ (`${i?.column} で並べ替え`)
 };
 
 const ko_fixproofsortaria2 = /** @type {(inputs: Fixproofsortaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Sort by ${i?.column}`)
+	return /** @type {LocalizedString} */ (`${i?.column} 기준 정렬`)
 };
 
 const zh_hant1_fixproofsortaria2 = /** @type {(inputs: Fixproofsortaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Sort by ${i?.column}`)
+	return /** @type {LocalizedString} */ (`按 ${i?.column} 排序`)
 };
 
 const de_fixproofsortaria2 = /** @type {(inputs: Fixproofsortaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Sort by ${i?.column}`)
+	return /** @type {LocalizedString} */ (`Nach ${i?.column} sortieren`)
 };
 
 const fr_fixproofsortaria2 = /** @type {(inputs: Fixproofsortaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Sort by ${i?.column}`)
+	return /** @type {LocalizedString} */ (`Trier par ${i?.column}`)
 };
 
 const uk_fixproofsortaria2 = /** @type {(inputs: Fixproofsortaria2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Sort by ${i?.column}`)
+	return /** @type {LocalizedString} */ (`Сортувати за ${i?.column}`)
 };
 
 /**

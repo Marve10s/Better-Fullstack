@@ -10,35 +10,35 @@ const en_fixproofcolresolvedindex3 = /** @type {(inputs: Fixproofcolresolvedinde
 };
 
 const es_fixproofcolresolvedindex3 = /** @type {(inputs: Fixproofcolresolvedindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved index`)
+	return /** @type {LocalizedString} */ (`Índice Resolved`)
 };
 
 const zh_fixproofcolresolvedindex3 = /** @type {(inputs: Fixproofcolresolvedindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved index`)
+	return /** @type {LocalizedString} */ (`Resolved 指数`)
 };
 
 const ja_fixproofcolresolvedindex3 = /** @type {(inputs: Fixproofcolresolvedindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved index`)
+	return /** @type {LocalizedString} */ (`Resolved 指数`)
 };
 
 const ko_fixproofcolresolvedindex3 = /** @type {(inputs: Fixproofcolresolvedindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved index`)
+	return /** @type {LocalizedString} */ (`Resolved 지수`)
 };
 
 const zh_hant1_fixproofcolresolvedindex3 = /** @type {(inputs: Fixproofcolresolvedindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved index`)
+	return /** @type {LocalizedString} */ (`Resolved 指數`)
 };
 
 const de_fixproofcolresolvedindex3 = /** @type {(inputs: Fixproofcolresolvedindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved index`)
+	return /** @type {LocalizedString} */ (`Resolved-Index`)
 };
 
 const fr_fixproofcolresolvedindex3 = /** @type {(inputs: Fixproofcolresolvedindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved index`)
+	return /** @type {LocalizedString} */ (`Indice Resolved`)
 };
 
 const uk_fixproofcolresolvedindex3 = /** @type {(inputs: Fixproofcolresolvedindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved index`)
+	return /** @type {LocalizedString} */ (`Індекс Resolved`)
 };
 
 /**

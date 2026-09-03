@@ -10,35 +10,35 @@ const en_fixproofrequirementslabel2 = /** @type {(inputs: Fixproofrequirementsla
 };
 
 const es_fixproofrequirementslabel2 = /** @type {(inputs: Fixproofrequirementslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Requirements`)
+	return /** @type {LocalizedString} */ (`Requisitos`)
 };
 
 const zh_fixproofrequirementslabel2 = /** @type {(inputs: Fixproofrequirementslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Requirements`)
+	return /** @type {LocalizedString} */ (`需求`)
 };
 
 const ja_fixproofrequirementslabel2 = /** @type {(inputs: Fixproofrequirementslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Requirements`)
+	return /** @type {LocalizedString} */ (`要件`)
 };
 
 const ko_fixproofrequirementslabel2 = /** @type {(inputs: Fixproofrequirementslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Requirements`)
+	return /** @type {LocalizedString} */ (`요구사항`)
 };
 
 const zh_hant1_fixproofrequirementslabel2 = /** @type {(inputs: Fixproofrequirementslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Requirements`)
+	return /** @type {LocalizedString} */ (`需求`)
 };
 
 const de_fixproofrequirementslabel2 = /** @type {(inputs: Fixproofrequirementslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Requirements`)
+	return /** @type {LocalizedString} */ (`Anforderungen`)
 };
 
 const fr_fixproofrequirementslabel2 = /** @type {(inputs: Fixproofrequirementslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Requirements`)
+	return /** @type {LocalizedString} */ (`Exigences`)
 };
 
 const uk_fixproofrequirementslabel2 = /** @type {(inputs: Fixproofrequirementslabel2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Requirements`)
+	return /** @type {LocalizedString} */ (`Вимоги`)
 };
 
 /**

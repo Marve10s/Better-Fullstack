@@ -10,35 +10,35 @@ const en_fixproofcolprogressindex3 = /** @type {(inputs: Fixproofcolprogressinde
 };
 
 const es_fixproofcolprogressindex3 = /** @type {(inputs: Fixproofcolprogressindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Progress index`)
+	return /** @type {LocalizedString} */ (`Índice Progress`)
 };
 
 const zh_fixproofcolprogressindex3 = /** @type {(inputs: Fixproofcolprogressindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Progress index`)
+	return /** @type {LocalizedString} */ (`Progress 指数`)
 };
 
 const ja_fixproofcolprogressindex3 = /** @type {(inputs: Fixproofcolprogressindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Progress index`)
+	return /** @type {LocalizedString} */ (`Progress 指数`)
 };
 
 const ko_fixproofcolprogressindex3 = /** @type {(inputs: Fixproofcolprogressindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Progress index`)
+	return /** @type {LocalizedString} */ (`Progress 지수`)
 };
 
 const zh_hant1_fixproofcolprogressindex3 = /** @type {(inputs: Fixproofcolprogressindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Progress index`)
+	return /** @type {LocalizedString} */ (`Progress 指數`)
 };
 
 const de_fixproofcolprogressindex3 = /** @type {(inputs: Fixproofcolprogressindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Progress index`)
+	return /** @type {LocalizedString} */ (`Progress-Index`)
 };
 
 const fr_fixproofcolprogressindex3 = /** @type {(inputs: Fixproofcolprogressindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Progress index`)
+	return /** @type {LocalizedString} */ (`Indice Progress`)
 };
 
 const uk_fixproofcolprogressindex3 = /** @type {(inputs: Fixproofcolprogressindex3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Progress index`)
+	return /** @type {LocalizedString} */ (`Індекс Progress`)
 };
 
 /**

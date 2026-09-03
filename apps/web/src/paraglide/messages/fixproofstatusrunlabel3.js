@@ -10,35 +10,35 @@ const en_fixproofstatusrunlabel3 = /** @type {(inputs: Fixproofstatusrunlabel3In
 };
 
 const es_fixproofstatusrunlabel3 = /** @type {(inputs: Fixproofstatusrunlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dry run`)
+	return /** @type {LocalizedString} */ (`Ejecución de prueba`)
 };
 
 const zh_fixproofstatusrunlabel3 = /** @type {(inputs: Fixproofstatusrunlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dry run`)
+	return /** @type {LocalizedString} */ (`试运行`)
 };
 
 const ja_fixproofstatusrunlabel3 = /** @type {(inputs: Fixproofstatusrunlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dry run`)
+	return /** @type {LocalizedString} */ (`ドライラン`)
 };
 
 const ko_fixproofstatusrunlabel3 = /** @type {(inputs: Fixproofstatusrunlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dry run`)
+	return /** @type {LocalizedString} */ (`드라이런`)
 };
 
 const zh_hant1_fixproofstatusrunlabel3 = /** @type {(inputs: Fixproofstatusrunlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dry run`)
+	return /** @type {LocalizedString} */ (`試執行`)
 };
 
 const de_fixproofstatusrunlabel3 = /** @type {(inputs: Fixproofstatusrunlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dry run`)
+	return /** @type {LocalizedString} */ (`Testlauf`)
 };
 
 const fr_fixproofstatusrunlabel3 = /** @type {(inputs: Fixproofstatusrunlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dry run`)
+	return /** @type {LocalizedString} */ (`Essai à blanc`)
 };
 
 const uk_fixproofstatusrunlabel3 = /** @type {(inputs: Fixproofstatusrunlabel3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dry run`)
+	return /** @type {LocalizedString} */ (`Пробний запуск`)
 };
 
 /**

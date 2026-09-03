@@ -10,35 +10,35 @@ const en_fixproofoutcomepartial2 = /** @type {(inputs: Fixproofoutcomepartial2In
 };
 
 const es_fixproofoutcomepartial2 = /** @type {(inputs: Fixproofoutcomepartial2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Partial`)
+	return /** @type {LocalizedString} */ (`Parcial`)
 };
 
 const zh_fixproofoutcomepartial2 = /** @type {(inputs: Fixproofoutcomepartial2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Partial`)
+	return /** @type {LocalizedString} */ (`部分完成`)
 };
 
 const ja_fixproofoutcomepartial2 = /** @type {(inputs: Fixproofoutcomepartial2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Partial`)
+	return /** @type {LocalizedString} */ (`部分的`)
 };
 
 const ko_fixproofoutcomepartial2 = /** @type {(inputs: Fixproofoutcomepartial2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Partial`)
+	return /** @type {LocalizedString} */ (`부분`)
 };
 
 const zh_hant1_fixproofoutcomepartial2 = /** @type {(inputs: Fixproofoutcomepartial2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Partial`)
+	return /** @type {LocalizedString} */ (`部分完成`)
 };
 
 const de_fixproofoutcomepartial2 = /** @type {(inputs: Fixproofoutcomepartial2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Partial`)
+	return /** @type {LocalizedString} */ (`Teilweise`)
 };
 
 const fr_fixproofoutcomepartial2 = /** @type {(inputs: Fixproofoutcomepartial2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Partial`)
+	return /** @type {LocalizedString} */ (`Partielle`)
 };
 
 const uk_fixproofoutcomepartial2 = /** @type {(inputs: Fixproofoutcomepartial2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Partial`)
+	return /** @type {LocalizedString} */ (`Частково`)
 };
 
 /**

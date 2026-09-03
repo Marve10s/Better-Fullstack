@@ -10,35 +10,35 @@ const en_fixproofmethodhiddenheading3 = /** @type {(inputs: Fixproofmethodhidden
 };
 
 const es_fixproofmethodhiddenheading3 = /** @type {(inputs: Fixproofmethodhiddenheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What the agent cannot see`)
+	return /** @type {LocalizedString} */ (`Lo que el agente no puede ver`)
 };
 
 const zh_fixproofmethodhiddenheading3 = /** @type {(inputs: Fixproofmethodhiddenheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What the agent cannot see`)
+	return /** @type {LocalizedString} */ (`代理看不到什么`)
 };
 
 const ja_fixproofmethodhiddenheading3 = /** @type {(inputs: Fixproofmethodhiddenheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What the agent cannot see`)
+	return /** @type {LocalizedString} */ (`エージェントに見えないもの`)
 };
 
 const ko_fixproofmethodhiddenheading3 = /** @type {(inputs: Fixproofmethodhiddenheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What the agent cannot see`)
+	return /** @type {LocalizedString} */ (`에이전트가 볼 수 없는 것`)
 };
 
 const zh_hant1_fixproofmethodhiddenheading3 = /** @type {(inputs: Fixproofmethodhiddenheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What the agent cannot see`)
+	return /** @type {LocalizedString} */ (`代理程式看不到什麼`)
 };
 
 const de_fixproofmethodhiddenheading3 = /** @type {(inputs: Fixproofmethodhiddenheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What the agent cannot see`)
+	return /** @type {LocalizedString} */ (`Was der Agent nicht sehen kann`)
 };
 
 const fr_fixproofmethodhiddenheading3 = /** @type {(inputs: Fixproofmethodhiddenheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What the agent cannot see`)
+	return /** @type {LocalizedString} */ (`Ce que l'agent ne peut pas voir`)
 };
 
 const uk_fixproofmethodhiddenheading3 = /** @type {(inputs: Fixproofmethodhiddenheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What the agent cannot see`)
+	return /** @type {LocalizedString} */ (`Чого агент не бачить`)
 };
 
 /**

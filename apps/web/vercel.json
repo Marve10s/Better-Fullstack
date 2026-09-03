@@ -57,6 +57,11 @@
       "permanent": true
     },
     {
+      "source": "/run",
+      "destination": "/benchmark",
+      "permanent": true
+    },
+    {
       "source": "/docs/recipes/default-typescript-web.md",
       "destination": "/guides/typescript/hono-trpc-drizzle.md",
       "permanent": true

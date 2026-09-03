@@ -10,35 +10,35 @@ const en_fixproofprovenancestep32 = /** @type {(inputs: Fixproofprovenancestep32
 };
 
 const es_fixproofprovenancestep32 = /** @type {(inputs: Fixproofprovenancestep32Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`When the agent stops, the harness reverts every edit it made to test files.`)
+	return /** @type {LocalizedString} */ (`Cuando el agente para, el harness revierte todos los cambios que hizo en archivos de prueba.`)
 };
 
 const zh_fixproofprovenancestep32 = /** @type {(inputs: Fixproofprovenancestep32Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`When the agent stops, the harness reverts every edit it made to test files.`)
+	return /** @type {LocalizedString} */ (`代理停止后，harness 会还原它对测试文件做的每一处改动。`)
 };
 
 const ja_fixproofprovenancestep32 = /** @type {(inputs: Fixproofprovenancestep32Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`When the agent stops, the harness reverts every edit it made to test files.`)
+	return /** @type {LocalizedString} */ (`エージェントが停止すると、ハーネスはテストファイルへの変更をすべて差し戻します。`)
 };
 
 const ko_fixproofprovenancestep32 = /** @type {(inputs: Fixproofprovenancestep32Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`When the agent stops, the harness reverts every edit it made to test files.`)
+	return /** @type {LocalizedString} */ (`에이전트가 멈추면 하네스가 테스트 파일에 가한 수정을 모두 되돌립니다.`)
 };
 
 const zh_hant1_fixproofprovenancestep32 = /** @type {(inputs: Fixproofprovenancestep32Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`When the agent stops, the harness reverts every edit it made to test files.`)
+	return /** @type {LocalizedString} */ (`代理程式停止後，harness 會還原它對測試檔案做的每一處改動。`)
 };
 
 const de_fixproofprovenancestep32 = /** @type {(inputs: Fixproofprovenancestep32Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`When the agent stops, the harness reverts every edit it made to test files.`)
+	return /** @type {LocalizedString} */ (`Wenn der Agent stoppt, setzt das Harness jede Änderung zurück, die er an Testdateien vorgenommen hat.`)
 };
 
 const fr_fixproofprovenancestep32 = /** @type {(inputs: Fixproofprovenancestep32Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`When the agent stops, the harness reverts every edit it made to test files.`)
+	return /** @type {LocalizedString} */ (`Quand l'agent s'arrête, le harness annule toutes les modifications qu'il a faites dans les fichiers de test.`)
 };
 
 const uk_fixproofprovenancestep32 = /** @type {(inputs: Fixproofprovenancestep32Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`When the agent stops, the harness reverts every edit it made to test files.`)
+	return /** @type {LocalizedString} */ (`Коли агент зупиняється, harness скасовує кожну його зміну у файлах тестів.`)
 };
 
 /**

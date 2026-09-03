@@ -10,35 +10,35 @@ const en_fixproofmethodadmissionheading3 = /** @type {(inputs: Fixproofmethodadm
 };
 
 const es_fixproofmethodadmissionheading3 = /** @type {(inputs: Fixproofmethodadmissionheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How a task is admitted`)
+	return /** @type {LocalizedString} */ (`Cómo se admite una tarea`)
 };
 
 const zh_fixproofmethodadmissionheading3 = /** @type {(inputs: Fixproofmethodadmissionheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How a task is admitted`)
+	return /** @type {LocalizedString} */ (`任务如何被收录`)
 };
 
 const ja_fixproofmethodadmissionheading3 = /** @type {(inputs: Fixproofmethodadmissionheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How a task is admitted`)
+	return /** @type {LocalizedString} */ (`タスクの採用基準`)
 };
 
 const ko_fixproofmethodadmissionheading3 = /** @type {(inputs: Fixproofmethodadmissionheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How a task is admitted`)
+	return /** @type {LocalizedString} */ (`태스크를 받아들이는 기준`)
 };
 
 const zh_hant1_fixproofmethodadmissionheading3 = /** @type {(inputs: Fixproofmethodadmissionheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How a task is admitted`)
+	return /** @type {LocalizedString} */ (`任務如何被收錄`)
 };
 
 const de_fixproofmethodadmissionheading3 = /** @type {(inputs: Fixproofmethodadmissionheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How a task is admitted`)
+	return /** @type {LocalizedString} */ (`Wie eine Aufgabe aufgenommen wird`)
 };
 
 const fr_fixproofmethodadmissionheading3 = /** @type {(inputs: Fixproofmethodadmissionheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How a task is admitted`)
+	return /** @type {LocalizedString} */ (`Comment une tâche est admise`)
 };
 
 const uk_fixproofmethodadmissionheading3 = /** @type {(inputs: Fixproofmethodadmissionheading3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`How a task is admitted`)
+	return /** @type {LocalizedString} */ (`Як задача потрапляє в набір`)
 };
 
 /**

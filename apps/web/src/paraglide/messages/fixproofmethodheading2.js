@@ -10,35 +10,35 @@ const en_fixproofmethodheading2 = /** @type {(inputs: Fixproofmethodheading2Inpu
 };
 
 const es_fixproofmethodheading2 = /** @type {(inputs: Fixproofmethodheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Methodology`)
+	return /** @type {LocalizedString} */ (`Metodología`)
 };
 
 const zh_fixproofmethodheading2 = /** @type {(inputs: Fixproofmethodheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Methodology`)
+	return /** @type {LocalizedString} */ (`方法论`)
 };
 
 const ja_fixproofmethodheading2 = /** @type {(inputs: Fixproofmethodheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Methodology`)
+	return /** @type {LocalizedString} */ (`方法論`)
 };
 
 const ko_fixproofmethodheading2 = /** @type {(inputs: Fixproofmethodheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Methodology`)
+	return /** @type {LocalizedString} */ (`방법론`)
 };
 
 const zh_hant1_fixproofmethodheading2 = /** @type {(inputs: Fixproofmethodheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Methodology`)
+	return /** @type {LocalizedString} */ (`方法論`)
 };
 
 const de_fixproofmethodheading2 = /** @type {(inputs: Fixproofmethodheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Methodology`)
+	return /** @type {LocalizedString} */ (`Methodik`)
 };
 
 const fr_fixproofmethodheading2 = /** @type {(inputs: Fixproofmethodheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Methodology`)
+	return /** @type {LocalizedString} */ (`Méthodologie`)
 };
 
 const uk_fixproofmethodheading2 = /** @type {(inputs: Fixproofmethodheading2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Methodology`)
+	return /** @type {LocalizedString} */ (`Методологія`)
 };
 
 /**
