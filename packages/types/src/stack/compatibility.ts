@@ -1557,7 +1557,7 @@ export const analyzeStackCompatibility = (
   // CSS FRAMEWORK & UI LIBRARY CONSTRAINTS
   // ============================================
 
-  // If no web frontend, reset CSS framework and UI library to none
+  // If no web frontend, reset web-owned selections to none
   if (!nextStack.webFrontend.some((f) => f !== "none")) {
     if (nextStack.cssFramework !== "none") {
       nextStack.cssFramework = "none";
@@ -1573,6 +1573,14 @@ export const analyzeStackCompatibility = (
       changes.push({
         category: "uiLibrary",
         message: "UI library set to 'None' (no web frontend)",
+      });
+    }
+    if (nextStack.webMcp !== "none") {
+      nextStack.webMcp = "none";
+      changed = true;
+      changes.push({
+        category: "webMcp",
+        message: "WebMCP set to 'None' (no web frontend)",
       });
     }
   }
