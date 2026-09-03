@@ -151,6 +151,7 @@ import type {
   UILibrary,
   Validation,
   WebDeploy,
+  WebMcp,
 } from "@/types";
 
 import { getKotlinJavaIncompatibilityReason } from "@/types";
@@ -161,6 +162,7 @@ import { getAddonsChoice, getAppPlatformsChoice } from "@/prompts/developer/addo
 import { getAIChoice } from "@/prompts/services/ai";
 import { getAiDocsChoice } from "@/prompts/developer/ai-docs";
 import { getAnalyticsChoice } from "@/prompts/services/analytics";
+import { getWebMcpChoice } from "@/prompts/services/web-mcp";
 import { getAnimationChoice } from "@/prompts/services/animation";
 import { getApiChoice } from "@/prompts/architecture/api";
 import { getAstroIntegrationChoice } from "@/prompts/developer/astro-integration";
@@ -375,6 +377,7 @@ type PromptGroupResults = {
   integrations: Integrations;
   ecommerce: Ecommerce;
   analytics: Analytics;
+  webMcp: WebMcp;
   cms: CMS;
   caching: Caching;
   rateLimit: RateLimit;
@@ -560,6 +563,7 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   integrations: true,
   ecommerce: true,
   analytics: true,
+  webMcp: true,
   cms: true,
   caching: true,
   rateLimit: true,
@@ -1119,6 +1123,10 @@ export async function gatherConfig(
     analytics: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Analytics);
       return getAnalyticsChoice(flags.analytics, results.frontend);
+    },
+    webMcp: ({ results }) => {
+      if (results.ecosystem !== "typescript") return Promise.resolve("none" as WebMcp);
+      return getWebMcpChoice(flags.webMcp, results.frontend);
     },
     cms: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as CMS);
@@ -1781,6 +1789,7 @@ export async function gatherConfig(
     integrations: result.integrations,
     ecommerce: result.ecommerce,
     analytics: result.analytics,
+    webMcp: result.webMcp,
     cms: result.cms,
     caching: result.caching,
     rateLimit: result.rateLimit,

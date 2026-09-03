@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { onMounted, onUnmounted } from "vue";
+
+import { registerWebMcpTools } from "./webmcp";
+
+let unregister = () => {};
+
+onMounted(() => {
+  unregister = registerWebMcpTools();
+});
+onUnmounted(() => unregister());
+</script>
+
+<template></template>

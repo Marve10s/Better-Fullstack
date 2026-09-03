@@ -97,6 +97,7 @@ export function buildCompatibilityInputFromConfig(
     integrations: asString(config.integrations),
     ecommerce: asString(config.ecommerce),
     analytics: asString(config.analytics),
+    webMcp: asString(config.webMcp),
     backendLibraries: asString(config.effect),
     stateManagement: asString(config.stateManagement),
     forms: asString(config.forms),

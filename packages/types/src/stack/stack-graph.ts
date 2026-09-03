@@ -12,6 +12,7 @@ import {
   AUTH_VALUES,
   AI_VALUES,
   ANALYTICS_VALUES,
+  WEB_MCP_VALUES,
   ANIMATION_VALUES,
   ASTRO_INTEGRATION_VALUES,
   BACKEND_VALUES,
@@ -399,6 +400,7 @@ const LEGACY_TYPESCRIPT_FRONTEND_SINGLE_CATEGORIES = {
   fileUpload: "fileUpload",
   i18n: "i18n",
   analytics: "analytics",
+  webMcp: "webMcp",
   botProtection: "botProtection",
 } as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
 
@@ -1000,6 +1002,7 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(FILE_UPLOAD_VALUES, "fileUpload", "typescript", "fileUpload"),
   ...defineTools(I18N_VALUES, "i18n", "typescript", "i18n"),
   ...defineTools(ANALYTICS_VALUES, "analytics", "typescript", "analytics"),
+  ...defineTools(WEB_MCP_VALUES, "webMcp", "typescript", "webMcp"),
   ...defineTools(BOT_PROTECTION_VALUES, "botProtection", "typescript", "botProtection"),
   ...TOOLING_CAPABILITIES.map((capability) => {
     const category = getToolingCategory(capability.category);

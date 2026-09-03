@@ -213,6 +213,16 @@ const CATEGORY_NAMES: Record<string, LocalizedMap> = {
     "fr": "Analytique",
     "uk": "Аналітика",
   },
+  webMcp: {
+    "es": "WebMCP",
+    "zh": "WebMCP",
+    "ja": "WebMCP",
+    "ko": "WebMCP",
+    "zh-Hant": "WebMCP",
+    "de": "WebMCP",
+    "fr": "WebMCP",
+    "uk": "WebMCP",
+  },
   backendLibraries: {
     "es": "Servicios Effect",
     "zh": "Effect 服务",

@@ -18,6 +18,7 @@ describe("stackStateToProjectConfig", () => {
       aiDocs: ["cursorrules", "none"],
       git: "false",
       search: "elasticsearch",
+      webMcp: "enabled",
       rustLibraries: ["serde"],
       pythonAi: ["langchain"],
     });
@@ -33,6 +34,7 @@ describe("stackStateToProjectConfig", () => {
     expect(config.addons).toEqual(["biome"]);
     expect(config.aiDocs).toEqual(["cursorrules"]);
     expect(config.search).toBe("elasticsearch");
+    expect(config.webMcp).toBe("enabled");
     expect(config.rustLibraries).toEqual(["serde"]);
     expect(config.pythonAi).toEqual(["langchain"]);
   });

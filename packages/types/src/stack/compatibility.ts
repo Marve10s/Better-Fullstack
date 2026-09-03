@@ -339,6 +339,7 @@ export type CompatibilityInput = {
   integrations: string;
   ecommerce: string;
   analytics: string;
+  webMcp: string;
   backendLibraries: string;
   stateManagement: string;
   forms: string;
@@ -1610,6 +1611,7 @@ export const analyzeStackCompatibility = (
       ["ecommerce", "none", "E-commerce set to 'None' (React Native ecosystem)"],
       ["integrations", "none", "Integrations set to 'None' (React Native ecosystem)"],
       ["analytics", "none", "Analytics set to 'None' (React Native ecosystem)"],
+      ["webMcp", "none", "WebMCP set to 'None' (React Native ecosystem)"],
       ["aiSdk", "none", "AI SDK set to 'None' (React Native ecosystem)"],
       ["backendLibraries", "none", "Backend libraries set to 'None' (React Native ecosystem)"],
       ["examples", [], "Examples cleared (React Native ecosystem)"],
@@ -4479,6 +4481,14 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     authoritative: true,
     missingOwnerReason: "Analytics requires a web frontend",
   },
+  webMcp: {
+    role: "webMcp",
+    ecosystem: "typescript",
+    ownerRole: "frontend",
+    ownerEcosystem: "typescript",
+    authoritative: true,
+    missingOwnerReason: "WebMCP requires a web frontend",
+  },
   webDeploy: {
     role: "deploy",
     ecosystem: "typescript",
@@ -5742,6 +5752,7 @@ export function evaluateCompatibility(input: CompatibilityInput): CompatibilityE
     ["vectorDb", input.vectorDb],
     ["fileStorage", input.fileStorage],
     ["analytics", input.analytics],
+    ["webMcp", input.webMcp],
     ["cssFramework", input.cssFramework],
     ["uiLibrary", input.uiLibrary],
     ["webDeploy", input.webDeploy],

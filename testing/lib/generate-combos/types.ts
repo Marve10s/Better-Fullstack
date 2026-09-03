@@ -54,6 +54,7 @@ export const TEMPLATE_FINGERPRINT_KEYS = [
   "integrations",
   "ecommerce",
   "analytics",
+  "webMcp",
   "effect",
   "stateManagement",
   "forms",

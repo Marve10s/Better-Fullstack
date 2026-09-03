@@ -62,6 +62,7 @@ describe("stack selection translation", () => {
       projectName: "parity-app",
       webFrontend: ["astro"],
       astroIntegration: "react",
+      webMcp: "enabled",
       shadcnStyle: "luma",
       shadcnFont: "geist",
       backend: "self-next",
@@ -151,6 +152,7 @@ describe("stack selection translation", () => {
         fileUpload: "uploadthing",
         i18n: "i18next",
         analytics: "plausible",
+        webMcp: "enabled",
         botProtection: "turnstile",
         javaOrm: "spring-data-jpa",
         javaAuth: "spring-security",
@@ -196,6 +198,7 @@ describe("stack selection translation", () => {
     expect(config.fileUpload).toBe("uploadthing");
     expect(config.i18n).toBe("i18next");
     expect(config.analytics).toBe("plausible");
+    expect(config.webMcp).toBe("enabled");
     expect(config.botProtection).toBe("turnstile");
     expect(config.javaOrm).toBe("spring-data-jpa");
     expect(config.javaAuth).toBe("spring-security");
@@ -242,6 +245,7 @@ describe("stack selection translation", () => {
     expect(specs).toContain("frontend.fileUpload:typescript:uploadthing");
     expect(specs).toContain("frontend.i18n:typescript:i18next");
     expect(specs).toContain("frontend.analytics:typescript:plausible");
+    expect(specs).toContain("frontend.webMcp:typescript:enabled");
     expect(specs).toContain("frontend.botProtection:typescript:turnstile");
     expect(specs).toContain("backend.orm:java:spring-data-jpa");
     expect(specs).toContain("backend.auth:java:spring-security");

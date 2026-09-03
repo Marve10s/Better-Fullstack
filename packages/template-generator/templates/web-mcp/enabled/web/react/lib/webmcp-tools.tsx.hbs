@@ -1,0 +1,10 @@
+"use client";
+
+import { useEffect } from "react";
+
+import { registerWebMcpTools } from "./webmcp";
+
+export function WebMcpTools() {
+  useEffect(() => registerWebMcpTools(), []);
+  return null;
+}

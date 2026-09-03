@@ -296,6 +296,7 @@ const TYPESCRIPT_SERVICE_BASE_CONFIG: Partial<ProjectConfig> = {
   observability: "none",
   featureFlags: "none",
   analytics: "none",
+  webMcp: "none",
   cms: "none",
   caching: "none",
   rateLimit: "none",

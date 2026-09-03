@@ -48,6 +48,7 @@ import type {
   IntegrationsSchema,
   EcommerceSchema,
   AnalyticsSchema,
+  WebMcpSchema,
   MobileNavigationSchema,
   MobileUISchema,
   MobileStorageSchema,
@@ -220,6 +221,7 @@ export type FeatureFlags = z.infer<typeof FeatureFlagsSchema>;
 export type Integrations = z.infer<typeof IntegrationsSchema>;
 export type Ecommerce = z.infer<typeof EcommerceSchema>;
 export type Analytics = z.infer<typeof AnalyticsSchema>;
+export type WebMcp = z.infer<typeof WebMcpSchema>;
 export type MobileNavigation = z.infer<typeof MobileNavigationSchema>;
 export type MobileUI = z.infer<typeof MobileUISchema>;
 export type MobileStorage = z.infer<typeof MobileStorageSchema>;

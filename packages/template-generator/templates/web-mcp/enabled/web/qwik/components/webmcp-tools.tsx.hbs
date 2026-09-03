@@ -1,0 +1,12 @@
+import { component$, useVisibleTask$ } from "@builder.io/qwik";
+
+import { registerWebMcpTools } from "../lib/webmcp";
+
+export const WebMcpTools = component$(() => {
+  // WebMCP registration must run eagerly in the browser after the document mounts.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    cleanup(registerWebMcpTools());
+  });
+  return null;
+});

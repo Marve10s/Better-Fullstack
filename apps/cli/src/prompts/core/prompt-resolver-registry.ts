@@ -109,9 +109,11 @@ import {
   TESTING_VALUES,
   UI_LIBRARY_VALUES,
   VALIDATION_VALUES,
+  WEB_MCP_VALUES,
 } from "@/types";
 import { resolveAIPrompt } from "@/prompts/services/ai";
 import { resolveAnimationPrompt } from "@/prompts/services/animation";
+import { resolveWebMcpPrompt } from "@/prompts/services/web-mcp";
 import { resolveApiPrompt } from "@/prompts/architecture/api";
 import { resolveAstroIntegrationPrompt } from "@/prompts/developer/astro-integration";
 import { resolveAuthPrompt } from "@/prompts/services/auth";
@@ -269,6 +271,11 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
     schemaValues: ANIMATION_VALUES,
     resolve: resolveAnimationPrompt,
     coverageContexts: [{ frontends: ["react-vite"] }],
+  },
+  webMcp: {
+    schemaValues: WEB_MCP_VALUES,
+    resolve: resolveWebMcpPrompt,
+    coverageContexts: [{ frontends: ["react-vite"] }, { frontends: ["none"] }],
   },
   api: {
     schemaValues: API_VALUES,

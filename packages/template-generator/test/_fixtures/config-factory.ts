@@ -54,6 +54,7 @@ const DEFAULT_CONFIG = {
   observability: "none",
   featureFlags: "none",
   analytics: "none",
+  webMcp: "none",
   cms: "none",
   caching: "none",
   i18n: "none",

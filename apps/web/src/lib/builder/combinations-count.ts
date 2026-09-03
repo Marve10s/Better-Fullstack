@@ -83,6 +83,7 @@ const typescriptSingleSelectCategories = [
   "integrations",
   "ecommerce",
   "analytics",
+  "webMcp",
   "search",
   "fileStorage",
   "git",

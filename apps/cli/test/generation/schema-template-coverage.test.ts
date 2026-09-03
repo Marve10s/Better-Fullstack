@@ -133,6 +133,7 @@ import {
   UI_LIBRARY_VALUES,
   VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
+  WEB_MCP_VALUES,
 } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 import { readdirSync, readFileSync, statSync } from "node:fs";
@@ -240,6 +241,7 @@ const CATEGORY_VALUES: Record<string, readonly string[]> = {
   observability: OBSERVABILITY_VALUES,
   featureFlags: FEATURE_FLAGS_VALUES,
   analytics: ANALYTICS_VALUES,
+  webMcp: WEB_MCP_VALUES,
   cms: CMS_VALUES,
   caching: CACHING_VALUES,
   rateLimit: RATE_LIMIT_VALUES,

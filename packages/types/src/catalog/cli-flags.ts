@@ -327,6 +327,12 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         configKey: "analytics",
       },
       {
+        flag: "web-mcp",
+        summary: "Experimental browser-native WebMCP tools.",
+        source: { kind: "category", category: "webMcp" },
+        configKey: "webMcp",
+      },
+      {
         flag: "feature-flags",
         summary: "Feature flag platform.",
         source: { kind: "category", category: "featureFlags" },

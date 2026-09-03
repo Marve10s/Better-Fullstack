@@ -345,6 +345,7 @@ describe("Virtual Generator Regressions", () => {
       observability: "opentelemetry",
       featureFlags: "none",
       analytics: "none",
+      webMcp: "none",
       effect: "none",
       stateManagement: "tanstack-store",
       forms: "tanstack-form",

@@ -54,6 +54,7 @@ export function createCliDefaultProjectConfigBase(
     integrations: "none",
     ecommerce: "none",
     analytics: "none",
+    webMcp: "none",
     mobileNavigation: "none",
     mobileUI: "none",
     mobileStorage: "none",

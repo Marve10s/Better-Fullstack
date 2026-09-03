@@ -127,6 +127,7 @@ import {
   UI_LIBRARY_VALUES,
   VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
+  WEB_MCP_VALUES,
 } from "@/config/schemas";
 import {
   ELIXIR_UNSUPPORTED_GRAPH_TOOLS,
@@ -1448,6 +1449,7 @@ describe("stack graph structural round-trip (phase 0)", () => {
       fileUpload: { role: "fileUpload", values: FILE_UPLOAD_VALUES },
       i18n: { role: "i18n", values: I18N_VALUES },
       analytics: { role: "analytics", values: ANALYTICS_VALUES },
+      webMcp: { role: "webMcp", values: WEB_MCP_VALUES },
     } as const;
 
     for (const [field, { role, values }] of Object.entries(cases)) {

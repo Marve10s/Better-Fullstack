@@ -33,6 +33,7 @@ export { processFeatureFlagsTemplates } from "@/template-handlers/features/featu
 export { processIntegrationsTemplates } from "@/template-handlers/features/integrations";
 export { processEcommerceTemplates } from "@/template-handlers/features/ecommerce";
 export { processAnalyticsTemplates } from "@/template-handlers/features/analytics";
+export { processWebMcpTemplates } from "@/template-handlers/features/web-mcp";
 export { processAITemplates } from "@/template-handlers/features/ai";
 export { processRealtimeTemplates } from "@/template-handlers/features/realtime";
 export { processJobQueueTemplates } from "@/template-handlers/features/job-queue";

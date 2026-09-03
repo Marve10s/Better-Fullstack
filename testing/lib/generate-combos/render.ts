@@ -159,6 +159,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["integrations", config.integrations],
     ["ecommerce", config.ecommerce],
     ["analytics", config.analytics],
+    ["web-mcp", config.webMcp],
     ["effect", config.effect],
     ["state-management", config.stateManagement],
     ["forms", config.forms],

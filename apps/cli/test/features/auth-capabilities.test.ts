@@ -32,6 +32,7 @@ function createTypeScriptStack(overrides: Partial<CompatibilityInput> = {}): Com
     observability: "none",
     featureFlags: "none",
     analytics: "none",
+    webMcp: "none",
     backendLibraries: "none",
     stateManagement: "none",
     forms: "react-hook-form",

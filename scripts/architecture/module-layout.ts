@@ -208,6 +208,7 @@ const groupedFiles: Record<string, Record<string, string[]>> = {
       "server-deploy.ts",
       "state-management.ts",
       "web-deploy.ts",
+      "web-mcp.ts",
     ],
   },
   "apps/web/src/lib": {
@@ -373,6 +374,7 @@ const groupedFiles: Record<string, Record<string, string[]>> = {
       "search.ts",
       "testing.ts",
       "vector-db.ts",
+      "web-mcp.ts",
     ],
   },
   "packages/template-generator/src/utils": {
