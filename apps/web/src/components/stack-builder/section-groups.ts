@@ -38,7 +38,13 @@ export const SECTION_EMBEDDED_CATEGORIES = new Set<TechCategory>([
 ]);
 
 const TYPESCRIPT_SECTIONS: readonly BuilderSectionDef[] = [
-  section("frontend", "Frontend", ["webFrontend", "cssFramework", "uiLibrary", "appShells"]),
+  section("frontend", "Frontend", [
+    "webFrontend",
+    "cssFramework",
+    "uiLibrary",
+    "appShells",
+    "webMcp",
+  ]),
   section(
     "frontendLibraries",
     "Frontend Libraries",
