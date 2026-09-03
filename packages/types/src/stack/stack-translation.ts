@@ -1203,6 +1203,7 @@ type ScopedStackPartField = {
   role: ScopedStackPartRole;
   value: string | readonly string[] | undefined;
   allowMultiple?: boolean;
+  replaceExisting?: boolean;
 };
 
 const GRAPH_TYPESCRIPT_FRONTEND_PART_SELECTION_KEYS = [
@@ -1640,7 +1641,25 @@ function expandScopedStackPartSpecs(
         (allowMultiple ? part.toolId === toolId : true),
     );
 
-  for (const { ownerRole, ecosystem, role, value, allowMultiple } of fields) {
+  for (const { ownerRole, ecosystem, role, value, allowMultiple, replaceExisting } of fields) {
+    const owner = ownerRole ? getPrimary(ownerRole, ecosystem) : undefined;
+    if (replaceExisting && value !== undefined && owner) {
+      const matchingParts = stackParts.filter(
+        (part) =>
+          part.role === role &&
+          part.ecosystem === ecosystem &&
+          part.ownerPartId === owner.id &&
+          part.source !== "provided",
+      );
+      for (const part of matchingParts) {
+        const spec = formatStackPartSpec(part, stackParts);
+        const specIndex = stackPartSpecs.indexOf(spec);
+        if (specIndex >= 0) stackPartSpecs.splice(specIndex, 1);
+        stackPartSpecSet.delete(spec);
+        stackParts.splice(stackParts.indexOf(part), 1);
+      }
+    }
+
     const values = Array.isArray(value) ? value : [value];
     for (const toolId of values) {
       if (!toolId || toolId === "none") continue;
@@ -1654,7 +1673,6 @@ function expandScopedStackPartSpecs(
         continue;
       }
 
-      const owner = getPrimary(ownerRole, ecosystem);
       if (!owner || hasScoped(owner.id, role, ecosystem, toolId, allowMultiple)) {
         continue;
       }
@@ -1676,6 +1694,7 @@ function getSelectionScopedPartFields(selection: StackSelectionInput): ScopedSta
       ecosystem: "typescript" as const,
       role,
       value: selection[key],
+      replaceExisting: role === "webMcp",
     })),
     ...GRAPH_TYPESCRIPT_BACKEND_PART_SELECTION_KEYS.map(([key, role]) => ({
       ownerRole: "backend" as const,
@@ -1814,6 +1833,7 @@ function getCliScopedPartFields(input: CLIInput): ScopedStackPartField[] {
       ecosystem: "typescript" as const,
       role,
       value: getValue(key),
+      replaceExisting: role === "webMcp",
     })),
     ...GRAPH_TYPESCRIPT_BACKEND_PART_CLI_KEYS.map(([key, role]) => ({
       ownerRole: "backend" as const,

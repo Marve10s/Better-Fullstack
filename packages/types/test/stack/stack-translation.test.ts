@@ -129,6 +129,26 @@ describe("stack selection translation", () => {
     expect(command).not.toContain("--backend");
   });
 
+  it("removes a graph-backed WebMCP part when WebMCP is disabled", () => {
+    const selection = {
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      stackPartSpecs: [
+        "frontend:typescript:react-vite",
+        "frontend.webMcp:typescript:enabled",
+      ],
+      webFrontend: ["react-vite"],
+      webMcp: "none",
+    } satisfies StackSelectionInput;
+
+    const command = generateStackSelectionCommand(selection);
+    const config = toProjectConfig(selection);
+
+    expect(command).not.toContain("frontend.webMcp:typescript:enabled");
+    expect(config.webMcp).toBe("none");
+    expect(config.stackParts?.some((part) => part.role === "webMcp")).toBe(false);
+  });
+
   it("promotes explicit CLI graph feature flags into scoped stack parts", () => {
     const config = cliInputToProjectConfigPartial(
       {
