@@ -52,7 +52,6 @@ yarn.lock
 .smoke-manifest.json
 testing/.release-guard/
 testing/.published-package/
-testing/.tmp-scaffbench-*/
 reports/
 artifacts/demos/
 COMPARISON-PLAN.md

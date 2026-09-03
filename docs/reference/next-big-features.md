@@ -11,9 +11,9 @@ Updated 2026-06-30 to focus on the highest-leverage remaining product opportunit
 ## Framing
 
 Better-Fullstack's moat is multi-ecosystem breadth plus tested combinations. The June work shifted
-the product from "broad but uneven" toward "broad and increasingly wired": ScaffBench 2 exists,
-schema/template coverage exists, generic MCP stack updates exist, vector DB and mobile categories
-exist, and many old backlog rows are now real options. The biggest opportunities are now the two
+the product from "broad but uneven" toward "broad and increasingly wired": schema/template coverage
+exists, generic MCP stack updates exist, vector DB and mobile categories exist, and many old backlog
+rows are now real options. The biggest opportunities are now the two
 things **no scaffolder has shipped well**: a post-scaffold upgrade engine and a public
 verified-combinations guarantee. Both build directly on the stack-graph and validation foundation.
 
@@ -47,7 +47,7 @@ expansion and hardening track.
 
 ### 3. Public verified-combinations guarantee
 
-We run scaffold/type-check tests, smoke scaffolds, ScaffBench, and release guards. The generated
+We run scaffold/type-check tests, smoke scaffolds, and release guards. The generated
 status artifact now lives at `docs/verified-combinations.md`, with a public docs page at
 `/docs/reference/verified-combinations` and a Shields-compatible endpoint at
 `/api/verified-combinations`; each surface links to source artifacts, rerun commands, and owner areas

@@ -13,12 +13,8 @@ export type EvidenceReason =
   | "stale-timestamp"
   | "unsuccessful"
   | "incomplete-rows"
-  | "environment-unqualified"
   | "no-executed-steps"
-  | "deferred-validation"
-  | "skipped-validation"
   | "failed-validation"
-  | "generator-unbound"
   | "wrong-package-version"
   | "wrong-package-identity"
   | "wrong-registry"
@@ -36,8 +32,6 @@ const OUTCOME_REASONS: ReadonlySet<EvidenceReason> = new Set([
   "unsuccessful",
   "failed-validation",
   "no-executed-steps",
-  "deferred-validation",
-  "skipped-validation",
 ]);
 
 export type SourceEvidenceContext = {
@@ -206,90 +200,6 @@ export function evaluateReleaseGuardEvidence(
     (command) => byCommand.get(command)?.status === "pass",
   ).length;
   return verdict(expectedCommands.length, pass, [...new Set(reasons)]);
-}
-
-export function evaluateScaffbenchEvidence(
-  input: unknown,
-  expectedSpecIds: readonly string[],
-  context: SourceEvidenceContext,
-): EvidenceVerdict {
-  if (!input || typeof input !== "object" || Array.isArray(input)) {
-    return verdict(
-      expectedSpecIds.length,
-      0,
-      input === null || input === undefined ? ["missing"] : ["unrecognized-version"],
-    );
-  }
-  const summary = input as Record<string, any>;
-  const metadata = summary.metadata ?? {};
-  const results = Array.isArray(summary.results) ? summary.results : [];
-  const reasons = sourceReasons(
-    {
-      schemaVersion: metadata.evidenceSchemaVersion,
-      generatedAt: summary.generatedAt,
-      gitHead: metadata.gitHead,
-      workspaceClean: metadata.workspaceClean,
-      overallSuccess: results.length > 0,
-    },
-    context,
-  );
-  if (metadata.environmentQualified !== true) reasons.push("environment-unqualified");
-  if (
-    metadata.generatorSource !== "workspace-local" ||
-    metadata.generatorGitHead !== metadata.gitHead
-  ) {
-    reasons.push("generator-unbound");
-  }
-  if (
-    typeof context.currentPackageVersion !== "string" ||
-    metadata.bfGeneratorVersion !== context.currentPackageVersion
-  ) {
-    reasons.push("wrong-package-version");
-  }
-  const resultSpecIds = new Set(results.map((result: any) => result.specId));
-  if (
-    expectedSpecIds.some((id) => !resultSpecIds.has(id)) ||
-    results.length !== expectedSpecIds.length
-  ) {
-    reasons.push("incomplete-rows");
-  }
-  let passed = 0;
-  for (const result of results) {
-    const validation = result?.validation;
-    const steps =
-      validation && typeof validation.steps === "object"
-        ? (Object.values(validation.steps).filter(Boolean) as Array<Record<string, any>>)
-        : [
-            validation?.install,
-            validation?.build,
-            validation?.checkTypes,
-            validation?.lint,
-            validation?.format,
-            validation?.test,
-            validation?.doctor,
-            validation?.route,
-          ].filter(Boolean);
-    const executed = steps.filter((step) => step.status === "ran");
-    if (validation?.deferred) reasons.push("deferred-validation");
-    if (executed.length === 0) reasons.push("no-executed-steps");
-    if (steps.some((step) => step.status === "skip" || step.status === "na"))
-      reasons.push("skipped-validation");
-    if (
-      result?.failureTags?.length > 0 ||
-      validation?.projectExists === false ||
-      steps.some((step) => step.status !== "ran" || step.exitCode !== 0 || step.timedOut === true)
-    )
-      reasons.push("failed-validation");
-    if (
-      !validation?.deferred &&
-      validation?.projectExists !== false &&
-      executed.length > 0 &&
-      steps.every((step) => step.status === "ran" && step.exitCode === 0 && !step.timedOut) &&
-      !(result?.failureTags?.length > 0)
-    )
-      passed += 1;
-  }
-  return verdict(expectedSpecIds.length, passed, [...new Set(reasons)]);
 }
 
 export function evaluatePublishedPackageEvidence(

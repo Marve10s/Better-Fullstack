@@ -5,7 +5,6 @@ import { getPresetCombos } from "@testing/lib/presets";
 import {
   evaluatePublishedPackageEvidence,
   evaluateReleaseGuardEvidence,
-  evaluateScaffbenchEvidence,
   evaluateSmokeEvidence,
   REQUIRED_MANAGERS,
   SOURCE_EVIDENCE_MAX_AGE_MS,
@@ -26,69 +25,6 @@ type SmokeResult = {
   overallSuccess: boolean;
   steps: SmokeStep[];
   totalDurationMs?: number;
-};
-
-type ScaffbenchSpec = {
-  id: string;
-  title: string;
-  family?: string;
-  canonicalFlags?: string[];
-};
-
-type ScaffbenchStep = {
-  command: string;
-  exitCode: number | null;
-  status?: "ran" | "skip" | "na";
-  timedOut?: boolean;
-};
-
-type ScaffbenchResult = {
-  specId: string;
-  specTitle?: string;
-  path?: string;
-  trial?: number;
-  validation?: {
-    projectExists?: boolean;
-    deferred?: boolean;
-    install?: ScaffbenchStep;
-    build?: ScaffbenchStep;
-    checkTypes?: ScaffbenchStep;
-    lint?: ScaffbenchStep;
-    format?: ScaffbenchStep;
-    test?: ScaffbenchStep;
-    doctor?: ScaffbenchStep;
-    route?: ScaffbenchStep;
-    steps?: Record<string, ScaffbenchStep>;
-  };
-  stackScore?: {
-    matched: number;
-    total: number;
-    percent: number;
-  };
-  failureTags?: string[];
-};
-
-type ScaffbenchSummary = {
-  generatedAt?: string;
-  options?: {
-    specs?: string[];
-    paths?: string[];
-    qualityGate?: boolean;
-    doctorCheck?: boolean;
-    routeCheck?: boolean;
-  };
-  metadata?: {
-    evidenceSchemaVersion?: number;
-    gitHead?: string;
-    gitBranch?: string;
-    workspaceClean?: boolean;
-    bfGeneratorVersion?: string;
-    environmentQualified?: boolean;
-    generatorSource?: string;
-    generatorGitHead?: string;
-  };
-  specs?: ScaffbenchSpec[];
-  results?: ScaffbenchResult[];
 };
 
 type ReleaseGuardStep = {
@@ -147,14 +83,6 @@ const SMOKE_INPUTS: SmokeInput[] = [
     preset: "pr-core",
   },
 ];
-const SCAFFBENCH_INPUTS = [
-  {
-    label: "ScaffBench 2",
-    path: "testing/.tmp-scaffbench-2/summary.json",
-    expectedSpecIds: ["ai-search-workbench"],
-  },
-];
-
 async function readJson<T>(filePath: string): Promise<T | null> {
   try {
     return JSON.parse(await readFile(filePath, "utf8")) as T;
@@ -216,19 +144,6 @@ type VerifiedClaimSummary = {
     total: number;
     current?: boolean;
     reasons?: string[];
-    ownerArea: string;
-    actionLinks: ActionLink[];
-    rerunCommand: string;
-    failureHint: string;
-  }>;
-  scaffbench: Array<{
-    label: string;
-    source: string;
-    pass: number;
-    total: number;
-    current?: boolean;
-    reasons?: string[];
-    environmentQualified?: boolean;
     ownerArea: string;
     actionLinks: ActionLink[];
     rerunCommand: string;
@@ -373,73 +288,6 @@ function smokeStatus(result: SmokeResult): EvidenceStatus {
   return result.steps.some((step) => !step.success && !step.skipped) ? "partial-pass" : "pass";
 }
 
-function formatScaffbenchSteps(result: ScaffbenchResult): string {
-  const validation = result.validation;
-  if (!validation) {
-    return "no validation payload";
-  }
-
-  const orderedSteps: Array<readonly [string, ScaffbenchStep | undefined]> = validation.steps
-    ? Object.entries(validation.steps)
-    : [
-        ["install", validation.install],
-        ["build", validation.build],
-        ["typecheck", validation.checkTypes],
-        ["lint", validation.lint],
-        ["format", validation.format],
-        ["test", validation.test],
-        ["doctor", validation.doctor],
-        ["route", validation.route],
-      ];
-
-  return orderedSteps
-    .filter(([, step]) => Boolean(step))
-    .map(([name, step]) => {
-      if (step?.status === "na") {
-        return `${name}: n/a`;
-      }
-
-      if (step?.status === "skip") {
-        return `${name}: skipped`;
-      }
-
-      if (step?.timedOut) {
-        return `${name}: timed out`;
-      }
-
-      return `${name}: ${step?.exitCode === 0 ? "pass" : "fail"}`;
-    })
-    .join("<br>");
-}
-
-function scaffbenchResultStatus(result: ScaffbenchResult): "pass" | "fail" {
-  if (result.failureTags && result.failureTags.length > 0) {
-    return "fail";
-  }
-
-  if (result.validation?.deferred || result.validation?.projectExists === false) {
-    return "fail";
-  }
-
-  const steps = result.validation?.steps
-    ? Object.values(result.validation.steps)
-    : [
-        result.validation?.install,
-        result.validation?.build,
-        result.validation?.checkTypes,
-        result.validation?.lint,
-        result.validation?.format,
-        result.validation?.test,
-        result.validation?.doctor,
-        result.validation?.route,
-      ].filter(Boolean);
-
-  return steps.length > 0 &&
-    steps.every((step) => step?.status === "ran" && step.exitCode === 0 && step.timedOut !== true)
-    ? "pass"
-    : "fail";
-}
-
 function smokeCommandMap(): Map<string, string> {
   const commands = new Map<string, string>();
 
@@ -492,11 +340,6 @@ export async function readSmokeResults(input: SmokeInput): Promise<{
   );
 
   return { results: [...orderedResults, ...extraResults], sources };
-}
-
-function commandFromScaffbenchSpec(spec: ScaffbenchSpec): string {
-  const flags = spec.canonicalFlags?.join(" ") ?? "";
-  return `bun create better-fullstack@latest ${spec.id} ${flags}`.trim();
 }
 
 function releaseGuardOwner(command: string): string {
@@ -710,112 +553,6 @@ async function renderSmokeSection(claimSummary: VerifiedClaimSummary): Promise<s
   return sections.filter(Boolean).join("\n\n");
 }
 
-async function renderScaffbenchSection(claimSummary: VerifiedClaimSummary): Promise<string> {
-  const sections: string[] = ["## ScaffBench Evidence"];
-
-  for (const [inputIndex, input] of SCAFFBENCH_INPUTS.entries()) {
-    const claim = claimSummary.scaffbench[inputIndex];
-    const summary = await readJson<ScaffbenchSummary>(input.path);
-    if (!summary) {
-      sections.push(`No ScaffBench evidence found at ${code(input.path)}.`);
-      continue;
-    }
-
-    const runCount = summary.results?.length ?? 0;
-    const specCount = summary.specs?.length ?? 0;
-    const metadata = summary.metadata;
-    const sourceSummary = [
-      `Source: ${code(input.path)}.`,
-      `Specs: ${specCount}.`,
-      `Runs: ${runCount}.`,
-      metadata?.gitHead ? `Git head: ${code(metadata.gitHead.slice(0, 12))}.` : "",
-      metadata?.bfGeneratorVersion ? `Generator: ${code(metadata.bfGeneratorVersion)}.` : "",
-      typeof metadata?.environmentQualified === "boolean"
-        ? `Environment qualified: ${metadata.environmentQualified ? "yes" : "no"}.`
-        : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-
-    sections.push(`### ${input.label}`);
-    sections.push(sourceSummary);
-
-    if (runCount > 0) {
-      sections.push(
-        [
-          "| Status | Spec | Path | Trial | Owner area | Stack score | Validation steps | Failure tags | Action links |",
-          "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
-          ...(summary.results ?? [])
-            .map((result) => {
-              const spec = summary.specs?.find((candidate) => candidate.id === result.specId);
-              const family = spec?.family ?? "multi-ecosystem";
-              const ownerArea = ownerAreaForEcosystem(family);
-              const status = claim?.current === true ? scaffbenchResultStatus(result) : "fail";
-              const stackScore = result.stackScore
-                ? `${result.stackScore.matched}/${result.stackScore.total} (${result.stackScore.percent}%)`
-                : "n/a";
-
-              return [
-                statusLabel(status),
-                code(result.specId),
-                result.path ?? "n/a",
-                result.trial ?? "n/a",
-                code(ownerArea),
-                stackScore,
-                formatScaffbenchSteps(result),
-                result.failureTags?.join(", ") || "none",
-                actionLinksCell(
-                  compactActionLinks([
-                    repoActionLink("source", input.path),
-                    { label: "owner", href: repoUrl(ownerArea) },
-                    { label: "runner", href: repoUrl("scripts/benchmarks/scaffbench-v2.ts") },
-                  ]),
-                  "bun run scaffbench:2:canonical",
-                ),
-              ]
-                .map(escapeTableCell)
-                .join(" | ");
-            })
-            .map((row) => `| ${row} |`),
-        ].join("\n"),
-      );
-    }
-
-    const matrixSpecs = summary.specs ?? [];
-    if (matrixSpecs.length > 0) {
-      sections.push("### ScaffBench Spec Matrix");
-      sections.push(
-        runCount === 0
-          ? "These rows are matrix-only evidence: they prove the benchmark has a spec and canonical command, not that validation passed."
-          : "These rows list the canonical commands backing the benchmark specs.",
-      );
-      sections.push(
-        [
-          "| Status | Spec | Family | Owner area | Command |",
-          "| --- | --- | --- | --- | --- |",
-          ...matrixSpecs
-            .map((spec) => {
-              const status = runCount === 0 ? "matrix-only" : "configured";
-              const family = spec.family ?? "multi-ecosystem";
-              return [
-                statusLabel(status),
-                code(spec.id),
-                family,
-                code(ownerAreaForEcosystem(family)),
-                code(commandFromScaffbenchSpec(spec)),
-              ]
-                .map(escapeTableCell)
-                .join(" | ");
-            })
-            .map((row) => `| ${row} |`),
-        ].join("\n"),
-      );
-    }
-  }
-
-  return sections.join("\n\n");
-}
-
 async function renderReleaseGuardSection(
   claimSummary: VerifiedClaimSummary,
   currentGitHead?: string,
@@ -1016,7 +753,6 @@ async function buildVerifiedClaimSummary(
   currentGitHead?: string,
 ): Promise<VerifiedClaimSummary> {
   const smoke: VerifiedClaimSummary["smoke"] = [];
-  const scaffbench: VerifiedClaimSummary["scaffbench"] = [];
   const evidenceTimestamps: number[] = [];
   const recordEvidenceTimestamp = (value: unknown) => {
     const parsed = typeof value === "string" ? Date.parse(value) : Number.NaN;
@@ -1069,29 +805,6 @@ async function buildVerifiedClaimSummary(
     });
   }
 
-  for (const input of SCAFFBENCH_INPUTS) {
-    const summary = await readJson<ScaffbenchSummary>(input.path);
-    if (summary) recordEvidenceTimestamp(summary.generatedAt);
-    const results = summary?.results ?? [];
-    const ownerArea = "packages/template-generator/templates";
-    scaffbench.push({
-      label: input.label,
-      source: input.path,
-      pass: results.filter((result) => scaffbenchResultStatus(result) === "pass").length,
-      total: input.expectedSpecIds.length,
-      environmentQualified: summary?.metadata?.environmentQualified,
-      ownerArea,
-      actionLinks: compactActionLinks([
-        repoActionLink("source", input.path),
-        { label: "runner", href: repoUrl("scripts/benchmarks/scaffbench-v2.ts") },
-        { label: "owner", href: repoUrl(ownerArea) },
-      ]),
-      rerunCommand: "bun run scaffbench:2:canonical",
-      failureHint:
-        "Inspect failureTags and validation steps in the ScaffBench summary, then follow the owner area for the stack family.",
-    });
-  }
-
   const releaseSummary = await readJson<ReleaseGuardSummary>(RELEASE_GUARD_INPUT);
   const publishedPackageSummary =
     await readJson<PublishedPackageSmokeSummary>(PUBLISHED_PACKAGE_INPUT);
@@ -1107,7 +820,6 @@ async function buildVerifiedClaimSummary(
       publishedPackage: REQUIRED_MANAGERS.length,
     },
     smoke,
-    scaffbench,
     releaseGuard: releaseSummary
       ? {
           source: RELEASE_GUARD_INPUT,
@@ -1214,19 +926,6 @@ export type VerifiedCombinationSummary = {
     rerunCommand: string;
     failureHint: string;
   }>;
-  scaffbench: Array<{
-    label: string;
-    source: string;
-    pass: number;
-    total: number;
-    current?: boolean;
-    reasons?: string[];
-    environmentQualified?: boolean;
-    ownerArea: string;
-    actionLinks: VerifiedCombinationActionLink[];
-    rerunCommand: string;
-    failureHint: string;
-  }>;
   releaseGuard: {
     source: string;
     pass: number;
@@ -1281,12 +980,6 @@ async function enforceCurrentEvidence(
     const verdict = evaluateSmokeEvidence(await readJson<unknown>(input.path), expected, context);
     Object.assign(summary.smoke[index]!, verdict);
   }
-  for (const [index, input] of SCAFFBENCH_INPUTS.entries()) {
-    const raw = await readJson<ScaffbenchSummary>(input.path);
-    const expected = input.expectedSpecIds;
-    const verdict = evaluateScaffbenchEvidence(raw, expected, context);
-    Object.assign(summary.scaffbench[index]!, verdict);
-  }
   if (summary.releaseGuard) {
     Object.assign(
       summary.releaseGuard,
@@ -1339,10 +1032,9 @@ async function main(): Promise<void> {
       `Generated by ${code("bun run build:verified-combinations")}.`,
       `Last generated: ${generatedAt}.`,
     ].join(" "),
-    "A row marked Pass has green evidence in the generated input file. Partial pass means the smoke harness reported an overall pass while one or more non-gating steps failed. Failed rows are intentionally visible. Matrix-only and Configured rows are coverage commitments, not green merge claims. ScaffBench is a separate model benchmark and never contributes to product release verification.",
+    "A row marked Pass has green evidence in the generated input file. Partial pass means the smoke harness reported an overall pass while one or more non-gating steps failed. Failed rows are intentionally visible. Matrix-only and Configured rows are coverage commitments, not green merge claims. Fixproof is a separate coding-agent benchmark and never contributes to product release verification.",
     renderCurrentClaim(claimSummary),
     await renderSmokeSection(claimSummary),
-    await renderScaffbenchSection(claimSummary),
     await renderReleaseGuardSection(claimSummary, currentGitHead),
     await renderPublishedPackageSection(claimSummary, expectedPackageVersion),
   ];

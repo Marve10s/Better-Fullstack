@@ -112,12 +112,10 @@ export const changelogReleases: ChangelogRelease[] = [
     publishedAt: "2026-07-29T08:49:44Z",
     displayDate: "July 29, 2026",
     href: `${RELEASE_BASE_URL}/v2.3.1`,
-    title: "ScaffBench 2.2, the Run Before You Clone campaign, and expansion fixes",
+    title: "The Run Before You Clone campaign and expansion fixes",
     summary:
-      "This release republishes the agent benchmark on a rebuilt 2.2 harness with honest ranking, launches the Run Before You Clone campaign, and closes the review and CI findings left by the large library expansion.",
+      "This release launches the Run Before You Clone campaign and closes the review and CI findings left by the large library expansion.",
     highlights: [
-      "Read a rebuilt ScaffBench 2.2 board: a hardened harness and validator, a code-volume metric, tie-band ranks, hover notes explaining surprising rows, and a methodology card above the results.",
-      "Compare agents across harnesses, not just models, with official harness logos in the table and harness-plus-model pairing in the graph.",
       "Try a stack before you clone it through the Run Before You Clone campaign and the reworked Edit & Run surface.",
       "Install Python projects reliably under Poetry, and get pyright-clean output from PyJWT templates.",
       "Scaffold without npm 10 install failures, and stay on a working Nuxt 4.4.8 while @nuxt/ui catches up to 4.5.",
@@ -171,7 +169,6 @@ export const changelogReleases: ChangelogRelease[] = [
       "This patch makes the Kotlin language gate tell the truth in both the CLI and the builder, and removes builder surfaces that promised more than they delivered.",
     highlights: [
       "See the same Kotlin availability rules in the CLI and the web builder, backed by one shared predicate, with JPA entities opened correctly for Kotlin projects.",
-      "Read a ScaffBench graph that filters honestly, with a version dropdown for switching between boards.",
       "Work in a cleaner builder after the share modal's plugin section and the presets panel's brief suggester were removed.",
     ],
     image: gradientArtwork(),
@@ -191,7 +188,6 @@ export const changelogReleases: ChangelogRelease[] = [
       "Use release channels predictably: latest and beta selections remain on the channel you chose, while generated commands preserve the details needed to reproduce the same stack.",
       "Install community capability packs with project-contained writes and reliable failure reporting, making them safer to use in scripts and agent workflows.",
       "Read localized docs, guides, and posts in the selected language from the first page response, without an English body briefly appearing before the page settles.",
-      "Explore the new ScaffBench MCP path on the homepage, including DeepSeek V4 Flash results across the core benchmark suite.",
       "Move a builder stack into Claude Code faster with a copy-ready plugin install command in the share dialog.",
       "Create fresh projects more reliably across Next.js workspaces, Vinext with Strapi, Upstash Redis, Java testing, and multi-ecosystem commands.",
       "Anonymous usage reporting now distinguishes successful and failed runs, CLI and MCP entry points, and new versus returning installs while keeping error messages and local paths out of telemetry.",
@@ -260,7 +256,7 @@ export const changelogReleases: ChangelogRelease[] = [
       "This release turns the stack graph into a more visible source of truth: public verified-combination docs, an API badge endpoint, planner-backed CLI add flows, and tighter generated-project CI coverage. It also ships Supabase Auth for TanStack Start fullstack projects and fixes the final release-blocking generator regressions found by broad smoke coverage.",
     highlights: [
       "Added Supabase Auth support for TanStack Start fullstack projects, including server/browser clients, OAuth callback routing, login and dashboard routes, env typing, user-menu wiring, and cookie preservation.",
-      "Published verified-combination evidence through docs, generated web data, and a Shields-compatible API endpoint so release claims are backed by smoke, ScaffBench, and release-guard artifacts.",
+      "Published verified-combination evidence through docs, generated web data, and a Shields-compatible API endpoint so release claims are backed by smoke and release-guard artifacts.",
       "Routed explicit `create-better-fullstack add` stack flags through the stack-update planner/apply path, with dry-run previews, edited-file blockers, richer graph summaries, and regression coverage.",
       "Hardened generated GitHub Actions output for graph-selected addons across TypeScript and graph-only Rust, Python, Go, Java, Elixir, and .NET projects.",
       "Fixed TanStack Start OpenAPI/Kysely smoke failures by always declaring React Query devtools where the base template imports it, and updated the release snapshots.",
@@ -279,15 +275,14 @@ export const changelogReleases: ChangelogRelease[] = [
     publishedAt: "2026-06-29T20:06:24Z",
     displayDate: "June 29, 2026",
     href: `${RELEASE_BASE_URL}/v2.1.3`,
-    title: "ScaffBench 2 agent benchmark, hardened templates, and reliable payments",
+    title: "Hardened templates and reliable payments",
     summary:
-      "This release rebuilds the AI-agent scaffolding benchmark as ScaffBench 2 with honest, reproducible scoring and a live homepage leaderboard. It also makes every generated template pass its own type-check and format gates, fixes all five payment providers, and repairs a wave of stack combinations across the TypeScript, Rust, Go, Python, Java, and Elixir ecosystems.",
+      "This release makes every generated template pass its own type-check and format gates, fixes all five payment providers, and repairs a wave of stack combinations across the TypeScript, Rust, Go, Python, Java, and Elixir ecosystems.",
     highlights: [
-      "Rebuilt the AI-agent benchmark as ScaffBench 2: a per-spec solvability gate, reproducibility metadata, pass@k / pass^k scoring, and an honest read-only quality gate, plus opencode/Kilo and GPT/Codex agent adapters and free-tier models on an 8-config homepage leaderboard with Core/Full tabs.",
       "Made generated templates pass their own type-check and format gates - Biome 2.5 preset, Rust cargo fmt --check + clippy -D warnings, Python ruff, gofmt-clean Go, and the Java Testcontainers 2.x rename - so fresh scaffolds stay green.",
       "Fixed all five payment providers: added env schema for Dodo, Paddle, and Lemon Squeezy, async Paddle webhook verification, Lemon Squeezy SDK type alignment, and stopped pinning a stale Stripe apiVersion.",
       "Repaired a batch of stack combos: Nuxt oRPC auth context, Kysely auth schema types, OpenAPI tsconfig base path, Qwik Rolldown chunk names, Solid TanStack Router route tree, and Svelte Better Auth builds.",
-      "The homepage hero release badge now auto-updates from the latest GitHub release, and the benchmark leaderboard ships with real run data.",
+      "The homepage hero release badge now auto-updates from the latest GitHub release.",
       "Pinned MikroORM SQLite to the v7 driver and Deno to 2.8.x, and expanded MCP stack-update coverage to keep generated installs and CI reliable.",
     ],
     image: {

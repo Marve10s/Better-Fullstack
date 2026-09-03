@@ -114,7 +114,7 @@ describe("public verification receipt and badge", () => {
     });
     expect(badge).toMatchObject({ color: "brightgreen", message: "8/8 runtime verified" });
     expect(verification.cases[1]?.runtimeLimitation).toContain("native device UI");
-    expect(JSON.stringify(badge).toLowerCase()).not.toContain("scaffbench");
+    expect(JSON.stringify(badge).toLowerCase()).not.toContain("fixproof");
   });
 
   it("fails closed when the receipt is missing or malformed", () => {

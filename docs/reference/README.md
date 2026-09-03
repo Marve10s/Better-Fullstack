@@ -10,5 +10,4 @@ priority. Verify time-sensitive claims before using them.
 - `recipe-generation-contract.md` - registered adapters, managed ownership, runtime proof, and agent context
 - `next-big-features.md` - superseded opportunity analysis
 - `new-ecosystems-watch-list.md` - candidates not yet accepted as implementation backlog
-- `scaffbench-public-positioning.md` - shipped campaign research retained for future positioning
 - `stack-graph-phase-0-library-inventory.md` - graph migration inventory supporting the active design

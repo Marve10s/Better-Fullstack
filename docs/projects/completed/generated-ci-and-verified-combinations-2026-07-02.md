@@ -21,7 +21,7 @@ spec coverage.
 ## Verified Combinations Artifact
 
 - [x] `scripts/release/record-release-guard.ts` records release-gate pass/fail evidence to `testing/.release-guard/summary.json`.
-- [x] `scripts/validation/build-verified-combinations.ts` generates `docs/verified-combinations.md` from smoke, ScaffBench, and release-guard evidence.
+- [x] `scripts/validation/build-verified-combinations.ts` generates `docs/verified-combinations.md` from smoke and release-guard evidence.
 - [x] `scripts/validation/build-verified-combinations.ts` also generates `apps/web/src/lib/docs/verified-combinations-data.ts` for the public docs page.
 - [x] `/docs/reference/verified-combinations` publishes the current verified claim in the docs site.
 - [x] `/api/verified-combinations` exposes a Shields-compatible badge endpoint backed by the same generated data.

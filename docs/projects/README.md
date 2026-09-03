@@ -49,7 +49,6 @@ the executable source.
 - `completed/phase-1-quality-hardening-2026-04-04.md`
 - `completed/python-ecosystem-expansion-2026-08-12.md`
 - `completed/safe-update-automation-and-adoption-2026-08-23.md`
-- `completed/scaffbench-2-readiness.md`
 - `completed/selection-without-surrendering-determinism-2026-08-23.md`
 - `completed/shadcn-ui-polish-fixes-2026-03-02.md`
 - `completed/update-policy-and-recovery-management-2026-08-23.md`

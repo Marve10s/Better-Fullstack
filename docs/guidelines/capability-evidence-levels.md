@@ -45,4 +45,4 @@ assertions, and declared behavior assertions.
 - A later-stage result cannot skip an earlier prerequisite.
 - Dependency presence, generated source strings, theoretical compatibility, and skipped checks are
   never runtime proof.
-- ScaffBench evaluates coding agents. It does not raise a product capability evidence level.
+- Fixproof evaluates coding agents. It does not raise a product capability evidence level.

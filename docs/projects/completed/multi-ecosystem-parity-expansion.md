@@ -105,7 +105,7 @@ Zig stays on the watch list (web ecosystem still premature).
 ## Out of scope (tracked elsewhere)
 
 - Multi-ecosystem (`--part`) smoke presets - pre-existing gap for ALL ecosystems, tracked in
-  current ScaffBench/verification work.
+  current verification work.
 - TypeScript-exclusive service categories (payments, CMS, file storage, feature flags, i18n) for
   non-TS ecosystems - Tier 3, needs per-provider SDK evaluation first.
 - "else frontend" ownership of validation/effect - see `single-source-of-truth-stack-graph.md`.

@@ -5,7 +5,6 @@
     "paths": {
       "@actions/*": ["../.github/actions/*"],
       "@root/*": ["../*"],
-      "@scaffbench/*": ["./scaffbench/*"],
       "@scripts/*": ["./*"],
       "@testing/*": ["../testing/*"],
       "@web/*": ["../apps/web/src/*"]

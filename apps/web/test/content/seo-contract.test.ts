@@ -52,7 +52,7 @@ describe("SEO contracts", () => {
     });
   });
 
-  it("includes docs, guides, stack pages, MCP, and the benchmark runner in the dynamic sitemap", () => {
+  it("includes docs, guides, stack pages, MCP, and the benchmark page in the dynamic sitemap", () => {
     const entries = getSitemapEntriesFromPages({
       docsPages: [
         { slug: [], frontmatter: { updated: "2026-05-12" } },
@@ -78,7 +78,7 @@ describe("SEO contracts", () => {
     expect(paths).toContain("/docs/cli/create");
     expect(paths).toContain("/guides/typescript/create-tanstack-start-project");
     expect(paths).toContain("/mcp");
-    expect(paths).toContain("/run");
+    expect(paths).toContain("/benchmark");
     expect(paths).toContain("/templates");
     expect(paths).not.toContain("/stack");
     expect(paths).toContain("/stack/nextjs-hono-drizzle-better-auth");

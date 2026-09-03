@@ -41,8 +41,8 @@ is more valuable than a large set of combinations that only generate files.
 - Preview-first stack changes, token-bound apply, three-way scaffold updates, recovery points, and
   operation history.
 - MCP tools, an installable coding-agent plugin, and generated project instructions.
-- Release guards, generated-project smoke workflows, published-package checks, verification
-  evidence machinery, and ScaffBench.
+- Release guards, generated-project smoke workflows, published-package checks, and verification
+  evidence machinery.
 - Privacy-bounded aggregate telemetry and an operator-only internal decision room.
 
 ## Current truth
@@ -51,7 +51,7 @@ The next phase starts from these observed constraints, not from feature counts.
 
 | Area                  | Current state                                                                                                                                                                                     | Product consequence                                                                                |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Public verification   | The generated evidence document currently reports 0 of 12 PR core smoke cases, 0 of 1 ScaffBench cases, no release-guard receipt, and no published-package receipt.                               | Verification must become a current CI artifact before it can support a public quality claim.       |
+| Public verification   | The generated evidence document currently reports 0 of 12 PR core smoke cases, no release-guard receipt, and no published-package receipt.                                                         | Verification must become a current CI artifact before it can support a public quality claim.       |
 | Release publication   | The release workflow can tag and create a GitHub release before all packages are built, published, and smoke-tested. It does not consume the full required CI result for the exact SHA.           | Publication needs an exact-SHA, resumable state model before verification evidence can be trusted. |
 | Ecosystem coverage    | The smoke and template matrices do not present one consistent proof across all eight ecosystem surfaces.                                                                                          | Start with one representative core recipe per ecosystem, including React Native and .NET.          |
 | Update window         | Existing cross-version fixtures are provenance-only and explicitly unupgradeable. External validation adopted a fresh manifest-v2 baseline rather than upgrading from an older published release. | Do not advertise a historical support window yet. Build executable release fixtures first.         |
@@ -114,7 +114,7 @@ and package artifacts that produced it.
 | T0.4  | Refactor release publication into a resumable state model. Consume successful required CI for the exact SHA, build and verify all package tarballs before publication, preflight every package and version, publish exact artifacts, run installed-package smoke checks, then create the tag and GitHub release. | A failed release resumes without rebuilding different bytes or silently skipping a partially published package. Fault injection at every irreversible boundary cannot produce a success tag or GitHub release. Authoritative toolchain versions are pinned; floating versions run only as an advisory canary. |
 | T0.5  | Produce an immutable verification receipt for the exact commit and release candidate. Include the required-CI run, commit SHA, pinned toolchain, schema and template versions, package versions, matrix cases, timestamps, and results.                                                                          | CI creates the receipt from clean inputs and rejects missing, dirty, partial, stale, or mismatched evidence. The release consumes that exact receipt rather than rerunning a narrower substitute.                                                                                                             |
 | T0.6  | Unify the core build-proof matrix. Add one representative clean install and build case for each of the eight ecosystem surfaces.                                                                                                                                                                                 | The matrix covers TypeScript, React Native, Rust, Python, Go, Java, Elixir, and .NET on the exact release candidate. Failures identify the Stack Part and failed stage. Runtime behavior remains a separate Phase 3 evidence level.                                                                           |
-| T0.7  | Publish a verification page and badge from the current receipt. Keep product verification separate from ScaffBench model results.                                                                                                                                                                                | A user can see what passed, what was not run, evidence age, commit, package version, and maturity level. Missing evidence renders non-green.                                                                                                                                                                  |
+| T0.7  | Publish a verification page and badge from the current receipt. Keep product verification separate from Fixproof results.                                                                                                                                                                                          | A user can see what passed, what was not run, evidence age, commit, package version, and maturity level. Missing evidence renders non-green.                                                                                                                                                                  |
 | T0.8  | Add a privacy-safe support bundle and structured issue forms. Reuse `doctor --json` data, redact paths and raw errors, and require consent before copying anything.                                                                                                                                              | A failed operation can produce a bounded report containing versions, selected Stack Part identifiers, lifecycle state, and redacted diagnostics, with no source, prompts, secrets, environment values, URLs, or personal paths.                                                                               |
 | T0.9  | Make planning and public-claim checks part of the release guard.                                                                                                                                                                                                                                                 | A release fails when canonical docs contradict shipped behavior, evidence refers to another commit, or a public maturity label exceeds its receipt.                                                                                                                                                           |
 | T0.10 | Add output schemas and contract tests for every existing MCP tool that returns structured content. Share response types with CLI JSON where the underlying service is shared.                                                                                                                                    | Status, check, removal, project update, recovery, and stack update success and failure payloads validate against declared schemas.                                                                                                                                                                            |
@@ -284,12 +284,12 @@ Goal: help users choose a sound stack while keeping schema rules and evidence au
 
 ## Independent benchmark lane
 
-ScaffBench measures how coding agents use Better Fullstack. It is not generated-project
-verification and does not depend on Phases 1 through 6.
+Fixproof measures coding agents on sealed, real issues from private codebases with hidden tests. It
+is not generated-project verification and does not depend on Phases 1 through 6.
 
 | ID  | Task                                                                                                                                                       | Done when                                                                                                                                           |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B1  | Complete ScaffBench 3 canonical coverage and weak-versus-strong calibration under its own guideline. Publish only after its scoring and cohort gates pass. | Results cover the full canonical cohort, separate interface quality from application correctness, and never control the product verification badge. |
+| B1  | Prepare the first Fixproof board from sealed private tasks and hidden tests.                                                                                  | Results cover the defined cohort, stay separate from product verification, and never control the product verification badge.                       |
 
 ## Conditional bets
 
@@ -337,7 +337,7 @@ new-tool guideline and enters at an honest evidence level.
 - Do not fetch remote registry packs before local registry mutations use the shared safety model.
 - Do not expand `gen` across languages before the current path is persistent and recoverable.
 - Do not promise browser execution for every ecosystem or multi-service graph.
-- Do not publish ScaffBench 3 as a product guarantee before its coverage and scoring are calibrated.
+- Do not publish Fixproof as a product guarantee before its coverage and scoring are calibrated.
 - Do not add direct solo Stack Graph editing before the remaining settings authority decisions.
 - Do not delete the retired analytics source or its historical data.
 - Do not call a dependency, generated file, source string, or theoretical combination runtime proof.
@@ -356,7 +356,7 @@ new-tool guideline and enters at an honest evidence level.
 | Payments, organization preset, and raw SQL       | Consider as golden recipe or vertical-slice candidates only when demand and runtime verification maintenance exist. |
 | TypeScript, community, and new-category backlogs | Keep as demand intake, not scheduled roadmap commitments.                                                           |
 | Registry backlog                                 | Keep conditional until the Phase 2 mutation gate and demand gate pass.                                              |
-| ScaffBench                                       | Keep in the independent benchmark lane, separate from generated-project proof.                                      |
+| Fixproof                                         | Keep in the independent benchmark lane, separate from generated-project proof.                                      |
 
 ## Product scorecard
 

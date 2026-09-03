@@ -25,19 +25,6 @@ export type VerifiedCombinationSummary = {
     rerunCommand: string;
     failureHint: string;
   }>;
-  scaffbench: Array<{
-    label: string;
-    source: string;
-    pass: number;
-    total: number;
-    current?: boolean;
-    reasons?: string[];
-    environmentQualified?: boolean;
-    ownerArea: string;
-    actionLinks: VerifiedCombinationActionLink[];
-    rerunCommand: string;
-    failureHint: string;
-  }>;
   releaseGuard: {
     source: string;
     pass: number;
@@ -70,11 +57,11 @@ export type VerifiedCombinationSummary = {
 };
 
 export const verifiedCombinationsSummary: VerifiedCombinationSummary = {
-  "generatedAt": "2026-08-11T11:11:08.988Z",
-  "expiresAt": "2026-08-12T23:11:08.988Z",
-  "gitHead": "0c1bc90f735bb15b3fdd7aa1131ec7d48a0f274d",
+  "generatedAt": "2026-09-03T17:12:53.985Z",
+  "expiresAt": "2026-09-05T05:12:53.985Z",
+  "gitHead": "d644ce745a48cad689bb1446789e834a428e3607",
   "expectedTotals": {
-    "releaseGuard": 17,
+    "releaseGuard": 22,
     "publishedPackage": 3
   },
   "smoke": [
@@ -98,31 +85,6 @@ export const verifiedCombinationsSummary: VerifiedCombinationSummary = {
       ],
       "rerunCommand": "bun run test:smoke:pr-core",
       "failureHint": "Run the smoke preset and inspect the generated smoke-results.json source files.",
-      "current": false,
-      "reasons": [
-        "missing"
-      ]
-    }
-  ],
-  "scaffbench": [
-    {
-      "label": "ScaffBench 2",
-      "source": "testing/.tmp-scaffbench-2/summary.json",
-      "pass": 0,
-      "total": 1,
-      "ownerArea": "packages/template-generator/templates",
-      "actionLinks": [
-        {
-          "label": "runner",
-          "href": "https://github.com/Marve10s/Better-Fullstack/blob/main/scripts/benchmarks/scaffbench-v2.ts"
-        },
-        {
-          "label": "owner",
-          "href": "https://github.com/Marve10s/Better-Fullstack/blob/main/packages/template-generator/templates"
-        }
-      ],
-      "rerunCommand": "bun run scaffbench:2:canonical",
-      "failureHint": "Inspect failureTags and validation steps in the ScaffBench summary, then follow the owner area for the stack family.",
       "current": false,
       "reasons": [
         "missing"

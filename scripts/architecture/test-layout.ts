@@ -46,7 +46,7 @@ const testProjects: TestProject[] = [
         return "generation";
       }
       if (matches(file, /(?:recommend|starter-track|builder)/)) return "recommendations";
-      if (matches(file, /(?:benchmark|scaffbench)/)) return "benchmarks";
+      if (matches(file, /benchmark/)) return "benchmarks";
       if (
         matches(
           file,

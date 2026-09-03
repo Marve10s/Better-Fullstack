@@ -52,8 +52,8 @@ export function validatePublicEvidenceContracts(inputs: PublicEvidenceContractIn
   ) {
     errors.push("the public badge must fail closed unless the receipt is verified");
   }
-  if (!inputs.pageSource.includes("ScaffBench") || !inputs.pageSource.includes("does not raise")) {
-    errors.push("the public verification page must keep ScaffBench separate from product evidence");
+  if (!inputs.pageSource.includes("Fixproof") || !inputs.pageSource.includes("does not raise")) {
+    errors.push("the public verification page must keep Fixproof separate from product evidence");
   }
   return errors;
 }

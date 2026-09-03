@@ -1,7 +1,5 @@
-// Vendor and harness logomarks shared by the ScaffBench leaderboard
-// (llm-benchmark-section) and the homepage benchmark teaser. Kept in their own
-// module so the teaser can reuse the exact marks without pulling in the full
-// chart component.
+// Provider logomarks shared by agent-facing components. Kept in their own module
+// so the inline SVGs remain statically renderable.
 
 /** Brands we render a logo for: model vendors first, then harnesses. */
 export type ProviderLogoId =
@@ -78,7 +76,7 @@ export function ZaiMark({ className }: { className?: string }) {
   );
 }
 
-// Official harness logomarks, flattened to currentColor for benchmark rows.
+// Official harness logomarks, flattened to currentColor for agent-facing labels.
 export function OpencodeMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 300 300" aria-hidden className={className} xmlns="http://www.w3.org/2000/svg">

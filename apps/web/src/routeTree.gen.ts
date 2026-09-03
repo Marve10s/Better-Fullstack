@@ -19,7 +19,6 @@ import { Route as LlmsFullDottxtRouteImport } from './routes/llms-full[.]txt'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as NewRouteImport } from './routes/new'
-import { Route as RunRouteImport } from './routes/run'
 import { Route as RunBeforeYouCloneRouteImport } from './routes/run-before-you-clone'
 import { Route as SitemapDotmdRouteImport } from './routes/sitemap[.]md'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -91,11 +90,6 @@ const McpRoute = McpRouteImport.update({
 const NewRoute = NewRouteImport.update({
   id: '/new',
   path: '/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RunRoute = RunRouteImport.update({
-  id: '/run',
-  path: '/run',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RunBeforeYouCloneRoute = RunBeforeYouCloneRouteImport.update({
@@ -222,7 +216,6 @@ export interface FileRoutesByFullPath {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
-  '/run': typeof RunRoute
   '/run-before-you-clone': typeof RunBeforeYouCloneRoute
   '/sitemap.md': typeof SitemapDotmdRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -257,7 +250,6 @@ export interface FileRoutesByTo {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
-  '/run': typeof RunRoute
   '/run-before-you-clone': typeof RunBeforeYouCloneRoute
   '/sitemap.md': typeof SitemapDotmdRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -293,7 +285,6 @@ export interface FileRoutesById {
   '/llms.txt': typeof LlmsDottxtRoute
   '/mcp': typeof McpRoute
   '/new': typeof NewRoute
-  '/run': typeof RunRoute
   '/run-before-you-clone': typeof RunBeforeYouCloneRoute
   '/sitemap.md': typeof SitemapDotmdRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -330,7 +321,6 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new'
-    | '/run'
     | '/run-before-you-clone'
     | '/sitemap.md'
     | '/sitemap.xml'
@@ -365,7 +355,6 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new'
-    | '/run'
     | '/run-before-you-clone'
     | '/sitemap.md'
     | '/sitemap.xml'
@@ -400,7 +389,6 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/mcp'
     | '/new'
-    | '/run'
     | '/run-before-you-clone'
     | '/sitemap.md'
     | '/sitemap.xml'
@@ -436,7 +424,6 @@ export interface RootRouteChildren {
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   McpRoute: typeof McpRoute
   NewRoute: typeof NewRoute
-  RunRoute: typeof RunRoute
   RunBeforeYouCloneRoute: typeof RunBeforeYouCloneRoute
   SitemapDotmdRoute: typeof SitemapDotmdRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -531,13 +518,6 @@ declare module '@tanstack/react-router' {
       path: '/new'
       fullPath: '/new'
       preLoaderRoute: typeof NewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/run': {
-      id: '/run'
-      path: '/run'
-      fullPath: '/run'
-      preLoaderRoute: typeof RunRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/run-before-you-clone': {
@@ -708,7 +688,6 @@ const rootRouteChildren: RootRouteChildren = {
   LlmsDottxtRoute: LlmsDottxtRoute,
   McpRoute: McpRoute,
   NewRoute: NewRoute,
-  RunRoute: RunRoute,
   RunBeforeYouCloneRoute: RunBeforeYouCloneRoute,
   SitemapDotmdRoute: SitemapDotmdRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -735,12 +714,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

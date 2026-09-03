@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 
 /**
- * Horizontal bar chart for benchmark posts (ScaffBench et al.). Rendered inside
+ * Horizontal bar chart for benchmark posts. Rendered inside
  * MDX prose, so it opts out with `not-prose` and carries its own card chrome +
  * warm-stone / lime theming to match the homepage leaderboard. SSR-safe (pure
  * markup, no browser APIs). One highlighted bar per chart reads as "the result".

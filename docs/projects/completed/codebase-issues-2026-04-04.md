@@ -79,4 +79,4 @@ Verified-complete CI/security items were moved to `docs/projects/completed/ci-se
 
 ### 18. No cross-browser testing
 
-- Historical note: the old CI/quality backlog has been completed and archived as `docs/projects/completed/ci-and-quality-follow-ups-2026-06-30.md`; active quality follow-ups now live in feature-specific plans and ScaffBench/verification work.
+- Historical note: the old CI/quality backlog has been completed and archived as `docs/projects/completed/ci-and-quality-follow-ups-2026-06-30.md`; active quality follow-ups now live in feature-specific plans and verification work.

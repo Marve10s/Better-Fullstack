@@ -36,7 +36,6 @@ const projects: Project[] = [
       { directory: "src", prefix: "@/" },
       { directory: "test", prefix: "@test/" },
       { directory: "scripts", prefix: "@scripts/" },
-      { directory: "../../scripts/scaffbench", prefix: "@scaffbench/" },
       { directory: "../../testing", prefix: "@testing/" },
       { directory: "../web/src", prefix: "@web/" },
     ],
@@ -89,7 +88,6 @@ const projects: Project[] = [
   {
     root: "scripts",
     aliases: [
-      { directory: "scaffbench", prefix: "@scaffbench/" },
       { directory: ".", prefix: "@scripts/" },
       { directory: "../.github/actions", prefix: "@actions/" },
       { directory: "..", prefix: "@root/" },
@@ -228,12 +226,7 @@ function globTargetExists(target: string): boolean {
   return existsSync(fixedPrefix.endsWith(path.sep) ? fixedPrefix.slice(0, -1) : fixedPrefix);
 }
 
-async function canonicalExistingAlias(
-  project: Project,
-  projectRoot: string,
-  sourceFile: string,
-  value: string,
-): Promise<string | undefined> {
+function canonicalExistingAlias(project: Project, value: string): string | undefined {
   if (!value.startsWith("@/")) return undefined;
 
   if (project.root === "testing") {
@@ -241,29 +234,7 @@ async function canonicalExistingAlias(
   }
 
   if (project.root === "scripts") {
-    const suffix = value.slice(2);
-    const scaffbenchRoot = path.join(projectRoot, "scaffbench");
-    const scriptTarget = path.join(projectRoot, suffix);
-    const scaffbenchTarget = path.join(scaffbenchRoot, suffix);
-    const scriptTargetExists = await moduleTargetExists(scriptTarget);
-    const scaffbenchTargetExists = await moduleTargetExists(scaffbenchTarget);
-
-    if (isWithin(scaffbenchRoot, sourceFile)) {
-      return scriptTargetExists && !scaffbenchTargetExists
-        ? `@scripts/${suffix}`
-        : `@scaffbench/${suffix}`;
-    }
-    if (!scriptTargetExists && scaffbenchTargetExists) {
-      return `@scaffbench/${suffix}`;
-    }
-    return `@scripts/${suffix}`;
-  }
-
-  if (
-    project.root === "apps/web" &&
-    /scaffbench-(?:2(?:-[12])?|3-board)-data\.tsx?$/.test(sourceFile)
-  ) {
-    return `@web/${value.slice(2)}`;
+    return `@scripts/${value.slice(2)}`;
   }
 
   return undefined;
@@ -313,7 +284,7 @@ for (const project of projects) {
       const value = negative ? specifier.value.slice(1) : specifier.value;
       const canonicalReplacement = value.startsWith(".")
         ? aliasFor(projectRoot, project.aliases, filePath, value)
-        : await canonicalExistingAlias(project, projectRoot, filePath, value);
+        : canonicalExistingAlias(project, value);
       const replacement = canonicalReplacement
         ? `${negative ? "!" : ""}${canonicalReplacement}`
         : undefined;

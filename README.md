@@ -70,7 +70,7 @@ Connect your AI coding agents to Better Fullstack with one command:
 npx create-better-fullstack@latest install
 ```
 
-After install, supported agents scaffold projects through the MCP server, 2.6x faster than hand-writing in ScaffBench; see the [AI docs](https://better-fullstack.dev/docs/ai/overview) for setup.
+After install, supported agents scaffold projects through the MCP server; see the [AI docs](https://better-fullstack.dev/docs/ai/overview) for setup.
 
 <br>
 

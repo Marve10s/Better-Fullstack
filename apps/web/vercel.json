@@ -17,46 +17,6 @@
       "permanent": true
     },
     {
-      "source": "/blog/scaffbench.md",
-      "destination": "/benchmark",
-      "permanent": true
-    },
-    {
-      "source": "/blog/scaffbench",
-      "destination": "/benchmark",
-      "permanent": true
-    },
-    {
-      "source": "/blog/scaffbench-2.md",
-      "destination": "/benchmark",
-      "permanent": true
-    },
-    {
-      "source": "/blog/scaffbench-2",
-      "destination": "/benchmark",
-      "permanent": true
-    },
-    {
-      "source": "/blog/scaffbench-2-1.md",
-      "destination": "/benchmark",
-      "permanent": true
-    },
-    {
-      "source": "/blog/scaffbench-2-1",
-      "destination": "/benchmark",
-      "permanent": true
-    },
-    {
-      "source": "/blog/scaffbench-2-2.md",
-      "destination": "/benchmark",
-      "permanent": true
-    },
-    {
-      "source": "/blog/scaffbench-2-2",
-      "destination": "/benchmark",
-      "permanent": true
-    },
-    {
       "source": "/docs/recipes/default-typescript-web.md",
       "destination": "/guides/typescript/hono-trpc-drizzle.md",
       "permanent": true

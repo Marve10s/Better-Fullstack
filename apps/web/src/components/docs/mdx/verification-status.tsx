@@ -129,7 +129,7 @@ export function VerificationStatus() {
 
       <p className="text-muted-foreground text-sm">
         Runtime verification applies only to the recorded boundaries and limitations above. It does
-        not prove behavior outside those assertions. ScaffBench measures model performance and does
+        not prove behavior outside those assertions. Fixproof measures model performance and does
         not raise this product evidence level.
       </p>
     </div>

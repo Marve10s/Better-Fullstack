@@ -4,7 +4,6 @@ import {
   EVIDENCE_SCHEMA_VERSION,
   evaluatePublishedPackageEvidence,
   evaluateReleaseGuardEvidence,
-  evaluateScaffbenchEvidence,
   evaluateSmokeEvidence,
   type EvidenceReason,
 } from "@scripts/verified-combinations/evidence";
@@ -203,115 +202,6 @@ describe("source-bound evidence", () => {
     );
     expect(result.pass).toBe(0);
     expect(result.reasons).toContain("incomplete-rows");
-  });
-});
-
-describe("ScaffBench evidence", () => {
-  const validResult = {
-    specId: "spec",
-    failureTags: [],
-    validation: {
-      projectExists: true,
-      deferred: false,
-      steps: { build: { status: "ran", exitCode: 0, timedOut: false } },
-    },
-  };
-  const valid = {
-    generatedAt: source.generatedAt,
-    metadata: {
-      evidenceSchemaVersion: EVIDENCE_SCHEMA_VERSION,
-      gitHead: HEAD,
-      workspaceClean: true,
-      environmentQualified: true,
-      generatorSource: "workspace-local",
-      generatorGitHead: HEAD,
-      bfGeneratorVersion: "2.5.0",
-    },
-    results: [validResult],
-  };
-
-  it("accepts qualified execution with real passing steps", () => {
-    expect(evaluateScaffbenchEvidence(valid, ["spec"], context)).toEqual({
-      current: true,
-      pass: 1,
-      total: 1,
-      reasons: [],
-    });
-  });
-
-  it.each([
-    ["unqualified", { metadata: { environmentQualified: false } }, "environment-unqualified"],
-    ["an unbound generator", { metadata: { generatorSource: "registry" } }, "generator-unbound"],
-    [
-      "the wrong generator version",
-      { metadata: { bfGeneratorVersion: "2.4.0" } },
-      "wrong-package-version",
-    ],
-    [
-      "empty",
-      { results: [{ ...validResult, validation: { projectExists: true, steps: {} } }] },
-      "no-executed-steps",
-    ],
-    [
-      "deferred",
-      {
-        results: [
-          {
-            ...validResult,
-            validation: { deferred: true, steps: validResult.validation.steps },
-          },
-        ],
-      },
-      "deferred-validation",
-    ],
-    [
-      "skipped",
-      {
-        results: [
-          {
-            ...validResult,
-            validation: { steps: { build: { status: "skip", exitCode: null } } },
-          },
-        ],
-      },
-      "skipped-validation",
-    ],
-    [
-      "failed",
-      {
-        results: [
-          { ...validResult, validation: { steps: { build: { status: "ran", exitCode: 1 } } } },
-        ],
-      },
-      "failed-validation",
-    ],
-    [
-      "unknown step status",
-      {
-        results: [{ ...validResult, validation: { steps: { build: { exitCode: 0 } } } }],
-      },
-      "failed-validation",
-    ],
-    [
-      "timed out",
-      {
-        results: [
-          {
-            ...validResult,
-            validation: { steps: { build: { status: "ran", exitCode: 0, timedOut: true } } },
-          },
-        ],
-      },
-      "failed-validation",
-    ],
-  ])("rejects %s validation", (_, override, reason) => {
-    const result = evaluateScaffbenchEvidence(
-      { ...valid, ...override, metadata: { ...valid.metadata, ...(override as any).metadata } },
-      ["spec"],
-      context,
-    );
-    expect(result.pass).toBe(0);
-    expect(result.reasons).toContain(reason as EvidenceReason);
   });
 });
 
