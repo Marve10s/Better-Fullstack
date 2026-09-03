@@ -1625,6 +1625,17 @@ describe("stack update planner", () => {
             "frontend: Web frontend set to 'react-vite' (requested feature requires a web app)",
         },
         {
+          name: "web-mcp",
+          update: { webMcp: "enabled" },
+          field: "webMcp",
+          expected: "enabled",
+          expectedFrontend: ["react-vite"],
+          expectedPath: "apps/web/src/lib/webmcp.ts",
+          expectedNeedle: ".registerTool(",
+          expectedAdjustment:
+            "frontend: Web frontend set to 'react-vite' (requested feature requires a web app)",
+        },
+        {
           name: "i18n-next-intl",
           update: { i18n: "next-intl" },
           field: "i18n",

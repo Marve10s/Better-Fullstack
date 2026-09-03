@@ -1079,7 +1079,7 @@ describe("CLI history command", () => {
         { cwd: root, env: sharedEnv },
       );
       expect(replayResult.exitCode, cliOutput(replayResult)).toBe(0);
-      expect(cliOutput(replayResult)).toContain("WebMCP: enabled");
+      expect(cliOutput(replayResult)).toContain("apps/web/src/lib/webmcp.ts");
     },
     CLI_COMMAND_TEST_TIMEOUT_MS,
   );

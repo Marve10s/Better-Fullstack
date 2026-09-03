@@ -995,6 +995,7 @@ function getDefaultWebFrontendForRequestedUpdate(
     hasRequestedNonNoneValue(requestedChanges, "i18n") ||
     hasRequestedNonNoneValue(requestedChanges, "cms") ||
     hasRequestedNonNoneValue(requestedChanges, "analytics") ||
+    hasRequestedNonNoneValue(requestedChanges, "webMcp") ||
     hasRequestedNonNoneValue(requestedChanges, "webDeploy") ||
     requestedChanges.ai === "tanstack-ai";
 

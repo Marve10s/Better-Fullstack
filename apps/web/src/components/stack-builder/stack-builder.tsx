@@ -75,6 +75,7 @@ import {
   type BuilderSectionDef,
   getBuilderSections,
   isHiddenMobilePlatformCategory,
+  MULTI_FRONTEND_LIBRARY_GROUPS,
 } from "@/components/stack-builder/section-groups";
 import { ShareButton } from "@/components/stack-builder/share-button";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
@@ -674,22 +675,6 @@ const MULTI_STACK_STEPS: Array<{
   { id: "database" },
   { id: "mobile" },
   { id: "finalize" },
-];
-
-const MULTI_FRONTEND_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
-  "cssFramework",
-  "uiLibrary",
-  "stateManagement",
-  "appShells",
-  "forms",
-  "validation",
-  "testing",
-  "animation",
-  "fileUpload",
-  "i18n",
-  "analytics",
-  "botProtection",
-  "webDeploy",
 ];
 
 const MULTI_MOBILE_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
