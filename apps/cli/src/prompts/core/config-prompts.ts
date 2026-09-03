@@ -154,23 +154,23 @@ import type {
   WebMcp,
 } from "@/types";
 
-import { getKotlinJavaIncompatibilityReason } from "@/types";
 import { hasWebStyling, requiresChatSdkVercelAI } from "@/config/compatibility-rules";
-import { exitCancelled } from "@/presentation/errors";
 import { getUserPkgManager } from "@/platform/get-package-manager";
-import { getAddonsChoice, getAppPlatformsChoice } from "@/prompts/developer/addons";
-import { getAIChoice } from "@/prompts/services/ai";
-import { getAiDocsChoice } from "@/prompts/developer/ai-docs";
-import { getAnalyticsChoice } from "@/prompts/services/analytics";
-import { getWebMcpChoice } from "@/prompts/services/web-mcp";
-import { getAnimationChoice } from "@/prompts/services/animation";
+import { exitCancelled } from "@/presentation/errors";
 import { getApiChoice } from "@/prompts/architecture/api";
-import { getAstroIntegrationChoice } from "@/prompts/developer/astro-integration";
-import { getAuthChoice } from "@/prompts/services/auth";
 import { getBackendFrameworkChoice } from "@/prompts/architecture/backend";
-import { getBotProtectionChoice } from "@/prompts/services/bot-protection";
-import { getCachingChoice } from "@/prompts/data/caching";
-import { getCMSChoice } from "@/prompts/services/cms";
+import { getFrontendChoice, getNativeFrontendChoice } from "@/prompts/architecture/frontend";
+import {
+  getMobileDeepLinkingChoice,
+  getMobileLibrariesChoice,
+  getMobileNavigationChoice,
+  getMobileOTAChoice,
+  getMobilePushChoice,
+  getMobileStorageChoice,
+  getMobileTestingChoice,
+  getMobileUIChoice,
+} from "@/prompts/architecture/mobile";
+import { getRuntimeChoice } from "@/prompts/architecture/runtime";
 import {
   type ConfigPromptKey,
   type ConfigScope,
@@ -179,9 +179,27 @@ import {
   getDefaultPromptValue,
   shouldAskConfigPromptKey,
 } from "@/prompts/core/config-scope";
-import { getCSSFrameworkChoice } from "@/prompts/developer/css-framework";
+import { navigableGroup, type NavigablePromptGroup } from "@/prompts/core/navigable-group";
+import { PROMPT_RESOLVER_REGISTRY } from "@/prompts/core/prompt-resolver-registry";
+import { getCachingChoice } from "@/prompts/data/caching";
 import { getDatabaseChoice } from "@/prompts/data/database";
 import { getDBSetupChoice } from "@/prompts/data/database-setup";
+import { getFileStorageChoice } from "@/prompts/data/file-storage";
+import { getFileUploadChoice } from "@/prompts/data/file-upload";
+import { getORMChoice } from "@/prompts/data/orm";
+import { getSearchChoice } from "@/prompts/data/search";
+import { getVectorDbChoice } from "@/prompts/data/vector-db";
+import { getAddonsChoice, getAppPlatformsChoice } from "@/prompts/developer/addons";
+import { getAiDocsChoice } from "@/prompts/developer/ai-docs";
+import { getAstroIntegrationChoice } from "@/prompts/developer/astro-integration";
+import { getCSSFrameworkChoice } from "@/prompts/developer/css-framework";
+import { getEffectChoice } from "@/prompts/developer/effect";
+import { getExamplesChoice } from "@/prompts/developer/examples";
+import { getFormsChoice } from "@/prompts/developer/forms";
+import { getShadcnOptions, type ShadcnOptions } from "@/prompts/developer/shadcn-options";
+import { getTestingChoice } from "@/prompts/developer/testing";
+import { getUILibraryChoice } from "@/prompts/developer/ui-library";
+import { getValidationChoice } from "@/prompts/developer/validation";
 import {
   getDotnetApiChoice,
   getDotnetAuthChoice,
@@ -196,9 +214,7 @@ import {
   getDotnetTestingChoice,
   getDotnetWebFrameworkChoice,
 } from "@/prompts/ecosystems/dotnet-ecosystem";
-import { getEcommerceChoice } from "@/prompts/services/ecommerce";
 import { getEcosystemChoice } from "@/prompts/ecosystems/ecosystem";
-import { getEffectChoice } from "@/prompts/developer/effect";
 import {
   getElixirApiChoice,
   getElixirAuthChoice,
@@ -222,13 +238,6 @@ import {
   getElixirValidationChoice,
   getElixirWebFrameworkChoice,
 } from "@/prompts/ecosystems/elixir-ecosystem";
-import { getEmailChoice } from "@/prompts/services/email";
-import { getExamplesChoice } from "@/prompts/developer/examples";
-import { getFileStorageChoice } from "@/prompts/data/file-storage";
-import { getFileUploadChoice } from "@/prompts/data/file-upload";
-import { getFormsChoice } from "@/prompts/developer/forms";
-import { getFrontendChoice, getNativeFrontendChoice } from "@/prompts/architecture/frontend";
-import { getGitChoice } from "@/prompts/project/git";
 import {
   getGoApiChoice,
   getGoAuthChoice,
@@ -249,9 +258,6 @@ import {
   getGoValidationChoice,
   getGoWebFrameworkChoice,
 } from "@/prompts/ecosystems/go-ecosystem";
-import { getI18nChoice } from "@/prompts/services/i18n";
-import { getinstallChoice } from "@/prompts/project/install";
-import { getIntegrationsChoice } from "@/prompts/services/integrations";
 import {
   getJavaAuthChoice,
   getJavaApiChoice,
@@ -263,26 +269,10 @@ import {
   getJavaTestingLibrariesChoice,
   getJavaWebFrameworkChoice,
 } from "@/prompts/ecosystems/java-ecosystem";
-import { getJobQueueChoice } from "@/prompts/services/job-queue";
-import { getLoggingChoice } from "@/prompts/services/logging";
 import {
-  getMobileDeepLinkingChoice,
-  getMobileLibrariesChoice,
-  getMobileNavigationChoice,
-  getMobileOTAChoice,
-  getMobilePushChoice,
-  getMobileStorageChoice,
-  getMobileTestingChoice,
-  getMobileUIChoice,
-} from "@/prompts/architecture/mobile";
-import { gatherMultiEcosystemConfig, getCompositionModeChoice } from "@/prompts/ecosystems/multi-ecosystem-composer";
-import { navigableGroup, type NavigablePromptGroup } from "@/prompts/core/navigable-group";
-import { getObservabilityChoice } from "@/prompts/services/observability";
-import { getORMChoice } from "@/prompts/data/orm";
-import { getPackageManagerChoice } from "@/prompts/project/package-manager";
-import { getPaymentsChoice } from "@/prompts/services/payments";
-import { resolveProjectShape } from "@/prompts/project/project-shape";
-import { PROMPT_RESOLVER_REGISTRY } from "@/prompts/core/prompt-resolver-registry";
+  gatherMultiEcosystemConfig,
+  getCompositionModeChoice,
+} from "@/prompts/ecosystems/multi-ecosystem-composer";
 import {
   getPythonAiChoice,
   getPythonApiChoice,
@@ -306,9 +296,6 @@ import {
   getPythonValidationChoice,
   getPythonWebFrameworkChoice,
 } from "@/prompts/ecosystems/python-ecosystem";
-import { getRateLimitChoice } from "@/prompts/services/rate-limit";
-import { getRealtimeChoice } from "@/prompts/services/realtime";
-import { getRuntimeChoice } from "@/prompts/architecture/runtime";
 import {
   getRustApiChoice,
   getRustCliChoice,
@@ -325,16 +312,32 @@ import {
   getRustOrmChoice,
   getRustWebFrameworkChoice,
 } from "@/prompts/ecosystems/rust-ecosystem";
-import { getSearchChoice } from "@/prompts/data/search";
-import { getServerDeploymentChoice } from "@/prompts/services/server-deploy";
-import { getShadcnOptions, type ShadcnOptions } from "@/prompts/developer/shadcn-options";
-import { getStateManagementChoice } from "@/prompts/services/state-management";
-import { getTestingChoice } from "@/prompts/developer/testing";
-import { getUILibraryChoice } from "@/prompts/developer/ui-library";
-import { getValidationChoice } from "@/prompts/developer/validation";
-import { getVectorDbChoice } from "@/prompts/data/vector-db";
-import { getDeploymentChoice } from "@/prompts/services/web-deploy";
+import { getGitChoice } from "@/prompts/project/git";
+import { getinstallChoice } from "@/prompts/project/install";
+import { getPackageManagerChoice } from "@/prompts/project/package-manager";
+import { resolveProjectShape } from "@/prompts/project/project-shape";
 import { getWorkspaceShapeChoice } from "@/prompts/project/workspace-shape";
+import { getAIChoice } from "@/prompts/services/ai";
+import { getAnalyticsChoice } from "@/prompts/services/analytics";
+import { getAnimationChoice } from "@/prompts/services/animation";
+import { getAuthChoice } from "@/prompts/services/auth";
+import { getBotProtectionChoice } from "@/prompts/services/bot-protection";
+import { getCMSChoice } from "@/prompts/services/cms";
+import { getEcommerceChoice } from "@/prompts/services/ecommerce";
+import { getEmailChoice } from "@/prompts/services/email";
+import { getI18nChoice } from "@/prompts/services/i18n";
+import { getIntegrationsChoice } from "@/prompts/services/integrations";
+import { getJobQueueChoice } from "@/prompts/services/job-queue";
+import { getLoggingChoice } from "@/prompts/services/logging";
+import { getObservabilityChoice } from "@/prompts/services/observability";
+import { getPaymentsChoice } from "@/prompts/services/payments";
+import { getRateLimitChoice } from "@/prompts/services/rate-limit";
+import { getRealtimeChoice } from "@/prompts/services/realtime";
+import { getServerDeploymentChoice } from "@/prompts/services/server-deploy";
+import { getStateManagementChoice } from "@/prompts/services/state-management";
+import { getDeploymentChoice } from "@/prompts/services/web-deploy";
+import { getWebMcpChoice } from "@/prompts/services/web-mcp";
+import { getKotlinJavaIncompatibilityReason } from "@/types";
 
 type PromptGroupResults = {
   // Ecosystem choice first
@@ -758,6 +761,7 @@ function getPromptResolutionValue(
     forms: { forms: flags.forms, frontends },
     stateManagement: { stateManagement: flags.stateManagement, frontends },
     animation: { animation: flags.animation, frontends },
+    webMcp: { webMcp: flags.webMcp, frontends },
     caching: { caching: flags.caching, backend: results.backend, ecosystem: results.ecosystem },
     search: { search: flags.search, backend: results.backend, ecosystem: results.ecosystem },
     observability: {

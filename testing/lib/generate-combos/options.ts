@@ -350,7 +350,9 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
           ? "none"
           : sampleScalar(ECOMMERCE_VALUES, 0.9, "ecommerce"),
       analytics: sampleScalar(ANALYTICS_VALUES, 0.9, "analytics"),
-      webMcp: sampleScalar(WEB_MCP_VALUES, 0.9, "webMcp"),
+      webMcp: frontend.some((value) => value !== "none")
+        ? sampleScalar(WEB_MCP_VALUES, 0.9, "webMcp")
+        : "none",
       effect: sampleScalar(EFFECT_VALUES, 0.82, "effect"),
       stateManagement: sampleScalar(STATE_MANAGEMENT_VALUES, 0.7, "stateManagement"),
       forms: sampleScalar(FORMS_VALUES, 0.6, "forms"),

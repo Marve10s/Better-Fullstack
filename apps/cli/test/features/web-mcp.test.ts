@@ -2,6 +2,7 @@ import { readVirtualFileContent } from "@test/support/virtual-tree-utils";
 import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "@/index";
+import { getScopedDefaultPromptValue } from "@/prompts/core/config-prompts";
 import { resolveWebMcpPrompt } from "@/prompts/services/web-mcp";
 
 describe("WebMCP", () => {
@@ -13,6 +14,16 @@ describe("WebMCP", () => {
     expect(resolveWebMcpPrompt({ webMcp: "enabled", frontends: ["react-vite"] }).shouldPrompt).toBe(
       false,
     );
+  });
+
+  it("preserves an explicit selection when the prompt is scoped out", async () => {
+    expect(
+      await getScopedDefaultPromptValue(
+        "webMcp",
+        { ecosystem: "typescript", frontend: ["react-vite"] },
+        { webMcp: "enabled" },
+      ),
+    ).toBe("enabled");
   });
 
   it("generates guarded tool registration and mounts it in React", async () => {
@@ -36,12 +47,14 @@ describe("WebMCP", () => {
     expect(registration).toContain('name: "get_app_info"');
     expect(registration).toContain(".registerTool(");
     expect(registration).toContain("{ signal: controller.signal }");
-    expect(registration.indexOf('typeof document === "undefined"')).toBeLessThan(
-      registration.indexOf(".registerTool("),
-    );
-    expect(registration.indexOf("if (!modelContext)")).toBeLessThan(
-      registration.indexOf(".registerTool("),
-    );
+    const documentGuard = registration.indexOf('typeof document === "undefined"');
+    const modelContextGuard = registration.indexOf("if (!modelContext)");
+    const registrationCall = registration.indexOf(".registerTool(");
+    expect(documentGuard).toBeGreaterThanOrEqual(0);
+    expect(modelContextGuard).toBeGreaterThanOrEqual(0);
+    expect(registrationCall).toBeGreaterThanOrEqual(0);
+    expect(documentGuard).toBeLessThan(registrationCall);
+    expect(modelContextGuard).toBeLessThan(registrationCall);
     expect(component).toContain("useEffect(() => registerWebMcpTools(), [])");
     expect(appShell).toContain("<WebMcpTools />");
   });
@@ -87,6 +100,11 @@ describe("WebMCP", () => {
           ? "registerWebMcpTools()"
           : "<WebMcpTools",
       );
+      if (frontend === "astro") {
+        const lifecycle = readVirtualFileContent(root, "apps/web/src/components/WebMcpTools.astro");
+        expect(lifecycle).toContain('"astro:before-swap"');
+        expect(lifecycle).toContain('"astro:page-load"');
+      }
     }
   });
 
