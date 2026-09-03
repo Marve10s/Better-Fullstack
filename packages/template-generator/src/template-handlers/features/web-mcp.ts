@@ -163,7 +163,9 @@ export async function processWebMcpTemplates(
   const frontend = config.frontend.find(
     (entry) => entry !== "none" && !entry.startsWith("native-"),
   );
-  if (!frontend) return;
+  if (!frontend) {
+    throw new Error("WebMCP requires a web frontend");
+  }
 
   const target =
     frontend === "redwood"

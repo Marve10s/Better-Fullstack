@@ -118,4 +118,15 @@ describe("WebMCP", () => {
     expect(result.success).toBe(true);
     expect(() => readVirtualFileContent(result.tree!.root, "apps/web/src/lib/webmcp.ts")).toThrow();
   });
+
+  it("rejects WebMCP when no web frontend is selected", async () => {
+    const result = await createVirtual({
+      projectName: "webmcp-without-web",
+      frontend: ["none"],
+      webMcp: "enabled",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("WebMCP requires a web frontend");
+  });
 });
