@@ -1,9 +1,16 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { TbArrowDown as ArrowDown, TbArrowUp as ArrowUp } from "react-icons/tb";
 
-import type { FixproofBoard, FixproofModel } from "@/components/benchmark/fixproof-data";
+import type { FixproofBoard } from "@/components/benchmark/fixproof-data";
+import type { FixproofRow } from "@/components/benchmark/fixproof-theme";
 
-import { FIXPROOF_THEME_VARS, formatMinutes } from "@/components/benchmark/fixproof-outcome";
+import {
+  FIXPROOF_CARD,
+  FIXPROOF_THEME_VARS,
+  buildRows,
+  formatMinutes,
+} from "@/components/benchmark/fixproof-theme";
+import { ProviderLogo } from "@/components/home/provider-marks";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
@@ -11,8 +18,9 @@ import { m } from "@/paraglide/messages.js";
 type SortKey = "resolvedIndex" | "progressIndex";
 
 const HEAD_CELL =
-  "px-3 py-2.5 font-medium uppercase tracking-[0.14em] text-[10px] text-[#71706a] dark:text-[#8f8d84]";
+  "px-3 py-2.5 font-medium uppercase tracking-[0.14em] text-[10px] text-[var(--fx-label)]";
 const BODY_CELL = "px-3 py-3.5 font-mono text-[13px] tabular-nums";
+const TRACK_STYLE: CSSProperties = { backgroundColor: "var(--fx-track)" };
 
 /** A focusable "?" that explains one column without leaving the table. */
 export function MetricHelp({ label, children }: { label: string; children: ReactNode }) {
@@ -21,7 +29,7 @@ export function MetricHelp({ label, children }: { label: string; children: React
       <TooltipTrigger
         type="button"
         aria-label={m.fixproofDefinitionAria({ column: label })}
-        className="flex size-3.5 shrink-0 cursor-default items-center justify-center rounded-full border border-[#d9d8d2] text-[9px] font-bold leading-none text-[#71706a] transition-colors hover:border-foreground hover:text-foreground dark:border-[rgba(237,235,228,0.2)] dark:text-[#8f8d84] dark:hover:border-[#dad8d0] dark:hover:text-[#dad8d0]"
+        className="flex size-3.5 shrink-0 cursor-default items-center justify-center rounded-full border border-[var(--fx-edge)] text-[9px] font-bold leading-none text-[var(--fx-label)] transition-colors hover:border-[var(--fx-ink)] hover:text-[var(--fx-ink)]"
       >
         ?
       </TooltipTrigger>
@@ -49,7 +57,7 @@ function SortHeader({
   onSort: (key: SortKey) => void;
 }) {
   const handleClick = useCallback(() => onSort(sortKey), [onSort, sortKey]);
-  const Arrow = descending ? ArrowDown : ArrowUp;
+  const Arrow = active && !descending ? ArrowUp : ArrowDown;
 
   return (
     <th
@@ -63,8 +71,8 @@ function SortHeader({
           onClick={handleClick}
           aria-label={m.fixproofSortAria({ column: label })}
           className={cn(
-            "flex items-center gap-1 uppercase tracking-[0.14em] transition-colors hover:text-foreground",
-            active && "text-foreground",
+            "flex items-center gap-1 uppercase tracking-[0.14em] transition-colors hover:text-[var(--fx-ink)]",
+            active && "text-[var(--fx-ink)]",
           )}
         >
           {label}
@@ -79,10 +87,13 @@ function SortHeader({
 function PlainHeader({
   label,
   help,
+  helpLabel,
   align = "right",
 }: {
   label: string;
   help?: string;
+  /** Title of the tooltip when it explains something narrower than the column. */
+  helpLabel?: string;
   align?: "left" | "right";
 }) {
   return (
@@ -94,44 +105,62 @@ function PlainHeader({
         )}
       >
         {label}
-        {help ? <MetricHelp label={label}>{help}</MetricHelp> : null}
+        {help ? <MetricHelp label={helpLabel ?? label}>{help}</MetricHelp> : null}
       </span>
     </th>
   );
 }
 
-function ModelRow({ model }: { model: FixproofModel }) {
+/**
+ * An index cell: a bar track in the row's vendor hue, then the number. Progress
+ * runs at a lower fill so the two index columns stay apart at a glance.
+ */
+function IndexCell({ value, color, faded }: { value: number; color: string; faded?: boolean }) {
+  const fillStyle = useMemo<CSSProperties>(
+    () => ({ width: `${Math.max(value, 1)}%`, backgroundColor: color, opacity: faded ? 0.45 : 1 }),
+    [value, color, faded],
+  );
+
+  return (
+    <td className={cn(BODY_CELL, "whitespace-nowrap text-right")}>
+      <span
+        aria-hidden
+        className="relative mr-2.5 hidden h-1.5 w-16 overflow-hidden rounded-sm align-middle sm:inline-block"
+        style={TRACK_STYLE}
+      >
+        <span className="absolute inset-y-0 left-0 rounded-sm" style={fillStyle} />
+      </span>
+      <span className="inline-block w-7 text-right align-middle font-mono text-[16px] font-bold tabular-nums">
+        {value}
+      </span>
+    </td>
+  );
+}
+
+function ModelRow({ row }: { row: FixproofRow }) {
   return (
     <tr className="border-t border-[var(--fx-rule)]">
-      <th
-        scope="row"
-        className="whitespace-nowrap px-3 py-3.5 text-left font-mono text-[15px] font-medium"
-      >
-        {model.label}{" "}
-        <span className="font-normal text-[12px] text-[#9c9a93] dark:text-[#6c6a61]">
-          [{model.effort}]
+      <th scope="row" className="whitespace-nowrap px-3 py-3.5 text-left font-normal">
+        <span className="flex items-center gap-2">
+          <ProviderLogo logo={row.logo} />
+          <span className="font-mono text-[15px] font-medium">{row.label}</span>
         </span>
+        <span className="mt-0.5 block text-[11px] text-[var(--fx-label)]">{row.harness}</span>
       </th>
-      <td className={cn(BODY_CELL, "whitespace-nowrap text-left text-muted-foreground")}>
-        {model.harness}
-      </td>
-      <td className={cn(BODY_CELL, "text-right text-[16px] font-semibold")}>
-        {model.resolvedIndex}
-      </td>
-      <td className={cn(BODY_CELL, "text-right text-[16px] font-semibold")}>
-        {model.progressIndex}
-      </td>
+      <td className={cn(BODY_CELL, "whitespace-nowrap text-left")}>{row.effort}</td>
+      <IndexCell value={row.resolvedIndex} color={row.color} />
+      <IndexCell value={row.progressIndex} color={row.color} faded />
       <td className={cn(BODY_CELL, "text-right")}>
-        {model.resolved} / {model.graded}
+        {row.resolved} / {row.graded}
       </td>
-      <td className={cn(BODY_CELL, "text-right")}>{model.regressions}</td>
-      <td className={cn(BODY_CELL, "text-right")}>{model.testEditsReverted}</td>
-      <td className={cn(BODY_CELL, "text-right")}>{model.claimedNotDone}</td>
-      <td className={cn(BODY_CELL, "text-right")}>{formatMinutes(model.medianAgentSeconds)}</td>
-      <td className={cn(BODY_CELL, "whitespace-nowrap text-right text-muted-foreground")}>
-        {model.runDate}
+      <td className={cn(BODY_CELL, "text-right")}>{row.regressions}</td>
+      <td className={cn(BODY_CELL, "text-right")}>{row.testEditsReverted}</td>
+      <td className={cn(BODY_CELL, "text-right")}>{row.claimedNotDone}</td>
+      <td className={cn(BODY_CELL, "text-right")}>{formatMinutes(row.minutes)}</td>
+      <td className={cn(BODY_CELL, "whitespace-nowrap text-right text-[var(--fx-label)]")}>
+        {row.runDate}
       </td>
-      <td className={cn(BODY_CELL, "text-right")}>{model.trials}</td>
+      <td className={cn(BODY_CELL, "text-right")}>{row.trials}</td>
     </tr>
   );
 }
@@ -153,29 +182,25 @@ export function FixproofBoardTable({ board }: { board: FixproofBoard }) {
   );
 
   const rows = useMemo(() => {
-    const sorted = [...board.models];
+    const sorted = buildRows(board);
     sorted.sort((a, b) => (descending ? b[sortKey] - a[sortKey] : a[sortKey] - b[sortKey]));
     return sorted;
-  }, [board.models, sortKey, descending]);
+  }, [board, sortKey, descending]);
 
   return (
-    <div
-      className={cn(
-        FIXPROOF_THEME_VARS,
-        "overflow-hidden rounded-2xl border border-[#e1e0d8] bg-[#faf9f5] text-[#1b1a17] dark:border-[rgba(237,235,228,0.10)] dark:bg-[#161614] dark:text-[#dad8d0]",
-      )}
-    >
+    <div className={cn(FIXPROOF_THEME_VARS, FIXPROOF_CARD, "overflow-hidden")}>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1060px] border-collapse text-left">
           <caption className="sr-only">{m.fixproofBoardCaption()}</caption>
           <thead>
             <tr>
-              <PlainHeader align="left" label={m.fixproofColModel()} />
               <PlainHeader
                 align="left"
-                label={m.fixproofColHarness()}
+                label={m.fixproofColModel()}
+                helpLabel={m.fixproofColHarness()}
                 help={m.fixproofDefHarness()}
               />
+              <PlainHeader align="left" label={m.fixproofColEffort()} />
               <SortHeader
                 label={m.fixproofColResolvedIndex()}
                 help={m.fixproofDefResolvedIndex()}
@@ -208,8 +233,8 @@ export function FixproofBoardTable({ board }: { board: FixproofBoard }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((model) => (
-              <ModelRow key={model.id} model={model} />
+            {rows.map((row) => (
+              <ModelRow key={row.key} row={row} />
             ))}
           </tbody>
         </table>

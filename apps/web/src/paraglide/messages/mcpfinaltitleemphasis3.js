@@ -14,7 +14,7 @@ const es_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inpu
 };
 
 const zh_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`评测你的代理。`)
+	return /** @type {LocalizedString} */ (`查看代理的得分。`)
 };
 
 const ja_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
@@ -26,7 +26,7 @@ const ko_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inpu
 };
 
 const zh_hant1_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`評測你的代理程式。`)
+	return /** @type {LocalizedString} */ (`查看代理程式的得分。`)
 };
 
 const de_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {

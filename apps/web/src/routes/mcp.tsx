@@ -504,7 +504,7 @@ function HeroSection() {
           </motion.div>
         </div>
 
-        <div className="mt-14 grid grid-cols-2 border border-border bg-muted/20 lg:grid-cols-4">
+        <div className="mt-14 grid grid-cols-1 border border-border bg-muted/20 sm:grid-cols-3">
           {STATS.map((stat, index) => (
             <StatCell key={stat.id} stat={stat} index={index} inView={inView} />
           ))}
@@ -533,9 +533,7 @@ function StatCell({
       transition={transition}
       className={cn(
         "border-border p-5 sm:p-6",
-        index % 2 === 0 && "border-r",
-        index < 2 && "border-b lg:border-b-0",
-        index < 3 && "lg:border-r",
+        index < STATS.length - 1 && "border-b sm:border-b-0 sm:border-r",
       )}
     >
       <div className="font-mono text-3xl font-black tabular-nums sm:text-4xl">

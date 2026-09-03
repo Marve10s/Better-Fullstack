@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Mcpfinaltitle2Inputs */
 
 const en_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Grade your agent on`)
+	return /** @type {LocalizedString} */ (`See how agents score on`)
 };
 
 const es_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Evalúa tu agente con`)
+	return /** @type {LocalizedString} */ (`Mira cómo puntúan los agentes con`)
 };
 
 const zh_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
@@ -18,11 +18,11 @@ const zh_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => Localized
 };
 
 const ja_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`エージェントを採点するのは`)
+	return /** @type {LocalizedString} */ (`エージェントの成績が分かるのは`)
 };
 
 const ko_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`에이전트를 채점하는 기준은`)
+	return /** @type {LocalizedString} */ (`에이전트의 성적을 보여 주는 기준은`)
 };
 
 const zh_hant1_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
@@ -30,21 +30,21 @@ const zh_hant1_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => Loc
 };
 
 const de_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bewerten Sie Ihren Agenten an`)
+	return /** @type {LocalizedString} */ (`Sehen Sie, wie Agenten abschneiden bei`)
 };
 
 const fr_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Évaluez votre agent sur`)
+	return /** @type {LocalizedString} */ (`Voyez comment les agents s'en sortent sur`)
 };
 
 const uk_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Оцініть свого агента на`)
+	return /** @type {LocalizedString} */ (`Подивіться, як агенти показують себе на`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Grade your agent on" |
+* | "See how agents score on" |
 *
 * @param {Mcpfinaltitle2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

@@ -6,45 +6,45 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Changelogrelease20260612summary2Inputs */
 
 const en_changelogrelease20260612summary2 = /** @type {(inputs: Changelogrelease20260612summary2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`This release benchmarks how AI agents scaffold with Better Fullstack and publishes the results on the homepage, adds .NET as a first-class ecosystem on the new stack graph, and ships a much leaner install. It also fixes four scaffold bugs the benchmark itself uncovered.`)
+	return /** @type {LocalizedString} */ (`This release benchmarks how AI agents scaffold with Better Fullstack and publishes the results on the benchmark page, adds .NET as a first-class ecosystem on the new stack graph, and ships a much leaner install. It also fixes four scaffold bugs the benchmark itself uncovered.`)
 };
 
 const es_changelogrelease20260612summary2 = /** @type {(inputs: Changelogrelease20260612summary2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Esta versión mide cómo los agentes de IA crean scaffolds con Better Fullstack y publica los resultados en la página de inicio, añade .NET como ecosistema de primera clase en el nuevo grafo de stacks y entrega una instalación mucho más ligera. También corrige cuatro errores de scaffold que descubrió el propio benchmark.`)
+	return /** @type {LocalizedString} */ (`Esta versión mide cómo los agentes de IA crean scaffolds con Better Fullstack y publica los resultados en la página del benchmark, añade .NET como ecosistema de primera clase en el nuevo grafo de stacks y entrega una instalación mucho más ligera. También corrige cuatro errores de scaffold que descubrió el propio benchmark.`)
 };
 
 const zh_changelogrelease20260612summary2 = /** @type {(inputs: Changelogrelease20260612summary2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`这个版本衡量 AI 代理如何使用 Better Fullstack 生成 scaffold，并把结果发布到首页；同时在新的 stack graph 中加入一等 .NET 生态，并带来更轻的安装包。它还修复了 benchmark 本身发现的四个 scaffold 问题。`)
+	return /** @type {LocalizedString} */ (`这个版本衡量 AI 代理如何使用 Better Fullstack 生成 scaffold，并把结果发布到 benchmark 页面；同时在新的 stack graph 中加入一等 .NET 生态，并带来更轻的安装包。它还修复了 benchmark 本身发现的四个 scaffold 问题。`)
 };
 
 const ja_changelogrelease20260612summary2 = /** @type {(inputs: Changelogrelease20260612summary2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`このリリースでは、AI エージェントが Better Fullstack でどのようにスキャフォールディングするかをベンチマークし、その結果をホームページで公開し、新しいスタック グラフにファーストクラスのエコシステムとして .NET を追加し、より無駄のないインストールをリリースします。また、ベンチマーク自体が発見した 4 つのスキャフォールドのバグも修正されています。`)
+	return /** @type {LocalizedString} */ (`このリリースでは、AI エージェントが Better Fullstack でどのようにスキャフォールディングするかをベンチマークし、その結果をベンチマークページで公開し、新しいスタック グラフにファーストクラスのエコシステムとして .NET を追加し、より無駄のないインストールをリリースします。また、ベンチマーク自体が発見した 4 つのスキャフォールドのバグも修正されています。`)
 };
 
 const ko_changelogrelease20260612summary2 = /** @type {(inputs: Changelogrelease20260612summary2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`이 릴리스에서는 AI 에이전트가 Better Fullstack을 사용하여 스캐폴드하고 결과를 홈페이지에 게시하는 방법을 벤치마킹하고, 새 스택 그래프에 .NET을 일류 생태계로 추가하고, 훨씬 더 간결한 설치를 제공합니다. 또한 벤치마크 자체에서 발견한 4가지 스캐폴드 버그도 수정합니다.`)
+	return /** @type {LocalizedString} */ (`이 릴리스에서는 AI 에이전트가 Better Fullstack을 사용하여 스캐폴드하고 결과를 벤치마크 페이지에 게시하는 방법을 벤치마킹하고, 새 스택 그래프에 .NET을 일류 생태계로 추가하고, 훨씬 더 간결한 설치를 제공합니다. 또한 벤치마크 자체에서 발견한 4가지 스캐폴드 버그도 수정합니다.`)
 };
 
 const zh_hant1_changelogrelease20260612summary2 = /** @type {(inputs: Changelogrelease20260612summary2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`這個版本衡量 AI 代理程式如何使用 Better Fullstack 產生 scaffold，並將結果發佈到首頁；同時在新的 stack graph 中加入一等 .NET 生態，並帶來更輕的安裝包。它還修復了 benchmark 本身發現的四個 scaffold 問題。`)
+	return /** @type {LocalizedString} */ (`這個版本衡量 AI 代理程式如何使用 Better Fullstack 產生 scaffold，並將結果發佈到 benchmark 頁面；同時在新的 stack graph 中加入一等 .NET 生態，並帶來更輕的安裝包。它還修復了 benchmark 本身發現的四個 scaffold 問題。`)
 };
 
 const de_changelogrelease20260612summary2 = /** @type {(inputs: Changelogrelease20260612summary2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Diese Version misst, wie AI-Agenten mit Better Fullstack ein Gerüst bilden, veröffentlicht die Ergebnisse auf der Homepage, fügt .NET als erstklassiges Ökosystem zum neuen Stapeldiagramm hinzu und liefert eine viel schlankere Installation. Es behebt außerdem vier Gerüstfehler, die der Benchmark selbst aufgedeckt hat.`)
+	return /** @type {LocalizedString} */ (`Diese Version misst, wie AI-Agenten mit Better Fullstack ein Gerüst bilden, veröffentlicht die Ergebnisse auf der Benchmark-Seite, fügt .NET als erstklassiges Ökosystem zum neuen Stapeldiagramm hinzu und liefert eine viel schlankere Installation. Es behebt außerdem vier Gerüstfehler, die der Benchmark selbst aufgedeckt hat.`)
 };
 
 const fr_changelogrelease20260612summary2 = /** @type {(inputs: Changelogrelease20260612summary2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cette version évalue la façon dont les agents AI échafaudent avec Better Fullstack et publie les résultats sur la page d'accueil, ajoute .NET en tant qu'écosystème de première classe sur le nouveau graphique de pile et fournit une installation beaucoup plus légère. Elle corrige également quatre bugs d’échafaudage découverts par le benchmark lui-même.`)
+	return /** @type {LocalizedString} */ (`Cette version évalue la façon dont les agents AI échafaudent avec Better Fullstack et publie les résultats sur la page du benchmark, ajoute .NET en tant qu'écosystème de première classe sur le nouveau graphique de pile et fournit une installation beaucoup plus légère. Elle corrige également quatre bugs d’échafaudage découverts par le benchmark lui-même.`)
 };
 
 const uk_changelogrelease20260612summary2 = /** @type {(inputs: Changelogrelease20260612summary2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`У цьому релізі ми виміряли, як AI-агенти генерують проєкти з Better Fullstack, опублікували результати на головній, додали .NET як повноцінну екосистему в граф стеку й суттєво полегшили встановлення. Також виправили чотири помилки скафолдингу, які сам бенчмарк і виявив.`)
+	return /** @type {LocalizedString} */ (`У цьому релізі ми виміряли, як AI-агенти генерують проєкти з Better Fullstack, опублікували результати на сторінці бенчмарка, додали .NET як повноцінну екосистему в граф стеку й суттєво полегшили встановлення. Також виправили чотири помилки скафолдингу, які сам бенчмарк і виявив.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "This release benchmarks how AI agents scaffold with Better Fullstack and publishes the results on the homepage, adds .NET as a first-class ecosystem on the n..." |
+* | "This release benchmarks how AI agents scaffold with Better Fullstack and publishes the results on the benchmark page, adds .NET as a first-class ecosystem on..." |
 *
 * @param {Changelogrelease20260612summary2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

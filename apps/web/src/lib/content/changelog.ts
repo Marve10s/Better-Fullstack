@@ -347,9 +347,9 @@ export const changelogReleases: ChangelogRelease[] = [
     href: `${RELEASE_BASE_URL}/v2.0.2`,
     title: "Agent benchmark, .NET ecosystem, and a 42% lighter install",
     summary:
-      "This release benchmarks how AI agents scaffold with Better Fullstack and publishes the results on the homepage, adds .NET as a first-class ecosystem on the new stack graph, and ships a much leaner install. It also fixes four scaffold bugs the benchmark itself uncovered.",
+      "This release benchmarks how AI agents scaffold with Better Fullstack and publishes the results on the benchmark page, adds .NET as a first-class ecosystem on the new stack graph, and ships a much leaner install. It also fixes four scaffold bugs the benchmark itself uncovered.",
     highlights: [
-      "Benchmarked frontier models scaffolding the same project specs three ways - prompt-only, our CLI, and our MCP server. Agents on the MCP path finished up to 7× faster with 4× fewer output tokens; the full results live on the homepage with an interactive chart.",
+      "Benchmarked frontier models scaffolding the same project specs three ways - prompt-only, our CLI, and our MCP server. Agents on the MCP path finished up to 7× faster with 4× fewer output tokens; the full results were published on the benchmark page at the time, with an interactive chart.",
       "Redesigned the MCP page with one-paste setup for Claude Code, Codex, Gemini CLI, Cursor, VS Code, Claude Desktop, Windsurf, and Zed.",
       "Added .NET as a first-class ecosystem, plus an enterprise tier, backend-utils, and Render/Netlify deployment options on the stack graph (Phases 0–4).",
       "Cut install size by 42% (122 MB → 71 MB) and the web entry chunk by 32%.",
