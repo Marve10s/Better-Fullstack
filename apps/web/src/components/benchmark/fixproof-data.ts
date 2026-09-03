@@ -15,6 +15,8 @@ export type FixproofOutcome =
   | "pending";
 
 export type FixproofSource = "private" | "public";
+/** Per-requirement outcome; "na" means the requirement was already green at base or untested, so it is excluded. */
+export type FixproofRequirementResult = "pass" | "fail" | "na";
 
 export type FixproofCategoryId =
   | "port"
@@ -38,13 +40,17 @@ export interface FixproofTask {
   source: FixproofSource;
   /** Hidden checks the task is graded on. */
   requirements: number;
+  /** Weight of each requirement in the progress share: 2 core, 1 normal, 0.5 peripheral. */
+  requirementWeights: readonly number[];
 }
 
 export interface FixproofRun {
   task: string;
   outcome: FixproofOutcome;
-  /** Share of the task's requirements that went from failing to passing, 0..1. */
+  /** Weighted share of the task's requirements that went from failing to passing, 0..1: sum of weights of "pass" over sum of weights of "pass" and "fail". */
   progress: number | null;
+  /** One entry per requirement, in the task's requirement order. */
+  requirementResults: readonly FixproofRequirementResult[] | null;
   /** "passed/total" over every check the harness ran. */
   checks: string | null;
   agentSeconds: number | null;
@@ -118,16 +124,16 @@ export const FIXPROOF_BOARD: FixproofBoard = {
     { id: "effect-ts", label: "Effect TS" },
   ],
   tasks: [
-    { id: "T01", category: "port", difficulty: 9, source: "private", requirements: 3 },
-    { id: "T02", category: "contract", difficulty: 9, source: "private", requirements: 2 },
-    { id: "T03", category: "library-semantics", difficulty: 9, source: "private", requirements: 6 },
-    { id: "T04", category: "concurrency", difficulty: 9, source: "private", requirements: 4 },
-    { id: "T05", category: "bug", difficulty: 9, source: "private", requirements: 3 },
-    { id: "T06", category: "concurrency", difficulty: 9, source: "private", requirements: 4 },
-    { id: "T07", category: "effect-ts", difficulty: 9, source: "private", requirements: 3 },
-    { id: "T08", category: "concurrency", difficulty: 9, source: "private", requirements: 6 },
-    { id: "T09", category: "effect-ts", difficulty: 8, source: "private", requirements: 3 },
-    { id: "T10", category: "concurrency", difficulty: 9, source: "public", requirements: 5 },
+    { id: "T01", category: "port", difficulty: 9, source: "private", requirements: 3, requirementWeights: [2, 1, 0.5] },
+    { id: "T02", category: "contract", difficulty: 9, source: "private", requirements: 2, requirementWeights: [2, 1] },
+    { id: "T03", category: "library-semantics", difficulty: 9, source: "private", requirements: 6, requirementWeights: [2, 2, 2, 2, 1, 1] },
+    { id: "T04", category: "concurrency", difficulty: 9, source: "private", requirements: 4, requirementWeights: [2, 1, 1, 0.5] },
+    { id: "T05", category: "bug", difficulty: 9, source: "private", requirements: 3, requirementWeights: [2, 0.5, 1] },
+    { id: "T06", category: "concurrency", difficulty: 9, source: "private", requirements: 4, requirementWeights: [2, 1, 1, 1] },
+    { id: "T07", category: "effect-ts", difficulty: 9, source: "private", requirements: 3, requirementWeights: [2, 2, 2] },
+    { id: "T08", category: "concurrency", difficulty: 9, source: "private", requirements: 6, requirementWeights: [2, 2, 1, 1, 2, 1] },
+    { id: "T09", category: "effect-ts", difficulty: 8, source: "private", requirements: 3, requirementWeights: [2, 1, 0.5] },
+    { id: "T10", category: "concurrency", difficulty: 9, source: "public", requirements: 5, requirementWeights: [1, 2, 0.5, 1, 1] },
   ],
   models: [
     {
@@ -142,7 +148,7 @@ export const FIXPROOF_BOARD: FixproofBoard = {
       resolved: 1,
       resolvedIndex: 17,
       progressIndex: 35,
-      medianAgentSeconds: 1661,
+      medianAgentSeconds: 1652,
       regressions: 0,
       testEditsReverted: 5,
       claimedNotDone: 2,
@@ -151,6 +157,7 @@ export const FIXPROOF_BOARD: FixproofBoard = {
       runs: [
         {
           task: "T01",
+          requirementResults: ["pass", "fail", "pass"],
           outcome: "model-failure",
           progress: 0.71,
           checks: "151/152",
@@ -161,6 +168,7 @@ export const FIXPROOF_BOARD: FixproofBoard = {
         },
         {
           task: "T02",
+          requirementResults: ["pass", "pass"],
           outcome: "solved",
           progress: 1,
           checks: "1/1",
@@ -171,6 +179,7 @@ export const FIXPROOF_BOARD: FixproofBoard = {
         },
         {
           task: "T03",
+          requirementResults: ["fail", "fail", "fail", "pass", "pass", "pass"],
           outcome: "model-failure",
           progress: 0.4,
           checks: "24/28",
@@ -181,6 +190,7 @@ export const FIXPROOF_BOARD: FixproofBoard = {
         },
         {
           task: "T04",
+          requirementResults: ["fail", "fail", "na", "na"],
           outcome: "model-failure",
           progress: 0,
           checks: "1/2",
@@ -191,6 +201,7 @@ export const FIXPROOF_BOARD: FixproofBoard = {
         },
         {
           task: "T05",
+          requirementResults: ["fail", "fail", "na"],
           outcome: "deadline-exhausted",
           progress: 0,
           checks: "1/2",
@@ -201,6 +212,7 @@ export const FIXPROOF_BOARD: FixproofBoard = {
         },
         {
           task: "T06",
+          requirementResults: ["fail", "na", "fail", "na"],
           outcome: "provider-infra",
           progress: 0,
           checks: "1/3",
@@ -211,6 +223,7 @@ export const FIXPROOF_BOARD: FixproofBoard = {
         },
         {
           task: "T07",
+          requirementResults: null,
           outcome: "pending",
           progress: null,
           checks: null,
@@ -221,6 +234,7 @@ export const FIXPROOF_BOARD: FixproofBoard = {
         },
         {
           task: "T08",
+          requirementResults: null,
           outcome: "pending",
           progress: null,
           checks: null,
@@ -231,6 +245,7 @@ export const FIXPROOF_BOARD: FixproofBoard = {
         },
         {
           task: "T09",
+          requirementResults: null,
           outcome: "pending",
           progress: null,
           checks: null,
@@ -241,6 +256,7 @@ export const FIXPROOF_BOARD: FixproofBoard = {
         },
         {
           task: "T10",
+          requirementResults: ["fail", "fail", "fail", "fail", "fail"],
           outcome: "model-failure",
           progress: 0,
           checks: "0/7",

@@ -341,7 +341,6 @@ const STATS = [
   { id: "tools", value: 7, suffix: "", fraction: false },
   { id: "resources", value: 3, suffix: "", fraction: false },
   { id: "options", value: 677, suffix: "", fraction: false },
-  { id: "speed", value: 2.6, suffix: "×", fraction: true },
 ] as const;
 
 const numberFlowTiming = { duration: 900, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" } as const;
@@ -430,8 +429,6 @@ function getStatLabel(id: (typeof STATS)[number]["id"]) {
       return m.mcpStatReadableResources();
     case "options":
       return m.mcpStatConfigurableOptions();
-    case "speed":
-      return m.mcpStatFasterPromptOnly();
   }
 }
 

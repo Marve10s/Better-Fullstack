@@ -6,45 +6,45 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Mcpfinaltitle2Inputs */
 
 const en_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2.6× faster than`)
+	return /** @type {LocalizedString} */ (`Grade your agent on`)
 };
 
 const es_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2.6× más rápido que`)
+	return /** @type {LocalizedString} */ (`Grade your agent on`)
 };
 
 const zh_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`比`)
+	return /** @type {LocalizedString} */ (`Grade your agent on`)
 };
 
 const ja_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プロンプトのみより`)
+	return /** @type {LocalizedString} */ (`Grade your agent on`)
 };
 
 const ko_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2.6배 더 빠르다`)
+	return /** @type {LocalizedString} */ (`Grade your agent on`)
 };
 
 const zh_hant1_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`比`)
+	return /** @type {LocalizedString} */ (`Grade your agent on`)
 };
 
 const de_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2,6× schneller als`)
+	return /** @type {LocalizedString} */ (`Grade your agent on`)
 };
 
 const fr_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2,6 fois plus rapide que`)
+	return /** @type {LocalizedString} */ (`Grade your agent on`)
 };
 
 const uk_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2,6× швидше, ніж`)
+	return /** @type {LocalizedString} */ (`Grade your agent on`)
 };
 
 /**
 * | output |
 * | --- |
-* | "2.6× faster than" |
+* | "Grade your agent on" |
 *
 * @param {Mcpfinaltitle2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

@@ -6,45 +6,45 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Mcpfinaleyebrow2Inputs */
 
 const en_mcpfinaleyebrow2 = /** @type {(inputs: Mcpfinaleyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`benchmark-backed`)
+	return /** @type {LocalizedString} */ (`Fixproof`)
 };
 
 const es_mcpfinaleyebrow2 = /** @type {(inputs: Mcpfinaleyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`respaldado por benchmark`)
+	return /** @type {LocalizedString} */ (`Fixproof`)
 };
 
 const zh_mcpfinaleyebrow2 = /** @type {(inputs: Mcpfinaleyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`由 benchmark 支撑`)
+	return /** @type {LocalizedString} */ (`Fixproof`)
 };
 
 const ja_mcpfinaleyebrow2 = /** @type {(inputs: Mcpfinaleyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ベンチマークに裏付けられた`)
+	return /** @type {LocalizedString} */ (`Fixproof`)
 };
 
 const ko_mcpfinaleyebrow2 = /** @type {(inputs: Mcpfinaleyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`벤치마크 지원`)
+	return /** @type {LocalizedString} */ (`Fixproof`)
 };
 
 const zh_hant1_mcpfinaleyebrow2 = /** @type {(inputs: Mcpfinaleyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`由 benchmark 支撐`)
+	return /** @type {LocalizedString} */ (`Fixproof`)
 };
 
 const de_mcpfinaleyebrow2 = /** @type {(inputs: Mcpfinaleyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Benchmark-gestützt`)
+	return /** @type {LocalizedString} */ (`Fixproof`)
 };
 
 const fr_mcpfinaleyebrow2 = /** @type {(inputs: Mcpfinaleyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`appuyé par un benchmark`)
+	return /** @type {LocalizedString} */ (`Fixproof`)
 };
 
 const uk_mcpfinaleyebrow2 = /** @type {(inputs: Mcpfinaleyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`підтверджено бенчмарком`)
+	return /** @type {LocalizedString} */ (`Fixproof`)
 };
 
 /**
 * | output |
 * | --- |
-* | "benchmark-backed" |
+* | "Fixproof" |
 *
 * @param {Mcpfinaleyebrow2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

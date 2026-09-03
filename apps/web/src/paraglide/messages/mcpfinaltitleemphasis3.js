@@ -6,45 +6,45 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Mcpfinaltitleemphasis3Inputs */
 
 const en_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`prompt-only.`)
+	return /** @type {LocalizedString} */ (`real issues.`)
 };
 
 const es_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`solo prompt.`)
+	return /** @type {LocalizedString} */ (`real issues.`)
 };
 
 const zh_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`纯 prompt 快 2.6×。`)
+	return /** @type {LocalizedString} */ (`real issues.`)
 };
 
 const ja_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2.6倍高速。`)
+	return /** @type {LocalizedString} */ (`real issues.`)
 };
 
 const ko_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`프롬프트 전용.`)
+	return /** @type {LocalizedString} */ (`real issues.`)
 };
 
 const zh_hant1_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`純 prompt 快 2.6×。`)
+	return /** @type {LocalizedString} */ (`real issues.`)
 };
 
 const de_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nur per Prompt.`)
+	return /** @type {LocalizedString} */ (`real issues.`)
 };
 
 const fr_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`invite uniquement.`)
+	return /** @type {LocalizedString} */ (`real issues.`)
 };
 
 const uk_mcpfinaltitleemphasis3 = /** @type {(inputs: Mcpfinaltitleemphasis3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`prompt-only.`)
+	return /** @type {LocalizedString} */ (`real issues.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "prompt-only." |
+* | "real issues." |
 *
 * @param {Mcpfinaltitleemphasis3Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

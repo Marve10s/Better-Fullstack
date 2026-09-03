@@ -6,45 +6,45 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Fixproofmethodindexbody3Inputs */
 
 const en_fixproofmethodindexbody3 = /** @type {(inputs: Fixproofmethodindexbody3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the share of a task's requirements that were failing at the base commit and pass after the patch. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
+	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the weighted share of a task's requirements that were failing at the base commit and pass after the patch, with core requirements weighted 2 and peripheral ones 0.5; the weights and results for every requirement are part of the published data, so each task's value can be recomputed. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
 };
 
 const es_fixproofmethodindexbody3 = /** @type {(inputs: Fixproofmethodindexbody3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the share of a task's requirements that were failing at the base commit and pass after the patch. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
+	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the weighted share of a task's requirements that were failing at the base commit and pass after the patch, with core requirements weighted 2 and peripheral ones 0.5; the weights and results for every requirement are part of the published data, so each task's value can be recomputed. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
 };
 
 const zh_fixproofmethodindexbody3 = /** @type {(inputs: Fixproofmethodindexbody3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the share of a task's requirements that were failing at the base commit and pass after the patch. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
+	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the weighted share of a task's requirements that were failing at the base commit and pass after the patch, with core requirements weighted 2 and peripheral ones 0.5; the weights and results for every requirement are part of the published data, so each task's value can be recomputed. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
 };
 
 const ja_fixproofmethodindexbody3 = /** @type {(inputs: Fixproofmethodindexbody3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the share of a task's requirements that were failing at the base commit and pass after the patch. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
+	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the weighted share of a task's requirements that were failing at the base commit and pass after the patch, with core requirements weighted 2 and peripheral ones 0.5; the weights and results for every requirement are part of the published data, so each task's value can be recomputed. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
 };
 
 const ko_fixproofmethodindexbody3 = /** @type {(inputs: Fixproofmethodindexbody3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the share of a task's requirements that were failing at the base commit and pass after the patch. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
+	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the weighted share of a task's requirements that were failing at the base commit and pass after the patch, with core requirements weighted 2 and peripheral ones 0.5; the weights and results for every requirement are part of the published data, so each task's value can be recomputed. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
 };
 
 const zh_hant1_fixproofmethodindexbody3 = /** @type {(inputs: Fixproofmethodindexbody3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the share of a task's requirements that were failing at the base commit and pass after the patch. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
+	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the weighted share of a task's requirements that were failing at the base commit and pass after the patch, with core requirements weighted 2 and peripheral ones 0.5; the weights and results for every requirement are part of the published data, so each task's value can be recomputed. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
 };
 
 const de_fixproofmethodindexbody3 = /** @type {(inputs: Fixproofmethodindexbody3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the share of a task's requirements that were failing at the base commit and pass after the patch. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
+	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the weighted share of a task's requirements that were failing at the base commit and pass after the patch, with core requirements weighted 2 and peripheral ones 0.5; the weights and results for every requirement are part of the published data, so each task's value can be recomputed. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
 };
 
 const fr_fixproofmethodindexbody3 = /** @type {(inputs: Fixproofmethodindexbody3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the share of a task's requirements that were failing at the base commit and pass after the patch. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
+	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the weighted share of a task's requirements that were failing at the base commit and pass after the patch, with core requirements weighted 2 and peripheral ones 0.5; the weights and results for every requirement are part of the published data, so each task's value can be recomputed. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
 };
 
 const uk_fixproofmethodindexbody3 = /** @type {(inputs: Fixproofmethodindexbody3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the share of a task's requirements that were failing at the base commit and pass after the patch. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
+	return /** @type {LocalizedString} */ (`Resolved counts a task only when every hidden check passes and no regression appears. Progress is the weighted share of a task's requirements that were failing at the base commit and pass after the patch, with core requirements weighted 2 and peripheral ones 0.5; the weights and results for every requirement are part of the published data, so each task's value can be recomputed. Both weight tasks by difficulty, and checks that were already green never count toward progress.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Resolved counts a task only when every hidden check passes and no regression appears. Progress is the share of a task's requirements that were failing at the..." |
+* | "Resolved counts a task only when every hidden check passes and no regression appears. Progress is the weighted share of a task's requirements that were faili..." |
 *
 * @param {Fixproofmethodindexbody3Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
