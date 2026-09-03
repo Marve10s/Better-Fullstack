@@ -1009,6 +1009,80 @@ describe("CLI history command", () => {
     },
     CLI_COMMAND_TEST_TIMEOUT_MS,
   );
+
+  it(
+    "stores and replays WebMCP-enabled TypeScript projects",
+    async () => {
+      const root = await makeTempRoot("bfs-history-webmcp-test-");
+      const homeDir = join(root, "home");
+      await mkdir(homeDir, { recursive: true });
+
+      const sharedEnv = {
+        HOME: homeDir,
+        XDG_CONFIG_HOME: join(homeDir, ".config"),
+        XDG_DATA_HOME: join(homeDir, ".local", "share"),
+      };
+
+      const sourceResult = await runCli(
+        ["create", "webmcp-source", "--yes", "--no-install", "--no-git", "--disable-analytics"],
+        { cwd: root, env: sharedEnv },
+      );
+      expect(sourceResult.exitCode, cliOutput(sourceResult)).toBe(0);
+
+      const sourceConfig = (await readJsoncFile(
+        join(root, "webmcp-source", "bts.jsonc"),
+      )) as Record<string, unknown>;
+      const flatConfig = { ...sourceConfig };
+      delete flatConfig.stackParts;
+      const configPath = join(root, "webmcp-config.json");
+      await writeFile(
+        configPath,
+        `${JSON.stringify({ ...flatConfig, webMcp: "enabled" }, null, 2)}\n`,
+      );
+
+      const createResult = await runCli(
+        [
+          "create",
+          "webmcp-history-app",
+          "--config",
+          configPath,
+          "--no-install",
+          "--no-git",
+          "--disable-analytics",
+        ],
+        { cwd: root, env: sharedEnv },
+      );
+      expect(createResult.exitCode, cliOutput(createResult)).toBe(0);
+
+      const historyResult = await runCli(["history", "--json", "--limit", "1"], {
+        cwd: root,
+        env: sharedEnv,
+      });
+      expect(historyResult.exitCode, cliOutput(historyResult)).toBe(0);
+
+      const history = JSON.parse(cliOutput(historyResult)) as Array<{
+        config?: { webMcp?: string };
+        reproducibleCommand: string;
+      }>;
+      expect(history[0]?.config?.webMcp).toBe("enabled");
+      expect(history[0]?.reproducibleCommand).toContain("--web-mcp enabled");
+
+      const replayResult = await runCli(
+        [
+          "create",
+          "webmcp-history-replay",
+          "--from-history",
+          "1",
+          "--dry-run",
+          "--disable-analytics",
+        ],
+        { cwd: root, env: sharedEnv },
+      );
+      expect(replayResult.exitCode, cliOutput(replayResult)).toBe(0);
+      expect(cliOutput(replayResult)).toContain("WebMCP: enabled");
+    },
+    CLI_COMMAND_TEST_TIMEOUT_MS,
+  );
 });
 
 function telemetrySettingsPath(homeDir: string): string {
