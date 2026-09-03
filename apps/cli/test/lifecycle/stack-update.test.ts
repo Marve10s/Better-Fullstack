@@ -296,6 +296,7 @@ const TYPESCRIPT_SERVICE_BASE_CONFIG: Partial<ProjectConfig> = {
   observability: "none",
   featureFlags: "none",
   analytics: "none",
+  webMcp: "none",
   cms: "none",
   caching: "none",
   rateLimit: "none",
@@ -1620,6 +1621,17 @@ describe("stack update planner", () => {
           expectedFrontend: ["react-vite"],
           expectedPath: "apps/web/src/lib/plausible.tsx",
           expectedNeedle: "Plausible",
+          expectedAdjustment:
+            "frontend: Web frontend set to 'react-vite' (requested feature requires a web app)",
+        },
+        {
+          name: "web-mcp",
+          update: { webMcp: "enabled" },
+          field: "webMcp",
+          expected: "enabled",
+          expectedFrontend: ["react-vite"],
+          expectedPath: "apps/web/src/lib/webmcp.ts",
+          expectedNeedle: ".registerTool(",
           expectedAdjustment:
             "frontend: Web frontend set to 'react-vite' (requested feature requires a web app)",
         },

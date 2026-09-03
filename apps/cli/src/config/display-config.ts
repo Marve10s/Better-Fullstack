@@ -269,6 +269,10 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     configDisplay.push(`${pc.blue("Analytics:")} ${String(config.analytics)}`);
   }
 
+  if (config.webMcp !== undefined) {
+    configDisplay.push(`${pc.blue("WebMCP:")} ${String(config.webMcp)}`);
+  }
+
   if (config.mobileNavigation !== undefined) {
     configDisplay.push(`${pc.blue("Mobile Navigation:")} ${String(config.mobileNavigation)}`);
   }

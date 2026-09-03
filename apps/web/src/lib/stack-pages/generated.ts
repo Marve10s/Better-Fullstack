@@ -35,6 +35,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -272,7 +273,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=next&rt=none&be=self-next&db=postgres",
     meaningfulParameters: [
       { key: "fe-w", value: "next" },
@@ -281,7 +282,7 @@ export const GENERATED_STACK_PAGES = [
       { key: "db", value: "postgres" },
     ],
     output: {
-      fileCount: 68,
+      fileCount: 70,
       directoryCount: 27,
       layout: "workspace",
       topLevelEntries: [
@@ -310,7 +311,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -323,7 +324,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-clerk",
     ],
     guideUrl: "/guides/typescript/nextjs-drizzle-better-auth",
-    contentHash: "bd3e50410069f60f2e80f25ed2c50e90ca86fe18e28ef2cd8d7866bbbab7fef9",
+    contentHash: "2b2464dd9643c5432236a8d92091bb092014134aeb5c5f5372adc111cf983d12",
     updated: "2026-07-17",
   },
   {
@@ -359,6 +360,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -604,7 +606,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part codeQuality:universal:biome --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part codeQuality:universal:biome --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=next&rt=none&be=self-next&db=postgres&orm=prisma&cq=biome",
     meaningfulParameters: [
       { key: "fe-w", value: "next" },
@@ -645,7 +647,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -657,7 +659,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
       "nextjs-postgres-prisma-nextauth",
     ],
-    contentHash: "806f45ecbcac279214cd84d318fb583c63da46cb34c095954665065ace6c61dd",
+    contentHash: "e7a596d24a20c257ecd3afbd746476cd1b0ccd20bd58a057e86f4188fd41db12",
     updated: "2026-07-17",
   },
   {
@@ -693,6 +695,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -930,14 +933,14 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=next&db=postgres",
     meaningfulParameters: [
       { key: "fe-w", value: "next" },
       { key: "db", value: "postgres" },
     ],
     output: {
-      fileCount: 72,
+      fileCount: 74,
       directoryCount: 24,
       layout: "workspace",
       topLevelEntries: [
@@ -966,7 +969,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -975,7 +978,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
       "nextjs-hono-openapi-drizzle",
     ],
-    contentHash: "62daf8956adf84de7be3a04031e0b7085636157980b3d5c4b15989af9b4aaff3",
+    contentHash: "3f0c3a2bd8985eab0cd2102e932c9ebd3a28fa7cb75f00ab52a89c797675e26e",
     updated: "2026-07-17",
   },
   {
@@ -1011,6 +1014,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -1248,7 +1252,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-start --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database sqlite --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-start --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database sqlite --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=tanstack-start&rt=none&be=self-tanstack-start",
     meaningfulParameters: [
       { key: "fe-w", value: "tanstack-start" },
@@ -1256,7 +1260,7 @@ export const GENERATED_STACK_PAGES = [
       { key: "be", value: "self-tanstack-start" },
     ],
     output: {
-      fileCount: 65,
+      fileCount: 67,
       directoryCount: 26,
       layout: "workspace",
       topLevelEntries: [
@@ -1285,7 +1289,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -1298,7 +1302,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-resend",
     ],
     guideUrl: "/guides/typescript/create-tanstack-start-project",
-    contentHash: "86764f0eb7857e3890c37ad4317aff3bea24331e4424af0fa1276a699f8dc338",
+    contentHash: "a7d890c3d814be960e0c91c043bb77667c2e9c4f5a42e5fcd6079a1058adc12f",
     updated: "2026-07-17",
   },
   {
@@ -1334,6 +1338,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -1571,11 +1576,11 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-router --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-router --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?db=postgres",
     meaningfulParameters: [{ key: "db", value: "postgres" }],
     output: {
-      fileCount: 69,
+      fileCount: 71,
       directoryCount: 22,
       layout: "workspace",
       topLevelEntries: [
@@ -1604,7 +1609,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -1614,7 +1619,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-prisma-better-auth",
     ],
     guideUrl: "/guides/typescript/hono-trpc-drizzle",
-    contentHash: "33fd740a16d283b6efcdcb6767b0106b2ee48eb3ce1c61df5697a4339386ac05",
+    contentHash: "9c1c13cc11a7f17ffca9d47b1693367199a39456c5521fda10739503bfb7a282",
     updated: "2026-07-17",
   },
   {
@@ -1650,6 +1655,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -1887,14 +1893,14 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend react-router --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api orpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database sqlite --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend react-router --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api orpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database sqlite --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=react-router&api=orpc",
     meaningfulParameters: [
       { key: "fe-w", value: "react-router" },
       { key: "api", value: "orpc" },
     ],
     output: {
-      fileCount: 70,
+      fileCount: 72,
       directoryCount: 23,
       layout: "workspace",
       topLevelEntries: [
@@ -1923,7 +1929,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -1932,7 +1938,7 @@ export const GENERATED_STACK_PAGES = [
       "sveltekit-hono-drizzle",
       "nextjs-hono-drizzle-better-auth",
     ],
-    contentHash: "2681b124463f6b934c7e3233f8919956a336ccd873decc1fda02dcfbe412b13f",
+    contentHash: "6e0ebb8c03153c1b2c504e2b2e33189614cbbd5244305172581b11f03eff4547",
     updated: "2026-07-17",
   },
   {
@@ -1968,6 +1974,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -2203,7 +2210,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend svelte --css-framework tailwind --ui-library none --backend hono --runtime bun --api orpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend svelte --css-framework tailwind --ui-library none --backend hono --runtime bun --api orpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=svelte&db=postgres&ui=none&api=orpc",
     meaningfulParameters: [
       { key: "fe-w", value: "svelte" },
@@ -2212,7 +2219,7 @@ export const GENERATED_STACK_PAGES = [
       { key: "api", value: "orpc" },
     ],
     output: {
-      fileCount: 60,
+      fileCount: 62,
       directoryCount: 23,
       layout: "workspace",
       topLevelEntries: [
@@ -2241,7 +2248,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: ["Ui Library is intentionally set to none."],
       runtimeVerified: false,
     },
@@ -2251,7 +2258,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-hono-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/sveltekit-hono-drizzle",
-    contentHash: "11e3ae9f2803088922f155f8957d29898ce079d897d7f68bdfac7fbb027959f5",
+    contentHash: "d4735a0993c2840547fb6ea1be4fbcf6db8ab5205bf63461f377547fb8edf437",
     updated: "2026-07-17",
   },
   {
@@ -2287,6 +2294,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -2522,7 +2530,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend svelte --css-framework tailwind --ui-library none --backend elysia --runtime bun --api orpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend svelte --css-framework tailwind --ui-library none --backend elysia --runtime bun --api orpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=svelte&be=elysia&db=postgres&ui=none&api=orpc",
     meaningfulParameters: [
       { key: "fe-w", value: "svelte" },
@@ -2532,7 +2540,7 @@ export const GENERATED_STACK_PAGES = [
       { key: "api", value: "orpc" },
     ],
     output: {
-      fileCount: 60,
+      fileCount: 62,
       directoryCount: 23,
       layout: "workspace",
       topLevelEntries: [
@@ -2561,7 +2569,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: ["Ui Library is intentionally set to none."],
       runtimeVerified: false,
     },
@@ -2570,7 +2578,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-orpc-drizzle",
       "nextjs-hono-drizzle-better-auth",
     ],
-    contentHash: "ae32f217690240d25bc6065a712758b80a174a2a18f99070bf973559c0cdae31",
+    contentHash: "8b757450a5e1c707b401e8a1251e1fbb5f3b2a434a26955294f4ef9446094811",
     updated: "2026-07-17",
   },
   {
@@ -2606,6 +2614,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -2841,7 +2850,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend nuxt --css-framework tailwind --ui-library none --backend self --runtime none --api orpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend nuxt --css-framework tailwind --ui-library none --backend self --runtime none --api orpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=nuxt&rt=none&be=self-nuxt&db=postgres&orm=prisma&ui=none&api=orpc",
     meaningfulParameters: [
       { key: "fe-w", value: "nuxt" },
@@ -2882,7 +2891,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "Ui Library is intentionally set to none.",
@@ -2895,7 +2904,7 @@ export const GENERATED_STACK_PAGES = [
       "solidstart-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/nuxt-prisma-better-auth",
-    contentHash: "dd23686b2c74c4b7af7464499e5f679b6640e04b03050a2e475240e463c3c9b1",
+    contentHash: "9f83e5feb84ea92cf746d071498da4b67d6d559aa3622df96992f3f09b9848ff",
     updated: "2026-07-17",
   },
   {
@@ -2931,6 +2940,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -3176,7 +3186,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend astro --astro-integration react --css-framework tailwind --ui-library daisyui --backend hono --runtime bun --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database sqlite --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend astro --astro-integration react --css-framework tailwind --ui-library daisyui --backend hono --runtime bun --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database sqlite --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=astro&ai=react&ui=daisyui",
     meaningfulParameters: [
       { key: "fe-w", value: "astro" },
@@ -3184,7 +3194,7 @@ export const GENERATED_STACK_PAGES = [
       { key: "ui", value: "daisyui" },
     ],
     output: {
-      fileCount: 53,
+      fileCount: 55,
       directoryCount: 23,
       layout: "workspace",
       topLevelEntries: [
@@ -3213,7 +3223,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: ["The selection includes Astro's React integration alongside tRPC."],
       runtimeVerified: false,
     },
@@ -3223,7 +3233,7 @@ export const GENERATED_STACK_PAGES = [
       "react-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/astro-react-hono",
-    contentHash: "cba15808ad80a0661081c33064b31d071de4e5b78f29dcdbb56799e01d88b9f4",
+    contentHash: "d3abb3882c4e82f511ff0df194871b30265277c2fff760ff831d629965c51f0f",
     updated: "2026-07-17",
   },
   {
@@ -3259,6 +3269,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -3494,7 +3505,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend solid-start --css-framework tailwind --ui-library none --backend self --runtime none --api orpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database sqlite --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend solid-start --css-framework tailwind --ui-library none --backend self --runtime none --api orpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database sqlite --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=solid-start&rt=none&be=self-solid-start&ui=none&api=orpc",
     meaningfulParameters: [
       { key: "fe-w", value: "solid-start" },
@@ -3504,7 +3515,7 @@ export const GENERATED_STACK_PAGES = [
       { key: "api", value: "orpc" },
     ],
     output: {
-      fileCount: 53,
+      fileCount: 55,
       directoryCount: 22,
       layout: "workspace",
       topLevelEntries: [
@@ -3533,7 +3544,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "Ui Library is intentionally set to none.",
@@ -3546,7 +3557,7 @@ export const GENERATED_STACK_PAGES = [
       "react-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/solidstart-orpc-drizzle",
-    contentHash: "6ad2432f489b772383f835c43616b1546bf844503819ab7145d3390b9a711d2e",
+    contentHash: "bb903840d8a0d0a1a0a9897e571eb2a23912ae9fbdb8daa9e0a0745de8670a37",
     updated: "2026-07-17",
   },
   {
@@ -3582,6 +3593,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -3815,7 +3827,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend angular --css-framework tailwind --ui-library none --backend express --runtime node --api none --auth none --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend angular --css-framework tailwind --ui-library none --backend express --runtime node --api none --auth none --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl:
       "/new?fe-w=angular&rt=node&be=express&db=postgres&orm=prisma&au=none&ui=none&api=none",
     meaningfulParameters: [
@@ -3858,7 +3870,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Auth is intentionally set to none.",
         "Ui Library is intentionally set to none.",
@@ -3872,7 +3884,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-postgres-prisma-nextauth",
       "nextjs-prisma-better-auth",
     ],
-    contentHash: "09f244cc770cf23689a6413e795223301e8658af3ad148a3ae2f8a77c10e3c80",
+    contentHash: "d3ce1d16f77eb8e01dd870db8572ee569b0a4ab35e98b6352ec4f2fe859c8a08",
     updated: "2026-07-17",
   },
   {
@@ -3908,6 +3920,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -4153,7 +4166,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [],
       runtimeVerified: false,
     },
@@ -4163,7 +4176,7 @@ export const GENERATED_STACK_PAGES = [
       "python-fastapi-postgres-sqlalchemy",
     ],
     guideUrl: "/guides/rust/axum-leptos-fullstack",
-    contentHash: "d631ab41a11d8a9d0aafd8c64a1d69f4182b30b1f54067a10030d4f997b670f5",
+    contentHash: "a2a9457de59c7a5d5dda83d89e2e0bbb3489df9d80d9b1ba37918567c1f09eb2",
     updated: "2026-07-17",
   },
   {
@@ -4199,6 +4212,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -4437,7 +4451,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [],
       runtimeVerified: false,
     },
@@ -4447,7 +4461,7 @@ export const GENERATED_STACK_PAGES = [
       "go-gin-postgres-gorm",
     ],
     guideUrl: "/guides/python/fastapi-postgres-sqlalchemy",
-    contentHash: "65de3d122210a31b94de2421a318cc02838614f1a983368d7f5e60cf239b8083",
+    contentHash: "4bcecaad3d0b41a67707eebe369ebfcec89b89cc4d0322be0fe593ce2bcee252",
     updated: "2026-07-17",
   },
   {
@@ -4483,6 +4497,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -4710,7 +4725,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [],
       runtimeVerified: false,
     },
@@ -4720,7 +4735,7 @@ export const GENERATED_STACK_PAGES = [
       "python-fastapi-postgres-sqlmodel",
     ],
     guideUrl: "/guides/go/gin-postgres-gorm",
-    contentHash: "97844a250625f94f1fc3d7c357e56dbd4d901951bb479b2aee99c852d4738a02",
+    contentHash: "a015bfc01dd3220eb1e5e09ead34f9f4cb036e2a57a23cdf7c6023f922f643ac",
     updated: "2026-07-17",
   },
   {
@@ -4756,6 +4771,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -4993,7 +5009,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-start --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-start --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=tanstack-start&rt=none&be=self-tanstack-start&db=postgres",
     meaningfulParameters: [
       { key: "fe-w", value: "tanstack-start" },
@@ -5002,7 +5018,7 @@ export const GENERATED_STACK_PAGES = [
       { key: "db", value: "postgres" },
     ],
     output: {
-      fileCount: 65,
+      fileCount: 67,
       directoryCount: 26,
       layout: "workspace",
       topLevelEntries: [
@@ -5031,7 +5047,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -5044,7 +5060,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/tanstack-start-postgres-drizzle",
-    contentHash: "520c9a9314270eeda323d119b9e3f99e3dd6a82c4217547ebbcc9aee8a89d570",
+    contentHash: "0d5e1510225c4b27ab47cd67e22f9cfe44dc31d2389b7f0f62f2d08c578b0245",
     updated: "2026-07-30",
   },
   {
@@ -5080,6 +5096,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -5317,7 +5334,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-start --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database sqlite --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-start --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database sqlite --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=tanstack-start&rt=none&be=self-tanstack-start&orm=prisma",
     meaningfulParameters: [
       { key: "fe-w", value: "tanstack-start" },
@@ -5355,7 +5372,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -5367,7 +5384,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-better-auth",
       "nextjs-prisma-better-auth",
     ],
-    contentHash: "9edab4d417a971b5441bf3415713b043e8bd0ed894b7732b7aa668d9223e139b",
+    contentHash: "859b2234395790644e9e868c53960ae9a6078c9a69da0ccc12f62daed97aa0ec",
     updated: "2026-07-30",
   },
   {
@@ -5403,6 +5420,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -5640,7 +5658,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-start --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email resend --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-start --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email resend --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=tanstack-start&rt=none&be=self-tanstack-start&db=postgres&em=resend",
     meaningfulParameters: [
       { key: "fe-w", value: "tanstack-start" },
@@ -5650,7 +5668,7 @@ export const GENERATED_STACK_PAGES = [
       { key: "em", value: "resend" },
     ],
     output: {
-      fileCount: 68,
+      fileCount: 70,
       directoryCount: 27,
       layout: "workspace",
       topLevelEntries: [
@@ -5679,7 +5697,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -5692,7 +5710,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/tanstack-start-resend",
-    contentHash: "6f1aa1464f38f79ab492b29fd9751696620c30cff82be007e0103aaf4c90a84a",
+    contentHash: "a3200e3eae9f2b0cca4f566dde52f0c65146b1314d671e4cb3b0a1c16c2f8691",
     updated: "2026-07-30",
   },
   {
@@ -5728,6 +5746,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -5965,7 +5984,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-start --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth clerk --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-start --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth clerk --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=tanstack-start&rt=none&be=self-tanstack-start&db=postgres&au=clerk",
     meaningfulParameters: [
       { key: "fe-w", value: "tanstack-start" },
@@ -6004,7 +6023,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -6016,7 +6035,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-clerk",
       "tanstack-start-postgres-drizzle-resend",
     ],
-    contentHash: "1bcc8e0cef1710de12d6335f905a8e5c89c99aa5d87f15cc160706470b94c629",
+    contentHash: "ee103bc31597a0cda071459440c3a7b9dcb0c4a0d1d060e58d0168bc743ebd4b",
     updated: "2026-07-30",
   },
   {
@@ -6052,6 +6071,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -6289,14 +6309,14 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-router --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api orpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-router --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api orpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?db=postgres&api=orpc",
     meaningfulParameters: [
       { key: "db", value: "postgres" },
       { key: "api", value: "orpc" },
     ],
     output: {
-      fileCount: 69,
+      fileCount: 71,
       directoryCount: 22,
       layout: "workspace",
       topLevelEntries: [
@@ -6325,7 +6345,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -6335,7 +6355,7 @@ export const GENERATED_STACK_PAGES = [
       "sveltekit-hono-drizzle",
     ],
     guideUrl: "/guides/typescript/hono-better-auth",
-    contentHash: "3ec346a110918b2ecdf96cd6b7ece731ec1d2303ee9cef3f3c9d80aeb0cba150",
+    contentHash: "936f0db359412e83cdd384597ffde446753ee9055f8ccfaa8307bf638b0e580d",
     updated: "2026-07-30",
   },
   {
@@ -6371,6 +6391,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -6607,7 +6628,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-router --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api openapi --auth none --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-router --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api openapi --auth none --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-n=&db=postgres&au=none&api=openapi",
     meaningfulParameters: [
       { key: "fe-n", value: "" },
@@ -6616,7 +6637,7 @@ export const GENERATED_STACK_PAGES = [
       { key: "api", value: "openapi" },
     ],
     output: {
-      fileCount: 58,
+      fileCount: 60,
       directoryCount: 18,
       layout: "workspace",
       topLevelEntries: [
@@ -6645,7 +6666,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Auth is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -6658,7 +6679,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/hono-openapi-drizzle",
-    contentHash: "bc4d4b9d633bb1901fc2bf9921c03738016c3604af48ff84eb431c6be92b4931",
+    contentHash: "697bcadeeb63b9e2eebedb790f2a172ef5e4a80ab3f0253970f81bff884947e6",
     updated: "2026-07-30",
   },
   {
@@ -6694,6 +6715,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -6931,7 +6953,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-router --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend tanstack-router --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api trpc --auth better-auth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?db=postgres&orm=prisma",
     meaningfulParameters: [
       { key: "db", value: "postgres" },
@@ -6967,7 +6989,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -6977,7 +6999,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/hono-better-auth",
-    contentHash: "75d5e8b83dcfffdfafc413ed5e6f6f9623d48670702811ad4ffd2ded3a1412f2",
+    contentHash: "8cfa26d0f429f83431fa7ac77c58e618612dea4a421b7001da22d6f119622ef9",
     updated: "2026-07-30",
   },
   {
@@ -7013,6 +7035,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -7249,7 +7272,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api openapi --auth none --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend hono --runtime bun --api openapi --auth none --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=next&fe-n=&db=postgres&au=none&api=openapi",
     meaningfulParameters: [
       { key: "fe-w", value: "next" },
@@ -7259,7 +7282,7 @@ export const GENERATED_STACK_PAGES = [
       { key: "api", value: "openapi" },
     ],
     output: {
-      fileCount: 60,
+      fileCount: 62,
       directoryCount: 18,
       layout: "workspace",
       topLevelEntries: [
@@ -7288,7 +7311,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Auth is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -7301,7 +7324,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-trpc-drizzle",
     ],
     guideUrl: "/guides/typescript/nextjs-hono-api",
-    contentHash: "be8f19552ae1392767df9260f994ea5ba35d935befb0ae8cae74fe4f0b54b5b6",
+    contentHash: "c76fe2fdda571ba448ecba8463c01ce8147244c799a9e7174df7ec7bf00f5b0b",
     updated: "2026-07-30",
   },
   {
@@ -7337,6 +7360,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -7574,7 +7598,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth clerk --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth clerk --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=next&rt=none&be=self-next&db=postgres&au=clerk",
     meaningfulParameters: [
       { key: "fe-w", value: "next" },
@@ -7613,7 +7637,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -7625,7 +7649,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-clerk",
       "nextjs-drizzle-resend-better-auth",
     ],
-    contentHash: "2f1127a3d2177cf5d6f6c3fafeb4daab60f62074d4cae5aa05cf126a9f2d2c05",
+    contentHash: "93afd9df5d33d8d401253c35cdc5c9b42b9b5b4aeefd7310c96a63c7119e82b8",
     updated: "2026-07-30",
   },
   {
@@ -7661,6 +7685,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -7898,7 +7923,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments stripe --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments stripe --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=next&rt=none&be=self-next&db=postgres&orm=prisma&pay=stripe",
     meaningfulParameters: [
       { key: "fe-w", value: "next" },
@@ -7938,7 +7963,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -7951,7 +7976,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-postgres-prisma-nextauth",
     ],
     guideUrl: "/guides/typescript/nextjs-prisma-better-auth",
-    contentHash: "a809e00765b3ac0f9f3070c3a09c5a5446f8d4507a1d500d4311f4803241884f",
+    contentHash: "88701031cd59d83c8efa20239f2e697cae0bea7d421de2742028c1e30a8c1d8a",
     updated: "2026-07-30",
   },
   {
@@ -7987,6 +8012,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -8224,7 +8250,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email resend --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth better-auth --payments none --email resend --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm drizzle --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=next&rt=none&be=self-next&db=postgres&em=resend",
     meaningfulParameters: [
       { key: "fe-w", value: "next" },
@@ -8234,7 +8260,7 @@ export const GENERATED_STACK_PAGES = [
       { key: "em", value: "resend" },
     ],
     output: {
-      fileCount: 71,
+      fileCount: 73,
       directoryCount: 28,
       layout: "workspace",
       topLevelEntries: [
@@ -8263,7 +8289,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -8276,7 +8302,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/nextjs-drizzle-better-auth",
-    contentHash: "1e166ad0926d3c683167c81fcbf8b2c5f8b65c2b7af7861d6537db9af899ae8c",
+    contentHash: "8f82715e25b029609eddc6fccc380280d9d12bcdd8cec5925a1c15308bf12837",
     updated: "2026-07-30",
   },
   {
@@ -8312,6 +8338,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -8549,7 +8576,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth nextauth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --database postgres --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem typescript --frontend next --css-framework tailwind --ui-library shadcn-ui --shadcn-base radix --shadcn-style nova --shadcn-icon-library lucide --shadcn-color-theme neutral --shadcn-base-color neutral --shadcn-font inter --shadcn-radius default --backend self --runtime none --api trpc --auth nextauth --payments none --email none --file-upload none --logging none --observability none --feature-flags none --integrations none --ecommerce none --realtime none --job-queue none --caching none --rate-limit none --bot-protection none --i18n none --search none --vector-db none --file-storage none --cms none --effect none --ai none --state-management none --forms react-hook-form --validation zod --testing vitest --animation none --web-mcp none --database postgres --orm prisma --db-setup none --package-manager bun --git --web-deploy none --server-deploy none --install --part workspaceRunner:universal:turborepo --examples none --ai-docs claude-md agents-md",
     builderUrl: "/new?fe-w=next&rt=none&be=self-next&db=postgres&orm=prisma&au=nextauth",
     meaningfulParameters: [
       { key: "fe-w", value: "next" },
@@ -8589,7 +8616,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -8601,7 +8628,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-prisma-stripe-better-auth",
       "nextjs-drizzle-better-auth",
     ],
-    contentHash: "680adeea3c3a08863372e2e3224693e35ebe292b076fe310d5951c04b9a0d65d",
+    contentHash: "27839be256525720167a7cb312400d4d087121eebab6b2b7531b65ba240419c4",
     updated: "2026-07-30",
   },
   {
@@ -8637,6 +8664,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -8878,7 +8906,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [],
       runtimeVerified: false,
     },
@@ -8888,7 +8916,7 @@ export const GENERATED_STACK_PAGES = [
       "go-gin-postgres-gorm",
     ],
     guideUrl: "/guides/python/fastapi-postgres-sqlmodel",
-    contentHash: "7400cdfb6457d1cc70bd8b2d6b7ca4ce74108b4c050cd253f5532e327294631c",
+    contentHash: "9f01fc4cc9c503de2569e22d664158a4828db515316ce32c05dbe7cb91f2664a",
     updated: "2026-07-30",
   },
   {
@@ -8924,6 +8952,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -9164,7 +9193,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: ["Python ORM / Database is intentionally set to none."],
       runtimeVerified: false,
     },
@@ -9174,7 +9203,7 @@ export const GENERATED_STACK_PAGES = [
       "go-gin-postgres-gorm",
     ],
     guideUrl: "/guides/python/django-rest-api",
-    contentHash: "86e2ea058afbc64c9e7d9dc1310a059d84495e0daa50fc581bb56593c50951d5",
+    contentHash: "0354603cc472dfb749976eebdf336fe603f3319fa07e3516d43742f77e6f3c8e",
     updated: "2026-07-30",
   },
   {
@@ -9210,6 +9239,7 @@ export const GENERATED_STACK_PAGES = [
       integrations: "none",
       ecommerce: "none",
       analytics: "none",
+      webMcp: "none",
       mobileNavigation: "none",
       mobileUI: "none",
       mobileStorage: "none",
@@ -9442,7 +9472,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.1",
+      typesPackageVersion: "2.6.3",
       constraints: [],
       runtimeVerified: false,
     },
@@ -9452,7 +9482,7 @@ export const GENERATED_STACK_PAGES = [
       "python-fastapi-postgres-sqlmodel",
     ],
     guideUrl: "/guides/go/echo-sqlc-api",
-    contentHash: "5ba74287e860308c1e1969c78f44af42fea679e49da4ca13ca87a9d3fdd1663b",
+    contentHash: "b47ac9565477628eef25c892f23195dd6509d791b267f9d4de821be44ad3d7fc",
     updated: "2026-07-30",
   },
 ] as const satisfies readonly GeneratedStackPage[];

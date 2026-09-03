@@ -620,6 +620,17 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "multiple": false
       },
       {
+        "flag": "--web-mcp",
+        "summary": "Experimental browser-native WebMCP tools.",
+        "values": [
+          "enabled",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
         "flag": "--feature-flags",
         "summary": "Feature flag platform.",
         "values": [

@@ -34,6 +34,7 @@ const BASE_CONFIG: ProjectConfig = {
   observability: "none",
   featureFlags: "none",
   analytics: "none",
+  webMcp: "none",
   cms: "none",
   addons: ["turborepo"],
   examples: [],

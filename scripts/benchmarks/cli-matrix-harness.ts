@@ -318,6 +318,7 @@ const TS_DEFAULT_FLAGS: Record<string, string> = {
   logging: "none",
   observability: "none",
   analytics: "none",
+  webMcp: "none",
   cms: "none",
   caching: "none",
   search: "none",

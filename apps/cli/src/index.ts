@@ -122,6 +122,7 @@ export async function createVirtual(
       integrations: options.integrations || "none",
       ecommerce: options.ecommerce || "none",
       analytics: options.analytics || "none",
+      webMcp: options.webMcp || "none",
       mobileNavigation: options.mobileNavigation || (hasNativeFrontend ? "expo-router" : "none"),
       mobileUI: options.mobileUI || "none",
       mobileStorage: options.mobileStorage || "none",

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="WebMCP">
+  <defs>
+    <linearGradient id="webmcp-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#webmcp-gradient)"/>
+  <circle cx="19" cy="22" r="5" fill="white"/>
+  <circle cx="45" cy="18" r="5" fill="white"/>
+  <circle cx="44" cy="45" r="5" fill="white"/>
+  <path d="M23.5 21.2 40 18.8M22 26l18.5 15.8M45 23v17" fill="none" stroke="white" stroke-width="4" stroke-linecap="round"/>
+</svg>

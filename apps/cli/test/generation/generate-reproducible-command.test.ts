@@ -56,6 +56,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     observability: "none",
     featureFlags: "none",
     analytics: "none",
+    webMcp: "none",
     cms: "none",
     caching: "none",
     i18n: "none",
@@ -725,6 +726,7 @@ describe("generateReproducibleCommand", () => {
       "frontend.fileUpload:typescript:uploadthing",
       "frontend.i18n:typescript:i18next",
       "frontend.analytics:typescript:plausible",
+      "frontend.webMcp:typescript:enabled",
     ]);
     const command = generateReproducibleCommand(
       makeConfig({
@@ -738,6 +740,7 @@ describe("generateReproducibleCommand", () => {
         fileUpload: "uploadthing",
         i18n: "i18next",
         analytics: "plausible",
+        webMcp: "enabled",
       }),
     );
 
@@ -749,6 +752,7 @@ describe("generateReproducibleCommand", () => {
     expect(command).toContain("--part frontend.fileUpload:typescript:uploadthing");
     expect(command).toContain("--part frontend.i18n:typescript:i18next");
     expect(command).toContain("--part frontend.analytics:typescript:plausible");
+    expect(command).toContain("--part frontend.webMcp:typescript:enabled");
     expect(command).not.toContain("--css-framework scss");
     expect(command).not.toContain("--ui-library radix-ui");
     expect(command).not.toContain("--forms formik");
@@ -757,6 +761,7 @@ describe("generateReproducibleCommand", () => {
     expect(command).not.toContain("--file-upload uploadthing");
     expect(command).not.toContain("--i18n i18next");
     expect(command).not.toContain("--analytics plausible");
+    expect(command).not.toContain("--web-mcp enabled");
   });
 
   it("reproduces graph-owned infrastructure selections as --part flags", () => {

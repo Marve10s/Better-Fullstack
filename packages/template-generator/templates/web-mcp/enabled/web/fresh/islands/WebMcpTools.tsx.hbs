@@ -1,0 +1,9 @@
+/** @jsxImportSource preact */
+import { useEffect } from "preact/hooks";
+
+import { registerWebMcpTools } from "../lib/webmcp.ts";
+
+export default function WebMcpTools() {
+  useEffect(() => registerWebMcpTools(), []);
+  return null;
+}

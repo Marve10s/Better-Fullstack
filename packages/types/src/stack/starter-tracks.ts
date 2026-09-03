@@ -133,6 +133,7 @@ const NON_TYPESCRIPT_SELECTION: Partial<StackSelectionState> = {
   integrations: "none",
   ecommerce: "none",
   analytics: "none",
+  webMcp: "none",
   backendLibraries: "none",
   stateManagement: "none",
   forms: "none",

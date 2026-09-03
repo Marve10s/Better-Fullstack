@@ -243,6 +243,19 @@ describe("compatibility issue helpers", () => {
     expect(analyzeStackCompatibility(mixed).adjustedStack?.analytics).toBe("none");
   });
 
+  it("requires a web frontend for WebMCP", () => {
+    expect(getDisabledReason(DEFAULT_STACK_SELECTION, "webMcp", "enabled")).toBeNull();
+    const withoutWebFrontend = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["none"],
+      webMcp: "enabled" as const,
+    };
+    expect(getDisabledReason(withoutWebFrontend, "webMcp", "enabled")).toBe(
+      "WebMCP requires a web frontend",
+    );
+    expect(analyzeStackCompatibility(withoutWebFrontend).adjustedStack?.webMcp).toBe("none");
+  });
+
   it("keeps SigNoz off stacks without a generated server target", () => {
     for (const backend of ["none", "convex"] as const) {
       const stack = {

@@ -267,6 +267,7 @@ export const TELEMETRY_PROJECT_CONFIG_KEYS = [
   "integrations",
   "ecommerce",
   "analytics",
+  "webMcp",
   "cms",
   "caching",
   "rateLimit",

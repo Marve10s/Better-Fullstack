@@ -1,0 +1,67 @@
+type WebMcpInput = Record<string, unknown>;
+
+// Experimental draft API: https://webmachinelearning.github.io/webmcp/
+
+type WebMcpTool = {
+  name: string;
+  title?: string;
+  description: string;
+  inputSchema?: Record<string, unknown>;
+  annotations?: {
+    readOnlyHint?: boolean;
+    untrustedContentHint?: boolean;
+  };
+  execute: (
+    input: WebMcpInput,
+    options: { signal: AbortSignal },
+  ) => unknown | Promise<unknown>;
+};
+
+type ModelContext = {
+  registerTool: (
+    tool: WebMcpTool,
+    options?: { signal?: AbortSignal; exposedTo?: string[] },
+  ) => Promise<void>;
+};
+
+type WebMcpDocument = Document & {
+  readonly modelContext?: ModelContext;
+};
+
+export function registerWebMcpTools(): () => void {
+  if (typeof document === "undefined") return () => {};
+
+  const modelContext = (document as WebMcpDocument).modelContext;
+  if (!modelContext) return () => {};
+
+  const controller = new AbortController();
+  void modelContext
+    .registerTool(
+      {
+        name: "get_app_info",
+        title: "Get app info",
+        description: "Returns basic information about this application.",
+        inputSchema: {
+          type: "object",
+          properties: {},
+          additionalProperties: false,
+        },
+        annotations: { readOnlyHint: true },
+        execute: (_input, { signal }) => {
+          signal.throwIfAborted();
+          return {
+            name: "{{projectName}}",
+            description: "Generated with Better Fullstack",
+          };
+        },
+      },
+      { signal: controller.signal },
+    )
+    .catch((error: unknown) => {
+      if (!controller.signal.aborted) {
+        console.error("Failed to register WebMCP tools", error);
+      }
+    });
+
+  return () => controller.abort();
+}

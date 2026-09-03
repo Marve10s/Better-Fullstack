@@ -368,6 +368,15 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
       config.analytics,
       "none",
     );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "webMcp",
+      "typescript",
+      "web-mcp",
+      config.webMcp,
+      "none",
+    );
   }
 
   if (
@@ -974,6 +983,7 @@ function getTypeScriptFlags(config: ProjectConfig) {
   flags.push(`--validation ${config.validation}`);
   flags.push(`--testing ${config.testing}`);
   flags.push(`--animation ${config.animation}`);
+  flags.push(`--web-mcp ${config.webMcp}`);
   flags.push(`--realtime ${config.realtime}`);
   flags.push(`--job-queue ${config.jobQueue}`);
   flags.push(`--logging ${config.logging}`);

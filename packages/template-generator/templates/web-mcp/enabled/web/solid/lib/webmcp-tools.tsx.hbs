@@ -1,0 +1,11 @@
+import { onCleanup, onMount } from "solid-js";
+
+import { registerWebMcpTools } from "./webmcp";
+
+export function WebMcpTools() {
+  onMount(() => {
+    const unregister = registerWebMcpTools();
+    onCleanup(unregister);
+  });
+  return null;
+}

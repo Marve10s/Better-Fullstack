@@ -28,6 +28,18 @@ const SNAPSHOT_CONFIGS: Array<{
     },
   },
   {
+    name: "react-vite-webmcp",
+    config: {
+      frontend: ["react-vite"],
+      backend: "none",
+      api: "none",
+      database: "none",
+      orm: "none",
+      auth: "none",
+      webMcp: "enabled",
+    },
+  },
+  {
     name: "next-self-fullstack",
     config: {
       frontend: ["next"],

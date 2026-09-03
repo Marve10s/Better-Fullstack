@@ -24,6 +24,9 @@ const REACT_FRONTENDS: Frontend[] = [
   "redwood",
 ];
 
+// Redwood 8.9 pins GraphQL exactly; a second version breaks its schema type generator.
+const REDWOOD_GRAPHQL_VERSION = "16.9.0";
+
 function getTanStackFrameworkAdapter(
   lib: "table" | "virtual",
   config: ProjectConfig,
@@ -167,10 +170,20 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
   }
 
   if (config.addons.includes("graphql-codegen") && vfs.exists(webPkgPath)) {
+    const devDependencies: AvailableDependencies[] = [
+      "@graphql-codegen/cli",
+      "@graphql-codegen/client-preset",
+    ];
+    const usesRedwood = config.frontend.includes("redwood");
+    if (!usesRedwood) devDependencies.push("graphql");
+
     addPackageDependency({
       vfs,
       packagePath: webPkgPath,
-      devDependencies: ["@graphql-codegen/cli", "@graphql-codegen/client-preset", "graphql"],
+      devDependencies,
+      ...(usesRedwood
+        ? { customDevDependencies: { graphql: REDWOOD_GRAPHQL_VERSION } }
+        : {}),
     });
     const webPkg = vfs.readJson<PackageJson>(webPkgPath);
     if (webPkg) {

@@ -157,6 +157,7 @@ import {
   UI_LIBRARY_VALUES,
   VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
+  WEB_MCP_VALUES,
 } from "@/config/schemas";
 import { getToolingSelectionOptions } from "@/capabilities/tooling-capabilities";
 
@@ -200,6 +201,7 @@ export type OptionCategory =
   | "integrations"
   | "ecommerce"
   | "analytics"
+  | "webMcp"
   | "mobileNavigation"
   | "mobileUI"
   | "mobileStorage"
@@ -388,6 +390,7 @@ export const TYPESCRIPT_CATEGORY_ORDER = [
   "integrations",
   "ecommerce",
   "analytics",
+  "webMcp",
   "ai",
   "stateManagement",
   "forms",
@@ -659,6 +662,7 @@ export function getCategoryOrderForEcosystem(
 export function getCategoryDisplayName(categoryKey: string): string {
   const categoryNames: Record<string, string> = {
     i18n: "Internationalization (i18n)",
+    webMcp: "WebMCP",
     appShells: "App Platforms",
     appPlatforms: "Legacy Capabilities",
     toolchainProfile: "JavaScript Toolchain",
@@ -977,6 +981,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   integrations: INTEGRATIONS_VALUES,
   ecommerce: ECOMMERCE_VALUES,
   analytics: ANALYTICS_VALUES,
+  webMcp: WEB_MCP_VALUES,
   mobileNavigation: MOBILE_NAVIGATION_VALUES,
   mobileUI: MOBILE_UI_VALUES,
   mobileStorage: MOBILE_STORAGE_VALUES,
@@ -2206,6 +2211,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   integrations: buildCategoryMetadata("integrations"),
   ecommerce: buildCategoryMetadata("ecommerce"),
   analytics: buildCategoryMetadata("analytics"),
+  webMcp: buildCategoryMetadata("webMcp"),
   mobileNavigation: buildCategoryMetadata("mobileNavigation"),
   mobileUI: buildCategoryMetadata("mobileUI"),
   mobileStorage: buildCategoryMetadata("mobileStorage"),

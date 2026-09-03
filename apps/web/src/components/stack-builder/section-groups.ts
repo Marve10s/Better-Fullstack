@@ -37,8 +37,31 @@ export const SECTION_EMBEDDED_CATEGORIES = new Set<TechCategory>([
   "shadcnRadius",
 ]);
 
+export const MULTI_FRONTEND_LIBRARY_GROUPS = [
+  "cssFramework",
+  "uiLibrary",
+  "stateManagement",
+  "appShells",
+  "forms",
+  "validation",
+  "testing",
+  "animation",
+  "fileUpload",
+  "i18n",
+  "analytics",
+  "webMcp",
+  "botProtection",
+  "webDeploy",
+] satisfies readonly TechCategory[];
+
 const TYPESCRIPT_SECTIONS: readonly BuilderSectionDef[] = [
-  section("frontend", "Frontend", ["webFrontend", "cssFramework", "uiLibrary", "appShells"]),
+  section("frontend", "Frontend", [
+    "webFrontend",
+    "cssFramework",
+    "uiLibrary",
+    "appShells",
+    "webMcp",
+  ]),
   section(
     "frontendLibraries",
     "Frontend Libraries",

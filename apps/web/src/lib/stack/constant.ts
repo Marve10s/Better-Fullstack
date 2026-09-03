@@ -1545,6 +1545,25 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
+  webMcp: [
+    {
+      id: "enabled",
+      name: "WebMCP (Experimental)",
+      description: "Register browser-native tools that in-browser AI agents can discover and call",
+      icon: "/icon/webmcp.svg",
+      color: "from-blue-500 to-violet-600",
+      default: false,
+      isNew: true,
+    },
+    {
+      id: "none",
+      name: "No WebMCP",
+      description: "Skip browser-native tool registration",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
   backendLibraries: [
     {
       id: "effect",

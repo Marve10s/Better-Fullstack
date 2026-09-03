@@ -6,6 +6,10 @@ type TechResourceLinks = {
 type LinkMap = Record<string, TechResourceLinks>;
 
 const BASE_LINKS: LinkMap = {
+  enabled: {
+    docsUrl: "https://developer.chrome.com/docs/ai/webmcp",
+    githubUrl: "https://github.com/webmachinelearning/webmcp",
+  },
   "vercel-analytics": {
     docsUrl: "https://vercel.com/docs/analytics/quickstart",
     githubUrl: "https://github.com/vercel/analytics",

@@ -646,6 +646,7 @@ describe("Analytics Configurations", () => {
       const result = await runTRPCTest({
         projectName: "no-analytics",
         analytics: "none",
+        webMcp: "none",
         backend: "hono",
         runtime: "bun",
         database: "sqlite",

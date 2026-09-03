@@ -454,9 +454,9 @@ describe("TypeScript library expansion", () => {
     );
 
     expectSuccess(result);
-    expect(await readGenerated(result.projectDir, "web/package.json")).toContain(
-      "graphql-codegen --config codegen.ts",
-    );
+    const webPackage = await readGenerated(result.projectDir, "web/package.json");
+    expect(webPackage).toContain("graphql-codegen --config codegen.ts");
+    expect(webPackage).toContain('"graphql": "16.9.0"');
     await expectGeneratedFile(result.projectDir, "web/codegen.ts", "localhost:8911/graphql");
   });
 

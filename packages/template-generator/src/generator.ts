@@ -66,6 +66,7 @@ import {
   processIntegrationsTemplates,
   processEcommerceTemplates,
   processAnalyticsTemplates,
+  processWebMcpTemplates,
   processAITemplates,
   processRealtimeTemplates,
   processJobQueueTemplates,
@@ -290,6 +291,7 @@ async function processGraphTemplates(
     await processIntegrationsTemplates(vfs, templates, tsConfig);
     await processEcommerceTemplates(vfs, templates, tsConfig);
     await processAnalyticsTemplates(vfs, templates, tsConfig);
+    await processWebMcpTemplates(vfs, templates, tsConfig);
     await processAITemplates(vfs, templates, tsConfig);
     await processRealtimeTemplates(vfs, templates, tsConfig);
     await processJobQueueTemplates(vfs, templates, tsConfig);
@@ -498,6 +500,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       await processIntegrationsTemplates(vfs, templates, config);
       await processEcommerceTemplates(vfs, templates, config);
       await processAnalyticsTemplates(vfs, templates, config);
+      await processWebMcpTemplates(vfs, templates, config);
       await processAITemplates(vfs, templates, config);
       await processRealtimeTemplates(vfs, templates, config);
       await processJobQueueTemplates(vfs, templates, config);

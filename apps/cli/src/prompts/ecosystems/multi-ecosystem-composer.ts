@@ -17,6 +17,7 @@ import { hasWebStyling } from "@/config/compatibility-rules";
 import { exitCancelled } from "@/presentation/errors";
 import { getAddonsChoice, getAppPlatformsChoice } from "@/prompts/developer/addons";
 import { getAnalyticsChoice } from "@/prompts/services/analytics";
+import { getWebMcpChoice } from "@/prompts/services/web-mcp";
 import { getAiDocsChoice } from "@/prompts/developer/ai-docs";
 import { getAstroIntegrationChoice } from "@/prompts/developer/astro-integration";
 import { getBackendFrameworkChoice } from "@/prompts/architecture/backend";
@@ -478,6 +479,12 @@ export async function gatherMultiEcosystemConfig(
           getAnalyticsChoice(flags.analytics, frontendList),
         )
       : "none";
+  const webMcp =
+    frontendEcosystem === "typescript"
+      ? await scopedPromptValue("typescript", "webMcp", configScope, typeScriptSections, () =>
+          getWebMcpChoice(flags.webMcp, frontendList),
+        )
+      : "none";
   const webDeploy = await scopedPromptValue(
     "typescript",
     "webDeploy",
@@ -497,6 +504,9 @@ export async function gatherMultiEcosystemConfig(
     stackPartSpecs.push(`frontend:typescript:${frontend}`);
     if (analytics !== "none") {
       stackPartSpecs.push(`frontend.analytics:typescript:${analytics}`);
+    }
+    if (webMcp !== "none") {
+      stackPartSpecs.push(`frontend.webMcp:typescript:${webMcp}`);
     }
   }
   if (frontendEcosystem === "dotnet" && selectedDotnetFrontend !== "none") {
@@ -1613,6 +1623,7 @@ export async function gatherMultiEcosystemConfig(
     ...shadcnOptions,
     cssFramework,
     analytics,
+    webMcp,
     addons: selectedAddons,
     examples: [],
     dbSetup,

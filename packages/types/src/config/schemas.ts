@@ -61,6 +61,7 @@ export const StackPartRoleSchema = z
     "integrations",
     "ecommerce",
     "analytics",
+    "webMcp",
     "cms",
     "i18n",
     "documentation",
@@ -495,6 +496,10 @@ export const EcommerceSchema = z.enum(["medusa", "none"]).describe("E-commerce p
 export const AnalyticsSchema = z
   .enum(["plausible", "umami", "posthog", "ga4", "vercel-analytics", "none"])
   .describe("Product analytics provider");
+
+export const WebMcpSchema = z
+  .enum(["enabled", "none"])
+  .describe("Experimental browser-native WebMCP tool registration");
 
 export const MobileNavigationSchema = z
   .enum(["expo-router", "react-navigation", "none"])
@@ -1247,6 +1252,7 @@ export const CreateInputSchema = z.object({
   integrations: IntegrationsSchema.optional(),
   ecommerce: EcommerceSchema.optional(),
   analytics: AnalyticsSchema.optional(),
+  webMcp: WebMcpSchema.optional(),
   cms: CMSSchema.optional(),
   caching: CachingSchema.optional(),
   rateLimit: RateLimitSchema.optional(),
@@ -1446,6 +1452,7 @@ export const ProjectConfigSchema = z.object({
   integrations: IntegrationsSchema.default("none"),
   ecommerce: EcommerceSchema.default("none"),
   analytics: AnalyticsSchema,
+  webMcp: WebMcpSchema.default("none"),
   cms: CMSSchema,
   caching: CachingSchema,
   rateLimit: RateLimitSchema,
@@ -1631,6 +1638,7 @@ export const BetterTStackConfigSchema = z.object({
   integrations: IntegrationsSchema.default("none"),
   ecommerce: EcommerceSchema.default("none"),
   analytics: AnalyticsSchema,
+  webMcp: WebMcpSchema.default("none"),
   cms: CMSSchema,
   caching: CachingSchema,
   rateLimit: RateLimitSchema,
@@ -1830,6 +1838,7 @@ export const FEATURE_FLAGS_VALUES = FeatureFlagsSchema.options;
 export const INTEGRATIONS_VALUES = IntegrationsSchema.options;
 export const ECOMMERCE_VALUES = EcommerceSchema.options;
 export const ANALYTICS_VALUES = AnalyticsSchema.options;
+export const WEB_MCP_VALUES = WebMcpSchema.options;
 export const MOBILE_NAVIGATION_VALUES = MobileNavigationSchema.options;
 export const MOBILE_UI_VALUES = MobileUISchema.options;
 export const MOBILE_STORAGE_VALUES = MobileStorageSchema.options;

@@ -140,6 +140,7 @@ import {
   UI_LIBRARY_VALUES,
   VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
+  WEB_MCP_VALUES,
   getCategoryOptionIds,
   type CLIInput,
   type Ecosystem,
@@ -349,6 +350,9 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
           ? "none"
           : sampleScalar(ECOMMERCE_VALUES, 0.9, "ecommerce"),
       analytics: sampleScalar(ANALYTICS_VALUES, 0.9, "analytics"),
+      webMcp: frontend.some((value) => value !== "none")
+        ? sampleScalar(WEB_MCP_VALUES, 0.9, "webMcp")
+        : "none",
       effect: sampleScalar(EFFECT_VALUES, 0.82, "effect"),
       stateManagement: sampleScalar(STATE_MANAGEMENT_VALUES, 0.7, "stateManagement"),
       forms: sampleScalar(FORMS_VALUES, 0.6, "forms"),
@@ -740,6 +744,7 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     integrations: "none",
     ecommerce: "none",
     analytics: "none",
+    webMcp: "none",
     cms: "none",
     addons: [],
     examples: [],

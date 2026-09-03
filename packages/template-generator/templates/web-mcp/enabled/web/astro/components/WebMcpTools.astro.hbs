@@ -1,0 +1,13 @@
+<script>
+  import { registerWebMcpTools } from "../lib/webmcp";
+
+  let unregister = registerWebMcpTools();
+
+  document.addEventListener("astro:before-swap", () => {
+    unregister();
+  });
+  document.addEventListener("astro:page-load", () => {
+    unregister();
+    unregister = registerWebMcpTools();
+  });
+</script>

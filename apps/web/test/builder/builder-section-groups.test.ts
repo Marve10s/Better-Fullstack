@@ -8,6 +8,7 @@ import {
 import {
   getBuilderSections,
   isHiddenMobilePlatformCategory,
+  MULTI_FRONTEND_LIBRARY_GROUPS,
   SECTION_EMBEDDED_CATEGORIES,
   SECTIONS_BY_ECOSYSTEM,
 } from "@/components/stack-builder/section-groups";
@@ -60,6 +61,10 @@ describe("builder section groups", () => {
     for (const section of sections) {
       expect(knownKeys.has(section.key)).toBe(true);
     }
+  });
+
+  it("exposes WebMCP in the multi-stack frontend step", () => {
+    expect(MULTI_FRONTEND_LIBRARY_GROUPS).toContain("webMcp");
   });
 
   it("keeps Kotlin, Swift and Flutter categories out of the React Native ecosystem", () => {

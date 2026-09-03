@@ -63,6 +63,7 @@ export function getInvertClass(needsInvert?: "dark" | "light" | "both"): string 
 // so they need needsInvert: 'dark' to become white on dark backgrounds.
 
 export const ICON_REGISTRY: Record<string, IconConfig> = {
+  enabled: { type: "local", src: "/icon/webmcp.svg" },
   eslint: { type: "si", slug: "eslint", hex: "4B32C3" },
   prettier: { type: "si", slug: "prettier", hex: "F7B93E" },
   axios: { type: "si", slug: "axios", hex: "5A29E4" },

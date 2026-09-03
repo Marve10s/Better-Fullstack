@@ -90,6 +90,21 @@ describe("smoke combo command rendering", () => {
     expect(buildCommand("medusa-smoke", config)).toContain("--ecommerce medusa");
   });
 
+  it("includes WebMCP for non-interactive TypeScript smoke commands", () => {
+    const config: ProjectConfig = {
+      ...createCliDefaultProjectConfigBase("bun"),
+      projectName: "webmcp-smoke",
+      relativePath: "webmcp-smoke",
+      projectDir: "/tmp/webmcp-smoke",
+      ecosystem: "typescript",
+      webMcp: "enabled",
+      git: false,
+      install: false,
+    };
+
+    expect(buildCommand("webmcp-smoke", config)).toContain("--web-mcp enabled");
+  });
+
   it("includes Elixir flags for Elixir commands", () => {
     const config: ProjectConfig = {
       ...createCliDefaultProjectConfigBase("bun"),
