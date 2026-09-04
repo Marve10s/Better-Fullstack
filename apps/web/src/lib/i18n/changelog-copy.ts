@@ -10,7 +10,6 @@ export function getLocalizedChangelogRelease(release: ChangelogRelease): Changel
     title: m.changelogRelease20260612Title(),
     summary: m.changelogRelease20260612Summary(),
     highlights: [
-      m.changelogRelease20260612HighlightBenchmark(),
       m.changelogRelease20260612HighlightMcp(),
       m.changelogRelease20260612HighlightDotnet(),
       m.changelogRelease20260612HighlightInstall(),

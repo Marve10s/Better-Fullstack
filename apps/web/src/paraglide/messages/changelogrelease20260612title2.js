@@ -6,45 +6,45 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Changelogrelease20260612title2Inputs */
 
 const en_changelogrelease20260612title2 = /** @type {(inputs: Changelogrelease20260612title2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agent benchmark, .NET ecosystem, and a 42% lighter install`)
+	return /** @type {LocalizedString} */ (`.NET ecosystem and a 42% lighter install`)
 };
 
 const es_changelogrelease20260612title2 = /** @type {(inputs: Changelogrelease20260612title2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Benchmark de agentes, ecosistema .NET e instalación un 42% más ligera`)
+	return /** @type {LocalizedString} */ (`Ecosistema .NET y una instalación un 42 % más ligera`)
 };
 
 const zh_changelogrelease20260612title2 = /** @type {(inputs: Changelogrelease20260612title2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`代理 benchmark、.NET 生态，以及轻 42% 的安装体积`)
+	return /** @type {LocalizedString} */ (`.NET 生态与缩小 42% 的安装体积`)
 };
 
 const ja_changelogrelease20260612title2 = /** @type {(inputs: Changelogrelease20260612title2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`エージェントのベンチマーク、.NET エコシステム、および 42% 軽量のインストール`)
+	return /** @type {LocalizedString} */ (`.NETエコシステムと42%軽量化されたインストール`)
 };
 
 const ko_changelogrelease20260612title2 = /** @type {(inputs: Changelogrelease20260612title2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`에이전트 벤치마크, .NET 생태계 및 42% 더 가벼운 설치`)
+	return /** @type {LocalizedString} */ (`.NET 생태계와 42% 가벼워진 설치`)
 };
 
 const zh_hant1_changelogrelease20260612title2 = /** @type {(inputs: Changelogrelease20260612title2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`代理 benchmark、.NET 生態，以及輕 42% 的安裝體積`)
+	return /** @type {LocalizedString} */ (`.NET 生態系與縮小 42% 的安裝體積`)
 };
 
 const de_changelogrelease20260612title2 = /** @type {(inputs: Changelogrelease20260612title2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agent-Benchmark, .NET-Ökosystem und eine um 42 % leichtere Installation`)
+	return /** @type {LocalizedString} */ (`.NET-Ökosystem und eine um 42 % kleinere Installation`)
 };
 
 const fr_changelogrelease20260612title2 = /** @type {(inputs: Changelogrelease20260612title2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Benchmark d'agent, écosystème .NET et installation 42 % plus légère`)
+	return /** @type {LocalizedString} */ (`Écosystème .NET et installation allégée de 42 %`)
 };
 
 const uk_changelogrelease20260612title2 = /** @type {(inputs: Changelogrelease20260612title2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Бенчмарк агентів, екосистема .NET і встановлення на 42% легше`)
+	return /** @type {LocalizedString} */ (`Екосистема .NET та зменшення розміру встановлення на 42%`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Agent benchmark, .NET ecosystem, and a 42% lighter install" |
+* | ".NET ecosystem and a 42% lighter install" |
 *
 * @param {Changelogrelease20260612title2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options

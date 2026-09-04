@@ -112,11 +112,6 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link to="/benchmark" className={FOOTER_LINK}>
-                {m.navBenchmark()}
-              </Link>
-            </li>
-            <li>
               <Link
                 to="/"
                 hash="whats-new"

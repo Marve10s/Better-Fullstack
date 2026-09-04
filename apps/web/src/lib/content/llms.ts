@@ -106,7 +106,7 @@ export function generateLlmsTxt({
     pageLine("Full documentation corpus", "/llms-full.txt", "Product docs, guides, and blog text"),
     pageLine("Markdown sitemap", "/sitemap.md", "Semantic index of public content"),
     pageLine("Guides", "/guides", "Stack-specific starter guides"),
-    pageLine("Blog", "/blog", "Engineering write-ups and benchmarks"),
+    pageLine("Blog", "/blog", "Engineering write-ups"),
     "",
     "## Important Docs",
     "",
