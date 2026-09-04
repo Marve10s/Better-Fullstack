@@ -525,7 +525,7 @@
   "fixproofColTrials": "試驗次數",
   "fixproofDefHarness": "驅動模型的代理程式 CLI。",
   "fixproofDefResolvedIndex": "所有隱藏檢查都通過且沒有出現迴歸的任務占比，按難度加權。這是最核心的數字。",
-  "fixproofDefProgressIndex": "每個任務中，在基線提交上失敗、在代理程式的修補之後通過的需求所占的加權比例，再按難度在任務之間加權。每條需求的權重為 2（核心）、1 或 0.5（外圍）；在基線提交上已經通過的需求永遠不計入。",
+  "fixproofDefProgressIndex": "每個任務中，在基線提交上失敗、在代理程式的修補之後通過的需求所占的加權比例，再按難度在任務之間加權。每條需求的權重為 2（核心）、1 或 0.5（外圍）；在基線提交上已經通過的需求和未經測試的需求均從分子和分母中排除。",
   "fixproofDefSolvedOverGraded": "在目前已評測的任務中完全解決的數量。待執行的任務和被排除的執行不計入分母。",
   "fixproofDefRegressions": "評測執行中，套件自帶的測試套件不再通過的那些。 短橫線表示至少一次已評測執行的迴歸結果未知。",
   "fixproofDefTestEdits": "代理程式對測試檔案所做的改動。harness 會在評測前把它們還原。",

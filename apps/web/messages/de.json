@@ -525,7 +525,7 @@
   "fixproofColTrials": "Versuche",
   "fixproofDefHarness": "Das Agenten-CLI, das das Modell gesteuert hat.",
   "fixproofDefResolvedIndex": "Nach Schwierigkeit gewichteter Anteil der Aufgaben, bei denen jede verborgene Prüfung bestanden wurde und keine Regression auftrat. Das ist die zentrale Kennzahl.",
-  "fixproofDefProgressIndex": "Gewichteter Anteil der Anforderungen einer Aufgabe, die auf dem Basis-Commit fehlgeschlagen sind und nach dem Patch des Agenten bestehen, anschließend über alle Aufgaben nach Schwierigkeit gewichtet. Jede Anforderung hat ein Gewicht von 2 (Kern), 1 oder 0,5 (Rand); Anforderungen, die auf dem Basis-Commit schon grün waren, zählen nie.",
+  "fixproofDefProgressIndex": "Gewichteter Anteil der Anforderungen einer Aufgabe, die auf dem Basis-Commit fehlgeschlagen sind und nach dem Patch des Agenten bestehen, anschließend über alle Aufgaben nach Schwierigkeit gewichtet. Jede Anforderung hat ein Gewicht von 2 (Kern), 1 oder 0,5 (Rand); Anforderungen, die auf dem Basis-Commit schon grün waren, sowie ungetestete Anforderungen werden sowohl aus dem Zähler als auch aus dem Nenner ausgeschlossen.",
   "fixproofDefSolvedOverGraded": "Vollständig gelöste Aufgaben von den bisher bewerteten Aufgaben. Ausstehende Aufgaben und ausgeschlossene Läufe stehen nicht im Nenner.",
   "fixproofDefRegressions": "Bewertete Läufe, in denen die vorhandene Test-Suite des Pakets nicht mehr bestanden wurde. Ein Strich bedeutet, dass für mindestens einen bewerteten Lauf kein Regressionsergebnis vorliegt.",
   "fixproofDefTestEdits": "Änderungen, die der Agent an Testdateien vorgenommen hat. Das Harness setzt sie vor der Bewertung zurück.",

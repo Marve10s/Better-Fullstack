@@ -525,7 +525,7 @@
   "fixproofColTrials": "Trials",
   "fixproofDefHarness": "The agent CLI that drove the model.",
   "fixproofDefResolvedIndex": "Difficulty-weighted share of tasks where every hidden check passed and no regression appeared. This is the headline number.",
-  "fixproofDefProgressIndex": "Weighted share of each task's requirements that were failing at the base commit and pass after the agent's patch, then difficulty-weighted across tasks. Each requirement carries a weight of 2 (core), 1 or 0.5 (peripheral); requirements already green at base never count.",
+  "fixproofDefProgressIndex": "Weighted share of each task's requirements that were failing at the base commit and pass after the agent's patch, then difficulty-weighted across tasks. Each requirement carries a weight of 2 (core), 1 or 0.5 (peripheral); requirements already green at base and untested requirements are excluded from both the numerator and denominator.",
   "fixproofDefSolvedOverGraded": "Tasks fully resolved out of the tasks graded so far. Pending tasks and excluded runs are not in the denominator.",
   "fixproofDefRegressions": "Graded runs where the package's existing test suite stopped passing. A dash means at least one graded run has no regression result.",
   "fixproofDefTestEdits": "Edits the agent made to test files. The harness reverts them before grading.",

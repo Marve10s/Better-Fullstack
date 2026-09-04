@@ -525,7 +525,7 @@
   "fixproofColTrials": "Essais",
   "fixproofDefHarness": "La CLI d'agent qui a piloté le modèle.",
   "fixproofDefResolvedIndex": "Part des tâches, pondérée par la difficulté, où toutes les vérifications cachées sont passées et où aucune régression n'est apparue. C'est le chiffre principal.",
-  "fixproofDefProgressIndex": "Part pondérée des exigences de chaque tâche qui échouaient au commit de base et passent après le correctif de l'agent, puis pondérée par la difficulté sur l'ensemble des tâches. Chaque exigence porte un poids de 2 (cœur), 1 ou 0,5 (périphérique) ; les exigences déjà vertes au commit de base ne comptent jamais.",
+  "fixproofDefProgressIndex": "Part pondérée des exigences de chaque tâche qui échouaient au commit de base et passent après le correctif de l'agent, puis pondérée par la difficulté sur l'ensemble des tâches. Chaque exigence porte un poids de 2 (cœur), 1 ou 0,5 (périphérique) ; les exigences déjà satisfaites au commit de base et les exigences non testées sont exclues du numérateur comme du dénominateur.",
   "fixproofDefSolvedOverGraded": "Tâches entièrement résolues sur les tâches évaluées jusqu'ici. Les tâches en attente et les exécutions exclues ne sont pas au dénominateur.",
   "fixproofDefRegressions": "Exécutions évaluées où la suite de tests existante du paquet a cessé de passer. Un tiret indique qu’au moins une exécution évaluée n’a pas de résultat de régression.",
   "fixproofDefTestEdits": "Modifications que l'agent a apportées aux fichiers de test. Le harness les annule avant l'évaluation.",
