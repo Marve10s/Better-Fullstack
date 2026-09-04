@@ -12,6 +12,7 @@ import {
   legendVendors,
   pointLabel,
 } from "@/components/benchmark/fixproof-theme";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
@@ -174,35 +175,6 @@ function computeLabelPlacements(
 
 function metricName(metric: ChartMetric): string {
   return metric === "resolvedIndex" ? m.fixproofColResolvedIndex() : m.fixproofColProgressIndex();
-}
-
-function MetricTabButton({
-  metric,
-  active,
-  onSelect,
-}: {
-  metric: ChartMetric;
-  active: boolean;
-  onSelect: (metric: ChartMetric) => void;
-}) {
-  const handleClick = useCallback(() => onSelect(metric), [onSelect, metric]);
-
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={handleClick}
-      className={cn(
-        "cursor-pointer border-r border-[var(--fx-edge)] px-3.5 py-2 text-xs font-medium transition-colors last:border-r-0",
-        active
-          ? "bg-[#C6E853] text-[#0a0a0a]"
-          : "bg-transparent text-[var(--fx-label)] hover:text-[var(--fx-ink)]",
-      )}
-    >
-      {metricName(metric)}
-    </button>
-  );
 }
 
 function AxisLayer({ axis, note }: { axis: AxisSpec; note: string }) {
@@ -477,6 +449,9 @@ function VendorLegend({ rows }: { rows: readonly FixproofRow[] }) {
 
 export function FixproofChart({ board }: { board: FixproofBoard }) {
   const [metric, setMetric] = useState<ChartMetric>("resolvedIndex");
+  const handleMetricChange = useCallback((value: unknown) => {
+    if (value === "resolvedIndex" || value === "progressIndex") setMetric(value);
+  }, []);
   const [hovered, setHovered] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-10%" });
@@ -498,55 +473,48 @@ export function FixproofChart({ board }: { board: FixproofBoard }) {
       transition={fadeUpTransition}
       className={cn("w-full", FIXPROOF_THEME_VARS)}
     >
-      <div className="mb-3 flex flex-wrap items-center justify-end gap-2.5">
-        <div
-          className="inline-flex overflow-hidden rounded-md border border-[var(--fx-edge)]"
-          role="tablist"
-          aria-label={m.fixproofChartMetricAria()}
-        >
-          <MetricTabButton
-            metric="resolvedIndex"
-            active={metric === "resolvedIndex"}
-            onSelect={setMetric}
-          />
-          <MetricTabButton
-            metric="progressIndex"
-            active={metric === "progressIndex"}
-            onSelect={setMetric}
-          />
-        </div>
-      </div>
-
-      <div ref={ref} className={cn(FIXPROOF_CARD, "px-4 pb-6 pt-6 sm:px-8 sm:pb-8 sm:pt-7")}>
-        <section aria-label={m.fixproofChartRegionAria()} className="overflow-x-auto" tabIndex={0}>
-          <div className="w-full">
-            <p className="px-3 text-sm font-semibold">{metricName(metric)}</p>
-            <svg
-              viewBox={`0 0 ${VB_W} ${VB_H}`}
-              className="mt-3 h-auto max-h-[420px] w-full"
-              preserveAspectRatio="xMidYMid meet"
+      <Tabs value={metric} onValueChange={handleMetricChange} className="min-w-0 gap-3">
+        <TabsList aria-label={m.fixproofChartMetricAria()} className="self-end">
+          <TabsTrigger value="resolvedIndex">{metricName("resolvedIndex")}</TabsTrigger>
+          <TabsTrigger value="progressIndex">{metricName("progressIndex")}</TabsTrigger>
+        </TabsList>
+        <TabsContent value={metric} className="min-w-0">
+          <div ref={ref} className={cn(FIXPROOF_CARD, "px-4 pb-6 pt-6 sm:px-8 sm:pb-8 sm:pt-7")}>
+            <section
+              aria-label={m.fixproofChartRegionAria()}
+              className="overflow-x-auto"
+              tabIndex={0}
             >
-              <AxisLayer key={axis.max} axis={axis} note={m.fixproofChartNote()} />
-              {points.map((point, index) => (
-                <ModelDot
-                  key={point.key}
-                  point={point}
-                  metric={metric}
-                  x={plotX(point.minutes ?? 0, axis)}
-                  y={plotY(point[metric])}
-                  placement={placements[point.key]}
-                  index={index}
-                  inView={inView}
-                  reduceMotion={reduceMotion === true}
-                  active={hovered === point.key}
-                  onActiveChange={setHovered}
-                />
-              ))}
-            </svg>
+              <div className="w-full min-w-[980px]">
+                <p className="px-3 text-sm font-semibold">{metricName(metric)}</p>
+                <svg
+                  viewBox={`0 0 ${VB_W} ${VB_H}`}
+                  className="mt-3 h-auto max-h-[420px] w-full"
+                  preserveAspectRatio="xMidYMid meet"
+                >
+                  <AxisLayer key={axis.max} axis={axis} note={m.fixproofChartNote()} />
+                  {points.map((point, index) => (
+                    <ModelDot
+                      key={point.key}
+                      point={point}
+                      metric={metric}
+                      x={plotX(point.minutes ?? 0, axis)}
+                      y={plotY(point[metric])}
+                      placement={placements[point.key]}
+                      index={index}
+                      inView={inView}
+                      reduceMotion={reduceMotion === true}
+                      active={hovered === point.key}
+                      onActiveChange={setHovered}
+                    />
+                  ))}
+                </svg>
+              </div>
+            </section>
+            <VendorLegend rows={points} />
           </div>
-        </section>
-        <VendorLegend rows={points} />
-      </div>
+        </TabsContent>
+      </Tabs>
     </motion.div>
   );
 }

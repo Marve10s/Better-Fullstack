@@ -284,12 +284,12 @@ Goal: help users choose a sound stack while keeping schema rules and evidence au
 
 ## Independent benchmark lane
 
-Fixproof measures coding agents on sealed, real issues from private codebases with hidden tests. It
-is not generated-project verification and does not depend on Phases 1 through 6.
+Fixproof measures coding agents on sealed, real issues from private and public codebases with hidden
+tests. It is not generated-project verification and does not depend on Phases 1 through 6.
 
-| ID  | Task                                                                                                                                                       | Done when                                                                                                                                           |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B1  | Prepare the first Fixproof board from sealed private tasks and hidden tests.                                                                                  | Results cover the defined cohort, stay separate from product verification, and never control the product verification badge.                       |
+| ID  | Task                                                                                                                  | Done when                                                                                                                    |
+| --- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| B1  | Prepare the first Fixproof board from sealed tasks sourced from private and public codebases, graded by hidden tests. | Results cover the defined cohort, stay separate from product verification, and never control the product verification badge. |
 
 ## Conditional bets
 
