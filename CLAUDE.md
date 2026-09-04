@@ -25,26 +25,28 @@ Rankings, higher = better. Cost reflects what I actually pay (OpenAI is near-fre
 | gpt-5.6-luna  | 9    | 9     | 6            | 5     |
 | sonnet-5      | 5    | 7     | 7            | 7     |
 | opus-5        | 8    | 5     | 8            | 8     |
-| fable-5       | 2    | 2     | 9            | 9     |
+| fable-5.1     | 2    | 2     | 9            | 9     |
 
 GPT-5.6 tier notes (GPT-5.5 is retired - don't use it):
 
-- **Sol** - the GPT flagship. Frontier-level agentic coding; writes tight, restrained code. Use for hard unsupervised problems where taste doesn't matter. Supports `max` and `ultra` reasoning efforts (`ultra` spawns subagents - always pair with `rollout_token_budget`). User-facing work stays on Claude models.
+- **Sol** - the GPT-5.6 flagship. Frontier-level agentic coding; writes tight, restrained code. Use for hard unsupervised problems where taste doesn't matter. Supports `max` and `ultra` reasoning efforts (`ultra` spawns subagents - always pair with `rollout_token_budget`). User-facing work stays on Claude models.
 - **Terra** - the everyday workhorse. Use for routine well-specified implementation and mid-weight investigation where Sol is overkill. Since my OpenAI cost is flat, its niche is mostly rate-limit headroom.
 - **Luna** - smallest and fastest tier; weakest on open-ended reasoning. Default for bulk mechanical work: migrations, sweeps across many files, data grinding, first-pass verification - anywhere throughput and latency matter more than depth.
 
 How to apply:
 
+- GPT-6 Astra (`gpt-6-astra`) is the smartest model in this roster. Use it with `high` reasoning when maximum intelligence matters; increase reasoning for unusually difficult work.
+- Gemini 3.8 Flash High (`gemini-3.8-flash-high`) runs through AGY for quick research, source summaries, and multimodal input. Verify its claims before relying on them for final judgment.
 - These are defaults, not limits. You have standing permission to override them: if a chosen model's output doesn't meet the bar, rerun or redo the work with a smarter model without asking. Judge the output, not the price tag. Escalating costs less than shipping mediocre work.
 - Cost is a tie-breaker only: when axes conflict for anything that ships, intelligence > taste > speed > cost.
 - `high` is the floor reasoning effort for every model in this table - Claude subagents and workflows (`effort: 'high'`) and Codex runs alike. Never dispatch below it, including for bulk or mechanical work. Go above it (`xhigh`, or `max` when correctness outweighs everything) for hard agentic or coding work.
 - Don't let cost prevent you from using the right model for the job. Instead, take advantage of cheaper options to get more information and try things before moving the work to a more expensive option.
 - Bulk/mechanical work (clear-spec implementation, data analysis, migrations): gpt-5.6-luna - effectively free and fastest. Escalate to terra when the spec has ambiguity, sol when it's genuinely hard.
 - Anything user-facing (UI, copy, API design) needs taste ≥ 7.
-- Reviews of plans/implementations: fable-5 or opus-5, optionally gpt-5.6-sol as an extra independent perspective.
+- Reviews of plans/implementations: fable-5.1 or opus-5, optionally gpt-5.6-sol as an extra independent perspective.
 - Never use Haiku.
-- Mechanics: GPT models are only reachable through the Codex CLI - `codex exec` / `codex review` (my ~/.codex/config.toml defaults to gpt-5.6-sol at effort high). Pick a tier per call with `codex exec -m gpt-5.6-luna|terra|sol`. Use the codex-implementation, codex-review, and codex-computer-use skills; for work they don't cover (investigation, data analysis), run `codex exec -s read-only` directly with a self-contained prompt. Get the flags right the first time - see the invocation contract below.
-- Claude models run via the Agent/Workflow `model` parameter, which takes tier names, not full IDs: `sonnet` → sonnet-5, `opus` → opus-5, `fable` → fable-5. (`haiku` also resolves, but see "Never use Haiku" above.)
+- Mechanics: GPT models are only reachable through the Codex CLI - `codex exec` / `codex review` (my ~/.codex/config.toml defaults to gpt-5.6-sol at effort high). Choose an explicit model per call with `codex exec -m <model>`, including `gpt-6-astra`, `gpt-5.6-sol`, `gpt-5.6-terra`, or `gpt-5.6-luna`. Use the codex-implementation, codex-review, and codex-computer-use skills; for work they don't cover (investigation, data analysis), run `codex exec -s read-only` directly with a self-contained prompt. Get the flags right the first time - see the invocation contract below.
+- Claude models run via the Agent/Workflow `model` parameter, which takes tier names, not full IDs: `sonnet` → sonnet-5, `opus` → opus-5, `fable` → fable-5.1. (`haiku` also resolves, but see "Never use Haiku" above.)
 
 Codex CLI invocation contract - **`codex exec`, `codex exec resume`, and `codex review` are three different parsers.** A flag that exists on one is rejected by the others. Do not carry flags across them, and do not invent flags from memory of older Codex versions; `codex exec --help` is the authority. These are the mistakes that actually keep happening:
 
