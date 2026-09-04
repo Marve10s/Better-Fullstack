@@ -153,7 +153,7 @@ function ModelRow({ row }: { row: FixproofRow }) {
       <td className={cn(BODY_CELL, "text-right")}>
         {row.resolved} / {row.graded}
       </td>
-      <td className={cn(BODY_CELL, "text-right")}>{row.regressions}</td>
+      <td className={cn(BODY_CELL, "text-right")}>{row.regressions ?? "–"}</td>
       <td className={cn(BODY_CELL, "text-right")}>{row.testEditsReverted}</td>
       <td className={cn(BODY_CELL, "text-right")}>{row.claimedNotDone}</td>
       <td className={cn(BODY_CELL, "text-right")}>{formatMinutes(row.minutes)}</td>

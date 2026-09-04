@@ -82,7 +82,7 @@ export interface FixproofRow {
   progressIndex: number;
   resolved: number;
   graded: number;
-  regressions: number;
+  regressions: number | null;
   testEditsReverted: number;
   claimedNotDone: number;
   /** Median wall-clock minutes, null when nothing was timed. */

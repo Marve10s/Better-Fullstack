@@ -75,7 +75,8 @@ export interface FixproofModel {
   /** Difficulty-weighted, 0..100. */
   progressIndex: number;
   medianAgentSeconds: number;
-  regressions: number;
+  /** Null when any graded run has an unknown regression result. */
+  regressions: number | null;
   testEditsReverted: number;
   claimedNotDone: number;
   infraExcluded: number;
@@ -149,7 +150,7 @@ export const FIXPROOF_BOARD: FixproofBoard = {
       resolvedIndex: 17,
       progressIndex: 35,
       medianAgentSeconds: 1652,
-      regressions: 0,
+      regressions: null,
       testEditsReverted: 5,
       claimedNotDone: 2,
       infraExcluded: 1,
