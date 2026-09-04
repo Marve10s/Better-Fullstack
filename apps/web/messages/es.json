@@ -525,7 +525,7 @@
   "fixproofColTrials": "Intentos",
   "fixproofDefHarness": "La CLI de agente que condujo el modelo.",
   "fixproofDefResolvedIndex": "Proporción ponderada por dificultad de las tareas en las que pasaron todas las comprobaciones ocultas y no apareció ninguna regresión. Es la cifra principal.",
-  "fixproofDefProgressIndex": "Proporción ponderada de los requisitos de cada tarea que fallaban en el commit base y pasan tras el parche del agente, ponderada después por dificultad entre tareas. Cada requisito lleva un peso de 2 (central), 1 o 0,5 (periférico); los pesos y el resultado de cada requisito se publican con cada tarea, y los requisitos que ya estaban en verde en el commit base nunca cuentan.",
+  "fixproofDefProgressIndex": "Proporción ponderada de los requisitos de cada tarea que fallaban en el commit base y pasan tras el parche del agente, ponderada después por dificultad entre tareas. Cada requisito lleva un peso de 2 (central), 1 o 0,5 (periférico); los requisitos que ya estaban en verde en el commit base nunca cuentan.",
   "fixproofDefSolvedOverGraded": "Tareas resueltas por completo sobre las tareas evaluadas hasta ahora. Las tareas pendientes y las ejecuciones excluidas no están en el denominador.",
   "fixproofDefRegressions": "Ejecuciones evaluadas en las que la suite de pruebas existente del paquete dejó de pasar. Un guion indica que al menos una ejecución evaluada no tiene un resultado de regresiones.",
   "fixproofDefTestEdits": "Cambios que el agente hizo en archivos de prueba. El harness los revierte antes de evaluar.",
