@@ -15,9 +15,8 @@ import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
  * eagerly from the MDX modules would merge them into the entry chunk -
  * Rollup cannot split one module's exports across chunks.)
  *
- * Keys intentionally match the `import.meta.glob` keys used in
- * `src/lib/docs/source.ts` and `src/lib/guides/source.ts` (paths relative to
- * those files), so the two maps line up without translation.
+ * Keys match the root-relative paths emitted by Vite for the aliased
+ * `import.meta.glob` patterns in the docs, guides, and blog MDX loaders.
  */
 const VIRTUAL_ID = "virtual:content-meta";
 const RESOLVED_ID = "\0" + VIRTUAL_ID;
@@ -169,7 +168,7 @@ function localizedLoaderKey(
   contentSubdir: ContentSubdir,
   relativePath: string,
 ): string {
-  return `${locale}:../../../content/${contentSubdir}/${relativePath}`;
+  return `${locale}:/content/${contentSubdir}/${relativePath}`;
 }
 
 function localizedMdxModuleId(
@@ -456,13 +455,11 @@ export function contentMetaPlugin(): Plugin {
       }
 
       if (id !== RESOLVED_ID) return undefined;
-      const docs = buildMeta("docs", "../../../content/docs/", bundles);
-      const guides = buildMeta("guides", "../../../content/guides/", bundles);
-      const blog = buildMeta("blog", "../../../content/blog/", bundles);
+      const docs = buildMeta("docs", "/content/docs/", bundles);
+      const guides = buildMeta("guides", "/content/guides/", bundles);
+      const blog = buildMeta("blog", "/content/blog/", bundles);
       for (const entry of [...docs.entries, ...guides.entries, ...blog.entries]) {
-        this.addWatchFile(
-          path.join(rootDir, "content", entry.filePath.replace("../../../content/", "")),
-        );
+        this.addWatchFile(path.join(rootDir, entry.filePath.slice(1)));
       }
       for (const filePath of [
         ...docs.watchFiles,
