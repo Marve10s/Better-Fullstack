@@ -2,7 +2,7 @@
 title: Stack Builder
 description: Compose, preview, run, share, and download Better Fullstack projects in the browser.
 translationStatus: pending
-updated: 2026-08-22
+updated: 2026-09-04
 ---
 
 The [Stack Builder](https://better-fullstack.dev/new) uses the same schemas, compatibility rules, and template generator as the CLI. Every change updates the reproducible command and the shareable URL.
@@ -19,7 +19,7 @@ The [Stack Builder](https://better-fullstack.dev/new) uses the same schemas, com
 
 ## Two modes
 
-Solo mode exposes one ecosystem's full category surface. Multi-Ecosystem mode composes frontend, backend, database, and mobile parts from different languages, then attaches capabilities to their owners through repeated `--part role:ecosystem:tool` flags. See [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/) for how parts and ownership work.
+New projects open in the Multi-Ecosystem application flow: choose applications, configure them, set project options, and review the generated structure. Solo mode remains available for direct editing of one ecosystem's full category surface. Multi-Ecosystem mode composes frontend, backend, database, and mobile parts from different languages, then attaches capabilities to their owners through repeated `--part role:ecosystem:tool` flags. See [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/) for how parts and ownership work.
 
 Builder state lives in the URL. Share a link and the recipient gets your exact selection. Sharing does not upload project files or saved configuration bodies. Saved stacks stay in browser storage. When analytics is enabled, the builder records bounded anonymous usage and stack-selection metadata as described in [Privacy](#privacy).
 
@@ -31,7 +31,7 @@ The builder runs every selection through the same compatibility engine as the CL
 
 Edit & Run creates a disposable generated project and executes it in a browser WebContainer. It never deploys anything and never sends your edits to a server.
 
-Requirements: Solo mode, the TypeScript ecosystem, at least one web frontend, and a WebContainer-capable browser. Redwood is excluded because its layout hides the root dev script the runner needs. Native and multi-ecosystem projects can still use Preview and ZIP download, then run locally with their own toolchains.
+Requirements: TypeScript web applications with no native applications or services, and a WebContainer-capable browser. Both Solo mode and TypeScript-only graphs are supported. Redwood is excluded because its layout hides the root dev script the runner needs. Graphs that require native runtimes can still use Preview and ZIP download, then run locally with their own toolchains.
 
 The flow: generate from the selection, mount files in the WebContainer, install dependencies with npm (WebContainers provide Node and npm; this does not change the package manager recorded for downloads or CLI scaffolds), start `dev:web` or `dev`, and show the preview URL. First installs need network access and can take a while.
 

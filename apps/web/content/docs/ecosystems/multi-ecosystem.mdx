@@ -2,7 +2,7 @@
 title: Multi-Ecosystem
 description: Compose one Better Fullstack project from frontend, backend, database, and mobile parts across ecosystems.
 translationStatus: pending
-updated: 2026-08-22
+updated: 2026-09-04
 ---
 
 Multi-Ecosystem mode models a project as connected stack parts instead of one flat ecosystem selection. Use it when a product spans languages: a TypeScript frontend, a Go API, a shared PostgreSQL database, and a React Native app in one workspace. Open it in the [Stack Builder](https://better-fullstack.dev/new?mode=multi) or pass repeated `--part` flags.
@@ -43,7 +43,22 @@ npm create better-fullstack@latest my-mixed-app -- \
 
 Multi-ecosystem projects write `stackParts` to `bts.jsonc`, and those parts drive generated structure, history, and reproducible commands. Legacy flat fields may still appear as compatibility views derived from the graph. The generated command preserves the graph as repeated `--part` flags, so nothing depends on hidden builder state.
 
-The builder's Multi-Ecosystem flow walks through frontend, backend, database, mobile/apps, then finalize (tooling, AI docs, install, Git, version settings).
+The builder starts with an application flow:
+
+1. **Applications:** choose web, mobile, backend, or a combination.
+2. **Configure:** choose each application's ecosystem, framework, and capabilities. Add an optional database here. The mobile picker includes React Native, Kotlin, Swift, and Flutter.
+3. **Project:** choose settings supported by the selected applications. JavaScript package-manager and toolchain questions appear only when the project includes a TypeScript or React Native workspace.
+4. **Review:** inspect generated paths, capabilities, dependency setup commands, and backend endpoints before previewing or generating files.
+
+You can return to a step to edit it. Changing one application preserves unrelated named services and their capabilities. Existing stack URLs keep their graph selections.
+
+## Local setup and startup
+
+Projects with a JavaScript workspace use the selected package manager at the root. When a project also contains native backend services, the root `dev` script starts the web applications and services together and stops them when one exits.
+
+Native-only graphs have no root `package.json`. Run `bash scripts/setup.sh` to prepare dependencies, then `bash scripts/dev.sh` to start the web applications and backend services. These scripts need Bash, including Git Bash on Windows. Native mobile apps run separately in their simulator or device; their generated READMEs provide the commands and SDK requirements.
+
+The CLI's `--install` option prepares every selected application's dependencies using its toolchain. Missing SDKs are reported as setup failures. Use `--no-install` to generate files first and run the README's setup commands later.
 
 ## Compatibility
 

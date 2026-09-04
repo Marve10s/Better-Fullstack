@@ -6,11 +6,20 @@ import type {
   StackPartRole,
 } from "@/config/types";
 
-import { analyzeStackCompatibility, type CompatibilityInput } from "@/stack/compatibility";
-import { createCliDefaultProjectConfigBase, type CliDefaultProjectConfigBase } from "@/config/defaults";
+import {
+  getToolingCapability,
+  isToolingOverlayOnly,
+  toolingRequiresJavaScriptWorkspace,
+} from "@/capabilities/tooling-capabilities";
 import { normalizeOptionId, type OptionCategory } from "@/catalog/option-metadata";
 import {
+  createCliDefaultProjectConfigBase,
+  type CliDefaultProjectConfigBase,
+} from "@/config/defaults";
+import { analyzeStackCompatibility, type CompatibilityInput } from "@/stack/compatibility";
+import {
   formatStackPartSpec,
+  hasJavaScriptWorkspaceRoot,
   getAddonStackPartBinding,
   legacyProjectConfigToStackParts,
   mergeProjectConfigSettingsIntoStackParts,
@@ -19,7 +28,6 @@ import {
   stackPartsToLegacyProjectConfigPartial,
   validateStackParts,
 } from "@/stack/stack-graph";
-import { getToolingCapability, isToolingOverlayOnly } from "@/capabilities/tooling-capabilities";
 
 export type StackSelectionMode = "solo" | "multi";
 export type StackSelectionInput = CompatibilityInput & {
@@ -1676,7 +1684,15 @@ function expandScopedStackPartSpecs(
       if (!owner || hasScoped(owner.id, role, ecosystem, toolId, allowMultiple)) {
         continue;
       }
-      const spec = `${ownerRole}.${role}:${ecosystem}:${toolId}`;
+      const sameRoleOwners = stackParts.filter(
+        (part) =>
+          !part.ownerPartId &&
+          part.source !== "provided" &&
+          part.role === ownerRole &&
+          part.ecosystem === ecosystem,
+      );
+      const ownerSelector = sameRoleOwners.length > 1 ? owner.id : ownerRole;
+      const spec = `${ownerSelector}.${role}:${ecosystem}:${toolId}`;
       if (!stackPartSpecSet.has(spec)) {
         stackPartSpecs.push(spec);
         stackPartSpecSet.add(spec);
@@ -1813,6 +1829,64 @@ function getSelectionScopedPartFields(selection: StackSelectionInput): ScopedSta
     ]),
     ...getExampleScopedPartFields(selection.examples),
   ];
+}
+
+/** Update the graph's explicit capabilities when a builder field changes. */
+export function patchGraphScopedSelections(
+  selection: StackSelectionInput,
+  updates: Partial<StackSelectionInput>,
+): Partial<StackSelectionInput> {
+  if (!isGraphStackSelection(selection) || updates.stackPartSpecs) return updates;
+  const next = { ...selection, ...updates };
+  const groupFields = (fields: ScopedStackPartField[]) => {
+    const groups = new Map<string, { field: ScopedStackPartField; values: Set<string> }>();
+    for (const field of fields) {
+      const key = `${field.ownerRole ?? "root"}:${field.ecosystem}:${field.role}`;
+      const group = groups.get(key) ?? { field, values: new Set<string>() };
+      for (const value of Array.isArray(field.value) ? field.value : [field.value]) {
+        if (value && value !== "none") group.values.add(value);
+      }
+      groups.set(key, group);
+    }
+    return groups;
+  };
+  const before = groupFields(getSelectionScopedPartFields(selection));
+  const after = groupFields(getSelectionScopedPartFields(next));
+  let parts = parseStackPartSpecs(selection.stackPartSpecs, "selected").filter(
+    (part) => part.source !== "provided",
+  );
+  const changedFields: ScopedStackPartField[] = [];
+  for (const key of new Set([...before.keys(), ...after.keys()])) {
+    const oldGroup = before.get(key);
+    const newGroup = after.get(key);
+    const oldValues = oldGroup?.values ?? new Set<string>();
+    const newValues = newGroup?.values ?? new Set<string>();
+    if (oldValues.size === newValues.size && [...oldValues].every((value) => newValues.has(value)))
+      continue;
+    const field = newGroup?.field ?? oldGroup?.field;
+    if (!field) continue;
+    const owner = field.ownerRole
+      ? parts.find(
+          (part) =>
+            !part.ownerPartId &&
+            part.role === field.ownerRole &&
+            part.ecosystem === field.ecosystem,
+        )
+      : undefined;
+    if (field.ownerRole && !owner) continue;
+    parts = parts.filter(
+      (part) =>
+        !(
+          part.ownerPartId === owner?.id &&
+          part.role === field.role &&
+          part.ecosystem === field.ecosystem &&
+          (!field.allowMultiple || (oldValues.has(part.toolId) && !newValues.has(part.toolId)))
+        ),
+    );
+    changedFields.push({ ...field, value: [...newValues] });
+  }
+  const specs = parts.map((part) => formatStackPartSpec(part, parts));
+  return { ...updates, stackPartSpecs: expandScopedStackPartSpecs(specs, changedFields) };
 }
 
 function getCliScopedPartFields(input: CLIInput): ScopedStackPartField[] {
@@ -1961,22 +2035,35 @@ function getSelectableStackPartSpecs(specs: readonly string[]): string[] {
 export function isGraphStackSelection(
   selection: Pick<StackSelectionInput, "stackMode" | "stackPartSpecs">,
 ): boolean {
-  return (
-    (selection.stackMode === "multi" || String(selection.stackMode) === "graph") &&
-    getSelectableStackPartSpecs(selection.stackPartSpecs).length > 0
-  );
+  return selection.stackMode === "multi" || String(selection.stackMode) === "graph";
 }
 
 function getGraphStackParts(selection: StackSelectionInput) {
-  const stackPartSpecs = expandScopedStackPartSpecs(
-    selection.stackPartSpecs,
-    getSelectionScopedPartFields(selection),
+  const hasJavaScript = hasJavaScriptWorkspaceRoot(
+    parseStackPartSpecs(selection.stackPartSpecs, "selected"),
   );
+  const fields = getSelectionScopedPartFields(selection).map((field) => ({
+    ...field,
+    value: (Array.isArray(field.value) ? field.value : [field.value]).filter(
+      (value) => value && (hasJavaScript || !toolingRequiresJavaScriptWorkspace(value)),
+    ),
+  }));
+  const stackPartSpecs = expandScopedStackPartSpecs(selection.stackPartSpecs, fields);
   const stackParts = parseStackPartSpecs(stackPartSpecs, "selected");
   const selectableStackParts = parseStackPartSpecs(
     getSelectableStackPartSpecs(stackPartSpecs),
     "selected",
   );
+  if (
+    !selectableStackParts.some(
+      (part) =>
+        !part.ownerPartId &&
+        part.source !== "provided" &&
+        ["frontend", "backend", "mobile"].includes(part.role),
+    )
+  ) {
+    throw new Error("Choose at least one application before generating a project.");
+  }
   const validation = validateStackParts(selectableStackParts);
   if (validation.issues.length > 0) {
     throw new Error(validation.issues.map((issue) => issue.message).join("\n"));
@@ -2499,7 +2586,9 @@ function generateGraphCommand(selection: StackSelectionInput, projectName: strin
       ? formatChangedStringFlags(selection, GRAPH_ELIXIR_BACKEND_FLAG_KEYS)
       : []),
     ...(hasMobile ? formatChangedStringFlags(selection, GRAPH_MOBILE_FLAG_KEYS) : []),
-    `--package-manager ${selection.packageManager}`,
+    ...(hasJavaScriptWorkspaceRoot(stackParts)
+      ? [`--package-manager ${selection.packageManager}`]
+      : []),
     ...(selection.versionChannel !== "stable"
       ? [`--version-channel ${selection.versionChannel}`]
       : []),

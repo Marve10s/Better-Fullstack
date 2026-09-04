@@ -1,4 +1,8 @@
-import { getLocalWebDevPort } from "@better-fullstack/types";
+import {
+  getLocalWebDevPort,
+  hasJavaScriptWorkspaceRoot,
+  isToolingOverlayOnly,
+} from "@better-fullstack/types";
 import { consola } from "consola";
 import pc from "picocolors";
 
@@ -46,6 +50,19 @@ export async function displayPostInstallInstructions(
 
   if (ecosystem !== "typescript" && addons?.includes("gitleaks")) {
     consola.box(getGitleaksInstructions("gitleaks", false, config.git));
+  }
+
+  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
+    const { getGraphProjectTasks } = await import("@better-fullstack/template-generator");
+    const tasks = getGraphProjectTasks(config);
+    const hasJavaScript = hasJavaScriptWorkspaceRoot(config.stackParts);
+    const steps = [`cd ${relativePath}`];
+    if (!depsInstalled) steps.push(...tasks.flatMap((task) => (task.setup ? [task.setup] : [])));
+    steps.push(hasJavaScript ? `${packageManager} run dev` : "bash scripts/dev.sh");
+    consola.box(
+      `Next steps\n\n${steps.join("\n")}\n\nNative mobile apps run in their own simulator or device. See README.md for application commands and connection details.`,
+    );
+    return;
   }
 
   // Handle Rust projects with different instructions

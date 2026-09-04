@@ -1,8 +1,18 @@
-import { getLocalWebDevPort, type ProjectConfig } from "@better-fullstack/types";
+import {
+  getLocalWebDevPort,
+  hasJavaScriptWorkspaceRoot,
+  isToolingOverlayOnly,
+  type ProjectConfig,
+} from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "@/core/virtual-fs";
 
-import { getGraphBackendConnection, hasWebFrontend } from "@/graph/graph-backend";
+import {
+  getGraphBackendConnection,
+  getGraphBackendConnections,
+  hasWebFrontend,
+} from "@/graph/graph-backend";
+import { getGraphProjectTasks } from "@/graph/graph-project";
 
 const JAVA_GROUP_ID = "com.example";
 const JAVA_RESERVED_WORDS = new Set([
@@ -68,7 +78,7 @@ const JAVA_RESERVED_WORDS = new Set([
 
 export function processReadme(vfs: VirtualFileSystem, config: ProjectConfig): void {
   let content: string;
-  if (config.stackParts?.length) {
+  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
     content = generateGraphReadmeContent(config);
   } else if (config.ecosystem === "rust") {
     content = generateRustReadmeContent(config);
@@ -87,120 +97,59 @@ export function processReadme(vfs: VirtualFileSystem, config: ProjectConfig): vo
 }
 
 function generateGraphReadmeContent(config: ProjectConfig): string {
-  const graphBackend = getGraphBackendConnection(config);
-  const hasWeb = hasWebFrontend(config);
-  const frontendPart = (config.stackParts ?? []).find(
-    (part) => part.role === "frontend" && !part.ownerPartId && part.source !== "provided",
+  const parts = (config.stackParts ?? []).filter(
+    (part) => !part.ownerPartId && part.source !== "provided" && part.toolId !== "none",
   );
-  const databasePart = (config.stackParts ?? []).find(
-    (part) => part.role === "database" && part.source !== "provided" && part.toolId !== "none",
-  );
-  const graphOrmPart = (config.stackParts ?? []).find(
-    (part) => part.role === "orm" && part.source !== "provided",
-  );
-  const frontendLabel = frontendPart?.toolId ?? config.frontend.find((entry) => entry !== "none");
-  const installCommand =
-    config.packageManager === "npm"
-      ? "npm install"
-      : config.packageManager === "pnpm"
-        ? "pnpm install"
-        : config.packageManager === "yarn"
-          ? "yarn install"
-          : "bun install";
-  const packageManagerRunCommand =
-    config.packageManager === "npm" ? "npm run" : config.packageManager;
-  const setupLine = graphBackend?.setupCommand
-    ? `\n\`\`\`sh\n${graphBackend.setupCommand}\n\`\`\`\n`
-    : "";
-  const databaseNote =
-    databasePart && graphBackend?.ecosystem === "java" && graphOrmPart?.toolId === "spring-data-jpa"
-      ? "\nThe generated Spring Data JPA example uses an embedded H2 dev database. Update `apps/server/src/main/resources/application.yml` when switching to an external database.\n"
-      : databasePart
-        ? `\nDatabase-backed backend selections expect a local ${databasePart.toolId} database or a matching \`DATABASE_URL\` in the backend environment before you start the server. Copy the backend \`.env.example\` to \`.env\` and adjust it for your machine.\n`
-        : "";
-  const hasJavaSpringSecurity = (config.stackParts ?? []).some(
-    (part) =>
-      part.role === "auth" && part.ecosystem === "java" && part.toolId === "spring-security",
-  );
-  const authNote = hasJavaSpringSecurity
-    ? "\nSpring Security is enabled. HTTP Basic auth protects application endpoints except `/health`; set `APP_BASIC_USERNAME` and `APP_BASIC_PASSWORD` before running locally if you want credentials other than the dev defaults.\n"
-    : "";
-  const serverScripts = graphBackend
-    ? [
-        graphBackend.setupCommand
-          ? "- `setup:server` installs or prepares backend dependencies."
-          : null,
-        "- `dev:server` starts the generated backend.",
-        graphBackend.checkCommand ? "- `check:server` runs the backend compile/check lane." : null,
-        graphBackend.testCommand ? "- `test:server` runs backend tests." : null,
-      ]
-        .filter(Boolean)
-        .join("\n")
-    : null;
-
+  const tasks = getGraphProjectTasks(config);
+  const hasJavaScript = hasJavaScriptWorkspaceRoot(config.stackParts);
+  const connections = getGraphBackendConnections(config);
+  const runCommand = `${config.packageManager} run dev`;
+  const setups = tasks.flatMap((task) => (task.setup ? [task.setup] : []));
   return `# ${config.projectName}
 
-This project was created with [Better Fullstack](https://github.com/Marve10s/Better-Fullstack) using the multi-ecosystem project graph.
+Created with [Better Fullstack](https://github.com/Marve10s/Better-Fullstack).
 
-## Stack
+## Applications and resources
 
-- Frontend: ${frontendLabel ?? "not selected"}${frontendPart ? ` (${frontendPart.ecosystem})` : ""}
-${graphBackend ? `- Backend: ${graphBackend.label} (${graphBackend.ecosystem})` : "- Backend: not selected"}
+${parts.map((part) => `- **${part.toolId}** (${part.ecosystem}, ${part.role}): \`${part.targetPath ?? "."}\`; part \`${part.id}\``).join("\n")}
 
-## Project Structure
+## Setup
 
-\`\`\`text
-${config.projectName}/
-├── apps/
-${hasWebFrontend(config) ? "│   ├── web/         # Frontend application\n" : ""}${graphBackend ? "│   └── server/      # Backend application\n" : ""}└── package.json     # Root scripts for the generated graph
-\`\`\`
+Install the SDKs for the selected languages before preparing dependencies. SwiftUI needs macOS, Xcode, and XcodeGen; Kotlin Android apps need a JDK and Android SDK; Flutter needs the Flutter SDK. Rust web apps also need the WebAssembly target and Trunk or Dioxus CLI.
 
-## Local Development
+${hasJavaScript ? "JavaScript dependencies are installed at the workspace root. Each native application keeps its own toolchain." : "This project uses native toolchains. It has no JavaScript root package or JavaScript package-manager requirement. The root scripts use Bash, available on macOS/Linux or through Git Bash on Windows."}
 
-Install the JavaScript workspace dependencies first. If you created the project with \`--no-install\`, this step has not run yet.
+If dependencies were not prepared during creation, run:
 
 \`\`\`sh
-${installCommand}
+${hasJavaScript ? setups.join("\n") : "bash scripts/setup.sh"}
 \`\`\`
 
-${graphBackend?.setupCommand ? `Prepare the backend dependencies and database state before starting the server:\n${setupLine}` : ""}${databaseNote}${authNote}
-Run the generated apps in separate terminals so each ecosystem keeps its native watcher and logs.
+Copy each application's \`.env.example\` to \`.env\` when present and configure database credentials before starting database-backed services.
 
-${
-  hasWeb
-    ? `\`\`\`sh
-${packageManagerRunCommand} dev:web
-\`\`\`
-`
-    : ""
-}${
-    config.frontend.some((entry) => entry.startsWith("native-"))
-      ? `\`\`\`sh
-${packageManagerRunCommand} dev:native
-\`\`\`
-`
-      : ""
-  }
-${
-  graphBackend
-    ? `Start the backend:
+## Local development
+
+Start the selected web applications and backend services together:
+
 \`\`\`sh
-${graphBackend.devCommand}
-\`\`\``
-    : ""
-}
-${graphBackend && hasWeb ? `The frontend is configured to call the backend at \`${graphBackend.serverUrl}\`. The generated health check reads the matching public server URL from the web environment file and targets \`${graphBackend.healthPath}\`.\n` : ""}
-## Root Scripts
+${hasJavaScript ? runCommand : "bash scripts/dev.sh"}
+\`\`\`
 
-- \`dev\` starts the primary generated workspace for graph projects.
-${hasWeb ? "- `dev:web` starts the frontend workspace.\n" : ""}${config.frontend.some((entry) => entry.startsWith("native-")) ? "- `dev:native` starts the React Native/Expo workspace.\n" : ""}
-${serverScripts ? `${serverScripts}\n` : ""}
+The supervisor stops the other services when one exits. Native mobile applications run separately so you can choose a simulator or device. Open Kotlin applications in Android Studio.
 
-## Compatibility Notes
+${tasks
+  .filter((task) => task.dev)
+  .map(
+    (task) =>
+      `### ${task.label}\n\nRun independently from the project root:\n\n\`\`\`sh\n${task.dev}\n\`\`\``,
+  )
+  .join("\n\n")}
 
-- TypeScript frontends can be generated with Elixir Phoenix backends; Phoenix runs on port 4000 and exposes \`/api/health\`.
-- Astro frontends can be generated with Rust backends; Rust web servers run on port 3000 and expose \`/health\`.
-- Cross-ecosystem graph projects share an HTTP boundary. Framework-specific API clients such as tRPC are not assumed across language boundaries; the scaffold wires the frontend to the backend base URL and health endpoint.
+## Connections
+
+${connections.length ? connections.map((connection, index) => `- **${connection.label}**${index === 0 ? " (default client connection)" : ""}: \`${connection.serverUrl}\`, health endpoint \`${connection.healthUrl}\`.`).join("\n") : "See each application's README and environment file for its local endpoint."}
+
+Cross-language clients communicate over HTTP. Framework-specific clients such as tRPC are used only with compatible backends. Generated connection files identify the default backend; additional services retain their own paths and endpoints.
 `;
 }
 

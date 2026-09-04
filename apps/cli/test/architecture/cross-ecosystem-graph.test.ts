@@ -1,11 +1,11 @@
 import { cliInputToProjectConfigPartial, getLocalWebDevPort } from "@better-fullstack/types";
+import { readVirtualFileContent as fileContent } from "@test/support/virtual-tree-utils";
 import { describe, expect, it } from "bun:test";
 
-import { createVirtual } from "@/index";
 import { validateConfigForProgrammaticUse } from "@/config/config-validation";
-import { runWithContext } from "@/presentation/context";
 import { displayConfig } from "@/config/display-config";
-import { readVirtualFileContent as fileContent } from "@test/support/virtual-tree-utils";
+import { createVirtual } from "@/index";
+import { runWithContext } from "@/presentation/context";
 
 function graphParts(part: string[]) {
   return cliInputToProjectConfigPartial({ part }).stackParts;
@@ -181,10 +181,7 @@ describe("Cross-ecosystem graph generation", () => {
       api: "none",
       runtime: "none",
       addons: ["kong"],
-      stackParts: graphParts([
-        "backend:python:fastapi",
-        "workspaceTooling:universal:kong",
-      ]),
+      stackParts: graphParts(["backend:python:fastapi", "workspaceTooling:universal:kong"]),
     });
 
     expect(result.success).toBe(true);
@@ -356,8 +353,8 @@ describe("Cross-ecosystem graph generation", () => {
     expect(result.success).toBe(true);
     const readme = fileContent(result.tree!.root, "README.md");
     expect(readme).toContain("npm install");
-    expect(readme).toContain("npm run dev:web");
-    expect(readme).not.toContain("bun run dev:web");
+    expect(readme).toContain("npm run dev");
+    expect(readme).not.toContain("bun run dev");
   });
 
   it("keeps graph-only non-TypeScript GitHub Actions rooted in the backend app", async () => {

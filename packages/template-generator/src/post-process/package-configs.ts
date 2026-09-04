@@ -9,6 +9,7 @@ import type { VirtualFileSystem } from "@/core/virtual-fs";
 
 import { dependencyVersionMap } from "@/dependencies/add-deps";
 import { getGraphBackendConnection, getGraphBackendConnections } from "@/graph/graph-backend";
+import { getGraphProjectTasks } from "@/graph/graph-project";
 import { getServerPackagePath } from "@/platform/project-paths";
 
 type PackageJson = {
@@ -139,6 +140,8 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   const pmConfig = getPackageManagerConfig(packageManager, workspaceTool);
   const graphBackend = getGraphBackendConnection(config);
   const graphBackends = getGraphBackendConnections(config);
+  const nativeTasks = getGraphProjectTasks(config).filter((task) => task.id !== "workspace");
+  const nativeServices = nativeTasks.filter((task) => task.dev && !task.interactive);
   const hasWebWorkspace = vfs.fileExists("apps/web/package.json");
   const hasNativeWorkspace = vfs.fileExists("apps/native/package.json");
   const hasDocsWorkspace = vfs.fileExists("apps/docs/package.json");
@@ -147,10 +150,26 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
 
   if (hasRedwood) {
     scripts.dev = "rw --no-telemetry dev";
-  } else if (graphBackend && hasWebWorkspace) {
-    scripts.dev = pmConfig.filter("web", "dev");
-  } else if (graphBackend && !hasNativeWorkspace) {
-    scripts.dev = graphBackend.devCommand;
+  } else if (nativeServices.length > 0) {
+    const commands = [
+      ...(hasWebWorkspace ? [pmConfig.filter("web", "dev")] : []),
+      ...(hasNativeWorkspace ? [pmConfig.filter("native", "dev")] : []),
+      ...(hasDocsWorkspace ? [pmConfig.filter("docs", "dev")] : []),
+      ...(vfs.fileExists("apps/server/package.json") && backend !== "none" && backend !== "self"
+        ? [pmConfig.filter(backendPackageName, "dev")]
+        : []),
+      ...nativeServices.flatMap((task) => (task.dev ? [task.dev] : [])),
+    ];
+    scripts.dev =
+      commands.length === 1
+        ? commands.join("")
+        : `concurrently --kill-others ${commands.map((command) => JSON.stringify(command)).join(" ")}`;
+    if (commands.length > 1) {
+      pkgJson.devDependencies = {
+        ...pkgJson.devDependencies,
+        concurrently: dependencyVersionMap.concurrently,
+      };
+    }
   } else {
     scripts.dev = pmConfig.dev;
   }
@@ -196,6 +215,12 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     }
   } else if (backend !== "self" && backend !== "none") {
     scripts["dev:server"] = pmConfig.filter(backendPackageName, "dev");
+  }
+
+  for (const task of nativeTasks) {
+    const id = task.id.replace(/[^a-zA-Z0-9_-]+/g, "-");
+    if (task.setup) scripts[`setup:${id}`] = task.setup;
+    if (task.dev) scripts[`dev:${id}`] = task.dev;
   }
 
   for (const service of graphBackends) {

@@ -98,7 +98,9 @@ export async function getinstallChoice(
   if (ecosystem === "elixir") {
     const mixInstalled = await commandExists("mix");
     if (!mixInstalled) {
-      log.warn("Mix is not installed. Please install Elixir from https://elixir-lang.org/install.html");
+      log.warn(
+        "Mix is not installed. Please install Elixir from https://elixir-lang.org/install.html",
+      );
       return false;
     }
 
@@ -120,5 +122,15 @@ export async function getinstallChoice(
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");
 
+  return response;
+}
+
+export async function getGraphInstallChoice(install?: boolean) {
+  if (install !== undefined) return install;
+  const response = await navigableConfirm({
+    message: "Prepare dependencies for all selected applications? (Requires their native SDKs)",
+    initialValue: DEFAULT_CONFIG.install,
+  });
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
   return response;
 }

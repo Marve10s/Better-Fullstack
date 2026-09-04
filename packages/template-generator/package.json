@@ -39,6 +39,10 @@
     "./template-reader": {
       "types": "./dist/template-reader.d.mts",
       "default": "./dist/template-reader.mjs"
+    },
+    "./graph-project": {
+      "types": "./dist/graph-project.d.mts",
+      "default": "./dist/graph-project.mjs"
     }
   },
   "publishConfig": {

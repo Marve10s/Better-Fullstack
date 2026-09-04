@@ -126,12 +126,13 @@ test.describe("Builder parity", () => {
 
   test("multi-ecosystem mode emits scoped --part flags", async ({ page }) => {
     await clickVisibleTestId(page, "stack-mode-multi");
+    await clickVisibleTestId(page, "multi-step-configure");
     await clickVisibleTestId(page, "multi-frontend-tool-next");
-    await clickVisibleTestId(page, "multi-step-next");
+    await clickVisibleTestId(page, "multi-step-backend");
     await clickVisibleTestId(page, "multi-backend-language-go");
     await clickVisibleTestId(page, "multi-backend-tool-gin");
     await clickVisibleTestId(page, "multi-backend-orm-gorm");
-    await clickVisibleTestId(page, "multi-step-next");
+    await clickVisibleTestId(page, "multi-step-database");
     await clickVisibleTestId(page, "multi-database-tool-postgres");
 
     const command = commandOutput(page);
@@ -148,6 +149,7 @@ test.describe("Builder parity", () => {
     page,
   }) => {
     await clickVisibleTestId(page, "stack-mode-multi");
+    await clickVisibleTestId(page, "multi-step-configure");
     await clickVisibleTestId(page, "multi-frontend-tool-astro");
     await expect(page.getByTestId("multi-frontend-astroIntegration-react")).toBeVisible();
     await expect(page.getByTestId("multi-frontend-webDeploy-vercel")).toBeVisible();
@@ -157,6 +159,9 @@ test.describe("Builder parity", () => {
     await clickVisibleTestId(page, "multi-database-tool-postgres");
     await expect(page.getByTestId("multi-database-dbSetup-neon")).toBeVisible();
 
+    await clickVisibleTestId(page, "multi-step-applications");
+    await clickVisibleTestId(page, "multi-application-mobile");
+    await clickVisibleTestId(page, "multi-step-configure");
     await clickVisibleTestId(page, "multi-step-mobile");
     await clickVisibleTestId(page, "multi-mobile-tool-native-bare");
     await expect(page.getByTestId("multi-mobile-auth-auth0")).toHaveCount(0);
@@ -175,14 +180,15 @@ test.describe("Builder parity", () => {
     await expect(page.getByTestId("multi-frontend-tool-blazor-webassembly")).toBeVisible();
     await expect(command).toContainText("--part frontend:dotnet:blazor-webassembly");
 
-    await clickVisibleTestId(page, "multi-step-finalize");
+    await clickVisibleTestId(page, "multi-step-project");
     await expect(page.getByTestId("category-workspaceShape")).toBeVisible();
     await expect(page.getByTestId("category-examples")).toBeVisible();
   });
 
   test("multi-ecosystem mode exposes Kotlin as a separate backend language", async ({ page }) => {
     await clickVisibleTestId(page, "stack-mode-multi");
-    await clickVisibleTestId(page, "multi-step-next");
+    await clickVisibleTestId(page, "multi-step-configure");
+    await clickVisibleTestId(page, "multi-step-backend");
     await clickVisibleTestId(page, "multi-backend-language-kotlin");
 
     const command = commandOutput(page);

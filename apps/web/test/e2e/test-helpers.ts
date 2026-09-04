@@ -10,7 +10,7 @@ export async function gotoAppPage(page: Page, url: string) {
 }
 
 export async function openBuilder(page: Page) {
-  await gotoAppPage(page, "/new");
+  await gotoAppPage(page, "/new?mode=solo");
   await expect(commandOutput(page)).toContainText("bun create better-fullstack", {
     timeout: 15_000,
   });
