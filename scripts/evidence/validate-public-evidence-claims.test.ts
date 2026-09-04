@@ -10,6 +10,15 @@ describe("public evidence contract", () => {
     expect(validatePublicEvidenceContracts(await loadPublicEvidenceContractInputs())).toEqual([]);
   });
 
+  it("allows retired benchmark copy but rejects treating benchmarks as release evidence", async () => {
+    const inputs = await loadPublicEvidenceContractInputs();
+    expect(validatePublicEvidenceContracts(inputs)).toEqual([]);
+    inputs.pageSource += "\nScaffBench verifies this release.\n";
+    expect(validatePublicEvidenceContracts(inputs)).toContain(
+      "the public verification page must keep ScaffBench separate from product evidence",
+    );
+  });
+
   it("rejects unqualified maturity and production claims", async () => {
     const inputs = await loadPublicEvidenceContractInputs();
     inputs.promotionalFiles["README.md"] += "\nProduction-ready and runtime-verified.\n";

@@ -249,7 +249,7 @@ function fixture() {
         executable: "/bin/bun",
         command: ["bun", "--version"],
         success: true,
-        stdoutTail: "1.3.12\n",
+        stdoutTail: `${RELEASE_TOOLCHAINS.bun}\n`,
       },
       {
         tool: "node",
@@ -263,7 +263,7 @@ function fixture() {
         executable: "/bin/bunx",
         command: ["bunx", "--version"],
         success: true,
-        stdoutTail: "1.3.12\n",
+        stdoutTail: `${RELEASE_TOOLCHAINS.bun}\n`,
       },
       {
         tool: "cargo",

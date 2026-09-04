@@ -1,5 +1,8 @@
 import { expect, it } from "bun:test";
 import path from "node:path";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { pathToFileURL } from "node:url";
 import { build } from "vite";
 
 import { contentMetaPlugin } from "@vite-plugins/content-meta";
@@ -80,9 +83,14 @@ for (const ssr of [false, true]) {
     if (!("output" in result)) throw new Error("Expected a single Vite build output");
     const entry = result.output.find((output) => output.type === "chunk" && output.isEntry);
     if (entry?.type !== "chunk") throw new Error("Missing compiled loader contract");
-    const contract: unknown = await import(
-      `data:text/javascript;base64,${Buffer.from(entry.code).toString("base64")}`
-    );
-    expect(contract).toMatchObject({ verified: true });
+    const directory = await mkdtemp(path.join(tmpdir(), "bf-mdx-contract-"));
+    try {
+      const modulePath = path.join(directory, "contract.mjs");
+      await writeFile(modulePath, entry.code);
+      const contract: unknown = await import(pathToFileURL(modulePath).href);
+      expect(contract).toMatchObject({ verified: true });
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 }

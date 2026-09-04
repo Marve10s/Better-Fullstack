@@ -8,7 +8,7 @@ import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 
 export const RELEASE_TOOLCHAINS = {
-  bun: "1.3.12",
+  bun: "1.4.0",
   node: "24.11.1",
   npm: "11.6.2",
   pnpm: "10.20.0",
