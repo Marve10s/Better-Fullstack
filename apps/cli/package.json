@@ -1,5 +1,6 @@
 {
   "name": "create-better-fullstack",
+  "mcpName": "io.github.Marve10s/better-fullstack",
   "version": "2.6.3",
   "description": "Scaffold configurable fullstack projects in TypeScript, React Native, Rust, Go, Python, Java, .NET, and Elixir through a visual builder, CLI, and MCP server.",
   "keywords": [

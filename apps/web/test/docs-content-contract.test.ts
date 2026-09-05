@@ -61,6 +61,7 @@ const PENDING_TRANSLATION_PATHS = [
   "content/docs/verification.mdx",
   "content/blog/better-auth-architecture.mdx",
   "content/blog/drizzle-vs-prisma.mdx",
+  "content/blog/gpt-6-astra-fullstack-starter.mdx",
   "content/blog/self-backend-vs-separate-api.mdx",
   "content/blog/tanstack-start-vs-nextjs.mdx",
   "content/guides/ai/nextjs-ai-cli-agent-workbench.mdx",
