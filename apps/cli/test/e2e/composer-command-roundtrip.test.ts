@@ -3,7 +3,7 @@ import { DEFAULT_STACK } from "@web/lib/stack/stack-defaults";
 import { generateStackCommand } from "@web/lib/stack/stack-utils";
 import { expect, test } from "bun:test";
 import { existsSync } from "node:fs";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -13,6 +13,7 @@ const cases = [
     parts: ["frontend:dotnet:blazor-webassembly", "backend:go:gin"],
     javascript: false,
     marker: "apps/web/Program.cs",
+    addons: ["lefthook" as const],
   },
   {
     name: "flutter",
@@ -60,11 +61,13 @@ for (const scenario of cases) {
         projectName: scenario.name,
         stackMode: "multi",
         stackPartSpecs: scenario.parts,
+        addons: "addons" in scenario ? scenario.addons : [],
         aiDocs: [],
         git: "false",
         install: "false",
       });
       expect(command.includes("--package-manager")).toBe(scenario.javascript);
+      if (!scenario.javascript) expect(command).not.toContain("lefthook");
       const [projectName, ...flags] = command
         .replace(/^bun create better-fullstack@latest\s+/, "")
         .split(/\s+/);
@@ -106,4 +109,70 @@ for (const scenario of cases) {
       await rm(directory, { recursive: true, force: true });
     }
   }, 45_000);
+}
+
+test("failed native installation retains the setup command in next steps", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "bfs-composer-recovery-"));
+  try {
+    await mkdir(join(directory, "bin"));
+    await writeFile(join(directory, "bin/go"), "#!/usr/bin/env bash\nexit 7\n", { mode: 0o755 });
+    const command = generateStackCommand({
+      ...DEFAULT_STACK,
+      projectName: "native-setup-recovery",
+      stackMode: "multi",
+      stackPartSpecs: ["backend:go:gin"],
+      aiDocs: [],
+      git: "false",
+      install: "true",
+    });
+    const [, ...flags] = command.replace(/^bun create better-fullstack@latest\s+/, "").split(/\s+/);
+    const result = await scaffoldWithCli({
+      cliPath: resolve(import.meta.dir, "../../dist/cli.mjs"),
+      cwd: directory,
+      projectName: "native-setup-recovery",
+      flags,
+      env: { PATH: `${join(directory, "bin")}:${process.env.PATH}` },
+      timeoutMs: 30_000,
+      expectedFiles: ["bts.jsonc", "scripts/setup.sh"],
+    });
+    expect(result.timedOut, formatCliScaffoldFailure(result)).toBe(false);
+    expect(result.missingExpectedFiles, formatCliScaffoldFailure(result)).toBeUndefined();
+    expect(result.stdout).toContain("Next steps");
+    expect(result.stdout.split("Next steps")[1]).toContain("go mod tidy");
+    expect(result.stdout.split("Next steps")[1]).toContain("bash scripts/dev.sh");
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+}, 45_000);
+
+for (const flags of [
+  ["--addons", "lefthook"],
+  ["--part", "gitHooks:universal:lefthook"],
+]) {
+  test(`native CLI rejects package-dependent tooling before addon setup: ${flags.join(" ")}`, async () => {
+    const directory = await mkdtemp(join(tmpdir(), "bfs-native-tooling-"));
+    try {
+      const result = await scaffoldWithCli({
+        cliPath: resolve(import.meta.dir, "../../dist/cli.mjs"),
+        cwd: directory,
+        projectName: "native-tooling",
+        flags: [
+          "--part",
+          "backend:go:gin",
+          "--ai-docs",
+          "none",
+          "--no-git",
+          "--no-install",
+          ...flags,
+        ],
+        timeoutMs: 30_000,
+      });
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain("Lefthook requires a generated JavaScript application");
+      expect(result.stderr).not.toContain("ENOENT");
+      expect(existsSync(join(result.projectDir, "apps/server/go.mod"))).toBe(false);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
 }

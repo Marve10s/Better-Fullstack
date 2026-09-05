@@ -1,10 +1,10 @@
 import { cliInputToProjectConfigPartial, parseStackPartSpecs } from "@better-fullstack/types";
-import { describe, expect, it } from "bun:test";
-
-import { processPackageConfigs } from "@/post-process/package-configs";
-import { dependencyVersionMap } from "@/dependencies/add-deps";
 import { makeConfig } from "@test/_fixtures/config-factory";
 import { createSeededVFS } from "@test/_fixtures/vfs-factory";
+import { describe, expect, it } from "bun:test";
+
+import { dependencyVersionMap } from "@/dependencies/add-deps";
+import { processPackageConfigs } from "@/post-process/package-configs";
 
 type PackageJson = {
   name?: string;
@@ -150,7 +150,11 @@ describe("processPackageConfigs", () => {
   });
 
   it("generates Vite+ recursive workspace scripts", () => {
-    const vfs = createSeededVFS();
+    const vfs = createSeededVFS([
+      "package.json",
+      "apps/web/package.json",
+      "packages/db/package.json",
+    ]);
     vfs.writeJson("package.json", { name: "starter", scripts: {}, workspaces: [] });
 
     processPackageConfigs(
@@ -169,11 +173,10 @@ describe("processPackageConfigs", () => {
     );
 
     expect(vfs.readJson<PackageJson>("package.json")?.scripts).toMatchObject({
-      dev: "vp run --fail-if-no-match --filter web dev",
+      dev: 'concurrently --kill-others "vp run --fail-if-no-match --filter web dev" "cd apps/server && go run cmd/server/main.go"',
       build: "vp run -r build",
       "check-types": "vp run -r check-types",
       "dev:web": "vp run --fail-if-no-match --filter web dev",
-      "dev:native": "vp run --fail-if-no-match --filter native dev",
       "dev:server": "cd apps/server && go run cmd/server/main.go",
       "db:push": "vp run --fail-if-no-match --filter @vite-plus-demo/db db:push",
       check: "vp run -r check",

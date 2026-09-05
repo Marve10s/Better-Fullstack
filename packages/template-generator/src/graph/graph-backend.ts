@@ -135,24 +135,30 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
         )?.toolId ??
         config.pythonPackageManager ??
         "uv";
-      const runner =
-        packageManager === "poetry"
-          ? "poetry run"
-          : packageManager === "pip"
-            ? ".venv/bin/python -m"
-            : "uv run";
+      const runPython = (command: string, { module = true, dev = false } = {}) => {
+        if (packageManager === "pip") {
+          const args = `${module ? "-m " : ""}${command}`;
+          return `if [ -f .venv/Scripts/python.exe ]; then .venv/Scripts/python.exe ${args}; else .venv/bin/python ${args}; fi`;
+        }
+        const runner =
+          packageManager === "poetry" ? "poetry run" : dev ? "uv run --extra dev" : "uv run";
+        return `${runner} ${module ? "" : "python "}${command}`;
+      };
       const setupCommand =
         packageManager === "poetry"
           ? "poetry install --extras dev"
           : packageManager === "pip"
-            ? "python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'"
+            ? `if [ "$OS" = "Windows_NT" ]; then python -m venv .venv; else python3 -m venv .venv; fi && ${runPython("pip install -e '.[dev]'")}`
             : "uv sync --extra dev";
-      const devCommand =
+      const devCommand = `cd ${targetPath} && ${
         backend.toolId === "fastapi"
-          ? `cd ${targetPath} && ${runner} uvicorn app.main:app --reload --host 0.0.0.0 --port \${PORT:-8000}`
+          ? runPython("uvicorn app.main:app --reload --host 0.0.0.0 --port ${PORT:-8000}")
           : backend.toolId === "litestar"
-            ? `cd ${targetPath} && ${runner} litestar --app src.app.main:app run --reload --host 0.0.0.0 --port \${PORT:-8000}`
-            : `cd ${targetPath} && ${packageManager === "pip" ? ".venv/bin/python" : `${runner} python`} src/app/main.py`;
+            ? runPython(
+                "litestar --app src.app.main:app run --reload --host 0.0.0.0 --port ${PORT:-8000}",
+              )
+            : runPython("src/app/main.py", { module: false })
+      }`;
       return {
         partId: backend.id,
         ecosystem: backend.ecosystem,
@@ -165,8 +171,8 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
         healthUrl: "http://localhost:8000/health",
         setupCommand: `cd ${targetPath} && ${setupCommand}`,
         devCommand,
-        checkCommand: `cd ${targetPath} && ${runner} ruff check .`,
-        testCommand: `cd ${targetPath} && ${runner} pytest`,
+        checkCommand: `cd ${targetPath} && ${runPython("ruff check .", { dev: true })}`,
+        testCommand: `cd ${targetPath} && ${runPython("pytest", { dev: true })}`,
       };
     }
     case "go":
@@ -186,11 +192,15 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
         testCommand: `cd ${targetPath} && go mod tidy && go test ./...`,
       };
     case "java": {
-      const buildTool = config.javaBuildTool === "gradle" ? "./gradlew" : "./mvnw";
+      const selectedBuildTool =
+        (config.stackParts ?? []).find(
+          (part) => part.ownerPartId === backend.id && part.role === "buildTool",
+        )?.toolId ?? config.javaBuildTool;
+      const buildTool = selectedBuildTool === "gradle" ? "./gradlew" : "./mvnw";
       const isQuarkus = backend.toolId === "quarkus";
       const isKtor = backend.toolId === "ktor";
       const devTask =
-        config.javaBuildTool === "gradle"
+        selectedBuildTool === "gradle"
           ? isKtor
             ? "run"
             : isQuarkus
@@ -201,7 +211,7 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
             : isQuarkus
               ? "quarkus:dev"
               : "spring-boot:run";
-      const buildTask = config.javaBuildTool === "gradle" ? "build" : "package";
+      const buildTask = selectedBuildTool === "gradle" ? "build" : "package";
       return {
         partId: backend.id,
         ecosystem: backend.ecosystem,
@@ -295,7 +305,10 @@ export function getGraphBackendConnections(config: ProjectConfig): GraphBackendC
       serverUrl,
       healthUrl: `${serverUrl}${connection.healthPath}`,
       devCommand: connection.devCommand
-        .replace(`cd ${connection.targetPath} && `, `cd ${connection.targetPath} && PORT=${port} `)
+        .replace(
+          `cd ${connection.targetPath} && `,
+          `cd ${connection.targetPath} && export PORT=${port} && `,
+        )
         .replace(`\${PORT:-${defaultPort}}`, `\${PORT:-${port}}`),
     };
   });

@@ -10,35 +10,35 @@ const en_buildercomposeraddapplication3 = /** @type {(inputs: Buildercomposeradd
 };
 
 const es_buildercomposeraddapplication3 = /** @type {(inputs: Buildercomposeraddapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Add application`)
+	return /** @type {LocalizedString} */ (`Añadir aplicación`)
 };
 
 const zh_buildercomposeraddapplication3 = /** @type {(inputs: Buildercomposeraddapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Add application`)
+	return /** @type {LocalizedString} */ (`添加应用`)
 };
 
 const ja_buildercomposeraddapplication3 = /** @type {(inputs: Buildercomposeraddapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Add application`)
+	return /** @type {LocalizedString} */ (`アプリケーションを追加`)
 };
 
 const ko_buildercomposeraddapplication3 = /** @type {(inputs: Buildercomposeraddapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Add application`)
+	return /** @type {LocalizedString} */ (`애플리케이션 추가`)
 };
 
 const zh_hant1_buildercomposeraddapplication3 = /** @type {(inputs: Buildercomposeraddapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Add application`)
+	return /** @type {LocalizedString} */ (`新增應用程式`)
 };
 
 const de_buildercomposeraddapplication3 = /** @type {(inputs: Buildercomposeraddapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Add application`)
+	return /** @type {LocalizedString} */ (`Anwendung hinzufügen`)
 };
 
 const fr_buildercomposeraddapplication3 = /** @type {(inputs: Buildercomposeraddapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Add application`)
+	return /** @type {LocalizedString} */ (`Ajouter une application`)
 };
 
 const uk_buildercomposeraddapplication3 = /** @type {(inputs: Buildercomposeraddapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Add application`)
+	return /** @type {LocalizedString} */ (`Додати застосунок`)
 };
 
 /**

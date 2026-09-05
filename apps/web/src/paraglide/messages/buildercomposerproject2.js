@@ -10,35 +10,35 @@ const en_buildercomposerproject2 = /** @type {(inputs: Buildercomposerproject2In
 };
 
 const es_buildercomposerproject2 = /** @type {(inputs: Buildercomposerproject2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project`)
+	return /** @type {LocalizedString} */ (`Proyecto`)
 };
 
 const zh_buildercomposerproject2 = /** @type {(inputs: Buildercomposerproject2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project`)
+	return /** @type {LocalizedString} */ (`项目`)
 };
 
 const ja_buildercomposerproject2 = /** @type {(inputs: Buildercomposerproject2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project`)
+	return /** @type {LocalizedString} */ (`プロジェクト`)
 };
 
 const ko_buildercomposerproject2 = /** @type {(inputs: Buildercomposerproject2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project`)
+	return /** @type {LocalizedString} */ (`프로젝트`)
 };
 
 const zh_hant1_buildercomposerproject2 = /** @type {(inputs: Buildercomposerproject2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project`)
+	return /** @type {LocalizedString} */ (`專案`)
 };
 
 const de_buildercomposerproject2 = /** @type {(inputs: Buildercomposerproject2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project`)
+	return /** @type {LocalizedString} */ (`Projekt`)
 };
 
 const fr_buildercomposerproject2 = /** @type {(inputs: Buildercomposerproject2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project`)
+	return /** @type {LocalizedString} */ (`Projet`)
 };
 
 const uk_buildercomposerproject2 = /** @type {(inputs: Buildercomposerproject2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project`)
+	return /** @type {LocalizedString} */ (`Проєкт`)
 };
 
 /**

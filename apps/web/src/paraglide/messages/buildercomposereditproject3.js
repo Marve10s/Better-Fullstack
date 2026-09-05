@@ -10,35 +10,35 @@ const en_buildercomposereditproject3 = /** @type {(inputs: Buildercomposereditpr
 };
 
 const es_buildercomposereditproject3 = /** @type {(inputs: Buildercomposereditproject3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit project settings`)
+	return /** @type {LocalizedString} */ (`Editar ajustes del proyecto`)
 };
 
 const zh_buildercomposereditproject3 = /** @type {(inputs: Buildercomposereditproject3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit project settings`)
+	return /** @type {LocalizedString} */ (`编辑项目设置`)
 };
 
 const ja_buildercomposereditproject3 = /** @type {(inputs: Buildercomposereditproject3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit project settings`)
+	return /** @type {LocalizedString} */ (`プロジェクト設定を編集`)
 };
 
 const ko_buildercomposereditproject3 = /** @type {(inputs: Buildercomposereditproject3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit project settings`)
+	return /** @type {LocalizedString} */ (`프로젝트 설정 편집`)
 };
 
 const zh_hant1_buildercomposereditproject3 = /** @type {(inputs: Buildercomposereditproject3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit project settings`)
+	return /** @type {LocalizedString} */ (`編輯專案設定`)
 };
 
 const de_buildercomposereditproject3 = /** @type {(inputs: Buildercomposereditproject3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit project settings`)
+	return /** @type {LocalizedString} */ (`Projekteinstellungen bearbeiten`)
 };
 
 const fr_buildercomposereditproject3 = /** @type {(inputs: Buildercomposereditproject3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit project settings`)
+	return /** @type {LocalizedString} */ (`Modifier les paramètres du projet`)
 };
 
 const uk_buildercomposereditproject3 = /** @type {(inputs: Buildercomposereditproject3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit project settings`)
+	return /** @type {LocalizedString} */ (`Редагувати параметри проєкту`)
 };
 
 /**

@@ -2574,7 +2574,7 @@ function CreationModeComposer({
                 : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
-            <span className="font-mono text-[10px] opacity-60">0{index + 1}</span>
+            <span className="font-mono text-[10px]">0{index + 1}</span>
             <span className="text-xs font-medium sm:text-sm">{getMultiStepLabel(step.id)}</span>
           </button>
         ))}
@@ -4757,8 +4757,9 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                   >
                     $
                   </motion.span>
-                  <code
-                    data-testid="command-output"
+                  <section
+                    aria-label={m.docsSectionCli()}
+                    tabIndex={0}
                     className={cn(
                       "no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap",
                       isMultiCreationInProgress && !isFinalMultiStep
@@ -4766,8 +4767,8 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                         : "text-[12.5px] text-[rgba(250,250,247,0.88)]",
                     )}
                   >
-                    {command}
-                  </code>
+                    <code data-testid="command-output">{command}</code>
+                  </section>
                   {isMultiCreationInProgress && !isFinalMultiStep ? (
                     <>
                       <button

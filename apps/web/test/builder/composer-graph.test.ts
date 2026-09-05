@@ -63,6 +63,43 @@ describe("application composer graph edits", () => {
     });
   });
 
+  it("adds a second named backend with its own capabilities", () => {
+    const before = ["backend:go:gin:api", "api.orm:go:gorm"];
+    const after = [
+      ...before,
+      "backend:python:fastapi:worker",
+      "worker.packageManager:python:poetry",
+    ];
+    const parts = getComposerParts(reconcileComposerSpecs(before, before, after));
+    expect(parts.find((part) => part.id === "api")?.toolId).toBe("gin");
+    expect(parts.find((part) => part.id === "worker")?.toolId).toBe("fastapi");
+    expect(parts.find((part) => part.ownerPartId === "worker")?.toolId).toBe("poetry");
+    expect(parts.find((part) => part.ownerPartId === "api")?.toolId).toBe("gorm");
+  });
+
+  it("edits the second named service without changing the first service", () => {
+    const before = [
+      "backend:go:gin:api",
+      "api.orm:go:gorm",
+      "backend:go:echo:worker",
+      "worker.orm:go:sqlc",
+    ];
+    const after = before.map((spec) => spec.replace("worker.orm:go:sqlc", "worker.orm:go:ent"));
+    const parts = getComposerParts(reconcileComposerSpecs(before, before, after));
+    expect(parts.find((part) => part.ownerPartId === "api")?.toolId).toBe("gorm");
+    expect(parts.find((part) => part.ownerPartId === "worker")?.toolId).toBe("ent");
+    const remaining = getComposerParts(reconcileComposerSpecs(after, after, before.slice(0, 2)));
+    expect(remaining.map((part) => part.toolId)).toEqual(["gin", "gorm"]);
+  });
+
+  it("keeps multiple frontends when adding a named application", () => {
+    const before = ["frontend:typescript:next:store"];
+    const parts = getComposerParts(
+      reconcileComposerSpecs(before, before, [...before, "frontend:typescript:react-vite:admin"]),
+    );
+    expect(parts.map((part) => part.id)).toEqual(["store", "admin"]);
+  });
+
   it("requires an application and derives JavaScript settings from selected roots", () => {
     expect(hasComposerApplication([])).toBe(false);
     expect(hasComposerApplication(["database:universal:postgres"])).toBe(false);

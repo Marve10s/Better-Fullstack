@@ -10,35 +10,35 @@ const en_buildercomposerconnections2 = /** @type {(inputs: Buildercomposerconnec
 };
 
 const es_buildercomposerconnections2 = /** @type {(inputs: Buildercomposerconnections2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend connections`)
+	return /** @type {LocalizedString} */ (`Conexiones con el backend`)
 };
 
 const zh_buildercomposerconnections2 = /** @type {(inputs: Buildercomposerconnections2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend connections`)
+	return /** @type {LocalizedString} */ (`后端连接`)
 };
 
 const ja_buildercomposerconnections2 = /** @type {(inputs: Buildercomposerconnections2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend connections`)
+	return /** @type {LocalizedString} */ (`バックエンド接続`)
 };
 
 const ko_buildercomposerconnections2 = /** @type {(inputs: Buildercomposerconnections2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend connections`)
+	return /** @type {LocalizedString} */ (`백엔드 연결`)
 };
 
 const zh_hant1_buildercomposerconnections2 = /** @type {(inputs: Buildercomposerconnections2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend connections`)
+	return /** @type {LocalizedString} */ (`後端連線`)
 };
 
 const de_buildercomposerconnections2 = /** @type {(inputs: Buildercomposerconnections2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend connections`)
+	return /** @type {LocalizedString} */ (`Backend-Verbindungen`)
 };
 
 const fr_buildercomposerconnections2 = /** @type {(inputs: Buildercomposerconnections2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend connections`)
+	return /** @type {LocalizedString} */ (`Connexions au backend`)
 };
 
 const uk_buildercomposerconnections2 = /** @type {(inputs: Buildercomposerconnections2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend connections`)
+	return /** @type {LocalizedString} */ (`Підключення до бекенду`)
 };
 
 /**

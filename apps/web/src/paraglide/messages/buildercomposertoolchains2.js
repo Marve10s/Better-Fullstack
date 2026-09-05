@@ -10,35 +10,35 @@ const en_buildercomposertoolchains2 = /** @type {(inputs: Buildercomposertoolcha
 };
 
 const es_buildercomposertoolchains2 = /** @type {(inputs: Buildercomposertoolchains2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Before you run the project`)
+	return /** @type {LocalizedString} */ (`Antes de ejecutar el proyecto`)
 };
 
 const zh_buildercomposertoolchains2 = /** @type {(inputs: Buildercomposertoolchains2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Before you run the project`)
+	return /** @type {LocalizedString} */ (`运行项目前`)
 };
 
 const ja_buildercomposertoolchains2 = /** @type {(inputs: Buildercomposertoolchains2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Before you run the project`)
+	return /** @type {LocalizedString} */ (`プロジェクトを実行する前に`)
 };
 
 const ko_buildercomposertoolchains2 = /** @type {(inputs: Buildercomposertoolchains2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Before you run the project`)
+	return /** @type {LocalizedString} */ (`프로젝트 실행 전 준비 사항`)
 };
 
 const zh_hant1_buildercomposertoolchains2 = /** @type {(inputs: Buildercomposertoolchains2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Before you run the project`)
+	return /** @type {LocalizedString} */ (`執行專案前`)
 };
 
 const de_buildercomposertoolchains2 = /** @type {(inputs: Buildercomposertoolchains2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Before you run the project`)
+	return /** @type {LocalizedString} */ (`Bevor du das Projekt startest`)
 };
 
 const fr_buildercomposertoolchains2 = /** @type {(inputs: Buildercomposertoolchains2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Before you run the project`)
+	return /** @type {LocalizedString} */ (`Avant de lancer le projet`)
 };
 
 const uk_buildercomposertoolchains2 = /** @type {(inputs: Buildercomposertoolchains2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Before you run the project`)
+	return /** @type {LocalizedString} */ (`Перед запуском проєкту`)
 };
 
 /**

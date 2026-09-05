@@ -10,35 +10,35 @@ const en_buildercomposerreviewtitle3 = /** @type {(inputs: Buildercomposerreview
 };
 
 const es_buildercomposerreviewtitle3 = /** @type {(inputs: Buildercomposerreviewtitle3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Review ${i?.name}`)
+	return /** @type {LocalizedString} */ (`Revisar ${i?.name}`)
 };
 
 const zh_buildercomposerreviewtitle3 = /** @type {(inputs: Buildercomposerreviewtitle3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Review ${i?.name}`)
+	return /** @type {LocalizedString} */ (`检查 ${i?.name}`)
 };
 
 const ja_buildercomposerreviewtitle3 = /** @type {(inputs: Buildercomposerreviewtitle3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Review ${i?.name}`)
+	return /** @type {LocalizedString} */ (`${i?.name} を確認`)
 };
 
 const ko_buildercomposerreviewtitle3 = /** @type {(inputs: Buildercomposerreviewtitle3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Review ${i?.name}`)
+	return /** @type {LocalizedString} */ (`${i?.name} 검토`)
 };
 
 const zh_hant1_buildercomposerreviewtitle3 = /** @type {(inputs: Buildercomposerreviewtitle3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Review ${i?.name}`)
+	return /** @type {LocalizedString} */ (`檢查 ${i?.name}`)
 };
 
 const de_buildercomposerreviewtitle3 = /** @type {(inputs: Buildercomposerreviewtitle3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Review ${i?.name}`)
+	return /** @type {LocalizedString} */ (`${i?.name} überprüfen`)
 };
 
 const fr_buildercomposerreviewtitle3 = /** @type {(inputs: Buildercomposerreviewtitle3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Review ${i?.name}`)
+	return /** @type {LocalizedString} */ (`Vérifier ${i?.name}`)
 };
 
 const uk_buildercomposerreviewtitle3 = /** @type {(inputs: Buildercomposerreviewtitle3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Review ${i?.name}`)
+	return /** @type {LocalizedString} */ (`Перевірити ${i?.name}`)
 };
 
 /**

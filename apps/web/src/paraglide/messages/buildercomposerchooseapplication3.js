@@ -10,35 +10,35 @@ const en_buildercomposerchooseapplication3 = /** @type {(inputs: Buildercomposer
 };
 
 const es_buildercomposerchooseapplication3 = /** @type {(inputs: Buildercomposerchooseapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Choose at least one application to continue.`)
+	return /** @type {LocalizedString} */ (`Elige al menos una aplicación para continuar.`)
 };
 
 const zh_buildercomposerchooseapplication3 = /** @type {(inputs: Buildercomposerchooseapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Choose at least one application to continue.`)
+	return /** @type {LocalizedString} */ (`请至少选择一个应用以继续。`)
 };
 
 const ja_buildercomposerchooseapplication3 = /** @type {(inputs: Buildercomposerchooseapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Choose at least one application to continue.`)
+	return /** @type {LocalizedString} */ (`続行するには、少なくとも1つのアプリケーションを選択してください。`)
 };
 
 const ko_buildercomposerchooseapplication3 = /** @type {(inputs: Buildercomposerchooseapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Choose at least one application to continue.`)
+	return /** @type {LocalizedString} */ (`계속하려면 애플리케이션을 하나 이상 선택하세요.`)
 };
 
 const zh_hant1_buildercomposerchooseapplication3 = /** @type {(inputs: Buildercomposerchooseapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Choose at least one application to continue.`)
+	return /** @type {LocalizedString} */ (`請至少選擇一個應用程式以繼續。`)
 };
 
 const de_buildercomposerchooseapplication3 = /** @type {(inputs: Buildercomposerchooseapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Choose at least one application to continue.`)
+	return /** @type {LocalizedString} */ (`Wähle mindestens eine Anwendung aus, um fortzufahren.`)
 };
 
 const fr_buildercomposerchooseapplication3 = /** @type {(inputs: Buildercomposerchooseapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Choose at least one application to continue.`)
+	return /** @type {LocalizedString} */ (`Choisissez au moins une application pour continuer.`)
 };
 
 const uk_buildercomposerchooseapplication3 = /** @type {(inputs: Buildercomposerchooseapplication3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Choose at least one application to continue.`)
+	return /** @type {LocalizedString} */ (`Виберіть принаймні один застосунок, щоб продовжити.`)
 };
 
 /**

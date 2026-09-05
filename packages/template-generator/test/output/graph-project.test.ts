@@ -5,6 +5,7 @@ import { describe, expect, it } from "bun:test";
 import type { VirtualNode } from "@/types";
 
 import { generateVirtualProject } from "@/generator";
+import { getGraphBackendConnections } from "@/graph/graph-backend";
 import { getGraphProjectTasks } from "@/graph/graph-project";
 import { EMBEDDED_TEMPLATES } from "@/templates.generated";
 
@@ -56,6 +57,31 @@ describe("multi-ecosystem project output", () => {
     expect(output.get("scripts/setup.sh")).toContain("flutter pub get");
     expect(output.get("README.md")).toContain("flutter run");
     expect([...output.keys()].some((path) => path.endsWith("lib/main.dart"))).toBe(true);
+  });
+
+  it("runs each named Java backend with the wrapper it generates", async () => {
+    const specs = [
+      "backend:java:spring-boot:api",
+      "api.buildTool:java:maven",
+      "backend:java:quarkus:worker",
+      "worker.buildTool:java:gradle",
+    ];
+    const output = await generate(specs);
+    const connections = getGraphBackendConnections(configFor(specs));
+    expect(output.has("services/api/mvnw")).toBe(true);
+    expect(output.has("services/worker/gradlew")).toBe(true);
+    expect(connections.find((connection) => connection.partId === "api")?.devCommand).toContain(
+      "./mvnw spring-boot:run",
+    );
+    expect(connections.find((connection) => connection.partId === "worker")?.devCommand).toContain(
+      "./gradlew quarkusDev",
+    );
+    expect(
+      connections.find((connection) => connection.partId === "worker")?.checkCommand,
+    ).toContain("./gradlew build");
+    expect(connections.find((connection) => connection.partId === "worker")?.testCommand).toContain(
+      "./gradlew test",
+    );
   });
 
   it("uses the Python package manager owned by the selected service", () => {
@@ -159,3 +185,72 @@ exit 8
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+for (const platform of ["posix", "windows"] as const) {
+  it(`executes pip setup and service commands with a ${platform} virtual environment`, async () => {
+    const { mkdtemp, mkdir, writeFile, readFile, realpath, rm } = await import("node:fs/promises");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const directory = await realpath(await mkdtemp(join(tmpdir(), "bfs-python-setup-")));
+    try {
+      const config = configFor([
+        "backend:python:fastapi:api",
+        "backend:python:fastapi:worker",
+        "worker.packageManager:python:pip",
+      ]);
+      const connection = getGraphBackendConnections(config).find(
+        (connection) => connection.partId === "worker",
+      );
+      if (!connection) throw new Error("Missing Python service");
+      await mkdir(join(directory, "bin"));
+      await mkdir(join(directory, connection.targetPath), { recursive: true });
+      const venv = platform === "windows" ? "Scripts/python.exe" : "bin/python";
+      const python = platform === "windows" ? "python" : "python3";
+      const recorder =
+        '#!/usr/bin/env bash\nprintf "%s|%s\\n" "$PWD" "$*" >> "$GRAPH_PYTHON_LOG"\n';
+      await writeFile(join(directory, "recorder"), recorder, { mode: 0o755 });
+      await writeFile(
+        join(directory, "bin", python),
+        `#!/usr/bin/env bash
+[ "$*" = "-m venv .venv" ] || exit 2
+mkdir -p .venv/${platform === "windows" ? "Scripts" : "bin"}
+cp "$GRAPH_PYTHON_RECORDER" .venv/${venv}
+`,
+        { mode: 0o755 },
+      );
+      const logPath = join(directory, "python.log");
+      for (const command of [
+        connection.setupCommand,
+        connection.devCommand,
+        connection.checkCommand,
+        connection.testCommand,
+      ]) {
+        if (!command) throw new Error("Missing Python command");
+        const child = Bun.spawn(["bash", "-c", command], {
+          cwd: directory,
+          env: {
+            ...process.env,
+            OS: platform === "windows" ? "Windows_NT" : "",
+            PORT: "8123",
+            PATH: `${join(directory, "bin")}:${process.env.PATH}`,
+            GRAPH_PYTHON_LOG: logPath,
+            GRAPH_PYTHON_RECORDER: join(directory, "recorder"),
+          },
+          stdout: "pipe",
+          stderr: "pipe",
+        });
+        const stderr = await new Response(child.stderr).text();
+        expect(await child.exited, stderr).toBe(0);
+      }
+      const prefix = `${join(directory, connection.targetPath)}|`;
+      expect((await readFile(logPath, "utf8")).trim().split("\n")).toEqual([
+        `${prefix}-m pip install -e .[dev]`,
+        `${prefix}-m uvicorn app.main:app --reload --host 0.0.0.0 --port 8001`,
+        `${prefix}-m ruff check .`,
+        `${prefix}-m pytest`,
+      ]);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+}

@@ -10,35 +10,35 @@ const en_buildercomposerreview2 = /** @type {(inputs: Buildercomposerreview2Inpu
 };
 
 const es_buildercomposerreview2 = /** @type {(inputs: Buildercomposerreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Review`)
+	return /** @type {LocalizedString} */ (`Revisar`)
 };
 
 const zh_buildercomposerreview2 = /** @type {(inputs: Buildercomposerreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Review`)
+	return /** @type {LocalizedString} */ (`检查`)
 };
 
 const ja_buildercomposerreview2 = /** @type {(inputs: Buildercomposerreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Review`)
+	return /** @type {LocalizedString} */ (`確認`)
 };
 
 const ko_buildercomposerreview2 = /** @type {(inputs: Buildercomposerreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Review`)
+	return /** @type {LocalizedString} */ (`검토`)
 };
 
 const zh_hant1_buildercomposerreview2 = /** @type {(inputs: Buildercomposerreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Review`)
+	return /** @type {LocalizedString} */ (`檢查`)
 };
 
 const de_buildercomposerreview2 = /** @type {(inputs: Buildercomposerreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Review`)
+	return /** @type {LocalizedString} */ (`Überprüfen`)
 };
 
 const fr_buildercomposerreview2 = /** @type {(inputs: Buildercomposerreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Review`)
+	return /** @type {LocalizedString} */ (`Vérifier`)
 };
 
 const uk_buildercomposerreview2 = /** @type {(inputs: Buildercomposerreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Review`)
+	return /** @type {LocalizedString} */ (`Перевірка`)
 };
 
 /**

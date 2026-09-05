@@ -109,7 +109,9 @@ export function ComposerProjectReview({
         <pre className="overflow-x-auto rounded-lg border border-border bg-muted/20 p-4 text-xs leading-6">
           <code>{hasJavaScript ? `${config.packageManager} run dev` : "bash scripts/dev.sh"}</code>
         </pre>
-        <p className="text-xs text-muted-foreground">{m.builderComposerNativeRun()}</p>
+        {roots.some((part) => part.role === "mobile") && (
+          <p className="text-xs text-muted-foreground">{m.builderComposerNativeRun()}</p>
+        )}
       </div>
     </div>
   );

@@ -459,6 +459,18 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       };
     }
 
+    if (
+      usesGraphParts &&
+      !hasJavaScriptWorkspaceRoot(config.stackParts) &&
+      (config.addons.includes("lefthook") ||
+        config.stackParts?.some((part) => part.toolId === "lefthook" && part.source !== "provided"))
+    ) {
+      return {
+        success: false,
+        error: "Lefthook requires a generated JavaScript application for its package-based setup.",
+      };
+    }
+
     if (usesGraphParts) {
       const graphIssues = [
         ...validateGraphContainerAddons(config),

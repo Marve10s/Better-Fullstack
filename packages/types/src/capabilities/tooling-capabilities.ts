@@ -461,6 +461,6 @@ export function toolingRequiresJavaScriptWorkspace(toolId: string): boolean {
   return (
     ["toolchain", "workspaceRunner", "codeQuality", "documentation", "codeGeneration"].includes(
       capability.category,
-    ) || ["husky", "knip", "ruler"].includes(toolId)
+    ) || ["husky", "lefthook", "knip", "ruler"].includes(toolId)
   );
 }

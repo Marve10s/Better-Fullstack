@@ -47,6 +47,9 @@ test("new projects start with applications and expose every mobile ecosystem", a
   await clickVisibleTestId(page, "multi-step-review");
   await expect(page.getByTestId("multi-project-review")).toContainText("flutter pub get");
   await expect(page.getByTestId("multi-project-review")).toContainText("apps/native");
+  await expect(page.getByTestId("multi-project-review")).toContainText(
+    "Run native mobile apps separately",
+  );
 });
 
 test("native applications omit JavaScript setup, round-trip their URL, and preview native output", async ({
@@ -69,6 +72,9 @@ test("native applications omit JavaScript setup, round-trip their URL, and previ
   await page.reload();
   await expect(commandOutput(page)).toContainText("--part backend:go:", { timeout: 15_000 });
   await clickVisibleTestId(page, "multi-step-review");
+  await expect(page.getByTestId("multi-project-review")).not.toContainText(
+    "Run native mobile apps separately",
+  );
   await expect(page.getByTestId("multi-project-review")).toContainText("dotnet restore");
   await expect(page.getByTestId("multi-project-review")).toContainText("go mod tidy");
   await expect(page.getByTestId("multi-project-review")).toContainText("bash scripts/dev.sh");

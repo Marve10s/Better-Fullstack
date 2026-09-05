@@ -486,9 +486,7 @@ describe("generated target checks", () => {
     expect(await fs.pathExists(path.join(readmeOnly.projectDir, "packages/db/package.json"))).toBe(
       false,
     );
-    expect((await discoverGeneratedCheckTargets(readmeOnly)).map((target) => target.id)).toEqual([
-      "workspace:typescript",
-    ]);
+    expect(await discoverGeneratedCheckTargets(readmeOnly)).toEqual([]);
 
     const packaged = await materializeGraph(
       ["backend:typescript:hono", "database:universal:sqlite", "backend.orm:typescript:drizzle"],
@@ -515,12 +513,12 @@ describe("generated target checks", () => {
     });
     expect(await fs.pathExists(path.join(redis.projectDir, "packages/db/package.json"))).toBe(true);
     expect((await discoverGeneratedCheckTargets(redis)).map((target) => target.id)).toEqual([
-      "workspace:typescript",
+      "database:universal:redis",
     ]);
     const redisChecks = await runGeneratedChecks(redis, {
       commandExists: async () => true,
       execute: async () => ({ exitCode: 0 }),
     });
-    expect(redisChecks).toMatchObject([{ role: "workspace", status: "pass", executed: true }]);
+    expect(redisChecks).toMatchObject([{ role: "database", status: "pass", executed: true }]);
   });
 });

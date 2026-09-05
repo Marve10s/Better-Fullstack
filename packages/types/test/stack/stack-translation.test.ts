@@ -1088,6 +1088,25 @@ describe("graph composer contracts", () => {
     expect(command).toContain("--part frontend:dotnet:blazor-webassembly");
   });
 
+  it("removes explicitly imported JavaScript tooling from native-only graphs", () => {
+    const selection: StackSelectionInput = {
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      stackPartSpecs: [
+        "backend:go:gin",
+        "workspaceRunner:typescript:turborepo",
+        "gitHooks:universal:lefthook",
+      ],
+      appPlatforms: [],
+    };
+    expect(toProjectConfig(selection).stackParts?.some((part) => part.toolId === "turborepo")).toBe(
+      false,
+    );
+    expect(generateStackSelectionCommand(selection)).not.toContain("turborepo");
+    expect(generateStackSelectionCommand(selection)).not.toContain("lefthook");
+    expect(generateStackSelectionCommand(selection)).not.toContain("--package-manager");
+  });
+
   it("rejects an empty graph instead of generating the default TypeScript project", () => {
     const selection: StackSelectionInput = {
       ...DEFAULT_SELECTION,

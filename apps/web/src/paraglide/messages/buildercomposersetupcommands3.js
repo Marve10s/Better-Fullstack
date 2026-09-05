@@ -10,35 +10,35 @@ const en_buildercomposersetupcommands3 = /** @type {(inputs: Buildercomposersetu
 };
 
 const es_buildercomposersetupcommands3 = /** @type {(inputs: Buildercomposersetupcommands3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prepare dependencies`)
+	return /** @type {LocalizedString} */ (`Preparar dependencias`)
 };
 
 const zh_buildercomposersetupcommands3 = /** @type {(inputs: Buildercomposersetupcommands3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prepare dependencies`)
+	return /** @type {LocalizedString} */ (`准备依赖`)
 };
 
 const ja_buildercomposersetupcommands3 = /** @type {(inputs: Buildercomposersetupcommands3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prepare dependencies`)
+	return /** @type {LocalizedString} */ (`依存関係を準備`)
 };
 
 const ko_buildercomposersetupcommands3 = /** @type {(inputs: Buildercomposersetupcommands3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prepare dependencies`)
+	return /** @type {LocalizedString} */ (`의존성 준비`)
 };
 
 const zh_hant1_buildercomposersetupcommands3 = /** @type {(inputs: Buildercomposersetupcommands3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prepare dependencies`)
+	return /** @type {LocalizedString} */ (`準備相依套件`)
 };
 
 const de_buildercomposersetupcommands3 = /** @type {(inputs: Buildercomposersetupcommands3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prepare dependencies`)
+	return /** @type {LocalizedString} */ (`Abhängigkeiten vorbereiten`)
 };
 
 const fr_buildercomposersetupcommands3 = /** @type {(inputs: Buildercomposersetupcommands3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prepare dependencies`)
+	return /** @type {LocalizedString} */ (`Préparer les dépendances`)
 };
 
 const uk_buildercomposersetupcommands3 = /** @type {(inputs: Buildercomposersetupcommands3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prepare dependencies`)
+	return /** @type {LocalizedString} */ (`Підготувати залежності`)
 };
 
 /**

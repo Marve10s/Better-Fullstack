@@ -196,7 +196,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     if (!isSilent()) {
       await displayPostInstallInstructions({
         ...options,
-        depsInstalled: options.install,
+        depsInstalled: options.install && setupFailures.length === 0,
       });
     }
 

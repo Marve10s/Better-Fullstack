@@ -10,35 +10,35 @@ const en_buildercomposerprogress2 = /** @type {(inputs: Buildercomposerprogress2
 };
 
 const es_buildercomposerprogress2 = /** @type {(inputs: Buildercomposerprogress2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project creation progress`)
+	return /** @type {LocalizedString} */ (`Progreso de creación del proyecto`)
 };
 
 const zh_buildercomposerprogress2 = /** @type {(inputs: Buildercomposerprogress2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project creation progress`)
+	return /** @type {LocalizedString} */ (`项目创建进度`)
 };
 
 const ja_buildercomposerprogress2 = /** @type {(inputs: Buildercomposerprogress2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project creation progress`)
+	return /** @type {LocalizedString} */ (`プロジェクト作成の進行状況`)
 };
 
 const ko_buildercomposerprogress2 = /** @type {(inputs: Buildercomposerprogress2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project creation progress`)
+	return /** @type {LocalizedString} */ (`프로젝트 생성 진행 상황`)
 };
 
 const zh_hant1_buildercomposerprogress2 = /** @type {(inputs: Buildercomposerprogress2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project creation progress`)
+	return /** @type {LocalizedString} */ (`專案建立進度`)
 };
 
 const de_buildercomposerprogress2 = /** @type {(inputs: Buildercomposerprogress2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project creation progress`)
+	return /** @type {LocalizedString} */ (`Fortschritt der Projekterstellung`)
 };
 
 const fr_buildercomposerprogress2 = /** @type {(inputs: Buildercomposerprogress2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project creation progress`)
+	return /** @type {LocalizedString} */ (`Progression de la création du projet`)
 };
 
 const uk_buildercomposerprogress2 = /** @type {(inputs: Buildercomposerprogress2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project creation progress`)
+	return /** @type {LocalizedString} */ (`Хід створення проєкту`)
 };
 
 /**

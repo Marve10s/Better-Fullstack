@@ -2048,7 +2048,10 @@ function getGraphStackParts(selection: StackSelectionInput) {
       (value) => value && (hasJavaScript || !toolingRequiresJavaScriptWorkspace(value)),
     ),
   }));
-  const stackPartSpecs = expandScopedStackPartSpecs(selection.stackPartSpecs, fields);
+  const explicitSpecs = selection.stackPartSpecs.filter(
+    (spec) => hasJavaScript || !toolingRequiresJavaScriptWorkspace(spec.split(":")[2] ?? ""),
+  );
+  const stackPartSpecs = expandScopedStackPartSpecs(explicitSpecs, fields);
   const stackParts = parseStackPartSpecs(stackPartSpecs, "selected");
   const selectableStackParts = parseStackPartSpecs(
     getSelectableStackPartSpecs(stackPartSpecs),

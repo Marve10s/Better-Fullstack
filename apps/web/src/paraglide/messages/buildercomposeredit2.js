@@ -10,35 +10,35 @@ const en_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) 
 };
 
 const es_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit`)
+	return /** @type {LocalizedString} */ (`Editar`)
 };
 
 const zh_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit`)
+	return /** @type {LocalizedString} */ (`编辑`)
 };
 
 const ja_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit`)
+	return /** @type {LocalizedString} */ (`編集`)
 };
 
 const ko_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit`)
+	return /** @type {LocalizedString} */ (`편집`)
 };
 
 const zh_hant1_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit`)
+	return /** @type {LocalizedString} */ (`編輯`)
 };
 
 const de_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit`)
+	return /** @type {LocalizedString} */ (`Bearbeiten`)
 };
 
 const fr_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit`)
+	return /** @type {LocalizedString} */ (`Modifier`)
 };
 
 const uk_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit`)
+	return /** @type {LocalizedString} */ (`Редагувати`)
 };
 
 /**

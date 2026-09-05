@@ -10,35 +10,35 @@ const en_buildercomposerconfiguretitle3 = /** @type {(inputs: Buildercomposercon
 };
 
 const es_buildercomposerconfiguretitle3 = /** @type {(inputs: Buildercomposerconfiguretitle3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Make each application yours`)
+	return /** @type {LocalizedString} */ (`Personaliza cada aplicación`)
 };
 
 const zh_buildercomposerconfiguretitle3 = /** @type {(inputs: Buildercomposerconfiguretitle3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Make each application yours`)
+	return /** @type {LocalizedString} */ (`自定义每个应用`)
 };
 
 const ja_buildercomposerconfiguretitle3 = /** @type {(inputs: Buildercomposerconfiguretitle3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Make each application yours`)
+	return /** @type {LocalizedString} */ (`各アプリケーションをカスタマイズ`)
 };
 
 const ko_buildercomposerconfiguretitle3 = /** @type {(inputs: Buildercomposerconfiguretitle3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Make each application yours`)
+	return /** @type {LocalizedString} */ (`각 애플리케이션 맞춤 설정`)
 };
 
 const zh_hant1_buildercomposerconfiguretitle3 = /** @type {(inputs: Buildercomposerconfiguretitle3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Make each application yours`)
+	return /** @type {LocalizedString} */ (`自訂每個應用程式`)
 };
 
 const de_buildercomposerconfiguretitle3 = /** @type {(inputs: Buildercomposerconfiguretitle3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Make each application yours`)
+	return /** @type {LocalizedString} */ (`Passe jede Anwendung an`)
 };
 
 const fr_buildercomposerconfiguretitle3 = /** @type {(inputs: Buildercomposerconfiguretitle3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Make each application yours`)
+	return /** @type {LocalizedString} */ (`Personnalisez chaque application`)
 };
 
 const uk_buildercomposerconfiguretitle3 = /** @type {(inputs: Buildercomposerconfiguretitle3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Make each application yours`)
+	return /** @type {LocalizedString} */ (`Налаштуйте кожен застосунок`)
 };
 
 /**

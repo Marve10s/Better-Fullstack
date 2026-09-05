@@ -10,35 +10,35 @@ const en_buildercomposerconfigure2 = /** @type {(inputs: Buildercomposerconfigur
 };
 
 const es_buildercomposerconfigure2 = /** @type {(inputs: Buildercomposerconfigure2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Configure`)
+	return /** @type {LocalizedString} */ (`Configurar`)
 };
 
 const zh_buildercomposerconfigure2 = /** @type {(inputs: Buildercomposerconfigure2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Configure`)
+	return /** @type {LocalizedString} */ (`配置`)
 };
 
 const ja_buildercomposerconfigure2 = /** @type {(inputs: Buildercomposerconfigure2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Configure`)
+	return /** @type {LocalizedString} */ (`構成`)
 };
 
 const ko_buildercomposerconfigure2 = /** @type {(inputs: Buildercomposerconfigure2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Configure`)
+	return /** @type {LocalizedString} */ (`구성`)
 };
 
 const zh_hant1_buildercomposerconfigure2 = /** @type {(inputs: Buildercomposerconfigure2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Configure`)
+	return /** @type {LocalizedString} */ (`設定`)
 };
 
 const de_buildercomposerconfigure2 = /** @type {(inputs: Buildercomposerconfigure2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Configure`)
+	return /** @type {LocalizedString} */ (`Konfigurieren`)
 };
 
 const fr_buildercomposerconfigure2 = /** @type {(inputs: Buildercomposerconfigure2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Configure`)
+	return /** @type {LocalizedString} */ (`Configurer`)
 };
 
 const uk_buildercomposerconfigure2 = /** @type {(inputs: Buildercomposerconfigure2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Configure`)
+	return /** @type {LocalizedString} */ (`Налаштування`)
 };
 
 /**

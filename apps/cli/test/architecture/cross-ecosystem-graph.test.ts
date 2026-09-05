@@ -228,7 +228,9 @@ describe("Cross-ecosystem graph generation", () => {
     const rootPackage = JSON.parse(fileContent(root, "package.json")) as {
       scripts?: Record<string, string>;
     };
-    expect(rootPackage.scripts?.dev).toBe("bun run --filter web dev");
+    expect(rootPackage.scripts?.dev).toBe(
+      'concurrently --kill-others "bun run --filter web dev" "cd apps/server && mix phx.server"',
+    );
     expect(rootPackage.scripts?.["dev:server"]).toBe("cd apps/server && mix phx.server");
     expect(rootPackage.scripts?.["setup:server"]).toBe(
       "cd apps/server && mix deps.get && mix ecto.setup",
@@ -267,7 +269,7 @@ describe("Cross-ecosystem graph generation", () => {
       scripts?: Record<string, string>;
     };
     expect(rootPackage.scripts?.["dev:server"]).toBe("cd apps/server && cargo run --bin server");
-    expect(fileContent(root, "README.md")).toContain("Astro frontends can be generated with Rust");
+    expect(fileContent(root, "README.md")).toContain("cd apps/server && cargo run --bin server");
   });
 
   it("dry-runs every TypeScript web frontend with every non-TypeScript backend", async () => {
@@ -306,7 +308,7 @@ describe("Cross-ecosystem graph generation", () => {
         ).toContain(corsLine);
 
         expect(fileContent(root, graphDocPathFor(frontend))).toContain("Health URL:");
-        expect(fileContent(root, "README.md")).toContain("multi-ecosystem project graph");
+        expect(fileContent(root, "README.md")).toContain(serverUrlFor(ecosystem, backend));
 
         if (ecosystem === "python") {
           const backendReadme = fileContent(root, "apps/server/README.md");

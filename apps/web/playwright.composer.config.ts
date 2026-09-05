@@ -13,7 +13,11 @@ export default defineConfig({
   reporter: "list",
   use: { ...base.use, baseURL: "http://localhost:3333", trace: "retain-on-failure" },
   projects: [
-    { name: "desktop", use: { viewport: { width: 1440, height: 900 } } },
+    {
+      name: "desktop",
+      testMatch: /composer-flow\.spec\.ts/,
+      use: { viewport: { width: 1440, height: 900 } },
+    },
     ...[
       { name: "tablet", width: 768, height: 1024 },
       { name: "phone", width: 390, height: 844 },

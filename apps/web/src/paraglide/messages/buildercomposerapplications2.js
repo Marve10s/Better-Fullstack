@@ -10,27 +10,27 @@ const en_buildercomposerapplications2 = /** @type {(inputs: Buildercomposerappli
 };
 
 const es_buildercomposerapplications2 = /** @type {(inputs: Buildercomposerapplications2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Applications`)
+	return /** @type {LocalizedString} */ (`Aplicaciones`)
 };
 
 const zh_buildercomposerapplications2 = /** @type {(inputs: Buildercomposerapplications2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Applications`)
+	return /** @type {LocalizedString} */ (`应用`)
 };
 
 const ja_buildercomposerapplications2 = /** @type {(inputs: Buildercomposerapplications2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Applications`)
+	return /** @type {LocalizedString} */ (`アプリケーション`)
 };
 
 const ko_buildercomposerapplications2 = /** @type {(inputs: Buildercomposerapplications2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Applications`)
+	return /** @type {LocalizedString} */ (`애플리케이션`)
 };
 
 const zh_hant1_buildercomposerapplications2 = /** @type {(inputs: Buildercomposerapplications2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Applications`)
+	return /** @type {LocalizedString} */ (`應用程式`)
 };
 
 const de_buildercomposerapplications2 = /** @type {(inputs: Buildercomposerapplications2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Applications`)
+	return /** @type {LocalizedString} */ (`Anwendungen`)
 };
 
 const fr_buildercomposerapplications2 = /** @type {(inputs: Buildercomposerapplications2Inputs) => LocalizedString} */ () => {
@@ -38,7 +38,7 @@ const fr_buildercomposerapplications2 = /** @type {(inputs: Buildercomposerappli
 };
 
 const uk_buildercomposerapplications2 = /** @type {(inputs: Buildercomposerapplications2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Applications`)
+	return /** @type {LocalizedString} */ (`Застосунки`)
 };
 
 /**

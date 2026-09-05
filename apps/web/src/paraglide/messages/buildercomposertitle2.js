@@ -10,35 +10,35 @@ const en_buildercomposertitle2 = /** @type {(inputs: Buildercomposertitle2Inputs
 };
 
 const es_buildercomposertitle2 = /** @type {(inputs: Buildercomposertitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What are you building?`)
+	return /** @type {LocalizedString} */ (`¿Qué vas a crear?`)
 };
 
 const zh_buildercomposertitle2 = /** @type {(inputs: Buildercomposertitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What are you building?`)
+	return /** @type {LocalizedString} */ (`你想构建什么？`)
 };
 
 const ja_buildercomposertitle2 = /** @type {(inputs: Buildercomposertitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What are you building?`)
+	return /** @type {LocalizedString} */ (`何を作りますか？`)
 };
 
 const ko_buildercomposertitle2 = /** @type {(inputs: Buildercomposertitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What are you building?`)
+	return /** @type {LocalizedString} */ (`무엇을 만드시겠어요?`)
 };
 
 const zh_hant1_buildercomposertitle2 = /** @type {(inputs: Buildercomposertitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What are you building?`)
+	return /** @type {LocalizedString} */ (`你想建置什麼？`)
 };
 
 const de_buildercomposertitle2 = /** @type {(inputs: Buildercomposertitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What are you building?`)
+	return /** @type {LocalizedString} */ (`Was möchtest du entwickeln?`)
 };
 
 const fr_buildercomposertitle2 = /** @type {(inputs: Buildercomposertitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What are you building?`)
+	return /** @type {LocalizedString} */ (`Que souhaitez-vous créer ?`)
 };
 
 const uk_buildercomposertitle2 = /** @type {(inputs: Buildercomposertitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`What are you building?`)
+	return /** @type {LocalizedString} */ (`Що ви хочете створити?`)
 };
 
 /**
