@@ -1,0 +1,125 @@
+---
+title: "Write an AGENTS.md that helps with fullstack work"
+description: "A practical AGENTS.md example for a Next.js fullstack project: file ownership, real check commands, auth boundaries, and instructions worth maintaining."
+date: 2026-09-05
+translationStatus: pending
+image: /search-media/agents-md-fullstack.png
+tags:
+  - agents
+  - nextjs
+  - getting-started
+keywords:
+  - AGENTS.md example
+  - AGENTS.md fullstack project
+  - CLAUDE.md Next.js
+---
+
+![A document icon and Better Fullstack mark above the words AGENTS.md for fullstack work](/search-media/agents-md-fullstack.png)
+
+An agent opens your fullstack repo and needs to add a settings page. Which package owns the database? Where does the server get the session? Which command checks the change? A useful `AGENTS.md` answers those questions before the agent invents a second way to do something your project already handles.
+
+The [AGENTS.md format](https://agents.md/) gives coding agents a place to find repository instructions. The file's value comes from the facts you put in it. A paragraph asking for clean, maintainable code leaves the agent to discover every project decision again.
+
+## Start with the generated project
+
+Better Fullstack can write instruction files alongside a new app. To preview a Next.js starter with tRPC, Prisma, PostgreSQL, and Better Auth:
+
+```bash
+bun create better-fullstack@latest my-app \
+  --template t3 \
+  --package-manager bun \
+  --ai-docs agents-md claude-md \
+  --no-install \
+  --no-git \
+  --dry-run
+```
+
+Review the selected stack, then run the same command without `--dry-run` to generate it. The [Claude Code MCP walkthrough](/guides/ai/claude-code-fullstack-mcp) shows the structured-tool alternative.
+
+The generated instructions describe the selected technologies, project structure, common commands, and Better Fullstack configuration. Read them against the actual files. Then add the decisions that belong to your app: how you authorize a write, where new code should go, and what counts as a completed feature.
+
+## Name the files that own the work
+
+For the Next.js and Prisma project inspected for this article, the important directories are:
+
+| Path | What the agent should inspect there |
+| --- | --- |
+| `apps/web/src/app` | Pages and framework-owned route handlers |
+| `packages/api/src` | tRPC context, procedures, and routers |
+| `packages/auth/src` | Better Auth configuration |
+| `packages/db` | Prisma schema and database client |
+| `package.json` | Workspace scripts and package-manager selection |
+| `bts.jsonc` | The stack recorded by Better Fullstack |
+
+These paths are specific to that generated layout. Check them before copying the example into another stack. A single-app project or a separate API service needs different instructions.
+
+Avoid maintaining a full directory listing in prose. Point to the few places that would be costly to get wrong. If generated guidance and an actual file disagree, investigate the mismatch before making a change based on the guidance.
+
+## An example worth adapting
+
+The following is a suggested section to add to the generated file, after checking the paths and commands. The ownership rules describe the inspected layout. The private-data rules are requirements for future feature work, not a claim that the starter already implements a notes application.
+
+```md
+## Working in this app
+
+Read the relevant package.json before running commands. Use Bun.
+The root check commands are bun run check-types and bun run build.
+Report each command's result. If prerequisites prevent a check,
+name the missing prerequisite instead of calling the check passed.
+
+Keep pages and Next.js route handlers in apps/web/src/app.
+Inspect packages/api/src before adding an API operation.
+Keep auth configuration in packages/auth/src and database code
+in packages/db. Reuse the existing session and database clients.
+
+For private records, derive the current user from the server session.
+Do not accept a client-supplied owner ID as authorization.
+Apply ownership checks to reads, updates, and deletes.
+
+After changing an authenticated data flow, verify it with two test
+accounts. Confirm that one account cannot access the other's record
+through the API. A successful build does not prove this behavior.
+
+Before applying a database schema change, identify the target database
+and explain the effect on existing data. Do not put credentials in
+this file or in test output.
+```
+
+Each instruction changes an observable decision. The file names tell the agent where to start. The commands define a check. The account test defines behavior that a happy-path screenshot would miss.
+
+Keep the feature itself in the task request. A temporary instruction to add a notes page does not need to follow every future agent working on billing or navigation.
+
+## Make sure your agent reads the file
+
+Claude Code uses `CLAUDE.md` for project instructions. Anthropic documents an [AGENTS.md import](https://code.claude.com/docs/en/memory#agentsmd) for repositories that share instructions across tools. If you choose `AGENTS.md` as the maintained source, your `CLAUDE.md` can include:
+
+```md
+@AGENTS.md
+```
+
+Preserve any Claude-specific rules when making that change. If both files already contain substantial guidance, reconcile them first so the import does not leave duplicate or conflicting rules. Keep the import outside a code fence in the actual file.
+
+Better Fullstack can generate both files, but they do not stay synchronized just because they were created together. Decide which one your team will maintain. For other agents, check their supported filenames and loading rules before assuming the same behavior.
+
+## Keep instructions tied to evidence
+
+During the project inspection for this article, the root manifest defined `check-types` and `build`. That is the reason those commands appear in the example. A familiar command such as `bun test` would be a guess unless the project has an applicable test suite.
+
+Be just as precise about results. Type checks can find incompatible types. A production build can find compilation problems. Neither proves that PostgreSQL is reachable or that a user can sign in. Ask the agent to report those as separate checks.
+
+When a command or package location changes, update the instruction in the same change. If a rule repeatedly sends agents to the wrong place, correct or remove it. More instructions create more things to maintain.
+
+## Give the next task a clear finish
+
+Once the repository guidance is in place, a feature request can stay short:
+
+```text
+Add a private notes page using the existing API, auth, and database code.
+A signed-in user can create a note and see it after refreshing.
+Show a useful empty state and a visible error if saving fails.
+
+Follow AGENTS.md. Verify ownership through the API with two accounts,
+and report which checks passed and which you could not run.
+```
+
+The repository file supplies the stable project rules. The task supplies the new behavior. [Choose your starting stack](/new?preset=t3), generate the instruction files, and edit them after inspecting what the generator actually produced.

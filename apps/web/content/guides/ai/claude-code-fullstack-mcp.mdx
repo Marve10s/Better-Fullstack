@@ -1,0 +1,145 @@
+---
+title: "Create a fullstack app with Claude Code and MCP"
+description: "Connect Claude Code to Better Fullstack, preview a Next.js app with Prisma and Better Auth, then generate and check the project through MCP."
+updated: 2026-09-05
+translationStatus: pending
+category: AI Tools
+tags:
+  - nextjs
+  - mcp
+  - agents
+  - better-auth
+keywords:
+  - Claude Code fullstack starter
+  - Claude Code MCP Next.js
+  - Better Fullstack MCP tutorial
+---
+
+You can give Claude Code a concrete starting task: create a Next.js app with PostgreSQL, Prisma, tRPC, and Better Auth, then check that it builds. Better Fullstack's MCP server provides tools to inspect that stack and generate its files.
+
+This guide takes you from connecting the server to handing the generated app back to Claude for feature work. It uses Next.js for both the frontend and server routes. If you want to inspect the same core technologies visually first, [open the T3 preset](/new?preset=t3).
+
+## Connect the generator
+
+You need Claude Code installed and signed in, plus Bun and Node.js available in your terminal. Register the server once:
+
+```bash
+claude mcp add --transport stdio --scope user better-fullstack -- bunx create-better-fullstack@latest mcp
+```
+
+This changes your Claude Code MCP configuration. User scope makes the connection available across your projects, including the new directory you will generate. Claude starts Better Fullstack as a local process when it connects. Anthropic documents the command format and scopes in its [MCP reference](https://code.claude.com/docs/en/mcp).
+
+If Better Fullstack is already connected through its installer or plugin, use that connection. You do not need another registration.
+
+Open Claude Code in an empty parent directory. Run `/mcp` inside Claude Code and check that `better-fullstack` is connected. Then ask:
+
+```text
+Use the Better Fullstack MCP server to plan a project named claude-starter.
+
+First read bfs_get_guidance and the current TypeScript schema.
+Use Next.js with its own server routes, PostgreSQL, Prisma, tRPC,
+Better Auth, Tailwind, shadcn/ui, and Bun. Generate CLAUDE.md and AGENTS.md.
+Do not add payments, deployment services, or example features.
+
+Check compatibility, then call bfs_plan_project. Show the selected
+stack, any adjustments, and the planned file tree. Stop before creation.
+```
+
+This first request gives you a chance to inspect the result before files appear on disk.
+
+## Check the plan
+
+For this stack, the core fields are `frontend: ["next"]`, `backend: "self"`, and `runtime: "none"`. Here, `self` means Next.js owns the server routes. The runtime field does not select a separate backend runtime. You still need the toolchain required by Next.js.
+
+The MCP server accepts structured fields. This is the input used for this guide's verified plan:
+
+```json
+{
+  "projectName": "claude-starter",
+  "ecosystem": "typescript",
+  "frontend": ["next"],
+  "backend": "self",
+  "runtime": "none",
+  "database": "postgres",
+  "orm": "prisma",
+  "api": "trpc",
+  "auth": "better-auth",
+  "packageManager": "bun",
+  "cssFramework": "tailwind",
+  "uiLibrary": "shadcn-ui",
+  "payments": "none",
+  "examples": [],
+  "aiDocs": ["claude-md", "agents-md"]
+}
+```
+
+Ask Claude to read the live schema before reusing this input. CLI flags and MCP fields are different interfaces: `--template t3` is a CLI shortcut, not a field in this planning request. This example specifies the stack directly and does not select the T3 preset's extra workspace tooling.
+
+A successful compatibility call should have no unresolved issues. If the server changes a selection, check the reason before proceeding. The plan should include the web app and the shared `api`, `auth`, and `db` packages.
+
+## Create in the intended directory
+
+Once the plan matches your request, continue:
+
+```text
+Create the project with bfs_create_project using the same fields.
+Set targetDir to the absolute path of the parent directory we are
+working in. Keep projectName as claude-starter.
+
+Report projectDirectory from the result and the install command.
+Do not start the application or add features yet.
+```
+
+`targetDir` is the parent directory. Setting it to the intended final `claude-starter` directory would add another directory level. An explicit path also avoids relying on the MCP process's working directory.
+
+Creation writes the project files. Dependency installation is a separate step. Inspect the returned directory before running commands there:
+
+```text
+claude-starter/
+  AGENTS.md
+  CLAUDE.md
+  bts.jsonc
+  bts.lock.json
+  apps/web/
+    src/app/api/auth/[...all]/route.ts
+    src/app/api/trpc/[trpc]/route.ts
+  packages/
+    api/
+    auth/
+    db/
+```
+
+## Install and verify
+
+From the parent directory, run:
+
+```bash
+cd claude-starter
+bun install
+bun run check-types
+bun run build
+```
+
+Read the generated README and package scripts if you choose a different stack. The commands and prerequisites can change with the selected tools.
+
+The September 5, 2026 verification called the published Better Fullstack MCP server directly. Guidance, schema discovery, compatibility, planning, and creation succeeded. Compatibility returned no changes or issues, and planning created no project directory. The resulting files included both instruction files and the Next.js auth route. Dependency installation, type checks, and the production build also passed without manual source edits.
+
+This verifies the generator workflow through an MCP client. It is not a recording of Claude choosing and executing the tools. Database connectivity, browser sign-in, and deployment require separate checks in your environment.
+
+## Move Claude into the generated app
+
+Open a new Claude Code session from `claude-starter`. Its `CLAUDE.md` now describes the generated project. Ask Claude to compare those instructions with the actual files and package scripts before editing. The [AGENTS.md article](/blog/agents-md-fullstack-project) shows how to add rules specific to your app without copying an entire README.
+
+For a first feature, choose one action that you can verify after refreshing the page. For example, a signed-in user creates a private note and sees it again on their next visit. Follow the generated database setup instructions before testing that flow. The [Next.js, Prisma, and Better Auth guide](/guides/typescript/nextjs-prisma-better-auth) covers the stack's database and auth boundaries.
+
+## When a step fails
+
+| Symptom | What to check |
+| --- | --- |
+| The server is missing in `/mcp` | Inspect `claude mcp get better-fullstack` in your terminal. Check whether the registration belongs to another project scope. |
+| The server cannot start | Confirm `bunx` is available in the environment that launches Claude Code. Restart Claude Code after changing your shell setup. |
+| A tool rejects a field | Read `bfs_get_schema` and the tool's input schema. Use MCP field names and types, including arrays for `frontend` and `aiDocs`. |
+| Creation rejects the destination | Choose a new project name in an empty parent directory. Inspect an existing folder before deciding what to keep. |
+| The build passes but sign-in fails | Check the generated environment configuration and database setup. A build does not prove that a database connection or session works. |
+
+For other clients and existing-project operations, use the [MCP reference](/docs/ai/mcp). For this walkthrough, the useful checkpoint is a generated project you have inspected and checked, ready for one concrete feature.

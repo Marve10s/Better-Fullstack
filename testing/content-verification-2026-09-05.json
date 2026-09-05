@@ -1,0 +1,82 @@
+{
+  "date": "2026-09-05",
+  "purpose": "Claude Code MCP guide and AGENTS.md article verification",
+  "content": [
+    "apps/web/content/guides/ai/claude-code-fullstack-mcp.mdx",
+    "apps/web/content/blog/agents-md-fullstack-project.mdx"
+  ],
+  "package": "create-better-fullstack@2.6.3",
+  "launcher": "bunx create-better-fullstack@latest mcp",
+  "client": "Programmatic MCP client, not a Claude Code agent session",
+  "planInput": {
+    "projectName": "claude-starter",
+    "ecosystem": "typescript",
+    "frontend": [
+      "next"
+    ],
+    "backend": "self",
+    "runtime": "none",
+    "database": "postgres",
+    "orm": "prisma",
+    "api": "trpc",
+    "auth": "better-auth",
+    "packageManager": "bun",
+    "cssFramework": "tailwind",
+    "uiLibrary": "shadcn-ui",
+    "payments": "none",
+    "examples": [],
+    "aiDocs": [
+      "claude-md",
+      "agents-md"
+    ]
+  },
+  "mcp": {
+    "guidance": "passed",
+    "schema": "passed",
+    "compatibility": {
+      "changes": [],
+      "issues": []
+    },
+    "plan": "passed; project directory absent after planning",
+    "create": "passed; expected instruction files and route handlers exist"
+  },
+  "generatedProjectChecks": {
+    "bun install": 0,
+    "bun run check-types": 0,
+    "bun run build": 0
+  },
+  "cli": {
+    "command": "bun create better-fullstack@latest my-app --template t3 --package-manager bun --ai-docs agents-md claude-md --no-install --no-git",
+    "dryRunExitCode": 0,
+    "createExitCode": 0
+  },
+  "contentChecks": {
+    "baseCommit": "5b48cd7120aa536a5d1d77587e93ab28ed6dba47",
+    "workingDirectory": "apps/web",
+    "command": "bun test test/docs-content-contract.test.ts test/content/mdx-loader-paths.test.ts test/content/seo-contract.test.ts",
+    "passed": 32,
+    "failed": 0,
+    "mdx": "Both new pages compiled and rendered to static HTML",
+    "cover": "1200x630 PNG rendered from manually authored SVG; visually inspected"
+  },
+  "notTested": [
+    "Claude Code choosing and executing the MCP tools",
+    "database connectivity and schema application",
+    "browser sign-up and authenticated requests",
+    "deployment"
+  ],
+  "sourceEdits": [],
+  "logSha256": {
+    "mcp-install.log": "f2249c79537fb885366f0ad9def5fe099c08910bad4df2fe3ea3336a83680c45",
+    "mcp-check-types.log": "7edaf86cef989ed9c3c8be9398f650aa79ce5d2e120fb68bcdf68b8f732779f4",
+    "mcp-build.log": "3a02944a077e49553feb5fddd082c65c4f49c2bc2a281a27b1155107268f537f",
+    "cli-dry-run.log": "7d6d2f927a4f60b6c6cefc321f924df2007a4cd299d4021e6e861d4af881a1bf",
+    "cli-create.log": "2f77f422c649b7446b534a1a2b0b7cfde738df1b1c88b973678eb32015e735e9",
+    "content-tests.log": "42c99761e177419a2e31a80463426ce6e350a373819fd768050cf79453063428"
+  },
+  "sources": [
+    "https://code.claude.com/docs/en/mcp",
+    "https://code.claude.com/docs/en/memory",
+    "https://agents.md/"
+  ]
+}

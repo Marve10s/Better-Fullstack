@@ -39,6 +39,8 @@ const BUILDER_URL_KEYS = new Set([
   "view",
 ]);
 const PENDING_TRANSLATION_PATHS = [
+  "content/guides/ai/claude-code-fullstack-mcp.mdx",
+  "content/blog/agents-md-fullstack-project.mdx",
   "content/docs/ai/mcp.mdx",
   "content/docs/ai/overview.mdx",
   "content/docs/builder.mdx",
