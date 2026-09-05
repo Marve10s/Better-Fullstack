@@ -22,7 +22,7 @@ export function validateUpdateActionSources(sources: UpdateActionSources): strin
   );
   requireMatch(
     sources.metadata,
-    /bun-version:\s*"1\.3\.12"/,
+    /bun-version:\s*"1\.4\.0"/,
     "Update action must pin its Bun runtime.",
   );
   for (const input of [

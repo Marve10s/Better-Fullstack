@@ -129,7 +129,7 @@ describe("release workflow contract", () => {
     (bun!.with as Record<string, unknown>)["bun-version"] = "latest";
 
     expect(validateReleaseWorkflow(release, floatingCi)).toContain(
-      "required CI must pin every authoritative Bun runtime to 1.3.12",
+      "required CI must pin every authoritative Bun runtime to 1.4.0",
     );
   });
 

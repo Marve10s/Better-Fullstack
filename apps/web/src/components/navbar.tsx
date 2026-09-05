@@ -8,7 +8,6 @@ import {
   TbCheck as Check,
   TbChevronDown as ChevronDown,
   TbClipboardCopy as ClipboardCopy,
-  TbGauge as Gauge,
   TbBrandGithub as Github,
   TbStack3 as Layers3,
   TbLanguage as Languages,
@@ -467,18 +466,6 @@ function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
 
         <DropdownMenuGroup>
           <DropdownMenuLabel className={MOBILE_MENU_LABEL_CLASS}>
-            {m.navSectionExplore()}
-          </DropdownMenuLabel>
-          <div className={MOBILE_MENU_GROUP_CLASS}>
-            <DropdownMenuItem render={<Link to="/benchmark" />} className={MOBILE_MENU_ITEM_CLASS}>
-              <Gauge className="size-4" />
-              {m.navBenchmark()}
-            </DropdownMenuItem>
-          </div>
-        </DropdownMenuGroup>
-
-        <DropdownMenuGroup>
-          <DropdownMenuLabel className={MOBILE_MENU_LABEL_CLASS}>
             {m.navSectionResources()}
           </DropdownMenuLabel>
           <div className={MOBILE_MENU_GROUP_CLASS}>
@@ -575,9 +562,6 @@ export function Navbar() {
                   activeProps={DOCS_ACTIVE_PROPS}
                 >
                   {m.navPresets()}
-                </Link>
-                <Link to="/benchmark" className={NAV_LINK_CLASS} activeProps={DOCS_ACTIVE_PROPS}>
-                  {m.navBenchmark()}
                 </Link>
                 <DocsMenu />
               </div>

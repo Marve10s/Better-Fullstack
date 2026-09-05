@@ -338,14 +338,12 @@ const TIPS: readonly TipId[] = [
 ] as const;
 
 const STATS = [
-  { id: "tools", value: 7, suffix: "", fraction: false },
-  { id: "resources", value: 3, suffix: "", fraction: false },
-  { id: "options", value: 677, suffix: "", fraction: false },
-  { id: "speed", value: 2.6, suffix: "×", fraction: true },
+  { id: "tools", value: 7 },
+  { id: "resources", value: 3 },
+  { id: "options", value: 677 },
 ] as const;
 
 const numberFlowTiming = { duration: 900, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" } as const;
-const oneDecimalFormat = { minimumFractionDigits: 1, maximumFractionDigits: 1 } as const;
 
 const fadeUpInitial = { opacity: 0, y: 12 } as const;
 const fadeUpVisible = { opacity: 1, y: 0 } as const;
@@ -430,8 +428,6 @@ function getStatLabel(id: (typeof STATS)[number]["id"]) {
       return m.mcpStatReadableResources();
     case "options":
       return m.mcpStatConfigurableOptions();
-    case "speed":
-      return m.mcpStatFasterPromptOnly();
   }
 }
 
@@ -442,7 +438,6 @@ function McpPage() {
         <HeroSection />
         <ToolsSection />
         <WorkflowSection />
-        <CtaSection />
         <Footer />
       </div>
     </main>
@@ -507,7 +502,7 @@ function HeroSection() {
           </motion.div>
         </div>
 
-        <div className="mt-14 grid grid-cols-2 border border-border bg-muted/20 lg:grid-cols-4">
+        <div className="mt-14 grid grid-cols-1 border border-border bg-muted/20 sm:grid-cols-3">
           {STATS.map((stat, index) => (
             <StatCell key={stat.id} stat={stat} index={index} inView={inView} />
           ))}
@@ -536,18 +531,14 @@ function StatCell({
       transition={transition}
       className={cn(
         "border-border p-5 sm:p-6",
-        index % 2 === 0 && "border-r",
-        index < 2 && "border-b lg:border-b-0",
-        index < 3 && "lg:border-r",
+        index < STATS.length - 1 && "border-b sm:border-r sm:border-b-0",
       )}
     >
       <div className="font-mono text-3xl font-black tabular-nums sm:text-4xl">
         <NumberFlow
           value={inView ? stat.value : 0}
-          format={stat.fraction ? oneDecimalFormat : undefined}
           transformTiming={numberFlowTiming}
         />
-        {stat.suffix ? <span className={ACCENT_TEXT}>{stat.suffix}</span> : null}
       </div>
       <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         {getStatLabel(stat.id)}
@@ -903,41 +894,5 @@ function WorkflowLine({ line, index }: { line: (typeof WORKFLOW_LINES)[number]; 
       </span>
       <span className="text-[#7a7a7a]">{getWorkflowNote(line.id)}</span>
     </motion.p>
-  );
-}
-
-function CtaSection() {
-  return (
-    <section className="px-4 py-20 text-center sm:px-8 sm:py-24">
-      <p className={cn("font-mono text-[11px] uppercase tracking-[0.22em]", ACCENT_TEXT)}>
-        ✦ {m.mcpFinalEyebrow()}
-      </p>
-      <h2
-        className="mx-auto mt-4 max-w-[18ch] text-balance font-mono font-bold tracking-[-0.04em]"
-        style={h2Style}
-      >
-        {m.mcpFinalTitle()}{" "}
-        <span className="italic text-muted-foreground">{m.mcpFinalTitleEmphasis()}</span>
-      </h2>
-      <p className="mx-auto mt-5 max-w-md text-pretty text-sm text-muted-foreground sm:text-base">
-        {m.mcpFinalDescription()}
-      </p>
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-        <a
-          href="/benchmark"
-          className="group inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-all hover:gap-3"
-        >
-          {m.mcpViewBenchmark()}
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </a>
-        <a
-          href="/docs/ai/mcp"
-          className="group inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {m.mcpReadDocs()}
-          <ArrowUpRight className="size-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-        </a>
-      </div>
-    </section>
   );
 }

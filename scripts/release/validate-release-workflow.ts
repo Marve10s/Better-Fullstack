@@ -50,9 +50,9 @@ export function validateReleaseWorkflow(
   );
   if (
     requiredCiBunSteps.length === 0 ||
-    requiredCiBunSteps.some((step) => record(step.with)["bun-version"] !== "1.3.12")
+    requiredCiBunSteps.some((step) => record(step.with)["bun-version"] !== "1.4.0")
   ) {
-    errors.push("required CI must pin every authoritative Bun runtime to 1.3.12");
+    errors.push("required CI must pin every authoritative Bun runtime to 1.4.0");
   }
 
   const jobs = record(workflow.jobs);
@@ -240,7 +240,7 @@ export function validateReleaseWorkflow(
     errors.push("authoritative release toolchains must use exact versions");
   }
   for (const version of [
-    "1.3.12",
+    "1.4.0",
     "24.11.1",
     "11.6.2",
     "10.20.0",

@@ -44,6 +44,7 @@ describe("SEO contracts", () => {
       }>;
     };
 
+    expect(config.redirects?.some((redirect) => redirect.destination === "/benchmark")).toBe(false);
     expect(config.redirects).toContainEqual({
       source: "/:path*",
       has: [{ type: "host", value: "better-fullstack-web.vercel.app" }],
@@ -52,7 +53,7 @@ describe("SEO contracts", () => {
     });
   });
 
-  it("includes docs, guides, stack pages, MCP, and the benchmark runner in the dynamic sitemap", () => {
+  it("includes product pages and excludes retired benchmark pages from the dynamic sitemap", () => {
     const entries = getSitemapEntriesFromPages({
       docsPages: [
         { slug: [], frontmatter: { updated: "2026-05-12" } },
@@ -78,7 +79,8 @@ describe("SEO contracts", () => {
     expect(paths).toContain("/docs/cli/create");
     expect(paths).toContain("/guides/typescript/create-tanstack-start-project");
     expect(paths).toContain("/mcp");
-    expect(paths).toContain("/run");
+    expect(paths).not.toContain("/run");
+    expect(paths).not.toContain("/benchmark");
     expect(paths).toContain("/templates");
     expect(paths).not.toContain("/stack");
     expect(paths).toContain("/stack/nextjs-hono-drizzle-better-auth");

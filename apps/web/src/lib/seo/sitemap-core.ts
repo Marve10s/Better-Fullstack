@@ -22,12 +22,10 @@ type SitemapStackPage = {
 const staticSitemapEntries: SitemapEntry[] = [
   { path: "/", changefreq: "daily", priority: 1 },
   { path: "/new", changefreq: "daily", priority: 0.9 },
-  { path: "/benchmark", changefreq: "weekly", priority: 0.8 },
   { path: "/compare", changefreq: "weekly", priority: 0.8 },
   { path: "/compare/create-t3-app", changefreq: "weekly", priority: 0.7 },
   { path: "/compare/better-t-stack", changefreq: "weekly", priority: 0.7 },
   { path: "/mcp", changefreq: "weekly", priority: 0.7 },
-  { path: "/run", changefreq: "weekly", priority: 0.7 },
   { path: "/run-before-you-clone", changefreq: "weekly", priority: 0.9 },
   { path: "/templates", changefreq: "weekly", priority: 0.9 },
 ];
