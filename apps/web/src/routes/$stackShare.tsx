@@ -2,7 +2,6 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { StackBuilderPage } from "@/components/stack-builder/stack-builder-page";
 import { buildPageHead, getEcosystemOgImage, SITE_NAME } from "@/lib/seo/seo";
-import { parseStackShareSlug } from "@/lib/stack/stack-share-paths";
 import { getCanonicalStackSharePath, normalizeStackShareSlug } from "@/lib/stack/stack-share-slugs";
 
 const STACK_SHARE_LABELS = {
@@ -18,7 +17,8 @@ const STACK_SHARE_LABELS = {
 } as const;
 
 export const Route = createFileRoute("/$stackShare")({
-  loader: ({ params }) => {
+  loader: async ({ params }) => {
+    const { parseStackShareSlug } = await import("@/lib/stack/stack-share-paths");
     const stack = parseStackShareSlug(params.stackShare);
     if (!stack) throw notFound();
     return { stack };

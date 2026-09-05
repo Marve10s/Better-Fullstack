@@ -1,13 +1,9 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { DocsPageContent } from "@/components/docs/docs-page";
+import { getLocalizedDocFrontmatter } from "@/lib/docs/frontmatter";
 import { docsPageHead } from "@/lib/docs/seo";
-import {
-  getLocalizedDocFrontmatter,
-  getNeighbors,
-  getPage,
-  preloadDocPageContent,
-} from "@/lib/docs/source";
+import { getNeighbors, getPage, preloadDocPageContent } from "@/lib/docs/source";
 
 /**
  * Catch-all for nested docs paths (`/docs/cli/create`, `/docs/ecosystems/multi-ecosystem`,
@@ -16,6 +12,7 @@ import {
  * `[[...slug]]`). Both routes render the same component below.
  */
 export const Route = createFileRoute("/docs/$")({
+  codeSplitGroupings: [["loader"], ["component"]],
   loader: ({ params }) => {
     const splat = params._splat ?? "";
     const slug = splat.split("/").filter(Boolean);

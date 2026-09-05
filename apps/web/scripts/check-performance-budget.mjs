@@ -1,10 +1,12 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
+import { collectEntryAssets } from "./performance-entry-assets.mjs";
 
 const SCRIPT_DIR = path.dirname(new URL(import.meta.url).pathname);
 const WEB_DIR = path.resolve(SCRIPT_DIR, "..");
 const ASSETS_DIR = path.resolve(WEB_DIR, ".vercel/output/static/assets");
+const MANIFEST_PATH = path.resolve(ASSETS_DIR, "../.vite/manifest.json");
 const BASELINE_PATH = path.resolve(WEB_DIR, "perf-baseline.json");
 const REPORT_DIR = path.resolve(WEB_DIR, "reports/performance");
 const CURRENT_REPORT_PATH = path.resolve(REPORT_DIR, "current.json");
@@ -18,8 +20,6 @@ const TRACKED_KEYS = [
   "totalJsGzip",
 ];
 
-const MAIN_JS_PATTERNS = [/^main-.*\.js$/, /^index-.*\.js$/];
-const MAIN_CSS_PATTERNS = [/^main-.*\.css$/, /^index-.*\.css$/];
 const LOCALIZED_CONTENT_JS_PATTERN =
   /^(?:localized-content-|(?:es|zh-Hant|zh|ja|ko|de|fr|uk)[.-]).*\.js$/;
 const LAZY_SYNTAX_JS_PATTERN = /^lazy-syntax-(?:language|theme)-.*\.js$/;
@@ -54,10 +54,16 @@ async function getFileSize(filePath) {
   };
 }
 
-function findAsset(entries, patterns) {
-  return [...entries]
-    .sort((a, b) => a.gzip - b.gzip || a.file.localeCompare(b.file))
-    .find((entry) => patterns.some((pattern) => pattern.test(entry.file)));
+async function measureEntryAssets(files) {
+  if (files.length === 0) throw new Error("Required entry assets are missing from client manifest");
+  let raw = 0;
+  let gzip = 0;
+  for (const file of files) {
+    const size = await getFileSize(path.resolve(ASSETS_DIR, "..", file));
+    raw += size.raw;
+    gzip += size.gzip;
+  }
+  return { file: files.join(", "), raw, gzip };
 }
 
 function isLocalizedContentAsset(file) {
@@ -85,8 +91,10 @@ async function collectMetrics() {
     cssSizes.push({ file, ...size });
   }
 
-  const mainJs = findAsset(jsSizes, MAIN_JS_PATTERNS);
-  const mainCss = findAsset(cssSizes, MAIN_CSS_PATTERNS);
+  const manifest = JSON.parse(await fs.readFile(MANIFEST_PATH, "utf8"));
+  const entryAssets = collectEntryAssets(manifest);
+  const mainJs = await measureEntryAssets(entryAssets.js);
+  const mainCss = await measureEntryAssets(entryAssets.css);
   const stackBuilderJs = [...jsSizes]
     .filter((entry) => /^stack-builder-.*\.js$/.test(entry.file))
     .sort((a, b) => b.gzip - a.gzip || a.file.localeCompare(b.file))[0];
@@ -117,6 +125,8 @@ async function collectMetrics() {
 
   return {
     generatedAt: new Date().toISOString(),
+    entryMeasurementVersion: 2,
+    entryAssets,
     assetCount: {
       js: jsSizes.length,
       budgetedJs: budgetedJsSizes.length,
@@ -216,6 +226,7 @@ async function updateBaseline(current) {
 
   const baseline = {
     updatedAt: new Date().toISOString(),
+    entryMeasurementVersion: 2,
     metrics: Object.fromEntries(TRACKED_KEYS.map((key) => [key, current.metrics[key]])),
     budgets,
   };
@@ -238,6 +249,10 @@ async function updateBaseline(current) {
 async function checkAgainstBaseline(current) {
   const baselineRaw = await fs.readFile(BASELINE_PATH, "utf8");
   const baseline = JSON.parse(baselineRaw);
+
+  if (baseline.entryMeasurementVersion !== 2) {
+    throw new Error("Entry measurement changed to the manifest's static dependency graph. Migrate the entry baseline using the pre-change build before comparing; do not reset it to the optimized build.");
+  }
 
   for (const key of TRACKED_KEYS) {
     if (typeof baseline?.metrics?.[key] !== "number") {
