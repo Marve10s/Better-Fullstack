@@ -1,6 +1,4 @@
-import { PACKAGE_MANAGER_COMMANDS } from "@better-fullstack/types";
 import { Link } from "@tanstack/react-router";
-import { motion } from "motion/react";
 import { Fragment, useState } from "react";
 import {
   TbArrowNarrowRight as ArrowNarrowRight,
@@ -12,6 +10,7 @@ import {
 import { LIKED_BY } from "@/components/home/testimonials-data";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/platform/utils";
+import { PACKAGE_MANAGER_COMMANDS } from "@/lib/project/home-display-data";
 import { m } from "@/paraglide/messages.js";
 
 const PMS = ["bun", "pnpm", "npm", "yarn"] as const;
@@ -55,23 +54,15 @@ export default function HeroSection() {
   return (
     <section className="relative bg-surface text-ink">
       <div className="mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-3xl flex-col items-center justify-center px-4 py-16 sm:py-20">
-        <motion.h1
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+        <h1
           className="text-balance text-center font-mono font-bold tracking-[-0.045em] text-ink"
           style={{ fontSize: "clamp(2.25rem, 6.5vw, 4.5rem)", lineHeight: 1 }}
         >
           {m.homeStarterTitleA()}{" "}
           <span className={cn("italic", ACCENT_TEXT)}>{m.homeStarterTitleB()}</span>
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.12 }}
-          className="mt-5 max-w-2xl whitespace-pre-line text-center text-sm leading-relaxed text-soft sm:mt-6 sm:text-base"
-        >
+        <p className="mt-5 max-w-2xl whitespace-pre-line text-center text-sm leading-relaxed text-soft sm:mt-6 sm:text-base">
           {m
             .homeStarterSubtitle()
             .split("→")
@@ -101,14 +92,9 @@ export default function HeroSection() {
                 )}
               </Fragment>
             ))}
-        </motion.p>
+        </p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.22 }}
-          className="mt-8 w-full sm:mt-10"
-        >
+        <div className="mt-8 w-full sm:mt-10">
           <div className="flex flex-wrap justify-center gap-2">
             {SHAPES.map((entry) => (
               <button
@@ -186,14 +172,9 @@ export default function HeroSection() {
               <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-12 flex flex-wrap items-center justify-center gap-x-4 gap-y-3"
-        >
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-x-4 gap-y-3">
           <ul className="isolate flex -space-x-2.5" aria-label={m.homeLikedOnX()}>
             {LIKED_BY.map((person) => (
               <li
@@ -247,7 +228,7 @@ export default function HeroSection() {
               ✦ {m.homeLikedOnX()}
             </p>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

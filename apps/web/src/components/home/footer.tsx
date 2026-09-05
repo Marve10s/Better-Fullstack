@@ -1,4 +1,4 @@
-import { PACKAGE_MANAGER_COMMANDS } from "@better-fullstack/types";
+import { PACKAGE_MANAGER_COMMANDS } from "@/lib/project/home-display-data";
 import { Link } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "motion/react";
 import { useState, type ReactNode } from "react";

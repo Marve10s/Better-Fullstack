@@ -1,6 +1,7 @@
 import type { ShikiTransformer } from "shiki";
 
 import { contentMetaPlugin } from "#vite-plugins/content-meta";
+import { projectStatsPlugin } from "#vite-plugins/project-stats";
 import { paraglideCompilerOptions } from "#web-root/paraglide.config";
 import { remarkExtractToc } from "#web/lib/docs/remark-extract-toc";
 import { remarkNpmTabs } from "#web/lib/docs/remark-npm-tabs";
@@ -110,6 +111,7 @@ export default defineConfig({
     __BFS_DEPLOYED_GIT_HEAD__: JSON.stringify(deployedGitHead),
   },
   build: {
+    manifest: true,
     sourcemap: false,
     minify: "esbuild",
     rollupOptions: {
@@ -148,6 +150,7 @@ export default defineConfig({
   },
   plugins: [
     contentMetaPlugin(),
+    projectStatsPlugin(),
     ssrMdxLoaderAliasPlugin(),
     ssrTemplateGeneratorAliasPlugin(),
     paraglideVitePlugin(paraglideCompilerOptions),

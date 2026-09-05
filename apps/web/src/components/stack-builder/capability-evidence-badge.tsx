@@ -4,7 +4,7 @@ import {
   type OptionCategory,
   type OptionCategoryEcosystem,
 } from "@better-fullstack/types";
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, memo, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 
 import type { PublicCapabilityEvidenceReport } from "@/lib/docs/release-verification";
 
@@ -15,6 +15,13 @@ const BASELINE_INVENTORY = getCapabilityInventory();
 
 const CapabilityEvidenceContext =
   createContext<readonly CapabilityInventoryRecord[]>(BASELINE_INVENTORY);
+const CapabilityEvidenceLookupContext = createContext(
+  new Map(BASELINE_INVENTORY.map((record) => [evidenceKey(record), record])),
+);
+
+function evidenceKey(record: { ecosystem: string; category: string; optionId: string }) {
+  return `${record.ecosystem}:${record.category}:${record.optionId}`;
+}
 
 export function useCapabilityEvidenceInventory() {
   return useContext(CapabilityEvidenceContext);
@@ -23,6 +30,10 @@ export function useCapabilityEvidenceInventory() {
 export function CapabilityEvidenceProvider({ children }: { children: ReactNode }) {
   const [inventory, setInventory] =
     useState<readonly CapabilityInventoryRecord[]>(BASELINE_INVENTORY);
+  const lookup = useMemo(
+    () => new Map(inventory.map((record) => [evidenceKey(record), record])),
+    [inventory],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -44,7 +55,9 @@ export function CapabilityEvidenceProvider({ children }: { children: ReactNode }
 
   return (
     <CapabilityEvidenceContext.Provider value={inventory}>
-      {children}
+      <CapabilityEvidenceLookupContext.Provider value={lookup}>
+        {children}
+      </CapabilityEvidenceLookupContext.Provider>
     </CapabilityEvidenceContext.Provider>
   );
 }
@@ -54,17 +67,8 @@ function useCapabilityEvidence(
   category: OptionCategory,
   optionId: string,
 ): CapabilityInventoryRecord | undefined {
-  const inventory = useCapabilityEvidenceInventory();
-  return useMemo(
-    () =>
-      inventory.find(
-        (record) =>
-          record.ecosystem === ecosystem &&
-          record.category === category &&
-          record.optionId === optionId,
-      ),
-    [category, ecosystem, inventory, optionId],
-  );
+  const lookup = useContext(CapabilityEvidenceLookupContext);
+  return lookup.get(evidenceKey({ ecosystem, category, optionId }));
 }
 
 const EVIDENCE_LABELS = {
@@ -73,7 +77,7 @@ const EVIDENCE_LABELS = {
   "runtime-verified": "Runtime verified",
 } as const;
 
-export function CapabilityEvidenceBadge({
+export const CapabilityEvidenceBadge = memo(function CapabilityEvidenceBadge({
   ecosystem,
   category,
   optionId,
@@ -119,4 +123,4 @@ export function CapabilityEvidenceBadge({
       </TooltipContent>
     </Tooltip>
   );
-}
+});
