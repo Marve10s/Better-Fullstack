@@ -7,41 +7,16 @@ import type {
   ServerDeploy,
 } from "@/types";
 
-import { getDefaultConfig } from "@/constants";
-import {
-  getAddonStackPartBinding,
-  parseStackPartSpecs,
-  stackPartsToLegacyProjectConfigPartial,
-} from "@/types";
 import { hasWebStyling } from "@/config/compatibility-rules";
+import { getDefaultConfig } from "@/constants";
 import { exitCancelled } from "@/presentation/errors";
-import { getAddonsChoice, getAppPlatformsChoice } from "@/prompts/developer/addons";
-import { getAnalyticsChoice } from "@/prompts/services/analytics";
-import { getWebMcpChoice } from "@/prompts/services/web-mcp";
-import { getAiDocsChoice } from "@/prompts/developer/ai-docs";
-import { getAstroIntegrationChoice } from "@/prompts/developer/astro-integration";
-import { getBackendFrameworkChoice } from "@/prompts/architecture/backend";
-import { getBotProtectionChoice } from "@/prompts/services/bot-protection";
 import { getApiChoice } from "@/prompts/architecture/api";
-import { getAuthChoice } from "@/prompts/services/auth";
-import { getORMChoice } from "@/prompts/data/orm";
+import { getBackendFrameworkChoice } from "@/prompts/architecture/backend";
+import {
+  NATIVE_FRONTEND_PROMPT_OPTIONS,
+  WEB_FRONTEND_PROMPT_OPTIONS,
+} from "@/prompts/architecture/frontend";
 import { getRuntimeChoice } from "@/prompts/architecture/runtime";
-import { getPaymentsChoice } from "@/prompts/services/payments";
-import { getEmailChoice } from "@/prompts/services/email";
-import { getFileUploadChoice } from "@/prompts/data/file-upload";
-import { getLoggingChoice } from "@/prompts/services/logging";
-import { getObservabilityChoice } from "@/prompts/services/observability";
-import { getAIChoice } from "@/prompts/services/ai";
-import { getRealtimeChoice } from "@/prompts/services/realtime";
-import { getJobQueueChoice } from "@/prompts/services/job-queue";
-import { getCachingChoice } from "@/prompts/data/caching";
-import { getRateLimitChoice } from "@/prompts/services/rate-limit";
-import { getCMSChoice } from "@/prompts/services/cms";
-import { getSearchChoice } from "@/prompts/data/search";
-import { getVectorDbChoice } from "@/prompts/data/vector-db";
-import { getFileStorageChoice } from "@/prompts/data/file-storage";
-import { getIntegrationsChoice } from "@/prompts/services/integrations";
-import { getEcommerceChoice } from "@/prompts/services/ecommerce";
 import {
   type ConfigPromptKey,
   type ConfigScope,
@@ -50,9 +25,26 @@ import {
   getDefaultPromptValue,
   shouldAskConfigPromptKey,
 } from "@/prompts/core/config-scope";
-import { getCSSFrameworkChoice } from "@/prompts/developer/css-framework";
+import {
+  isCancel,
+  isGoBack,
+  navigableMultiselect,
+  navigableSelect,
+} from "@/prompts/core/navigable";
+import { getCachingChoice } from "@/prompts/data/caching";
 import { getDatabaseChoice } from "@/prompts/data/database";
 import { getDBSetupChoice } from "@/prompts/data/database-setup";
+import { getFileStorageChoice } from "@/prompts/data/file-storage";
+import { getFileUploadChoice } from "@/prompts/data/file-upload";
+import { getORMChoice } from "@/prompts/data/orm";
+import { getSearchChoice } from "@/prompts/data/search";
+import { getVectorDbChoice } from "@/prompts/data/vector-db";
+import { getAddonsChoice, getAppPlatformsChoice } from "@/prompts/developer/addons";
+import { getAiDocsChoice } from "@/prompts/developer/ai-docs";
+import { getAstroIntegrationChoice } from "@/prompts/developer/astro-integration";
+import { getCSSFrameworkChoice } from "@/prompts/developer/css-framework";
+import { getShadcnOptions, type ShadcnOptions } from "@/prompts/developer/shadcn-options";
+import { getUILibraryChoice } from "@/prompts/developer/ui-library";
 import {
   getDotnetApiChoice,
   getDotnetAuthChoice,
@@ -90,8 +82,6 @@ import {
   getElixirValidationChoice,
   getElixirWebFrameworkChoice,
 } from "@/prompts/ecosystems/elixir-ecosystem";
-import { NATIVE_FRONTEND_PROMPT_OPTIONS, WEB_FRONTEND_PROMPT_OPTIONS } from "@/prompts/architecture/frontend";
-import { getGitChoice } from "@/prompts/project/git";
 import {
   getGoApiChoice,
   getGoAuthChoice,
@@ -112,7 +102,6 @@ import {
   getGoValidationChoice,
   getGoWebFrameworkChoice,
 } from "@/prompts/ecosystems/go-ecosystem";
-import { getinstallChoice } from "@/prompts/project/install";
 import {
   getJavaAuthChoice,
   getJavaApiChoice,
@@ -124,8 +113,6 @@ import {
   getJavaTestingLibrariesChoice,
   getJavaWebFrameworkChoice,
 } from "@/prompts/ecosystems/java-ecosystem";
-import { isCancel, isGoBack, navigableMultiselect, navigableSelect } from "@/prompts/core/navigable";
-import { getPackageManagerChoice } from "@/prompts/project/package-manager";
 import {
   getPythonAiChoice,
   getPythonAuthChoice,
@@ -164,9 +151,32 @@ import {
   getRustOrmChoice,
   getRustWebFrameworkChoice,
 } from "@/prompts/ecosystems/rust-ecosystem";
-import { getShadcnOptions, type ShadcnOptions } from "@/prompts/developer/shadcn-options";
-import { getUILibraryChoice } from "@/prompts/developer/ui-library";
+import { getGitChoice } from "@/prompts/project/git";
+import { getGraphInstallChoice } from "@/prompts/project/install";
+import { getPackageManagerChoice } from "@/prompts/project/package-manager";
+import { getAIChoice } from "@/prompts/services/ai";
+import { getAnalyticsChoice } from "@/prompts/services/analytics";
+import { getAuthChoice } from "@/prompts/services/auth";
+import { getBotProtectionChoice } from "@/prompts/services/bot-protection";
+import { getCMSChoice } from "@/prompts/services/cms";
+import { getEcommerceChoice } from "@/prompts/services/ecommerce";
+import { getEmailChoice } from "@/prompts/services/email";
+import { getIntegrationsChoice } from "@/prompts/services/integrations";
+import { getJobQueueChoice } from "@/prompts/services/job-queue";
+import { getLoggingChoice } from "@/prompts/services/logging";
+import { getObservabilityChoice } from "@/prompts/services/observability";
+import { getPaymentsChoice } from "@/prompts/services/payments";
+import { getRateLimitChoice } from "@/prompts/services/rate-limit";
+import { getRealtimeChoice } from "@/prompts/services/realtime";
 import { getDeploymentChoice } from "@/prompts/services/web-deploy";
+import { getWebMcpChoice } from "@/prompts/services/web-mcp";
+import {
+  getAddonStackPartBinding,
+  hasJavaScriptWorkspaceRoot,
+  toolingRequiresJavaScriptWorkspace,
+  parseStackPartSpecs,
+  stackPartsToLegacyProjectConfigPartial,
+} from "@/types";
 
 type CompositionMode = "single" | "multi";
 export type BackendEcosystem = Extract<
@@ -264,7 +274,11 @@ export async function selectKotlinMobileLibraries(
     required: false,
     initialValues: [],
     options: [
-      { value: "navigation-compose", label: "Navigation Compose", hint: "Official Android navigation" },
+      {
+        value: "navigation-compose",
+        label: "Navigation Compose",
+        hint: "Official Android navigation",
+      },
       { value: "voyager", label: "Voyager", hint: "Multiplatform navigation" },
       { value: "koin", label: "Koin", hint: "Dependency injection" },
       { value: "ktor-client", label: "Ktor Client", hint: "Multiplatform HTTP client" },
@@ -444,9 +458,7 @@ export async function gatherMultiEcosystemConfig(
   const swiftMobile = mobileEcosystem === "swift" ? "swiftui" : "none";
   const dartMobile = mobileEcosystem === "dart" ? "flutter" : "none";
   const kotlinMobileLibraries =
-    kotlinMobile !== "none"
-      ? await selectKotlinMobileLibraries(flags.kotlinMobileLibraries)
-      : [];
+    kotlinMobile !== "none" ? await selectKotlinMobileLibraries(flags.kotlinMobileLibraries) : [];
   const uiLibrary = hasWebStyling(frontendList)
     ? await scopedPromptValue("typescript", "uiLibrary", configScope, typeScriptSections, () =>
         getUILibraryChoice(flags.uiLibrary, frontendList, astroIntegration),
@@ -587,12 +599,8 @@ export async function gatherMultiEcosystemConfig(
     const observability =
       backend === "none"
         ? "none"
-        : await scopedPromptValue(
-            "typescript",
-            "observability",
-            configScope,
-            backendSections,
-            () => getObservabilityChoice(flags.observability, backend, "typescript"),
+        : await scopedPromptValue("typescript", "observability", configScope, backendSections, () =>
+            getObservabilityChoice(flags.observability, backend, "typescript"),
           );
     const ai =
       backend === "none"
@@ -658,12 +666,8 @@ export async function gatherMultiEcosystemConfig(
     const integrations =
       backend === "none"
         ? "none"
-        : await scopedPromptValue(
-            "typescript",
-            "integrations",
-            configScope,
-            backendSections,
-            () => getIntegrationsChoice(flags.integrations, backend, "typescript", runtime),
+        : await scopedPromptValue("typescript", "integrations", configScope, backendSections, () =>
+            getIntegrationsChoice(flags.integrations, backend, "typescript", runtime),
           );
     const ecommerce =
       backend === "none"
@@ -1160,12 +1164,12 @@ export async function gatherMultiEcosystemConfig(
       javaWebFramework === "ktor"
         ? "kotlin"
         : javaWebFramework !== "spring-boot"
-        ? "java"
-        : flags.javaLanguage !== undefined
-          ? promptValue(await getJavaLanguageChoice(flags.javaLanguage))
-          : flags.javaWebFramework !== undefined
-            ? "java"
-            : promptValue(await getJavaLanguageChoice(flags.javaLanguage));
+          ? "java"
+          : flags.javaLanguage !== undefined
+            ? promptValue(await getJavaLanguageChoice(flags.javaLanguage))
+            : flags.javaWebFramework !== undefined
+              ? "java"
+              : promptValue(await getJavaLanguageChoice(flags.javaLanguage));
     const javaBuildTool = promptValue(
       await getJavaBuildToolChoice(flags.javaBuildTool, javaLanguage),
     );
@@ -1534,42 +1538,39 @@ export async function gatherMultiEcosystemConfig(
 
   const baseStackParts = parseStackPartSpecs(stackPartSpecs, "selected");
   const graphPartial = stackPartsToLegacyProjectConfigPartial(baseStackParts);
-  const appPlatforms = await scopedPromptValue(
-    "typescript",
-    "appPlatforms",
-    configScope,
-    typeScriptSections,
-    () => getAppPlatformsChoice(flags.addons, frontendList),
-  );
+  const appPlatforms =
+    frontendEcosystem === "typescript" && frontendList.some((frontend) => frontend !== "none")
+      ? await scopedPromptValue("typescript", "appPlatforms", configScope, typeScriptSections, () =>
+          getAppPlatformsChoice(flags.addons, frontendList),
+        )
+      : [];
   const addons = await scopedPromptValue(
     "typescript",
     "addons",
     configScope,
     typeScriptSections,
     () =>
-      getAddonsChoice(
-        flags.addons,
-        frontendList,
-        "none",
-        undefined,
-        undefined,
-        undefined,
-        { ...graphPartial, ecosystem: backendEcosystem },
-      ),
+      getAddonsChoice(flags.addons, frontendList, "none", undefined, undefined, undefined, {
+        ...graphPartial,
+        ecosystem: backendEcosystem,
+      }),
   );
-  const serverDeploy = shouldAskConfigPromptKey(
-    "typescript",
-    "serverDeploy",
-    configScope,
-    typeScriptSections,
-  )
-    ? await selectServerDeployment(flags.serverDeploy)
-    : (getDefaultPromptValue("serverDeploy") as ServerDeploy);
+  const serverDeploy =
+    backendEcosystem === "typescript" &&
+    backendChoices.backend !== "none" &&
+    shouldAskConfigPromptKey("typescript", "serverDeploy", configScope, typeScriptSections)
+      ? await selectServerDeployment(flags.serverDeploy)
+      : (getDefaultPromptValue("serverDeploy") as ServerDeploy);
   const aiDocs = promptValue(await getAiDocsChoice(flags.aiDocs));
   const git = promptValue(await getGitChoice(flags.git));
-  const packageManager = promptValue(await getPackageManagerChoice(flags.packageManager));
-  const install = promptValue(await getinstallChoice(flags.install, "typescript", "none"));
-  const selectedAddons = Array.from(new Set([...appPlatforms, ...addons]));
+  const hasJavaScript = hasJavaScriptWorkspaceRoot(baseStackParts);
+  const packageManager = hasJavaScript
+    ? promptValue(await getPackageManagerChoice(flags.packageManager))
+    : baseConfig.packageManager;
+  const install = promptValue(await getGraphInstallChoice(flags.install));
+  const selectedAddons = Array.from(new Set([...appPlatforms, ...addons])).filter(
+    (addon) => hasJavaScript || !toolingRequiresJavaScriptWorkspace(addon),
+  );
 
   if (frontendEcosystem === "typescript" && frontendList[0] !== "none" && webDeploy !== "none") {
     stackPartSpecs.push(`frontend.deploy:typescript:${webDeploy}`);
@@ -1597,7 +1598,7 @@ export async function gatherMultiEcosystemConfig(
     projectName,
     projectDir,
     relativePath,
-    ecosystem: "typescript",
+    ecosystem: hasJavaScript ? "typescript" : (graphPartial.ecosystem ?? backendEcosystem),
     frontend:
       frontendEcosystem === "typescript"
         ? nativeFrontend === "none"

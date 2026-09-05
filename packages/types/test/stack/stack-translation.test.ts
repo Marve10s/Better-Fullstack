@@ -2,7 +2,9 @@ import { describe, expect, it } from "bun:test";
 
 import type { StackSelectionInput } from "@/stack/stack-translation";
 
+import { isToolingOverlayPart } from "@/capabilities/tooling-capabilities";
 import {
+  patchGraphScopedSelections,
   DEFAULT_STACK_SELECTION,
   STACK_SELECTION_KEYS,
   STACK_SELECTION_URL_KEYS,
@@ -15,7 +17,6 @@ import {
   parseStackSelectionFromUrlRecord,
   stackSelectionToProjectConfig,
 } from "@/stack/stack-translation";
-import { isToolingOverlayPart } from "@/capabilities/tooling-capabilities";
 
 const DEFAULT_SELECTION = DEFAULT_STACK_SELECTION;
 
@@ -133,10 +134,7 @@ describe("stack selection translation", () => {
     const selection = {
       ...DEFAULT_SELECTION,
       stackMode: "multi",
-      stackPartSpecs: [
-        "frontend:typescript:react-vite",
-        "frontend.webMcp:typescript:enabled",
-      ],
+      stackPartSpecs: ["frontend:typescript:react-vite", "frontend.webMcp:typescript:enabled"],
       webFrontend: ["react-vite"],
       webMcp: "none",
     } satisfies StackSelectionInput;
@@ -1068,5 +1066,94 @@ describe("stack selection translation", () => {
     expect(command).toContain("--part mobile.libraries:kotlin:ktor-client");
     expect(command).toContain("--part mobile:swift:swiftui:ios");
     expect(command).toContain("--part mobile:dart:flutter:flutter");
+  });
+});
+
+describe("graph composer contracts", () => {
+  it("omits the JavaScript package-manager flag for native-only applications", () => {
+    const command = generateStackSelectionCommand({
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      stackPartSpecs: ["frontend:dotnet:blazor-webassembly", "backend:go:gin"],
+      appPlatforms: [],
+    });
+    expect(command).not.toContain("--package-manager");
+    expect(
+      generateStackSelectionCommand({
+        ...DEFAULT_SELECTION,
+        stackMode: "multi",
+        stackPartSpecs: ["frontend:dotnet:blazor-webassembly", "backend:go:gin"],
+      }),
+    ).not.toContain("turborepo");
+    expect(command).toContain("--part frontend:dotnet:blazor-webassembly");
+  });
+
+  it("removes explicitly imported JavaScript tooling from native-only graphs", () => {
+    const selection: StackSelectionInput = {
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      stackPartSpecs: [
+        "backend:go:gin",
+        "workspaceRunner:typescript:turborepo",
+        "gitHooks:universal:lefthook",
+      ],
+      appPlatforms: [],
+    };
+    expect(toProjectConfig(selection).stackParts?.some((part) => part.toolId === "turborepo")).toBe(
+      false,
+    );
+    expect(generateStackSelectionCommand(selection)).not.toContain("turborepo");
+    expect(generateStackSelectionCommand(selection)).not.toContain("lefthook");
+    expect(generateStackSelectionCommand(selection)).not.toContain("--package-manager");
+  });
+
+  it("rejects an empty graph instead of generating the default TypeScript project", () => {
+    const selection: StackSelectionInput = {
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      stackPartSpecs: [],
+    };
+    expect(() => toProjectConfig(selection)).toThrow("Choose at least one application");
+    expect(() => generateStackSelectionCommand(selection)).toThrow(
+      "Choose at least one application",
+    );
+  });
+});
+
+describe("graph capability editing", () => {
+  it("replaces an explicit capability and preserves other services", () => {
+    const selection: StackSelectionInput = {
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      stackPartSpecs: [
+        "backend:python:fastapi:api",
+        "api.packageManager:python:uv",
+        "backend:go:gin:worker",
+      ],
+      appPlatforms: [],
+    };
+    const updates = patchGraphScopedSelections(selection, { pythonPackageManager: "poetry" });
+    const config = toProjectConfig({ ...selection, ...updates });
+    expect(
+      config.stackParts?.some((part) => part.role === "packageManager" && part.toolId === "uv"),
+    ).toBe(false);
+    expect(
+      config.stackParts?.find(
+        (part) => part.role === "packageManager" && part.ownerPartId === "api",
+      )?.toolId,
+    ).toBe("poetry");
+    expect(config.stackParts?.find((part) => part.id === "worker")?.toolId).toBe("gin");
+  });
+
+  it("removes an explicitly selected optional capability", () => {
+    const selection: StackSelectionInput = {
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      stackPartSpecs: ["backend:go:gin", "backend.logging:go:zerolog"],
+      goLogging: "zerolog",
+      appPlatforms: [],
+    };
+    const updates = patchGraphScopedSelections(selection, { goLogging: "none" });
+    expect(generateStackSelectionCommand({ ...selection, ...updates })).not.toContain("zerolog");
   });
 });

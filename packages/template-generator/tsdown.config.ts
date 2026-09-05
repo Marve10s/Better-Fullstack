@@ -4,6 +4,7 @@ export default defineConfig({
   entry: [
     "src/index.ts",
     "src/browser.ts",
+    "src/graph-project.ts",
     "src/fs-writer.ts",
     "src/core/template-reader.ts",
   ],

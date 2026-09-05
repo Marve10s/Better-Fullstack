@@ -9,12 +9,12 @@ import { track } from "@vercel/analytics";
 
 import type { StackState } from "@/lib/stack/stack-defaults";
 
-import { normalizeCampaignSlug } from "@/lib/campaign/campaign";
 import {
   isBrowserTelemetryEnabled,
   sanitizeProductProperties,
   trackProductEvent,
 } from "@/lib/analytics/product-analytics";
+import { normalizeCampaignSlug } from "@/lib/campaign/campaign";
 
 export type CampaignEvent =
   | "campaign_viewed"
@@ -148,7 +148,14 @@ export function selectionAnalyticsProperties(
   const track = STARTER_TRACK_DEFINITIONS.find(
     (candidate) => [...candidate.selection.stackPartSpecs].sort().join("|") === selectionSignature,
   );
-  const evidence = getStackSelectionEvidence(stack, { inventory });
+  let evidence;
+  try {
+    evidence = getStackSelectionEvidence(stack, { inventory });
+  } catch {
+    // Onboarding selections may be incomplete or temporarily incompatible.
+    // Analytics must not require a project that is ready for generation.
+    return stackAnalyticsProperties(stack, extra);
+  }
 
   return stackAnalyticsProperties(stack, {
     ...extra,

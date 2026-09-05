@@ -13,10 +13,12 @@ import {
   type StackPartOptionContext,
   type StackPartRole,
 } from "@better-fullstack/types";
-import { usesVirtualNoneStackSelection as usesVirtualNoneSelection } from "@better-fullstack/types/stack-translation";
+import {
+  patchGraphScopedSelections,
+  usesVirtualNoneStackSelection as usesVirtualNoneSelection,
+} from "@better-fullstack/types/stack-translation";
 import { AnimatePresence, motion } from "motion/react";
 import {
-  Fragment,
   Suspense,
   lazy,
   startTransition,
@@ -104,6 +106,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   beginBuilderZipAttempt,
@@ -129,6 +132,11 @@ import {
   type BuilderSearchPreferences,
 } from "@/lib/builder/builder-search-preferences";
 import { hasSeenBuilderShareModal } from "@/lib/builder/builder-share-modal-visibility";
+import {
+  composerUsesJavaScript,
+  hasComposerApplication,
+  reconcileComposerSpecs,
+} from "@/lib/builder/composer-graph";
 import {
   buildSavedStackEntry,
   loadSavedStacks,
@@ -280,7 +288,8 @@ type GraphBackendPickerConfig = GraphBackendConfig & {
   javaLanguage: "java" | "kotlin";
 };
 
-type MultiStackStepId = "frontend" | "backend" | "database" | "mobile" | "finalize";
+type ComposerRole = "frontend" | "backend" | "database" | "mobile";
+type MultiStackStepId = "applications" | "configure" | "project" | "review";
 
 function BuilderSearchField({
   scope,
@@ -654,27 +663,30 @@ function getAppPlatformGroupHeading(
 
 function getMultiStepLabel(stepId: MultiStackStepId) {
   switch (stepId) {
-    case "frontend":
-      return getLocalizedCategoryDisplayName("webFrontend", "Frontend");
-    case "backend":
-      return getLocalizedCategoryDisplayName("backend", "Backend");
-    case "database":
-      return getLocalizedCategoryDisplayName("database", "Database");
-    case "mobile":
-      return m.builderStepMobile();
-    case "finalize":
-      return m.builderStepFinalize();
+    case "applications":
+      return m.builderComposerApplications();
+    case "configure":
+      return m.builderComposerConfigure();
+    case "project":
+      return m.builderComposerProject();
+    case "review":
+      return m.builderComposerReview();
   }
 }
 
-const MULTI_STACK_STEPS: Array<{
-  id: MultiStackStepId;
-}> = [
-  { id: "frontend" },
-  { id: "backend" },
-  { id: "database" },
-  { id: "mobile" },
-  { id: "finalize" },
+function getComposerRoleLabel(role: ComposerRole) {
+  if (role === "mobile") return m.builderStepMobile();
+  return getLocalizedCategoryDisplayName(
+    role === "frontend" ? "webFrontend" : role,
+    role === "frontend" ? "Frontend" : role === "backend" ? "Backend" : "Database",
+  );
+}
+
+const MULTI_STACK_STEPS: Array<{ id: MultiStackStepId }> = [
+  { id: "applications" },
+  { id: "configure" },
+  { id: "project" },
+  { id: "review" },
 ];
 
 const MULTI_MOBILE_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
@@ -955,10 +967,7 @@ function getSoloBackendSelection(stack: StackState): GraphSelection {
             : getSelectedOptionId(stack.nativeFrontend),
     backendEcosystem: currentEcosystem,
     backendLanguage: stack.javaLanguage === "kotlin" ? "kotlin" : "java",
-    backend:
-      typeof backendValue === "string" && backendValue !== "none"
-        ? backendValue
-        : getDefaultGraphTool(backendConfig.frameworkCategory, "backend", currentEcosystem, "none"),
+    backend: typeof backendValue === "string" ? backendValue : "none",
     database: stack.database !== "none" ? stack.database : "none",
     backendOrm: typeof ormValue === "string" ? ormValue : "none",
     backendApi: typeof apiValue === "string" ? apiValue : "none",
@@ -967,7 +976,7 @@ function getSoloBackendSelection(stack: StackState): GraphSelection {
 }
 
 function getGraphSelection(stack: StackState): GraphSelection {
-  if (stack.stackPartSpecs.length === 0) {
+  if (stack.stackPartSpecs.length === 0 && stack.stackMode !== "multi") {
     return getSoloBackendSelection(stack);
   }
 
@@ -1392,6 +1401,17 @@ function getStackOptionUpdate(
   category: keyof typeof TECH_OPTIONS,
   techId: string,
 ): Partial<StackState> {
+  return patchGraphScopedSelections(
+    currentStack,
+    getStackOptionFieldUpdate(currentStack, category, techId),
+  );
+}
+
+function getStackOptionFieldUpdate(
+  currentStack: StackState,
+  category: keyof typeof TECH_OPTIONS,
+  techId: string,
+): Partial<StackState> {
   const catKey = getStackKeyForCategory(category);
   const update: Partial<StackState> = {};
   const currentValue = currentStack[catKey];
@@ -1517,14 +1537,29 @@ function shouldSkipCategory(stack: StackState, categoryKey: string): boolean {
   );
 }
 
-function resolveDisplayedSections(
-  stackMode: StackState["stackMode"],
-  ecosystem: Ecosystem,
-): BuilderSectionDef[] {
+function resolveDisplayedSections(stack: StackState): BuilderSectionDef[] {
+  const { stackMode, ecosystem } = stack;
   if (stackMode === "multi") {
     return getBuilderSections(
       "typescript",
-      GRAPH_COMMON_CATEGORY_ORDER as readonly OptionCategory[],
+      GRAPH_COMMON_CATEGORY_ORDER.filter((category) => {
+        if (
+          category === "packageManager" ||
+          category === "toolchainProfile" ||
+          category === "workspaceRunner" ||
+          category === "codeQualityProfile" ||
+          category === "gitHooks" ||
+          category === "documentation" ||
+          category === "examples"
+        )
+          return composerUsesJavaScript(stack.stackPartSpecs);
+        const tooling = getToolingCategoryForUi(category);
+        if (!tooling) return true;
+        // Keep a category only when it offers a supported choice for this graph.
+        return getVisibleOptions(stack, category, TECH_OPTIONS[category] || []).some(
+          (option) => option.id !== "none" && isOptionCompatible(stack, category, option.id),
+        );
+      }) as readonly OptionCategory[],
     );
   }
   return getBuilderSections(ecosystem, getCategoryOrderForEcosystem(ecosystem));
@@ -1539,6 +1574,11 @@ const SHADCN_SUB_CATEGORIES = new Set<keyof typeof TECH_OPTIONS>([
   "shadcnFont",
   "shadcnRadius",
 ]);
+
+const ComposerProjectReview = lazy(async () => {
+  const module = await import("@/components/stack-builder/composer-project-review");
+  return { default: module.ComposerProjectReview };
+});
 
 const PreviewPanel = lazy(async () => {
   const module = await import("@/components/stack-builder/preview-panel");
@@ -1725,6 +1765,11 @@ function CreationModeComposer({
   onActiveStepChange: (stepId: MultiStackStepId) => void;
 }) {
   const graphSelection = useMemo(() => getGraphSelection(stack), [stack]);
+  const [selectedRole, setSelectedRole] = useState<ComposerRole>("frontend");
+  const applicationRoles: ComposerRole[] = ["frontend", "mobile", "backend"];
+  const selectedRoles = applicationRoles.filter((role) => graphSelection[role] !== "none");
+  const configurableRoles: ComposerRole[] = [...selectedRoles, "database"];
+  const activeRole = configurableRoles.includes(selectedRole) ? selectedRole : configurableRoles[0];
   const frontendConfig = GRAPH_FRONTEND_CONFIG_BY_ECOSYSTEM[graphSelection.frontendEcosystem];
   const mobileConfig = GRAPH_MOBILE_CONFIGS.find(
     (config) => config.ecosystem === graphSelection.mobileEcosystem,
@@ -1825,11 +1870,14 @@ function CreationModeComposer({
 
   const applyGraphSelection = useCallback(
     (nextSelection: GraphSelection) => {
-      const specs = graphSelectionToSpecs(nextSelection);
-      onChange((current) => ({
-        ...stackPatchFromGraphSpecs(specs),
-        projectName: current.projectName,
-      }));
+      onChange((current) => {
+        const specs = reconcileComposerSpecs(
+          current.stackPartSpecs,
+          graphSelectionToSpecs(getGraphSelection(current)),
+          graphSelectionToSpecs(nextSelection),
+        );
+        return { ...stackPatchFromGraphSpecs(specs), projectName: current.projectName };
+      });
     },
     [onChange],
   );
@@ -1992,7 +2040,7 @@ function CreationModeComposer({
   }, [hasStaleKotlinBackendCapability, reconciledBackendCapabilities, updateGraphSelection]);
 
   const getStepSelection = (
-    stepId: MultiStackStepId,
+    stepId: ComposerRole,
   ): { scopeLabel: string; toolId: string; toolName: string } | null => {
     switch (stepId) {
       case "frontend":
@@ -2027,8 +2075,6 @@ function CreationModeComposer({
               toolId: graphSelection.mobile,
               toolName: getOptionName(mobileConfig.frameworkCategory, graphSelection.mobile),
             };
-      case "finalize":
-        return null;
     }
   };
 
@@ -2086,7 +2132,7 @@ function CreationModeComposer({
         )}
         <span
           className={cn(
-            "relative hidden font-mono text-[11px] uppercase tracking-wide transition-all min-[480px]:inline sm:text-xs",
+            "relative font-mono text-[10px] uppercase tracking-wide transition-all sm:text-xs",
             selected && "font-bold",
           )}
         >
@@ -2151,7 +2197,7 @@ function CreationModeComposer({
   );
 
   const renderActiveStep = () => {
-    switch (activeStep) {
+    switch (activeRole) {
       case "frontend":
         return (
           <div className="space-y-5">
@@ -2477,8 +2523,6 @@ function CreationModeComposer({
               ))}
           </div>
         );
-      case "finalize":
-        return null;
     }
   };
 
@@ -2486,73 +2530,178 @@ function CreationModeComposer({
     return null;
   }
 
-  return (
-    <section
-      data-testid="stack-graph-composer"
-      className="mb-6 rounded-2xl border border-border/60 bg-muted/20 p-4 shadow-sm sm:mb-8 sm:p-5"
-    >
-      <div className="space-y-5">
-        <div className="flex items-start overflow-x-auto px-10 pb-12">
-          {MULTI_STACK_STEPS.map((step, index) => {
-            const selected = activeStep === step.id;
-            const isFinalize = step.id === "finalize";
-            const isLast = index === MULTI_STACK_STEPS.length - 1;
-            const selection = isFinalize ? null : getStepSelection(step.id);
-            const subLabel = isFinalize
-              ? m.builderSetup()
-              : (selection?.toolName ?? m.builderNone());
-            const stepNumber = String(index + 1).padStart(2, "0");
+  const toggleApplication = (role: ComposerRole) => {
+    if (graphSelection[role] !== "none") {
+      updateGraphSelection({
+        [role]: "none",
+        ...(role === "backend"
+          ? { backendOrm: "none", backendApi: "none", backendAuth: "none" }
+          : {}),
+      });
+      return;
+    }
+    const config =
+      role === "frontend" ? frontendConfig : role === "mobile" ? mobileConfig : backendConfig;
+    updateGraphSelection({
+      [role]: getDefaultGraphTool(config.frameworkCategory, role, config.ecosystem, "none"),
+    });
+    setSelectedRole(role);
+  };
 
-            return (
-              <Fragment key={step.id}>
+  const editRole = (role: ComposerRole) => {
+    setSelectedRole(role);
+    onActiveStepChange("configure");
+  };
+
+  return (
+    <section data-testid="stack-graph-composer" className="mb-8 space-y-8">
+      <nav
+        aria-label={m.builderComposerProgress()}
+        className="grid grid-cols-4 border-b border-border"
+      >
+        {MULTI_STACK_STEPS.map((step, index) => (
+          <button
+            key={step.id}
+            type="button"
+            data-testid={`multi-step-${step.id}`}
+            aria-current={activeStep === step.id ? "step" : undefined}
+            disabled={step.id !== "applications" && selectedRoles.length === 0}
+            onClick={() => onActiveStepChange(step.id)}
+            className={cn(
+              "flex min-h-16 flex-col gap-1 border-b-2 px-2 py-3 text-left transition-colors disabled:opacity-40 sm:flex-row sm:items-center sm:gap-3",
+              activeStep === step.id
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <span className="font-mono text-[10px]">0{index + 1}</span>
+            <span className="text-xs font-medium sm:text-sm">{getMultiStepLabel(step.id)}</span>
+          </button>
+        ))}
+      </nav>
+
+      {activeStep === "applications" && (
+        <div className="space-y-6">
+          <div className="max-w-xl space-y-2">
+            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              {m.builderComposerTitle()}
+            </h2>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {m.builderComposerDescription()}
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {applicationRoles.map((role) => {
+              const selection = getStepSelection(role);
+              const description =
+                role === "frontend"
+                  ? m.builderComposerWebDescription()
+                  : role === "mobile"
+                    ? m.builderComposerMobileDescription()
+                    : m.builderComposerBackendDescription();
+              return (
                 <button
+                  key={role}
                   type="button"
-                  data-testid={`multi-step-${step.id}`}
-                  aria-pressed={selected}
-                  onClick={() => onActiveStepChange(step.id)}
-                  className="group relative flex w-12 shrink-0 cursor-pointer flex-col items-center text-center"
+                  aria-pressed={Boolean(selection)}
+                  data-testid={`multi-application-${role}`}
+                  onClick={() => toggleApplication(role)}
+                  className={cn(
+                    "flex min-h-44 flex-col items-start gap-4 rounded-xl border p-5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-ring",
+                    selection
+                      ? "border-primary bg-primary/5"
+                      : "border-border bg-background hover:bg-muted/40",
+                  )}
                 >
-                  <span
-                    className={cn(
-                      "flex h-12 w-12 items-center justify-center rounded-full border font-mono text-sm font-semibold transition-all",
-                      selected
-                        ? "border-2 border-[#C6E853] text-[#C6E853]"
-                        : "border-border/60 bg-muted/40 text-muted-foreground group-hover:border-[#C6E853]/40 group-hover:text-foreground",
-                    )}
-                  >
-                    {stepNumber}
+                  <span className="flex w-full items-center justify-between text-sm font-semibold">
+                    {getComposerRoleLabel(role)}
+                    {selection && <Check aria-hidden="true" className="size-4 text-primary" />}
                   </span>
-                  <span className="absolute top-14 left-1/2 flex w-28 -translate-x-1/2 flex-col">
-                    <span
-                      className={cn(
-                        "truncate text-[13px] transition-colors",
-                        selected
-                          ? "font-semibold text-foreground"
-                          : "font-medium text-muted-foreground group-hover:text-foreground",
-                      )}
-                    >
-                      {getMultiStepLabel(step.id)}
-                    </span>
-                    <span className="truncate text-[11px] text-muted-foreground/70">
-                      {subLabel}
-                    </span>
+                  <span className="flex-1 text-xs leading-relaxed text-muted-foreground">
+                    {description}
+                  </span>
+                  <span className="text-xs font-medium">
+                    {selection?.toolName ?? m.builderComposerAddApplication()}
                   </span>
                 </button>
-
-                {!isLast && (
-                  <div aria-hidden="true" className="mt-6 h-px min-w-8 flex-1 bg-border/60" />
-                )}
-              </Fragment>
-            );
-          })}
-        </div>
-
-        {activeStep !== "finalize" && (
-          <div className="space-y-6 rounded-xl border border-border/60 bg-background p-4 sm:p-5">
-            {renderActiveStep()}
+              );
+            })}
           </div>
-        )}
-      </div>
+          {selectedRoles.length === 0 && (
+            <output className="text-sm text-muted-foreground">
+              {m.builderComposerChooseApplication()}
+            </output>
+          )}
+          <p className="text-xs text-muted-foreground">{m.builderComposerDatabaseLater()}</p>
+        </div>
+      )}
+
+      {activeStep === "configure" && (
+        <div className="space-y-5">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              {m.builderComposerConfigureTitle()}
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {m.builderComposerConfigureDescription()}
+            </p>
+          </div>
+          <Tabs
+            value={activeRole}
+            onValueChange={(value) => {
+              if (configurableRoles.includes(value as ComposerRole))
+                setSelectedRole(value as ComposerRole);
+            }}
+          >
+            <TabsList variant="line" className="mb-5 max-w-full justify-start overflow-x-auto">
+              {configurableRoles.map((role) => (
+                <TabsTrigger
+                  key={role}
+                  value={role}
+                  data-testid={`multi-step-${role}`}
+                  className="gap-2 px-2 py-2 sm:px-4"
+                >
+                  {getComposerRoleLabel(role)}
+                  <span className="hidden text-[10px] text-muted-foreground sm:inline">
+                    {getStepSelection(role)?.toolName ?? m.builderNone()}
+                  </span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <TabsContent value={activeRole} className="space-y-6">
+              {renderActiveStep()}
+            </TabsContent>
+          </Tabs>
+        </div>
+      )}
+
+      {activeStep === "project" && (
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            {m.builderComposerProjectTitle()}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {composerUsesJavaScript(stack.stackPartSpecs)
+              ? m.builderComposerJsSettings()
+              : m.builderComposerNativeSettings()}
+          </p>
+        </div>
+      )}
+
+      {activeStep === "review" && (
+        <div className="space-y-6">
+          <Suspense
+            fallback={
+              <Loader2 className="size-5 animate-spin" aria-label={m.builderComposerReview()} />
+            }
+          >
+            <ComposerProjectReview stack={stack} onEdit={editRole} />
+          </Suspense>
+          <Button variant="outline" onClick={() => onActiveStepChange("project")}>
+            {m.builderComposerEditProject()}
+          </Button>
+        </div>
+      )}
     </section>
   );
 }
@@ -2574,6 +2723,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   const evidenceInventory = useCapabilityEvidenceInventory();
 
   const [command, setCommand] = useState("");
+  const [commandError, setCommandError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -2586,7 +2736,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [sharePromptMoment, setSharePromptMoment] = useState<ShareMoment>("run");
   const [pendingUpdateEntryId, setPendingUpdateEntryId] = useState<string | null>(null);
-  const [multiActiveStep, setMultiActiveStep] = useState<MultiStackStepId>("frontend");
+  const [multiActiveStep, setMultiActiveStep] = useState<MultiStackStepId>("applications");
   // Collapse state stores explicit user toggles only; sections without an
   // override fall back to their definition's default, which auto-expands when
   // the section holds a non-default selection (shared URLs, presets, random).
@@ -2729,10 +2879,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
 
   const graphSelection = useMemo(() => getGraphSelection(stack), [stack]);
 
-  const displayedSections = useMemo(
-    () => resolveDisplayedSections(stack.stackMode, stack.ecosystem),
-    [stack.stackMode, stack.ecosystem],
-  );
+  const displayedSections = useMemo(() => resolveDisplayedSections(stack), [stack]);
   const sectionKeyByCategory = useMemo(() => {
     const lookup = new Map<string, string>();
     for (const builderSection of displayedSections) {
@@ -2869,11 +3016,20 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   }, [adjustedStack, campaign, compatibilityAnalysis.changes, evidenceInventory, setStack]);
 
   useEffect(() => {
+    setCommandError(null);
     const stackToUse = adjustedStack || stack;
     const projectName = stackToUse.projectName || "my-app";
     const formattedProjectName = formatProjectName(projectName);
-    const cmd = generateStackCommand({ ...stackToUse, projectName: formattedProjectName });
-    setCommand(cmd);
+    if (stackToUse.stackMode === "multi" && !hasComposerApplication(stackToUse.stackPartSpecs)) {
+      setCommand("");
+      return;
+    }
+    try {
+      setCommand(generateStackCommand({ ...stackToUse, projectName: formattedProjectName }));
+    } catch (error) {
+      setCommand("");
+      setCommandError(error instanceof Error ? error.message : String(error));
+    }
   }, [stack, adjustedStack]);
 
   useEffect(() => {
@@ -2896,7 +3052,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
 
   useEffect(() => {
     if (!isMultiMode) {
-      setMultiActiveStep("frontend");
+      setMultiActiveStep("applications");
     }
   }, [isMultiMode]);
 
@@ -2985,6 +3141,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   // ─── Handlers ───────────────────────────────────────────────────────────
 
   const copyToClipboard = () => {
+    if (!command) return;
     navigator.clipboard.writeText(command);
     selectionCompletedRef.current = true;
     trackCampaignEvent(
@@ -3002,21 +3159,13 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   };
 
   const getCompatibilityStackForCategory = (category: keyof typeof TECH_OPTIONS): StackState => {
-    if (stack.stackMode !== "multi" || multiActiveStep !== "finalize") return stack;
+    if (stack.stackMode !== "multi" || multiActiveStep !== "project") return stack;
     if (graphSelection.backend === "none") return stack;
 
     const backendCategories = getGraphBackendAdvancedCategoryOrder(graphSelection.backendEcosystem);
-    const stackWithGraphBackend = {
-      ...stack,
-      backend: stack.backend === "none" ? ("hono" as StackState["backend"]) : stack.backend,
-    };
-
-    if (!backendCategories.includes(category)) return stackWithGraphBackend;
-
-    return {
-      ...stackWithGraphBackend,
-      ecosystem: graphSelection.backendEcosystem as Ecosystem,
-    };
+    return backendCategories.includes(category)
+      ? { ...stack, ecosystem: graphSelection.backendEcosystem as Ecosystem }
+      : stack;
   };
 
   const handleTechSelect = (category: keyof typeof TECH_OPTIONS, techId: string) => {
@@ -3051,7 +3200,10 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   };
 
   const enableMultiMode = () => {
-    const specs = graphSelectionToSpecs(getGraphSelection(stack));
+    const specs =
+      stack.stackPartSpecs.length > 0
+        ? stack.stackPartSpecs
+        : graphSelectionToSpecs(getGraphSelection(stack));
     setStack((current) => ({
       ...stackPatchFromGraphSpecs(specs),
       projectName: current.projectName,
@@ -3279,6 +3431,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   );
 
   const goToSection = (sectionKey: string) => {
+    if (isMultiMode) setMultiActiveStep("project");
     // Expand the section if collapsed, then scroll it into view.
     expandSection(sectionKey);
     setSidebarOpen(false);
@@ -3288,6 +3441,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   };
 
   const goToCategory = (categoryKey: string) => {
+    if (isMultiMode) setMultiActiveStep("project");
     const sectionKey = sectionKeyByCategory.get(categoryKey);
     if (sectionKey) {
       expandSection(sectionKey);
@@ -3441,7 +3595,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                       />
                       <span
                         className={cn(
-                          "relative hidden font-mono text-[11px] uppercase tracking-wide transition-all min-[480px]:inline sm:text-xs",
+                          "relative font-mono text-[10px] uppercase tracking-wide transition-all sm:text-xs",
                           isActive ? "font-bold" : "",
                         )}
                       >
@@ -3594,7 +3748,11 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                   <button
                     type="button"
                     onClick={handleDownloadProject}
-                    disabled={isDownloadingProject}
+                    disabled={
+                      isDownloadingProject ||
+                      Boolean(commandError) ||
+                      (isMultiMode && !hasComposerApplication(stack.stackPartSpecs))
+                    }
                     data-testid="download-project-zip"
                     aria-label={
                       isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()
@@ -3821,6 +3979,14 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
 
               {viewMode === "command" ? (
                 <div className="p-3 pb-24 sm:p-4 sm:pb-28">
+                  {commandError && (
+                    <p
+                      role="alert"
+                      className="mb-4 rounded-lg border border-destructive/30 p-4 text-sm text-destructive"
+                    >
+                      {commandError}
+                    </p>
+                  )}
                   <CreationModeComposer
                     stack={stack}
                     onChange={setStack}
@@ -3829,8 +3995,8 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                   />
 
                   {/* Grouped sections - each section renders its categories as
-                      subsections. In multi mode these are the final "Finalize" step. */}
-                  {(stack.stackMode !== "multi" || multiActiveStep === "finalize") &&
+                      subsections. In multi mode these belong to the Project step. */}
+                  {(stack.stackMode !== "multi" || multiActiveStep === "project") &&
                     displayedSections.map((builderSection) => {
                       const visibleCategories = builderSection.categories.filter(
                         (categoryKey) =>
@@ -4591,8 +4757,9 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                   >
                     $
                   </motion.span>
-                  <code
-                    data-testid="command-output"
+                  <section
+                    aria-label={m.docsSectionCli()}
+                    tabIndex={0}
                     className={cn(
                       "no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap",
                       isMultiCreationInProgress && !isFinalMultiStep
@@ -4600,13 +4767,14 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                         : "text-[12.5px] text-[rgba(250,250,247,0.88)]",
                     )}
                   >
-                    {command}
-                  </code>
+                    <code data-testid="command-output">{command}</code>
+                  </section>
                   {isMultiCreationInProgress && !isFinalMultiStep ? (
                     <>
                       <button
                         type="button"
                         onClick={copyToClipboard}
+                        disabled={!command}
                         data-analytics-event="builder_command_copied"
                         data-analytics-source="builder_partial"
                         aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
@@ -4622,8 +4790,9 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                       <button
                         type="button"
                         data-testid="multi-step-next"
+                        disabled={!hasComposerApplication(stack.stackPartSpecs)}
                         onClick={handleMultiNextStep}
-                        className="border-beam flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] p-px text-[11.5px] font-semibold text-[#2A3303] shadow-[0_0_24px_rgba(198,232,83,0.22)] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48"
+                        className="border-beam disabled:cursor-not-allowed disabled:opacity-40 flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] p-px text-[11.5px] font-semibold text-[#2A3303] shadow-[0_0_24px_rgba(198,232,83,0.22)] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48"
                       >
                         <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
                           <span className="hidden min-[420px]:inline">{m.builderNextStep()}</span>
@@ -4642,6 +4811,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                       }}
                       type="button"
                       onClick={copyToClipboard}
+                      disabled={!command}
                       data-analytics-event="builder_command_copied"
                       data-analytics-source={isMultiMode ? "builder_multi" : "builder_solo"}
                       aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}

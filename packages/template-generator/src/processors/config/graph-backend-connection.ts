@@ -1,6 +1,7 @@
 import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "@/core/virtual-fs";
+
 import {
   getGraphBackendConnection,
   getGraphBackendConnections,
@@ -42,10 +43,10 @@ export function processGraphBackendConnection(vfs: VirtualFileSystem, config: Pr
   if (connections.length > 1) {
     vfs.writeFile(
       "GRAPH_SERVICES.md",
-      `# Generated services\n\nThe first service is the default client connection. Every service also has named root scripts.\n\n${connections
+      `# Generated services\n\nThe first service is the default client connection. Each service keeps its own directory and native startup command.\n\n${connections
         .map(
           (service, index) =>
-            `## ${index === 0 ? `${service.label} (default)` : service.label}\n\n- Part ID: \`${service.partId}\`\n- Directory: \`${service.targetPath}\`\n- Base URL: \`${service.serverUrl}\`\n- Start: \`bun run dev:${service.partId.replace(/[^a-zA-Z0-9_-]+/g, "-")}\``,
+            `## ${index === 0 ? `${service.label} (default)` : service.label}\n\n- Part ID: \`${service.partId}\`\n- Directory: \`${service.targetPath}\`\n- Base URL: \`${service.serverUrl}\`\n- Start: \`${service.devCommand}\``,
         )
         .join("\n\n")}\n`,
     );
@@ -53,12 +54,18 @@ export function processGraphBackendConnection(vfs: VirtualFileSystem, config: Pr
 
   const graphFrontends = (config.stackParts ?? []).filter(
     (part) =>
-      part.role === "frontend" && !part.ownerPartId && part.source !== "provided" && part.toolId !== "none",
+      part.role === "frontend" &&
+      !part.ownerPartId &&
+      part.source !== "provided" &&
+      part.toolId !== "none",
   );
   const graphFrontend = graphFrontends.find((part) => part.ecosystem === "typescript");
   const graphMobiles = (config.stackParts ?? []).filter(
     (part) =>
-      part.role === "mobile" && !part.ownerPartId && part.source !== "provided" && part.toolId !== "none",
+      part.role === "mobile" &&
+      !part.ownerPartId &&
+      part.source !== "provided" &&
+      part.toolId !== "none",
   );
 
   for (const graphMobile of graphMobiles) {
@@ -114,14 +121,9 @@ The frontend environment file contains the matching public server URL. Keep that
   );
 
   if (
-    [
-      "next",
-      "vinext",
-      "tanstack-router",
-      "tanstack-start",
-      "react-router",
-      "react-vite",
-    ].includes(frontend)
+    ["next", "vinext", "tanstack-router", "tanstack-start", "react-router", "react-vite"].includes(
+      frontend,
+    )
   ) {
     writeReactStatus(vfs, frontend, connection.serverUrl, connection.healthPath);
   } else if (frontend === "astro") {
@@ -433,7 +435,10 @@ export function GraphBackendStatus() {
     if (!content || content.includes("GraphBackendStatus")) continue;
 
     const withImport = content.startsWith('"use client"')
-      ? content.replace('"use client"\n', '"use client"\nimport { GraphBackendStatus } from "@/components/graph-backend-status";\n')
+      ? content.replace(
+          '"use client"\n',
+          '"use client"\nimport { GraphBackendStatus } from "@/components/graph-backend-status";\n',
+        )
       : `import { GraphBackendStatus } from "@/components/graph-backend-status";\n${content}`;
 
     const updated = withImport.includes('<h2 className="mb-2 font-medium">API Status</h2>')
@@ -538,14 +543,17 @@ function writeSvelteStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath
     '<script lang="ts">\nimport GraphBackendStatus from "../components/GraphBackendStatus.svelte";',
   );
   const updated = withImport.replace(
-    '\t</div>\n</div>',
-    '\t\t<GraphBackendStatus />\n\t</div>\n</div>',
+    "\t</div>\n</div>",
+    "\t\t<GraphBackendStatus />\n\t</div>\n</div>",
   );
   vfs.writeFile(path, updated);
 }
 
 function writeNuxtStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath: string): void {
-  const healthUrlExpression = graphHealthUrlExpression("(serverUrl || \"" + serverUrl + "\")", healthPath);
+  const healthUrlExpression = graphHealthUrlExpression(
+    '(serverUrl || "' + serverUrl + '")',
+    healthPath,
+  );
 
   vfs.writeFile(
     "apps/web/app/components/GraphBackendStatus.vue",
@@ -594,7 +602,10 @@ onMounted(() => {
 }
 
 function writeSolidStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath: string): void {
-  const healthUrlExpression = graphHealthUrlExpression(viteServerUrlExpression(serverUrl), healthPath);
+  const healthUrlExpression = graphHealthUrlExpression(
+    viteServerUrlExpression(serverUrl),
+    healthPath,
+  );
 
   vfs.writeFile(
     "apps/web/src/components/graph-backend-status.tsx",
@@ -668,12 +679,18 @@ export default function GraphBackendStatus() {
     'import Counter from "../islands/Counter.tsx";',
     'import Counter from "../islands/Counter.tsx";\nimport GraphBackendStatus from "../islands/GraphBackendStatus.tsx";',
   );
-  const updated = withImport.replace("<Counter start={3} />", "<Counter start={3} />\n            <GraphBackendStatus />");
+  const updated = withImport.replace(
+    "<Counter start={3} />",
+    "<Counter start={3} />\n            <GraphBackendStatus />",
+  );
   vfs.writeFile(path, updated);
 }
 
 function writeAngularStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath: string): void {
-  const healthUrlExpression = graphHealthUrlExpression(viteServerUrlExpression(serverUrl), healthPath);
+  const healthUrlExpression = graphHealthUrlExpression(
+    viteServerUrlExpression(serverUrl),
+    healthPath,
+  );
 
   vfs.writeFile(
     "apps/web/src/app/components/graph-backend-status.component.ts",
@@ -729,7 +746,10 @@ export class GraphBackendStatusComponent implements OnInit {
 }
 
 function writeQwikStatus(vfs: VirtualFileSystem, serverUrl: string, healthPath: string): void {
-  const healthUrlExpression = graphHealthUrlExpression(viteServerUrlExpression(serverUrl), healthPath);
+  const healthUrlExpression = graphHealthUrlExpression(
+    viteServerUrlExpression(serverUrl),
+    healthPath,
+  );
 
   vfs.writeFile(
     "apps/web/src/components/graph-backend-status.tsx",
@@ -850,6 +870,9 @@ export default GraphBackendStatus;
         '\n          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">',
         '\n          <GraphBackendStatus />\n\n          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">',
       )
-    : withImport.replace("\n          <div>", "\n          <GraphBackendStatus />\n\n          <div>");
+    : withImport.replace(
+        "\n          <div>",
+        "\n          <GraphBackendStatus />\n\n          <div>",
+      );
   vfs.writeFile(path, updated);
 }

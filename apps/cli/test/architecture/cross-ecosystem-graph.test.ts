@@ -1,11 +1,11 @@
 import { cliInputToProjectConfigPartial, getLocalWebDevPort } from "@better-fullstack/types";
+import { readVirtualFileContent as fileContent } from "@test/support/virtual-tree-utils";
 import { describe, expect, it } from "bun:test";
 
-import { createVirtual } from "@/index";
 import { validateConfigForProgrammaticUse } from "@/config/config-validation";
-import { runWithContext } from "@/presentation/context";
 import { displayConfig } from "@/config/display-config";
-import { readVirtualFileContent as fileContent } from "@test/support/virtual-tree-utils";
+import { createVirtual } from "@/index";
+import { runWithContext } from "@/presentation/context";
 
 function graphParts(part: string[]) {
   return cliInputToProjectConfigPartial({ part }).stackParts;
@@ -181,10 +181,7 @@ describe("Cross-ecosystem graph generation", () => {
       api: "none",
       runtime: "none",
       addons: ["kong"],
-      stackParts: graphParts([
-        "backend:python:fastapi",
-        "workspaceTooling:universal:kong",
-      ]),
+      stackParts: graphParts(["backend:python:fastapi", "workspaceTooling:universal:kong"]),
     });
 
     expect(result.success).toBe(true);
@@ -231,7 +228,9 @@ describe("Cross-ecosystem graph generation", () => {
     const rootPackage = JSON.parse(fileContent(root, "package.json")) as {
       scripts?: Record<string, string>;
     };
-    expect(rootPackage.scripts?.dev).toBe("bun run --filter web dev");
+    expect(rootPackage.scripts?.dev).toBe(
+      'concurrently --kill-others "bun run --filter web dev" "cd apps/server && mix phx.server"',
+    );
     expect(rootPackage.scripts?.["dev:server"]).toBe("cd apps/server && mix phx.server");
     expect(rootPackage.scripts?.["setup:server"]).toBe(
       "cd apps/server && mix deps.get && mix ecto.setup",
@@ -270,7 +269,7 @@ describe("Cross-ecosystem graph generation", () => {
       scripts?: Record<string, string>;
     };
     expect(rootPackage.scripts?.["dev:server"]).toBe("cd apps/server && cargo run --bin server");
-    expect(fileContent(root, "README.md")).toContain("Astro frontends can be generated with Rust");
+    expect(fileContent(root, "README.md")).toContain("cd apps/server && cargo run --bin server");
   });
 
   it("dry-runs every TypeScript web frontend with every non-TypeScript backend", async () => {
@@ -309,7 +308,7 @@ describe("Cross-ecosystem graph generation", () => {
         ).toContain(corsLine);
 
         expect(fileContent(root, graphDocPathFor(frontend))).toContain("Health URL:");
-        expect(fileContent(root, "README.md")).toContain("multi-ecosystem project graph");
+        expect(fileContent(root, "README.md")).toContain(serverUrlFor(ecosystem, backend));
 
         if (ecosystem === "python") {
           const backendReadme = fileContent(root, "apps/server/README.md");
@@ -356,8 +355,8 @@ describe("Cross-ecosystem graph generation", () => {
     expect(result.success).toBe(true);
     const readme = fileContent(result.tree!.root, "README.md");
     expect(readme).toContain("npm install");
-    expect(readme).toContain("npm run dev:web");
-    expect(readme).not.toContain("bun run dev:web");
+    expect(readme).toContain("npm run dev");
+    expect(readme).not.toContain("bun run dev");
   });
 
   it("keeps graph-only non-TypeScript GitHub Actions rooted in the backend app", async () => {

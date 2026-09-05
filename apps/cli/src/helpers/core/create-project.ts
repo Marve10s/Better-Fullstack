@@ -5,8 +5,6 @@ import fs from "fs-extra";
 import os from "node:os";
 import path from "node:path";
 
-import type { ProjectConfig } from "@/types";
-
 import { writeBtsConfig } from "@/config/bts-config";
 import { setupAddons } from "@/helpers/addons/addons-setup";
 import { setupDatabase } from "@/helpers/core/db-setup";
@@ -31,6 +29,7 @@ import {
 import { formatProject } from "@/platform/file-formatter";
 import { isSilent } from "@/presentation/context";
 import { CLIError } from "@/presentation/errors";
+import { isToolingOverlayOnly, type ProjectConfig } from "@/types";
 
 export interface CreateProjectOptions {
   manualDb?: boolean;
@@ -57,11 +56,13 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
 
     // Loaded here instead of at module top to keep CLI startup fast - the
     // template-generator bundle embeds all templates (~2.5 MB of source).
-    const [{ generateVirtualProject, EMBEDDED_TEMPLATES }, { writeTreeToFilesystem }] =
-      await Promise.all([
-        import("@better-fullstack/template-generator"),
-        import("@better-fullstack/template-generator/fs-writer"),
-      ]);
+    const [
+      { generateVirtualProject, EMBEDDED_TEMPLATES, getGraphProjectTasks },
+      { writeTreeToFilesystem },
+    ] = await Promise.all([
+      import("@better-fullstack/template-generator"),
+      import("@better-fullstack/template-generator/fs-writer"),
+    ]);
 
     const result = await generateVirtualProject({
       config: options,
@@ -73,8 +74,10 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     }
 
     await writeTreeToFilesystem(result.tree, projectDir);
-    await setPackageManagerVersion(projectDir, options.packageManager);
-    await ensurePackageManagerProjectFiles(projectDir, options.packageManager);
+    if (await fs.pathExists(path.join(projectDir, "package.json"))) {
+      await setPackageManagerVersion(projectDir, options.packageManager);
+      await ensurePackageManagerProjectFiles(projectDir, options.packageManager);
+    }
 
     if (!isConvex && options.database !== "none") {
       const dbResult = await setupDatabase(options, cliInput);
@@ -109,9 +112,36 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
 
     const repositoryInitialized = await initializeGit(projectDir, options.git);
 
+    const usesGraph =
+      Boolean(options.stackParts?.length) && !isToolingOverlayOnly(options.stackParts);
+    if (options.install && usesGraph) {
+      for (const task of getGraphProjectTasks(options)) {
+        if (!task.setup) continue;
+        if (task.id === "workspace") {
+          const result = await installDependencies({
+            projectDir,
+            packageManager: options.packageManager,
+          });
+          if (!result.success) setupFailures.push(result);
+          continue;
+        }
+        try {
+          if (!isSilent()) log.step(`Preparing ${task.label} (${task.path})`);
+          await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`bash -c ${task.setup}`;
+        } catch (error) {
+          setupFailures.push({
+            step: `Prepare ${task.label}`,
+            success: false,
+            errorMessage: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+    }
+
     // Skip npm/pnpm/bun install for Rust/Python/Go/Java projects (they use native toolchains)
     if (
       options.install &&
+      !usesGraph &&
       (options.ecosystem === "typescript" || options.ecosystem === "react-native")
     ) {
       const result = await installDependencies({
@@ -122,13 +152,13 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     }
 
     // Run cargo build for Rust projects
-    if (options.install && options.ecosystem === "rust") {
+    if (options.install && !usesGraph && options.ecosystem === "rust") {
       const result = await runCargoBuild({ projectDir });
       if (!result.success) setupFailures.push(result);
     }
 
     // Install Python dependencies with the selected Python package manager.
-    if (options.install && options.ecosystem === "python") {
+    if (options.install && !usesGraph && options.ecosystem === "python") {
       const result = await runPythonInstall({
         projectDir,
         packageManager: options.pythonPackageManager,
@@ -137,13 +167,18 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     }
 
     // Run go mod tidy for Go projects
-    if (options.install && options.ecosystem === "go") {
+    if (options.install && !usesGraph && options.ecosystem === "go") {
       const result = await runGoModTidy({ projectDir });
       if (!result.success) setupFailures.push(result);
     }
 
     // Run wrapper-based verification for Java projects
-    if (options.install && options.ecosystem === "java" && options.javaBuildTool !== "none") {
+    if (
+      options.install &&
+      !usesGraph &&
+      options.ecosystem === "java" &&
+      options.javaBuildTool !== "none"
+    ) {
       const result =
         options.javaBuildTool === "gradle"
           ? await runGradleTests({ projectDir })
@@ -151,7 +186,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       if (!result.success) setupFailures.push(result);
     }
 
-    if (options.install && options.ecosystem === "elixir") {
+    if (options.install && !usesGraph && options.ecosystem === "elixir") {
       const result = await runMixCompile({ projectDir });
       if (!result.success) setupFailures.push(result);
     }
@@ -161,7 +196,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     if (!isSilent()) {
       await displayPostInstallInstructions({
         ...options,
-        depsInstalled: options.install,
+        depsInstalled: options.install && setupFailures.length === 0,
       });
     }
 
