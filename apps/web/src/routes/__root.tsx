@@ -1,7 +1,7 @@
 import { Outlet, HeadContent, Scripts, createRootRoute, Link } from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import { lazy, Suspense, type ReactNode, useSyncExternalStore } from "react";
+import { lazy, Suspense, type ReactNode, useEffect, useSyncExternalStore } from "react";
 
 import geistSansUrl from "@/assets/fonts/Geist-Variable.woff2";
 import geistMonoUrl from "@/assets/fonts/GeistMono-Variable.woff2";
@@ -208,6 +208,12 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  // Browser tests wait for this before clicking; server HTML now includes
+  // interactive content whose handlers attach only after hydration.
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = "true";
+  }, []);
+
   return (
     <RootDocument>
       <Navbar />

@@ -215,14 +215,23 @@ async function writeSummary(summaryLines) {
   await fs.writeFile(SUMMARY_PATH, `${summaryLines.join("\n")}\n`, "utf8");
 }
 
-async function updateBaseline(current) {
-  let budgets = { ...DEFAULT_BUDGETS };
+async function readExistingBaseline() {
   try {
-    const existing = JSON.parse(await fs.readFile(BASELINE_PATH, "utf8"));
-    if (existing?.budgets) budgets = { ...budgets, ...existing.budgets };
-  } catch {
-    // Baseline does not exist yet.
+    return JSON.parse(await fs.readFile(BASELINE_PATH, "utf8"));
+  } catch (error) {
+    if (error?.code === "ENOENT") return null;
+    throw error;
   }
+}
+
+async function updateBaseline(current) {
+  const existing = await readExistingBaseline();
+  if (existing && existing.entryMeasurementVersion !== 2) {
+    throw new Error(
+      "Entry measurement changed to the manifest's static dependency graph. Migrate the entry baseline using the pre-change build before updating it; do not reset it to the optimized build.",
+    );
+  }
+  const budgets = { ...DEFAULT_BUDGETS, ...existing?.budgets };
 
   const baseline = {
     updatedAt: new Date().toISOString(),
