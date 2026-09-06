@@ -7,6 +7,7 @@ import { localizeGuideFrontmatter } from "@/lib/i18n/content-copy";
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/guides/")({
+  codeSplitGroupings: [["loader"], ["component"]],
   loader: () => {
     const page = getGuidePage([]);
     if (!page) throw notFound();

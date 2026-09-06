@@ -19,10 +19,12 @@ import {
   Fragment,
   Suspense,
   lazy,
+  memo,
   startTransition,
   type ReactNode,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -62,15 +64,11 @@ import { toast } from "sonner";
 import type { ShareMoment } from "@/lib/campaign/campaign-share";
 import type { Ecosystem } from "@/lib/stack/types";
 
-import { BuilderShareModal } from "@/components/stack-builder/builder-share-modal";
 import {
   CapabilityEvidenceBadge,
   CapabilityEvidenceProvider,
   useCapabilityEvidenceInventory,
 } from "@/components/stack-builder/capability-evidence-badge";
-import { ExistingProjectImportDialog } from "@/components/stack-builder/existing-project-import-dialog";
-import { PresetsPanel } from "@/components/stack-builder/presets-panel";
-import { SavedStacksPanel } from "@/components/stack-builder/saved-stacks-panel";
 import {
   type BuilderSectionDef,
   getBuilderSections,
@@ -1252,7 +1250,13 @@ function getCategoryRenderGroups(
   }));
 }
 
-function TechResourceButtons({ category, techId }: { category: string; techId: string }) {
+const TechResourceButtons = memo(function TechResourceButtons({
+  category,
+  techId,
+}: {
+  category: string;
+  techId: string;
+}) {
   const { docsUrl, githubUrl } = getTechResourceLinks(category, techId);
 
   if (!docsUrl && !githubUrl) return null;
@@ -1302,7 +1306,84 @@ function TechResourceButtons({ category, techId }: { category: string; techId: s
       )}
     </div>
   );
-}
+});
+
+const TechOptionCard = memo(function TechOptionCard({
+  tech,
+  category,
+  ecosystem,
+  isSelected,
+  isDisabled,
+  disabledReason,
+  description,
+  onSelect,
+}: {
+  tech: TechOption;
+  category: keyof typeof TECH_OPTIONS;
+  ecosystem: OptionCategoryEcosystem;
+  isSelected: boolean;
+  isDisabled: boolean;
+  disabledReason: string | null;
+  description: string;
+  onSelect: (category: keyof typeof TECH_OPTIONS, techId: string) => void;
+}) {
+  return (
+    <motion.div
+      data-testid={`option-${category}-${tech.id}`}
+      className={cn(
+        "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
+        isSelected
+          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+          : isDisabled
+            ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
+            : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+      )}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect(category, tech.id);
+      }}
+      title={disabledReason || undefined}
+    >
+      <div className="absolute top-2 right-2 flex items-center gap-1">
+        <TechResourceButtons category={category} techId={tech.id} />
+        {tech.default && !isSelected && (
+          <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
+            {m.builderDefault()}
+          </span>
+        )}
+      </div>
+      <div className="flex items-start gap-3">
+        {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
+          <div className="flex shrink-0 flex-col items-center gap-1">
+            <div
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+                isSelected ? "bg-primary/10" : "bg-muted/50 group-hover:bg-muted",
+              )}
+            >
+              <TechIcon techId={tech.id} icon={tech.icon} name={tech.name} className="h-5 w-5" />
+            </div>
+          </div>
+        )}
+        <div className="min-w-0 flex-1 pt-0.5">
+          <span
+            className={cn(
+              "block font-semibold text-sm",
+              isSelected ? "text-primary" : "text-foreground",
+            )}
+          >
+            {tech.name}
+          </span>
+          <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+            {description}
+          </p>
+          <CapabilityEvidenceBadge ecosystem={ecosystem} category={category} optionId={tech.id} />
+          {isDisabled && disabledReason && <DisabledReasonInline reason={disabledReason} />}
+        </div>
+      </div>
+    </motion.div>
+  );
+});
 
 function DisabledReasonInline({ reason, compact = false }: { reason: string; compact?: boolean }) {
   return (
@@ -2557,6 +2638,26 @@ function CreationModeComposer({
   );
 }
 
+const BuilderShareModal = lazy(async () => {
+  const module = await import("@/components/stack-builder/secondary-panels");
+  return { default: module.BuilderShareModal };
+});
+
+const ExistingProjectImportDialog = lazy(async () => {
+  const module = await import("@/components/stack-builder/secondary-panels");
+  return { default: module.ExistingProjectImportDialog };
+});
+
+const PresetsPanel = lazy(async () => {
+  const module = await import("@/components/stack-builder/secondary-panels");
+  return { default: module.PresetsPanel };
+});
+
+const SavedStacksPanel = lazy(async () => {
+  const module = await import("@/components/stack-builder/secondary-panels");
+  return { default: module.SavedStacksPanel };
+});
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
@@ -2573,7 +2674,6 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   ] = useStackState(initialStack);
   const evidenceInventory = useCapabilityEvidenceInventory();
 
-  const [command, setCommand] = useState("");
   const [copied, setCopied] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -2584,6 +2684,8 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   const [isDownloadingProject, setIsDownloadingProject] = useState(false);
   const [sharePromptOpen, setSharePromptOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [hasOpenedImport, setHasOpenedImport] = useState(false);
+  const [hasOpenedSharePrompt, setHasOpenedSharePrompt] = useState(false);
   const [sharePromptMoment, setSharePromptMoment] = useState<ShareMoment>("run");
   const [pendingUpdateEntryId, setPendingUpdateEntryId] = useState<string | null>(null);
   const [multiActiveStep, setMultiActiveStep] = useState<MultiStackStepId>("frontend");
@@ -2611,7 +2713,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const compatibilityAnalysis = analyzeStackCompatibility(stack);
+  const compatibilityAnalysis = useMemo(() => analyzeStackCompatibility(stack), [stack]);
   const adjustedStack = useMemo<StackState | null>(() => {
     if (!compatibilityAnalysis.adjustedStack) return null;
     return { ...stack, ...compatibilityAnalysis.adjustedStack };
@@ -2658,6 +2760,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
 
       const stackToShare = adjustedStack || stack;
       setSharePromptMoment(moment);
+      setHasOpenedSharePrompt(true);
       setSharePromptOpen(true);
       trackCampaignEvent(
         "builder_share_prompted",
@@ -2868,12 +2971,11 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     }
   }, [adjustedStack, campaign, compatibilityAnalysis.changes, evidenceInventory, setStack]);
 
-  useEffect(() => {
+  const command = useMemo(() => {
     const stackToUse = adjustedStack || stack;
     const projectName = stackToUse.projectName || "my-app";
     const formattedProjectName = formatProjectName(projectName);
-    const cmd = generateStackCommand({ ...stackToUse, projectName: formattedProjectName });
-    setCommand(cmd);
+    return generateStackCommand({ ...stackToUse, projectName: formattedProjectName });
   }, [stack, adjustedStack]);
 
   useEffect(() => {
@@ -2917,12 +3019,9 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     }
   }, [runSupported, setViewMode, viewMode]);
 
-  // Warm the run-panel chunk so the first switch to the Run tab mounts it
-  // synchronously - a suspended mount would delay the copy button's
-  // shared-layout landing target past the command bar's exit.
-  useEffect(() => {
+  const warmRunPanel = () => {
     if (runSupported) void import("@/components/stack-builder/run-panel");
-  }, [runSupported]);
+  };
 
   const handleRunStarted = useCallback(
     (rerun: boolean) => {
@@ -3031,6 +3130,15 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
       });
     });
   };
+
+  // Cards keep a stable handler while selection checks use the latest committed stack.
+  const handleTechSelectRef = useRef(handleTechSelect);
+  useLayoutEffect(() => {
+    handleTechSelectRef.current = handleTechSelect;
+  });
+  const selectTech = useCallback((category: keyof typeof TECH_OPTIONS, techId: string) => {
+    handleTechSelectRef.current(category, techId);
+  }, []);
 
   const handleMultiActiveStepChange = (stepId: MultiStackStepId) => {
     setMultiActiveStep(stepId);
@@ -3352,19 +3460,27 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
           </div>
         </DialogContent>
       </Dialog>
-      <BuilderShareModal
-        open={sharePromptOpen}
-        onOpenChange={setSharePromptOpen}
-        stack={adjustedStack || stack}
-        moment={sharePromptMoment}
-        campaign={campaign}
-      />
-      <ExistingProjectImportDialog
-        open={importDialogOpen}
-        onOpenChange={setImportDialogOpen}
-        currentStack={adjustedStack || stack}
-        onLoadImported={loadImportedStack}
-      />
+      {hasOpenedSharePrompt && (
+        <Suspense fallback={null}>
+          <BuilderShareModal
+            open={sharePromptOpen}
+            onOpenChange={setSharePromptOpen}
+            stack={adjustedStack || stack}
+            moment={sharePromptMoment}
+            campaign={campaign}
+          />
+        </Suspense>
+      )}
+      {hasOpenedImport && (
+        <Suspense fallback={null}>
+          <ExistingProjectImportDialog
+            open={importDialogOpen}
+            onOpenChange={setImportDialogOpen}
+            currentStack={adjustedStack || stack}
+            onLoadImported={loadImportedStack}
+          />
+        </Suspense>
+      )}
       <div className="relative flex h-full w-full flex-col overflow-hidden border-border text-foreground">
         {/* Single scroller: header + toolbar + content scroll together (header is not pinned) */}
         <div
@@ -3549,6 +3665,9 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                     <button
                       type="button"
                       onClick={() => setViewMode("run")}
+                      onPointerEnter={warmRunPanel}
+                      onFocus={warmRunPanel}
+                      onTouchStart={warmRunPanel}
                       data-testid="tab-run"
                       aria-pressed={viewMode === "run"}
                       data-state={viewMode === "run" ? "active" : "inactive"}
@@ -3792,7 +3911,12 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                           </DropdownMenuItem>
                         </>
                       )}
-                      <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setHasOpenedImport(true);
+                          setImportDialogOpen(true);
+                        }}
+                      >
                         <FileImport className="h-3.5 w-3.5" />
                         Import bts.jsonc
                       </DropdownMenuItem>
@@ -3965,85 +4089,19 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                     : null;
 
                                                   return (
-                                                    <motion.div
+                                                    <TechOptionCard
                                                       key={tech.id}
-                                                      data-testid={`option-${group.category}-${tech.id}`}
-                                                      className={cn(
-                                                        "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
-                                                        isSelected
-                                                          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                                          : isDisabled
-                                                            ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
-                                                            : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                                      )}
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleTechSelect(group.category, tech.id);
-                                                      }}
-                                                      title={disabledReason || undefined}
-                                                    >
-                                                      <div className="absolute top-2 right-2 flex items-center gap-1">
-                                                        <TechResourceButtons
-                                                          category={group.category}
-                                                          techId={tech.id}
-                                                        />
-                                                        {tech.default && !isSelected && (
-                                                          <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                                                            {m.builderDefault()}
-                                                          </span>
-                                                        )}
-                                                      </div>
-                                                      <div className="flex items-start gap-3">
-                                                        {(tech.icon !== "" ||
-                                                          ICON_REGISTRY[tech.id]) && (
-                                                          <div className="flex shrink-0 flex-col items-center gap-1">
-                                                            <div
-                                                              className={cn(
-                                                                "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                                                                isSelected
-                                                                  ? "bg-primary/10"
-                                                                  : "bg-muted/50 group-hover:bg-muted",
-                                                              )}
-                                                            >
-                                                              <TechIcon
-                                                                techId={tech.id}
-                                                                icon={tech.icon}
-                                                                name={tech.name}
-                                                                className="h-5 w-5"
-                                                              />
-                                                            </div>
-                                                          </div>
-                                                        )}
-                                                        <div className="min-w-0 flex-1 pt-0.5">
-                                                          <span
-                                                            className={cn(
-                                                              "block font-semibold text-sm",
-                                                              isSelected
-                                                                ? "text-primary"
-                                                                : "text-foreground",
-                                                            )}
-                                                          >
-                                                            {tech.name}
-                                                          </span>
-                                                          <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                                            {
-                                                              getLocalizedTechOption(tech)
-                                                                .description
-                                                            }
-                                                          </p>
-                                                          <CapabilityEvidenceBadge
-                                                            ecosystem={stack.ecosystem}
-                                                            category={group.category}
-                                                            optionId={tech.id}
-                                                          />
-                                                          {isDisabled && disabledReason && (
-                                                            <DisabledReasonInline
-                                                              reason={disabledReason}
-                                                            />
-                                                          )}
-                                                        </div>
-                                                      </div>
-                                                    </motion.div>
+                                                      tech={tech}
+                                                      category={group.category}
+                                                      ecosystem={stack.ecosystem}
+                                                      isSelected={isSelected}
+                                                      isDisabled={isDisabled}
+                                                      disabledReason={disabledReason}
+                                                      description={
+                                                        getLocalizedTechOption(tech).description
+                                                      }
+                                                      onSelect={selectTech}
+                                                    />
                                                   );
                                                 })}
                                               </div>
@@ -4471,29 +4529,41 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                 </div>
               ) : viewMode === "presets" ? (
                 <div className="min-h-0 flex-1 overflow-hidden">
-                  <PresetsPanel
-                    stack={adjustedStack || stack}
-                    ecosystem={stack.ecosystem}
-                    onApplyPreset={applyPreset}
-                    onCustomizePreset={(presetId) => {
-                      applyPreset(presetId);
-                      setViewMode("command");
-                    }}
-                    starterTrackFilters={starterTrackFilters}
-                    onStarterTrackFiltersChange={updateStarterTrackFilters}
-                  />
+                  <Suspense
+                    fallback={
+                      <div className="p-4 text-sm text-muted-foreground">{m.builderLoading()}</div>
+                    }
+                  >
+                    <PresetsPanel
+                      stack={adjustedStack || stack}
+                      ecosystem={stack.ecosystem}
+                      onApplyPreset={applyPreset}
+                      onCustomizePreset={(presetId) => {
+                        applyPreset(presetId);
+                        setViewMode("command");
+                      }}
+                      starterTrackFilters={starterTrackFilters}
+                      onStarterTrackFiltersChange={updateStarterTrackFilters}
+                    />
+                  </Suspense>
                 </div>
               ) : (
                 <div className="min-h-0 flex-1 overflow-hidden">
-                  <SavedStacksPanel
-                    entries={savedStacks}
-                    currentStack={adjustedStack || stack}
-                    onLoadEntry={loadSavedStack}
-                    onOverwriteEntry={overwriteSavedStack}
-                    onDeleteEntry={deleteSavedStack}
-                    onRenameEntry={renameSavedStack}
-                    onDuplicateEntry={duplicateSavedStack}
-                  />
+                  <Suspense
+                    fallback={
+                      <div className="p-4 text-sm text-muted-foreground">{m.builderLoading()}</div>
+                    }
+                  >
+                    <SavedStacksPanel
+                      entries={savedStacks}
+                      currentStack={adjustedStack || stack}
+                      onLoadEntry={loadSavedStack}
+                      onOverwriteEntry={overwriteSavedStack}
+                      onDeleteEntry={deleteSavedStack}
+                      onRenameEntry={renameSavedStack}
+                      onDuplicateEntry={duplicateSavedStack}
+                    />
+                  </Suspense>
                 </div>
               )}
             </main>

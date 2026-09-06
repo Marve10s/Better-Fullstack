@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 
-import { ChangelogModal } from "@/components/changelog-modal";
 import { registerVisit } from "@/lib/analytics/visitor";
 import { latestChangelogRelease } from "@/lib/content/changelog";
 import {
@@ -12,6 +11,11 @@ import { getLocalizedChangelogRelease } from "@/lib/i18n/changelog-copy";
 import { getLocaleDateTag } from "@/lib/i18n/locales";
 import { m } from "@/paraglide/messages.js";
 import { getLocale } from "@/paraglide/runtime.js";
+
+const ChangelogModal = lazy(async () => {
+  const { ChangelogModal } = await import("@/components/changelog-modal");
+  return { default: ChangelogModal };
+});
 
 function formatReleaseDate(publishedAt: string, fallback: string): string {
   const parsed = new Date(publishedAt);
@@ -27,6 +31,7 @@ function formatReleaseDate(publishedAt: string, fallback: string): string {
 export function ChangelogWidget() {
   const [isVisible, setIsVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hasOpenedModal, setHasOpenedModal] = useState(false);
 
   useEffect(() => {
     if (!latestChangelogRelease) return;
@@ -65,6 +70,7 @@ export function ChangelogWidget() {
 
     markInteracted("opened");
     setIsVisible(false);
+    setHasOpenedModal(true);
     setIsModalOpen(true);
   }, [markInteracted]);
 
@@ -148,7 +154,11 @@ export function ChangelogWidget() {
         </div>
       ) : null}
 
-      <ChangelogModal open={isModalOpen} onOpenChange={setIsModalOpen} />
+      {hasOpenedModal && (
+        <Suspense fallback={null}>
+          <ChangelogModal open={isModalOpen} onOpenChange={setIsModalOpen} />
+        </Suspense>
+      )}
     </>
   );
 }

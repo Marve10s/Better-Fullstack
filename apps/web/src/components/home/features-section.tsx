@@ -1,15 +1,13 @@
 import NumberFlow from "@number-flow/react";
 import { Link } from "@tanstack/react-router";
 import { motion, useInView } from "motion/react";
-import { lazy, Suspense, useMemo, useRef } from "react";
+import { lazy, Suspense, useRef } from "react";
 import { TbArrowRight as ArrowRight } from "react-icons/tb";
-
-import type { TechCategory } from "@/lib/stack/types";
 
 import { ContainerScroll } from "@/components/effects/container-scroll";
 import { TechIcon } from "@/components/ui/tech-icon";
+import { HOME_FEATURE_OPTIONS } from "@/lib/project/home-display-data";
 import { OPTION_ENTRY_COUNT, PROJECT_ECOSYSTEM_COPY } from "@/lib/project/project-stats";
-import { ECOSYSTEMS, TECH_OPTIONS } from "@/lib/stack/constant";
 import { m } from "@/paraglide/messages.js";
 
 const WebGLShader = lazy(async () => {
@@ -17,75 +15,31 @@ const WebGLShader = lazy(async () => {
   return { default: m.WebGLShader };
 });
 
-type Layer =
-  | { type: "ecosystems"; key: string; word: () => string }
-  | { type: "categories"; categories: TechCategory[]; key: string; word: () => string };
+type Layer = { key: keyof typeof HOME_FEATURE_OPTIONS; word: () => string };
 
 const LAYERS: ReadonlyArray<Layer> = [
-  { type: "ecosystems", key: "ecosystems", word: m.homeLayerLanguageEcosystems },
+  { key: "ecosystems", word: m.homeLayerLanguageEcosystems },
   {
-    type: "categories",
-    categories: ["webFrontend", "rustFrontend"],
     key: "frontend",
     word: m.homeLayerFrontendFrameworks,
   },
   {
-    type: "categories",
-    categories: [
-      "backend",
-      "rustWebFramework",
-      "pythonWebFramework",
-      "goWebFramework",
-      "javaWebFramework",
-      "elixirWebFramework",
-      "dotnetWebFramework",
-    ],
     key: "backend",
     word: m.homeLayerBackendFrameworks,
   },
   {
-    type: "categories",
-    categories: ["orm", "rustOrm", "pythonOrm", "goOrm", "javaOrm", "elixirOrm", "dotnetOrm"],
     key: "orm",
     word: m.homeLayerDatabaseOrms,
   },
   {
-    type: "categories",
-    categories: [
-      "auth",
-      "rustAuth",
-      "pythonAuth",
-      "goAuth",
-      "javaAuth",
-      "elixirAuth",
-      "dotnetAuth",
-    ],
     key: "auth",
     word: m.homeLayerAuthProviders,
   },
   {
-    type: "categories",
-    categories: ["ai", "pythonAi"],
     key: "ai",
     word: m.homeLayerAiIntegrations,
   },
 ];
-
-function getOptions(categories: TechCategory[]) {
-  const seen = new Set<string>();
-  const results: { id: string; name: string }[] = [];
-
-  for (const cat of categories) {
-    for (const opt of TECH_OPTIONS[cat] ?? []) {
-      if (!opt.legacy && opt.id !== "none" && !seen.has(opt.id)) {
-        seen.add(opt.id);
-        results.push({ id: opt.id, name: opt.name });
-      }
-    }
-  }
-
-  return results;
-}
 
 export default function FeaturesSection() {
   return (
@@ -172,12 +126,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
   const inView = useInView(ref, { once: true, margin: "-20%" });
   const flip = index % 2 === 1;
 
-  const options = useMemo(() => {
-    if (layer.type === "ecosystems") {
-      return ECOSYSTEMS.map((e) => ({ id: e.id, name: e.name }));
-    }
-    return getOptions(layer.categories);
-  }, [layer]);
+  const options = HOME_FEATURE_OPTIONS[layer.key];
 
   return (
     <li
@@ -227,13 +176,13 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.15 }}
             className={
-              layer.type === "ecosystems"
+              layer.key === "ecosystems"
                 ? "mt-6 flex flex-wrap items-center gap-6"
                 : "mt-5 flex flex-wrap gap-1.5"
             }
           >
             {options.map((opt, j) =>
-              layer.type === "ecosystems" ? (
+              layer.key === "ecosystems" ? (
                 <motion.div
                   key={opt.id}
                   initial={{ opacity: 0, scale: 0.92 }}

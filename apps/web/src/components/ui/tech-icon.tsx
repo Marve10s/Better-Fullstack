@@ -9,9 +9,10 @@ interface TechIconProps {
   icon?: string;
   name: string;
   className?: string;
+  loading?: "eager" | "lazy";
 }
 
-export function TechIcon({ techId, icon, name, className }: TechIconProps) {
+export function TechIcon({ techId, icon, name, className, loading = "lazy" }: TechIconProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
@@ -24,6 +25,8 @@ export function TechIcon({ techId, icon, name, className }: TechIconProps) {
           : computeSiUrl(config.slug, config.hex, isDark, config.fixedColor);
         return (
           <img
+            loading={loading}
+            decoding="async"
             src={src}
             alt={`${name} icon`}
             width={20}
@@ -35,6 +38,8 @@ export function TechIcon({ techId, icon, name, className }: TechIconProps) {
       // local
       return (
         <img
+          loading={loading}
+          decoding="async"
           src={config.src}
           alt={`${name} icon`}
           width={20}
@@ -51,6 +56,8 @@ export function TechIcon({ techId, icon, name, className }: TechIconProps) {
   if (icon.startsWith("https://") || icon.startsWith("/")) {
     return (
       <img
+        loading={loading}
+        decoding="async"
         src={icon}
         alt={`${name} icon`}
         width={20}

@@ -7,6 +7,7 @@ export const commandOutput = (page: Page): Locator => visibleTestId(page, "comma
 
 export async function gotoAppPage(page: Page, url: string) {
   await page.goto(url, { waitUntil: "domcontentloaded" });
+  await expect(page.locator("html[data-hydrated]")).toBeAttached({ timeout: 30_000 });
 }
 
 export async function openBuilder(page: Page) {

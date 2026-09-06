@@ -13,7 +13,6 @@ import {
   canonicalUrl,
   getEcosystemOgImage,
 } from "@/lib/seo/seo";
-import { getStackPage } from "@/lib/stack-pages/source";
 
 function stackPageJsonLd(page: GeneratedStackPage) {
   const url = canonicalUrl(`/stack/${page.slug}`);
@@ -47,7 +46,8 @@ function stackPageJsonLd(page: GeneratedStackPage) {
 }
 
 export const Route = createFileRoute("/stack_/$comboSlug")({
-  loader: ({ params }) => {
+  loader: async ({ params }) => {
+    const { getStackPage } = await import("@/lib/stack-pages/source");
     const page = getStackPage(params.comboSlug);
     if (!page) throw notFound();
     return page;

@@ -13,7 +13,7 @@ import {
 } from "react-icons/tb";
 
 import { TechIcon } from "@/components/ui/tech-icon";
-import { trackCampaignEvent } from "@/lib/analytics/campaign-analytics";
+import { trackCampaignEvent } from "@/lib/analytics/campaign-events";
 import {
   CAMPAIGN_BUILDER_SEARCH,
   CAMPAIGN_PRESETS,

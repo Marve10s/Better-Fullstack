@@ -12,7 +12,6 @@ import {
   SITE_URL,
   canonicalUrl,
 } from "@/lib/seo/seo";
-import { getPublishedStackPages } from "@/lib/stack-pages/source";
 
 const TEMPLATE_IMAGE = canonicalUrl("/search-media/stack-decisions-1200x630.png");
 const ECOSYSTEM_ORDER = ["typescript", "python", "go", "rust"] as const;
@@ -58,12 +57,17 @@ function templateIndexJsonLd(pages: GeneratedStackPage[]) {
 }
 
 export const Route = createFileRoute("/templates")({
-  head: () => {
+  loader: async () => {
+    const { getPublishedStackPages } = await import("@/lib/stack-pages/source");
+    return getPublishedStackPages().sort(
+      (left, right) => right.priority - left.priority || left.title.localeCompare(right.title),
+    );
+  },
+  head: ({ loaderData: pages = [] }) => {
     const title = `Fullstack Starter Templates | ${SITE_NAME}`;
     const description =
       "Browse compatibility-checked fullstack starter templates for TanStack Start, Next.js, Hono, FastAPI, Go, Rust, databases, ORMs, auth, and API layers.";
     const url = canonicalUrl("/templates");
-    const pages = getPublishedStackPages();
 
     return {
       meta: [
@@ -138,9 +142,7 @@ function TemplateCard({ page, ordinal }: { page: GeneratedStackPage; ordinal: nu
 }
 
 function TemplatesPage() {
-  const pages = getPublishedStackPages().sort(
-    (left, right) => right.priority - left.priority || left.title.localeCompare(right.title),
-  );
+  const pages = Route.useLoaderData();
 
   return (
     <>

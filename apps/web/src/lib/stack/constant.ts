@@ -8,7 +8,7 @@ import {
 
 import type { Ecosystem, TechCategory } from "@/lib/stack/types";
 
-import { DEFAULT_STACK, isStackDefault, type StackState } from "@/lib/stack/stack-defaults";
+import { DEFAULT_STACK, isStackDefault, type StackState } from "#web/lib/stack/stack-defaults";
 
 const AUTH_TECH_OPTIONS = getCapabilityDefinitions("auth").map((cap) => ({
   id: cap.id,
