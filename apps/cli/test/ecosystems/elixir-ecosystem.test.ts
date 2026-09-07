@@ -129,6 +129,9 @@ describe("Elixir library expansion", () => {
     expect(hasVirtualFile(tree.root, "lib/elixir_ash_ets/catalog_domain.ex")).toBe(true);
     expect(hasVirtualFile(tree.root, "lib/elixir_ash_ets/resources/item.ex")).toBe(true);
     expect(hasVirtualFile(tree.root, "lib/elixir_ash_ets/catalog.ex")).toBe(false);
+    expect(getVirtualTreeFileContent(tree, "config/config.exs")).toContain(
+      "config :ash, default_string_length_count: :codepoints",
+    );
   });
 
   it("keeps Tesla and Phoenix OpenTelemetry on compatible semantic conventions", async () => {

@@ -11,6 +11,7 @@ import path from "node:path";
 import { dependencyVersionMap } from "@/dependencies/add-deps";
 import {
   getPinnedDependencyVersion,
+  getTemplatePinnedVersion,
   isMajorUpdateAllowlisted,
 } from "@/dependencies/dependency-update-policy";
 
@@ -366,6 +367,7 @@ export function scanTemplateVersions(templatesDir: string): {
   function extractVersions(filePath: string) {
     const content = fs.readFileSync(filePath, "utf-8");
     const relPath = path.relative(templatesDir, filePath);
+    const templateKey = relPath.split(path.sep).join("/");
 
     DEP_PATTERN.lastIndex = 0;
     let match;
@@ -377,7 +379,9 @@ export function scanTemplateVersions(templatesDir: string): {
       if (SKIP_FIELDS.has(pkg)) continue;
 
       if (pkg in dependencyVersionMap) {
-        const mapVersion = dependencyVersionMap[pkg as keyof typeof dependencyVersionMap];
+        const mapVersion =
+          getTemplatePinnedVersion(templateKey, pkg) ??
+          dependencyVersionMap[pkg as keyof typeof dependencyVersionMap];
         const mismatchKey = `${relPath}|${pkg}|${version}`;
         if (mapVersion !== version && !seenMismatches.has(mismatchKey)) {
           seenMismatches.add(mismatchKey);
