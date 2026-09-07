@@ -5,6 +5,7 @@ import type { StackSelectionInput } from "@/stack/stack-translation";
 import { isToolingOverlayPart } from "@/capabilities/tooling-capabilities";
 import {
   patchGraphScopedSelections,
+  projectGraphScopedSelections,
   DEFAULT_STACK_SELECTION,
   STACK_SELECTION_KEYS,
   STACK_SELECTION_URL_KEYS,
@@ -1156,4 +1157,65 @@ describe("graph capability editing", () => {
     const updates = patchGraphScopedSelections(selection, { goLogging: "none" });
     expect(generateStackSelectionCommand({ ...selection, ...updates })).not.toContain("zerolog");
   });
+});
+
+it("edits the owner of a projected Java build tool and preserves the other named service", () => {
+  const selection: StackSelectionInput = {
+    ...DEFAULT_SELECTION,
+    stackMode: "multi",
+    stackPartSpecs: [
+      "backend:java:spring-boot:api",
+      "api.buildTool:java:maven",
+      "backend:java:quarkus:worker",
+      "worker.buildTool:java:gradle",
+    ],
+    javaBuildTool: "gradle",
+    appPlatforms: [],
+  };
+  const updates = patchGraphScopedSelections(selection, { javaBuildTool: "maven" });
+  const config = toProjectConfig({ ...selection, ...updates });
+  expect(
+    config.stackParts?.find((part) => part.role === "buildTool" && part.ownerPartId === "api")
+      ?.toolId,
+  ).toBe("maven");
+  expect(
+    config.stackParts?.find((part) => part.role === "buildTool" && part.ownerPartId === "worker")
+      ?.toolId,
+  ).toBe("maven");
+  const next = patchGraphScopedSelections(
+    { ...selection, ...updates },
+    { javaBuildTool: "gradle" },
+  );
+  const nextConfig = toProjectConfig({ ...selection, ...updates, ...next });
+  expect(
+    nextConfig.stackParts?.find((part) => part.role === "buildTool" && part.ownerPartId === "api")
+      ?.toolId,
+  ).toBe("maven");
+  expect(
+    nextConfig.stackParts?.find(
+      (part) => part.role === "buildTool" && part.ownerPartId === "worker",
+    )?.toolId,
+  ).toBe("gradle");
+});
+
+it("projects imported capability values before editing stale default fields", () => {
+  const selection: StackSelectionInput = {
+    ...DEFAULT_SELECTION,
+    stackMode: "multi",
+    stackPartSpecs: [
+      "backend:java:spring-boot:api",
+      "api.buildTool:java:maven",
+      "backend:java:quarkus:worker",
+      "worker.buildTool:java:gradle",
+    ],
+    appPlatforms: [],
+  };
+  expect(selection.javaBuildTool).toBe("maven");
+  const projected = projectGraphScopedSelections(selection);
+  expect(projected.javaBuildTool).toBe("gradle");
+  expect(projected.ecosystem).toBe(selection.ecosystem);
+  expect(projected.backend).toBe(selection.backend);
+  const updates = patchGraphScopedSelections(selection, { javaBuildTool: "maven" });
+  expect(updates.stackPartSpecs).toContain("worker.buildTool:java:maven");
+  expect(updates.stackPartSpecs).not.toContain("worker.buildTool:java:gradle");
 });

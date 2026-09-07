@@ -115,6 +115,7 @@
   "guidesRelated": "関連ガイド",
   "tocOnThisPage": "このページの内容",
   "uiClose": "閉じる",
+  "uiCloseAll": "すべて閉じる",
   "uiLoading": "読み込み中",
   "uiToggle": "トグル",
   "themeToggle": "テーマの切り替え",
@@ -605,5 +606,13 @@
   "builderComposerConnectionsDescription": "生成されたクライアントは、最初のバックエンドを既定の HTTP 接続先として使用します。追加のサービスはそれぞれ独自のエンドポイントを使用します。",
   "builderComposerSetupCommands": "依存関係を準備",
   "builderComposerRunCommands": "Web アプリケーションとサービスを起動",
-  "builderComposerNativeRun": "ネイティブモバイルアプリは個別に実行して、シミュレーターやデバイスを選択してください。生成される README に実行コマンドが記載されています。"
+  "builderComposerNativeRun": "ネイティブモバイルアプリは個別に実行して、シミュレーターやデバイスを選択してください。生成される README に実行コマンドが記載されています。",
+  "builderComposerOptional": "任意",
+  "builderComposerJsWorkspace": "JavaScript ワークスペース",
+  "builderComposerNativeToolchains": "ネイティブツールチェーン",
+  "builderComposerCommands": "コマンド",
+  "builderComposerSetup": "セットアップ",
+  "builderComposerDev": "開発",
+  "builderComposerSdks": "これらの言語の SDK をインストールしてください",
+  "builderComposerXcode": "ネイティブ iOS アプリには macOS と Xcode が必要です"
 }

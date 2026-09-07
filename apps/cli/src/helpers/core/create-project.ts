@@ -117,7 +117,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     if (options.install && usesGraph) {
       for (const task of getGraphProjectTasks(options)) {
         if (!task.setup) continue;
-        if (task.id === "workspace") {
+        if (task.kind === "workspace") {
           const result = await installDependencies({
             projectDir,
             packageManager: options.packageManager,

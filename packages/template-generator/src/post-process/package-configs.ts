@@ -140,7 +140,7 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   const pmConfig = getPackageManagerConfig(packageManager, workspaceTool);
   const graphBackend = getGraphBackendConnection(config);
   const graphBackends = getGraphBackendConnections(config);
-  const nativeTasks = getGraphProjectTasks(config).filter((task) => task.id !== "workspace");
+  const nativeTasks = getGraphProjectTasks(config).filter((task) => task.kind !== "workspace");
   const nativeServices = nativeTasks.filter((task) => task.dev && !task.interactive);
   const hasWebWorkspace = vfs.fileExists("apps/web/package.json");
   const hasNativeWorkspace = vfs.fileExists("apps/native/package.json");

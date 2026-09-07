@@ -254,3 +254,29 @@ cp "$GRAPH_PYTHON_RECORDER" .venv/${venv}
     }
   });
 }
+
+it("includes a native service named workspace in the JavaScript root dev command", async () => {
+  const specs = ["frontend:typescript:react-vite", "backend:go:gin:workspace"];
+  const output = await generate(specs);
+  const root = JSON.parse(output.get("package.json") ?? "{}") as {
+    scripts: Record<string, string>;
+  };
+  expect(root.scripts.dev).toContain("cd apps/server && go run cmd/server/main.go");
+  expect(
+    getGraphProjectTasks(configFor(specs)).find((task) => task.path === "apps/server")?.kind,
+  ).toBe("application");
+});
+
+it("starts repeated .NET frontends with distinct ports overriding their launch profiles", async () => {
+  const specs = [
+    "frontend:dotnet:blazor-webassembly:store",
+    "frontend:dotnet:blazor-webassembly:admin",
+  ];
+  const output = await generate(specs);
+  const script = output.get("scripts/dev.sh");
+  expect(script).toContain("http://localhost:5173");
+  expect(script).toContain("http://localhost:5174");
+  for (const task of getGraphProjectTasks(configFor(specs))) {
+    expect(task.dev).toContain("--urls http://localhost:");
+  }
+});

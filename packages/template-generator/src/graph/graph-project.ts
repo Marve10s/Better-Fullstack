@@ -5,6 +5,7 @@ import type { VirtualFileSystem } from "@/core/virtual-fs";
 import { getGraphBackendConnections } from "@/graph/graph-backend";
 
 export type GraphProjectTask = {
+  kind: "workspace" | "application";
   id: string;
   path: string;
   label: string;
@@ -23,6 +24,7 @@ export function getGraphProjectTasks(config: ProjectConfig): GraphProjectTask[] 
   const tasks: GraphProjectTask[] = [];
   if (hasJavaScriptWorkspaceRoot(parts)) {
     tasks.push({
+      kind: "workspace",
       id: "workspace",
       path: ".",
       label: "JavaScript workspace",
@@ -33,6 +35,7 @@ export function getGraphProjectTasks(config: ProjectConfig): GraphProjectTask[] 
   }
   for (const backend of getGraphBackendConnections(config)) {
     tasks.push({
+      kind: "application",
       id: backend.partId,
       path: backend.targetPath,
       label: backend.label,
@@ -47,12 +50,23 @@ export function getGraphProjectTasks(config: ProjectConfig): GraphProjectTask[] 
       interactive: false,
     });
   }
+  let dotnetFrontendPort = 5173;
   for (const part of parts) {
     const path = part.targetPath ?? (part.role === "frontend" ? "apps/web" : "apps/mobile");
     const cd = `cd ${quote(path)} && `;
-    const task = { id: part.id, path, label: part.toolId, interactive: part.role === "mobile" };
+    const task = {
+      kind: "application" as const,
+      id: part.id,
+      path,
+      label: part.toolId,
+      interactive: part.role === "mobile",
+    };
     if (part.role === "frontend" && part.ecosystem === "dotnet") {
-      tasks.push({ ...task, setup: `${cd}dotnet restore`, dev: `${cd}dotnet watch run` });
+      tasks.push({
+        ...task,
+        setup: `${cd}dotnet restore`,
+        dev: `${cd}dotnet watch run --urls http://localhost:${dotnetFrontendPort++}`,
+      });
     }
     if (part.role === "frontend" && part.ecosystem === "rust") {
       const rustBackend = parts.find(

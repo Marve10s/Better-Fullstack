@@ -118,6 +118,7 @@
   "guidesRelated": "Related guides",
   "tocOnThisPage": "On this page",
   "uiClose": "Close",
+  "uiCloseAll": "Close all",
   "uiLoading": "Loading",
   "uiToggle": "Toggle",
   "themeToggle": "Toggle theme",
@@ -605,5 +606,13 @@
   "builderComposerConnectionsDescription": "Generated clients use the first backend as their default HTTP connection. Additional services keep their own endpoints.",
   "builderComposerSetupCommands": "Prepare dependencies",
   "builderComposerRunCommands": "Start web applications and services",
-  "builderComposerNativeRun": "Run native mobile apps separately to choose a simulator or device. The generated README includes their commands."
+  "builderComposerNativeRun": "Run native mobile apps separately to choose a simulator or device. The generated README includes their commands.",
+  "builderComposerOptional": "Optional",
+  "builderComposerJsWorkspace": "JavaScript workspace",
+  "builderComposerNativeToolchains": "Native toolchains",
+  "builderComposerCommands": "Commands",
+  "builderComposerSetup": "Setup",
+  "builderComposerDev": "Dev",
+  "builderComposerSdks": "Install the SDKs for these languages",
+  "builderComposerXcode": "Native iOS apps need macOS and Xcode"
 }

@@ -136,3 +136,42 @@ it("does not require a generatable project to record an incomplete builder selec
     expect(properties).not.toHaveProperty("selected_evidence_level");
   }
 });
+
+for (const selectedId of ["api", "worker"]) {
+  it(`updates the selected ${selectedId} when two named services use the same framework`, () => {
+    const current = [
+      "backend:go:gin:api",
+      "api.orm:go:gorm",
+      "backend:go:gin:worker",
+      "worker.orm:go:gorm",
+    ];
+    const previous = ["backend:go:gin", "backend.orm:go:gorm"];
+    const parts = getComposerParts(
+      reconcileComposerSpecs(current, previous, ["backend:go:gin", "backend.orm:go:sqlc"], {
+        backend: selectedId,
+      }),
+    );
+    expect(parts.filter((part) => part.role === "backend").map((part) => part.id)).toEqual([
+      "api",
+      "worker",
+    ]);
+    expect(parts.find((part) => part.ownerPartId === selectedId)?.toolId).toBe("sqlc");
+    expect(
+      parts.find((part) => part.ownerPartId === (selectedId === "api" ? "worker" : "api"))?.toolId,
+    ).toBe("gorm");
+    const replaced = getComposerParts(
+      reconcileComposerSpecs(current, previous, ["backend:python:fastapi"], {
+        backend: selectedId,
+      }),
+    );
+    expect(replaced.filter((part) => part.role === "backend")).toHaveLength(2);
+    expect(replaced.find((part) => part.id === selectedId)?.toolId).toBe("fastapi");
+    const removed = getComposerParts(
+      reconcileComposerSpecs(current, previous, [], { backend: selectedId }),
+    );
+    expect(removed.filter((part) => part.role === "backend")).toHaveLength(1);
+    expect(removed.some((part) => part.id === selectedId || part.ownerPartId === selectedId)).toBe(
+      false,
+    );
+  });
+}

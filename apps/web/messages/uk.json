@@ -116,6 +116,7 @@
   "guidesRelated": "Пов’язані гайди",
   "tocOnThisPage": "На цій сторінці",
   "uiClose": "Закрити",
+  "uiCloseAll": "Закрити всі",
   "uiLoading": "Завантаження",
   "uiToggle": "Перемикач",
   "themeToggle": "Перемкнути тему",
@@ -605,5 +606,13 @@
   "builderComposerConnectionsDescription": "Згенеровані клієнти використовують перший бекенд як стандартне HTTP-підключення. Додаткові сервіси зберігають власні кінцеві точки.",
   "builderComposerSetupCommands": "Підготувати залежності",
   "builderComposerRunCommands": "Запустити вебзастосунки та сервіси",
-  "builderComposerNativeRun": "Запускайте нативні мобільні застосунки окремо, щоб вибрати симулятор або пристрій. Згенерований README містить відповідні команди."
+  "builderComposerNativeRun": "Запускайте нативні мобільні застосунки окремо, щоб вибрати симулятор або пристрій. Згенерований README містить відповідні команди.",
+  "builderComposerOptional": "Необов'язково",
+  "builderComposerJsWorkspace": "Робочий простір JavaScript",
+  "builderComposerNativeToolchains": "Нативні тулчейни",
+  "builderComposerCommands": "Команди",
+  "builderComposerSetup": "Налаштування",
+  "builderComposerDev": "Розробка",
+  "builderComposerSdks": "Встановіть SDK для цих мов",
+  "builderComposerXcode": "Нативним iOS-застосункам потрібні macOS і Xcode"
 }

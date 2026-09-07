@@ -29,6 +29,7 @@ export function reconcileComposerSpecs(
   currentSpecs: readonly string[],
   previousSelection: readonly string[],
   nextSelection: readonly string[],
+  selectedRootIds: Partial<Record<StackPart["role"], string>> = {},
 ) {
   let parts = getComposerParts(currentSpecs);
   const previous = getComposerParts(previousSelection);
@@ -69,6 +70,9 @@ export function reconcileComposerSpecs(
         (part) => part.toolId === before?.toolId && part.ecosystem === before?.ecosystem,
       );
       const current =
+        (beforeRoots.length === 1
+          ? currentRoots.find((part) => part.id === selectedRootIds[role])
+          : undefined) ??
         currentRoots.find((part) => part.id === (before?.id ?? after?.id)) ??
         (before &&
         beforeRoots.length === 1 &&

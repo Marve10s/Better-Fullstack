@@ -115,6 +115,7 @@
   "guidesRelated": "Guides associés",
   "tocOnThisPage": "Sur cette page",
   "uiClose": "Fermer",
+  "uiCloseAll": "Tout fermer",
   "uiLoading": "Chargement",
   "uiToggle": "Basculer",
   "themeToggle": "Changer de thème",
@@ -605,5 +606,13 @@
   "builderComposerConnectionsDescription": "Les clients générés utilisent le premier backend comme connexion HTTP par défaut. Les services supplémentaires conservent leurs propres points d’accès.",
   "builderComposerSetupCommands": "Préparer les dépendances",
   "builderComposerRunCommands": "Démarrer les applications web et les services",
-  "builderComposerNativeRun": "Lancez les applications mobiles natives séparément pour choisir un simulateur ou un appareil. Le README généré contient les commandes correspondantes."
+  "builderComposerNativeRun": "Lancez les applications mobiles natives séparément pour choisir un simulateur ou un appareil. Le README généré contient les commandes correspondantes.",
+  "builderComposerOptional": "Optionnel",
+  "builderComposerJsWorkspace": "Workspace JavaScript",
+  "builderComposerNativeToolchains": "Toolchains natives",
+  "builderComposerCommands": "Commandes",
+  "builderComposerSetup": "Setup",
+  "builderComposerDev": "Dev",
+  "builderComposerSdks": "Installez les SDK de ces langages",
+  "builderComposerXcode": "Les apps iOS natives nécessitent macOS et Xcode"
 }

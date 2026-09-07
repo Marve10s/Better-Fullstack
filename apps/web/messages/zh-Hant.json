@@ -115,6 +115,7 @@
   "guidesRelated": "相關指南",
   "tocOnThisPage": "本頁內容",
   "uiClose": "關閉",
+  "uiCloseAll": "全部關閉",
   "uiLoading": "載入中",
   "uiToggle": "切換",
   "themeToggle": "切換主題",
@@ -605,5 +606,13 @@
   "builderComposerConnectionsDescription": "產生的用戶端將第一個後端作為預設 HTTP 連線。其他服務保留各自的端點。",
   "builderComposerSetupCommands": "準備相依套件",
   "builderComposerRunCommands": "啟動網頁應用程式和服務",
-  "builderComposerNativeRun": "請單獨執行原生行動應用程式，以選擇模擬器或裝置。產生的 README 中包含相應指令。"
+  "builderComposerNativeRun": "請單獨執行原生行動應用程式，以選擇模擬器或裝置。產生的 README 中包含相應指令。",
+  "builderComposerOptional": "可選",
+  "builderComposerJsWorkspace": "JavaScript 工作區",
+  "builderComposerNativeToolchains": "原生工具鏈",
+  "builderComposerCommands": "指令",
+  "builderComposerSetup": "安裝",
+  "builderComposerDev": "開發",
+  "builderComposerSdks": "請安裝這些語言的 SDK",
+  "builderComposerXcode": "原生 iOS 應用需要 macOS 和 Xcode"
 }

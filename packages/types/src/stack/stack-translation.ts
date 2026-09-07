@@ -1206,6 +1206,7 @@ function hasGraphPrimaryPart(
 
 type ScopedStackPartRole = Exclude<StackPartRole, "frontend" | "backend" | "mobile" | "database">;
 type ScopedStackPartField = {
+  ownerPartId?: string;
   ownerRole?: "frontend" | "backend" | "mobile" | "database";
   ecosystem: StackPartEcosystem;
   role: ScopedStackPartRole;
@@ -1649,8 +1650,20 @@ function expandScopedStackPartSpecs(
         (allowMultiple ? part.toolId === toolId : true),
     );
 
-  for (const { ownerRole, ecosystem, role, value, allowMultiple, replaceExisting } of fields) {
-    const owner = ownerRole ? getPrimary(ownerRole, ecosystem) : undefined;
+  for (const {
+    ownerPartId,
+    ownerRole,
+    ecosystem,
+    role,
+    value,
+    allowMultiple,
+    replaceExisting,
+  } of fields) {
+    const owner = ownerPartId
+      ? stackParts.find((part) => part.id === ownerPartId)
+      : ownerRole
+        ? getPrimary(ownerRole, ecosystem)
+        : undefined;
     if (replaceExisting && value !== undefined && owner) {
       const matchingParts = stackParts.filter(
         (part) =>
@@ -1831,12 +1844,38 @@ function getSelectionScopedPartFields(selection: StackSelectionInput): ScopedSta
   ];
 }
 
+/** Refresh only capability fields from the graph, preserving the primary application editor state. */
+export function projectGraphScopedSelections(selection: StackSelectionInput): StackSelectionInput {
+  if (!isGraphStackSelection(selection) || selection.stackPartSpecs.length === 0) return selection;
+  const parts = parseStackPartSpecs(selection.stackPartSpecs, "selected").filter(
+    (part) => part.source !== "provided",
+  );
+  const rootProjection = stackPartsToLegacyProjectConfigPartial(
+    parts.filter((part) => !part.ownerPartId),
+  );
+  const graphProjection = stackPartsToLegacyProjectConfigPartial(parts);
+  const patch: Record<string, unknown> = {};
+  for (const [key, category] of Object.entries(STACK_SELECTION_OPTION_CATEGORY_BY_KEY)) {
+    const configKey = category as keyof ProjectConfig;
+    const value = graphProjection[configKey];
+    if (JSON.stringify(value) === JSON.stringify(rootProjection[configKey])) continue;
+    if (
+      typeof value === "string" ||
+      (Array.isArray(value) && value.every((entry) => typeof entry === "string"))
+    ) {
+      patch[key] = value;
+    }
+  }
+  return { ...selection, ...patch };
+}
+
 /** Update the graph's explicit capabilities when a builder field changes. */
 export function patchGraphScopedSelections(
   selection: StackSelectionInput,
   updates: Partial<StackSelectionInput>,
 ): Partial<StackSelectionInput> {
   if (!isGraphStackSelection(selection) || updates.stackPartSpecs) return updates;
+  selection = projectGraphScopedSelections(selection);
   const next = { ...selection, ...updates };
   const groupFields = (fields: ScopedStackPartField[]) => {
     const groups = new Map<string, { field: ScopedStackPartField; values: Set<string> }>();
@@ -1865,14 +1904,22 @@ export function patchGraphScopedSelections(
       continue;
     const field = newGroup?.field ?? oldGroup?.field;
     if (!field) continue;
-    const owner = field.ownerRole
-      ? parts.find(
-          (part) =>
-            !part.ownerPartId &&
-            part.role === field.ownerRole &&
-            part.ecosystem === field.ecosystem,
-        )
-      : undefined;
+    const owners = parts.filter(
+      (part) =>
+        !part.ownerPartId && part.role === field.ownerRole && part.ecosystem === field.ecosystem,
+    );
+    // Scalar projection uses the last explicit capability. Carry its owner through
+    // removal and expansion so a flat edit cannot migrate to another service.
+    const projectedCapability = parts.findLast(
+      (part) =>
+        part.role === field.role &&
+        part.ecosystem === field.ecosystem &&
+        oldValues.has(part.toolId) &&
+        owners.some((owner) => owner.id === part.ownerPartId),
+    );
+    const owner =
+      owners.find((part) => part.id === projectedCapability?.ownerPartId) ??
+      (owners.length === 1 ? owners[0] : undefined);
     if (field.ownerRole && !owner) continue;
     parts = parts.filter(
       (part) =>
@@ -1883,7 +1930,7 @@ export function patchGraphScopedSelections(
           (!field.allowMultiple || (oldValues.has(part.toolId) && !newValues.has(part.toolId)))
         ),
     );
-    changedFields.push({ ...field, value: [...newValues] });
+    changedFields.push({ ...field, ownerPartId: owner?.id, value: [...newValues] });
   }
   const specs = parts.map((part) => formatStackPartSpec(part, parts));
   return { ...updates, stackPartSpecs: expandScopedStackPartSpecs(specs, changedFields) };

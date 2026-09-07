@@ -15,6 +15,7 @@ import {
 } from "@better-fullstack/types";
 import {
   patchGraphScopedSelections,
+  projectGraphScopedSelections,
   usesVirtualNoneStackSelection as usesVirtualNoneSelection,
 } from "@better-fullstack/types/stack-translation";
 import { AnimatePresence, motion } from "motion/react";
@@ -36,6 +37,10 @@ import {
   TbBookmark as Bookmark,
   TbBook as BookOpen,
   TbCheck as Check,
+  TbDatabase as Database,
+  TbDeviceMobile as Smartphone,
+  TbServer as Server,
+  TbWorld as Globe,
   TbChevronDown as ChevronDown,
   TbClipboardCopy as ClipboardCopy,
   TbDownload as Download,
@@ -70,6 +75,7 @@ import {
   CapabilityEvidenceProvider,
   useCapabilityEvidenceInventory,
 } from "@/components/stack-builder/capability-evidence-badge";
+import { ComposerRolePreview } from "@/components/stack-builder/composer-role-art";
 import { ExistingProjectImportDialog } from "@/components/stack-builder/existing-project-import-dialog";
 import { PresetsPanel } from "@/components/stack-builder/presets-panel";
 import { SavedStacksPanel } from "@/components/stack-builder/saved-stacks-panel";
@@ -106,7 +112,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   beginBuilderZipAttempt,
@@ -258,6 +263,7 @@ type GraphBackendEcosystem = Extract<
   "typescript" | "rust" | "python" | "go" | "java" | "elixir" | "dotnet"
 >;
 type GraphSelection = {
+  rootIds?: Partial<Record<ComposerRole, string>>;
   frontendEcosystem: GraphFrontendEcosystem;
   frontend: string;
   mobileEcosystem: GraphMobileEcosystem;
@@ -682,6 +688,36 @@ function getComposerRoleLabel(role: ComposerRole) {
   );
 }
 
+const COMPOSER_ROLE_ICONS: Record<ComposerRole, typeof Globe> = {
+  frontend: Globe,
+  mobile: Smartphone,
+  backend: Server,
+  database: Database,
+};
+
+const COMPOSER_APPLICATION_ROLES: ComposerRole[] = ["frontend", "mobile", "backend"];
+
+type ComposerEcosystemIcon = { key: string; label: string; techId?: string; icon?: string };
+
+const COMPOSER_ECOSYSTEM_ICONS: Record<ComposerRole, ComposerEcosystemIcon[]> = {
+  frontend: GRAPH_FRONTEND_CONFIGS.map((config) => ({
+    key: config.ecosystem,
+    label: config.label,
+    techId: config.ecosystem,
+  })),
+  mobile: GRAPH_MOBILE_CONFIGS.map((config) => ({
+    key: config.ecosystem,
+    label: config.label,
+    icon: config.icon,
+  })),
+  backend: GRAPH_BACKEND_PICKER_CONFIGS.map((config) => ({
+    key: config.id,
+    label: config.label,
+    techId: config.id,
+  })),
+  database: [],
+};
+
 const MULTI_STACK_STEPS: Array<{ id: MultiStackStepId }> = [
   { id: "applications" },
   { id: "configure" },
@@ -1014,6 +1050,12 @@ function getGraphSelection(stack: StackState): GraphSelection {
       : undefined;
 
     return {
+      rootIds: {
+        frontend: frontend?.id,
+        mobile: mobile?.id,
+        backend: backend?.id,
+        database: database?.id,
+      },
       frontendEcosystem,
       frontend: frontend?.toolId ?? "none",
       mobileEcosystem,
@@ -1401,9 +1443,10 @@ function getStackOptionUpdate(
   category: keyof typeof TECH_OPTIONS,
   techId: string,
 ): Partial<StackState> {
+  const projected = projectGraphScopedSelections(currentStack);
   return patchGraphScopedSelections(
-    currentStack,
-    getStackOptionFieldUpdate(currentStack, category, techId),
+    projected,
+    getStackOptionFieldUpdate(projected, category, techId),
   );
 }
 
@@ -1597,6 +1640,7 @@ function GraphOptionButton({
   disabledReason,
   evidenceEcosystem,
   evidenceCategory,
+  dense = false,
   onSelect,
 }: {
   option: TechOption;
@@ -1605,6 +1649,7 @@ function GraphOptionButton({
   disabledReason?: string | null;
   evidenceEcosystem: OptionCategoryEcosystem;
   evidenceCategory: OptionCategory;
+  dense?: boolean;
   onSelect: () => void;
 }) {
   const isDisabled = Boolean(disabledReason);
@@ -1620,7 +1665,8 @@ function GraphOptionButton({
       title={disabledReason || undefined}
       onClick={isDisabled ? undefined : onSelect}
       className={cn(
-        "group relative cursor-pointer rounded-lg border p-3 text-left transition-all sm:p-4",
+        "group relative cursor-pointer rounded-lg border text-left transition-all",
+        dense ? "p-2.5" : "p-3 sm:p-4",
         selected
           ? "border-primary bg-primary/5 ring-1 ring-primary/20"
           : isDisabled
@@ -1628,11 +1674,12 @@ function GraphOptionButton({
             : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
       )}
     >
-      <div className="flex items-start gap-3">
+      <div className={cn("flex items-start", dense ? "gap-2.5" : "gap-3")}>
         {(option.icon !== "" || ICON_REGISTRY[option.id]) && (
           <div
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
+              "flex shrink-0 items-center justify-center transition-colors",
+              dense ? "h-8 w-8 rounded-md" : "h-10 w-10 rounded-lg",
               selected ? "bg-primary/10" : "bg-muted/50 group-hover:bg-muted",
             )}
           >
@@ -1640,20 +1687,28 @@ function GraphOptionButton({
               techId={option.id}
               icon={option.icon}
               name={option.name}
-              className="h-5 w-5"
+              className={dense ? "h-4 w-4" : "h-5 w-5"}
             />
           </div>
         )}
-        <div className="min-w-0 flex-1 pt-0.5">
+        <div className={cn("min-w-0 flex-1", dense ? "pt-0" : "pt-0.5")}>
           <span
             className={cn(
-              "block font-semibold text-sm",
+              "block truncate font-semibold",
+              dense ? "text-[13px] leading-5" : "text-sm",
               selected ? "text-primary" : "text-foreground",
             )}
           >
             {localizedOption.name}
           </span>
-          <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+          <p
+            className={cn(
+              "text-muted-foreground",
+              dense
+                ? "line-clamp-1 text-[11px] leading-4"
+                : "mt-0.5 line-clamp-2 text-xs leading-relaxed",
+            )}
+          >
             {localizedOption.description}
           </p>
           <CapabilityEvidenceBadge
@@ -1678,6 +1733,7 @@ function GraphOptionGroup({
   evidenceEcosystem,
   evidenceCategory,
   defaultCollapsed = false,
+  dense = false,
   getDisabledReasonForOption,
   onSelect,
 }: {
@@ -1690,6 +1746,7 @@ function GraphOptionGroup({
   evidenceEcosystem: OptionCategoryEcosystem;
   evidenceCategory: OptionCategory;
   defaultCollapsed?: boolean;
+  dense?: boolean;
   getDisabledReasonForOption?: (optionId: string) => string | null;
   onSelect: (id: string) => void;
 }) {
@@ -1703,10 +1760,25 @@ function GraphOptionGroup({
         onClick={() => setCollapsed((prev) => !prev)}
         data-testid={`${testIdPrefix}-toggle`}
         aria-expanded={!collapsed}
-        className="mb-3 flex w-full cursor-pointer items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
+        className={cn(
+          "flex w-full cursor-pointer items-center gap-2 border-b border-border text-left transition-opacity hover:opacity-80",
+          dense ? "mb-2.5 pb-1.5" : "mb-3 pb-2",
+        )}
       >
-        <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-        <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">{label}</h2>
+        <Terminal
+          className={cn(
+            "shrink-0 text-muted-foreground",
+            dense ? "h-4 w-4" : "h-4 w-4 sm:h-5 sm:w-5",
+          )}
+        />
+        <h2
+          className={cn(
+            "flex-1 font-mono text-foreground",
+            dense ? "text-xs sm:text-[13px]" : "text-sm sm:text-base",
+          )}
+        >
+          {label}
+        </h2>
         {collapsed && selectionCount > 0 && (
           <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
             {selectionCount}
@@ -1725,7 +1797,14 @@ function GraphOptionGroup({
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
+            <div
+              className={cn(
+                "grid",
+                dense
+                  ? "grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                  : "grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4",
+              )}
+            >
               {options.map((option) => {
                 const disabledReason = getDisabledReasonForOption?.(option.id) ?? null;
                 const selected = isOptionSelected
@@ -1741,6 +1820,7 @@ function GraphOptionGroup({
                     disabledReason={disabledReason}
                     evidenceEcosystem={evidenceEcosystem}
                     evidenceCategory={evidenceCategory}
+                    dense={dense}
                     onSelect={() => onSelect(option.id)}
                   />
                 );
@@ -1765,9 +1845,11 @@ function CreationModeComposer({
   onActiveStepChange: (stepId: MultiStackStepId) => void;
 }) {
   const graphSelection = useMemo(() => getGraphSelection(stack), [stack]);
+  const optionStack = useMemo(() => projectGraphScopedSelections(stack), [stack]);
   const [selectedRole, setSelectedRole] = useState<ComposerRole>("frontend");
-  const applicationRoles: ComposerRole[] = ["frontend", "mobile", "backend"];
-  const selectedRoles = applicationRoles.filter((role) => graphSelection[role] !== "none");
+  const selectedRoles = COMPOSER_APPLICATION_ROLES.filter(
+    (role) => graphSelection[role] !== "none",
+  );
   const configurableRoles: ComposerRole[] = [...selectedRoles, "database"];
   const activeRole = configurableRoles.includes(selectedRole) ? selectedRole : configurableRoles[0];
   const frontendConfig = GRAPH_FRONTEND_CONFIG_BY_ECOSYSTEM[graphSelection.frontendEcosystem];
@@ -1857,16 +1939,16 @@ function CreationModeComposer({
       ? []
       : getGraphBackendAdvancedCategoryOrder(graphSelection.backendEcosystem);
   const backendCompatibilityStack: StackState = {
-    ...stack,
+    ...optionStack,
     ecosystem: graphSelection.backendEcosystem as Ecosystem,
   };
   const mobileCompatibilityStack: StackState = {
-    ...stack,
+    ...optionStack,
     ecosystem: "react-native",
   };
   // The react-native ecosystem rejects every non-Expo option, so a Kotlin app's
   // libraries have to be checked outside it.
-  const kotlinMobileCompatibilityStack: StackState = stack;
+  const kotlinMobileCompatibilityStack: StackState = optionStack;
 
   const applyGraphSelection = useCallback(
     (nextSelection: GraphSelection) => {
@@ -1875,6 +1957,7 @@ function CreationModeComposer({
           current.stackPartSpecs,
           graphSelectionToSpecs(getGraphSelection(current)),
           graphSelectionToSpecs(nextSelection),
+          getGraphSelection(current).rootIds,
         );
         return { ...stackPatchFromGraphSpecs(specs), projectName: current.projectName };
       });
@@ -2094,7 +2177,6 @@ function CreationModeComposer({
     icon?: string;
   }) => {
     const hasIcon = Boolean(icon) || (iconTechId ? Boolean(ICON_REGISTRY[iconTechId]) : false);
-    const ecosystemMeta = iconTechId ? ECOSYSTEMS.find((eco) => eco.id === iconTechId) : undefined;
 
     return (
       <button
@@ -2103,37 +2185,27 @@ function CreationModeComposer({
         aria-pressed={selected}
         onClick={onClick}
         className={cn(
-          "group relative flex cursor-pointer items-center justify-center gap-2 px-3 py-3 transition-all sm:gap-2.5 sm:px-4 sm:py-3.5",
+          "group flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-1.5 transition-colors",
           selected
-            ? "bg-muted/40 text-foreground"
-            : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
+            ? "border-foreground/50 bg-muted/60 text-foreground"
+            : "border-border/70 text-muted-foreground hover:border-foreground/30 hover:text-foreground",
         )}
       >
-        {selected && (
-          <motion.div
-            layoutId={`multi-language-indicator-${testId}`}
-            className={cn(
-              "absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r",
-              ecosystemMeta?.color ?? "from-primary to-primary/60",
-            )}
-            transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
-          />
-        )}
         {hasIcon && (
           <TechIcon
             techId={iconTechId}
             icon={icon}
             name={label}
             className={cn(
-              "relative h-4.5 w-4.5 shrink-0 transition-all sm:h-5 sm:w-5",
-              selected ? "scale-110" : "opacity-50 group-hover:opacity-75",
+              "h-4 w-4 shrink-0 transition-opacity",
+              !selected && "opacity-60 group-hover:opacity-90",
             )}
           />
         )}
         <span
           className={cn(
-            "relative font-mono text-[10px] uppercase tracking-wide transition-all sm:text-xs",
-            selected && "font-bold",
+            "font-mono text-[10px] uppercase tracking-wide",
+            selected && "font-semibold",
           )}
         >
           {label}
@@ -2143,21 +2215,14 @@ function CreationModeComposer({
   };
 
   const renderLanguagePicker = ({
-    gridClassName,
     children,
     optionCount,
   }: {
-    gridClassName?: string;
     children: ReactNode;
     optionCount: number;
   }) => {
     if (optionCount <= 1) return null;
-
-    return (
-      <div className="-mx-4 -mt-4 mb-5 overflow-hidden rounded-t-xl border-b border-border/60 sm:-mx-5 sm:-mt-5">
-        <div className={cn("grid bg-fd-background", gridClassName)}>{children}</div>
-      </div>
-    );
+    return <div className="flex flex-wrap gap-1.5">{children}</div>;
   };
 
   const renderStackOptionGroup = ({
@@ -2165,7 +2230,7 @@ function CreationModeComposer({
     category,
     testIdPrefix,
     defaultCollapsed,
-    compatibilityStack = stack,
+    compatibilityStack = optionStack,
   }: {
     label: string;
     category: keyof typeof TECH_OPTIONS;
@@ -2176,13 +2241,14 @@ function CreationModeComposer({
     <GraphOptionGroup
       label={label}
       options={getVisibleOptions(compatibilityStack, category, TECH_OPTIONS[category] || [])}
-      selectedId={getStackStringValue(stack, category)}
-      selectedCount={getSelectedCount(category, stack)}
-      isOptionSelected={(optionId) => isSelectedCheck(stack, category, optionId)}
+      selectedId={getStackStringValue(optionStack, category)}
+      selectedCount={getSelectedCount(category, optionStack)}
+      isOptionSelected={(optionId) => isSelectedCheck(optionStack, category, optionId)}
       testIdPrefix={testIdPrefix}
       evidenceEcosystem={compatibilityStack.ecosystem}
       evidenceCategory={category}
       defaultCollapsed={defaultCollapsed}
+      dense
       getDisabledReasonForOption={(optionId) =>
         isOptionCompatible(compatibilityStack, category, optionId)
           ? null
@@ -2203,7 +2269,6 @@ function CreationModeComposer({
           <div className="space-y-5">
             {renderLanguagePicker({
               optionCount: GRAPH_FRONTEND_CONFIGS.length,
-              gridClassName: "grid-cols-2",
               children: GRAPH_FRONTEND_CONFIGS.map((config) =>
                 renderLanguageButton({
                   selected: graphSelection.frontendEcosystem === config.ecosystem,
@@ -2234,6 +2299,7 @@ function CreationModeComposer({
               label={m.builderFrontendGroup({ ecosystem: frontendConfig.label })}
               options={frontendOptions}
               selectedId={graphSelection.frontend}
+              dense
               testIdPrefix="multi-frontend-tool"
               evidenceEcosystem={frontendConfig.ecosystem}
               evidenceCategory={frontendConfig.frameworkCategory}
@@ -2294,7 +2360,6 @@ function CreationModeComposer({
           <div className="space-y-5">
             {renderLanguagePicker({
               optionCount: GRAPH_BACKEND_PICKER_CONFIGS.length,
-              gridClassName: "grid-cols-3 lg:grid-cols-6",
               children: GRAPH_BACKEND_PICKER_CONFIGS.map((config) =>
                 renderLanguageButton({
                   selected:
@@ -2335,6 +2400,7 @@ function CreationModeComposer({
               label={m.builderBackendGroup({ ecosystem: backendLabel })}
               options={backendOptions}
               selectedId={graphSelection.backend}
+              dense
               testIdPrefix="multi-backend-tool"
               evidenceEcosystem={backendConfig.ecosystem}
               evidenceCategory={backendConfig.frameworkCategory}
@@ -2358,6 +2424,7 @@ function CreationModeComposer({
                 label={m.builderOrmGroup({ ecosystem: backendLabel })}
                 options={backendOrmOptions}
                 selectedId={graphSelection.backendOrm}
+                dense
                 testIdPrefix="multi-backend-orm"
                 evidenceEcosystem={backendConfig.ecosystem}
                 evidenceCategory={backendConfig.ormCategory}
@@ -2375,6 +2442,7 @@ function CreationModeComposer({
                   label={m.builderApiGroup({ ecosystem: backendLabel })}
                   options={backendApiOptions}
                   selectedId={graphSelection.backendApi}
+                  dense
                   testIdPrefix="multi-backend-api"
                   evidenceEcosystem={backendConfig.ecosystem}
                   evidenceCategory={backendConfig.apiCategory}
@@ -2394,6 +2462,7 @@ function CreationModeComposer({
                   label={m.builderAuthGroup({ ecosystem: backendLabel })}
                   options={backendAuthOptions}
                   selectedId={graphSelection.backendAuth}
+                  dense
                   testIdPrefix="multi-backend-auth"
                   evidenceEcosystem={backendConfig.ecosystem}
                   evidenceCategory={backendConfig.authCategory}
@@ -2431,6 +2500,7 @@ function CreationModeComposer({
               label={m.builderStandaloneDatabase()}
               options={databaseOptions}
               selectedId={graphSelection.database}
+              dense
               testIdPrefix="multi-database-tool"
               evidenceEcosystem="typescript"
               evidenceCategory="database"
@@ -2484,6 +2554,7 @@ function CreationModeComposer({
               label={m.builderMobileApp()}
               options={mobileOptions}
               selectedId={graphSelection.mobile}
+              dense
               testIdPrefix="multi-mobile-tool"
               evidenceEcosystem="react-native"
               evidenceCategory={mobileConfig.frameworkCategory}
@@ -2553,143 +2624,368 @@ function CreationModeComposer({
     onActiveStepChange("configure");
   };
 
-  return (
-    <section data-testid="stack-graph-composer" className="mb-8 space-y-8">
-      <nav
-        aria-label={m.builderComposerProgress()}
-        className="grid grid-cols-4 border-b border-border"
+  const activeStepIndex = MULTI_STACK_STEPS.findIndex((step) => step.id === activeStep);
+  const summarizeRoles = (roles: ComposerRole[]) =>
+    roles
+      .map((role) => getStepSelection(role)?.toolName)
+      .filter(Boolean)
+      .join(" · ");
+  const getStepSummary = (stepId: MultiStackStepId) => {
+    switch (stepId) {
+      case "applications":
+        return selectedRoles.map(getComposerRoleLabel).join(" · ");
+      case "configure":
+        return summarizeRoles(configurableRoles);
+      case "project":
+        return composerUsesJavaScript(stack.stackPartSpecs)
+          ? `${stack.packageManager} · ${m.builderComposerJsWorkspace()}`
+          : m.builderComposerNativeToolchains();
+      case "review":
+        return stack.projectName;
+    }
+  };
+  const toggleDatabase = () => {
+    const database =
+      graphSelection.database === "none"
+        ? getDefaultGraphTool("database", "database", "universal", "none")
+        : "none";
+    updateGraphSelection({
+      database,
+      ...reconcileBackendCapabilities({ ...graphSelection, database }, backendConfig),
+    });
+  };
+
+  const pickSelectedOptions = (categories: ReadonlyArray<keyof typeof TECH_OPTIONS>) =>
+    categories.flatMap((category) =>
+      (TECH_OPTIONS[category] ?? []).filter(
+        (option) => option.id !== "none" && isSelectedCheck(optionStack, category, option.id),
+      ),
+    );
+  const pickOption = (category: keyof typeof TECH_OPTIONS | undefined, optionId: string) => {
+    if (!category || optionId === "none") return [];
+    const option = TECH_OPTIONS[category]?.find((candidate) => candidate.id === optionId);
+    return option ? [option] : [];
+  };
+  const getRoleLibraries = (role: ComposerRole): TechOption[] => {
+    switch (role) {
+      case "frontend":
+        return graphSelection.frontendEcosystem === "typescript" &&
+          graphSelection.frontend !== "none"
+          ? pickSelectedOptions(MULTI_FRONTEND_LIBRARY_GROUPS)
+          : [];
+      case "mobile":
+        if (graphSelection.mobile === "none") return [];
+        if (graphSelection.mobileEcosystem === "react-native")
+          return pickSelectedOptions(MULTI_MOBILE_LIBRARY_GROUPS);
+        if (graphSelection.mobileEcosystem === "kotlin")
+          return pickSelectedOptions(MULTI_KOTLIN_MOBILE_LIBRARY_GROUPS);
+        return [];
+      case "backend":
+        if (graphSelection.backend === "none") return [];
+        return [
+          ...pickOption(backendConfig.ormCategory, graphSelection.backendOrm),
+          ...pickOption(backendConfig.apiCategory, graphSelection.backendApi),
+          ...pickOption(backendConfig.authCategory, graphSelection.backendAuth),
+        ];
+      case "database":
+        return graphSelection.database === "none" ? [] : pickSelectedOptions(["dbSetup"]);
+    }
+  };
+
+  const renderApplicationTile = (role: ComposerRole) => {
+    const selection = getStepSelection(role);
+    const selected = Boolean(selection);
+    const Icon = COMPOSER_ROLE_ICONS[role];
+    const ecosystems = COMPOSER_ECOSYSTEM_ICONS[role];
+    const libraries = getRoleLibraries(role);
+    const visibleLibraries = libraries.slice(0, 4);
+    return (
+      <button
+        key={role}
+        type="button"
+        aria-pressed={selected}
+        data-testid={`multi-application-${role}`}
+        onClick={() => (role === "database" ? toggleDatabase() : toggleApplication(role))}
+        className={cn(
+          "group relative flex cursor-pointer flex-col rounded-2xl border p-4 text-left transition-all focus-visible:outline-2 focus-visible:outline-ring",
+          selected
+            ? "border-foreground/40 bg-muted/30"
+            : "border-border bg-background hover:border-foreground/25 hover:bg-muted/15",
+        )}
       >
-        {MULTI_STACK_STEPS.map((step, index) => (
-          <button
-            key={step.id}
-            type="button"
-            data-testid={`multi-step-${step.id}`}
-            aria-current={activeStep === step.id ? "step" : undefined}
-            disabled={step.id !== "applications" && selectedRoles.length === 0}
-            onClick={() => onActiveStepChange(step.id)}
+        <span className="flex items-center justify-between gap-2">
+          <span className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+            <Icon
+              className={cn(
+                "h-4 w-4 shrink-0",
+                selected ? "text-foreground" : "text-muted-foreground",
+              )}
+            />
+            <span className="truncate">{getComposerRoleLabel(role)}</span>
+            {role === "database" && (
+              <span className="font-mono text-[9px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                {m.builderComposerOptional()}
+              </span>
+            )}
+          </span>
+          <span
+            aria-hidden="true"
             className={cn(
-              "flex min-h-16 flex-col gap-1 border-b-2 px-2 py-3 text-left transition-colors disabled:opacity-40 sm:flex-row sm:items-center sm:gap-3",
-              activeStep === step.id
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground",
+              "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors",
+              selected
+                ? "border-[#C6E853] bg-[#C6E853] text-[#2A3303]"
+                : "border-border text-transparent group-hover:border-foreground/40",
             )}
           >
-            <span className="font-mono text-[10px]">0{index + 1}</span>
-            <span className="text-xs font-medium sm:text-sm">{getMultiStepLabel(step.id)}</span>
-          </button>
-        ))}
+            <Check className="h-3 w-3" />
+          </span>
+        </span>
+        <span className="mt-2 flex flex-wrap items-center gap-1.5">
+          {ecosystems.length > 0 ? (
+            ecosystems.map((eco) => (
+              <TechIcon
+                key={eco.key}
+                techId={eco.techId}
+                icon={eco.icon}
+                name={eco.label}
+                className={cn(
+                  "h-3.5 w-3.5 transition-opacity",
+                  selected ? "opacity-80" : "opacity-45 group-hover:opacity-70",
+                )}
+              />
+            ))
+          ) : (
+            <span className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
+              {m.builderUniversal()}
+            </span>
+          )}
+        </span>
+        <span className="mt-auto flex flex-col gap-2 pt-4">
+          <span className="flex min-w-0 items-center gap-2 text-xs">
+            {selection ? (
+              <>
+                <TechIcon
+                  techId={selection.toolId}
+                  name={selection.toolName}
+                  className="h-4 w-4 shrink-0"
+                />
+                <span className="truncate font-medium">{selection.toolName}</span>
+                <span className="ml-auto shrink-0 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
+                  {selection.scopeLabel}
+                </span>
+              </>
+            ) : (
+              <span className="text-muted-foreground">{m.builderComposerAddApplication()}</span>
+            )}
+          </span>
+          {visibleLibraries.length > 0 && (
+            <span className="flex flex-wrap gap-1">
+              {visibleLibraries.map((library) => (
+                <span
+                  key={library.id}
+                  className="inline-flex max-w-full items-center gap-1 rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                >
+                  <TechIcon
+                    techId={library.id}
+                    icon={library.icon}
+                    name={library.name}
+                    className="h-3 w-3 shrink-0"
+                  />
+                  <span className="truncate">{getLocalizedTechOption(library).name}</span>
+                </span>
+              ))}
+              {libraries.length > visibleLibraries.length && (
+                <span className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                  +{libraries.length - visibleLibraries.length}
+                </span>
+              )}
+            </span>
+          )}
+        </span>
+      </button>
+    );
+  };
+
+  return (
+    <section data-testid="stack-graph-composer" className="mb-8 space-y-6">
+      <nav
+        aria-label={m.builderComposerProgress()}
+        className="no-scrollbar -mx-1 flex items-stretch gap-1 overflow-x-auto px-1"
+      >
+        {MULTI_STACK_STEPS.map((step, index) => {
+          const isActive = activeStep === step.id;
+          const isDone = index < activeStepIndex;
+          const summary = getStepSummary(step.id);
+          return (
+            <button
+              key={step.id}
+              type="button"
+              data-testid={`multi-step-${step.id}`}
+              aria-current={isActive ? "step" : undefined}
+              disabled={step.id !== "applications" && selectedRoles.length === 0}
+              onClick={() => onActiveStepChange(step.id)}
+              className={cn(
+                "flex min-w-36 flex-1 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+                isActive
+                  ? "border-foreground/30 bg-muted/40"
+                  : "border-transparent hover:bg-muted/30",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-semibold transition-colors",
+                  isActive
+                    ? "bg-foreground text-background"
+                    : isDone
+                      ? "bg-[#C6E853] text-[#2A3303]"
+                      : "border border-border text-muted-foreground",
+                )}
+              >
+                {isDone ? <Check className="h-3 w-3" /> : index + 1}
+              </span>
+              <span className="min-w-0">
+                <span
+                  className={cn(
+                    "block text-xs font-medium sm:text-[13px]",
+                    isActive ? "text-foreground" : "text-muted-foreground",
+                  )}
+                >
+                  {getMultiStepLabel(step.id)}
+                </span>
+                {summary && (
+                  <span className="block truncate font-mono text-[10px] text-muted-foreground">
+                    {summary}
+                  </span>
+                )}
+              </span>
+            </button>
+          );
+        })}
       </nav>
 
       {activeStep === "applications" && (
-        <div className="space-y-6">
-          <div className="max-w-xl space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
               {m.builderComposerTitle()}
             </h2>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              {m.builderComposerDescription()}
-            </p>
+            {selectedRoles.length === 0 && (
+              <output className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
+                {m.builderComposerChooseApplication()}
+              </output>
+            )}
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {applicationRoles.map((role) => {
-              const selection = getStepSelection(role);
-              const description =
-                role === "frontend"
-                  ? m.builderComposerWebDescription()
-                  : role === "mobile"
-                    ? m.builderComposerMobileDescription()
-                    : m.builderComposerBackendDescription();
-              return (
-                <button
-                  key={role}
-                  type="button"
-                  aria-pressed={Boolean(selection)}
-                  data-testid={`multi-application-${role}`}
-                  onClick={() => toggleApplication(role)}
-                  className={cn(
-                    "flex min-h-44 flex-col items-start gap-4 rounded-xl border p-5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-ring",
-                    selection
-                      ? "border-primary bg-primary/5"
-                      : "border-border bg-background hover:bg-muted/40",
-                  )}
-                >
-                  <span className="flex w-full items-center justify-between text-sm font-semibold">
-                    {getComposerRoleLabel(role)}
-                    {selection && <Check aria-hidden="true" className="size-4 text-primary" />}
-                  </span>
-                  <span className="flex-1 text-xs leading-relaxed text-muted-foreground">
-                    {description}
-                  </span>
-                  <span className="text-xs font-medium">
-                    {selection?.toolName ?? m.builderComposerAddApplication()}
-                  </span>
-                </button>
-              );
-            })}
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {COMPOSER_APPLICATION_ROLES.map(renderApplicationTile)}
+            {renderApplicationTile("database")}
           </div>
-          {selectedRoles.length === 0 && (
-            <output className="text-sm text-muted-foreground">
-              {m.builderComposerChooseApplication()}
-            </output>
-          )}
-          <p className="text-xs text-muted-foreground">{m.builderComposerDatabaseLater()}</p>
+          <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:14px_14px] px-4 pt-6 sm:px-6">
+            <div className="relative grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {[...COMPOSER_APPLICATION_ROLES, "database" as const].map((role) => {
+                const selection = getStepSelection(role);
+                return (
+                  <ComposerRolePreview
+                    key={role}
+                    role={role}
+                    selected={Boolean(selection)}
+                    toolId={selection?.toolId}
+                    toolName={selection?.toolName}
+                  />
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
 
       {activeStep === "configure" && (
         <div className="space-y-5">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight">
-              {m.builderComposerConfigureTitle()}
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {m.builderComposerConfigureDescription()}
-            </p>
-          </div>
-          <Tabs
-            value={activeRole}
-            onValueChange={(value) => {
-              if (configurableRoles.includes(value as ComposerRole))
-                setSelectedRole(value as ComposerRole);
-            }}
+          <div
+            role="tablist"
+            aria-label={m.builderComposerConfigure()}
+            className="flex flex-wrap gap-1.5"
           >
-            <TabsList variant="line" className="mb-5 max-w-full justify-start overflow-x-auto">
-              {configurableRoles.map((role) => (
-                <TabsTrigger
+            {configurableRoles.map((role) => {
+              const Icon = COMPOSER_ROLE_ICONS[role];
+              const selection = getStepSelection(role);
+              const isActive = role === activeRole;
+              return (
+                <button
                   key={role}
-                  value={role}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
                   data-testid={`multi-step-${role}`}
-                  className="gap-2 px-2 py-2 sm:px-4"
+                  onClick={() => setSelectedRole(role)}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors",
+                    isActive
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground",
+                  )}
                 >
-                  {getComposerRoleLabel(role)}
-                  <span className="hidden text-[10px] text-muted-foreground sm:inline">
-                    {getStepSelection(role)?.toolName ?? m.builderNone()}
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="font-medium">{getComposerRoleLabel(role)}</span>
+                  <span
+                    className={cn(
+                      "hidden font-mono text-[10px] sm:inline",
+                      isActive ? "text-background/70" : "text-muted-foreground/80",
+                    )}
+                  >
+                    {selection?.toolName ?? m.builderNone()}
                   </span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            <TabsContent value={activeRole} className="space-y-6">
-              {renderActiveStep()}
-            </TabsContent>
-          </Tabs>
+                </button>
+              );
+            })}
+          </div>
+          <motion.div
+            key={activeRole}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+          >
+            {renderActiveStep()}
+          </motion.div>
         </div>
       )}
 
       {activeStep === "project" && (
-        <div className="space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
             {m.builderComposerProjectTitle()}
           </h2>
-          <p className="text-sm text-muted-foreground">
-            {composerUsesJavaScript(stack.stackPartSpecs)
-              ? m.builderComposerJsSettings()
-              : m.builderComposerNativeSettings()}
-          </p>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-[11px]">
+            {composerUsesJavaScript(stack.stackPartSpecs) ? (
+              <>
+                <TechIcon techId="typescript" name="TypeScript" className="h-3.5 w-3.5" />
+                {m.builderComposerJsWorkspace()}
+              </>
+            ) : (
+              m.builderComposerNativeToolchains()
+            )}
+          </span>
+          {configurableRoles.map((role) => {
+            const selection = getStepSelection(role);
+            if (!selection) return null;
+            return (
+              <span
+                key={role}
+                className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-[11px] text-muted-foreground"
+              >
+                <TechIcon
+                  techId={selection.toolId}
+                  name={selection.toolName}
+                  className="h-3.5 w-3.5"
+                />
+                {selection.toolName}
+              </span>
+            );
+          })}
         </div>
       )}
 
       {activeStep === "review" && (
-        <div className="space-y-6">
+        <div className="space-y-5">
           <Suspense
             fallback={
               <Loader2 className="size-5 animate-spin" aria-label={m.builderComposerReview()} />
@@ -2697,7 +2993,8 @@ function CreationModeComposer({
           >
             <ComposerProjectReview stack={stack} onEdit={editRole} />
           </Suspense>
-          <Button variant="outline" onClick={() => onActiveStepChange("project")}>
+          <Button variant="ghost" size="sm" onClick={() => onActiveStepChange("project")}>
+            <Settings className="h-3.5 w-3.5" />
             {m.builderComposerEditProject()}
           </Button>
         </div>
@@ -2994,8 +3291,15 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
             }),
           );
         }
+        // Toggling applications on the first composer step cascades dependent
+        // options to "none"; those adjustments are expected, not worth a toast.
+        const isChoosingApplications = isMultiMode && multiActiveStep === "applications";
         startTransition(() => {
-          if (!suppressCompatibilityToastRef.current && compatibilityAnalysis.changes.length > 0) {
+          if (
+            !suppressCompatibilityToastRef.current &&
+            !isChoosingApplications &&
+            compatibilityAnalysis.changes.length > 0
+          ) {
             if (compatibilityAnalysis.changes.length === 1) {
               toast.info(compatibilityAnalysis.changes[0].message, { duration: 4000 });
             } else if (compatibilityAnalysis.changes.length > 1) {
@@ -3013,7 +3317,15 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
         });
       }
     }
-  }, [adjustedStack, campaign, compatibilityAnalysis.changes, evidenceInventory, setStack]);
+  }, [
+    adjustedStack,
+    campaign,
+    compatibilityAnalysis.changes,
+    evidenceInventory,
+    isMultiMode,
+    multiActiveStep,
+    setStack,
+  ]);
 
   useEffect(() => {
     setCommandError(null);

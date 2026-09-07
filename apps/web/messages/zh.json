@@ -115,6 +115,7 @@
   "guidesRelated": "相关指南",
   "tocOnThisPage": "本页内容",
   "uiClose": "关闭",
+  "uiCloseAll": "全部关闭",
   "uiLoading": "加载中",
   "uiToggle": "切换",
   "themeToggle": "切换主题",
@@ -605,5 +606,13 @@
   "builderComposerConnectionsDescription": "生成的客户端将第一个后端作为默认 HTTP 连接。其他服务保留各自的端点。",
   "builderComposerSetupCommands": "准备依赖",
   "builderComposerRunCommands": "启动 Web 应用和服务",
-  "builderComposerNativeRun": "请单独运行原生移动应用，以选择模拟器或设备。生成的 README 中包含相应命令。"
+  "builderComposerNativeRun": "请单独运行原生移动应用，以选择模拟器或设备。生成的 README 中包含相应命令。",
+  "builderComposerOptional": "可选",
+  "builderComposerJsWorkspace": "JavaScript 工作区",
+  "builderComposerNativeToolchains": "原生工具链",
+  "builderComposerCommands": "命令",
+  "builderComposerSetup": "安装",
+  "builderComposerDev": "开发",
+  "builderComposerSdks": "请安装这些语言的 SDK",
+  "builderComposerXcode": "原生 iOS 应用需要 macOS 和 Xcode"
 }

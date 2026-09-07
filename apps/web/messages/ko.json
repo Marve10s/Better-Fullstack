@@ -115,6 +115,7 @@
   "guidesRelated": "관련 가이드",
   "tocOnThisPage": "이 페이지에서",
   "uiClose": "닫기",
+  "uiCloseAll": "모두 닫기",
   "uiLoading": "로드 중",
   "uiToggle": "전환",
   "themeToggle": "테마 전환",
@@ -605,5 +606,13 @@
   "builderComposerConnectionsDescription": "생성된 클라이언트는 첫 번째 백엔드를 기본 HTTP 연결로 사용합니다. 추가 서비스는 자체 엔드포인트를 유지합니다.",
   "builderComposerSetupCommands": "의존성 준비",
   "builderComposerRunCommands": "웹 애플리케이션 및 서비스 시작",
-  "builderComposerNativeRun": "시뮬레이터나 기기를 선택하려면 네이티브 모바일 앱을 별도로 실행하세요. 생성된 README에 실행 명령어가 포함됩니다."
+  "builderComposerNativeRun": "시뮬레이터나 기기를 선택하려면 네이티브 모바일 앱을 별도로 실행하세요. 생성된 README에 실행 명령어가 포함됩니다.",
+  "builderComposerOptional": "선택 사항",
+  "builderComposerJsWorkspace": "JavaScript 워크스페이스",
+  "builderComposerNativeToolchains": "네이티브 툴체인",
+  "builderComposerCommands": "명령어",
+  "builderComposerSetup": "설정",
+  "builderComposerDev": "개발",
+  "builderComposerSdks": "이 언어들의 SDK를 설치하세요",
+  "builderComposerXcode": "네이티브 iOS 앱에는 macOS와 Xcode가 필요합니다"
 }
