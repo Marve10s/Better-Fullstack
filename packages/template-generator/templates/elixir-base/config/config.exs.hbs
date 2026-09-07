@@ -2,6 +2,8 @@ import Config
 
 {{#if (eq elixirApplicationFramework "ash")}}
 config :{{elixirAppName}}, ash_domains: [{{elixirModuleName}}.CatalogDomain]
+
+config :ash, default_string_length_count: :codepoints
 {{/if}}
 
 {{#if (or (eq elixirOrm "ecto-sql") (or (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3")))}}

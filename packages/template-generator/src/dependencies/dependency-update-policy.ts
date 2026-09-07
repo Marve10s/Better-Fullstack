@@ -213,3 +213,37 @@ export function getLatestChannelPinnedVersion(packageName: string): string | und
 export function isMajorUpdateAllowlisted(packageName: string): boolean {
   return DEPENDENCY_UPDATE_POLICIES[packageName]?.allowMajor === true;
 }
+
+export type TemplateDependencyPin = {
+  /** Template path relative to the templates directory, using forward slashes. */
+  template: string;
+  versions: Readonly<Record<string, string>>;
+  reason: string;
+};
+
+/**
+ * Framework-specific templates whose dependency versions must not follow
+ * dependencyVersionMap. Template sync skips these entries instead of rewriting them.
+ */
+export const TEMPLATE_DEPENDENCY_PINS: readonly TemplateDependencyPin[] = [
+  {
+    template: "frontend/redwood/web/package.json.hbs",
+    versions: {
+      react: "18.3.1",
+      "react-dom": "18.3.1",
+      "@types/react": "^18.2.55",
+      "@types/react-dom": "^18.2.19",
+    },
+    reason:
+      "@redwoodjs/web 8.9 declares exact react@18.3.1 and react-dom@18.3.1 peers; npm rejects the React 19 set with ERESOLVE.",
+  },
+];
+
+export function getTemplatePinnedVersion(
+  templateFile: string,
+  packageName: string,
+): string | undefined {
+  return TEMPLATE_DEPENDENCY_PINS.find((pin) => pin.template === templateFile)?.versions[
+    packageName
+  ];
+}
