@@ -1,16 +1,23 @@
 import { describe, expect, it } from "bun:test";
+import path from "node:path";
 
 import { dependencyVersionMap } from "@/dependencies/add-deps";
 import {
   getUpdateType,
+  scanTemplateVersions,
   selectAutomatedUpdates,
   type VersionInfo,
 } from "@/dependencies/dependency-checker";
 import {
   DEPENDENCY_UPDATE_POLICIES,
   getLatestChannelPinnedVersion,
+  getGeneratedPackageJsonPins,
   getPinnedDependencyVersion,
+  getTemplatePinnedVersion,
+  TEMPLATE_DEPENDENCY_PINS,
 } from "@/dependencies/dependency-update-policy";
+
+const TEMPLATES_DIR = path.resolve(import.meta.dir, "../../templates");
 
 const candidate = (name: string, updateType: VersionInfo["updateType"]): VersionInfo => ({
   name,
@@ -36,6 +43,28 @@ describe("dependency update policy", () => {
         expect(getLatestChannelPinnedVersion(name)).toBe(policy.pinnedVersion);
       }
     }
+  });
+
+  it("keeps Redwood on the React 18 peers its framework packages require", () => {
+    expect(getTemplatePinnedVersion("frontend/redwood/web/package.json.hbs", "react")).toBe(
+      "18.3.1",
+    );
+    expect(
+      getTemplatePinnedVersion("frontend/react/next/package.json.hbs", "react"),
+    ).toBeUndefined();
+    expect(getGeneratedPackageJsonPins(new Set(["@redwoodjs/web", "react"])).get("react")).toBe(
+      "18.3.1",
+    );
+    expect(getGeneratedPackageJsonPins(new Set(["react"])).size).toBe(0);
+    for (const pin of TEMPLATE_DEPENDENCY_PINS) {
+      for (const [name, version] of Object.entries(pin.versions)) {
+        expect(version).not.toBe(dependencyVersionMap[name as keyof typeof dependencyVersionMap]);
+      }
+    }
+  });
+
+  it("keeps every template in sync with the version map or an explicit template pin", () => {
+    expect(scanTemplateVersions(TEMPLATES_DIR).versionMismatches).toEqual([]);
   });
 
   it("keeps incomplete TanStack Router release trains out of the latest channel", () => {
