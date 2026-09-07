@@ -64,11 +64,7 @@ import { toast } from "sonner";
 import type { ShareMoment } from "@/lib/campaign/campaign-share";
 import type { Ecosystem } from "@/lib/stack/types";
 
-import {
-  CapabilityEvidenceBadge,
-  CapabilityEvidenceProvider,
-  useCapabilityEvidenceInventory,
-} from "@/components/stack-builder/capability-evidence-badge";
+import { CapabilityEvidenceProvider, useCapabilityEvidenceInventory } from "@/components/stack-builder/capability-evidence-badge";
 import {
   type BuilderSectionDef,
   getBuilderSections,
@@ -1377,7 +1373,6 @@ const TechOptionCard = memo(function TechOptionCard({
           <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
             {description}
           </p>
-          <CapabilityEvidenceBadge ecosystem={ecosystem} category={category} optionId={tech.id} />
           {isDisabled && disabledReason && <DisabledReasonInline reason={disabledReason} />}
         </div>
       </div>
@@ -1697,11 +1692,6 @@ function GraphOptionButton({
           <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
             {localizedOption.description}
           </p>
-          <CapabilityEvidenceBadge
-            ecosystem={evidenceEcosystem}
-            category={evidenceCategory}
-            optionId={option.id}
-          />
           {disabledReason && <DisabledReasonInline reason={disabledReason} />}
         </div>
       </div>
@@ -4323,13 +4313,6 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                                               ).description
                                                                             }
                                                                           </p>
-                                                                          <CapabilityEvidenceBadge
-                                                                            ecosystem={
-                                                                              stack.ecosystem
-                                                                            }
-                                                                            category={key}
-                                                                            optionId={tech.id}
-                                                                          />
                                                                         </div>
                                                                       </div>
                                                                     </motion.div>
@@ -4453,11 +4436,6 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                                     .description
                                                                 }
                                                               </p>
-                                                              <CapabilityEvidenceBadge
-                                                                ecosystem={stack.ecosystem}
-                                                                category="astroIntegration"
-                                                                optionId={tech.id}
-                                                              />
                                                               {isDisabled && disabledReason && (
                                                                 <DisabledReasonInline
                                                                   reason={disabledReason}
