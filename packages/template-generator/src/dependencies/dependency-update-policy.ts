@@ -217,6 +217,8 @@ export function isMajorUpdateAllowlisted(packageName: string): boolean {
 export type TemplateDependencyPin = {
   /** Template path relative to the templates directory, using forward slashes. */
   template: string;
+  /** Dependency whose presence identifies this template's generated package.json. */
+  marker: string;
   versions: Readonly<Record<string, string>>;
   reason: string;
 };
@@ -228,6 +230,7 @@ export type TemplateDependencyPin = {
 export const TEMPLATE_DEPENDENCY_PINS: readonly TemplateDependencyPin[] = [
   {
     template: "frontend/redwood/web/package.json.hbs",
+    marker: "@redwoodjs/web",
     versions: {
       react: "18.3.1",
       "react-dom": "18.3.1",
@@ -246,4 +249,21 @@ export function getTemplatePinnedVersion(
   return TEMPLATE_DEPENDENCY_PINS.find((pin) => pin.template === templateFile)?.versions[
     packageName
   ];
+}
+
+/**
+ * Template pins that apply to a generated package.json, keyed by dependency name.
+ * Version channels must leave these entries on the framework-required release.
+ */
+export function getGeneratedPackageJsonPins(
+  dependencyNames: ReadonlySet<string>,
+): ReadonlyMap<string, string> {
+  const pins = new Map<string, string>();
+  for (const pin of TEMPLATE_DEPENDENCY_PINS) {
+    if (!dependencyNames.has(pin.marker)) continue;
+    for (const [name, version] of Object.entries(pin.versions)) {
+      pins.set(name, version);
+    }
+  }
+  return pins;
 }

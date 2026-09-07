@@ -11,6 +11,7 @@ import {
 import {
   DEPENDENCY_UPDATE_POLICIES,
   getLatestChannelPinnedVersion,
+  getGeneratedPackageJsonPins,
   getPinnedDependencyVersion,
   getTemplatePinnedVersion,
   TEMPLATE_DEPENDENCY_PINS,
@@ -51,6 +52,10 @@ describe("dependency update policy", () => {
     expect(
       getTemplatePinnedVersion("frontend/react/next/package.json.hbs", "react"),
     ).toBeUndefined();
+    expect(getGeneratedPackageJsonPins(new Set(["@redwoodjs/web", "react"])).get("react")).toBe(
+      "18.3.1",
+    );
+    expect(getGeneratedPackageJsonPins(new Set(["react"])).size).toBe(0);
     for (const pin of TEMPLATE_DEPENDENCY_PINS) {
       for (const [name, version] of Object.entries(pin.versions)) {
         expect(version).not.toBe(dependencyVersionMap[name as keyof typeof dependencyVersionMap]);

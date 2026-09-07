@@ -1,4 +1,7 @@
-import { getLatestChannelPinnedVersion } from "@better-fullstack/template-generator";
+import {
+  getGeneratedPackageJsonPins,
+  getLatestChannelPinnedVersion,
+} from "@better-fullstack/template-generator";
 import { log } from "@clack/prompts";
 import fs from "fs-extra";
 import path from "node:path";
@@ -405,11 +408,16 @@ export async function planDependencyVersionChannel(
 
   for (const packageJsonPath of packageJsonPaths) {
     const packageJson = await readPackageJson(packageJsonPath);
+    const sections = getVersionSections(packageJson);
+    const templatePins = getGeneratedPackageJsonPins(
+      new Set(sections.flatMap((section) => Object.keys(section))),
+    );
     let changed = false;
 
-    for (const section of getVersionSections(packageJson)) {
+    for (const section of sections) {
       for (const [packageName, currentVersion] of Object.entries(section)) {
         if (!isRegistrySemverSpec(currentVersion)) continue;
+        if (templatePins.has(packageName)) continue;
 
         const resolvedVersion = resolvedVersions.get(packageName);
         if (!resolvedVersion) continue;

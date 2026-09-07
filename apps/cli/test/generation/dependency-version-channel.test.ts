@@ -440,6 +440,60 @@ describe("applyDependencyVersionChannel", () => {
     expect(packageJson.dependencies.react).toBe("^19.3.0");
   });
 
+  it("keeps template-pinned Redwood React peers on the latest channel", async () => {
+    const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-redwood-"));
+
+    await fs.outputJson(
+      path.join(projectDir, "web", "package.json"),
+      {
+        name: "web",
+        dependencies: {
+          "@redwoodjs/web": "^8.9.0",
+          react: "18.3.1",
+          "react-dom": "18.3.1",
+        },
+        devDependencies: {
+          "@types/react": "^18.2.55",
+        },
+      },
+      { spaces: 2 },
+    );
+    await fs.outputJson(
+      path.join(projectDir, "api", "package.json"),
+      { name: "api", dependencies: { react: "^18.3.1" } },
+      { spaces: 2 },
+    );
+
+    global.fetch = mock(async (input: string | URL | Request) => {
+      const packageName = decodeURIComponent(String(input).split("/").pop() ?? "");
+      const latestByPackage: Record<string, string> = {
+        "@redwoodjs/web": "8.9.0",
+        react: "19.3.0",
+        "react-dom": "19.3.0",
+        "@types/react": "19.2.18",
+      };
+      const latest = latestByPackage[packageName];
+
+      return new Response(
+        JSON.stringify({ "dist-tags": { latest }, versions: latest ? { [latest]: {} } : {} }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }) as unknown as typeof fetch;
+
+    await applyDependencyVersionChannel(projectDir, "latest");
+
+    const webPackageJson = await fs.readJson(path.join(projectDir, "web", "package.json"));
+    const apiPackageJson = await fs.readJson(path.join(projectDir, "api", "package.json"));
+
+    expect(webPackageJson.dependencies).toMatchObject({
+      "@redwoodjs/web": "^8.9.0",
+      react: "18.3.1",
+      "react-dom": "18.3.1",
+    });
+    expect(webPackageJson.devDependencies["@types/react"]).toBe("^18.2.55");
+    expect(apiPackageJson.dependencies.react).toBe("^19.3.0");
+  });
+
   it("does not downgrade stable dependencies to older prereleases for beta channel", async () => {
     const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-beta-floor-"));
 

@@ -1,1 +1,10 @@
-export { Analytics } from "@vercel/analytics/vue";
+import { inject } from "@vercel/analytics";
+import { defineComponent, onMounted } from "vue";
+
+export const Analytics = defineComponent({
+  name: "VercelAnalytics",
+  setup() {
+    onMounted(() => inject());
+    return () => null;
+  },
+});
