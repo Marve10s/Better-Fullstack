@@ -233,7 +233,12 @@ test("selecting a later named service edits only that service", async ({ page })
 test("review lists every named service with the paths present in its download", async ({
   page,
 }) => {
-  const specs = ["backend:go:gin:api", "backend:python:fastapi:worker"];
+  const specs = [
+    "frontend:dotnet:blazor-webassembly:admin",
+    "frontend:typescript:react-vite:site",
+    "backend:go:gin:api",
+    "backend:python:fastapi:worker",
+  ];
   await gotoAppPage(page, `/new?mode=multi&part=${encodeURIComponent(specs.join(","))}`);
   await expect(commandOutput(page)).toContainText("backend:python:fastapi:worker");
   await clickVisibleTestId(page, "multi-step-review");
@@ -243,12 +248,17 @@ test("review lists every named service with the paths present in its download", 
   await expect(review).toContainText("services/api");
   await expect(review).toContainText("services/worker");
   await expect(review).not.toContainText("apps/server");
+  await expect(review).toContainText("apps/web");
+  await expect(review).toContainText("apps/admin");
+  await expect(review).not.toContainText("apps/site");
   const downloadPromise = page.waitForEvent("download");
   await clickVisibleTestId(page, "download-project-zip");
   const download = await downloadPromise;
   const path = await download.path();
   if (!path) throw new Error("Project download did not produce an archive");
   const archive = unzipSync(await readFile(path));
+  expect(Object.keys(archive).some((file) => file.endsWith("apps/web/package.json"))).toBe(true);
+  expect(Object.keys(archive).some((file) => file.endsWith("apps/admin/Program.cs"))).toBe(true);
   for (const service of ["api", "worker"]) {
     expect(Object.keys(archive).some((file) => file.includes(`services/${service}/`))).toBe(true);
   }

@@ -23,6 +23,30 @@ async function generate(part: string[]) {
 }
 
 describe("multi-ecosystem project output", () => {
+  it("rejects standalone JavaScript app platforms in native-only projects", async () => {
+    for (const addon of ["opentui", "wxt"] as const) {
+      const config = { ...configFor(["backend:go:gin"]), addons: [addon] };
+      const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain(`${addon} requires a generated JavaScript application`);
+      expect(result.tree).toBeUndefined();
+    }
+  });
+
+  it("uses the rendered JavaScript frontend path in mixed frontend graph metadata and README", async () => {
+    const specs = [
+      "frontend:dotnet:blazor-webassembly:admin",
+      "frontend:typescript:react-vite:site",
+    ];
+    const config = configFor(specs);
+    const output = await generate(specs);
+    expect(config.stackParts?.find((part) => part.id === "site")?.targetPath).toBe("apps/web");
+    expect(output.has("apps/web/package.json")).toBe(true);
+    expect(output.has("apps/admin/Program.cs")).toBe(true);
+    expect(output.get("README.md")).toContain("`apps/web`; part `site`");
+    expect(output.get("README.md")).not.toContain("`apps/site`");
+  });
+
   it("reserves TypeScript server and Expo ports before allocating native services", () => {
     const specs = [
       "backend:typescript:hono:api",

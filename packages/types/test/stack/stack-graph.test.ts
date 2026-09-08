@@ -179,6 +179,30 @@ function getTypeScriptApiOptionsForFrontend(frontend: string) {
 }
 
 describe("stack graph", () => {
+  it("keeps JavaScript app paths fixed and named native paths distinct", () => {
+    const parts = parseStackPartSpecs([
+      "frontend:dotnet:blazor-webassembly:web",
+      "frontend:typescript:react-vite:site",
+      "backend:typescript:hono:api",
+      "backend:go:gin:worker",
+      "mobile:kotlin:jetpack-compose:phone",
+      "mobile:react-native:native-bare:expo",
+    ]);
+    expect(parts.find((part) => part.id === "site")?.targetPath).toBe("apps/web");
+    expect(parts.find((part) => part.id === "web")?.targetPath).toBe("apps/web-2");
+    expect(parts.find((part) => part.id === "api")?.targetPath).toBe("apps/server");
+    expect(parts.find((part) => part.id === "worker")?.targetPath).toBe("services/worker");
+    expect(parts.find((part) => part.id === "expo")?.targetPath).toBe("apps/native");
+    expect(parts.find((part) => part.id === "phone")?.targetPath).toBe("apps/phone");
+    const nativeParts = parseStackPartSpecs([
+      "frontend:dotnet:blazor-webassembly:native",
+      "frontend:rust:leptos:site",
+      "mobile:kotlin:jetpack-compose:phone",
+    ]);
+    expect(nativeParts.find((part) => part.id === "native")?.targetPath).toBe("apps/native-2");
+    expect(nativeParts.find((part) => part.id === "phone")?.targetPath).toBe("apps/native");
+  });
+
   it("round-trips named primary services and resolves capabilities by owner ID", () => {
     const stackParts = parseStackPartSpecs([
       "backend:go:gin:api",

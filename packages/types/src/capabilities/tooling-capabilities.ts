@@ -459,8 +459,13 @@ export function toolingRequiresJavaScriptWorkspace(toolId: string): boolean {
   const capability = getToolingCapability(toolId);
   if (!capability) return false;
   return (
-    ["toolchain", "workspaceRunner", "codeQuality", "documentation", "codeGeneration"].includes(
-      capability.category,
-    ) || ["husky", "lefthook", "knip", "ruler"].includes(toolId)
+    [
+      "toolchain",
+      "workspaceRunner",
+      "codeQuality",
+      "documentation",
+      "codeGeneration",
+      "appPlatforms",
+    ].includes(capability.category) || ["husky", "lefthook", "knip", "ruler"].includes(toolId)
   );
 }

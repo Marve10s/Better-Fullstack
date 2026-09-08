@@ -85,6 +85,7 @@ async function materializeGraph(
   roots.push(projectDir);
   const config = {
     ...createCliDefaultProjectConfigBase(),
+    addons: [],
     projectName: "real-checks",
     projectDir,
     relativePath: ".",

@@ -160,6 +160,7 @@ for (const flags of [
   ["--addons", "husky"],
   ["--part", "gitHooks:universal:husky"],
   ["--addons", "biome"],
+  ["--addons", "opentui"],
 ]) {
   test(`native CLI rejects package-dependent tooling before addon setup: ${flags.join(" ")}`, async () => {
     const directory = await mkdtemp(join(tmpdir(), "bfs-native-tooling-"));

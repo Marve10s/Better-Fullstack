@@ -2533,6 +2533,7 @@ function buildProjectConfigBase(
   return {
     ...baseConfig,
     ...loweredGraphConfig,
+    addons: loweredGraphConfig.addons ?? [],
     ...(graphBackend
       ? { effect: "effect-full" as const, validation: "effect-schema" as const }
       : {}),

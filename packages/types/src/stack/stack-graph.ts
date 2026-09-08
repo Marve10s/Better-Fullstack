@@ -3094,21 +3094,45 @@ export function parseStackPartSpecs(
     database: "data",
   };
 
-  const primaryParts = unresolvedPrimaryParts.map((part) =>
-    createStackPart({
+  const usesFixedJavaScriptPath = (part: (typeof unresolvedPrimaryParts)[number]) =>
+    (part.ecosystem === "typescript" || part.ecosystem === "react-native") &&
+    ["frontend", "backend", "mobile"].includes(part.role);
+  // Reserve fixed JavaScript paths and singleton native paths before naming repeated apps.
+  const usedTargetPaths = new Set(
+    unresolvedPrimaryParts
+      .filter(
+        (part) => usesFixedJavaScriptPath(part) || (primaryRoleCounts.get(part.role) ?? 0) <= 1,
+      )
+      .flatMap((part) => {
+        const targetPath = getRoleTargetPath(part.role);
+        return targetPath ? [targetPath] : [];
+      }),
+  );
+  const primaryParts = unresolvedPrimaryParts.map((part) => {
+    let targetPath: string | undefined;
+    if (
+      (primaryRoleCounts.get(part.role) ?? 0) > 1 &&
+      PRIMARY_ROLES.has(part.role) &&
+      !usesFixedJavaScriptPath(part)
+    ) {
+      const basePath = `${repeatedTargetRoot[part.role as StackPrimaryRole]}/${sanitizePartId(
+        part.customId ?? `${part.ecosystem}-${part.toolId}`,
+      ).replaceAll(":", "-")}`;
+      targetPath = basePath;
+      for (let suffix = 2; usedTargetPaths.has(targetPath); suffix += 1) {
+        targetPath = `${basePath}-${suffix}`;
+      }
+      usedTargetPaths.add(targetPath);
+    }
+    return createStackPart({
       role: part.role,
       ecosystem: part.ecosystem,
       toolId: part.toolId,
       source,
       id: part.customId,
-      targetPath:
-        (primaryRoleCounts.get(part.role) ?? 0) > 1 && PRIMARY_ROLES.has(part.role)
-          ? `${repeatedTargetRoot[part.role as StackPrimaryRole]}/${sanitizePartId(
-              part.customId ?? `${part.ecosystem}-${part.toolId}`,
-            ).replaceAll(":", "-")}`
-          : undefined,
-    }),
-  );
+      targetPath,
+    });
+  });
 
   const primaryByRole = new Map(primaryParts.map((part) => [part.role, part]));
   const primaryByRoleAndEcosystem = new Map(
