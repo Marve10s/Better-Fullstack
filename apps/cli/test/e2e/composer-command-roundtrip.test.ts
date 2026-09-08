@@ -157,6 +157,9 @@ test("failed native installation retains the setup command in next steps", async
 for (const flags of [
   ["--addons", "lefthook"],
   ["--part", "gitHooks:universal:lefthook"],
+  ["--addons", "husky"],
+  ["--part", "gitHooks:universal:husky"],
+  ["--addons", "biome"],
 ]) {
   test(`native CLI rejects package-dependent tooling before addon setup: ${flags.join(" ")}`, async () => {
     const directory = await mkdtemp(join(tmpdir(), "bfs-native-tooling-"));
@@ -177,7 +180,7 @@ for (const flags of [
         timeoutMs: 30_000,
       });
       expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain("Lefthook requires a generated JavaScript application");
+      expect(result.stderr).toContain("requires a generated JavaScript application");
       expect(result.stderr).not.toContain("ENOENT");
       expect(existsSync(join(result.projectDir, "apps/server/go.mod"))).toBe(false);
     } finally {

@@ -79,6 +79,7 @@ async function simulateStoppedTransactionOwner(projectDir: string): Promise<void
 function makeConfig(projectDir: string, overrides: Partial<ProjectConfig> = {}): ProjectConfig {
   return {
     ...createCliDefaultProjectConfigBase(),
+    addons: [],
     projectName: "upgrade-app",
     projectDir,
     relativePath: ".",

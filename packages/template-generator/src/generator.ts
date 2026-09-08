@@ -2,6 +2,7 @@ import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
 import {
   hasJavaScriptWorkspaceRoot,
+  toolingRequiresJavaScriptWorkspace,
   formatStackGraphIssue,
   getRoleTargetPath,
   hasVitePlusWorkspaceRoot,
@@ -459,16 +460,19 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       };
     }
 
-    if (
-      usesGraphParts &&
-      !hasJavaScriptWorkspaceRoot(config.stackParts) &&
-      (config.addons.includes("lefthook") ||
-        config.stackParts?.some((part) => part.toolId === "lefthook" && part.source !== "provided"))
-    ) {
-      return {
-        success: false,
-        error: "Lefthook requires a generated JavaScript application for its package-based setup.",
-      };
+    if (usesGraphParts && !hasJavaScriptWorkspaceRoot(config.stackParts)) {
+      const packageBasedTool = [
+        ...config.addons,
+        ...(config.stackParts ?? [])
+          .filter((part) => part.source !== "provided")
+          .map((part) => part.toolId),
+      ].find(toolingRequiresJavaScriptWorkspace);
+      if (packageBasedTool) {
+        return {
+          success: false,
+          error: `${packageBasedTool} requires a generated JavaScript application for its package-based setup.`,
+        };
+      }
     }
 
     if (usesGraphParts) {
