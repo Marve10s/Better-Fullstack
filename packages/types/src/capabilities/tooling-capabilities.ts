@@ -454,3 +454,19 @@ export function getSelectedToolingOption(
       : selection.toolIds.every((toolId) => selectedToolIds.includes(toolId)),
   );
 }
+
+export function toolingRequiresJavaScriptWorkspace(toolId: string): boolean {
+  const capability = getToolingCapability(toolId);
+  if (!capability) return false;
+  return (
+    [
+      "toolchain",
+      "workspaceRunner",
+      "codeQuality",
+      "documentation",
+      "codeGeneration",
+      "appPlatforms",
+      "testingTools",
+    ].includes(capability.category) || ["husky", "lefthook", "knip", "ruler"].includes(toolId)
+  );
+}

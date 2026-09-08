@@ -4,6 +4,7 @@ import {
   type StarterTrackFilters,
 } from "@better-fullstack/types";
 import {
+  STACK_SELECTION_URL_KEYS,
   createStackSelectionSearchParams as createStackSearchParams,
   normalizeStackSelection as normalizeStackStateSelections,
   parseStackSelectionFromSearch as parseStackFromSearch,
@@ -16,7 +17,10 @@ import type { StackSearchParams } from "@/lib/stack/stack-search-schema";
 import { normalizeCampaignSlug } from "@/lib/campaign/campaign";
 import { PRESET_TEMPLATES } from "@/lib/stack/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack/stack-defaults";
-import { getStackSharePath } from "@/lib/stack/stack-share-paths";
+import {
+  createDefaultMultiEcosystemShareStack,
+  getStackSharePath,
+} from "@/lib/stack/stack-share-paths";
 
 type BuilderViewMode = "command" | "preview" | "run" | "presets" | "saved";
 
@@ -41,7 +45,7 @@ export function getInitialBuilderState(
 ): InitialBuilderState {
   if (!search) {
     return {
-      stack: fallbackStack ?? DEFAULT_STACK,
+      stack: fallbackStack ?? createDefaultMultiEcosystemShareStack(),
       viewMode: "command",
       selectedFile: "",
       campaign: undefined,
@@ -50,11 +54,18 @@ export function getInitialBuilderState(
     };
   }
 
+  const hasStackSelection = Object.values(STACK_SELECTION_URL_KEYS).some(
+    (key) => search[key as keyof StackSearchParams] !== undefined,
+  );
   const presetId = search.preset;
   const preset = presetId ? PRESET_TEMPLATES.find((t) => t.id === presetId) : undefined;
 
   return {
-    stack: preset ? ({ ...DEFAULT_STACK, ...preset.stack } as StackState) : searchToStack(search),
+    stack: preset
+      ? ({ ...DEFAULT_STACK, ...preset.stack } as StackState)
+      : hasStackSelection
+        ? searchToStack(search)
+        : (fallbackStack ?? createDefaultMultiEcosystemShareStack()),
     viewMode: search.view || "command",
     selectedFile: search.file || "",
     campaign: normalizeCampaignSlug(search.campaign),

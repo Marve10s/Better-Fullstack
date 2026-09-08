@@ -5,13 +5,15 @@ import {
   type StackPart,
 } from "@better-fullstack/types";
 
+import { getGraphFrontendPorts, getGraphJavaScriptServicePorts } from "@/graph/graph-frontend";
+
 export type GraphBackendConnection = {
   partId: string;
   ecosystem: Exclude<StackPart["ecosystem"], "typescript" | "react-native" | "universal">;
   toolId: string;
   label: string;
   targetPath: string;
-  /** Dev-server origin of the web frontend (null when the graph has no web frontend). */
+  /** Single web dev origin, or null when CORS cannot be pinned to one frontend. */
   webOrigin: string | null;
   serverUrl: string;
   healthPath: string;
@@ -22,8 +24,8 @@ export type GraphBackendConnection = {
   testCommand: string | null;
 };
 
-function getGraphWebFrontend(config: ProjectConfig): StackPart | undefined {
-  return (config.stackParts ?? []).find(
+function getGraphWebFrontends(config: ProjectConfig): StackPart[] {
+  return (config.stackParts ?? []).filter(
     (part) =>
       part.role === "frontend" &&
       !part.ownerPartId &&
@@ -39,7 +41,7 @@ const BACKEND_LABELS: Record<string, string> = {
   warp: "Rust Warp",
   poem: "Rust Poem",
   salvo: "Rust Salvo",
-  "fastapi": "Python FastAPI",
+  fastapi: "Python FastAPI",
   django: "Python Django",
   flask: "Python Flask",
   litestar: "Python Litestar",
@@ -58,7 +60,7 @@ const BACKEND_LABELS: Record<string, string> = {
   "phoenix-live-view": "Elixir Phoenix LiveView",
 };
 
-export function getGraphBackendConnection(config: ProjectConfig): GraphBackendConnection | null {
+function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnection | null {
   const backend = (config.stackParts ?? []).find(
     (part) =>
       part.role === "backend" &&
@@ -73,25 +75,22 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
 
   const targetPath = backend.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
   const label = BACKEND_LABELS[backend.toolId] ?? `${backend.ecosystem} ${backend.toolId}`;
-  const graphFrontend = getGraphWebFrontend(config);
+  const graphFrontends = getGraphWebFrontends(config);
+  const graphFrontend = graphFrontends[0];
   const webPort = graphFrontend
-    ? graphFrontend.ecosystem === "dotnet"
-      ? 5173
-      : graphFrontend.ecosystem === "rust"
-        ? 8080
-        : graphFrontend.ecosystem === "typescript"
-          ? getLocalWebDevPort([graphFrontend.toolId] as ProjectConfig["frontend"])
-          : null
+    ? getGraphFrontendPorts(config).get(graphFrontend.id)
     : hasWebFrontend(config)
       ? getLocalWebDevPort(config.frontend)
       : null;
-  const webOrigin = webPort ? `http://localhost:${webPort}` : null;
+  // Native templates accept one pinned origin or their permissive development default.
+  const webOrigin = graphFrontends.length <= 1 && webPort ? `http://localhost:${webPort}` : null;
 
   switch (backend.ecosystem) {
     case "elixir": {
       const hasPhoenix = backend.toolId === "phoenix" || backend.toolId === "phoenix-live-view";
       const hasEcto = (config.stackParts ?? []).some(
-        (part) => part.ownerPartId === backend.id && part.role === "orm" && part.toolId === "ecto-sql",
+        (part) =>
+          part.ownerPartId === backend.id && part.role === "orm" && part.toolId === "ecto-sql",
       );
       return {
         partId: backend.id,
@@ -128,12 +127,36 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         testCommand: `cd ${targetPath} && cargo test`,
       };
     case "python": {
-      const devCommand =
+      const packageManager =
+        (config.stackParts ?? []).find(
+          (part) => part.ownerPartId === backend.id && part.role === "packageManager",
+        )?.toolId ??
+        config.pythonPackageManager ??
+        "uv";
+      const runPython = (command: string, { module = true, dev = false } = {}) => {
+        if (packageManager === "pip") {
+          const args = `${module ? "-m " : ""}${command}`;
+          return `if [ -f .venv/Scripts/python.exe ]; then .venv/Scripts/python.exe ${args}; else .venv/bin/python ${args}; fi`;
+        }
+        const runner =
+          packageManager === "poetry" ? "poetry run" : dev ? "uv run --extra dev" : "uv run";
+        return `${runner} ${module ? "" : "python "}${command}`;
+      };
+      const setupCommand =
+        packageManager === "poetry"
+          ? "poetry install --extras dev"
+          : packageManager === "pip"
+            ? `if [ "$OS" = "Windows_NT" ]; then python -m venv .venv; else python3 -m venv .venv; fi && ${runPython("pip install -e '.[dev]'")}`
+            : "uv sync --extra dev";
+      const devCommand = `cd ${targetPath} && ${
         backend.toolId === "fastapi"
-          ? `cd ${targetPath} && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port \${PORT:-8000}`
+          ? runPython("uvicorn app.main:app --reload --host 0.0.0.0 --port ${PORT:-8000}")
           : backend.toolId === "litestar"
-            ? `cd ${targetPath} && uv run litestar --app src.app.main:app run --reload --host 0.0.0.0 --port \${PORT:-8000}`
-            : `cd ${targetPath} && uv run python src/app/main.py`;
+            ? runPython(
+                "litestar --app src.app.main:app run --reload --host 0.0.0.0 --port ${PORT:-8000}",
+              )
+            : runPython("src/app/main.py", { module: false })
+      }`;
       return {
         partId: backend.id,
         ecosystem: backend.ecosystem,
@@ -144,10 +167,10 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         serverUrl: "http://localhost:8000",
         healthPath: "/health",
         healthUrl: "http://localhost:8000/health",
-        setupCommand: `cd ${targetPath} && uv sync --extra dev`,
+        setupCommand: `cd ${targetPath} && ${setupCommand}`,
         devCommand,
-        checkCommand: `cd ${targetPath} && uv run --extra dev ruff check .`,
-        testCommand: `cd ${targetPath} && uv run --extra dev pytest`,
+        checkCommand: `cd ${targetPath} && ${runPython("ruff check .", { dev: true })}`,
+        testCommand: `cd ${targetPath} && ${runPython("pytest", { dev: true })}`,
       };
     }
     case "go":
@@ -167,22 +190,26 @@ export function getGraphBackendConnection(config: ProjectConfig): GraphBackendCo
         testCommand: `cd ${targetPath} && go mod tidy && go test ./...`,
       };
     case "java": {
-      const buildTool = config.javaBuildTool === "gradle" ? "./gradlew" : "./mvnw";
+      const selectedBuildTool =
+        (config.stackParts ?? []).find(
+          (part) => part.ownerPartId === backend.id && part.role === "buildTool",
+        )?.toolId ?? config.javaBuildTool;
+      const buildTool = selectedBuildTool === "gradle" ? "./gradlew" : "./mvnw";
       const isQuarkus = backend.toolId === "quarkus";
       const isKtor = backend.toolId === "ktor";
       const devTask =
-        config.javaBuildTool === "gradle"
+        selectedBuildTool === "gradle"
           ? isKtor
             ? "run"
             : isQuarkus
-            ? "quarkusDev"
-            : "bootRun"
+              ? "quarkusDev"
+              : "bootRun"
           : isKtor
             ? "compile exec:java"
             : isQuarkus
-            ? "quarkus:dev"
-            : "spring-boot:run";
-      const buildTask = config.javaBuildTool === "gradle" ? "build" : "package";
+              ? "quarkus:dev"
+              : "spring-boot:run";
+      const buildTask = selectedBuildTool === "gradle" ? "build" : "package";
       return {
         partId: backend.id,
         ecosystem: backend.ecosystem,
@@ -250,15 +277,18 @@ export function getGraphBackendConnections(config: ProjectConfig): GraphBackendC
   );
 
   const connections = backendParts.flatMap((backend) => {
-    const connection = getGraphBackendConnection({
+    const connection = getRawGraphBackendConnection({
       ...config,
       stackParts: [backend, ...(config.stackParts ?? []).filter((part) => part.id !== backend.id)],
     });
     return connection ? [connection] : [];
   });
 
-  const usedPorts = new Set<number>();
-  return connections.map((connection) => {
+  const usedPorts = new Set([
+    ...getGraphJavaScriptServicePorts(config),
+    ...getGraphFrontendPorts(config).values(),
+  ]);
+  const httpConnections = connections.map((connection) => {
     const url = new URL(connection.serverUrl);
     const defaultPort = Number(url.port);
     let port = defaultPort;
@@ -271,12 +301,42 @@ export function getGraphBackendConnections(config: ProjectConfig): GraphBackendC
       ...connection,
       serverUrl,
       healthUrl: `${serverUrl}${connection.healthPath}`,
+      devCommand: connection.devCommand
+        .replace(
+          `cd ${connection.targetPath} && `,
+          `cd ${connection.targetPath} && export PORT=${port} && `,
+        )
+        .replace(`\${PORT:-${defaultPort}}`, `\${PORT:-${port}}`),
+    };
+  });
+
+  return httpConnections.map((connection) => {
+    const usesGrpc = (config.stackParts ?? []).some(
+      (part) =>
+        part.ownerPartId === connection.partId &&
+        part.role === "api" &&
+        part.source !== "provided" &&
+        ((part.ecosystem === "go" && part.toolId === "grpc-go") ||
+          (part.ecosystem === "rust" && part.toolId === "tonic") ||
+          (part.ecosystem === "java" && part.toolId === "grpc")),
+    );
+    if (!usesGrpc) return connection;
+    const grpcPortVariable = connection.ecosystem === "java" ? "GRPC_SERVER_PORT" : "GRPC_PORT";
+    let grpcPort = connection.ecosystem === "java" ? 9090 : 50051;
+    while (usedPorts.has(grpcPort)) grpcPort += 1;
+    usedPorts.add(grpcPort);
+    return {
+      ...connection,
       devCommand: connection.devCommand.replace(
         `cd ${connection.targetPath} && `,
-        `cd ${connection.targetPath} && PORT=${port} `,
+        `cd ${connection.targetPath} && export ${grpcPortVariable}=${grpcPort} && `,
       ),
     };
   });
+}
+
+export function getGraphBackendConnection(config: ProjectConfig): GraphBackendConnection | null {
+  return getGraphBackendConnections(config)[0] ?? null;
 }
 
 export function hasWebFrontend(

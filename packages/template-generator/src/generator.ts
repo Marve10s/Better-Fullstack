@@ -1,6 +1,8 @@
 import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
 import {
+  hasJavaScriptWorkspaceRoot,
+  toolingRequiresJavaScriptWorkspace,
   formatStackGraphIssue,
   getRoleTargetPath,
   hasVitePlusWorkspaceRoot,
@@ -13,6 +15,7 @@ import {
 import type { GeneratorOptions, GeneratorResult, VirtualFileTree } from "@/types";
 
 import { VirtualFileSystem } from "@/core/virtual-fs";
+import { processNativeGraphCommands } from "@/graph/graph-project";
 import {
   flattenSingleApp,
   processCatalogs,
@@ -249,6 +252,9 @@ async function processGraphTemplates(
     stackGraphToLegacyProjectConfigForEcosystem(config, "typescript"),
   );
   await processBaseTemplate(vfs, templates, tsConfig);
+  if (!hasJavaScriptWorkspaceRoot(config.stackParts)) {
+    for (const path of ["package.json", "tsconfig.json", "deno.json"]) vfs.deleteFile(path);
+  }
   await processGraphNativeAppTemplates(vfs, templates, config);
 
   if (rustFrontend && !hasRustBackend) {
@@ -261,7 +267,7 @@ async function processGraphTemplates(
     );
   }
 
-  if (tsConfig.frontend.length > 0 || tsConfig.backend !== "none") {
+  if (hasJavaScriptWorkspaceRoot(config.stackParts)) {
     await processFrontendTemplates(vfs, templates, tsConfig);
     await processBackendTemplates(vfs, templates, tsConfig);
     await processApiTemplates(vfs, templates, tsConfig);
@@ -420,6 +426,7 @@ async function processGraphTemplates(
   processPackageConfigs(vfs, config);
   processDependencies(vfs, config);
   processCatalogs(vfs, config);
+  processNativeGraphCommands(vfs, config);
 }
 
 export async function generateVirtualProject(options: GeneratorOptions): Promise<GeneratorResult> {
@@ -451,6 +458,21 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
         success: false,
         error: "Vite+ requires a generated TypeScript web frontend",
       };
+    }
+
+    if (usesGraphParts && !hasJavaScriptWorkspaceRoot(config.stackParts)) {
+      const packageBasedTool = [
+        ...config.addons,
+        ...(config.stackParts ?? [])
+          .filter((part) => part.source !== "provided")
+          .map((part) => part.toolId),
+      ].find(toolingRequiresJavaScriptWorkspace);
+      if (packageBasedTool) {
+        return {
+          success: false,
+          error: `${packageBasedTool} requires a generated JavaScript application for its package-based setup.`,
+        };
+      }
     }
 
     if (usesGraphParts) {

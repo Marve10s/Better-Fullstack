@@ -2,6 +2,7 @@ import {
   compareStackGraphs,
   getCapabilityInventory,
   legacyProjectConfigToStackParts,
+  parseStackPartSpecs,
   type StackPart,
   type StackPartComparisonSnapshot,
   type StackPartEvidenceSnapshot,
@@ -39,6 +40,16 @@ function evidenceForPart(part: StackPart): StackPartEvidenceSnapshot | null {
 }
 
 export function stackStateToStackParts(stack: StackState): StackPart[] {
+  if (stack.stackMode === "multi") {
+    const parts = parseStackPartSpecs(stack.stackPartSpecs, "selected");
+    try {
+      return stackStateToProjectConfig(stack).stackParts ?? parts;
+    } catch {
+      // Comparisons also render while applications are incomplete or being reconciled.
+      // Generation owns validation; the comparison can still show the selected graph.
+      return parts;
+    }
+  }
   const config = stackStateToProjectConfig(stack);
   return config.stackParts ?? legacyProjectConfigToStackParts(config);
 }

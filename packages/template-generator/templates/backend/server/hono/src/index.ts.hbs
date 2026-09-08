@@ -131,7 +131,7 @@ app.use(
 );
 {{/if}}
 {{#if (eq api "graphql-yoga")}}
-const graphqlHandler = createGraphQLHandler(async (request) => {
+const graphqlHandler = createGraphQLHandler(async ({{#if (isBetterAuth auth)}}request{{/if}}) => {
 {{#if (isBetterAuth auth)}}
 	const session = await auth.api.getSession({ headers: request.headers });
 	return createGraphQLContext(session);

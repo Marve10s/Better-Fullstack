@@ -56,6 +56,9 @@ import {
   getKotlinJavaIncompatibilityReason,
   getToolingCapability,
   getToolingCategory,
+  hasJavaScriptWorkspaceRoot,
+  isToolingOverlayOnly,
+  toolingRequiresJavaScriptWorkspace,
   isToolingOverlayPart,
   legacyProjectConfigToStackParts,
 } from "@/types";
@@ -200,6 +203,15 @@ async function showBuilderRecommendationPrompt() {
 
 function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
   const baseConfig = getDefaultConfig();
+  if (
+    flagConfig.stackParts?.length &&
+    !isToolingOverlayOnly(flagConfig.stackParts) &&
+    !hasJavaScriptWorkspaceRoot(flagConfig.stackParts)
+  ) {
+    baseConfig.addons = baseConfig.addons.filter(
+      (addon) => !toolingRequiresJavaScriptWorkspace(addon),
+    );
+  }
 
   if (flagConfig.ecosystem !== "react-native") {
     return baseConfig;

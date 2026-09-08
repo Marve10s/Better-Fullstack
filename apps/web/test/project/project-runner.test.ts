@@ -258,3 +258,20 @@ describe("project runner", () => {
     expect(initial.viewMode).toBe("run");
   });
 });
+
+it("keeps browser run available for TypeScript applications in the guided flow", () => {
+  expect(
+    getStackRunSupport({
+      ...DEFAULT_STACK,
+      stackMode: "multi",
+      stackPartSpecs: ["frontend:typescript:react-vite", "backend:typescript:hono"],
+    }),
+  ).toEqual({ supported: true });
+  expect(
+    getStackRunSupport({
+      ...DEFAULT_STACK,
+      stackMode: "multi",
+      stackPartSpecs: ["frontend:typescript:react-vite", "backend:go:gin"],
+    }),
+  ).toEqual({ supported: false, reason: "native-runtime" });
+});

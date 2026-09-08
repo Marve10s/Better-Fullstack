@@ -291,3 +291,10 @@ describe("StackState contract", () => {
     );
   });
 });
+
+it("starts fresh projects in the application flow while preserving explicit solo links", () => {
+  expect(getInitialBuilderState({}).stack.stackMode).toBe("multi");
+  expect(getInitialBuilderState(undefined).stack.stackMode).toBe("multi");
+  expect(getInitialBuilderState({ mode: "solo" }).stack.stackMode).toBe("solo");
+  expect(getInitialBuilderState({ eco: "go" }).stack.ecosystem).toBe("go");
+});

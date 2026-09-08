@@ -1,8 +1,39 @@
+import { generateVirtualProject, EMBEDDED_TEMPLATES } from "@better-fullstack/template-generator";
 import { describe, expect, it } from "bun:test";
 
 import { stackStateToProjectConfig } from "@/lib/builder/preview-config";
 
 describe("stackStateToProjectConfig", () => {
+  it("generates native preview files without restoring filtered JavaScript addons", async () => {
+    const config = stackStateToProjectConfig({
+      stackMode: "multi",
+      stackPartSpecs: ["backend:go:gin:api", "backend:python:fastapi:worker"],
+    });
+    expect(config.addons).toEqual([]);
+    const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
+    expect(result.success, result.error).toBe(true);
+    expect(result.tree).toBeDefined();
+  });
+
+  it("generates the mixed frontend paths displayed by the composer", async () => {
+    const config = stackStateToProjectConfig({
+      stackMode: "multi",
+      stackPartSpecs: [
+        "frontend:dotnet:blazor-webassembly:admin",
+        "frontend:typescript:react-vite:site",
+        "backend:go:gin:api",
+        "backend:python:fastapi:worker",
+      ],
+    });
+    expect(config.stackParts?.find((part) => part.id === "site")?.targetPath).toBe("apps/web");
+    const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
+    expect(result.success, result.error).toBe(true);
+    if (!result.tree) throw new Error(result.error);
+    const paths = JSON.stringify(result.tree.root);
+    expect(paths).toContain('"path":"apps/web/package.json"');
+    expect(paths).toContain('"path":"apps/admin/Program.cs"');
+  });
+
   it("maps stack state into a canonical project config", () => {
     const config = stackStateToProjectConfig({
       projectName: "  preview-app  ",
@@ -73,7 +104,9 @@ describe("stackStateToProjectConfig", () => {
       ],
     });
 
-    expect(config.stackParts?.map((part) => `${part.role}:${part.ecosystem}:${part.toolId}`)).toEqual(
+    expect(
+      config.stackParts?.map((part) => `${part.role}:${part.ecosystem}:${part.toolId}`),
+    ).toEqual(
       expect.arrayContaining([
         "frontend:typescript:next",
         "backend:go:gin",

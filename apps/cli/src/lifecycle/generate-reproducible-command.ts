@@ -3,6 +3,8 @@ import type { ProjectConfig, StackPartRole } from "@/types";
 import {
   formatStackPartSpec,
   getAddonStackPartBinding,
+  hasJavaScriptWorkspaceRoot,
+  isToolingOverlayOnly,
   legacyProjectConfigToStackParts,
   projectStackPartSettingsToProjectConfig,
 } from "@/types";
@@ -39,7 +41,13 @@ function appendCommonFlags(flags: string[], config: ProjectConfig) {
   }
 
   flags.push(config.git ? "--git" : "--no-git");
-  flags.push(`--package-manager ${config.packageManager}`);
+  if (
+    !config.stackParts?.length ||
+    isToolingOverlayOnly(config.stackParts) ||
+    hasJavaScriptWorkspaceRoot(config.stackParts)
+  ) {
+    flags.push(`--package-manager ${config.packageManager}`);
+  }
   if (config.workspaceShape && config.workspaceShape !== "monorepo") {
     flags.push(`--workspace-shape ${config.workspaceShape}`);
   }

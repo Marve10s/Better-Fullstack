@@ -5,6 +5,7 @@ import {
   type CapabilityInventoryRecord,
   type Ecosystem,
 } from "@better-fullstack/types";
+
 import type { CampaignProperties } from "@/lib/analytics/campaign-events";
 import type { StackState } from "@/lib/stack/stack-defaults";
 
@@ -90,7 +91,14 @@ export function selectionAnalyticsProperties(
   const track = STARTER_TRACK_DEFINITIONS.find(
     (candidate) => [...candidate.selection.stackPartSpecs].sort().join("|") === selectionSignature,
   );
-  const evidence = getStackSelectionEvidence(stack, { inventory });
+  let evidence;
+  try {
+    evidence = getStackSelectionEvidence(stack, { inventory });
+  } catch {
+    // Onboarding selections may be incomplete or temporarily incompatible.
+    // Analytics must not require a project that is ready for generation.
+    return stackAnalyticsProperties(stack, extra);
+  }
 
   return stackAnalyticsProperties(stack, {
     ...extra,

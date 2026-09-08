@@ -9,6 +9,7 @@ import type { VirtualFileSystem } from "@/core/virtual-fs";
 
 import { dependencyVersionMap } from "@/dependencies/add-deps";
 import { getGraphBackendConnection, getGraphBackendConnections } from "@/graph/graph-backend";
+import { getGraphProjectTasks } from "@/graph/graph-project";
 import { getServerPackagePath } from "@/platform/project-paths";
 
 type PackageJson = {
@@ -139,6 +140,21 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   const pmConfig = getPackageManagerConfig(packageManager, workspaceTool);
   const graphBackend = getGraphBackendConnection(config);
   const graphBackends = getGraphBackendConnections(config);
+  const nativeTasks = getGraphProjectTasks(config).filter((task) => task.kind !== "workspace");
+  const nativeServices = nativeTasks.filter((task) => task.dev && !task.interactive);
+  const nativeScripts = new Map<string, string>();
+  const runNative = (command: string) => {
+    let path = nativeScripts.get(command);
+    if (!path) {
+      path = `scripts/native/task-${nativeScripts.size + 1}.sh`;
+      nativeScripts.set(command, path);
+      vfs.writeFile(
+        path,
+        `#!/usr/bin/env bash\nset -e\ncd "$(dirname "$0")/../.."\n${command}\n`,
+      );
+    }
+    return `bash ${path}`;
+  };
   const hasWebWorkspace = vfs.fileExists("apps/web/package.json");
   const hasNativeWorkspace = vfs.fileExists("apps/native/package.json");
   const hasDocsWorkspace = vfs.fileExists("apps/docs/package.json");
@@ -147,10 +163,27 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
 
   if (hasRedwood) {
     scripts.dev = "rw --no-telemetry dev";
-  } else if (graphBackend && hasWebWorkspace) {
-    scripts.dev = pmConfig.filter("web", "dev");
-  } else if (graphBackend && !hasNativeWorkspace) {
-    scripts.dev = graphBackend.devCommand;
+  } else if (nativeServices.length > 0) {
+    const commands = [
+      ...vfs.getAllFiles().flatMap((path) => {
+        if (!/^(apps|packages)\/[^/]+\/package\.json$/.test(path)) return [];
+        const workspace = vfs.readJson<PackageJson>(path);
+        return workspace?.name && workspace.scripts?.dev
+          ? [pmConfig.filter(workspace.name, "dev")]
+          : [];
+      }),
+      ...nativeServices.flatMap((task) => (task.dev ? [runNative(task.dev)] : [])),
+    ];
+    scripts.dev =
+      commands.length === 1
+        ? commands.join("")
+        : `concurrently --kill-others ${commands.map((command) => JSON.stringify(command)).join(" ")}`;
+    if (commands.length > 1) {
+      pkgJson.devDependencies = {
+        ...pkgJson.devDependencies,
+        concurrently: dependencyVersionMap.concurrently,
+      };
+    }
   } else {
     scripts.dev = pmConfig.dev;
   }
@@ -184,26 +217,32 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   }
 
   if (graphBackend) {
-    scripts["dev:server"] = graphBackend.devCommand;
+    scripts["dev:server"] = runNative(graphBackend.devCommand);
     if (graphBackend.setupCommand) {
-      scripts["setup:server"] = graphBackend.setupCommand;
+      scripts["setup:server"] = runNative(graphBackend.setupCommand);
     }
     if (graphBackend.checkCommand) {
-      scripts["check:server"] = graphBackend.checkCommand;
+      scripts["check:server"] = runNative(graphBackend.checkCommand);
     }
     if (graphBackend.testCommand) {
-      scripts["test:server"] = graphBackend.testCommand;
+      scripts["test:server"] = runNative(graphBackend.testCommand);
     }
   } else if (backend !== "self" && backend !== "none") {
     scripts["dev:server"] = pmConfig.filter(backendPackageName, "dev");
   }
 
+  for (const task of nativeTasks) {
+    const id = `part:${task.id}`;
+    if (task.setup) scripts[`setup:${id}`] = runNative(task.setup);
+    if (task.dev) scripts[`dev:${id}`] = runNative(task.dev);
+  }
+
   for (const service of graphBackends) {
-    const scriptId = service.partId.replace(/[^a-zA-Z0-9_-]+/g, "-");
-    scripts[`dev:${scriptId}`] = service.devCommand;
-    if (service.setupCommand) scripts[`setup:${scriptId}`] = service.setupCommand;
-    if (service.checkCommand) scripts[`check:${scriptId}`] = service.checkCommand;
-    if (service.testCommand) scripts[`test:${scriptId}`] = service.testCommand;
+    const scriptId = `part:${service.partId}`;
+    scripts[`dev:${scriptId}`] = runNative(service.devCommand);
+    if (service.setupCommand) scripts[`setup:${scriptId}`] = runNative(service.setupCommand);
+    if (service.checkCommand) scripts[`check:${scriptId}`] = runNative(service.checkCommand);
+    if (service.testCommand) scripts[`test:${scriptId}`] = runNative(service.testCommand);
   }
 
   if (backend === "convex") {

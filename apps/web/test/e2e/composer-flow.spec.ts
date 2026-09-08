@@ -1,0 +1,322 @@
+import { parseStackPartSpecs } from "@better-fullstack/types";
+import { expect, test, type Page } from "@playwright/test";
+import { unzipSync } from "fflate";
+import { readFile } from "node:fs/promises";
+
+import { clickVisibleTestId, gotoAppPage } from "./test-helpers";
+
+// The compact command bar hides text without stopping command generation.
+const commandOutput = (page: Page) => page.getByTestId("command-output");
+
+test.beforeEach(async ({ page }) => {
+  page.on("pageerror", (error) => {
+    throw error;
+  });
+});
+
+test.afterEach(async ({ page }, testInfo) => {
+  if (testInfo.status !== "passed") return;
+  const widths = await page.evaluate(() => ({
+    content: document.documentElement.scrollWidth,
+    viewport: window.innerWidth,
+  }));
+  expect(widths.content).toBeLessThanOrEqual(widths.viewport);
+});
+
+test("new projects start with applications and expose every mobile ecosystem", async ({
+  page,
+}, testInfo) => {
+  await gotoAppPage(page, "/new");
+  await expect(commandOutput(page)).toContainText("bun create better-fullstack", {
+    timeout: 15_000,
+  });
+  await expect(page.getByRole("heading", { name: "What are you building?" })).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("composer-applications.png"), fullPage: true });
+  await clickVisibleTestId(page, "multi-application-mobile");
+  await expect(page.getByTestId("multi-application-mobile")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await clickVisibleTestId(page, "multi-step-mobile");
+  for (const language of ["react-native", "kotlin", "swift", "dart"]) {
+    await expect(page.getByTestId(`multi-mobile-language-${language}`)).toBeVisible();
+  }
+  await clickVisibleTestId(page, "multi-mobile-language-dart");
+  await expect(commandOutput(page)).toContainText("--part mobile:dart:flutter");
+  await clickVisibleTestId(page, "multi-step-review");
+  await expect(page.getByTestId("multi-project-review")).toContainText("Flutter");
+  await expect(page.getByTestId("multi-command-bar")).toContainText("--part mobile:dart:flutter");
+});
+
+test("native applications omit JavaScript setup, round-trip their URL, and preview native output", async ({
+  page,
+}) => {
+  await gotoAppPage(page, "/new");
+  await expect(commandOutput(page)).toContainText("bun create better-fullstack", {
+    timeout: 15_000,
+  });
+  await clickVisibleTestId(page, "multi-step-frontend");
+  await clickVisibleTestId(page, "multi-frontend-language-dotnet");
+  await clickVisibleTestId(page, "multi-step-backend");
+  await clickVisibleTestId(page, "multi-backend-language-go");
+  await clickVisibleTestId(page, "multi-step-project");
+  await expect(page.getByTestId("category-packageManager")).toHaveCount(0);
+  await expect(page.getByTestId("category-toolchainProfile")).toHaveCount(0);
+  await expect(commandOutput(page)).not.toContainText("--package-manager");
+  await expect(commandOutput(page)).not.toContainText("turborepo");
+  await expect(commandOutput(page)).toContainText("--part backend:go:");
+  await page.reload();
+  await expect(page.locator("html[data-hydrated]")).toBeAttached({ timeout: 30_000 });
+  await expect(commandOutput(page)).toContainText("--part backend:go:", { timeout: 15_000 });
+  await clickVisibleTestId(page, "multi-step-review");
+  await expect(page.getByTestId("multi-project-review")).toContainText("Blazor");
+  await expect(page.getByTestId("multi-project-review")).toContainText("Gin");
+  const downloadPromise = page.waitForEvent("download");
+  await clickVisibleTestId(page, "download-project-zip");
+  const download = await downloadPromise;
+  const zipPath = await download.path();
+  expect(zipPath).not.toBeNull();
+  if (!zipPath) throw new Error("Project download did not produce an archive");
+  const archive = unzipSync(await readFile(zipPath));
+  expect(Object.keys(archive).some((path) => path.endsWith("scripts/setup.sh"))).toBe(true);
+  expect(Object.keys(archive).some((path) => path.endsWith("package.json"))).toBe(false);
+  await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
+  await clickVisibleTestId(page, "multi-review-preview");
+  await expect(page.getByText("setup.sh", { exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("package.json", { exact: true })).toHaveCount(0);
+});
+
+test("an empty application selection cannot generate a default project", async ({ page }) => {
+  await gotoAppPage(page, "/new");
+  await expect(commandOutput(page)).toContainText("bun create better-fullstack", {
+    timeout: 15_000,
+  });
+  await clickVisibleTestId(page, "multi-application-frontend");
+  await clickVisibleTestId(page, "multi-application-backend");
+  await expect(page.getByTestId("multi-step-review")).toBeDisabled();
+  await expect(commandOutput(page)).toHaveText("");
+  await clickVisibleTestId(page, "multi-application-mobile");
+  await expect(page.getByTestId("multi-step-review")).toBeEnabled();
+  await expect(commandOutput(page)).toContainText("--part mobile:");
+});
+
+test("a standalone database can be changed and removed without adding a backend", async ({ page }) => {
+  const specs = ["frontend:typescript:react-vite", "database:universal:postgres:data"];
+  await gotoAppPage(page, `/new?mode=multi&part=${encodeURIComponent(specs.join(","))}`);
+  await expect(commandOutput(page)).toContainText("database:universal:postgres:data", {
+    timeout: 15_000,
+  });
+  await clickVisibleTestId(page, "multi-step-review");
+  await clickVisibleTestId(page, "multi-edit-data");
+  await expect(page.getByTestId("multi-database-tool-postgres")).toBeVisible();
+  await clickVisibleTestId(page, "multi-database-tool-mysql");
+  await expect(commandOutput(page)).toContainText("database:universal:mysql:data");
+  await expect(commandOutput(page)).not.toContainText("--part backend:");
+  await page.reload();
+  await expect(page.locator("html[data-hydrated]")).toBeAttached({ timeout: 30_000 });
+  await expect(commandOutput(page)).toContainText("database:universal:mysql:data");
+  await clickVisibleTestId(page, "multi-step-review");
+  await clickVisibleTestId(page, "multi-edit-data");
+  await clickVisibleTestId(page, "multi-database-tool-none");
+  await expect(commandOutput(page)).not.toContainText("--part database:");
+  await expect(commandOutput(page)).not.toContainText("--part backend:");
+  await expect(commandOutput(page)).toContainText("frontend:typescript:react-vite");
+  await clickVisibleTestId(page, "multi-step-review");
+  await expect(page.getByTestId("multi-edit-data")).toHaveCount(0);
+});
+
+for (const removal of ["application toggle", "framework picker"]) {
+  test(`removing a backend through the ${removal} preserves its standalone database`, async ({ page }) => {
+    const specs = [
+      "frontend:typescript:react-vite",
+      "backend:go:gin:api",
+      "api.orm:go:gorm",
+      "database:universal:postgres:data",
+    ];
+    await gotoAppPage(page, `/new?mode=multi&part=${encodeURIComponent(specs.join(","))}`);
+    await expect(commandOutput(page)).toContainText("backend:go:gin:api", {
+      timeout: 15_000,
+    });
+    if (removal === "application toggle") {
+      await clickVisibleTestId(page, "multi-application-backend");
+    } else {
+      await clickVisibleTestId(page, "multi-step-backend");
+      await clickVisibleTestId(page, "multi-backend-tool-none");
+    }
+    await expect(commandOutput(page)).not.toContainText("--part backend:");
+    await expect(commandOutput(page)).not.toContainText("gorm");
+    await expect(commandOutput(page)).toContainText("database:universal:postgres:data");
+    await page.reload();
+    await expect(page.locator("html[data-hydrated]")).toBeAttached({ timeout: 30_000 });
+    await expect(commandOutput(page)).toContainText("database:universal:postgres:data");
+    await expect(commandOutput(page)).not.toContainText("--part backend:");
+    await clickVisibleTestId(page, "multi-step-review");
+    await expect(page.getByTestId("multi-edit-api")).toHaveCount(0);
+    await clickVisibleTestId(page, "multi-edit-data");
+    await expect(page.getByTestId("multi-database-tool-postgres")).toBeVisible();
+  });
+}
+
+test("editing a shared project preserves its named services and owned capabilities", async ({
+  page,
+}) => {
+  const specs = [
+    "frontend:typescript:next",
+    "backend:go:gin:api",
+    "api.orm:go:gorm",
+    "backend:python:fastapi:worker",
+    "worker.packageManager:python:poetry",
+  ];
+  await gotoAppPage(page, `/new?mode=multi&part=${encodeURIComponent(specs.join(","))}`);
+  await expect(commandOutput(page)).toContainText("backend:python:fastapi:worker", {
+    timeout: 15_000,
+  });
+  await clickVisibleTestId(page, "multi-step-frontend");
+  await clickVisibleTestId(page, "multi-frontend-language-dotnet");
+  await expect(commandOutput(page)).toContainText("frontend:dotnet:blazor-webassembly");
+  const command = await commandOutput(page).textContent();
+  const parts = parseStackPartSpecs(
+    [...(command ?? "").matchAll(/--part (\S+)/g)].map((match) => match[1] ?? ""),
+    "selected",
+  );
+  expect(parts.find((part) => part.role === "orm" && part.toolId === "gorm")?.ownerPartId).toBe(
+    "api",
+  );
+  expect(
+    parts.find((part) => part.role === "packageManager" && part.toolId === "poetry")?.ownerPartId,
+  ).toBe("worker");
+  await clickVisibleTestId(page, "multi-step-review");
+  await expect(page.getByTestId("multi-project-review")).toContainText("Blazor");
+  await expect(page.getByTestId("multi-command-bar")).toContainText("packageManager:python:poetry");
+});
+
+test("the application flow remains usable on a narrow screen", async ({ page }, testInfo) => {
+  await gotoAppPage(page, "/new");
+  // The compact mobile command bar hides its text, but generation still signals hydration.
+  const generatedCommand = page.getByTestId("command-output");
+  await expect(generatedCommand).toContainText("bun create better-fullstack", {
+    timeout: 15_000,
+  });
+  await expect(page.getByTestId("multi-application-mobile")).toBeVisible();
+  await clickVisibleTestId(page, "multi-application-mobile");
+  await expect(page.getByTestId("multi-application-mobile")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await clickVisibleTestId(page, "multi-step-mobile");
+  await expect(page.getByTestId("multi-mobile-language-swift")).toContainText("Swift");
+  await clickVisibleTestId(page, "multi-mobile-language-swift");
+  await expect(generatedCommand).toContainText("mobile:swift:swiftui");
+  for (const role of ["frontend", "mobile", "backend"]) {
+    const fits = await page.getByTestId(`multi-step-${role}`).evaluate((element) => {
+      const bounds = element.getBoundingClientRect();
+      const list = element.parentElement?.getBoundingClientRect();
+      return Boolean(list && bounds.left >= list.left && bounds.right <= list.right);
+    });
+    expect(fits).toBe(true);
+  }
+  const widths = await page.evaluate(() => ({
+    scroll: document.documentElement.scrollWidth,
+    viewport: window.innerWidth,
+  }));
+  expect(widths.scroll).toBeLessThanOrEqual(widths.viewport);
+  await expect(page.getByText(/compatibility adjustments made/)).toHaveCount(0, { timeout: 6000 });
+  await page.screenshot({ path: testInfo.outputPath("composer-mobile.png"), fullPage: true });
+});
+
+test("editing one of two Gin services preserves both named application identities", async ({
+  page,
+}) => {
+  const specs = ["backend:go:gin:api", "backend:go:gin:worker"];
+  await gotoAppPage(page, `/new?mode=multi&part=${encodeURIComponent(specs.join(","))}`);
+  await expect(commandOutput(page)).toContainText("backend:go:gin:worker", { timeout: 15_000 });
+  await clickVisibleTestId(page, "multi-step-backend");
+  await clickVisibleTestId(page, "multi-backend-language-python");
+  await expect(commandOutput(page)).toContainText("backend:python:fastapi:api");
+  await expect(commandOutput(page)).toContainText("backend:go:gin:worker");
+  const command = await commandOutput(page).textContent();
+  const parts = parseStackPartSpecs(
+    [...(command ?? "").matchAll(/--part (\S+)/g)].map((match) => match[1] ?? ""),
+    "selected",
+  );
+  expect(parts.filter((part) => part.role === "backend")).toHaveLength(2);
+  await page.reload();
+  await expect(commandOutput(page)).toContainText("backend:python:fastapi:api", {
+    timeout: 15_000,
+  });
+  await expect(commandOutput(page)).toContainText("backend:go:gin:worker");
+});
+
+test("selecting a later named service edits only that service", async ({ page }) => {
+  const specs = [
+    "backend:java:spring-boot:api",
+    "api.buildTool:java:maven",
+    "backend:java:quarkus:worker",
+    "worker.buildTool:java:gradle",
+  ];
+  await gotoAppPage(page, `/new?mode=multi&part=${encodeURIComponent(specs.join(","))}`);
+  await expect(commandOutput(page)).toContainText("worker.buildTool:java:gradle", {
+    timeout: 15_000,
+  });
+  await clickVisibleTestId(page, "multi-step-review");
+  await clickVisibleTestId(page, "multi-edit-worker");
+  await clickVisibleTestId(page, "multi-backend-javaBuildTool-toggle");
+  await expect(page.getByTestId("multi-backend-javaBuildTool-gradle")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await clickVisibleTestId(page, "multi-backend-javaBuildTool-maven");
+  await expect(commandOutput(page)).toContainText("worker.buildTool:java:maven");
+  await expect(commandOutput(page)).toContainText("api.buildTool:java:maven");
+  await expect(commandOutput(page)).not.toContainText("buildTool:java:gradle");
+  await clickVisibleTestId(page, "multi-backend-language-python");
+  await expect(commandOutput(page)).toContainText("backend:python:fastapi:worker");
+  await expect(commandOutput(page)).toContainText("backend:java:spring-boot:api");
+  const editedCommand = await commandOutput(page).textContent();
+  const editedParts = parseStackPartSpecs(
+    [...(editedCommand ?? "").matchAll(/--part (\S+)/g)].map((match) => match[1] ?? ""),
+    "selected",
+  );
+  expect(
+    editedParts.find((part) => part.role === "buildTool" && part.toolId === "maven")?.ownerPartId,
+  ).toBe("api");
+  await page.reload();
+  await expect(commandOutput(page)).toContainText("backend:python:fastapi:worker", {
+    timeout: 15_000,
+  });
+  await expect(commandOutput(page)).toContainText("backend:java:spring-boot:api");
+});
+
+test("review lists every named service with the paths present in its download", async ({
+  page,
+}) => {
+  const specs = [
+    "frontend:dotnet:blazor-webassembly:admin",
+    "frontend:typescript:react-vite:site",
+    "backend:go:gin:api",
+    "backend:python:fastapi:worker",
+  ];
+  await gotoAppPage(page, `/new?mode=multi&part=${encodeURIComponent(specs.join(","))}`);
+  await expect(commandOutput(page)).toContainText("backend:python:fastapi:worker");
+  await clickVisibleTestId(page, "multi-step-review");
+  const review = page.getByTestId("multi-project-review");
+  await expect(review).toContainText("Gin");
+  await expect(review).toContainText("FastAPI");
+  await expect(review).toContainText("services/api");
+  await expect(review).toContainText("services/worker");
+  await expect(review).not.toContainText("apps/server");
+  await expect(review).toContainText("apps/web");
+  await expect(review).toContainText("apps/admin");
+  await expect(review).not.toContainText("apps/site");
+  const downloadPromise = page.waitForEvent("download");
+  await clickVisibleTestId(page, "download-project-zip");
+  const download = await downloadPromise;
+  const path = await download.path();
+  if (!path) throw new Error("Project download did not produce an archive");
+  const archive = unzipSync(await readFile(path));
+  expect(Object.keys(archive).some((file) => file.endsWith("apps/web/package.json"))).toBe(true);
+  expect(Object.keys(archive).some((file) => file.endsWith("apps/admin/Program.cs"))).toBe(true);
+  for (const service of ["api", "worker"]) {
+    expect(Object.keys(archive).some((file) => file.includes(`services/${service}/`))).toBe(true);
+  }
+});

@@ -3,12 +3,12 @@ import {
   parseStackPartSpecs,
   type ProjectConfig,
 } from "@better-fullstack/types";
+import { getVirtualTreeFileContent, hasVirtualFile } from "@test/support/virtual-tree-utils";
 import { describe, expect, it } from "bun:test";
 
-import { createVirtual } from "@/index";
 import { validateConfigForProgrammaticUse } from "@/config/config-validation";
+import { createVirtual } from "@/index";
 import { runWithContext } from "@/presentation/context";
-import { getVirtualTreeFileContent, hasVirtualFile } from "@test/support/virtual-tree-utils";
 
 const readTextFromTree = getVirtualTreeFileContent;
 
@@ -550,7 +550,6 @@ describe("Virtual Generator Regressions", () => {
         "run: cargo build --verbose",
         "run: cargo test --verbose",
       ],
-      scripts: { "test:server": "cd apps/server && cargo test" },
     },
     {
       name: "Go",
@@ -563,7 +562,6 @@ describe("Virtual Generator Regressions", () => {
         "run: go build ./...",
         "run: go test ./...",
       ],
-      scripts: { "test:server": "cd apps/server && go mod tidy && go test ./..." },
     },
     {
       name: "Python",
@@ -575,7 +573,6 @@ describe("Virtual Generator Regressions", () => {
         "run: python -m compileall -q .",
         "run: pytest",
       ],
-      scripts: { "test:server": "cd apps/server && uv run --extra dev pytest" },
     },
     {
       name: "Java",
@@ -586,7 +583,6 @@ describe("Virtual Generator Regressions", () => {
         "cache: maven",
         "run: ./mvnw --batch-mode verify",
       ],
-      scripts: { "test:server": "cd apps/server && ./mvnw test" },
     },
     {
       name: "Elixir",
@@ -599,7 +595,6 @@ describe("Virtual Generator Regressions", () => {
         "run: mix compile --warnings-as-errors",
         "run: mix test",
       ],
-      scripts: { "test:server": "cd apps/server && mix test" },
     },
     {
       name: ".NET without tests",
@@ -611,7 +606,6 @@ describe("Virtual Generator Regressions", () => {
         "run: dotnet build --no-restore --configuration Release",
       ],
       workflowExcludes: ["run: dotnet test --no-build --configuration Release"],
-      absentScripts: ["test:server"],
     },
     {
       name: ".NET with tests",
@@ -623,7 +617,6 @@ describe("Virtual Generator Regressions", () => {
         "run: dotnet build --no-restore --configuration Release",
         "run: dotnet test --no-build --configuration Release",
       ],
-      scripts: { "test:server": "cd apps/server && dotnet test" },
     },
   ] as const;
 
@@ -652,12 +645,7 @@ describe("Virtual Generator Regressions", () => {
       for (const unexpected of testCase.workflowExcludes ?? []) {
         expect(workflow).not.toContain(unexpected);
       }
-      for (const [scriptName, scriptValue] of Object.entries(testCase.scripts ?? {})) {
-        expect(rootPackageJson?.scripts?.[scriptName]).toBe(scriptValue);
-      }
-      for (const scriptName of testCase.absentScripts ?? []) {
-        expect(rootPackageJson?.scripts?.[scriptName]).toBeUndefined();
-      }
+      expect(rootPackageJson).toBeUndefined();
     });
   }
 
@@ -962,15 +950,11 @@ describe("Virtual Generator Regressions", () => {
     expect(router).toContain('import { queryClient } from "./utils/graphql"');
     expect(router).toContain("<QueryClientProvider client={queryClient}>");
     expect(graphqlClient).toContain("export const queryClient");
-    expect(graphqlRoute).toContain(
-      'import { createFileRoute } from "@tanstack/react-router"',
-    );
+    expect(graphqlRoute).toContain('import { createFileRoute } from "@tanstack/react-router"');
     expect(graphqlRoute).toContain('export const Route = createFileRoute("/api/graphql")');
     expect(graphqlRoute).toContain("server: {");
     expect(graphqlRoute).toContain("handlers: {");
-    expect(graphqlRoute).toContain(
-      'import { auth } from "@tanstack-start-graphql-yoga/auth"',
-    );
+    expect(graphqlRoute).toContain('import { auth } from "@tanstack-start-graphql-yoga/auth"');
     expect(graphqlRoute).not.toContain("createAPIFileRoute");
     expect(graphqlRoute).not.toContain('from "@/lib/auth"');
   });

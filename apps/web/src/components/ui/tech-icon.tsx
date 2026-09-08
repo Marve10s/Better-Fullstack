@@ -1,6 +1,11 @@
-import { useTheme } from "@/lib/content/theme";
 import { cn } from "@/lib/platform/utils";
-import { computeSiUrl, getInvertClass, ICON_REGISTRY } from "@/lib/stack/tech-icons";
+import {
+  getBrandInvertClass,
+  getInvertClass,
+  getSiUrl,
+  getSiUrlInvertClass,
+  ICON_REGISTRY,
+} from "@/lib/stack/tech-icons";
 
 interface TechIconProps {
   /** Preferred: look up colour-aware config from the registry */
@@ -13,25 +18,24 @@ interface TechIconProps {
 }
 
 export function TechIcon({ techId, icon, name, className, loading = "lazy" }: TechIconProps) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
   if (techId) {
     const config = ICON_REGISTRY[techId];
     if (config) {
       if (config.type === "si") {
-        const src = config.needsInvert
-          ? computeSiUrl(config.slug, config.hex, false, config.fixedColor)
-          : computeSiUrl(config.slug, config.hex, isDark, config.fixedColor);
+        const invertClass = config.needsInvert
+          ? getInvertClass(config.needsInvert)
+          : config.fixedColor
+            ? ""
+            : getBrandInvertClass(config.hex);
         return (
           <img
             loading={loading}
             decoding="async"
-            src={src}
+            src={getSiUrl(config.slug, config.hex)}
             alt={`${name} icon`}
             width={20}
             height={20}
-            className={cn("inline-block", getInvertClass(config.needsInvert), className)}
+            className={cn("inline-block", invertClass, className)}
           />
         );
       }
@@ -62,7 +66,7 @@ export function TechIcon({ techId, icon, name, className, loading = "lazy" }: Te
         alt={`${name} icon`}
         width={20}
         height={20}
-        className={cn("inline-block", className)}
+        className={cn("inline-block", getSiUrlInvertClass(icon), className)}
       />
     );
   }

@@ -2,12 +2,12 @@ import { describe, expect, it } from "bun:test";
 
 import type { ProjectConfig } from "@/types";
 
+import { generateReproducibleCommand } from "@/lifecycle/generate-reproducible-command";
 import {
   createCliDefaultProjectConfigBase,
   mergeProjectConfigSettingsIntoStackParts,
   parseStackPartSpecs,
 } from "@/types";
-import { generateReproducibleCommand } from "@/lifecycle/generate-reproducible-command";
 
 function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
   return {
@@ -1102,6 +1102,20 @@ describe("generateReproducibleCommand", () => {
     );
 
     expect(command).toContain("--addons none");
+  });
+
+  it("omits JavaScript package-manager flags when reproducing native-only graphs", () => {
+    const config = makeConfig({
+      stackParts: parseStackPartSpecs(["frontend:dotnet:blazor-webassembly", "backend:go:gin"]),
+      addons: [],
+    });
+    expect(generateReproducibleCommand(config)).not.toContain("--package-manager");
+    expect(
+      generateReproducibleCommand({
+        ...config,
+        stackParts: parseStackPartSpecs(["mobile:react-native:native-bare", "backend:go:gin"]),
+      }),
+    ).toContain("--package-manager bun");
   });
 
   it("does not restate addons when addon parts are already emitted", () => {

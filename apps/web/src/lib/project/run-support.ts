@@ -10,7 +10,23 @@ export type RunSupport =
 // Kept dependency-free so the builder toolbar can gate the Run tab without
 // pulling the WebContainer runtime chunk into the main bundle.
 export function getStackRunSupport(stack: StackState): RunSupport {
-  if (stack.ecosystem !== "typescript" || stack.stackMode !== "solo") {
+  if (stack.stackMode === "multi") {
+    const applications = stack.stackPartSpecs
+      .map((spec) => spec.split(":"))
+      .filter(
+        ([role, , tool]) =>
+          ["frontend", "backend", "mobile"].includes(role ?? "") && tool !== "none",
+      );
+    if (applications.some(([role, ecosystem]) => ecosystem !== "typescript" || role === "mobile")) {
+      return { supported: false, reason: "native-runtime" };
+    }
+    if (!applications.some(([role]) => role === "frontend"))
+      return { supported: false, reason: "no-web-frontend" };
+    if (applications.some(([, , tool]) => tool === "redwood"))
+      return { supported: false, reason: "unsupported-framework" };
+    return { supported: true };
+  }
+  if (stack.ecosystem !== "typescript") {
     return { supported: false, reason: "native-runtime" };
   }
 

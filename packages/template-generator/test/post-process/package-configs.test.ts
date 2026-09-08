@@ -1,10 +1,10 @@
 import { cliInputToProjectConfigPartial, parseStackPartSpecs } from "@better-fullstack/types";
-import { describe, expect, it } from "bun:test";
-
-import { processPackageConfigs } from "@/post-process/package-configs";
-import { dependencyVersionMap } from "@/dependencies/add-deps";
 import { makeConfig } from "@test/_fixtures/config-factory";
 import { createSeededVFS } from "@test/_fixtures/vfs-factory";
+import { describe, expect, it } from "bun:test";
+
+import { dependencyVersionMap } from "@/dependencies/add-deps";
+import { processPackageConfigs } from "@/post-process/package-configs";
 
 type PackageJson = {
   name?: string;
@@ -150,8 +150,13 @@ describe("processPackageConfigs", () => {
   });
 
   it("generates Vite+ recursive workspace scripts", () => {
-    const vfs = createSeededVFS();
+    const vfs = createSeededVFS([
+      "package.json",
+      "apps/web/package.json",
+      "packages/db/package.json",
+    ]);
     vfs.writeJson("package.json", { name: "starter", scripts: {}, workspaces: [] });
+    vfs.writeJson("apps/web/package.json", { name: "web", scripts: { dev: "next dev" } });
 
     processPackageConfigs(
       vfs,
@@ -169,12 +174,11 @@ describe("processPackageConfigs", () => {
     );
 
     expect(vfs.readJson<PackageJson>("package.json")?.scripts).toMatchObject({
-      dev: "vp run --fail-if-no-match --filter web dev",
+      dev: 'concurrently --kill-others "vp run --fail-if-no-match --filter web dev" "bash scripts/native/task-1.sh"',
       build: "vp run -r build",
       "check-types": "vp run -r check-types",
       "dev:web": "vp run --fail-if-no-match --filter web dev",
-      "dev:native": "vp run --fail-if-no-match --filter native dev",
-      "dev:server": "cd apps/server && go run cmd/server/main.go",
+      "dev:server": "bash scripts/native/task-1.sh",
       "db:push": "vp run --fail-if-no-match --filter @vite-plus-demo/db db:push",
       check: "vp run -r check",
       lint: "vp run -r lint",
@@ -500,11 +504,11 @@ describe("processPackageConfigs", () => {
 
     const scripts = backendOnly.readJson<PackageJson>("package.json")?.scripts;
     expect(scripts).toMatchObject({
-      dev: "cd apps/server && go run cmd/server/main.go",
-      "setup:server": "cd apps/server && go mod tidy",
-      "dev:server": "cd apps/server && go run cmd/server/main.go",
-      "check:server": "cd apps/server && go mod tidy && go test ./...",
-      "test:server": "cd apps/server && go mod tidy && go test ./...",
+      dev: "bash scripts/native/task-1.sh",
+      "setup:server": "bash scripts/native/task-2.sh",
+      "dev:server": "bash scripts/native/task-1.sh",
+      "check:server": "bash scripts/native/task-3.sh",
+      "test:server": "bash scripts/native/task-3.sh",
     });
     expect(scripts?.["dev:web"]).toBeUndefined();
     expect(scripts?.["dev:native"]).toBeUndefined();

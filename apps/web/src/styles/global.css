@@ -829,3 +829,158 @@ body[data-blog-font="opendyslexic"] .blog-prose {
 .blog-prose [data-long-version] {
   min-height: 0;
 }
+
+/* Toasts: frosted glass panels (translucent fill, backdrop blur, specular rim). */
+:root {
+  --glass-fill: rgba(255, 255, 255, 0.55);
+  --glass-rim: rgba(255, 255, 255, 0.85);
+  --glass-edge: rgba(0, 0, 0, 0.08);
+  --glass-sheen: rgba(255, 255, 255, 0.45);
+  --glass-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --glass-icon-fill: rgba(0, 0, 0, 0.06);
+}
+
+.dark {
+  --glass-fill: rgba(34, 34, 38, 0.52);
+  --glass-rim: rgba(255, 255, 255, 0.2);
+  --glass-edge: rgba(255, 255, 255, 0.1);
+  --glass-sheen: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.35);
+  --glass-icon-fill: rgba(255, 255, 255, 0.08);
+}
+
+[data-sonner-toaster] [data-sonner-toast].cn-toast {
+  isolation: isolate;
+  overflow: hidden;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 2.5rem 0.875rem 1rem;
+  border: 1px solid var(--glass-edge);
+  border-radius: 22px;
+  background: var(--glass-fill);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.04),
+    var(--glass-shadow);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+  backdrop-filter: blur(28px) saturate(1.8);
+}
+
+[data-sonner-toaster] [data-sonner-toast].cn-toast::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 80% at 0% 0%, var(--glass-sheen), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 45%);
+  pointer-events: none;
+}
+
+[data-sonner-toaster] [data-sonner-toast].cn-toast .cn-toast-icon {
+  display: flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  border-radius: 9999px;
+  background: var(--glass-icon-fill);
+  box-shadow: inset 0 1px 0 var(--glass-rim);
+  color: var(--foreground);
+}
+
+[data-sonner-toaster] [data-sonner-toast].cn-toast .cn-toast-content {
+  padding-top: 0.25rem;
+}
+
+[data-sonner-toaster] [data-sonner-toast].cn-toast .cn-toast-title {
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  white-space: pre-line;
+}
+
+[data-sonner-toaster] [data-sonner-toast].cn-toast .cn-toast-description {
+  color: var(--muted-foreground);
+}
+
+[data-sonner-toaster] [data-sonner-toast].cn-toast[data-type="success"] .cn-toast-icon {
+  color: #6fb21a;
+}
+
+[data-sonner-toaster] [data-sonner-toast].cn-toast[data-type="error"] .cn-toast-icon {
+  color: var(--destructive);
+}
+
+[data-sonner-toaster] [data-sonner-toast].cn-toast [data-close-button] {
+  position: absolute;
+  top: 0.625rem;
+  right: 0.625rem;
+  left: auto;
+  display: flex;
+  height: 1.5rem;
+  width: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--glass-edge);
+  border-radius: 9999px;
+  background: var(--glass-icon-fill);
+  color: var(--foreground);
+  box-shadow: inset 0 1px 0 var(--glass-rim);
+  opacity: 0;
+  transform: none;
+  transition:
+    opacity 0.15s,
+    background-color 0.15s;
+  cursor: pointer;
+}
+
+[data-sonner-toaster] [data-sonner-toast].cn-toast:hover [data-close-button],
+[data-sonner-toaster] [data-sonner-toast].cn-toast:focus-within [data-close-button] {
+  opacity: 1;
+}
+
+[data-sonner-toaster] [data-sonner-toast].cn-toast [data-close-button]:hover {
+  background: var(--glass-rim);
+}
+
+.cn-toast-close-all {
+  position: fixed;
+  z-index: 1000000000;
+  display: flex;
+  height: 1.75rem;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0 0.75rem 0 0.625rem;
+  border: 1px solid var(--glass-edge);
+  border-radius: 9999px;
+  background: var(--glass-fill);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    var(--glass-shadow);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+  backdrop-filter: blur(28px) saturate(1.8);
+  cursor: pointer;
+  transition:
+    bottom 0.4s,
+    right 0.4s,
+    background-color 0.15s;
+}
+
+.cn-toast-close-all:hover {
+  background: var(--glass-rim);
+}
+
+/* Composer application previews: one shared 7s loop, elements enter in stages. */

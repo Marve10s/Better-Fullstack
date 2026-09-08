@@ -14,3 +14,5 @@ export {
   type PreflightWarning,
   type PreflightResult,
 } from "@/preflight-validation";
+
+export { getGraphProjectTasks, type GraphProjectTask } from "@/graph/graph-project";

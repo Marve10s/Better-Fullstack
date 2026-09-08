@@ -230,9 +230,12 @@ describe("generated output cleanliness", () => {
       files.find((file) => pathEndsWith(file.path, "services/gateway/build.gradle.kts"))?.content,
     ).toContain("ktor-server-netty");
     const rootPackage = files.find((file) => pathEndsWith(file.path, "package.json"))?.content;
-    expect(rootPackage).toContain('"dev:gateway"');
-    expect(rootPackage).toContain('"dev:api"');
-    expect(rootPackage).toContain("PORT=8081 go run cmd/server/main.go");
+    expect(rootPackage).toBeUndefined();
+    const devScript = files.find((file) => pathEndsWith(file.path, "scripts/dev.sh"))?.content;
+    expect(devScript).toContain("services/gateway");
+    expect(devScript).toContain("./gradlew run");
+    expect(devScript).toContain("services/api");
+    expect(devScript).toContain("export PORT=8081 && go run cmd/server/main.go");
     expect(paths.some((path) => path.endsWith("GRAPH_SERVICES.md"))).toBe(true);
   });
 

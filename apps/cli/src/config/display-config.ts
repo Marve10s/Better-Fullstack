@@ -3,6 +3,8 @@ import {
   getSelectedToolingOption,
   getToolingCapability,
   getToolingSelectionOptions,
+  hasJavaScriptWorkspaceRoot,
+  isToolingOverlayOnly,
   legacyProjectConfigToStackParts,
   TOOLING_CATEGORIES,
 } from "@better-fullstack/types";
@@ -375,7 +377,12 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     configDisplay.push(`${pc.blue("Git Init:")} ${gitText}`);
   }
 
-  if (config.packageManager !== undefined) {
+  if (
+    config.packageManager !== undefined &&
+    (!config.stackParts?.length ||
+      isToolingOverlayOnly(config.stackParts) ||
+      hasJavaScriptWorkspaceRoot(config.stackParts))
+  ) {
     configDisplay.push(`${pc.blue("Package Manager:")} ${String(config.packageManager)}`);
   }
 
