@@ -288,7 +288,7 @@ export function getGraphBackendConnections(config: ProjectConfig): GraphBackendC
     ...getGraphJavaScriptServicePorts(config),
     ...getGraphFrontendPorts(config).values(),
   ]);
-  return connections.map((connection) => {
+  const httpConnections = connections.map((connection) => {
     const url = new URL(connection.serverUrl);
     const defaultPort = Number(url.port);
     let port = defaultPort;
@@ -307,6 +307,28 @@ export function getGraphBackendConnections(config: ProjectConfig): GraphBackendC
           `cd ${connection.targetPath} && export PORT=${port} && `,
         )
         .replace(`\${PORT:-${defaultPort}}`, `\${PORT:-${port}}`),
+    };
+  });
+
+  return httpConnections.map((connection) => {
+    const usesGrpc = (config.stackParts ?? []).some(
+      (part) =>
+        part.ownerPartId === connection.partId &&
+        part.role === "api" &&
+        part.source !== "provided" &&
+        ((part.ecosystem === "go" && part.toolId === "grpc-go") ||
+          (part.ecosystem === "rust" && part.toolId === "tonic")),
+    );
+    if (!usesGrpc) return connection;
+    let grpcPort = 50051;
+    while (usedPorts.has(grpcPort)) grpcPort += 1;
+    usedPorts.add(grpcPort);
+    return {
+      ...connection,
+      devCommand: connection.devCommand.replace(
+        `cd ${connection.targetPath} && `,
+        `cd ${connection.targetPath} && export GRPC_PORT=${grpcPort} && `,
+      ),
     };
   });
 }

@@ -759,7 +759,9 @@ function getMultiStackSteps(stack: StackState): MultiStackStepId[] {
   const selection = getGraphSelection(stack);
   return [
     "applications",
-    ...COMPOSER_APPLICATION_ROLES.filter((role) => selection[role] !== "none"),
+    ...COMPOSER_APPLICATION_ROLES.filter(
+      (role) => selection[role] !== "none" || (role === "backend" && selection.database !== "none"),
+    ),
     "project",
     "review",
   ];
@@ -2580,7 +2582,7 @@ function CreationModeComposer({
               }}
             />
 
-            {graphSelection.backend !== "none" && (
+            {(graphSelection.backend !== "none" || graphSelection.database !== "none") && (
               <GraphOptionGroup
                 label={getLocalizedCategoryDisplayName(
                   "database",
@@ -2601,8 +2603,7 @@ function CreationModeComposer({
               />
             )}
 
-            {graphSelection.backend !== "none" &&
-              graphSelection.database !== "none" &&
+            {graphSelection.database !== "none" &&
               renderStackOptionGroup({
                 label: getLocalizedCategoryDisplayName(
                   "dbSetup",

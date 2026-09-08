@@ -100,6 +100,31 @@ test("an empty application selection cannot generate a default project", async (
   await expect(commandOutput(page)).toContainText("--part mobile:");
 });
 
+test("a standalone database can be changed and removed without adding a backend", async ({ page }) => {
+  const specs = ["frontend:typescript:react-vite", "database:universal:postgres:data"];
+  await gotoAppPage(page, `/new?mode=multi&part=${encodeURIComponent(specs.join(","))}`);
+  await expect(commandOutput(page)).toContainText("database:universal:postgres:data", {
+    timeout: 15_000,
+  });
+  await clickVisibleTestId(page, "multi-step-review");
+  await clickVisibleTestId(page, "multi-edit-data");
+  await expect(page.getByTestId("multi-database-tool-postgres")).toBeVisible();
+  await clickVisibleTestId(page, "multi-database-tool-mysql");
+  await expect(commandOutput(page)).toContainText("database:universal:mysql:data");
+  await expect(commandOutput(page)).not.toContainText("--part backend:");
+  await page.reload();
+  await expect(page.locator("html[data-hydrated]")).toBeAttached({ timeout: 30_000 });
+  await expect(commandOutput(page)).toContainText("database:universal:mysql:data");
+  await clickVisibleTestId(page, "multi-step-review");
+  await clickVisibleTestId(page, "multi-edit-data");
+  await clickVisibleTestId(page, "multi-database-tool-none");
+  await expect(commandOutput(page)).not.toContainText("--part database:");
+  await expect(commandOutput(page)).not.toContainText("--part backend:");
+  await expect(commandOutput(page)).toContainText("frontend:typescript:react-vite");
+  await clickVisibleTestId(page, "multi-step-review");
+  await expect(page.getByTestId("multi-edit-data")).toHaveCount(0);
+});
+
 test("editing a shared project preserves its named services and owned capabilities", async ({
   page,
 }) => {

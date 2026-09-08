@@ -263,6 +263,69 @@ it("launches native package scripts through Bash with their paths and assigned p
   }
 });
 
+it("exports distinct gRPC ports when launching named Go and Rust services", async () => {
+  const { mkdtemp, mkdir, writeFile, readFile, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const { dirname, join } = await import("node:path");
+  const directory = await mkdtemp(join(tmpdir(), "bfs-grpc-ports-"));
+  try {
+    const output = await generate([
+      "frontend:typescript:react-vite",
+      "backend:go:gin:api",
+      "api.api:go:grpc-go",
+      "backend:go:gin:worker",
+      "worker.api:go:grpc-go",
+      "backend:rust:axum:events",
+      "events.api:rust:tonic",
+      "backend:rust:axum:jobs",
+      "jobs.api:rust:tonic",
+    ]);
+    const root = JSON.parse(output.get("package.json") ?? "{}") as {
+      scripts: Record<string, string>;
+    };
+    for (const [path, content] of output) {
+      if (!path.startsWith("scripts/native/")) continue;
+      await mkdir(dirname(join(directory, path)), { recursive: true });
+      await writeFile(join(directory, path), content);
+    }
+    await mkdir(join(directory, "bin"));
+    for (const tool of ["go", "cargo"]) {
+      await writeFile(
+        join(directory, "bin", tool),
+        '#!/usr/bin/env bash\nprintf "%s\\n" "${GRPC_PORT:-50051}" >> "$GRAPH_COMMAND_LOG"\n',
+        { mode: 0o755 },
+      );
+    }
+    const log = join(directory, "ports.log");
+    for (const id of ["api", "worker", "events", "jobs"]) {
+      await mkdir(join(directory, "services", id), { recursive: true });
+      const command = root.scripts[`dev:part:${id}`];
+      if (!command) throw new Error(`Missing dev script for ${id}`);
+      const child = Bun.spawn(command.split(" "), {
+        cwd: directory,
+        env: {
+          ...process.env,
+          PATH: `${join(directory, "bin")}:${process.env.PATH}`,
+          GRPC_PORT: "",
+          GRAPH_COMMAND_LOG: log,
+        },
+        stdout: "pipe",
+        stderr: "pipe",
+      });
+      const stderr = await new Response(child.stderr).text();
+      expect(await child.exited, stderr).toBe(0);
+    }
+    expect((await readFile(log, "utf8")).trim().split("\n")).toEqual([
+      "50051",
+      "50052",
+      "50053",
+      "50054",
+    ]);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 it("runs every native setup command from the project root", async () => {
   const { mkdtemp, mkdir, writeFile, readFile, realpath, rm } = await import("node:fs/promises");
   const { tmpdir } = await import("node:os");
