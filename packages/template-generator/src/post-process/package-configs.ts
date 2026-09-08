@@ -231,13 +231,13 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
   }
 
   for (const task of nativeTasks) {
-    const id = task.id.replace(/[^a-zA-Z0-9_-]+/g, "-");
+    const id = `part:${task.id}`;
     if (task.setup) scripts[`setup:${id}`] = runNative(task.setup);
     if (task.dev) scripts[`dev:${id}`] = runNative(task.dev);
   }
 
   for (const service of graphBackends) {
-    const scriptId = service.partId.replace(/[^a-zA-Z0-9_-]+/g, "-");
+    const scriptId = `part:${service.partId}`;
     scripts[`dev:${scriptId}`] = runNative(service.devCommand);
     if (service.setupCommand) scripts[`setup:${scriptId}`] = runNative(service.setupCommand);
     if (service.checkCommand) scripts[`check:${scriptId}`] = runNative(service.checkCommand);

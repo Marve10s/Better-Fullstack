@@ -100,7 +100,7 @@ for (const scenario of cases) {
           await readFile(join(result.projectDir, serverScript.slice("bash ".length)), "utf8"),
         ).toContain("go run");
         if (scenario.name === "named-services") {
-          const workerScript = root.scripts["dev:worker"];
+          const workerScript = root.scripts["dev:part:worker"];
           if (!workerScript) throw new Error("Missing worker script");
           expect(
             await readFile(join(result.projectDir, workerScript.slice("bash ".length)), "utf8"),
@@ -161,6 +161,7 @@ for (const flags of [
   ["--part", "gitHooks:universal:husky"],
   ["--addons", "biome"],
   ["--addons", "opentui"],
+  ["--part", "testing:typescript:msw"],
 ]) {
   test(`native CLI rejects package-dependent tooling before addon setup: ${flags.join(" ")}`, async () => {
     const directory = await mkdtemp(join(tmpdir(), "bfs-native-tooling-"));

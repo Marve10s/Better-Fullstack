@@ -23,6 +23,37 @@ async function generate(part: string[]) {
 }
 
 describe("multi-ecosystem project output", () => {
+  it("rejects ownerless MSW in a native-only graph before emitting partial output", async () => {
+    const config = configFor(["backend:go:gin", "testing:typescript:msw"]);
+    const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("msw requires a generated JavaScript application");
+    expect(result.tree).toBeUndefined();
+  });
+
+  it("preserves default aliases and distinct service IDs in package scripts", async () => {
+    const output = await generate([
+      "frontend:typescript:react-vite",
+      "backend:go:gin:api",
+      "backend:go:gin:server",
+      "backend:go:gin:foo.bar",
+      "backend:go:gin:foo-bar",
+    ]);
+    const root = JSON.parse(output.get("package.json") ?? "{}") as {
+      scripts: Record<string, string>;
+    };
+    for (const action of ["dev", "setup", "check", "test"]) {
+      const defaultScript = root.scripts[`${action}:server`];
+      expect(defaultScript).toBe(root.scripts[`${action}:part:api`]);
+      for (const id of ["server", "foo.bar", "foo-bar"]) {
+        const script = root.scripts[`${action}:part:${id}`];
+        expect(script).toBeDefined();
+        expect(script).not.toBe(defaultScript);
+        expect(output.get(script.replace(/^bash /, ""))).toContain(`services/${id}`);
+      }
+    }
+  });
+
   it("rejects standalone JavaScript app platforms in native-only projects", async () => {
     for (const addon of ["opentui", "wxt"] as const) {
       const config = { ...configFor(["backend:go:gin"]), addons: [addon] };
@@ -205,7 +236,7 @@ it("launches native package scripts through Bash with their paths and assigned p
       await writeFile(join(directory, path), recorder, { mode: 0o755 });
     const log = join(directory, "commands.log");
     for (const id of ["admin", "worker", "jobs"]) {
-      const command = root.scripts[`dev:${id}`];
+      const command = root.scripts[`dev:part:${id}`];
       if (!command) throw new Error(`Missing dev script for ${id}`);
       expect(command).toMatch(/^bash scripts\/native\/[a-zA-Z0-9-]+\.sh$/);
       const child = Bun.spawn(command.split(" "), {
@@ -401,7 +432,7 @@ it("includes a native service named workspace in the JavaScript root dev command
     scripts: Record<string, string>;
   };
   expect(root.scripts.dev).toContain("bash scripts/native/");
-  const command = root.scripts["dev:workspace"];
+  const command = root.scripts["dev:part:workspace"];
   if (!command) throw new Error("Missing workspace service dev script");
   expect(output.get(command.replace("bash ", ""))).toContain(
     "cd apps/server && go run cmd/server/main.go",
@@ -431,7 +462,7 @@ it("reserves the JavaScript frontend port before starting a .NET frontend", asyn
   const root = JSON.parse(output.get("package.json") ?? "{}") as {
     scripts: Record<string, string>;
   };
-  const command = root.scripts["dev:admin"];
+  const command = root.scripts["dev:part:admin"];
   if (!command) throw new Error("Missing admin frontend dev script");
   expect(output.get(command.replace("bash ", ""))).toContain("http://localhost:5174");
 });
