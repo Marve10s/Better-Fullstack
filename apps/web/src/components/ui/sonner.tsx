@@ -32,14 +32,18 @@ function CloseAllToasts({ position }: { position: NonNullable<ToasterProps["posi
     );
     if (!toaster) return;
     const measure = () => {
-      const stackHeight = [...toaster.querySelectorAll<HTMLElement>("[data-sonner-toast]")]
-        .filter((item) => item.dataset.removed !== "true")
-        .reduce((max, item) => {
-          const offset = Number.parseFloat(item.style.getPropertyValue("--offset")) || 0;
-          const height =
-            Number.parseFloat(item.style.getPropertyValue("--initial-height")) || item.offsetHeight;
-          return Math.max(max, offset + height);
-        }, 0);
+      const items = [...toaster.querySelectorAll<HTMLElement>("[data-sonner-toast]")].filter(
+        (item) => item.dataset.removed !== "true",
+      );
+      // On mobile, Sonner's full-width container has different edges than its toasts.
+      const bounds = items[0]?.getBoundingClientRect();
+      if (!bounds) return;
+      const stackHeight = items.reduce((max, item) => {
+        const offset = Number.parseFloat(item.style.getPropertyValue("--offset")) || 0;
+        const height =
+          Number.parseFloat(item.style.getPropertyValue("--initial-height")) || item.offsetHeight;
+        return Math.max(max, offset + height);
+      }, 0);
       const style = getComputedStyle(toaster);
       setPlacement({
         [vertical]:
@@ -47,9 +51,9 @@ function CloseAllToasts({ position }: { position: NonNullable<ToasterProps["posi
           stackHeight +
           CLOSE_ALL_GAP,
         ...(horizontal === "center"
-          ? { left: "50%", transform: "translateX(-50%)" }
+          ? { left: (bounds.left + bounds.right) / 2, transform: "translateX(-50%)" }
           : {
-              [horizontal]: Number.parseFloat(style[horizontal === "left" ? "left" : "right"]) || 0,
+              [horizontal]: horizontal === "left" ? bounds.left : window.innerWidth - bounds.right,
             }),
       });
     };
