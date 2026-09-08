@@ -23,6 +23,38 @@ async function generate(part: string[]) {
 }
 
 describe("multi-ecosystem project output", () => {
+  it("starts standalone JavaScript app workspaces alongside native services", async () => {
+    for (const packageManager of ["bun", "npm", "pnpm", "yarn"] as const) {
+      const result = await generateVirtualProject({
+        config: {
+          ...configFor(["frontend:typescript:react-vite", "backend:go:gin"]),
+          addons: ["opentui", "wxt"],
+          packageManager,
+        },
+        templates: EMBEDDED_TEMPLATES,
+      });
+      expect(result.success, result.error).toBe(true);
+      if (!result.tree) throw new Error(result.error);
+      const output = new Map(files(result.tree.root).map((file) => [file.path, file.content]));
+      const root = JSON.parse(output.get("package.json") ?? "{}") as {
+        scripts: Record<string, string>;
+      };
+      for (const app of ["web", "tui", "extension"]) {
+        expect(output.has(`apps/${app}/package.json`)).toBe(true);
+        const command =
+          packageManager === "bun"
+            ? `bun run --filter ${app} dev`
+            : packageManager === "npm"
+              ? `npm run dev --workspace ${app}`
+              : packageManager === "pnpm"
+                ? `pnpm --filter ${app} dev`
+                : `yarn workspace ${app} dev`;
+        expect(root.scripts.dev).toContain(JSON.stringify(command));
+      }
+      expect(root.scripts.dev).toContain("bash scripts/native/");
+    }
+  });
+
   it("rejects ownerless MSW in a native-only graph before emitting partial output", async () => {
     const config = configFor(["backend:go:gin", "testing:typescript:msw"]);
     const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });

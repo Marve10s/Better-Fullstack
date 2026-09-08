@@ -165,12 +165,13 @@ function updateRootPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): v
     scripts.dev = "rw --no-telemetry dev";
   } else if (nativeServices.length > 0) {
     const commands = [
-      ...(hasWebWorkspace ? [pmConfig.filter("web", "dev")] : []),
-      ...(hasNativeWorkspace ? [pmConfig.filter("native", "dev")] : []),
-      ...(hasDocsWorkspace ? [pmConfig.filter("docs", "dev")] : []),
-      ...(vfs.fileExists("apps/server/package.json") && backend !== "none" && backend !== "self"
-        ? [pmConfig.filter(backendPackageName, "dev")]
-        : []),
+      ...vfs.getAllFiles().flatMap((path) => {
+        if (!/^(apps|packages)\/[^/]+\/package\.json$/.test(path)) return [];
+        const workspace = vfs.readJson<PackageJson>(path);
+        return workspace?.name && workspace.scripts?.dev
+          ? [pmConfig.filter(workspace.name, "dev")]
+          : [];
+      }),
       ...nativeServices.flatMap((task) => (task.dev ? [runNative(task.dev)] : [])),
     ];
     scripts.dev =
