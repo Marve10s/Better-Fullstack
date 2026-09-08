@@ -311,7 +311,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -324,7 +324,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-clerk",
     ],
     guideUrl: "/guides/typescript/nextjs-drizzle-better-auth",
-    contentHash: "2b2464dd9643c5432236a8d92091bb092014134aeb5c5f5372adc111cf983d12",
+    contentHash: "88fdf593a8bec71e5165e9666ad8b0634f7b03748bc50734e20e584df9d90f2a",
     updated: "2026-07-17",
   },
   {
@@ -647,7 +647,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -659,7 +659,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
       "nextjs-postgres-prisma-nextauth",
     ],
-    contentHash: "e7a596d24a20c257ecd3afbd746476cd1b0ccd20bd58a057e86f4188fd41db12",
+    contentHash: "babc2adc1357f44124ae5f2fafb21f1427f961ba2bf8119c02f2074ad61a6d22",
     updated: "2026-07-17",
   },
   {
@@ -969,7 +969,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -978,7 +978,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
       "nextjs-hono-openapi-drizzle",
     ],
-    contentHash: "3f0c3a2bd8985eab0cd2102e932c9ebd3a28fa7cb75f00ab52a89c797675e26e",
+    contentHash: "8657e55ac722e617076632ec3df87ac028396415ed0d9d1ac4901d4da205fa44",
     updated: "2026-07-17",
   },
   {
@@ -1289,7 +1289,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -1302,7 +1302,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-resend",
     ],
     guideUrl: "/guides/typescript/create-tanstack-start-project",
-    contentHash: "a7d890c3d814be960e0c91c043bb77667c2e9c4f5a42e5fcd6079a1058adc12f",
+    contentHash: "c1939978c2b2d4ee875503e7c0faac25680bb233e959761e032a83df6e4ada0a",
     updated: "2026-07-17",
   },
   {
@@ -1609,7 +1609,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -1619,7 +1619,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-prisma-better-auth",
     ],
     guideUrl: "/guides/typescript/hono-trpc-drizzle",
-    contentHash: "9c1c13cc11a7f17ffca9d47b1693367199a39456c5521fda10739503bfb7a282",
+    contentHash: "67ccdb5870ccc7142a9152b7a6adca8f6c5b7b94f042b0227f9ce51d4fbac455",
     updated: "2026-07-17",
   },
   {
@@ -1929,7 +1929,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -1938,7 +1938,7 @@ export const GENERATED_STACK_PAGES = [
       "sveltekit-hono-drizzle",
       "nextjs-hono-drizzle-better-auth",
     ],
-    contentHash: "6e0ebb8c03153c1b2c504e2b2e33189614cbbd5244305172581b11f03eff4547",
+    contentHash: "df2aec26e2d44b27570cad808c24f5358f8b5bb0185425c2764c972deb69f923",
     updated: "2026-07-17",
   },
   {
@@ -2248,7 +2248,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: ["Ui Library is intentionally set to none."],
       runtimeVerified: false,
     },
@@ -2258,7 +2258,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-hono-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/sveltekit-hono-drizzle",
-    contentHash: "d4735a0993c2840547fb6ea1be4fbcf6db8ab5205bf63461f377547fb8edf437",
+    contentHash: "d5ba4b96fe1ae9d44bd1496c4e60b11d38e9541e8baf87da5267a62a829effc6",
     updated: "2026-07-17",
   },
   {
@@ -2569,7 +2569,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: ["Ui Library is intentionally set to none."],
       runtimeVerified: false,
     },
@@ -2578,7 +2578,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-orpc-drizzle",
       "nextjs-hono-drizzle-better-auth",
     ],
-    contentHash: "8b757450a5e1c707b401e8a1251e1fbb5f3b2a434a26955294f4ef9446094811",
+    contentHash: "842c110070ba139455c885230283c63d0de54f3058f953150a021cd6257b9be9",
     updated: "2026-07-17",
   },
   {
@@ -2891,7 +2891,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "Ui Library is intentionally set to none.",
@@ -2904,7 +2904,7 @@ export const GENERATED_STACK_PAGES = [
       "solidstart-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/nuxt-prisma-better-auth",
-    contentHash: "9f83e5feb84ea92cf746d071498da4b67d6d559aa3622df96992f3f09b9848ff",
+    contentHash: "468ef6491f303a748be2655fa1ff359b07f7853580dc2e7e4cf211c6d329b41b",
     updated: "2026-07-17",
   },
   {
@@ -3223,7 +3223,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: ["The selection includes Astro's React integration alongside tRPC."],
       runtimeVerified: false,
     },
@@ -3233,7 +3233,7 @@ export const GENERATED_STACK_PAGES = [
       "react-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/astro-react-hono",
-    contentHash: "d3abb3882c4e82f511ff0df194871b30265277c2fff760ff831d629965c51f0f",
+    contentHash: "80231ad31130be67fa5b2d3c1d73f3db439b6d0135eb36bce5e457d15e93eb61",
     updated: "2026-07-17",
   },
   {
@@ -3544,7 +3544,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "Ui Library is intentionally set to none.",
@@ -3557,7 +3557,7 @@ export const GENERATED_STACK_PAGES = [
       "react-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/solidstart-orpc-drizzle",
-    contentHash: "bb903840d8a0d0a1a0a9897e571eb2a23912ae9fbdb8daa9e0a0745de8670a37",
+    contentHash: "b7a339f3b3f93edb549dd5c2906d89c0f7a754cc60ae55c24e8c9c4b11d858db",
     updated: "2026-07-17",
   },
   {
@@ -3870,7 +3870,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Auth is intentionally set to none.",
         "Ui Library is intentionally set to none.",
@@ -3884,7 +3884,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-postgres-prisma-nextauth",
       "nextjs-prisma-better-auth",
     ],
-    contentHash: "d3ce1d16f77eb8e01dd870db8572ee569b0a4ab35e98b6352ec4f2fe859c8a08",
+    contentHash: "e9621b86155d251061723ee94ea01cb875a924f35c5c7b2762ea0cdb28008d6c",
     updated: "2026-07-17",
   },
   {
@@ -4166,7 +4166,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [],
       runtimeVerified: false,
     },
@@ -4176,7 +4176,7 @@ export const GENERATED_STACK_PAGES = [
       "python-fastapi-postgres-sqlalchemy",
     ],
     guideUrl: "/guides/rust/axum-leptos-fullstack",
-    contentHash: "a2a9457de59c7a5d5dda83d89e2e0bbb3489df9d80d9b1ba37918567c1f09eb2",
+    contentHash: "eed9ab3ee7f7ad81876017fd5d184cc846d00125a7d31abbcd01174a560cd2af",
     updated: "2026-07-17",
   },
   {
@@ -4451,7 +4451,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [],
       runtimeVerified: false,
     },
@@ -4461,7 +4461,7 @@ export const GENERATED_STACK_PAGES = [
       "go-gin-postgres-gorm",
     ],
     guideUrl: "/guides/python/fastapi-postgres-sqlalchemy",
-    contentHash: "4bcecaad3d0b41a67707eebe369ebfcec89b89cc4d0322be0fe593ce2bcee252",
+    contentHash: "43feca3ea429ff99d64409fda19fb379378b2f2579e00b1e1f815c6f9134cd1d",
     updated: "2026-07-17",
   },
   {
@@ -4725,7 +4725,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [],
       runtimeVerified: false,
     },
@@ -4735,7 +4735,7 @@ export const GENERATED_STACK_PAGES = [
       "python-fastapi-postgres-sqlmodel",
     ],
     guideUrl: "/guides/go/gin-postgres-gorm",
-    contentHash: "a015bfc01dd3220eb1e5e09ead34f9f4cb036e2a57a23cdf7c6023f922f643ac",
+    contentHash: "490555d96cc8147b52569b98175e06cd63a85a994bfe9b67f185c83632dd925b",
     updated: "2026-07-17",
   },
   {
@@ -5047,7 +5047,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -5060,7 +5060,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/tanstack-start-postgres-drizzle",
-    contentHash: "0d5e1510225c4b27ab47cd67e22f9cfe44dc31d2389b7f0f62f2d08c578b0245",
+    contentHash: "a544e49345761dd13d6df3e4db496798366f69e8f11acc0a6b29a32da04219b4",
     updated: "2026-07-30",
   },
   {
@@ -5372,7 +5372,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -5384,7 +5384,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-better-auth",
       "nextjs-prisma-better-auth",
     ],
-    contentHash: "859b2234395790644e9e868c53960ae9a6078c9a69da0ccc12f62daed97aa0ec",
+    contentHash: "13659e735454adbdd353accff90be554a73c6b7c4da62846a7c01a82e12e7b04",
     updated: "2026-07-30",
   },
   {
@@ -5697,7 +5697,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -5710,7 +5710,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/tanstack-start-resend",
-    contentHash: "a3200e3eae9f2b0cca4f566dde52f0c65146b1314d671e4cb3b0a1c16c2f8691",
+    contentHash: "2de2fd353d96242f897b8796eea60c915fc46f15024aad4f605662615de4657c",
     updated: "2026-07-30",
   },
   {
@@ -6023,7 +6023,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -6035,7 +6035,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-clerk",
       "tanstack-start-postgres-drizzle-resend",
     ],
-    contentHash: "ee103bc31597a0cda071459440c3a7b9dcb0c4a0d1d060e58d0168bc743ebd4b",
+    contentHash: "9cc8650fb6f61820b1a42425e8928c6e0001b6b6d0c84693075eb693cb63e729",
     updated: "2026-07-30",
   },
   {
@@ -6345,7 +6345,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -6355,7 +6355,7 @@ export const GENERATED_STACK_PAGES = [
       "sveltekit-hono-drizzle",
     ],
     guideUrl: "/guides/typescript/hono-better-auth",
-    contentHash: "936f0db359412e83cdd384597ffde446753ee9055f8ccfaa8307bf638b0e580d",
+    contentHash: "74eb6829f9a7c3821c9bb4eacd871bb85b6716d719cc28a58543ae70c638695c",
     updated: "2026-07-30",
   },
   {
@@ -6666,7 +6666,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Auth is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -6679,7 +6679,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/hono-openapi-drizzle",
-    contentHash: "697bcadeeb63b9e2eebedb790f2a172ef5e4a80ab3f0253970f81bff884947e6",
+    contentHash: "2fa89eae372b2838eb8bf09050f01a319aa7f169a2ceda702e7f13c7ffc2913e",
     updated: "2026-07-30",
   },
   {
@@ -6989,7 +6989,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -6999,7 +6999,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/hono-better-auth",
-    contentHash: "8cfa26d0f429f83431fa7ac77c58e618612dea4a421b7001da22d6f119622ef9",
+    contentHash: "f3fa97932685896ad5af9def41899ac0c4a3896b76889c88f41aa87e87ff7986",
     updated: "2026-07-30",
   },
   {
@@ -7311,7 +7311,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Auth is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -7324,7 +7324,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-trpc-drizzle",
     ],
     guideUrl: "/guides/typescript/nextjs-hono-api",
-    contentHash: "c76fe2fdda571ba448ecba8463c01ce8147244c799a9e7174df7ec7bf00f5b0b",
+    contentHash: "48d5abf614acb85efce541da5644d422f38261fec200b6c40d5126ca33ac8983",
     updated: "2026-07-30",
   },
   {
@@ -7637,7 +7637,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -7649,7 +7649,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-clerk",
       "nextjs-drizzle-resend-better-auth",
     ],
-    contentHash: "93afd9df5d33d8d401253c35cdc5c9b42b9b5b4aeefd7310c96a63c7119e82b8",
+    contentHash: "f7d734fb6ea9ac975f8bab2db3ef84732450d8e4946a5f20d873e9c66f347dbe",
     updated: "2026-07-30",
   },
   {
@@ -7963,7 +7963,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -7976,7 +7976,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-postgres-prisma-nextauth",
     ],
     guideUrl: "/guides/typescript/nextjs-prisma-better-auth",
-    contentHash: "88701031cd59d83c8efa20239f2e697cae0bea7d421de2742028c1e30a8c1d8a",
+    contentHash: "9ba1de1212a41147500674e74c64273aa6c6ce194992c3e78aaef6954de1e426",
     updated: "2026-07-30",
   },
   {
@@ -8289,7 +8289,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -8302,7 +8302,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/nextjs-drizzle-better-auth",
-    contentHash: "8f82715e25b029609eddc6fccc380280d9d12bcdd8cec5925a1c15308bf12837",
+    contentHash: "523ddfc4c1d285ecc6dd024166635babb409ef6e6106e0afa25632b17e866ca9",
     updated: "2026-07-30",
   },
   {
@@ -8616,7 +8616,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -8628,7 +8628,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-prisma-stripe-better-auth",
       "nextjs-drizzle-better-auth",
     ],
-    contentHash: "27839be256525720167a7cb312400d4d087121eebab6b2b7531b65ba240419c4",
+    contentHash: "a58569980642c8e1f5d05194a1f1b013830dfda428bb80f0c12b4cc2a71def48",
     updated: "2026-07-30",
   },
   {
@@ -8906,7 +8906,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [],
       runtimeVerified: false,
     },
@@ -8916,7 +8916,7 @@ export const GENERATED_STACK_PAGES = [
       "go-gin-postgres-gorm",
     ],
     guideUrl: "/guides/python/fastapi-postgres-sqlmodel",
-    contentHash: "9f01fc4cc9c503de2569e22d664158a4828db515316ce32c05dbe7cb91f2664a",
+    contentHash: "b2f6e845d47eb52114bcba5a6823aa1f2d16acb2cb86133ff027c624e896fec5",
     updated: "2026-07-30",
   },
   {
@@ -9193,7 +9193,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: ["Python ORM / Database is intentionally set to none."],
       runtimeVerified: false,
     },
@@ -9203,7 +9203,7 @@ export const GENERATED_STACK_PAGES = [
       "go-gin-postgres-gorm",
     ],
     guideUrl: "/guides/python/django-rest-api",
-    contentHash: "0354603cc472dfb749976eebdf336fe603f3319fa07e3516d43742f77e6f3c8e",
+    contentHash: "ff7a52c5dcc9eaebe401fd41590ce6385caf221535db08324842f59c381d675a",
     updated: "2026-07-30",
   },
   {
@@ -9472,7 +9472,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.3",
+      typesPackageVersion: "2.6.4",
       constraints: [],
       runtimeVerified: false,
     },
@@ -9482,7 +9482,7 @@ export const GENERATED_STACK_PAGES = [
       "python-fastapi-postgres-sqlmodel",
     ],
     guideUrl: "/guides/go/echo-sqlc-api",
-    contentHash: "b47ac9565477628eef25c892f23195dd6509d791b267f9d4de821be44ad3d7fc",
+    contentHash: "8d73a32b560887e18ee73535607e4beb97da59ef0593e9cb49d67a32776a512b",
     updated: "2026-07-30",
   },
 ] as const satisfies readonly GeneratedStackPage[];

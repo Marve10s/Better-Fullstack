@@ -24,6 +24,28 @@ export function composerUsesJavaScript(specs: readonly string[]) {
   return hasJavaScriptWorkspaceRoot(getComposerParts(specs));
 }
 
+/** Review the same primary applications and paths that the generator receives. */
+export function getComposerReviewParts(specs: readonly string[]) {
+  const parts = getComposerParts(specs);
+  return parts.flatMap((part) => {
+    if (
+      part.ownerPartId ||
+      (part.role !== "frontend" &&
+        part.role !== "backend" &&
+        part.role !== "mobile" &&
+        part.role !== "database")
+    )
+      return [];
+    return [
+      {
+        ...part,
+        role: part.role,
+        capabilities: parts.filter((child) => child.ownerPartId === part.id),
+      },
+    ];
+  });
+}
+
 /** Apply the editor's changed selections without replacing imported services or their capabilities. */
 export function reconcileComposerSpecs(
   currentSpecs: readonly string[],

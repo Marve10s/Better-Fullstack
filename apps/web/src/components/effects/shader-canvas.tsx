@@ -39,6 +39,11 @@ export function ShaderCanvas({ fragmentShader, className, uniforms, paused }: Sh
   uniformsRef.current = uniforms;
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
+  const updatePlaybackRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    updatePlaybackRef.current?.();
+  }, [paused]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -73,6 +78,8 @@ export function ShaderCanvas({ fragmentShader, className, uniforms, paused }: Sh
     const uResolution = gl.getUniformLocation(program, "u_resolution");
 
     let raf = 0;
+    let inView = false;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const start = performance.now();
     let lastT = 0;
 
@@ -91,6 +98,8 @@ export function ShaderCanvas({ fragmentShader, className, uniforms, paused }: Sh
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     const render = () => {
+      raf = 0;
+      if (!inView || document.hidden) return;
       if (!pausedRef.current) {
         resize();
         const t = (performance.now() - start) / 1000;
@@ -122,22 +131,30 @@ export function ShaderCanvas({ fragmentShader, className, uniforms, paused }: Sh
       } else {
         gl.uniform1f(uTime, lastT);
       }
-      raf = requestAnimationFrame(render);
-    };
-    render();
-
-    const onVisibility = () => {
-      if (document.hidden) {
-        cancelAnimationFrame(raf);
-      } else {
+      if (!pausedRef.current && !reducedMotion.matches) {
         raf = requestAnimationFrame(render);
       }
     };
-    document.addEventListener("visibilitychange", onVisibility);
+
+    const updatePlayback = () => {
+      cancelAnimationFrame(raf);
+      render();
+    };
+    updatePlaybackRef.current = updatePlayback;
+    const observer = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      updatePlayback();
+    });
+    observer.observe(canvas);
+    document.addEventListener("visibilitychange", updatePlayback);
+    reducedMotion.addEventListener("change", updatePlayback);
 
     return () => {
+      updatePlaybackRef.current = null;
       cancelAnimationFrame(raf);
-      document.removeEventListener("visibilitychange", onVisibility);
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", updatePlayback);
+      reducedMotion.removeEventListener("change", updatePlayback);
       gl.deleteProgram(program);
       gl.deleteShader(vs);
       gl.deleteShader(fs);

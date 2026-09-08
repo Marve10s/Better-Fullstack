@@ -1,0 +1,59 @@
+{
+  "date": "2026-09-05",
+  "purpose": "GPT-6 Astra article verification",
+  "agent": "Codex desktop",
+  "model": "gpt-6-astra",
+  "platform": "darwin",
+  "arch": "arm64",
+  "bun": "1.4.0",
+  "node": "26.3.0",
+  "package": "create-better-fullstack@2.6.3",
+  "command": "bun create better-fullstack@2.6.3 astra-starter --template t3 --package-manager bun --ai-docs agents-md --no-install --no-git",
+  "preview": {
+    "flag": "--dry-run",
+    "plannedFiles": 68,
+    "plannedDirectories": 28,
+    "exitCode": 0
+  },
+  "generation": {
+    "exitCode": 0
+  },
+  "checks": [
+    {
+      "command": "bun install",
+      "exitCode": 0,
+      "installedPackages": 709
+    },
+    {
+      "command": "bun run check-types",
+      "exitCode": 0,
+      "tasksPassed": 4
+    },
+    {
+      "command": "bun run build",
+      "exitCode": 0,
+      "tasksPassed": 1,
+      "nextVersion": "16.3.4"
+    }
+  ],
+  "sourceEdits": [],
+  "toolEdits": [
+    "Next.js build added generated type paths and set jsx to react-jsx in apps/web/tsconfig.json"
+  ],
+  "notTested": [
+    "database connectivity",
+    "schema application",
+    "browser sign-up and sign-in",
+    "authenticated request",
+    "deployment",
+    "MCP-driven generation"
+  ],
+  "lockSha256": "4574e7c2782730fe36f693d29d0cefb2f5f63cb39f51ce29af6cf59efdbae5f0",
+  "logSha256": {
+    "dry-run": "6fcdc31df8cf603426dcce1c553aee2dbff324988071be173e738375d83ec841",
+    "scaffold": "b430d308818e772a5083ac1e5b7eb066bcd4ce33ce7149aebbe44087114eee34",
+    "install": "c61820048c6c2e70b3e570948b0fa0545eecc28fc447bdaad3798aa8a83f146c",
+    "check-types": "b1bcbf7f5d117d5748c9223be68bde145e3194514f633b4b8a4049b8feaa2a1b",
+    "build": "07bcddc1b4a45eacf3fa453b9095bc27005d9c0124b15a07fa08c839bc4c9195"
+  }
+}

@@ -201,7 +201,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "react-navigation": { type: "si", slug: "react", hex: "61DAFB" },
   "react-vite": { type: "si", slug: "react", hex: "61DAFB" },
   uniwind: { type: "si", slug: "tailwindcss", hex: "06B6D4" },
-  "self-vinext": { type: "si", slug: "vuedotjs", hex: "4FC08D" },
+  "self-vinext": { type: "si", slug: "nextdotjs", hex: "000000" },
   "self-svelte": { type: "si", slug: "svelte", hex: "FF3E00" },
   "go-better-auth": { type: "si", slug: "go", hex: "00ADD8" },
   "native-unistyles": { type: "si", slug: "expo", hex: "000020" },

@@ -9,6 +9,7 @@ the executable source.
 
 ## Active
 
+- `active/non-social-growth.md` - measurement baseline, MCP distribution preparation, and the GPT-6 Astra article
 - `active/capability-recipe-evidence.md` - [Phase 3](../next-updates-roadmap.md#phase-3-replace-catalog-confidence-with-recipe-evidence): receipt-backed capability evidence and eight golden runtime recipes
 - `active/platform-features.md` - [Phase 1](../next-updates-roadmap.md#phase-1-establish-a-real-supported-update-window): executable release fixtures and supported-window proof
 - `active/documentation-follow-ups.md` - [Phase 0](../next-updates-roadmap.md#phase-0-make-every-claim-reproducible): compatibility references and localization completion

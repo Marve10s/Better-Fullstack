@@ -1,8 +1,8 @@
 {
   "updatedAt": "2026-08-03T20:35:00.443Z",
   "metrics": {
-    "mainJsGzip": 258,
-    "mainCssGzip": 34923,
+    "mainJsGzip": 423231,
+    "mainCssGzip": 36274,
     "stackBuilderJsGzip": 77059,
     "largestJsGzip": 665363,
     "totalJsGzip": 1978679
@@ -13,5 +13,19 @@
     "stackBuilderJsGzip": 12288,
     "largestJsGzip": 20480,
     "totalJsGzip": 81920
+  },
+  "entryMeasurementVersion": 2,
+  "entryMeasurementMigration": {
+    "date": "2026-09-05T14:34:40.633Z",
+    "source": "origin/main at 8ea3b9b70 before performance changes, built with Vite manifest enabled",
+    "previousMainJsGzip": 258,
+    "assets": {
+      "js": [
+        "assets/index-gRR60bg9.js"
+      ],
+      "css": [
+        "assets/index-DOVWU8Xw.css"
+      ]
+    }
   }
 }

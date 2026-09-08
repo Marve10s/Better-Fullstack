@@ -7,6 +7,7 @@ import { localizeBlogFrontmatter, localizeBlogPost } from "@/lib/i18n/content-co
 import { m } from "@/paraglide/messages.js";
 
 export const Route = createFileRoute("/blog/$")({
+  codeSplitGroupings: [["loader"], ["component"]],
   loader: ({ params }) => {
     const slug = (params._splat ?? "").split("/").filter(Boolean);
     const post = getBlogPost(slug);

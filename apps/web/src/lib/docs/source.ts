@@ -4,6 +4,7 @@ import { localizedDocsMdxLoaders, localizedDocsRawMdxLoaders } from "virtual:loc
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 
 import { createSuspenseCache } from "@/lib/content/mdx-suspense-cache";
+import { getLocalizedDocFrontmatter } from "@/lib/docs/frontmatter";
 import {
   docsMdxLoaders as mdxLoaders,
   docsRawMdxLoaders as rawMdxLoaders,
@@ -15,6 +16,8 @@ import {
   toSupportedLocale,
 } from "@/lib/i18n/locales";
 import { getLocale } from "@/paraglide/runtime.js";
+
+export { getLocalizedDocFrontmatter } from "@/lib/docs/frontmatter";
 
 export type DocFrontmatter = {
   title?: string;
@@ -212,19 +215,6 @@ function contentCacheKey(page: DocPage, locale: ContentLocale): string {
 function localizedFolderName(name: string, locale = currentContentLocale()): string {
   if (locale === "en") return name;
   return DOC_FOLDER_TITLE_TRANSLATIONS[name]?.[locale]?.title ?? name;
-}
-
-export function getLocalizedDocFrontmatter(
-  page: Pick<DocPage, "frontmatter" | "localizedFrontmatter">,
-  locale = currentContentLocale(),
-): DocFrontmatter {
-  if (locale === "en" || page.frontmatter.translationStatus === "pending") {
-    return page.frontmatter;
-  }
-  return {
-    ...page.frontmatter,
-    ...page.localizedFrontmatter?.[locale],
-  };
 }
 
 export function localizeDocPage(page: DocPage): DocPage {

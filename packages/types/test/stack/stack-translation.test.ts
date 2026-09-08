@@ -1219,3 +1219,26 @@ it("projects imported capability values before editing stale default fields", ()
   expect(updates.stackPartSpecs).toContain("worker.buildTool:java:maven");
   expect(updates.stackPartSpecs).not.toContain("worker.buildTool:java:gradle");
 });
+
+it("removes array capabilities from every owning service without copying retained values", () => {
+  const selection: StackSelectionInput = {
+    ...DEFAULT_SELECTION,
+    stackMode: "multi",
+    stackPartSpecs: [
+      "backend:java:spring-boot:api",
+      "api.libraries:java:lombok",
+      "api.buildTool:java:maven",
+      "backend:java:spring-boot:worker",
+      "worker.libraries:java:mapstruct",
+      "worker.buildTool:java:maven",
+    ],
+    appPlatforms: [],
+  };
+  const updates = patchGraphScopedSelections(selection, { javaLibraries: ["mapstruct"] });
+  const parts = toProjectConfig({ ...selection, ...updates }).stackParts ?? [];
+  expect(
+    parts
+      .filter((part) => part.role === "libraries")
+      .map((part) => [part.ownerPartId, part.toolId]),
+  ).toEqual([["worker", "mapstruct"]]);
+});

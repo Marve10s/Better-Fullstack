@@ -1694,7 +1694,18 @@ function expandScopedStackPartSpecs(
         continue;
       }
 
-      if (!owner || hasScoped(owner.id, role, ecosystem, toolId, allowMultiple)) {
+      // Flat projections combine capabilities from all matching services. A
+      // projected value already owned by another service must stay there.
+      const alreadyOwned =
+        !ownerPartId &&
+        stackParts.some(
+          (part) =>
+            !part.ownerPartId &&
+            part.role === ownerRole &&
+            part.ecosystem === ecosystem &&
+            hasScoped(part.id, role, ecosystem, toolId, allowMultiple),
+        );
+      if (!owner || alreadyOwned || hasScoped(owner.id, role, ecosystem, toolId, allowMultiple)) {
         continue;
       }
       const sameRoleOwners = stackParts.filter(
@@ -1920,14 +1931,32 @@ export function patchGraphScopedSelections(
     const owner =
       owners.find((part) => part.id === projectedCapability?.ownerPartId) ??
       (owners.length === 1 ? owners[0] : undefined);
+    if (field.allowMultiple) {
+      parts = parts.filter(
+        (part) =>
+          !(
+            part.role === field.role &&
+            part.ecosystem === field.ecosystem &&
+            (field.ownerRole
+              ? owners.some((candidate) => candidate.id === part.ownerPartId)
+              : !part.ownerPartId) &&
+            oldValues.has(part.toolId) &&
+            !newValues.has(part.toolId)
+          ),
+      );
+      const added = [...newValues].filter((value) => !oldValues.has(value));
+      if (added.length && (!field.ownerRole || owner)) {
+        changedFields.push({ ...field, ownerPartId: owner?.id, value: added });
+      }
+      continue;
+    }
     if (field.ownerRole && !owner) continue;
     parts = parts.filter(
       (part) =>
         !(
           part.ownerPartId === owner?.id &&
           part.role === field.role &&
-          part.ecosystem === field.ecosystem &&
-          (!field.allowMultiple || (oldValues.has(part.toolId) && !newValues.has(part.toolId)))
+          part.ecosystem === field.ecosystem
         ),
     );
     changedFields.push({ ...field, ownerPartId: owner?.id, value: [...newValues] });

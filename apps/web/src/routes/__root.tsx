@@ -1,8 +1,10 @@
 import { Outlet, HeadContent, Scripts, createRootRoute, Link } from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import { lazy, Suspense, type ReactNode, useSyncExternalStore } from "react";
+import { lazy, Suspense, type ReactNode, useEffect, useSyncExternalStore } from "react";
 
+import geistSansUrl from "@/assets/fonts/Geist-Variable.woff2";
+import geistMonoUrl from "@/assets/fonts/GeistMono-Variable.woff2";
 import { Navbar } from "@/components/navbar";
 import Providers from "@/components/providers";
 import {
@@ -187,25 +189,17 @@ export const Route = createRootRoute({
         { rel: "manifest", href: "/favicon/site.webmanifest" },
         {
           rel: "preload",
-          href: "/fonts/Geist-Variable.woff2",
+          href: geistSansUrl,
           as: "font",
           type: "font/woff2",
           crossOrigin: "anonymous",
         },
         {
           rel: "preload",
-          href: "/fonts/GeistMono-Variable.woff2",
+          href: geistMonoUrl,
           as: "font",
           type: "font/woff2",
           crossOrigin: "anonymous",
-        },
-        // Caveat is loaded as a head link (not a CSS @import) so it doesn't
-        // block the main stylesheet from applying.
-        { rel: "preconnect", href: "https://fonts.googleapis.com" },
-        { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-        {
-          rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Figtree:wght@600;700&display=swap",
         },
       ],
     };
@@ -214,6 +208,12 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  // Browser tests wait for this before clicking; server HTML now includes
+  // interactive content whose handlers attach only after hydration.
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = "true";
+  }, []);
+
   return (
     <RootDocument>
       <Navbar />

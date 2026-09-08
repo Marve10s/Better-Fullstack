@@ -5,6 +5,8 @@ import {
   type StackPart,
 } from "@better-fullstack/types";
 
+import { getGraphFrontendPorts } from "@/graph/graph-frontend";
+
 export type GraphBackendConnection = {
   partId: string;
   ecosystem: Exclude<StackPart["ecosystem"], "typescript" | "react-native" | "universal">;
@@ -75,13 +77,7 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
   const label = BACKEND_LABELS[backend.toolId] ?? `${backend.ecosystem} ${backend.toolId}`;
   const graphFrontend = getGraphWebFrontend(config);
   const webPort = graphFrontend
-    ? graphFrontend.ecosystem === "dotnet"
-      ? 5173
-      : graphFrontend.ecosystem === "rust"
-        ? 8080
-        : graphFrontend.ecosystem === "typescript"
-          ? getLocalWebDevPort([graphFrontend.toolId] as ProjectConfig["frontend"])
-          : null
+    ? getGraphFrontendPorts(config).get(graphFrontend.id)
     : hasWebFrontend(config)
       ? getLocalWebDevPort(config.frontend)
       : null;
@@ -286,11 +282,7 @@ export function getGraphBackendConnections(config: ProjectConfig): GraphBackendC
     return connection ? [connection] : [];
   });
 
-  const usedPorts = new Set(
-    connections.flatMap((connection) =>
-      connection.webOrigin ? [Number(new URL(connection.webOrigin).port)] : [],
-    ),
-  );
+  const usedPorts = new Set(getGraphFrontendPorts(config).values());
   return connections.map((connection) => {
     const url = new URL(connection.serverUrl);
     const defaultPort = Number(url.port);

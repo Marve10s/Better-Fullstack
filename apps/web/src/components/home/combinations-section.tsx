@@ -1,14 +1,17 @@
-import { motion } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
+import { motion, useInView, useReducedMotion } from "motion/react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { combinationsMetrics } from "@/lib/builder/combinations-count";
+import { HOME_COMBINATIONS_METRICS } from "@/lib/project/home-display-data";
 import { PROJECT_ECOSYSTEM_COPY } from "@/lib/project/project-stats";
 import { m } from "@/paraglide/messages.js";
 
 const { totalScientific, yearsAtOneMillisecondScientific, universeLifetimesScientific } =
-  combinationsMetrics;
+  HOME_COMBINATIONS_METRICS;
 
 export default function CombinationsSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView = useInView(sectionRef);
+  const reducedMotion = useReducedMotion();
   const funFacts = useMemo(
     () => [
       m.homeFactUniverseLifetimes({
@@ -16,8 +19,8 @@ export default function CombinationsSection() {
         exponent: universeLifetimesScientific.exponent,
       }),
       m.homeFactSand({
-        mantissa: combinationsMetrics.universeSandRatioScientific.mantissa,
-        exponent: combinationsMetrics.universeSandRatioScientific.exponent,
+        mantissa: HOME_COMBINATIONS_METRICS.universeSandRatioScientific.mantissa,
+        exponent: HOME_COMBINATIONS_METRICS.universeSandRatioScientific.exponent,
       }),
       m.homeFactEcosystems(PROJECT_ECOSYSTEM_COPY),
       m.homeFactUnique(),
@@ -28,14 +31,26 @@ export default function CombinationsSection() {
   const [factIndex, setFactIndex] = useState(0);
 
   useEffect(() => {
-    const id = window.setInterval(() => {
-      setFactIndex((i) => (i + 1) % funFacts.length);
-    }, 4000);
-    return () => window.clearInterval(id);
-  }, [funFacts.length]);
+    if (!inView || reducedMotion) return;
+    let interval: number | undefined;
+    const update = () => {
+      window.clearInterval(interval);
+      if (!document.hidden) {
+        interval = window.setInterval(() => {
+          setFactIndex((i) => (i + 1) % funFacts.length);
+        }, 4000);
+      }
+    };
+    update();
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, [funFacts.length, inView, reducedMotion]);
 
   return (
-    <section className="relative border-t border-border bg-muted/30">
+    <section ref={sectionRef} className="relative border-t border-border bg-muted/30">
       <div className="px-4 py-20 sm:px-8 sm:py-28">
         <div className="grid grid-cols-12 items-end gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-6">

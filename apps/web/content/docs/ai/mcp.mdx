@@ -2,7 +2,7 @@
 title: MCP Server
 description: Connect Better Fullstack to Claude Code, Cursor, Codex, VS Code, and other MCP clients, and call its tools safely.
 translationStatus: pending
-updated: 2026-08-31
+updated: 2026-09-05
 ---
 
 The `mcp` command starts the Better Fullstack MCP server over stdio. Agents use it to discover stacks, inspect schemas, validate compatibility, preview generated files, create projects, and evolve existing ones through structured tool calls instead of guessing CLI flags.
@@ -205,6 +205,31 @@ integration commands. Use `bfs_check_recipes` for ownership integrity and
 same bounded context document as CLI JSON and does not include source code. Its commands use a
 relative project path when possible, or an absolute path when that is required to target the
 inspected project.
+
+## Troubleshooting client response parsing
+
+If a JavaScript MCP client reports `TypeError: schema.safeParse is not a function`, check the
+arguments passed to `client.callTool`. In `@modelcontextprotocol/sdk` v1, the second argument is
+a result schema. Request options belong in the third argument:
+
+```ts
+// @modelcontextprotocol/sdk v1
+const result = await client.callTool(request, undefined, { timeout: 120_000 });
+```
+
+The split `@modelcontextprotocol/client` v2 package takes options as the second argument:
+
+```ts
+// @modelcontextprotocol/client v2
+const result = await client.callTool(request, { timeout: 120_000 });
+```
+
+Passing the v2 argument layout to v1 can fail while parsing a successful response. Check whether
+the project directory and `bts.jsonc` already exist before retrying create. If they do, inspect
+the project with `bfs_get_project_status`.
+
+Call `client.listTools()` before invoking tools so the client can validate structured responses
+against their advertised output schemas.
 
 ## Rules for agents
 

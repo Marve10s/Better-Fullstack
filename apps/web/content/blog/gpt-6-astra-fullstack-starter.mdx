@@ -1,0 +1,162 @@
+---
+title: "Build a fullstack starter with GPT-6 Astra and Better Fullstack"
+description: "Give GPT-6 Astra a Next.js project with auth, tRPC, and Prisma already wired up. Start with Better Fullstack, then build the feature you actually care about."
+date: 2026-09-05
+image: /search-media/gpt-6-astra-fullstack-minimal.png
+translationStatus: pending
+tags:
+  - ai
+  - nextjs
+  - getting-started
+keywords:
+  - GPT-6 Astra fullstack starter
+  - GPT-6 Astra Next.js
+  - Better Fullstack coding agent
+---
+
+![OpenAI and Better Fullstack icons with the title GPT-6 Astra + Better Fullstack](/search-media/gpt-6-astra-fullstack-minimal.png)
+
+You have an idea for an app. A place to track client projects, save research, or manage bookings. You open Astra and start describing it. Before the first useful feature exists, there are already decisions to make about auth, database access, API routes, and where the code belongs.
+
+Better Fullstack lets you make those choices explicitly and generate the starting project. For this walkthrough, that's Next.js with tRPC, Prisma, PostgreSQL, and Better Auth. Astra then has real files to read and extend.
+
+The result is a starter you own, with a path from setup to feature work. [Open the T3 preset](/new?preset=t3) to inspect the stack, or follow the CLI workflow below.
+
+## Why use a generator with Astra?
+
+OpenAI's [Astra guide](https://developers.openai.com/api/docs/guides/latest-model) describes a model built for work that spans code, browsers, and other software. That makes a complete feature an interesting task: understand the existing app, change its behavior, and check the result.
+
+One useful detail in [Matt Shumer's Astra review](https://somethingbig.ai/astra-review) is that his Unreal experiments used existing assets. The tools and starting material affected what the agent could accomplish. The same idea is worth trying with a web app: give the agent an established project structure and ask it to build on that.
+
+A generator gives that work a defined starting point. Better Fullstack's T3 preset creates the Next.js auth and tRPC routes, shared API and database packages, and the project scripts. You can inspect the selection before it writes files. You can also choose a different stack in the builder.
+
+There's no Astra-specific runtime in this starter. Better Fullstack generates local files without a model API key. Astra runs in your coding agent, with its own account access and usage charges.
+
+## Give Astra something to prove
+
+Theo introduces his early-access perspective in the description of [It's Here.](https://www.youtube.com/watch?v=XFWpf0wLbh0):
+
+> I was one of the first people allowed to use it.
+
+For a developer trying Astra now, the useful next step is to choose a task whose result you can judge yourself. A feature in your own app gives you that opportunity.
+
+OpenAI's description of [GPT-6 Astra with Ben Davis](https://www.youtube.com/watch?v=B-jjnydci50) discusses his DEF CON puzzle experiments and says:
+
+> parallel research branches help the model test theories, stay on track
+
+Both excerpts come from the videos' published descriptions. The idea worth bringing into this workflow is testing explanations against evidence. If sign-in fails, ask Astra to trace the request through the existing auth code and check its assumptions. Give it the error and the expected behavior. That is a more useful debugging task than asking it to rebuild authentication.
+
+## Start with a project Astra can read
+
+You'll need Bun, a supported Node.js installation, and Astra available in a coding agent with terminal access. PostgreSQL comes into the picture when you connect the database. Check OpenAI's [current model availability](https://developers.openai.com/api/docs/models/gpt-6-astra) if Astra isn't available in your account yet.
+
+Open an empty parent directory in your agent and give it this task:
+
+```text
+Create a fullstack starter named astra-starter using the latest
+Better Fullstack T3 preset and Bun. Generate AGENTS.md.
+
+Preview the project with --dry-run and inspect the selected stack.
+Then generate it with --no-install and --no-git.
+
+Read the generated project instructions and package scripts.
+Install dependencies, run check-types, and build the app.
+If a check fails, identify possible causes and test them against
+the actual error before changing the setup.
+
+Stop after the build. Report what passed and what still needs testing.
+```
+
+This gets setup to a useful checkpoint. Keep the feature request for the next step, when the agent can inspect the code it will change.
+
+## Preview and generate the starter
+
+Here are the commands behind that prompt. The first previews the project without writing it:
+
+```bash
+bun create better-fullstack@latest astra-starter \
+  --template t3 \
+  --package-manager bun \
+  --ai-docs agents-md \
+  --no-install \
+  --no-git \
+  --dry-run
+```
+
+Check that the preview selects Next.js, tRPC, Prisma, PostgreSQL, and Better Auth. The backend lives inside Next.js, so there's no separate API service to manage. Then generate the project:
+
+```bash
+bun create better-fullstack@latest astra-starter \
+  --template t3 \
+  --package-manager bun \
+  --ai-docs agents-md \
+  --no-install \
+  --no-git
+```
+
+The commands use the latest Better Fullstack release. Keep the generated lockfiles with your project so later work has a record of its setup and dependencies.
+
+## Read the output before adding features
+
+The useful part of the generated structure is where each responsibility lands:
+
+```text
+astra-starter/
+  AGENTS.md
+  bts.jsonc
+  bts.lock.json
+  apps/web/
+    src/app/api/auth/[...all]/route.ts
+    src/app/api/trpc/[trpc]/route.ts
+    src/app/dashboard/
+    src/app/login/
+  packages/
+    api/
+    auth/
+    config/
+    db/
+    env/
+```
+
+`packages/api` holds the API code. `packages/db` holds the database schema and client. The Next.js app has the auth and tRPC routes. `AGENTS.md` describes the project for the coding agent, while `bts.jsonc` records Better Fullstack's stack configuration.
+
+That gives your next request a concrete address. A saved note needs a database model, an API operation, and a page that calls it. Astra can follow those existing connections.
+
+## Install and check the project
+
+From the generated directory:
+
+```bash
+cd astra-starter
+bun install
+bun run check-types
+bun run build
+```
+
+A Codex session using GPT-6 Astra tested this workflow on September 5, 2026. Generation, installation, TypeScript checks in four packages, and the production build passed without manual source edits. Next.js made its normal generated-type and JSX configuration updates during the build.
+
+That run stopped at the build. It did not connect to PostgreSQL, test sign-in in a browser, or deploy the app. Those checks come next, against your own environment.
+
+## Give Astra a feature with a clear finish
+
+Before continuing, set the database connection and auth values in `apps/web/.env`. Follow the generated README to apply the schema and start the application. The [Next.js, Prisma, and Better Auth guide](/guides/typescript/nextjs-prisma-better-auth) explains the stack in more detail.
+
+Then try a feature request like this:
+
+```text
+Add a private notes page to this project.
+
+A signed-in user can create a note with a title and body, see their
+saved notes after refreshing, and delete one. A user must never be
+able to read or delete another user's notes, including through the API.
+
+Read AGENTS.md and inspect the existing auth, API, and database code
+before editing. Reuse those patterns. Include an empty state and a
+visible error when saving fails.
+
+Check the behavior with two test accounts and report the results.
+```
+
+This is a suggested next task, beyond the starter tested here. It gives the agent decisions worth working through: ownership of data, what a failed save looks like, and how to prove the feature works. You can replace notes with the first useful action in your own app.
+
+[Create your starting stack in Better Fullstack](/new?preset=t3), then give Astra that feature. If your agent connects tools through MCP, the [MCP setup guide](/docs/ai/mcp) provides an alternative to the CLI workflow used here.

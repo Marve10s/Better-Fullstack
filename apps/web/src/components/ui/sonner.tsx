@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import {
   TbCircleCheck as CircleCheckIcon,
   TbInfoCircle as InfoIcon,
@@ -15,10 +15,10 @@ import * as m from "@/paraglide/messages";
 const CLOSE_ALL_MIN_TOASTS = 3;
 const CLOSE_ALL_GAP = 10;
 
-/** Sits above the toast stack; Sonner exposes each toast's target offset as inline CSS variables. */
-function CloseAllToasts() {
+/** Sonner exposes each toast's target offset as inline CSS variables. */
+function CloseAllToasts({ position }: { position: NonNullable<ToasterProps["position"]> }) {
   const { toasts } = useSonner();
-  const [placement, setPlacement] = useState<{ right: number; bottom: number } | null>(null);
+  const [placement, setPlacement] = useState<CSSProperties | null>(null);
   const toastCount = toasts.length;
 
   useEffect(() => {
@@ -26,7 +26,10 @@ function CloseAllToasts() {
       setPlacement(null);
       return;
     }
-    const toaster = document.querySelector<HTMLElement>("[data-sonner-toaster]");
+    const [vertical, horizontal] = position.split("-");
+    const toaster = document.querySelector<HTMLElement>(
+      `[data-sonner-toaster][data-y-position="${vertical}"][data-x-position="${horizontal}"]`,
+    );
     if (!toaster) return;
     const measure = () => {
       const stackHeight = [...toaster.querySelectorAll<HTMLElement>("[data-sonner-toast]")]
@@ -39,8 +42,15 @@ function CloseAllToasts() {
         }, 0);
       const style = getComputedStyle(toaster);
       setPlacement({
-        right: Number.parseFloat(style.right) || 0,
-        bottom: (Number.parseFloat(style.bottom) || 0) + stackHeight + CLOSE_ALL_GAP,
+        [vertical]:
+          (Number.parseFloat(style[vertical === "top" ? "top" : "bottom"]) || 0) +
+          stackHeight +
+          CLOSE_ALL_GAP,
+        ...(horizontal === "center"
+          ? { left: "50%", transform: "translateX(-50%)" }
+          : {
+              [horizontal]: Number.parseFloat(style[horizontal === "left" ? "left" : "right"]) || 0,
+            }),
       });
     };
     measure();
@@ -50,8 +60,12 @@ function CloseAllToasts() {
       subtree: true,
       attributeFilter: ["style", "data-removed"],
     });
-    return () => observer.disconnect();
-  }, [toastCount]);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [toastCount, position]);
 
   if (!placement) return null;
   return (
@@ -106,7 +120,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         }}
         {...props}
       />
-      <CloseAllToasts />
+      <CloseAllToasts position={props.position ?? "bottom-right"} />
     </>
   );
 };

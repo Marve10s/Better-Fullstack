@@ -3,6 +3,7 @@ import { hasJavaScriptWorkspaceRoot, type ProjectConfig } from "@better-fullstac
 import type { VirtualFileSystem } from "@/core/virtual-fs";
 
 import { getGraphBackendConnections } from "@/graph/graph-backend";
+import { getGraphFrontendPorts } from "@/graph/graph-frontend";
 
 export type GraphProjectTask = {
   kind: "workspace" | "application";
@@ -50,7 +51,7 @@ export function getGraphProjectTasks(config: ProjectConfig): GraphProjectTask[] 
       interactive: false,
     });
   }
-  let dotnetFrontendPort = 5173;
+  const frontendPorts = getGraphFrontendPorts(config);
   for (const part of parts) {
     const path = part.targetPath ?? (part.role === "frontend" ? "apps/web" : "apps/mobile");
     const cd = `cd ${quote(path)} && `;
@@ -65,7 +66,7 @@ export function getGraphProjectTasks(config: ProjectConfig): GraphProjectTask[] 
       tasks.push({
         ...task,
         setup: `${cd}dotnet restore`,
-        dev: `${cd}dotnet watch run --urls http://localhost:${dotnetFrontendPort++}`,
+        dev: `${cd}dotnet watch run --urls http://localhost:${frontendPorts.get(part.id)}`,
       });
     }
     if (part.role === "frontend" && part.ecosystem === "rust") {
@@ -83,7 +84,7 @@ export function getGraphProjectTasks(config: ProjectConfig): GraphProjectTask[] 
         ...task,
         path: `${workspace}/crates/${client}`,
         setup: `cd ${quote(workspace)} && cargo fetch`,
-        dev: `cd ${quote(`${workspace}/crates/${client}`)} && ${part.toolId === "dioxus" ? "dx serve" : "trunk serve"}`,
+        dev: `cd ${quote(`${workspace}/crates/${client}`)} && ${part.toolId === "dioxus" ? "dx serve" : "trunk serve"} --port ${frontendPorts.get(part.id)}`,
       });
     }
     if (part.role === "mobile" && part.ecosystem === "dart") {

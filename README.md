@@ -25,6 +25,12 @@
 Scaffold fullstack projects from a catalog of Stack Parts.<br>
 Use the CLI, the Stack Builder in your browser, or an MCP server for AI agents.
 
+<br>
+
+[![Version](https://img.shields.io/npm/v/create-better-fullstack?style=for-the-badge&colorA=18181B&colorB=28CF8D)](https://www.npmjs.com/package/create-better-fullstack)
+&nbsp;
+[![Monthly downloads](https://img.shields.io/npm/dm/create-better-fullstack?style=for-the-badge&colorA=18181B&colorB=28CF8D)](https://www.npmjs.com/package/create-better-fullstack)
+
 </div>
 
 <br>
@@ -76,7 +82,7 @@ After install, supported agents scaffold projects through the MCP server, 2.6x f
 
 ## Community
 
-[![X](https://img.shields.io/badge/X-@MARVELOUSBC-1b1a17?style=flat-square&logo=x&logoColor=white)](https://x.com/MARVELOUSBC)
+[![X](https://img.shields.io/badge/X-@IbrahimElkamali-1b1a17?style=flat-square&logo=x&logoColor=white)](https://x.com/IbrahimElkamali)
 &nbsp;
 [![Telegram](https://img.shields.io/badge/Telegram-chat-1b1a17?style=flat-square&logo=telegram&logoColor=white)](https://t.me/TheCr1nge)
 &nbsp;
@@ -86,9 +92,9 @@ If you find a bug or want to contribute, open a [GitHub issue](https://github.co
 
 If Better Fullstack saves you time, consider sponsoring:
 
-[![GitHub Sponsors](https://img.shields.io/badge/GitHub_Sponsors-sponsor-EA4AAA?style=flat-square&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/Marve10s)
-&nbsp;
-[![Patreon](https://img.shields.io/badge/Patreon-support-F96854?style=flat-square&logo=patreon&logoColor=white)](https://www.patreon.com/c/marve10s)
+<a href="https://github.com/sponsors/Marve10s"><img src="https://img.shields.io/badge/GitHub_Sponsors-Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white" height="40" alt="Sponsor on GitHub"></a>
+&nbsp;&nbsp;
+<a href="https://www.patreon.com/c/marve10s"><img src="https://img.shields.io/badge/Patreon-Support-F96854?style=for-the-badge&logo=patreon&logoColor=white" height="40" alt="Support on Patreon"></a>
 
 <!--
 Star History is hidden while GitHub restricts stargazer data to repo admins and

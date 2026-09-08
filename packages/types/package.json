@@ -1,6 +1,6 @@
 {
   "name": "@better-fullstack/types",
-  "version": "2.6.3",
+  "version": "2.6.4",
   "description": "TypeScript types and schemas for Better Fullstack CLI",
   "keywords": [
     "better-fullstack",
@@ -65,7 +65,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "zod": "4.5.2"
+    "zod": "4.5.4"
   },
   "devDependencies": {
     "fast-check": "^4.9.0",

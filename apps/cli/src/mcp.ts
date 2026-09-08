@@ -196,7 +196,7 @@ import {
   TEMPLATE_VALUES,
   type Template,
 } from "@better-fullstack/types";
-import { McpServer } from "@modelcontextprotocol/server";
+import { type CallToolResult, McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import z from "zod";
 
@@ -1361,19 +1361,6 @@ const createProjectOutputSchema = z.object({
   ...graphPreviewOutputShape,
 });
 
-const planAdditionOutputSchema = z.object({
-  success: z.boolean(),
-  projectDir: z.string().optional(),
-  requestedParts: z.array(z.string()).optional(),
-  requestedChanges: z.record(z.string(), z.unknown()).optional(),
-  proposedConfig: z.record(z.string(), z.unknown()).optional(),
-  graphSummary: z.string().optional(),
-  filesToAdd: z.array(z.string()).optional(),
-  filesToPatch: z.array(z.string()).optional(),
-  filesToRemove: z.array(z.string()).optional(),
-  compatibilityWarnings: z.array(z.string()).optional(),
-});
-
 const addFeatureOutputSchema = z.object({
   success: z.boolean(),
   addedCapabilities: z.array(z.string()).optional(),
@@ -1424,6 +1411,10 @@ const stackUpdateOutputSchema = z.object({
   ...graphPreviewOutputShape,
 });
 
+const planAdditionOutputSchema = stackUpdateOutputSchema.extend({
+  requestedParts: z.array(z.string()).optional(),
+});
+
 const configDriftRepairOutputSchema = z.object({
   success: z.boolean(),
   mode: z.enum(["plan", "applied"]).optional(),
@@ -1445,9 +1436,7 @@ const configDriftRepairOutputSchema = z.object({
   lifecycle: lifecycleResultOutputSchema.optional(),
 });
 
-function projectPartRemovalPayload(
-  payload: Awaited<ReturnType<typeof planMcpPartRemoval>>,
-) {
+function projectPartRemovalPayload(payload: Awaited<ReturnType<typeof planMcpPartRemoval>>) {
   if (!payload.success) return payload;
   const {
     filesUnchanged: _filesUnchanged,
@@ -1741,34 +1730,38 @@ export function createMcpServer(): McpServer {
     },
   );
 
-  const registerTool = <Input extends Record<string, unknown> = Record<string, unknown>>(
+  const registerTool = <Input extends Record<string, unknown>>(
     name: string,
     config: {
       description: string;
-      inputSchema?: z.ZodType;
+      inputSchema: z.ZodType<Input>;
       outputSchema?: z.ZodType;
       annotations?: McpToolAnnotations;
     },
-    cb: (input: Input) => unknown,
+    cb: (input: Input) => CallToolResult | Promise<CallToolResult>,
   ): void => {
-    (
-      server.registerTool as unknown as (
-        toolName: string,
-        toolConfig: Record<string, unknown>,
-        toolCb: (input: Input) => unknown,
-      ) => void
-    )(name, config, async (input) =>
-      withCommandTelemetry(name, async () => cb(input), {
-        source: "mcp",
-        mode: config.annotations?.readOnlyHint ? "read" : "write",
-        resultStatus: (result) =>
-          result &&
-          typeof result === "object" &&
-          "isError" in result &&
-          (result as { isError?: unknown }).isError === true
-            ? "failed"
-            : "succeeded",
-      }),
+    server.registerTool(name, config, async (input) =>
+      withCommandTelemetry(
+        name,
+        async () => {
+          const result = await cb(input);
+          if (result.isError || !config.outputSchema) return result;
+
+          // The SDK validates output but sends the original, unparsed object.
+          // Project both representations to the schema advertised to clients.
+          const structuredContent = config.outputSchema.parse(result.structuredContent);
+          return {
+            ...result,
+            content: [{ type: "text" as const, text: JSON.stringify(structuredContent, null, 2) }],
+            structuredContent,
+          };
+        },
+        {
+          source: "mcp",
+          mode: config.annotations?.readOnlyHint ? "read" : "write",
+          resultStatus: (result) => (result.isError ? "failed" : "succeeded"),
+        },
+      ),
     );
   };
 
@@ -2954,11 +2947,15 @@ export function createMcpServer(): McpServer {
           .boolean()
           .optional()
           .default(false)
-          .describe("Delete the previewed candidates with reviewToken; false returns a dry-run result"),
+          .describe(
+            "Delete the previewed candidates with reviewToken; false returns a dry-run result",
+          ),
         reviewToken: z
           .string()
           .optional()
-          .describe("Exact token returned by the latest prune preview; required when apply is true"),
+          .describe(
+            "Exact token returned by the latest prune preview; required when apply is true",
+          ),
       }),
       outputSchema: recoveryManagementOutputSchema,
       annotations: {

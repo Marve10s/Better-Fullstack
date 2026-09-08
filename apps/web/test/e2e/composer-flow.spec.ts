@@ -213,3 +213,27 @@ test("a build-tool edit updates the service represented by the projected value",
   await expect(commandOutput(page)).toContainText("api.buildTool:java:maven");
   await expect(commandOutput(page)).not.toContainText("buildTool:java:gradle");
 });
+
+test("review lists every named service with the paths present in its download", async ({
+  page,
+}) => {
+  const specs = ["backend:go:gin:api", "backend:python:fastapi:worker"];
+  await gotoAppPage(page, `/new?mode=multi&part=${encodeURIComponent(specs.join(","))}`);
+  await expect(commandOutput(page)).toContainText("backend:python:fastapi:worker");
+  await clickVisibleTestId(page, "multi-step-review");
+  const review = page.getByTestId("multi-project-review");
+  await expect(review).toContainText("Gin");
+  await expect(review).toContainText("FastAPI");
+  await expect(review).toContainText("services/api");
+  await expect(review).toContainText("services/worker");
+  await expect(review).not.toContainText("apps/server");
+  const downloadPromise = page.waitForEvent("download");
+  await clickVisibleTestId(page, "download-project-zip");
+  const download = await downloadPromise;
+  const path = await download.path();
+  if (!path) throw new Error("Project download did not produce an archive");
+  const archive = unzipSync(await readFile(path));
+  for (const service of ["api", "worker"]) {
+    expect(Object.keys(archive).some((file) => file.includes(`services/${service}/`))).toBe(true);
+  }
+});

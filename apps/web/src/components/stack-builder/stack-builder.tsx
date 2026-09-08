@@ -22,10 +22,12 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   Suspense,
   lazy,
+  memo,
   startTransition,
   type ReactNode,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -43,6 +45,7 @@ import {
   TbChevronDown as ChevronDown,
   TbClipboardCopy as ClipboardCopy,
   TbDownload as Download,
+  TbDatabase as Database,
   TbDotsVertical as EllipsisVertical,
   TbFolder as Folder,
   TbEye as Eye,
@@ -69,15 +72,10 @@ import { toast } from "sonner";
 import type { ShareMoment } from "@/lib/campaign/campaign-share";
 import type { Ecosystem } from "@/lib/stack/types";
 
-import { BuilderShareModal } from "@/components/stack-builder/builder-share-modal";
 import {
-  CapabilityEvidenceBadge,
   CapabilityEvidenceProvider,
   useCapabilityEvidenceInventory,
 } from "@/components/stack-builder/capability-evidence-badge";
-import { ExistingProjectImportDialog } from "@/components/stack-builder/existing-project-import-dialog";
-import { PresetsPanel } from "@/components/stack-builder/presets-panel";
-import { SavedStacksPanel } from "@/components/stack-builder/saved-stacks-panel";
 import {
   type BuilderSectionDef,
   getBuilderSections,
@@ -138,6 +136,7 @@ import {
 import { hasSeenBuilderShareModal } from "@/lib/builder/builder-share-modal-visibility";
 import {
   composerUsesJavaScript,
+  getComposerReviewParts,
   hasComposerApplication,
   reconcileComposerSpecs,
 } from "@/lib/builder/composer-graph";
@@ -680,18 +679,19 @@ function getMultiStepLabel(stepId: MultiStackStepId) {
   }
 }
 
-function getComposerRoleLabel(role: ComposerApplicationRole) {
+function getComposerRoleLabel(role: ComposerRole) {
   if (role === "mobile") return m.builderStepMobile();
   return getLocalizedCategoryDisplayName(
     role === "frontend" ? "webFrontend" : role,
-    role === "frontend" ? "Frontend" : "Backend",
+    role === "frontend" ? "Frontend" : role === "database" ? "Database" : "Backend",
   );
 }
 
-const COMPOSER_ROLE_ICONS: Record<ComposerApplicationRole, typeof Globe> = {
+const COMPOSER_ROLE_ICONS: Record<ComposerRole, typeof Globe> = {
   frontend: Globe,
   mobile: Smartphone,
   backend: Server,
+  database: Database,
 };
 
 const COMPOSER_APPLICATION_ROLES: ComposerApplicationRole[] = ["frontend", "mobile", "backend"];
@@ -1342,7 +1342,13 @@ function getCategoryRenderGroups(
   }));
 }
 
-function TechResourceButtons({ category, techId }: { category: string; techId: string }) {
+const TechResourceButtons = memo(function TechResourceButtons({
+  category,
+  techId,
+}: {
+  category: string;
+  techId: string;
+}) {
   const { docsUrl, githubUrl } = getTechResourceLinks(category, techId);
 
   if (!docsUrl && !githubUrl) return null;
@@ -1392,7 +1398,83 @@ function TechResourceButtons({ category, techId }: { category: string; techId: s
       )}
     </div>
   );
-}
+});
+
+const TechOptionCard = memo(function TechOptionCard({
+  tech,
+  category,
+  ecosystem,
+  isSelected,
+  isDisabled,
+  disabledReason,
+  description,
+  onSelect,
+}: {
+  tech: TechOption;
+  category: keyof typeof TECH_OPTIONS;
+  ecosystem: OptionCategoryEcosystem;
+  isSelected: boolean;
+  isDisabled: boolean;
+  disabledReason: string | null;
+  description: string;
+  onSelect: (category: keyof typeof TECH_OPTIONS, techId: string) => void;
+}) {
+  return (
+    <motion.div
+      data-testid={`option-${category}-${tech.id}`}
+      className={cn(
+        "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
+        isSelected
+          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+          : isDisabled
+            ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
+            : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+      )}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect(category, tech.id);
+      }}
+      title={disabledReason || undefined}
+    >
+      <div className="absolute top-2 right-2 flex items-center gap-1">
+        <TechResourceButtons category={category} techId={tech.id} />
+        {tech.default && !isSelected && (
+          <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
+            {m.builderDefault()}
+          </span>
+        )}
+      </div>
+      <div className="flex items-start gap-3">
+        {(tech.icon !== "" || ICON_REGISTRY[tech.id]) && (
+          <div className="flex shrink-0 flex-col items-center gap-1">
+            <div
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+                isSelected ? "bg-primary/10" : "bg-muted/50 group-hover:bg-muted",
+              )}
+            >
+              <TechIcon techId={tech.id} icon={tech.icon} name={tech.name} className="h-5 w-5" />
+            </div>
+          </div>
+        )}
+        <div className="min-w-0 flex-1 pt-0.5">
+          <span
+            className={cn(
+              "block font-semibold text-sm",
+              isSelected ? "text-primary" : "text-foreground",
+            )}
+          >
+            {tech.name}
+          </span>
+          <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+            {description}
+          </p>
+          {isDisabled && disabledReason && <DisabledReasonInline reason={disabledReason} />}
+        </div>
+      </div>
+    </motion.div>
+  );
+});
 
 function DisabledReasonInline({ reason, compact = false }: { reason: string; compact?: boolean }) {
   return (
@@ -1745,11 +1827,6 @@ function GraphOptionButton({
           >
             {localizedOption.description}
           </p>
-          <CapabilityEvidenceBadge
-            ecosystem={evidenceEcosystem}
-            category={evidenceCategory}
-            optionId={option.id}
-          />
           {disabledReason && <DisabledReasonInline reason={disabledReason} />}
         </div>
       </div>
@@ -2671,55 +2748,57 @@ function CreationModeComposer({
   };
 
   const activeStepIndex = steps.indexOf(activeStep);
-  const categoryLabel = (category: keyof typeof TECH_OPTIONS) =>
-    getLocalizedCategoryDisplayName(
-      category,
-      COMPOSER_CATEGORY_FALLBACKS[category] ?? getCategoryDisplayName(category),
-    );
-  const backendCapabilities = (
-    [
-      ["database", "database" as const, graphSelection.database],
-      ["orm", backendConfig.ormCategory, graphSelection.backendOrm],
-      ["api", backendConfig.apiCategory, graphSelection.backendApi],
-      ["auth", backendConfig.authCategory, graphSelection.backendAuth],
-    ] as const
-  ).flatMap(([key, category, toolId]) =>
-    category && toolId !== "none"
-      ? [{ key, id: toolId, name: getOptionName(category, toolId), role: categoryLabel(key) }]
-      : [],
-  );
-  const reviewApplications = selectedRoles.flatMap((role) => {
-    const selection = getStepSelection(role);
-    return selection
-      ? [
-          {
-            role,
-            label: getComposerRoleLabel(role),
-            path: COMPOSER_ROLE_DETAILS[role].path,
-            tool: selection,
-            capabilities: role === "backend" ? backendCapabilities : [],
-          },
-        ]
-      : [];
+  const reviewApplications = getComposerReviewParts(stack.stackPartSpecs).map((part) => {
+    const config = (
+      part.role === "frontend"
+        ? GRAPH_FRONTEND_CONFIGS
+        : part.role === "backend"
+          ? GRAPH_BACKEND_CONFIGS
+          : part.role === "mobile"
+            ? GRAPH_MOBILE_CONFIGS
+            : []
+    ).find((candidate) => candidate.ecosystem === part.ecosystem);
+    return {
+      ...part,
+      label: getComposerRoleLabel(part.role),
+      path: part.targetPath,
+      tool: {
+        toolId: part.toolId,
+        toolName: config
+          ? getOptionName(config.frameworkCategory, part.toolId)
+          : part.role === "database"
+            ? getOptionName("database", part.toolId)
+            : part.toolId,
+        scopeLabel:
+          part.ecosystem === "java" &&
+          part.capabilities.some(
+            (capability) => capability.role === "language" && capability.toolId === "kotlin",
+          )
+            ? "Kotlin"
+            : (config?.label ??
+              (part.ecosystem === "universal" ? m.builderUniversal() : part.ecosystem)),
+      },
+      capabilities: part.capabilities.map((capability) => ({
+        key: capability.id,
+        id: capability.toolId,
+        name:
+          Object.values(TECH_OPTIONS)
+            .flat()
+            .find((option) => option.id === capability.toolId)?.name ?? capability.toolId,
+      })),
+    };
   });
   const reviewLanguages = [
     ...new Map(
-      [
-        ...(graphSelection.frontend !== "none"
-          ? [{ label: frontendConfig.label, techId: frontendConfig.ecosystem }]
-          : []),
-        ...(graphSelection.mobile !== "none"
-          ? [{ label: mobileConfig.label, icon: mobileConfig.icon }]
-          : []),
-        ...(graphSelection.backend !== "none"
-          ? [
-              {
-                label: backendLabel,
-                techId: backendLabel === "Kotlin" ? "kotlin" : backendConfig.ecosystem,
-              },
-            ]
-          : []),
-      ].map((language) => [language.label, language] as const),
+      reviewApplications
+        .filter((application) => application.role !== "database")
+        .map((application) => [
+          application.tool.scopeLabel,
+          {
+            label: application.tool.scopeLabel,
+            techId: application.tool.scopeLabel === "Kotlin" ? "kotlin" : application.ecosystem,
+          },
+        ]),
     ).values(),
   ];
   const getStepSummary = (stepId: MultiStackStepId) => {
@@ -3011,7 +3090,7 @@ function CreationModeComposer({
               const Icon = COMPOSER_ROLE_ICONS[application.role];
               return (
                 <div
-                  key={application.role}
+                  key={application.id}
                   className="grid gap-2 py-4 sm:grid-cols-[8rem_minmax(0,1fr)_auto] sm:items-start sm:gap-6"
                 >
                   <dt className="flex items-center gap-2 pt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
@@ -3050,14 +3129,20 @@ function CreationModeComposer({
                       </div>
                     )}
                   </dd>
-                  <button
-                    type="button"
-                    aria-label={`${m.builderComposerEdit()} ${application.label}`}
-                    onClick={() => onActiveStepChange(application.role)}
-                    className="hidden h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground sm:flex"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </button>
+                  {graphSelection.rootIds?.[application.role] === application.id && (
+                    <button
+                      type="button"
+                      aria-label={`${m.builderComposerEdit()} ${application.label}`}
+                      onClick={() =>
+                        onActiveStepChange(
+                          application.role === "database" ? "backend" : application.role,
+                        )
+                      }
+                      className="hidden h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground sm:flex"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -3080,8 +3165,7 @@ function CreationModeComposer({
                   {reviewLanguages.map((language) => (
                     <span key={language.label} className="inline-flex items-center gap-1.5">
                       <TechIcon
-                        techId={"techId" in language ? language.techId : undefined}
-                        icon={"icon" in language ? language.icon : undefined}
+                        techId={language.techId}
                         name={language.label}
                         className="h-3.5 w-3.5"
                       />
@@ -3111,6 +3195,26 @@ function CreationModeComposer({
   );
 }
 
+const BuilderShareModal = lazy(async () => {
+  const module = await import("@/components/stack-builder/secondary-panels");
+  return { default: module.BuilderShareModal };
+});
+
+const ExistingProjectImportDialog = lazy(async () => {
+  const module = await import("@/components/stack-builder/secondary-panels");
+  return { default: module.ExistingProjectImportDialog };
+});
+
+const PresetsPanel = lazy(async () => {
+  const module = await import("@/components/stack-builder/secondary-panels");
+  return { default: module.PresetsPanel };
+});
+
+const SavedStacksPanel = lazy(async () => {
+  const module = await import("@/components/stack-builder/secondary-panels");
+  return { default: module.SavedStacksPanel };
+});
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
@@ -3127,8 +3231,6 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   ] = useStackState(initialStack);
   const evidenceInventory = useCapabilityEvidenceInventory();
 
-  const [command, setCommand] = useState("");
-  const [commandError, setCommandError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -3139,6 +3241,8 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   const [isDownloadingProject, setIsDownloadingProject] = useState(false);
   const [sharePromptOpen, setSharePromptOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [hasOpenedImport, setHasOpenedImport] = useState(false);
+  const [hasOpenedSharePrompt, setHasOpenedSharePrompt] = useState(false);
   const [sharePromptMoment, setSharePromptMoment] = useState<ShareMoment>("run");
   const [pendingUpdateEntryId, setPendingUpdateEntryId] = useState<string | null>(null);
   const [multiActiveStep, setMultiActiveStep] = useState<MultiStackStepId>("applications");
@@ -3166,7 +3270,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const compatibilityAnalysis = analyzeStackCompatibility(stack);
+  const compatibilityAnalysis = useMemo(() => analyzeStackCompatibility(stack), [stack]);
   const adjustedStack = useMemo<StackState | null>(() => {
     if (!compatibilityAnalysis.adjustedStack) return null;
     return { ...stack, ...compatibilityAnalysis.adjustedStack };
@@ -3213,6 +3317,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
 
       const stackToShare = adjustedStack || stack;
       setSharePromptMoment(moment);
+      setHasOpenedSharePrompt(true);
       setSharePromptOpen(true);
       trackCampaignEvent(
         "builder_share_prompted",
@@ -3434,20 +3539,20 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     setStack,
   ]);
 
-  useEffect(() => {
-    setCommandError(null);
+  const { command, commandError } = useMemo(() => {
     const stackToUse = adjustedStack || stack;
     const projectName = stackToUse.projectName || "my-app";
     const formattedProjectName = formatProjectName(projectName);
     if (stackToUse.stackMode === "multi" && !hasComposerApplication(stackToUse.stackPartSpecs)) {
-      setCommand("");
-      return;
+      return { command: "", commandError: null };
     }
     try {
-      setCommand(generateStackCommand({ ...stackToUse, projectName: formattedProjectName }));
+      return {
+        command: generateStackCommand({ ...stackToUse, projectName: formattedProjectName }),
+        commandError: null,
+      };
     } catch (error) {
-      setCommand("");
-      setCommandError(error instanceof Error ? error.message : String(error));
+      return { command: "", commandError: error instanceof Error ? error.message : String(error) };
     }
   }, [stack, adjustedStack]);
 
@@ -3492,12 +3597,9 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     }
   }, [runSupported, setViewMode, viewMode]);
 
-  // Warm the run-panel chunk so the first switch to the Run tab mounts it
-  // synchronously - a suspended mount would delay the copy button's
-  // shared-layout landing target past the command bar's exit.
-  useEffect(() => {
+  const warmRunPanel = () => {
     if (runSupported) void import("@/components/stack-builder/run-panel");
-  }, [runSupported]);
+  };
 
   const handleRunStarted = useCallback(
     (rerun: boolean) => {
@@ -3599,6 +3701,15 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
       });
     });
   };
+
+  // Cards keep a stable handler while selection checks use the latest committed stack.
+  const handleTechSelectRef = useRef(handleTechSelect);
+  useLayoutEffect(() => {
+    handleTechSelectRef.current = handleTechSelect;
+  });
+  const selectTech = useCallback((category: keyof typeof TECH_OPTIONS, techId: string) => {
+    handleTechSelectRef.current(category, techId);
+  }, []);
 
   const handleMultiActiveStepChange = (stepId: MultiStackStepId) => {
     setMultiActiveStep(stepId);
@@ -4045,19 +4156,27 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
           </div>
         </DialogContent>
       </Dialog>
-      <BuilderShareModal
-        open={sharePromptOpen}
-        onOpenChange={setSharePromptOpen}
-        stack={adjustedStack || stack}
-        moment={sharePromptMoment}
-        campaign={campaign}
-      />
-      <ExistingProjectImportDialog
-        open={importDialogOpen}
-        onOpenChange={setImportDialogOpen}
-        currentStack={adjustedStack || stack}
-        onLoadImported={loadImportedStack}
-      />
+      {hasOpenedSharePrompt && (
+        <Suspense fallback={null}>
+          <BuilderShareModal
+            open={sharePromptOpen}
+            onOpenChange={setSharePromptOpen}
+            stack={adjustedStack || stack}
+            moment={sharePromptMoment}
+            campaign={campaign}
+          />
+        </Suspense>
+      )}
+      {hasOpenedImport && (
+        <Suspense fallback={null}>
+          <ExistingProjectImportDialog
+            open={importDialogOpen}
+            onOpenChange={setImportDialogOpen}
+            currentStack={adjustedStack || stack}
+            onLoadImported={loadImportedStack}
+          />
+        </Suspense>
+      )}
       <div className="relative flex h-full w-full flex-col overflow-hidden border-border text-foreground">
         {/* Single scroller: header + toolbar + content scroll together (header is not pinned) */}
         <div
@@ -4246,6 +4365,9 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                       <button
                         type="button"
                         onClick={() => setViewMode("run")}
+                        onPointerEnter={warmRunPanel}
+                        onFocus={warmRunPanel}
+                        onTouchStart={warmRunPanel}
                         data-testid="tab-run"
                         aria-pressed={viewMode === "run"}
                         data-state={viewMode === "run" ? "active" : "inactive"}
@@ -4493,7 +4615,12 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                             </DropdownMenuItem>
                           </>
                         )}
-                        <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setHasOpenedImport(true);
+                            setImportDialogOpen(true);
+                          }}
+                        >
                           <FileImport className="h-3.5 w-3.5" />
                           Import bts.jsonc
                         </DropdownMenuItem>
@@ -4684,85 +4811,19 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                     : null;
 
                                                   return (
-                                                    <motion.div
+                                                    <TechOptionCard
                                                       key={tech.id}
-                                                      data-testid={`option-${group.category}-${tech.id}`}
-                                                      className={cn(
-                                                        "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
-                                                        isSelected
-                                                          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                                          : isDisabled
-                                                            ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
-                                                            : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                                      )}
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleTechSelect(group.category, tech.id);
-                                                      }}
-                                                      title={disabledReason || undefined}
-                                                    >
-                                                      <div className="absolute top-2 right-2 flex items-center gap-1">
-                                                        <TechResourceButtons
-                                                          category={group.category}
-                                                          techId={tech.id}
-                                                        />
-                                                        {tech.default && !isSelected && (
-                                                          <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                                                            {m.builderDefault()}
-                                                          </span>
-                                                        )}
-                                                      </div>
-                                                      <div className="flex items-start gap-3">
-                                                        {(tech.icon !== "" ||
-                                                          ICON_REGISTRY[tech.id]) && (
-                                                          <div className="flex shrink-0 flex-col items-center gap-1">
-                                                            <div
-                                                              className={cn(
-                                                                "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                                                                isSelected
-                                                                  ? "bg-primary/10"
-                                                                  : "bg-muted/50 group-hover:bg-muted",
-                                                              )}
-                                                            >
-                                                              <TechIcon
-                                                                techId={tech.id}
-                                                                icon={tech.icon}
-                                                                name={tech.name}
-                                                                className="h-5 w-5"
-                                                              />
-                                                            </div>
-                                                          </div>
-                                                        )}
-                                                        <div className="min-w-0 flex-1 pt-0.5">
-                                                          <span
-                                                            className={cn(
-                                                              "block font-semibold text-sm",
-                                                              isSelected
-                                                                ? "text-primary"
-                                                                : "text-foreground",
-                                                            )}
-                                                          >
-                                                            {tech.name}
-                                                          </span>
-                                                          <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
-                                                            {
-                                                              getLocalizedTechOption(tech)
-                                                                .description
-                                                            }
-                                                          </p>
-                                                          <CapabilityEvidenceBadge
-                                                            ecosystem={stack.ecosystem}
-                                                            category={group.category}
-                                                            optionId={tech.id}
-                                                          />
-                                                          {isDisabled && disabledReason && (
-                                                            <DisabledReasonInline
-                                                              reason={disabledReason}
-                                                            />
-                                                          )}
-                                                        </div>
-                                                      </div>
-                                                    </motion.div>
+                                                      tech={tech}
+                                                      category={group.category}
+                                                      ecosystem={stack.ecosystem}
+                                                      isSelected={isSelected}
+                                                      isDisabled={isDisabled}
+                                                      disabledReason={disabledReason}
+                                                      description={
+                                                        getLocalizedTechOption(tech).description
+                                                      }
+                                                      onSelect={selectTech}
+                                                    />
                                                   );
                                                 })}
                                               </div>
@@ -4984,13 +5045,6 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                                               ).description
                                                                             }
                                                                           </p>
-                                                                          <CapabilityEvidenceBadge
-                                                                            ecosystem={
-                                                                              stack.ecosystem
-                                                                            }
-                                                                            category={key}
-                                                                            optionId={tech.id}
-                                                                          />
                                                                         </div>
                                                                       </div>
                                                                     </motion.div>
@@ -5114,11 +5168,6 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                                     .description
                                                                 }
                                                               </p>
-                                                              <CapabilityEvidenceBadge
-                                                                ecosystem={stack.ecosystem}
-                                                                category="astroIntegration"
-                                                                optionId={tech.id}
-                                                              />
                                                               {isDisabled && disabledReason && (
                                                                 <DisabledReasonInline
                                                                   reason={disabledReason}
@@ -5192,29 +5241,41 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                 </div>
               ) : viewMode === "presets" ? (
                 <div className="min-h-0 flex-1 overflow-hidden">
-                  <PresetsPanel
-                    stack={adjustedStack || stack}
-                    ecosystem={stack.ecosystem}
-                    onApplyPreset={applyPreset}
-                    onCustomizePreset={(presetId) => {
-                      applyPreset(presetId);
-                      setViewMode("command");
-                    }}
-                    starterTrackFilters={starterTrackFilters}
-                    onStarterTrackFiltersChange={updateStarterTrackFilters}
-                  />
+                  <Suspense
+                    fallback={
+                      <div className="p-4 text-sm text-muted-foreground">{m.builderLoading()}</div>
+                    }
+                  >
+                    <PresetsPanel
+                      stack={adjustedStack || stack}
+                      ecosystem={stack.ecosystem}
+                      onApplyPreset={applyPreset}
+                      onCustomizePreset={(presetId) => {
+                        applyPreset(presetId);
+                        setViewMode("command");
+                      }}
+                      starterTrackFilters={starterTrackFilters}
+                      onStarterTrackFiltersChange={updateStarterTrackFilters}
+                    />
+                  </Suspense>
                 </div>
               ) : (
                 <div className="min-h-0 flex-1 overflow-hidden">
-                  <SavedStacksPanel
-                    entries={savedStacks}
-                    currentStack={adjustedStack || stack}
-                    onLoadEntry={loadSavedStack}
-                    onOverwriteEntry={overwriteSavedStack}
-                    onDeleteEntry={deleteSavedStack}
-                    onRenameEntry={renameSavedStack}
-                    onDuplicateEntry={duplicateSavedStack}
-                  />
+                  <Suspense
+                    fallback={
+                      <div className="p-4 text-sm text-muted-foreground">{m.builderLoading()}</div>
+                    }
+                  >
+                    <SavedStacksPanel
+                      entries={savedStacks}
+                      currentStack={adjustedStack || stack}
+                      onLoadEntry={loadSavedStack}
+                      onOverwriteEntry={overwriteSavedStack}
+                      onDeleteEntry={deleteSavedStack}
+                      onRenameEntry={renameSavedStack}
+                      onDuplicateEntry={duplicateSavedStack}
+                    />
+                  </Suspense>
                 </div>
               )}
             </main>

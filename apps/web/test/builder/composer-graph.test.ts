@@ -5,6 +5,7 @@ import { selectionAnalyticsProperties } from "@/lib/analytics/campaign-analytics
 import {
   composerUsesJavaScript,
   getComposerParts,
+  getComposerReviewParts,
   hasComposerApplication,
   reconcileComposerSpecs,
 } from "@/lib/builder/composer-graph";
@@ -175,3 +176,22 @@ for (const selectedId of ["api", "worker"]) {
     );
   });
 }
+
+it("reviews every named application with its generated path and owned capabilities", () => {
+  const applications = getComposerReviewParts([
+    "frontend:typescript:react-vite",
+    "backend:go:gin:api",
+    "api.orm:go:gorm",
+    "backend:go:gin:worker",
+    "worker.orm:go:sqlc",
+    "database:universal:postgres",
+  ]);
+  expect(applications.map(({ id, targetPath }) => [id, targetPath])).toEqual([
+    ["frontend:typescript:react-vite", "apps/web"],
+    ["api", "services/api"],
+    ["worker", "services/worker"],
+    ["database:universal:postgres", "packages/db"],
+  ]);
+  expect(applications[1]?.capabilities.map((part) => part.toolId)).toEqual(["gorm"]);
+  expect(applications[2]?.capabilities.map((part) => part.toolId)).toEqual(["sqlc"]);
+});

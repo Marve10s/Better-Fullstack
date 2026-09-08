@@ -1,15 +1,6 @@
-import {
-  OPTION_CATEGORY_METADATA,
-  type OptionCategory,
-  type OptionCategoryEcosystem,
-} from "@better-fullstack/types";
-
 import type { GeneratedStackPage } from "@/lib/stack-pages/types";
 
-import {
-  CapabilityEvidenceBadge,
-  CapabilityEvidenceProvider,
-} from "@/components/stack-builder/capability-evidence-badge";
+import { CapabilityEvidenceProvider } from "@/components/stack-builder/capability-evidence-badge";
 import { getRelatedStackPages } from "@/lib/stack-pages/source";
 
 const SHAPE_COPY: Record<GeneratedStackPage["architecture"]["shape"], string> = {
@@ -49,41 +40,6 @@ function StackSection({
       </div>
       <div className="min-w-0">{children}</div>
     </section>
-  );
-}
-
-const EVIDENCE_ECOSYSTEMS = new Set<OptionCategoryEcosystem>([
-  "typescript",
-  "react-native",
-  "rust",
-  "python",
-  "go",
-  "java",
-  "dotnet",
-  "elixir",
-]);
-
-function StackPartEvidence({
-  ecosystem,
-  category,
-  optionId,
-}: {
-  ecosystem: string;
-  category: string;
-  optionId: string;
-}) {
-  if (
-    !EVIDENCE_ECOSYSTEMS.has(ecosystem as OptionCategoryEcosystem) ||
-    !(category in OPTION_CATEGORY_METADATA)
-  ) {
-    return null;
-  }
-  return (
-    <CapabilityEvidenceBadge
-      ecosystem={ecosystem as OptionCategoryEcosystem}
-      category={category as OptionCategory}
-      optionId={optionId}
-    />
   );
 }
 
@@ -161,11 +117,6 @@ function StackCombinationPageContent({ page }: { page: GeneratedStackPage }) {
                     <td className="px-4 py-4 font-medium">
                       {part.label}
                       <div>
-                        <StackPartEvidence
-                          ecosystem={page.ecosystem}
-                          category={part.category}
-                          optionId={part.id}
-                        />
                       </div>
                     </td>
                     <td className="max-w-md px-4 py-4 text-muted-foreground leading-6">

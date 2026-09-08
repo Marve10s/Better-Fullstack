@@ -1945,7 +1945,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -2760,7 +2760,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: react-vite-web
     "start": "vite"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -3168,7 +3168,7 @@ export default nextConfig;
     "start": "next start"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -4030,7 +4030,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: astro-react-in
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^7.2.9",
+    "astro": "^7.3.1",
     "@astrojs/react": "^6.0.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -4615,7 +4615,7 @@ export default defineNuxtConfig({
     "@nuxtjs/mdc": "^0.22.2",
     "nuxt": "4.4.8",
     "vue": "^3.5.42",
-    "vue-router": "^5.3.0",
+    "vue-router": "^5.3.1",
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@snapshot-nuxt-standalone/env": "workspace:*",
@@ -4631,7 +4631,7 @@ export default defineNuxtConfig({
   },
   "devDependencies": {
     "tailwindcss": "^4.3.3",
-    "@iconify-json/lucide": "^1.2.127",
+    "@iconify-json/lucide": "^1.2.129",
     "typescript": "catalog:",
     "@snapshot-nuxt-standalone/config": "workspace:*",
     "@tanstack/vue-query-devtools": "^6.1.38"
@@ -6044,7 +6044,7 @@ app.listen(3000, () => {
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -6839,7 +6839,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -7691,7 +7691,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -8778,7 +8778,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -9881,7 +9881,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -10965,7 +10965,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -11520,7 +11520,7 @@ export default nextConfig;
     "start": "next start"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -12115,7 +12115,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "dev": "vite dev"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -12928,7 +12928,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -13661,7 +13661,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -14421,7 +14421,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -15345,7 +15345,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -16189,7 +16189,7 @@ export default nextConfig;
     "start": "next start"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -16942,7 +16942,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -17876,7 +17876,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -18801,7 +18801,7 @@ export default app;
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -19621,7 +19621,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
     "check-types": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.7.0",
+    "@base-ui/react": "^1.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",

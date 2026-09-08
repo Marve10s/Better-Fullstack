@@ -280,3 +280,26 @@ it("starts repeated .NET frontends with distinct ports overriding their launch p
     expect(task.dev).toContain("--urls http://localhost:");
   }
 });
+
+it("reserves the JavaScript frontend port before starting a .NET frontend", async () => {
+  const specs = ["frontend:dotnet:blazor-webassembly:admin", "frontend:typescript:react-vite:site"];
+  const output = await generate(specs);
+  const root = JSON.parse(output.get("package.json") ?? "{}") as {
+    scripts: Record<string, string>;
+  };
+  expect(root.scripts.dev).toContain("http://localhost:5174");
+});
+
+it("reserves every native frontend port before starting backend services", async () => {
+  const specs = [
+    "frontend:dotnet:blazor-webassembly:admin",
+    "frontend:rust:leptos:site",
+    "backend:go:gin",
+  ];
+  const output = await generate(specs);
+  const script = output.get("scripts/dev.sh") ?? "";
+  expect(script).toContain("http://localhost:5173");
+  expect(script).toContain("trunk serve --port 8080");
+  expect(script).toContain("export PORT=8081");
+  expect(getGraphBackendConnections(configFor(specs))[0]?.serverUrl).toBe("http://localhost:8081");
+});
