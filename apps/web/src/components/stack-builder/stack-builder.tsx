@@ -37,7 +37,6 @@ import {
   TbBookmark as Bookmark,
   TbBook as BookOpen,
   TbCheck as Check,
-  TbDatabase as Database,
   TbDeviceMobile as Smartphone,
   TbServer as Server,
   TbWorld as Globe,
@@ -45,6 +44,7 @@ import {
   TbClipboardCopy as ClipboardCopy,
   TbDownload as Download,
   TbDotsVertical as EllipsisVertical,
+  TbFolder as Folder,
   TbEye as Eye,
   TbFileImport as FileImport,
   TbBrandGithub as Github,
@@ -75,7 +75,6 @@ import {
   CapabilityEvidenceProvider,
   useCapabilityEvidenceInventory,
 } from "@/components/stack-builder/capability-evidence-badge";
-import { ComposerRolePreview } from "@/components/stack-builder/composer-role-art";
 import { ExistingProjectImportDialog } from "@/components/stack-builder/existing-project-import-dialog";
 import { PresetsPanel } from "@/components/stack-builder/presets-panel";
 import { SavedStacksPanel } from "@/components/stack-builder/saved-stacks-panel";
@@ -295,7 +294,8 @@ type GraphBackendPickerConfig = GraphBackendConfig & {
 };
 
 type ComposerRole = "frontend" | "backend" | "database" | "mobile";
-type MultiStackStepId = "applications" | "configure" | "project" | "review";
+type ComposerApplicationRole = Exclude<ComposerRole, "database">;
+type MultiStackStepId = "applications" | ComposerApplicationRole | "project" | "review";
 
 function BuilderSearchField({
   scope,
@@ -671,35 +671,72 @@ function getMultiStepLabel(stepId: MultiStackStepId) {
   switch (stepId) {
     case "applications":
       return m.builderComposerApplications();
-    case "configure":
-      return m.builderComposerConfigure();
     case "project":
       return m.builderComposerProject();
     case "review":
       return m.builderComposerReview();
+    default:
+      return getComposerRoleLabel(stepId);
   }
 }
 
-function getComposerRoleLabel(role: ComposerRole) {
+function getComposerRoleLabel(role: ComposerApplicationRole) {
   if (role === "mobile") return m.builderStepMobile();
   return getLocalizedCategoryDisplayName(
     role === "frontend" ? "webFrontend" : role,
-    role === "frontend" ? "Frontend" : role === "backend" ? "Backend" : "Database",
+    role === "frontend" ? "Frontend" : "Backend",
   );
 }
 
-const COMPOSER_ROLE_ICONS: Record<ComposerRole, typeof Globe> = {
+const COMPOSER_ROLE_ICONS: Record<ComposerApplicationRole, typeof Globe> = {
   frontend: Globe,
   mobile: Smartphone,
   backend: Server,
-  database: Database,
 };
 
-const COMPOSER_APPLICATION_ROLES: ComposerRole[] = ["frontend", "mobile", "backend"];
+const COMPOSER_APPLICATION_ROLES: ComposerApplicationRole[] = ["frontend", "mobile", "backend"];
+
+const COMPOSER_CATEGORY_FALLBACKS: Partial<Record<keyof typeof TECH_OPTIONS, string>> = {
+  webFrontend: "Framework",
+  nativeFrontend: "Framework",
+  backend: "Framework",
+  cssFramework: "Styling",
+  uiLibrary: "UI library",
+  forms: "Forms",
+  database: "Database",
+  orm: "ORM",
+  api: "API layer",
+  auth: "Auth",
+  mobileNavigation: "Navigation",
+  mobileUI: "UI kit",
+  mobilePush: "Push notifications",
+  mobileStorage: "Storage",
+};
+
+const COMPOSER_ROLE_DETAILS: Record<
+  ComposerApplicationRole,
+  { path: string; description: () => string; categories: Array<keyof typeof TECH_OPTIONS> }
+> = {
+  frontend: {
+    path: "apps/web",
+    description: () => m.builderComposerWebDescription(),
+    categories: ["webFrontend", "cssFramework", "uiLibrary", "forms"],
+  },
+  mobile: {
+    path: "apps/native",
+    description: () => m.builderComposerMobileDescription(),
+    categories: ["nativeFrontend", "mobileNavigation", "mobileUI", "mobilePush", "mobileStorage"],
+  },
+  backend: {
+    path: "apps/server",
+    description: () => m.builderComposerBackendDescription(),
+    categories: ["backend", "database", "orm", "api", "auth"],
+  },
+};
 
 type ComposerEcosystemIcon = { key: string; label: string; techId?: string; icon?: string };
 
-const COMPOSER_ECOSYSTEM_ICONS: Record<ComposerRole, ComposerEcosystemIcon[]> = {
+const COMPOSER_ECOSYSTEM_ICONS: Record<ComposerApplicationRole, ComposerEcosystemIcon[]> = {
   frontend: GRAPH_FRONTEND_CONFIGS.map((config) => ({
     key: config.ecosystem,
     label: config.label,
@@ -715,15 +752,17 @@ const COMPOSER_ECOSYSTEM_ICONS: Record<ComposerRole, ComposerEcosystemIcon[]> = 
     label: config.label,
     techId: config.id,
   })),
-  database: [],
 };
 
-const MULTI_STACK_STEPS: Array<{ id: MultiStackStepId }> = [
-  { id: "applications" },
-  { id: "configure" },
-  { id: "project" },
-  { id: "review" },
-];
+function getMultiStackSteps(stack: StackState): MultiStackStepId[] {
+  const selection = getGraphSelection(stack);
+  return [
+    "applications",
+    ...COMPOSER_APPLICATION_ROLES.filter((role) => selection[role] !== "none"),
+    "project",
+    "review",
+  ];
+}
 
 const MULTI_MOBILE_LIBRARY_GROUPS: Array<keyof typeof TECH_OPTIONS> = [
   "auth",
@@ -1618,11 +1657,6 @@ const SHADCN_SUB_CATEGORIES = new Set<keyof typeof TECH_OPTIONS>([
   "shadcnRadius",
 ]);
 
-const ComposerProjectReview = lazy(async () => {
-  const module = await import("@/components/stack-builder/composer-project-review");
-  return { default: module.ComposerProjectReview };
-});
-
 const PreviewPanel = lazy(async () => {
   const module = await import("@/components/stack-builder/preview-panel");
   return { default: module.PreviewPanel };
@@ -1838,20 +1872,25 @@ function CreationModeComposer({
   onChange,
   activeStep,
   onActiveStepChange,
+  projectNameError,
+  commandBar,
+  reviewActions,
 }: {
   stack: StackState;
   onChange: (updates: Partial<StackState> | ((prev: StackState) => Partial<StackState>)) => void;
   activeStep: MultiStackStepId;
   onActiveStepChange: (stepId: MultiStackStepId) => void;
+  projectNameError: string | undefined;
+  commandBar: ReactNode;
+  reviewActions: ReactNode;
 }) {
   const graphSelection = useMemo(() => getGraphSelection(stack), [stack]);
   const optionStack = useMemo(() => projectGraphScopedSelections(stack), [stack]);
-  const [selectedRole, setSelectedRole] = useState<ComposerRole>("frontend");
   const selectedRoles = COMPOSER_APPLICATION_ROLES.filter(
     (role) => graphSelection[role] !== "none",
   );
-  const configurableRoles: ComposerRole[] = [...selectedRoles, "database"];
-  const activeRole = configurableRoles.includes(selectedRole) ? selectedRole : configurableRoles[0];
+  const steps = getMultiStackSteps(stack);
+  const activeRole = COMPOSER_APPLICATION_ROLES.find((role) => role === activeStep);
   const frontendConfig = GRAPH_FRONTEND_CONFIG_BY_ECOSYSTEM[graphSelection.frontendEcosystem];
   const mobileConfig = GRAPH_MOBILE_CONFIGS.find(
     (config) => config.ecosystem === graphSelection.mobileEcosystem,
@@ -2168,6 +2207,7 @@ function CreationModeComposer({
     onClick,
     iconTechId,
     icon,
+    colorKey,
   }: {
     selected: boolean;
     testId: string;
@@ -2175,8 +2215,12 @@ function CreationModeComposer({
     onClick: () => void;
     iconTechId?: string;
     icon?: string;
+    colorKey: string;
   }) => {
     const hasIcon = Boolean(icon) || (iconTechId ? Boolean(ICON_REGISTRY[iconTechId]) : false);
+    const color =
+      BUILDER_ECOSYSTEMS.find((ecosystem) => ecosystem.id === colorKey)?.color ??
+      "from-[#C6E853] to-[#8fb52a]";
 
     return (
       <button
@@ -2185,27 +2229,34 @@ function CreationModeComposer({
         aria-pressed={selected}
         onClick={onClick}
         className={cn(
-          "group flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-1.5 transition-colors",
+          "group relative flex cursor-pointer items-center justify-center gap-2 px-3 py-3 transition-all sm:gap-2.5 sm:px-4 sm:py-3.5",
           selected
-            ? "border-foreground/50 bg-muted/60 text-foreground"
-            : "border-border/70 text-muted-foreground hover:border-foreground/30 hover:text-foreground",
+            ? "bg-muted/40 text-foreground"
+            : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
         )}
       >
+        {selected && (
+          <motion.div
+            layoutId="composer-language-indicator"
+            className={cn("absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r", color)}
+            transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+          />
+        )}
         {hasIcon && (
           <TechIcon
             techId={iconTechId}
             icon={icon}
             name={label}
             className={cn(
-              "h-4 w-4 shrink-0 transition-opacity",
-              !selected && "opacity-60 group-hover:opacity-90",
+              "relative h-4.5 w-4.5 transition-all sm:h-5 sm:w-5",
+              selected ? "scale-110" : "opacity-50 group-hover:opacity-75",
             )}
           />
         )}
         <span
           className={cn(
-            "font-mono text-[10px] uppercase tracking-wide",
-            selected && "font-semibold",
+            "relative font-mono text-[10px] uppercase tracking-wide transition-all sm:text-xs",
+            selected && "font-bold",
           )}
         >
           {label}
@@ -2222,7 +2273,11 @@ function CreationModeComposer({
     optionCount: number;
   }) => {
     if (optionCount <= 1) return null;
-    return <div className="flex flex-wrap gap-1.5">{children}</div>;
+    return (
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] overflow-hidden rounded-xl border border-border/60">
+        {children}
+      </div>
+    );
   };
 
   const renderStackOptionGroup = ({
@@ -2262,8 +2317,8 @@ function CreationModeComposer({
     />
   );
 
-  const renderActiveStep = () => {
-    switch (activeRole) {
+  const renderRoleStep = (role: ComposerApplicationRole) => {
+    switch (role) {
       case "frontend":
         return (
           <div className="space-y-5">
@@ -2275,6 +2330,7 @@ function CreationModeComposer({
                   testId: `multi-frontend-language-${config.ecosystem}`,
                   label: config.label,
                   iconTechId: config.ecosystem,
+                  colorKey: config.ecosystem,
                   onClick: () => {
                     const frontend = getDefaultGraphTool(
                       config.frameworkCategory,
@@ -2369,6 +2425,7 @@ function CreationModeComposer({
                   testId: `multi-backend-language-${config.id}`,
                   label: config.label,
                   iconTechId: config.id,
+                  colorKey: config.id,
                   onClick: () => {
                     const backend = getDefaultGraphTool(
                       config.frameworkCategory,
@@ -2408,16 +2465,50 @@ function CreationModeComposer({
                 const nextSelection: GraphSelection = {
                   ...graphSelection,
                   backend,
+                  database: backend === "none" ? "none" : graphSelection.database,
                   backendOrm: backend === "none" ? "none" : graphSelection.backendOrm,
                   backendApi: backend === "none" ? "none" : graphSelection.backendApi,
                   backendAuth: backend === "none" ? "none" : graphSelection.backendAuth,
                 };
                 updateGraphSelection({
                   backend,
+                  database: nextSelection.database,
                   ...reconcileBackendCapabilities(nextSelection, backendConfig),
                 });
               }}
             />
+
+            {graphSelection.backend !== "none" && (
+              <GraphOptionGroup
+                label={getLocalizedCategoryDisplayName(
+                  "database",
+                  getCategoryDisplayName("database"),
+                )}
+                options={databaseOptions}
+                selectedId={graphSelection.database}
+                dense
+                testIdPrefix="multi-database-tool"
+                evidenceEcosystem="typescript"
+                evidenceCategory="database"
+                onSelect={(database) =>
+                  updateGraphSelection({
+                    database,
+                    ...reconcileBackendCapabilities({ ...graphSelection, database }, backendConfig),
+                  })
+                }
+              />
+            )}
+
+            {graphSelection.backend !== "none" &&
+              graphSelection.database !== "none" &&
+              renderStackOptionGroup({
+                label: getLocalizedCategoryDisplayName(
+                  "dbSetup",
+                  getCategoryDisplayName("dbSetup"),
+                ),
+                category: "dbSetup",
+                testIdPrefix: "multi-database-dbSetup",
+              })}
 
             {graphSelection.backend !== "none" && backendOrmOptions.length > 0 && (
               <GraphOptionGroup
@@ -2483,46 +2574,6 @@ function CreationModeComposer({
             ))}
           </div>
         );
-      case "database":
-        return (
-          <div className="space-y-5">
-            {renderLanguagePicker({
-              optionCount: 1,
-              children: renderLanguageButton({
-                selected: true,
-                testId: "multi-database-language-universal",
-                label: m.builderUniversal(),
-                onClick: () => undefined,
-              }),
-            })}
-
-            <GraphOptionGroup
-              label={m.builderStandaloneDatabase()}
-              options={databaseOptions}
-              selectedId={graphSelection.database}
-              dense
-              testIdPrefix="multi-database-tool"
-              evidenceEcosystem="typescript"
-              evidenceCategory="database"
-              onSelect={(database) =>
-                updateGraphSelection({
-                  database,
-                  ...reconcileBackendCapabilities({ ...graphSelection, database }, backendConfig),
-                })
-              }
-            />
-
-            {graphSelection.database !== "none" &&
-              renderStackOptionGroup({
-                label: getLocalizedCategoryDisplayName(
-                  "dbSetup",
-                  getCategoryDisplayName("dbSetup"),
-                ),
-                category: "dbSetup",
-                testIdPrefix: "multi-database-dbSetup",
-              })}
-          </div>
-        );
       case "mobile":
         return (
           <div className="space-y-5">
@@ -2534,6 +2585,7 @@ function CreationModeComposer({
                   testId: `multi-mobile-language-${config.ecosystem}`,
                   label: config.label,
                   icon: config.icon,
+                  colorKey: config.ecosystem,
                   onClick: () => {
                     const mobile = getDefaultGraphTool(
                       config.frameworkCategory,
@@ -2601,12 +2653,12 @@ function CreationModeComposer({
     return null;
   }
 
-  const toggleApplication = (role: ComposerRole) => {
+  const toggleApplication = (role: ComposerApplicationRole) => {
     if (graphSelection[role] !== "none") {
       updateGraphSelection({
         [role]: "none",
         ...(role === "backend"
-          ? { backendOrm: "none", backendApi: "none", backendAuth: "none" }
+          ? { database: "none", backendOrm: "none", backendApi: "none", backendAuth: "none" }
           : {}),
       });
       return;
@@ -2616,26 +2668,68 @@ function CreationModeComposer({
     updateGraphSelection({
       [role]: getDefaultGraphTool(config.frameworkCategory, role, config.ecosystem, "none"),
     });
-    setSelectedRole(role);
   };
 
-  const editRole = (role: ComposerRole) => {
-    setSelectedRole(role);
-    onActiveStepChange("configure");
-  };
-
-  const activeStepIndex = MULTI_STACK_STEPS.findIndex((step) => step.id === activeStep);
-  const summarizeRoles = (roles: ComposerRole[]) =>
-    roles
-      .map((role) => getStepSelection(role)?.toolName)
-      .filter(Boolean)
-      .join(" · ");
+  const activeStepIndex = steps.indexOf(activeStep);
+  const categoryLabel = (category: keyof typeof TECH_OPTIONS) =>
+    getLocalizedCategoryDisplayName(
+      category,
+      COMPOSER_CATEGORY_FALLBACKS[category] ?? getCategoryDisplayName(category),
+    );
+  const backendCapabilities = (
+    [
+      ["database", "database" as const, graphSelection.database],
+      ["orm", backendConfig.ormCategory, graphSelection.backendOrm],
+      ["api", backendConfig.apiCategory, graphSelection.backendApi],
+      ["auth", backendConfig.authCategory, graphSelection.backendAuth],
+    ] as const
+  ).flatMap(([key, category, toolId]) =>
+    category && toolId !== "none"
+      ? [{ key, id: toolId, name: getOptionName(category, toolId), role: categoryLabel(key) }]
+      : [],
+  );
+  const reviewApplications = selectedRoles.flatMap((role) => {
+    const selection = getStepSelection(role);
+    return selection
+      ? [
+          {
+            role,
+            label: getComposerRoleLabel(role),
+            path: COMPOSER_ROLE_DETAILS[role].path,
+            tool: selection,
+            capabilities: role === "backend" ? backendCapabilities : [],
+          },
+        ]
+      : [];
+  });
+  const reviewLanguages = [
+    ...new Map(
+      [
+        ...(graphSelection.frontend !== "none"
+          ? [{ label: frontendConfig.label, techId: frontendConfig.ecosystem }]
+          : []),
+        ...(graphSelection.mobile !== "none"
+          ? [{ label: mobileConfig.label, icon: mobileConfig.icon }]
+          : []),
+        ...(graphSelection.backend !== "none"
+          ? [
+              {
+                label: backendLabel,
+                techId: backendLabel === "Kotlin" ? "kotlin" : backendConfig.ecosystem,
+              },
+            ]
+          : []),
+      ].map((language) => [language.label, language] as const),
+    ).values(),
+  ];
   const getStepSummary = (stepId: MultiStackStepId) => {
     switch (stepId) {
       case "applications":
         return selectedRoles.map(getComposerRoleLabel).join(" · ");
-      case "configure":
-        return summarizeRoles(configurableRoles);
+      case "frontend":
+      case "mobile":
+      case "backend":
+        return getStepSelection(stepId)?.toolName;
       case "project":
         return composerUsesJavaScript(stack.stackPartSpecs)
           ? `${stack.packageManager} · ${m.builderComposerJsWorkspace()}`
@@ -2644,89 +2738,36 @@ function CreationModeComposer({
         return stack.projectName;
     }
   };
-  const toggleDatabase = () => {
-    const database =
-      graphSelection.database === "none"
-        ? getDefaultGraphTool("database", "database", "universal", "none")
-        : "none";
-    updateGraphSelection({
-      database,
-      ...reconcileBackendCapabilities({ ...graphSelection, database }, backendConfig),
-    });
-  };
-
-  const pickSelectedOptions = (categories: ReadonlyArray<keyof typeof TECH_OPTIONS>) =>
-    categories.flatMap((category) =>
-      (TECH_OPTIONS[category] ?? []).filter(
-        (option) => option.id !== "none" && isSelectedCheck(optionStack, category, option.id),
-      ),
-    );
-  const pickOption = (category: keyof typeof TECH_OPTIONS | undefined, optionId: string) => {
-    if (!category || optionId === "none") return [];
-    const option = TECH_OPTIONS[category]?.find((candidate) => candidate.id === optionId);
-    return option ? [option] : [];
-  };
-  const getRoleLibraries = (role: ComposerRole): TechOption[] => {
-    switch (role) {
-      case "frontend":
-        return graphSelection.frontendEcosystem === "typescript" &&
-          graphSelection.frontend !== "none"
-          ? pickSelectedOptions(MULTI_FRONTEND_LIBRARY_GROUPS)
-          : [];
-      case "mobile":
-        if (graphSelection.mobile === "none") return [];
-        if (graphSelection.mobileEcosystem === "react-native")
-          return pickSelectedOptions(MULTI_MOBILE_LIBRARY_GROUPS);
-        if (graphSelection.mobileEcosystem === "kotlin")
-          return pickSelectedOptions(MULTI_KOTLIN_MOBILE_LIBRARY_GROUPS);
-        return [];
-      case "backend":
-        if (graphSelection.backend === "none") return [];
-        return [
-          ...pickOption(backendConfig.ormCategory, graphSelection.backendOrm),
-          ...pickOption(backendConfig.apiCategory, graphSelection.backendApi),
-          ...pickOption(backendConfig.authCategory, graphSelection.backendAuth),
-        ];
-      case "database":
-        return graphSelection.database === "none" ? [] : pickSelectedOptions(["dbSetup"]);
-    }
-  };
-
-  const renderApplicationTile = (role: ComposerRole) => {
+  const renderApplicationTile = (role: ComposerApplicationRole) => {
     const selection = getStepSelection(role);
     const selected = Boolean(selection);
     const Icon = COMPOSER_ROLE_ICONS[role];
     const ecosystems = COMPOSER_ECOSYSTEM_ICONS[role];
-    const libraries = getRoleLibraries(role);
-    const visibleLibraries = libraries.slice(0, 4);
+    const details = COMPOSER_ROLE_DETAILS[role];
+    const labelClass = "font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground";
     return (
       <button
         key={role}
         type="button"
         aria-pressed={selected}
         data-testid={`multi-application-${role}`}
-        onClick={() => (role === "database" ? toggleDatabase() : toggleApplication(role))}
+        onClick={() => toggleApplication(role)}
         className={cn(
-          "group relative flex cursor-pointer flex-col rounded-2xl border p-4 text-left transition-all focus-visible:outline-2 focus-visible:outline-ring",
+          "group relative flex min-h-[20rem] cursor-pointer flex-col rounded-2xl border p-5 text-left transition-all focus-visible:outline-2 focus-visible:outline-ring md:min-h-[calc(100dvh-21rem)]",
           selected
-            ? "border-foreground/40 bg-muted/30"
+            ? "border-[#C6E853] bg-[#C6E853]/[0.06] ring-1 ring-[#C6E853]/40"
             : "border-border bg-background hover:border-foreground/25 hover:bg-muted/15",
         )}
       >
         <span className="flex items-center justify-between gap-2">
-          <span className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+          <span className="flex min-w-0 items-center gap-2 text-base font-semibold">
             <Icon
               className={cn(
-                "h-4 w-4 shrink-0",
+                "h-4.5 w-4.5 shrink-0",
                 selected ? "text-foreground" : "text-muted-foreground",
               )}
             />
             <span className="truncate">{getComposerRoleLabel(role)}</span>
-            {role === "database" && (
-              <span className="font-mono text-[9px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                {m.builderComposerOptional()}
-              </span>
-            )}
           </span>
           <span
             aria-hidden="true"
@@ -2740,92 +2781,107 @@ function CreationModeComposer({
             <Check className="h-3 w-3" />
           </span>
         </span>
-        <span className="mt-2 flex flex-wrap items-center gap-1.5">
-          {ecosystems.length > 0 ? (
-            ecosystems.map((eco) => (
+        <span className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {details.description()}
+        </span>
+        <span className="mt-5 flex flex-col gap-1.5">
+          <span className={labelClass}>{m.builderComposerGenerates()}</span>
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-muted/60 px-2 py-1 font-mono text-xs text-foreground/90">
+            <Folder className="h-3.5 w-3.5 text-muted-foreground" />
+            {details.path}
+          </span>
+        </span>
+        <span className="mt-5 flex flex-col gap-1.5">
+          <span className={labelClass}>{m.builderComposerConfigures()}</span>
+          <span className="flex flex-col divide-y divide-border/60">
+            {details.categories.map((category) => {
+              const seenIcons = new Set<string>();
+              const samples = (TECH_OPTIONS[category] ?? [])
+                .filter((option) => {
+                  const registered = ICON_REGISTRY[option.id];
+                  const iconKey =
+                    option.icon ||
+                    (typeof registered === "string" ? registered : JSON.stringify(registered)) ||
+                    option.id;
+                  if (option.id === "none" || seenIcons.has(iconKey)) return false;
+                  seenIcons.add(iconKey);
+                  return true;
+                })
+                .slice(0, 4);
+              return (
+                <span
+                  key={category}
+                  className="flex items-center justify-between gap-3 py-1.5 text-[13px]"
+                >
+                  <span className="text-foreground/85">
+                    {getLocalizedCategoryDisplayName(
+                      category,
+                      COMPOSER_CATEGORY_FALLBACKS[category] ?? getCategoryDisplayName(category),
+                    )}
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    {samples.map((option) => (
+                      <TechIcon
+                        key={option.id}
+                        techId={option.id}
+                        icon={option.icon}
+                        name={option.name}
+                        className={cn(
+                          "h-4 w-4 transition-opacity",
+                          selected ? "opacity-90" : "opacity-55 group-hover:opacity-75",
+                        )}
+                      />
+                    ))}
+                  </span>
+                </span>
+              );
+            })}
+          </span>
+        </span>
+        <span className="mt-auto flex flex-col gap-2 pt-8">
+          <span className={labelClass}>{m.builderComposerLanguages()}</span>
+          <span className="flex flex-wrap items-center gap-3">
+            {ecosystems.map((eco) => (
               <TechIcon
                 key={eco.key}
                 techId={eco.techId}
                 icon={eco.icon}
                 name={eco.label}
                 className={cn(
-                  "h-3.5 w-3.5 transition-opacity",
-                  selected ? "opacity-80" : "opacity-45 group-hover:opacity-70",
+                  "h-8 w-8 transition-opacity",
+                  selected ? "opacity-90" : "opacity-45 group-hover:opacity-70",
                 )}
               />
-            ))
-          ) : (
-            <span className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-              {m.builderUniversal()}
-            </span>
-          )}
-        </span>
-        <span className="mt-auto flex flex-col gap-2 pt-4">
-          <span className="flex min-w-0 items-center gap-2 text-xs">
-            {selection ? (
-              <>
-                <TechIcon
-                  techId={selection.toolId}
-                  name={selection.toolName}
-                  className="h-4 w-4 shrink-0"
-                />
-                <span className="truncate font-medium">{selection.toolName}</span>
-                <span className="ml-auto shrink-0 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-                  {selection.scopeLabel}
-                </span>
-              </>
-            ) : (
-              <span className="text-muted-foreground">{m.builderComposerAddApplication()}</span>
-            )}
+            ))}
           </span>
-          {visibleLibraries.length > 0 && (
-            <span className="flex flex-wrap gap-1">
-              {visibleLibraries.map((library) => (
-                <span
-                  key={library.id}
-                  className="inline-flex max-w-full items-center gap-1 rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] text-muted-foreground"
-                >
-                  <TechIcon
-                    techId={library.id}
-                    icon={library.icon}
-                    name={library.name}
-                    className="h-3 w-3 shrink-0"
-                  />
-                  <span className="truncate">{getLocalizedTechOption(library).name}</span>
-                </span>
-              ))}
-              {libraries.length > visibleLibraries.length && (
-                <span className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-                  +{libraries.length - visibleLibraries.length}
-                </span>
-              )}
-            </span>
-          )}
         </span>
       </button>
     );
   };
 
   return (
-    <section data-testid="stack-graph-composer" className="mb-8 space-y-6">
+    <section
+      data-testid="stack-graph-composer"
+      className={cn("space-y-6", activeStep === "project" && "mb-8")}
+    >
       <nav
         aria-label={m.builderComposerProgress()}
-        className="no-scrollbar -mx-1 flex items-stretch gap-1 overflow-x-auto px-1"
+        className="no-scrollbar -mx-1 flex flex-wrap items-stretch gap-1 px-1 sm:flex-nowrap sm:overflow-x-auto"
       >
-        {MULTI_STACK_STEPS.map((step, index) => {
-          const isActive = activeStep === step.id;
+        {steps.map((step, index) => {
+          const isActive = activeStep === step;
           const isDone = index < activeStepIndex;
-          const summary = getStepSummary(step.id);
+          const summary = getStepSummary(step);
           return (
             <button
-              key={step.id}
+              key={step}
               type="button"
-              data-testid={`multi-step-${step.id}`}
+              data-testid={`multi-step-${step}`}
               aria-current={isActive ? "step" : undefined}
-              disabled={step.id !== "applications" && selectedRoles.length === 0}
-              onClick={() => onActiveStepChange(step.id)}
+              disabled={step !== "applications" && selectedRoles.length === 0}
+              onClick={() => onActiveStepChange(step)}
               className={cn(
-                "flex min-w-36 flex-1 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+                "flex cursor-pointer items-center gap-2.5 rounded-lg border px-2 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40 sm:min-w-36 sm:flex-1 sm:gap-3 sm:px-3 sm:py-2.5",
                 isActive
                   ? "border-foreground/30 bg-muted/40"
                   : "border-transparent hover:bg-muted/30",
@@ -2843,14 +2899,14 @@ function CreationModeComposer({
               >
                 {isDone ? <Check className="h-3 w-3" /> : index + 1}
               </span>
-              <span className="min-w-0">
+              <span className={cn("min-w-0", !isActive && "hidden sm:block")}>
                 <span
                   className={cn(
                     "block text-xs font-medium sm:text-[13px]",
                     isActive ? "text-foreground" : "text-muted-foreground",
                   )}
                 >
-                  {getMultiStepLabel(step.id)}
+                  {getMultiStepLabel(step)}
                 </span>
                 {summary && (
                   <span className="block truncate font-mono text-[10px] text-muted-foreground">
@@ -2865,88 +2921,24 @@ function CreationModeComposer({
 
       {activeStep === "applications" && (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
-              {m.builderComposerTitle()}
-            </h2>
-            {selectedRoles.length === 0 && (
-              <output className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-                {m.builderComposerChooseApplication()}
-              </output>
-            )}
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
+            {m.builderComposerTitle()}
+          </h2>
+          <div className="grid gap-4 md:grid-cols-3">
             {COMPOSER_APPLICATION_ROLES.map(renderApplicationTile)}
-            {renderApplicationTile("database")}
-          </div>
-          <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:14px_14px] px-4 pt-6 sm:px-6">
-            <div className="relative grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {[...COMPOSER_APPLICATION_ROLES, "database" as const].map((role) => {
-                const selection = getStepSelection(role);
-                return (
-                  <ComposerRolePreview
-                    key={role}
-                    role={role}
-                    selected={Boolean(selection)}
-                    toolId={selection?.toolId}
-                    toolName={selection?.toolName}
-                  />
-                );
-              })}
-            </div>
           </div>
         </div>
       )}
 
-      {activeStep === "configure" && (
-        <div className="space-y-5">
-          <div
-            role="tablist"
-            aria-label={m.builderComposerConfigure()}
-            className="flex flex-wrap gap-1.5"
-          >
-            {configurableRoles.map((role) => {
-              const Icon = COMPOSER_ROLE_ICONS[role];
-              const selection = getStepSelection(role);
-              const isActive = role === activeRole;
-              return (
-                <button
-                  key={role}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  data-testid={`multi-step-${role}`}
-                  onClick={() => setSelectedRole(role)}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors",
-                    isActive
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground",
-                  )}
-                >
-                  <Icon className="h-3.5 w-3.5 shrink-0" />
-                  <span className="font-medium">{getComposerRoleLabel(role)}</span>
-                  <span
-                    className={cn(
-                      "hidden font-mono text-[10px] sm:inline",
-                      isActive ? "text-background/70" : "text-muted-foreground/80",
-                    )}
-                  >
-                    {selection?.toolName ?? m.builderNone()}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <motion.div
-            key={activeRole}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-          >
-            {renderActiveStep()}
-          </motion.div>
-        </div>
+      {activeRole && (
+        <motion.div
+          key={activeRole}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+        >
+          {renderRoleStep(activeRole)}
+        </motion.div>
       )}
 
       {activeStep === "project" && (
@@ -2964,7 +2956,7 @@ function CreationModeComposer({
               m.builderComposerNativeToolchains()
             )}
           </span>
-          {configurableRoles.map((role) => {
+          {[...selectedRoles, "database" as const].map((role) => {
             const selection = getStepSelection(role);
             if (!selection) return null;
             return (
@@ -2985,18 +2977,134 @@ function CreationModeComposer({
       )}
 
       {activeStep === "review" && (
-        <div className="space-y-5">
-          <Suspense
-            fallback={
-              <Loader2 className="size-5 animate-spin" aria-label={m.builderComposerReview()} />
-            }
-          >
-            <ComposerProjectReview stack={stack} onEdit={editRole} />
-          </Suspense>
-          <Button variant="ghost" size="sm" onClick={() => onActiveStepChange("project")}>
-            <Settings className="h-3.5 w-3.5" />
-            {m.builderComposerEditProject()}
-          </Button>
+        <div
+          data-testid="multi-project-review"
+          className="mx-auto w-full max-w-3xl space-y-10 py-6 sm:py-10"
+        >
+          <div className="text-center">
+            <label
+              htmlFor="project-name"
+              className="group inline-flex max-w-full cursor-text items-center gap-3"
+            >
+              <input
+                id="project-name"
+                value={stack.projectName || ""}
+                onChange={(event) => onChange({ projectName: event.target.value })}
+                placeholder="my-app"
+                size={Math.max(6, (stack.projectName || "my-app").length)}
+                aria-label={m.builderProjectName()}
+                aria-invalid={projectNameError ? true : undefined}
+                className={cn(
+                  "min-w-0 max-w-full border-none bg-transparent p-0 text-center font-mono text-4xl font-semibold tracking-tight text-foreground outline-none placeholder:text-muted-foreground/40 sm:text-5xl",
+                  projectNameError && "text-destructive",
+                )}
+              />
+              <Pencil className="h-5 w-5 shrink-0 text-muted-foreground/40 transition-colors group-focus-within:text-foreground" />
+            </label>
+            {projectNameError && (
+              <p className="mt-2 text-xs text-destructive">{projectNameError}</p>
+            )}
+          </div>
+
+          <dl className="divide-y divide-border/60 border-y border-border/60">
+            {reviewApplications.map((application) => {
+              const Icon = COMPOSER_ROLE_ICONS[application.role];
+              return (
+                <div
+                  key={application.role}
+                  className="grid gap-2 py-4 sm:grid-cols-[8rem_minmax(0,1fr)_auto] sm:items-start sm:gap-6"
+                >
+                  <dt className="flex items-center gap-2 pt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <Icon className="h-3.5 w-3.5" />
+                    {application.label}
+                  </dt>
+                  <dd className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="inline-flex items-center gap-2 text-base font-semibold">
+                        <TechIcon
+                          techId={application.tool.toolId}
+                          name={application.tool.toolName}
+                          className="h-5 w-5"
+                        />
+                        {application.tool.toolName}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {application.tool.scopeLabel}
+                      </span>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {application.path}
+                      </span>
+                    </div>
+                    {application.capabilities.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                        {application.capabilities.map((capability) => (
+                          <span key={capability.key} className="inline-flex items-center gap-1.5">
+                            <TechIcon
+                              techId={capability.id}
+                              name={capability.name}
+                              className="h-3.5 w-3.5"
+                            />
+                            {capability.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </dd>
+                  <button
+                    type="button"
+                    aria-label={`${m.builderComposerEdit()} ${application.label}`}
+                    onClick={() => onActiveStepChange(application.role)}
+                    className="hidden h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground sm:flex"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+            <div className="grid gap-2 py-4 sm:grid-cols-[8rem_minmax(0,1fr)_auto] sm:items-start sm:gap-6">
+              <dt className="flex items-center gap-2 pt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                <Settings className="h-3.5 w-3.5" />
+                {m.builderComposerProject()}
+              </dt>
+              <dd className="min-w-0">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-base">
+                  {composerUsesJavaScript(stack.stackPartSpecs) ? (
+                    <span className="font-semibold">
+                      {stack.packageManager} · {m.builderComposerJsWorkspace()}
+                    </span>
+                  ) : (
+                    <span className="font-semibold">{m.builderComposerNativeToolchains()}</span>
+                  )}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                  {reviewLanguages.map((language) => (
+                    <span key={language.label} className="inline-flex items-center gap-1.5">
+                      <TechIcon
+                        techId={"techId" in language ? language.techId : undefined}
+                        icon={"icon" in language ? language.icon : undefined}
+                        name={language.label}
+                        className="h-3.5 w-3.5"
+                      />
+                      {language.label}
+                    </span>
+                  ))}
+                </div>
+              </dd>
+              <button
+                type="button"
+                aria-label={`${m.builderComposerEdit()} ${m.builderComposerProject()}`}
+                onClick={() => onActiveStepChange("project")}
+                className="hidden h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground sm:flex"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </dl>
+
+          <div className="space-y-4">
+            {commandBar}
+            <div className="flex flex-wrap justify-center gap-2">{reviewActions}</div>
+          </div>
         </div>
       )}
     </section>
@@ -3186,13 +3294,12 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     }
     return lookup;
   }, [displayedSections]);
-  const multiActiveStepIndex = Math.max(
-    0,
-    MULTI_STACK_STEPS.findIndex((step) => step.id === multiActiveStep),
-  );
+  const multiSteps = useMemo(() => getMultiStackSteps(stack), [stack]);
+  const activeMultiStep = multiSteps.includes(multiActiveStep) ? multiActiveStep : "applications";
+  const multiActiveStepIndex = multiSteps.indexOf(activeMultiStep);
   const isMultiMode = stack.stackMode === "multi";
-  const isFinalMultiStep = multiActiveStepIndex >= MULTI_STACK_STEPS.length - 1;
-  const isMultiCreationInProgress = isMultiMode && viewMode === "command";
+  const isFinalMultiStep = multiActiveStepIndex >= multiSteps.length - 1;
+  const isMultiSummaryStep = isMultiMode && isFinalMultiStep;
   const builderSearchScope = getBuilderSearchScope(stack.ecosystem, stack.javaLanguage);
   const builderSearchEcosystemName =
     BUILDER_ECOSYSTEMS.find((ecosystem) => ecosystem.id === builderSearchScope)?.name ??
@@ -3293,7 +3400,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
         }
         // Toggling applications on the first composer step cascades dependent
         // options to "none"; those adjustments are expected, not worth a toast.
-        const isChoosingApplications = isMultiMode && multiActiveStep === "applications";
+        const isChoosingApplications = isMultiMode && activeMultiStep === "applications";
         startTransition(() => {
           if (
             !suppressCompatibilityToastRef.current &&
@@ -3323,7 +3430,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     compatibilityAnalysis.changes,
     evidenceInventory,
     isMultiMode,
-    multiActiveStep,
+    activeMultiStep,
     setStack,
   ]);
 
@@ -3471,7 +3578,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   };
 
   const getCompatibilityStackForCategory = (category: keyof typeof TECH_OPTIONS): StackState => {
-    if (stack.stackMode !== "multi" || multiActiveStep !== "project") return stack;
+    if (stack.stackMode !== "multi" || activeMultiStep !== "project") return stack;
     if (graphSelection.backend === "none") return stack;
 
     const backendCategories = getGraphBackendAdvancedCategoryOrder(graphSelection.backendEcosystem);
@@ -3498,16 +3605,9 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   };
 
   const handleMultiPreviousStep = () => {
-    const previousStep = MULTI_STACK_STEPS[multiActiveStepIndex - 1];
+    const previousStep = multiSteps[multiActiveStepIndex - 1];
     if (previousStep) {
-      handleMultiActiveStepChange(previousStep.id);
-    }
-  };
-
-  const handleMultiNextStep = () => {
-    const nextStep = MULTI_STACK_STEPS[multiActiveStepIndex + 1];
-    if (nextStep) {
-      handleMultiActiveStepChange(nextStep.id);
+      handleMultiActiveStepChange(previousStep);
     }
   };
 
@@ -3787,6 +3887,133 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
         : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
     );
 
+  const multiReviewCommandBar = isMultiSummaryStep && (
+    <>
+      <div
+        data-testid="multi-command-bar"
+        className="flex h-12 items-center gap-2 rounded-[14px] border border-transparent bg-[#18181B] pr-1.5 pl-2 font-mono text-[12.5px] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] dark:border-white/10 dark:bg-[#1a1a1a]"
+      >
+        <button
+          type="button"
+          data-testid="multi-step-back"
+          aria-label={m.builderPreviousStep()}
+          onClick={handleMultiPreviousStep}
+          className="flex h-9 shrink-0 cursor-pointer items-center gap-1 rounded-[9px] px-2.5 text-[11.5px] font-medium text-[#FAFAF7] transition-colors hover:bg-white/10"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span className="hidden min-[420px]:inline">{m.builderBack()}</span>
+        </button>
+        <span className="mx-0.5 h-5 w-px shrink-0 bg-white/10" aria-hidden="true" />
+        <span className="shrink-0 font-medium text-[#C6E853] select-none">$</span>
+        <section
+          aria-label={m.docsSectionCli()}
+          tabIndex={0}
+          className="no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap text-[rgba(250,250,247,0.88)]"
+        >
+          <code data-testid="command-output">{command}</code>
+        </section>
+        <button
+          type="button"
+          onClick={copyToClipboard}
+          disabled={!command}
+          data-analytics-event="builder_command_copied"
+          data-analytics-source="builder_multi"
+          aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
+          className="border-beam inline-flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] p-px text-[11.5px] font-semibold text-[#2A3303] shadow-[0_0_24px_rgba(198,232,83,0.22)] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48"
+        >
+          <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
+            {copied ? <Check className="h-3.5 w-3.5" /> : <ClipboardCopy className="h-3.5 w-3.5" />}
+            <span>{copied ? m.navCopied() : m.navCopy()}</span>
+          </span>
+        </button>
+      </div>
+    </>
+  );
+
+  const reviewActions = [
+    {
+      key: "preview",
+      testId: "multi-review-preview",
+      icon: Eye,
+      title: m.builderTabPreview(),
+      hint: m.builderComposerPreviewHint(),
+      onClick: () => setViewMode("preview"),
+    },
+    ...(runSupported
+      ? [
+          {
+            key: "run",
+            testId: "multi-review-run",
+            icon: Play,
+            title: m.builderTabRun(),
+            hint: m.builderComposerRunHint(),
+            onClick: () => setViewMode("run"),
+          },
+        ]
+      : []),
+    {
+      key: "download",
+      testId: "download-project-zip",
+      icon: isDownloadingProject ? Loader2 : Download,
+      title: isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip(),
+      hint: m.builderComposerDownloadHint(),
+      onClick: handleDownloadProject,
+      disabled:
+        isDownloadingProject ||
+        Boolean(commandError) ||
+        !hasComposerApplication(stack.stackPartSpecs),
+    },
+    {
+      key: "share",
+      testId: "multi-review-share",
+      icon: Link,
+      title: m.builderCopyShareLink(),
+      hint: m.builderComposerShareHint(),
+      onClick: async () => {
+        try {
+          await navigator.clipboard.writeText(getStackUrl());
+          toast.success(m.builderShareLinkCopied());
+        } catch {
+          toast.error(m.builderShareLinkFailed());
+        }
+      },
+    },
+  ];
+  const multiReviewActions =
+    isMultiSummaryStep &&
+    reviewActions.map((action) => (
+      <button
+        key={action.key}
+        type="button"
+        data-testid={action.testId}
+        aria-label={action.title}
+        title={action.hint}
+        onClick={action.onClick}
+        disabled={action.disabled}
+        className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-medium transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <action.icon
+          className={cn("h-4 w-4", action.icon === Loader2 && "animate-spin")}
+          aria-hidden
+        />
+        {action.title}
+      </button>
+    ));
+
+  const multiReviewReturn = isMultiMode && (
+    <div className="flex shrink-0 items-center border-b border-border/60 px-3 py-2">
+      <button
+        type="button"
+        data-testid="multi-review-return"
+        onClick={() => setViewMode("command")}
+        className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        {m.builderComposerBackToReview()}
+      </button>
+    </div>
+  );
+
   // ─── Render ─────────────────────────────────────────────────────────────
 
   return (
@@ -3930,367 +4157,372 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                 viewMode === "command" ? "" : "overflow-hidden",
               )}
             >
-              <div className="relative flex shrink-0 items-center gap-1 bg-fd-background py-2 pr-2 pl-2 sm:gap-2 sm:pr-4 sm:pl-0">
-                {/* ─── Project name field ─────────────────────────────────────
+              {!isMultiMode && (
+                <div className="relative flex shrink-0 items-center gap-1 bg-fd-background py-2 pr-2 pl-2 sm:gap-2 sm:pr-4 sm:pl-0">
+                  {/* ─── Project name field ─────────────────────────────────────
                     The wrapper mirrors the Preview/Run file-sidebar widths
                     (sm:w-48 md:w-56 lg:w-64) so its trailing separator lines
                     up with the sidebar border in the panels below. */}
-                <div className="flex min-w-0 shrink-0 items-center gap-2 sm:w-48 sm:pl-4 md:w-56 lg:w-64">
-                  <label
-                    htmlFor="project-name"
-                    className={cn(
-                      "group relative inline-flex h-8 w-32 min-w-0 cursor-text items-center gap-2 rounded-full border border-transparent bg-muted/55 px-3 transition-all duration-300 hover:bg-card focus-within:bg-card sm:w-auto sm:flex-1",
-                      projectNameError
-                        ? "border-destructive focus-within:border-destructive focus-within:shadow-[0_0_0_4px_rgba(239,68,68,0.12)]"
-                        : "border-border focus-within:border-foreground focus-within:shadow-[0_0_0_4px_rgba(24,24,27,0.05)] dark:focus-within:shadow-[0_0_0_4px_rgba(255,255,255,0.06)]",
-                    )}
-                  >
-                    <span className="sr-only">{m.builderProjectName()}</span>
-                    <input
-                      id="project-name"
-                      value={stack.projectName || ""}
-                      onChange={(e) => setStack({ projectName: e.target.value })}
-                      placeholder="my-app"
-                      aria-label={m.builderProjectName()}
-                      aria-invalid={projectNameError ? true : undefined}
-                      title={
-                        projectNameError ||
-                        ((stack.projectName || "my-app").includes(" ")
-                          ? m.builderWillSaveAs({
-                              name: (stack.projectName || "my-app").replace(/\s+/g, "-"),
-                            })
-                          : undefined)
-                      }
+                  <div className="flex min-w-0 shrink-0 items-center gap-2 sm:w-48 sm:pl-4 md:w-56 lg:w-64">
+                    <label
+                      htmlFor="project-name"
                       className={cn(
-                        "min-w-0 flex-1 border-none bg-transparent p-0 font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground/50",
-                        projectNameError && "text-destructive",
+                        "group relative inline-flex h-8 w-32 min-w-0 cursor-text items-center gap-2 rounded-full border border-transparent bg-muted/55 px-3 transition-all duration-300 hover:bg-card focus-within:bg-card sm:w-auto sm:flex-1",
+                        projectNameError
+                          ? "border-destructive focus-within:border-destructive focus-within:shadow-[0_0_0_4px_rgba(239,68,68,0.12)]"
+                          : "border-border focus-within:border-foreground focus-within:shadow-[0_0_0_4px_rgba(24,24,27,0.05)] dark:focus-within:shadow-[0_0_0_4px_rgba(255,255,255,0.06)]",
                       )}
+                    >
+                      <span className="sr-only">{m.builderProjectName()}</span>
+                      <input
+                        id="project-name"
+                        value={stack.projectName || ""}
+                        onChange={(e) => setStack({ projectName: e.target.value })}
+                        placeholder="my-app"
+                        aria-label={m.builderProjectName()}
+                        aria-invalid={projectNameError ? true : undefined}
+                        title={
+                          projectNameError ||
+                          ((stack.projectName || "my-app").includes(" ")
+                            ? m.builderWillSaveAs({
+                                name: (stack.projectName || "my-app").replace(/\s+/g, "-"),
+                              })
+                            : undefined)
+                        }
+                        className={cn(
+                          "min-w-0 flex-1 border-none bg-transparent p-0 font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground/50",
+                          projectNameError && "text-destructive",
+                        )}
+                      />
+                      <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-focus-within:text-foreground" />
+                    </label>
+
+                    <div
+                      className="hidden h-6 w-px shrink-0 bg-border sm:block"
+                      aria-hidden="true"
                     />
-                    <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-focus-within:text-foreground" />
-                  </label>
-
-                  <div className="hidden h-6 w-px shrink-0 bg-border sm:block" aria-hidden="true" />
-                </div>
-
-                <fieldset
-                  aria-label="Builder views"
-                  className="flex min-w-0 items-center gap-0.5 rounded-full border border-border/50 bg-muted/25 p-0.5"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("command")}
-                    data-testid="tab-builder"
-                    aria-pressed={viewMode === "command"}
-                    data-state={viewMode === "command" ? "active" : "inactive"}
-                    className={getToolbarTabClass(viewMode === "command")}
-                  >
-                    <Hammer className="h-3 w-3" />
-                    <span className="hidden min-[480px]:inline">{m.builderTabBuilder()}</span>
-                  </button>
-                  {!isMultiMode && (
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("presets")}
-                      data-testid="tab-presets"
-                      aria-pressed={viewMode === "presets"}
-                      data-state={viewMode === "presets" ? "active" : "inactive"}
-                      className={getToolbarTabClass(viewMode === "presets")}
-                    >
-                      <Zap className="h-3 w-3" />
-                      <span className="hidden min-[480px]:inline">{m.builderTabPresets()}</span>
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("preview")}
-                    data-testid="tab-preview"
-                    aria-pressed={viewMode === "preview"}
-                    data-state={viewMode === "preview" ? "active" : "inactive"}
-                    className={getToolbarTabClass(viewMode === "preview")}
-                  >
-                    <Eye className="h-3 w-3" />
-                    <span className="hidden min-[480px]:inline">{m.builderTabPreview()}</span>
-                  </button>
-                  {runSupported && (
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("run")}
-                      data-testid="tab-run"
-                      aria-pressed={viewMode === "run"}
-                      data-state={viewMode === "run" ? "active" : "inactive"}
-                      className={getToolbarTabClass(viewMode === "run")}
-                    >
-                      <Play className="h-3 w-3" />
-                      <span className="hidden lg:inline">{m.builderTabRun()}</span>
-                    </button>
-                  )}
-                  {!isMultiMode && (
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("saved")}
-                      data-testid="tab-saved"
-                      aria-pressed={viewMode === "saved"}
-                      data-state={viewMode === "saved" ? "active" : "inactive"}
-                      className={getToolbarTabClass(viewMode === "saved")}
-                    >
-                      <Bookmark className="h-3 w-3" />
-                      <span className="hidden min-[480px]:inline">{m.builderTabSaved()}</span>
-                    </button>
-                  )}
-                </fieldset>
-
-                {!isMultiMode && (
-                  <BuilderSearchField
-                    scope={builderSearchScope}
-                    placeholder={m.builderSearchPlaceholder({
-                      ecosystem: builderSearchEcosystemName,
-                    })}
-                    ariaLabel={m.builderSearchLabel({
-                      ecosystem: builderSearchEcosystemName,
-                    })}
-                    clearLabel={m.builderClearSearch()}
-                    emptyLabel={(query) => m.builderNoSearchResults({ query })}
-                    lookup={builderSearchData.lookup}
-                    onSelect={goToBuilderSearchResult}
-                    onFocus={() => setViewMode("command")}
-                  />
-                )}
-
-                <div className="relative shrink-0">
-                  <button
-                    type="button"
-                    onClick={handleDownloadProject}
-                    disabled={
-                      isDownloadingProject ||
-                      Boolean(commandError) ||
-                      (isMultiMode && !hasComposerApplication(stack.stackPartSpecs))
-                    }
-                    data-testid="download-project-zip"
-                    aria-label={
-                      isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()
-                    }
-                    title={
-                      isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()
-                    }
-                    className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-border/55 bg-muted/30 px-2.5 font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-all hover:border-foreground/30 hover:bg-background hover:text-foreground disabled:cursor-wait disabled:opacity-60"
-                  >
-                    {isDownloadingProject ? (
-                      <Loader2 className="size-3 animate-spin" aria-hidden />
-                    ) : (
-                      <Download className="size-3" aria-hidden />
-                    )}
-                    <span className="hidden xl:inline">
-                      {isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()}
-                    </span>
-                  </button>
-                </div>
-
-                <div
-                  className={cn(
-                    "flex items-center gap-1 rounded-full bg-muted/35 p-0.5",
-                    isMultiMode && "ml-auto",
-                  )}
-                >
-                  {/* Desktop action buttons */}
-                  <AnimatePresence initial={false}>
-                    {!isMultiMode && isSaveInputVisible && (
-                      <motion.div
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: 220, opacity: 1 }}
-                        exit={{ width: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
-                        className="hidden overflow-hidden sm:block"
-                      >
-                        <div className="flex items-center gap-1 pr-1">
-                          <Input
-                            value={savePresetName}
-                            onChange={(e) => setSavePresetName(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                saveCurrentStack(
-                                  savePresetName || stack.projectName || m.savedPresetFallback(),
-                                );
-                              }
-                              if (e.key === "Escape") {
-                                setIsSaveInputVisible(false);
-                                setSavePresetName("");
-                              }
-                            }}
-                            placeholder={stack.projectName || m.savedPresetFallback()}
-                            className="h-8 min-w-0"
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              saveCurrentStack(
-                                savePresetName || stack.projectName || m.savedPresetFallback(),
-                              )
-                            }
-                            className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                            title={m.builderSavePreset()}
-                          >
-                            <Check className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  <div className="hidden items-center gap-1">
-                    {!isMultiMode && (
-                      <>
-                        <Tooltip>
-                          <TooltipTrigger
-                            render={
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const nextVisible = !isSaveInputVisible;
-                                  setIsSaveInputVisible(nextVisible);
-                                  setSavePresetName(nextVisible ? stack.projectName || "" : "");
-                                }}
-                                title={m.builderSaveCurrentPreset()}
-                                aria-label={m.builderSaveCurrentPreset()}
-                                className={cn(
-                                  "cursor-pointer rounded-md p-1.5 transition-colors",
-                                  isSaveInputVisible
-                                    ? "bg-primary/15 text-primary"
-                                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                                )}
-                              />
-                            }
-                          >
-                            <Save className="h-3.5 w-3.5" />
-                          </TooltipTrigger>
-                          <TooltipContent>{m.builderSaveCurrentStackTooltip()}</TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger
-                            render={
-                              <button
-                                type="button"
-                                onClick={resetStack}
-                                title={m.builderResetDefaults()}
-                                aria-label={m.builderResetDefaults()}
-                                data-testid="btn-reset"
-                                className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                              />
-                            }
-                          >
-                            <RefreshCw className="h-3.5 w-3.5" />
-                          </TooltipTrigger>
-                          <TooltipContent>{m.builderResetTooltip()}</TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger
-                            render={
-                              <button
-                                type="button"
-                                onClick={getRandomStack}
-                                title={m.builderRandomTitle()}
-                                aria-label={m.builderRandomTitle()}
-                                data-testid="btn-random"
-                                className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                              />
-                            }
-                          >
-                            <Shuffle className="h-3.5 w-3.5" />
-                          </TooltipTrigger>
-                          <TooltipContent>{m.builderRandomTooltip()}</TooltipContent>
-                        </Tooltip>
-                      </>
-                    )}
-                    <ShareButton stackUrl={getStackUrl()} />
-                    {!isMultiMode && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={
-                            <button
-                              type="button"
-                              aria-label={m.builderSettings()}
-                              title={m.builderSettings()}
-                              className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                            />
-                          }
-                        >
-                          <Settings className="h-3.5 w-3.5" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-64 bg-fd-background">
-                          <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
                   </div>
 
-                  {/* Mobile three-dot menu */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      render={
-                        <button
-                          type="button"
-                          aria-label={m.builderMoreActions()}
-                          title={m.builderMoreActions()}
-                          className={cn(
-                            "flex items-center justify-center cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                          )}
-                        />
+                  <fieldset
+                    aria-label="Builder views"
+                    className="flex min-w-0 items-center gap-0.5 rounded-full border border-border/50 bg-muted/25 p-0.5"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("command")}
+                      data-testid="tab-builder"
+                      aria-pressed={viewMode === "command"}
+                      data-state={viewMode === "command" ? "active" : "inactive"}
+                      className={getToolbarTabClass(viewMode === "command")}
+                    >
+                      <Hammer className="h-3 w-3" />
+                      <span className="hidden min-[480px]:inline">{m.builderTabBuilder()}</span>
+                    </button>
+                    {!isMultiMode && (
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("presets")}
+                        data-testid="tab-presets"
+                        aria-pressed={viewMode === "presets"}
+                        data-state={viewMode === "presets" ? "active" : "inactive"}
+                        className={getToolbarTabClass(viewMode === "presets")}
+                      >
+                        <Zap className="h-3 w-3" />
+                        <span className="hidden min-[480px]:inline">{m.builderTabPresets()}</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("preview")}
+                      data-testid="tab-preview"
+                      aria-pressed={viewMode === "preview"}
+                      data-state={viewMode === "preview" ? "active" : "inactive"}
+                      className={getToolbarTabClass(viewMode === "preview")}
+                    >
+                      <Eye className="h-3 w-3" />
+                      <span className="hidden min-[480px]:inline">{m.builderTabPreview()}</span>
+                    </button>
+                    {runSupported && (
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("run")}
+                        data-testid="tab-run"
+                        aria-pressed={viewMode === "run"}
+                        data-state={viewMode === "run" ? "active" : "inactive"}
+                        className={getToolbarTabClass(viewMode === "run")}
+                      >
+                        <Play className="h-3 w-3" />
+                        <span className="hidden lg:inline">{m.builderTabRun()}</span>
+                      </button>
+                    )}
+                    {!isMultiMode && (
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("saved")}
+                        data-testid="tab-saved"
+                        aria-pressed={viewMode === "saved"}
+                        data-state={viewMode === "saved" ? "active" : "inactive"}
+                        className={getToolbarTabClass(viewMode === "saved")}
+                      >
+                        <Bookmark className="h-3 w-3" />
+                        <span className="hidden min-[480px]:inline">{m.builderTabSaved()}</span>
+                      </button>
+                    )}
+                  </fieldset>
+
+                  {!isMultiMode && (
+                    <BuilderSearchField
+                      scope={builderSearchScope}
+                      placeholder={m.builderSearchPlaceholder({
+                        ecosystem: builderSearchEcosystemName,
+                      })}
+                      ariaLabel={m.builderSearchLabel({
+                        ecosystem: builderSearchEcosystemName,
+                      })}
+                      clearLabel={m.builderClearSearch()}
+                      emptyLabel={(query) => m.builderNoSearchResults({ query })}
+                      lookup={builderSearchData.lookup}
+                      onSelect={goToBuilderSearchResult}
+                      onFocus={() => setViewMode("command")}
+                    />
+                  )}
+
+                  <div className="relative shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleDownloadProject}
+                      disabled={
+                        isDownloadingProject ||
+                        Boolean(commandError) ||
+                        (isMultiMode && !hasComposerApplication(stack.stackPartSpecs))
                       }
+                      data-testid="download-project-zip"
+                      aria-label={
+                        isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()
+                      }
+                      title={
+                        isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()
+                      }
+                      className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-border/55 bg-muted/30 px-2.5 font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-all hover:border-foreground/30 hover:bg-background hover:text-foreground disabled:cursor-wait disabled:opacity-60"
                     >
-                      <EllipsisVertical className="h-4 w-4" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      sideOffset={8}
-                      className="w-48 bg-fd-background"
-                    >
+                      {isDownloadingProject ? (
+                        <Loader2 className="size-3 animate-spin" aria-hidden />
+                      ) : (
+                        <Download className="size-3" aria-hidden />
+                      )}
+                      <span className="hidden xl:inline">
+                        {isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div
+                    className={cn(
+                      "flex items-center gap-1 rounded-full bg-muted/35 p-0.5",
+                      isMultiMode && "ml-auto",
+                    )}
+                  >
+                    {/* Desktop action buttons */}
+                    <AnimatePresence initial={false}>
+                      {!isMultiMode && isSaveInputVisible && (
+                        <motion.div
+                          initial={{ width: 0, opacity: 0 }}
+                          animate={{ width: 220, opacity: 1 }}
+                          exit={{ width: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: "easeInOut" }}
+                          className="hidden overflow-hidden sm:block"
+                        >
+                          <div className="flex items-center gap-1 pr-1">
+                            <Input
+                              value={savePresetName}
+                              onChange={(e) => setSavePresetName(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  saveCurrentStack(
+                                    savePresetName || stack.projectName || m.savedPresetFallback(),
+                                  );
+                                }
+                                if (e.key === "Escape") {
+                                  setIsSaveInputVisible(false);
+                                  setSavePresetName("");
+                                }
+                              }}
+                              placeholder={stack.projectName || m.savedPresetFallback()}
+                              className="h-8 min-w-0"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                saveCurrentStack(
+                                  savePresetName || stack.projectName || m.savedPresetFallback(),
+                                )
+                              }
+                              className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              title={m.builderSavePreset()}
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    <div className="hidden items-center gap-1">
                       {!isMultiMode && (
                         <>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              saveCurrentStack(stack.projectName || m.savedPresetFallback());
-                            }}
-                          >
-                            <Save className="h-3.5 w-3.5" />
-                            {m.builderSavePreset()}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={resetStack}>
-                            <RefreshCw className="h-3.5 w-3.5" />
-                            {m.builderResetDefaults()}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={getRandomStack}>
-                            <Shuffle className="h-3.5 w-3.5" />
-                            {m.builderRandomTitle()}
-                          </DropdownMenuItem>
+                          <Tooltip>
+                            <TooltipTrigger
+                              render={
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextVisible = !isSaveInputVisible;
+                                    setIsSaveInputVisible(nextVisible);
+                                    setSavePresetName(nextVisible ? stack.projectName || "" : "");
+                                  }}
+                                  title={m.builderSaveCurrentPreset()}
+                                  aria-label={m.builderSaveCurrentPreset()}
+                                  className={cn(
+                                    "cursor-pointer rounded-md p-1.5 transition-colors",
+                                    isSaveInputVisible
+                                      ? "bg-primary/15 text-primary"
+                                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                                  )}
+                                />
+                              }
+                            >
+                              <Save className="h-3.5 w-3.5" />
+                            </TooltipTrigger>
+                            <TooltipContent>{m.builderSaveCurrentStackTooltip()}</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger
+                              render={
+                                <button
+                                  type="button"
+                                  onClick={resetStack}
+                                  title={m.builderResetDefaults()}
+                                  aria-label={m.builderResetDefaults()}
+                                  data-testid="btn-reset"
+                                  className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                />
+                              }
+                            >
+                              <RefreshCw className="h-3.5 w-3.5" />
+                            </TooltipTrigger>
+                            <TooltipContent>{m.builderResetTooltip()}</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger
+                              render={
+                                <button
+                                  type="button"
+                                  onClick={getRandomStack}
+                                  title={m.builderRandomTitle()}
+                                  aria-label={m.builderRandomTitle()}
+                                  data-testid="btn-random"
+                                  className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                />
+                              }
+                            >
+                              <Shuffle className="h-3.5 w-3.5" />
+                            </TooltipTrigger>
+                            <TooltipContent>{m.builderRandomTooltip()}</TooltipContent>
+                          </Tooltip>
                         </>
                       )}
-                      <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
-                        <FileImport className="h-3.5 w-3.5" />
-                        Import bts.jsonc
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={async () => {
-                          try {
-                            await navigator.clipboard.writeText(getStackUrl());
-                            toast.success(m.builderShareLinkCopied());
-                          } catch {
-                            toast.error(m.builderShareLinkFailed());
-                          }
-                        }}
-                      >
-                        <Link className="h-3.5 w-3.5" />
-                        {m.builderCopyShareLink()}
-                      </DropdownMenuItem>
+                      <ShareButton stackUrl={getStackUrl()} />
                       {!isMultiMode && (
-                        <div className="mt-1 border-border/60 border-t pt-1">
-                          <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            render={
+                              <button
+                                type="button"
+                                aria-label={m.builderSettings()}
+                                title={m.builderSettings()}
+                                className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              />
+                            }
+                          >
+                            <Settings className="h-3.5 w-3.5" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-64 bg-fd-background">
+                            <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    </div>
+
+                    {/* Mobile three-dot menu */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <button
+                            type="button"
+                            aria-label={m.builderMoreActions()}
+                            title={m.builderMoreActions()}
+                            className={cn(
+                              "flex items-center justify-center cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                            )}
+                          />
+                        }
+                      >
+                        <EllipsisVertical className="h-4 w-4" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        sideOffset={8}
+                        className="w-48 bg-fd-background"
+                      >
+                        {!isMultiMode && (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                saveCurrentStack(stack.projectName || m.savedPresetFallback());
+                              }}
+                            >
+                              <Save className="h-3.5 w-3.5" />
+                              {m.builderSavePreset()}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={resetStack}>
+                              <RefreshCw className="h-3.5 w-3.5" />
+                              {m.builderResetDefaults()}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={getRandomStack}>
+                              <Shuffle className="h-3.5 w-3.5" />
+                              {m.builderRandomTitle()}
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                        <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+                          <FileImport className="h-3.5 w-3.5" />
+                          Import bts.jsonc
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(getStackUrl());
+                              toast.success(m.builderShareLinkCopied());
+                            } catch {
+                              toast.error(m.builderShareLinkFailed());
+                            }
+                          }}
+                        >
+                          <Link className="h-3.5 w-3.5" />
+                          {m.builderCopyShareLink()}
+                        </DropdownMenuItem>
+                        {!isMultiMode && (
+                          <div className="mt-1 border-border/60 border-t pt-1">
+                            <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
+                          </div>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {viewMode === "command" ? (
-                <div className="p-3 pb-24 sm:p-4 sm:pb-28">
+                <div className={cn("p-3 sm:p-4", !isMultiMode && "pb-24 sm:pb-28")}>
                   {commandError && (
                     <p
                       role="alert"
@@ -4302,13 +4534,22 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                   <CreationModeComposer
                     stack={stack}
                     onChange={setStack}
-                    activeStep={multiActiveStep}
+                    activeStep={activeMultiStep}
                     onActiveStepChange={handleMultiActiveStepChange}
+                    projectNameError={projectNameError}
+                    commandBar={multiReviewCommandBar}
+                    reviewActions={multiReviewActions}
                   />
+
+                  {isMultiMode && !isMultiSummaryStep && (
+                    <section aria-label={m.docsSectionCli()} className="sr-only">
+                      <code data-testid="command-output">{command}</code>
+                    </section>
+                  )}
 
                   {/* Grouped sections - each section renders its categories as
                       subsections. In multi mode these belong to the Project step. */}
-                  {(stack.stackMode !== "multi" || multiActiveStep === "project") &&
+                  {(stack.stackMode !== "multi" || activeMultiStep === "project") &&
                     displayedSections.map((builderSection) => {
                       const visibleCategories = builderSection.categories.filter(
                         (categoryKey) =>
@@ -4905,10 +5146,11 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                       );
                     })}
 
-                  <div className="h-10" />
+                  {!isMultiMode && <div className="h-10" />}
                 </div>
               ) : viewMode === "preview" ? (
-                <div className="min-h-0 flex-1 overflow-hidden">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  {multiReviewReturn}
                   <Suspense
                     fallback={
                       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
@@ -4924,7 +5166,8 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                   </Suspense>
                 </div>
               ) : viewMode === "run" ? (
-                <div className="min-h-0 flex-1 overflow-hidden">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  {multiReviewReturn}
                   <Suspense
                     fallback={
                       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
@@ -4983,7 +5226,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
             tucking behind its copy button) and the button itself flies to the
             run sidebar via the shared "bf-copy-command" layoutId. */}
         <AnimatePresence initial={false}>
-          {viewMode !== "run" && (
+          {viewMode !== "run" && !isMultiMode && (
             <motion.div
               key="floating-command-bar"
               initial={{ opacity: 0 }}
@@ -5034,33 +5277,8 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                       default: { duration: 0.2, delay: 0.52 },
                     },
                   }}
-                  className={cn(
-                    "ml-auto flex h-12 min-w-0 flex-1 items-center overflow-hidden rounded-[14px] border border-transparent bg-[#18181B] font-mono text-[12.5px] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] dark:border-white/10 dark:bg-[#1a1a1a]",
-                    isMultiCreationInProgress ? "gap-2 pr-1.5 pl-2" : "gap-2.5 pr-1.5 pl-4",
-                  )}
+                  className="ml-auto flex h-12 min-w-0 flex-1 items-center gap-2.5 overflow-hidden rounded-[14px] border border-transparent bg-[#18181B] pr-1.5 pl-4 font-mono text-[12.5px] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] dark:border-white/10 dark:bg-[#1a1a1a]"
                 >
-                  {isMultiCreationInProgress && (
-                    <>
-                      {multiActiveStepIndex > 0 && (
-                        <button
-                          type="button"
-                          data-testid="multi-step-back"
-                          aria-label={m.builderPreviousStep()}
-                          onClick={handleMultiPreviousStep}
-                          className="flex h-9 shrink-0 cursor-pointer items-center gap-1 rounded-[9px] px-2.5 text-[11.5px] font-medium text-[#FAFAF7] transition-colors hover:bg-white/10"
-                        >
-                          <ArrowLeft className="h-3.5 w-3.5" />
-                          <span className="hidden min-[420px]:inline">{m.builderBack()}</span>
-                        </button>
-                      )}
-                      {!isFinalMultiStep && (
-                        <span className="shrink-0 text-[11.5px] font-semibold text-[#C6E853] select-none">
-                          {multiActiveStepIndex + 1}/{MULTI_STACK_STEPS.length}
-                        </span>
-                      )}
-                      <span className="mx-0.5 h-5 w-px shrink-0 bg-white/10" aria-hidden="true" />
-                    </>
-                  )}
                   <motion.span
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.95 } }}
@@ -5072,80 +5290,34 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                   <section
                     aria-label={m.docsSectionCli()}
                     tabIndex={0}
-                    className={cn(
-                      "no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap",
-                      isMultiCreationInProgress && !isFinalMultiStep
-                        ? "text-[11px] text-[rgba(250,250,247,0.5)]"
-                        : "text-[12.5px] text-[rgba(250,250,247,0.88)]",
-                    )}
+                    className="no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap text-[12.5px] text-[rgba(250,250,247,0.88)]"
                   >
                     <code data-testid="command-output">{command}</code>
                   </section>
-                  {isMultiCreationInProgress && !isFinalMultiStep ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={copyToClipboard}
-                        disabled={!command}
-                        data-analytics-event="builder_command_copied"
-                        data-analytics-source="builder_partial"
-                        aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
-                        title={m.builderCopyPartialCommand()}
-                        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-[rgba(250,250,247,0.7)] transition-colors hover:bg-white/10 hover:text-[#FAFAF7]"
-                      >
-                        {copied ? (
-                          <Check className="h-3.5 w-3.5" />
-                        ) : (
-                          <ClipboardCopy className="h-3.5 w-3.5" />
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        data-testid="multi-step-next"
-                        disabled={!hasComposerApplication(stack.stackPartSpecs)}
-                        onClick={handleMultiNextStep}
-                        className="border-beam disabled:cursor-not-allowed disabled:opacity-40 flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] p-px text-[11.5px] font-semibold text-[#2A3303] shadow-[0_0_24px_rgba(198,232,83,0.22)] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48"
-                      >
-                        <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
-                          <span className="hidden min-[420px]:inline">{m.builderNextStep()}</span>
-                          <span className="min-[420px]:hidden">{m.builderNext()}</span>
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </span>
-                      </button>
-                    </>
-                  ) : (
-                    <motion.button
-                      layoutId="bf-copy-command"
-                      layout
-                      style={{ zIndex: 70 }}
-                      transition={{
-                        layout: { type: "spring", stiffness: 150, damping: 25, delay: 0.05 },
-                      }}
-                      type="button"
-                      onClick={copyToClipboard}
-                      disabled={!command}
-                      data-analytics-event="builder_command_copied"
-                      data-analytics-source={isMultiMode ? "builder_multi" : "builder_solo"}
-                      aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
-                      className={cn(
-                        "inline-flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] p-px text-[11.5px] font-semibold text-[#2A3303] transition-transform hover:scale-[1.02] min-[420px]:w-40 sm:w-48",
-                        // The animated gradient border + glow is a multi-ecosystem
-                        // affordance; solo keeps a plain solid lime copy button.
-                        isMultiMode
-                          ? "border-beam bg-[linear-gradient(90deg,#C6E853,#2f7df4,#C6E853)] bg-[length:200%_100%] shadow-[0_0_24px_rgba(198,232,83,0.22)]"
-                          : "bg-[#C6E853] hover:bg-[#d2ee72]",
+                  <motion.button
+                    layoutId="bf-copy-command"
+                    layout
+                    style={{ zIndex: 70 }}
+                    transition={{
+                      layout: { type: "spring", stiffness: 150, damping: 25, delay: 0.05 },
+                    }}
+                    type="button"
+                    onClick={copyToClipboard}
+                    disabled={!command}
+                    data-analytics-event="builder_command_copied"
+                    data-analytics-source="builder_solo"
+                    aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
+                    className="inline-flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[#C6E853] p-px text-[11.5px] font-semibold text-[#2A3303] transition-transform hover:scale-[1.02] hover:bg-[#d2ee72] min-[420px]:w-40 sm:w-48"
+                  >
+                    <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
+                      {copied ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : (
+                        <ClipboardCopy className="h-3.5 w-3.5" />
                       )}
-                    >
-                      <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
-                        {copied ? (
-                          <Check className="h-3.5 w-3.5" />
-                        ) : (
-                          <ClipboardCopy className="h-3.5 w-3.5" />
-                        )}
-                        <span>{copied ? m.navCopied() : m.navCopy()}</span>
-                      </span>
-                    </motion.button>
-                  )}
+                      <span>{copied ? m.navCopied() : m.navCopy()}</span>
+                    </span>
+                  </motion.button>
                 </motion.div>
                 {viewMode === "command" && (
                   <button

@@ -1,5 +1,5 @@
 import { ECOSYSTEMS, PRESET_CATEGORIES, TECH_OPTIONS } from "@/lib/stack/constant";
-import { computeSiUrl, ICON_REGISTRY, type IconConfig } from "@/lib/stack/tech-icons";
+import { getSiUrl, ICON_REGISTRY, type IconConfig } from "@/lib/stack/tech-icons";
 
 type IconTarget = {
   owner: string;
@@ -21,7 +21,7 @@ function addConfigTarget(targets: Map<string, Set<string>>, owner: string, confi
   if (!config) return;
 
   if (config.type === "si") {
-    addTarget(targets, owner, computeSiUrl(config.slug, config.hex, false, config.fixedColor));
+    addTarget(targets, owner, getSiUrl(config.slug, config.hex));
     return;
   }
 

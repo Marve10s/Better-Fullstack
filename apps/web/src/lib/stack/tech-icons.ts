@@ -24,35 +24,35 @@ type LocalConfig = {
 };
 export type IconConfig = SiConfig | LocalConfig;
 
-/**
- * For a Simple Icons CDN icon, choose the right colour given the current theme.
- * Dark icons (low luminance) become white on dark backgrounds.
- * Near-white icons get darkened slightly on light backgrounds.
- */
-function computeColor(brandHex: string, isDark: boolean): string {
-  const r = parseInt(brandHex.slice(0, 2), 16) / 255;
-  const g = parseInt(brandHex.slice(2, 4), 16) / 255;
-  const b = parseInt(brandHex.slice(4, 6), 16) / 255;
-  const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  if (isDark && L < 0.25) return "FFFFFF"; // dark icon on dark bg → white
-  if (!isDark && L > 0.75) return "1a1a1a"; // near-white icon on light bg → near-black
-  return brandHex;
+function luminance(hex: string): number {
+  const r = parseInt(hex.slice(0, 2), 16) / 255;
+  const g = parseInt(hex.slice(2, 4), 16) / 255;
+  const b = parseInt(hex.slice(4, 6), 16) / 255;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
-export function computeSiUrl(
-  slug: string,
-  hex: string,
-  isDark: boolean,
-  fixedColor = false,
-): string {
-  const color = fixedColor ? hex : computeColor(hex, isDark);
-  return `https://cdn.simpleicons.org/${slug}/${color}`;
+export function getSiUrl(slug: string, hex: string): string {
+  return `https://cdn.simpleicons.org/${slug}/${hex}`;
 }
 
 export function getInvertClass(needsInvert?: "dark" | "light" | "both"): string {
   if (needsInvert === "dark") return "invert-0 dark:invert";
   if (needsInvert === "light") return "invert dark:invert-0";
   return "";
+}
+
+export function getBrandInvertClass(hex: string): string {
+  const L = luminance(hex);
+  if (L < 0.25) return "dark:brightness-0 dark:invert";
+  if (L > 0.75) return "brightness-0 dark:brightness-100";
+  return "";
+}
+
+const SI_URL_PATTERN = /^https:\/\/cdn\.simpleicons\.org\/[^/]+(?:\/([0-9a-fA-F]{6}))?$/;
+
+export function getSiUrlInvertClass(url: string): string {
+  const hex = SI_URL_PATTERN.exec(url)?.[1];
+  return hex ? getBrandInvertClass(hex) : "";
 }
 
 // ---------------------------------------------------------------------------
@@ -196,6 +196,14 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   // ─── Native Frontend (Expo) ────────────────────────────────────────────────
   "native-bare": { type: "si", slug: "expo", hex: "000020" },
   "native-uniwind": { type: "si", slug: "expo", hex: "000020" },
+  "expo-router": { type: "si", slug: "expo", hex: "000020" },
+  "expo-notifications": { type: "si", slug: "expo", hex: "000020" },
+  "react-navigation": { type: "si", slug: "react", hex: "61DAFB" },
+  "react-vite": { type: "si", slug: "react", hex: "61DAFB" },
+  uniwind: { type: "si", slug: "tailwindcss", hex: "06B6D4" },
+  "self-vinext": { type: "si", slug: "vuedotjs", hex: "4FC08D" },
+  "self-svelte": { type: "si", slug: "svelte", hex: "FF3E00" },
+  "go-better-auth": { type: "si", slug: "go", hex: "00ADD8" },
   "native-unistyles": { type: "si", slug: "expo", hex: "000020" },
 
   // ─── Astro Integration ─────────────────────────────────────────────────────
@@ -210,7 +218,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
 
   // ─── Backend ───────────────────────────────────────────────────────────────
   hono: { type: "local", src: "/icon/hono.svg" },
-  elysia: { type: "local", src: "/icon/elysia.svg" },
+  elysia: { type: "local", src: "/icon/elysia.svg", needsInvert: "dark" },
   express: { type: "si", slug: "express", hex: "000000" },
   fastify: { type: "si", slug: "fastify", hex: "000000" },
   nestjs: { type: "si", slug: "nestjs", hex: "E0234E" },

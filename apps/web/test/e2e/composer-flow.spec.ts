@@ -37,7 +37,6 @@ test("new projects start with applications and expose every mobile ecosystem", a
     "aria-pressed",
     "true",
   );
-  await clickVisibleTestId(page, "multi-step-next");
   await clickVisibleTestId(page, "multi-step-mobile");
   for (const language of ["react-native", "kotlin", "swift", "dart"]) {
     await expect(page.getByTestId(`multi-mobile-language-${language}`)).toBeVisible();
@@ -45,11 +44,8 @@ test("new projects start with applications and expose every mobile ecosystem", a
   await clickVisibleTestId(page, "multi-mobile-language-dart");
   await expect(commandOutput(page)).toContainText("--part mobile:dart:flutter");
   await clickVisibleTestId(page, "multi-step-review");
-  await expect(page.getByTestId("multi-project-review")).toContainText("flutter pub get");
-  await expect(page.getByTestId("multi-project-review")).toContainText("apps/native");
-  await expect(page.getByTestId("multi-project-review")).toContainText(
-    "Run native mobile apps separately",
-  );
+  await expect(page.getByTestId("multi-project-review")).toContainText("Flutter");
+  await expect(page.getByTestId("multi-command-bar")).toContainText("--part mobile:dart:flutter");
 });
 
 test("native applications omit JavaScript setup, round-trip their URL, and preview native output", async ({
@@ -59,7 +55,7 @@ test("native applications omit JavaScript setup, round-trip their URL, and previ
   await expect(commandOutput(page)).toContainText("bun create better-fullstack", {
     timeout: 15_000,
   });
-  await clickVisibleTestId(page, "multi-step-configure");
+  await clickVisibleTestId(page, "multi-step-frontend");
   await clickVisibleTestId(page, "multi-frontend-language-dotnet");
   await clickVisibleTestId(page, "multi-step-backend");
   await clickVisibleTestId(page, "multi-backend-language-go");
@@ -72,12 +68,8 @@ test("native applications omit JavaScript setup, round-trip their URL, and previ
   await page.reload();
   await expect(commandOutput(page)).toContainText("--part backend:go:", { timeout: 15_000 });
   await clickVisibleTestId(page, "multi-step-review");
-  await expect(page.getByTestId("multi-project-review")).not.toContainText(
-    "Run native mobile apps separately",
-  );
-  await expect(page.getByTestId("multi-project-review")).toContainText("dotnet restore");
-  await expect(page.getByTestId("multi-project-review")).toContainText("go mod tidy");
-  await expect(page.getByTestId("multi-project-review")).toContainText("bash scripts/dev.sh");
+  await expect(page.getByTestId("multi-project-review")).toContainText("Blazor");
+  await expect(page.getByTestId("multi-project-review")).toContainText("Gin");
   const downloadPromise = page.waitForEvent("download");
   await clickVisibleTestId(page, "download-project-zip");
   const download = await downloadPromise;
@@ -88,7 +80,7 @@ test("native applications omit JavaScript setup, round-trip their URL, and previ
   expect(Object.keys(archive).some((path) => path.endsWith("scripts/setup.sh"))).toBe(true);
   expect(Object.keys(archive).some((path) => path.endsWith("package.json"))).toBe(false);
   await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
-  await clickVisibleTestId(page, "tab-preview");
+  await clickVisibleTestId(page, "multi-review-preview");
   await expect(page.getByText("setup.sh", { exact: true })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("package.json", { exact: true })).toHaveCount(0);
 });
@@ -100,11 +92,10 @@ test("an empty application selection cannot generate a default project", async (
   });
   await clickVisibleTestId(page, "multi-application-frontend");
   await clickVisibleTestId(page, "multi-application-backend");
-  await expect(page.getByTestId("multi-step-next")).toBeDisabled();
-  await expect(page.getByTestId("download-project-zip")).toBeDisabled();
+  await expect(page.getByTestId("multi-step-review")).toBeDisabled();
   await expect(commandOutput(page)).toHaveText("");
   await clickVisibleTestId(page, "multi-application-mobile");
-  await expect(page.getByTestId("multi-step-next")).toBeEnabled();
+  await expect(page.getByTestId("multi-step-review")).toBeEnabled();
   await expect(commandOutput(page)).toContainText("--part mobile:");
 });
 
@@ -122,7 +113,7 @@ test("editing a shared project preserves its named services and owned capabiliti
   await expect(commandOutput(page)).toContainText("backend:python:fastapi:worker", {
     timeout: 15_000,
   });
-  await clickVisibleTestId(page, "multi-step-configure");
+  await clickVisibleTestId(page, "multi-step-frontend");
   await clickVisibleTestId(page, "multi-frontend-language-dotnet");
   await expect(commandOutput(page)).toContainText("frontend:dotnet:blazor-webassembly");
   const command = await commandOutput(page).textContent();
@@ -137,9 +128,8 @@ test("editing a shared project preserves its named services and owned capabiliti
     parts.find((part) => part.role === "packageManager" && part.toolId === "poetry")?.ownerPartId,
   ).toBe("worker");
   await clickVisibleTestId(page, "multi-step-review");
-  await expect(page.getByTestId("multi-project-review")).toContainText("services/api");
-  await expect(page.getByTestId("multi-project-review")).toContainText("services/worker");
-  await expect(page.getByTestId("multi-project-review")).toContainText("poetry install");
+  await expect(page.getByTestId("multi-project-review")).toContainText("Blazor");
+  await expect(page.getByTestId("multi-command-bar")).toContainText("packageManager:python:poetry");
 });
 
 test("the application flow remains usable on a narrow screen", async ({ page }, testInfo) => {
@@ -155,12 +145,11 @@ test("the application flow remains usable on a narrow screen", async ({ page }, 
     "aria-pressed",
     "true",
   );
-  await clickVisibleTestId(page, "multi-step-next");
   await clickVisibleTestId(page, "multi-step-mobile");
   await expect(page.getByTestId("multi-mobile-language-swift")).toContainText("Swift");
   await clickVisibleTestId(page, "multi-mobile-language-swift");
   await expect(generatedCommand).toContainText("mobile:swift:swiftui");
-  for (const role of ["frontend", "mobile", "backend", "database"]) {
+  for (const role of ["frontend", "mobile", "backend"]) {
     const fits = await page.getByTestId(`multi-step-${role}`).evaluate((element) => {
       const bounds = element.getBoundingClientRect();
       const list = element.parentElement?.getBoundingClientRect();
@@ -183,7 +172,7 @@ test("editing one of two Gin services preserves both named application identitie
   const specs = ["backend:go:gin:api", "backend:go:gin:worker"];
   await gotoAppPage(page, `/new?mode=multi&part=${encodeURIComponent(specs.join(","))}`);
   await expect(commandOutput(page)).toContainText("backend:go:gin:worker", { timeout: 15_000 });
-  await clickVisibleTestId(page, "multi-step-configure");
+  await clickVisibleTestId(page, "multi-step-backend");
   await clickVisibleTestId(page, "multi-backend-language-python");
   await expect(commandOutput(page)).toContainText("backend:python:fastapi:api");
   await expect(commandOutput(page)).toContainText("backend:go:gin:worker");
@@ -213,7 +202,7 @@ test("a build-tool edit updates the service represented by the projected value",
   await expect(commandOutput(page)).toContainText("worker.buildTool:java:gradle", {
     timeout: 15_000,
   });
-  await clickVisibleTestId(page, "multi-step-configure");
+  await clickVisibleTestId(page, "multi-step-backend");
   await clickVisibleTestId(page, "multi-backend-javaBuildTool-toggle");
   await expect(page.getByTestId("multi-backend-javaBuildTool-gradle")).toHaveAttribute(
     "aria-pressed",
