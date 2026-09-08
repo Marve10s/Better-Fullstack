@@ -1,3 +1,5 @@
+import type { VirtualNode } from "@better-fullstack/template-generator";
+
 import { cliInputToProjectConfigPartial, getLocalWebDevPort } from "@better-fullstack/types";
 import { readVirtualFileContent as fileContent } from "@test/support/virtual-tree-utils";
 import { describe, expect, it } from "bun:test";
@@ -9,6 +11,17 @@ import { runWithContext } from "@/presentation/context";
 
 function graphParts(part: string[]) {
   return cliInputToProjectConfigPartial({ part }).stackParts;
+}
+
+function nativeScriptContent(root: VirtualNode, name: string) {
+  const pkg = JSON.parse(fileContent(root, "package.json")) as {
+    scripts?: Record<string, string>;
+  };
+  const command = pkg.scripts?.[name];
+  if (!command?.startsWith("bash scripts/native/")) {
+    throw new Error(`Expected ${name} to launch a native Bash script, received ${command}`);
+  }
+  return fileContent(root, command.slice("bash ".length));
 }
 
 const WEB_FRONTENDS = [
@@ -229,10 +242,10 @@ describe("Cross-ecosystem graph generation", () => {
       scripts?: Record<string, string>;
     };
     expect(rootPackage.scripts?.dev).toBe(
-      'concurrently --kill-others "bun run --filter web dev" "cd apps/server && mix phx.server"',
+      'concurrently --kill-others "bun run --filter web dev" "bash scripts/native/task-1.sh"',
     );
-    expect(rootPackage.scripts?.["dev:server"]).toBe("cd apps/server && mix phx.server");
-    expect(rootPackage.scripts?.["setup:server"]).toBe(
+    expect(nativeScriptContent(root, "dev:server")).toContain("cd apps/server && mix phx.server");
+    expect(nativeScriptContent(root, "setup:server")).toContain(
       "cd apps/server && mix deps.get && mix ecto.setup",
     );
   });
@@ -265,10 +278,9 @@ describe("Cross-ecosystem graph generation", () => {
     expect(astroPage).toContain("<Counter client:load />");
     expect(astroPage).toContain("<GraphBackendStatus />");
 
-    const rootPackage = JSON.parse(fileContent(root, "package.json")) as {
-      scripts?: Record<string, string>;
-    };
-    expect(rootPackage.scripts?.["dev:server"]).toBe("cd apps/server && cargo run --bin server");
+    expect(nativeScriptContent(root, "dev:server")).toContain(
+      "cd apps/server && cargo run --bin server",
+    );
     expect(fileContent(root, "README.md")).toContain("cd apps/server && cargo run --bin server");
   });
 
@@ -313,27 +325,24 @@ describe("Cross-ecosystem graph generation", () => {
         if (ecosystem === "python") {
           const backendReadme = fileContent(root, "apps/server/README.md");
           expect(backendReadme).toContain("Python backend");
-          const rootPackage = JSON.parse(fileContent(root, "package.json")) as {
-            scripts?: Record<string, string>;
-          };
-          expect(rootPackage.scripts?.["setup:server"]).toBe(
+          expect(nativeScriptContent(root, "setup:server")).toContain(
             "cd apps/server && uv sync --extra dev",
           );
           if (backend === "fastapi") {
-            expect(rootPackage.scripts?.["dev:server"]).toBe(
+            expect(nativeScriptContent(root, "dev:server")).toContain(
               "cd apps/server && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port ${PORT:-8000}",
             );
             expect(backendReadme).toContain("uv run uvicorn app.main:app");
           } else if (backend === "litestar") {
-            expect(rootPackage.scripts?.["dev:server"]).toBe(
+            expect(nativeScriptContent(root, "dev:server")).toContain(
               "cd apps/server && uv run litestar --app src.app.main:app run --reload --host 0.0.0.0 --port ${PORT:-8000}",
             );
             expect(backendReadme).toContain("uv run litestar --app src.app.main:app run");
           }
-          expect(rootPackage.scripts?.["check:server"]).toBe(
+          expect(nativeScriptContent(root, "check:server")).toContain(
             "cd apps/server && uv run --extra dev ruff check .",
           );
-          expect(rootPackage.scripts?.["test:server"]).toBe(
+          expect(nativeScriptContent(root, "test:server")).toContain(
             "cd apps/server && uv run --extra dev pytest",
           );
         }
@@ -477,13 +486,9 @@ describe("Cross-ecosystem graph generation", () => {
     const goMain = fileContent(goGin.tree!.root, "apps/server/cmd/server/main.go");
     expect(goMain).toContain('os.Getenv("CORS_ORIGIN")');
     expect(goMain).toContain('Access-Control-Allow-Origin", corsOrigin');
-    expect(
-      (
-        JSON.parse(fileContent(goGin.tree!.root, "package.json")) as {
-          scripts?: Record<string, string>;
-        }
-      ).scripts?.["setup:server"],
-    ).toBe("cd apps/server && go mod tidy");
+    expect(nativeScriptContent(goGin.tree!.root, "setup:server")).toContain(
+      "cd apps/server && go mod tidy",
+    );
 
     const spring = await createVirtual({
       projectName: "cors-spring",

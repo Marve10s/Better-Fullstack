@@ -46,6 +46,34 @@ export function getComposerReviewParts(specs: readonly string[]) {
   });
 }
 
+/** Project one selected application per role for editing without reordering the saved graph. */
+export function getComposerEditorSpecs(
+  specs: readonly string[],
+  selectedRootIds: Partial<Record<StackPart["role"], string>> = {},
+) {
+  const parts = getComposerParts(specs);
+  const roots = getComposerReviewParts(specs);
+  const selected = new Set<string>();
+  for (const role of new Set(roots.map((part) => part.role))) {
+    const root =
+      roots.find((part) => part.role === role && part.id === selectedRootIds[role]) ??
+      roots.find((part) => part.role === role);
+    if (root) selected.add(root.id);
+  }
+  const excluded = new Set(roots.filter((part) => !selected.has(part.id)).map((part) => part.id));
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const part of parts) {
+      if (part.ownerPartId && excluded.has(part.ownerPartId) && !excluded.has(part.id)) {
+        excluded.add(part.id);
+        changed = true;
+      }
+    }
+  }
+  const visible = parts.filter((part) => !excluded.has(part.id));
+  return visible.map((part) => formatStackPartSpec(part, visible));
+}
+
 /** Apply the editor's changed selections without replacing imported services or their capabilities. */
 export function reconcileComposerSpecs(
   currentSpecs: readonly string[],
@@ -111,6 +139,7 @@ export function reconcileComposerSpecs(
         (before ?? current)?.ecosystem === after?.ecosystem;
       let owner: StackPart | undefined = current;
       if (!sameApplication || !current) {
+        const position = current ? parts.indexOf(current) : parts.length;
         if (current) removeTree(current.id);
         const currentCanonicalId = current
           ? getComposerParts([`${current.role}:${current.ecosystem}:${current.toolId}`])[0]?.id
@@ -118,7 +147,7 @@ export function reconcileComposerSpecs(
         owner = after
           ? { ...after, id: current && current.id !== currentCanonicalId ? current.id : after.id }
           : undefined;
-        if (owner) parts.push(owner);
+        if (owner) parts.splice(position, 0, owner);
       }
       if (!after || !owner) continue;
 

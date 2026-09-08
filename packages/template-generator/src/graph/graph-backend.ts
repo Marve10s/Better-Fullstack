@@ -5,7 +5,7 @@ import {
   type StackPart,
 } from "@better-fullstack/types";
 
-import { getGraphFrontendPorts } from "@/graph/graph-frontend";
+import { getGraphFrontendPorts, getGraphJavaScriptServicePorts } from "@/graph/graph-frontend";
 
 export type GraphBackendConnection = {
   partId: string;
@@ -284,7 +284,10 @@ export function getGraphBackendConnections(config: ProjectConfig): GraphBackendC
     return connection ? [connection] : [];
   });
 
-  const usedPorts = new Set(getGraphFrontendPorts(config).values());
+  const usedPorts = new Set([
+    ...getGraphJavaScriptServicePorts(config),
+    ...getGraphFrontendPorts(config).values(),
+  ]);
   return connections.map((connection) => {
     const url = new URL(connection.serverUrl);
     const defaultPort = Number(url.port);

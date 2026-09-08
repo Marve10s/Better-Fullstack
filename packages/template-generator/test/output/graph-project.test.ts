@@ -23,6 +23,38 @@ async function generate(part: string[]) {
 }
 
 describe("multi-ecosystem project output", () => {
+  it("reserves TypeScript server and Expo ports before allocating native services", () => {
+    const specs = [
+      "backend:typescript:hono:api",
+      "backend:rust:axum:worker",
+      "mobile:react-native:native-bare",
+    ];
+    const connections = getGraphBackendConnections(configFor(specs));
+    expect(connections.find((part) => part.partId === "worker")?.serverUrl).toBe(
+      "http://localhost:3001",
+    );
+    expect(connections.find((part) => part.partId === "worker")?.devCommand).toContain(
+      "export PORT=3001",
+    );
+    const manyGo = configFor([
+      "mobile:react-native:native-bare",
+      "backend:go:gin:first",
+      "backend:go:echo:second",
+    ]);
+    expect(getGraphBackendConnections(manyGo).map((part) => part.serverUrl)).toEqual([
+      "http://localhost:8080",
+      "http://localhost:8082",
+    ]);
+  });
+
+  it("rejects repeated Rust web frontends before producing partial files", async () => {
+    const config = configFor(["frontend:rust:leptos:store", "frontend:rust:yew:admin"]);
+    const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("Only one Rust web frontend");
+    expect(result.tree).toBeUndefined();
+  });
+
   it("does not pin native backend CORS to only one of multiple web frontends", async () => {
     const specs = [
       "frontend:dotnet:blazor-webassembly:store",
@@ -36,9 +68,7 @@ describe("multi-ecosystem project output", () => {
       const env = output.get(`${connection.targetPath}/.env.example`);
       expect(env).toBeDefined();
       expect(env).toMatch(/^CORS_ORIGIN=$/m);
-      expect(output.get(`${connection.targetPath}/.env`) ?? "").not.toMatch(
-        /^CORS_ORIGIN=.+$/m,
-      );
+      expect(output.get(`${connection.targetPath}/.env`) ?? "").not.toMatch(/^CORS_ORIGIN=.+$/m);
     }
   });
 
@@ -145,7 +175,8 @@ it("launches native package scripts through Bash with their paths and assigned p
     }
     for (const path of ["bin", "apps/admin", "services/worker", "services/jobs"])
       await mkdir(join(directory, path), { recursive: true });
-    const recorder = '#!/usr/bin/env bash\nprintf "%s|%s|%s\\n" "$PWD" "$PORT" "$*" >> "$GRAPH_COMMAND_LOG"\n';
+    const recorder =
+      '#!/usr/bin/env bash\nprintf "%s|%s|%s\\n" "$PWD" "$PORT" "$*" >> "$GRAPH_COMMAND_LOG"\n';
     for (const path of ["bin/dotnet", "bin/go", "services/jobs/gradlew"])
       await writeFile(join(directory, path), recorder, { mode: 0o755 });
     const log = join(directory, "commands.log");
@@ -378,9 +409,7 @@ it("reserves the JavaScript frontend port before starting a .NET frontend", asyn
   };
   const command = root.scripts["dev:admin"];
   if (!command) throw new Error("Missing admin frontend dev script");
-  expect(output.get(command.replace("bash ", ""))).toContain(
-    "http://localhost:5174",
-  );
+  expect(output.get(command.replace("bash ", ""))).toContain("http://localhost:5174");
 });
 
 it("reserves every native frontend port before starting backend services", async () => {

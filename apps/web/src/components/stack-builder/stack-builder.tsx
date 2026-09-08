@@ -137,6 +137,7 @@ import { hasSeenBuilderShareModal } from "@/lib/builder/builder-share-modal-visi
 import {
   composerUsesJavaScript,
   getComposerReviewParts,
+  getComposerEditorSpecs,
   hasComposerApplication,
   reconcileComposerSpecs,
 } from "@/lib/builder/composer-graph";
@@ -1961,8 +1962,21 @@ function CreationModeComposer({
   commandBar: ReactNode;
   reviewActions: ReactNode;
 }) {
-  const graphSelection = useMemo(() => getGraphSelection(stack), [stack]);
-  const optionStack = useMemo(() => projectGraphScopedSelections(stack), [stack]);
+  const [editorRootIds, setEditorRootIds] = useState<NonNullable<GraphSelection["rootIds"]>>({});
+  const getEditorStack = useCallback(
+    (current: StackState): StackState => {
+      if (current.stackPartSpecs.length === 0) return current;
+      return {
+        ...current,
+        ...getGraphBackendAdvancedResetPatch(undefined),
+        ...stackPatchFromGraphSpecs(getComposerEditorSpecs(current.stackPartSpecs, editorRootIds)),
+      };
+    },
+    [editorRootIds],
+  );
+  const editorStack = useMemo(() => getEditorStack(stack), [stack, getEditorStack]);
+  const graphSelection = useMemo(() => getGraphSelection(editorStack), [editorStack]);
+  const optionStack = useMemo(() => projectGraphScopedSelections(editorStack), [editorStack]);
   const selectedRoles = COMPOSER_APPLICATION_ROLES.filter(
     (role) => graphSelection[role] !== "none",
   );
@@ -2071,14 +2085,14 @@ function CreationModeComposer({
       onChange((current) => {
         const specs = reconcileComposerSpecs(
           current.stackPartSpecs,
-          graphSelectionToSpecs(getGraphSelection(current)),
+          graphSelectionToSpecs(getGraphSelection(getEditorStack(current))),
           graphSelectionToSpecs(nextSelection),
-          getGraphSelection(current).rootIds,
+          getGraphSelection(getEditorStack(current)).rootIds,
         );
         return { ...stackPatchFromGraphSpecs(specs), projectName: current.projectName };
       });
     },
-    [onChange],
+    [onChange, getEditorStack],
   );
 
   const updateGraphSelection = useCallback(
@@ -2090,8 +2104,12 @@ function CreationModeComposer({
 
   const updateStackOption = (category: keyof typeof TECH_OPTIONS, optionId: string) => {
     onChange((current) => {
-      const patch = getStackOptionUpdate(current, category, optionId);
-      if (optionId === "none") return patch;
+      const view = getEditorStack(current);
+      const patch = getStackOptionFieldUpdate(
+        projectGraphScopedSelections(view),
+        category,
+        optionId,
+      );
 
       const nativeAlternatives = GRAPH_NATIVE_BACKEND_ALTERNATIVES[
         graphSelection.backendEcosystem as keyof typeof GRAPH_NATIVE_BACKEND_ALTERNATIVES
@@ -2099,7 +2117,7 @@ function CreationModeComposer({
 
       for (const sharedCategory of ["caching", "observability"] as const) {
         const nativeCategory = nativeAlternatives?.[sharedCategory];
-        if (!nativeCategory) continue;
+        if (!nativeCategory || optionId === "none") continue;
         if (category === sharedCategory) {
           (patch as Record<string, unknown>)[getStackKeyForCategory(nativeCategory)] = "none";
         } else if (category === nativeCategory) {
@@ -2107,7 +2125,14 @@ function CreationModeComposer({
         }
       }
 
-      return patch;
+      const nextView = patchGraphScopedSelections(view, patch);
+      const specs = reconcileComposerSpecs(
+        current.stackPartSpecs,
+        view.stackPartSpecs,
+        nextView.stackPartSpecs ?? view.stackPartSpecs,
+        getGraphSelection(view).rootIds,
+      );
+      return { ...patch, ...stackPatchFromGraphSpecs(specs) };
     });
   };
 
@@ -3129,20 +3154,23 @@ function CreationModeComposer({
                       </div>
                     )}
                   </dd>
-                  {graphSelection.rootIds?.[application.role] === application.id && (
-                    <button
-                      type="button"
-                      aria-label={`${m.builderComposerEdit()} ${application.label}`}
-                      onClick={() =>
-                        onActiveStepChange(
-                          application.role === "database" ? "backend" : application.role,
-                        )
-                      }
-                      className="hidden h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground sm:flex"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    aria-label={`${m.builderComposerEdit()} ${application.label}`}
+                    data-testid={`multi-edit-${application.id}`}
+                    onClick={() => {
+                      setEditorRootIds((current) => ({
+                        ...current,
+                        [application.role]: application.id,
+                      }));
+                      onActiveStepChange(
+                        application.role === "database" ? "backend" : application.role,
+                      );
+                    }}
+                    className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               );
             })}

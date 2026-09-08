@@ -1,3 +1,7 @@
+import {
+  patchGraphScopedSelections,
+  projectGraphScopedSelections,
+} from "@better-fullstack/types/stack-translation";
 import { describe, expect, it } from "bun:test";
 
 import { stackStateToStackParts } from "@/components/stack-builder/stack-graph-comparison";
@@ -5,6 +9,7 @@ import { selectionAnalyticsProperties } from "@/lib/analytics/campaign-analytics
 import {
   composerUsesJavaScript,
   getComposerParts,
+  getComposerEditorSpecs,
   getComposerReviewParts,
   hasComposerApplication,
   reconcileComposerSpecs,
@@ -12,6 +17,57 @@ import {
 import { DEFAULT_STACK } from "@/lib/stack/stack-defaults";
 
 describe("application composer graph edits", () => {
+  it("projects a later editor root and preserves the first root's capabilities", () => {
+    const specs = [
+      "backend:java:spring-boot:api",
+      "api.buildTool:java:maven",
+      "backend:java:quarkus:worker",
+      "worker.buildTool:java:gradle",
+    ];
+    const viewSpecs = getComposerEditorSpecs(specs, { backend: "worker" });
+    const view = projectGraphScopedSelections({
+      ...DEFAULT_STACK,
+      stackMode: "multi",
+      stackPartSpecs: viewSpecs,
+    });
+    expect(view.javaBuildTool).toBe("gradle");
+    expect(
+      getComposerParts(viewSpecs)
+        .filter((part) => part.role === "backend")
+        .map((part) => part.id),
+    ).toEqual(["worker"]);
+    const patch = patchGraphScopedSelections(view, { javaBuildTool: "maven" });
+    const result = getComposerParts(
+      reconcileComposerSpecs(specs, viewSpecs, patch.stackPartSpecs ?? viewSpecs, {
+        backend: "worker",
+      }),
+    );
+    expect(result.filter((part) => part.role === "backend").map((part) => part.id)).toEqual([
+      "api",
+      "worker",
+    ]);
+    expect(
+      result
+        .filter((part) => part.role === "buildTool")
+        .map((part) => [part.ownerPartId, part.toolId]),
+    ).toEqual([
+      ["api", "maven"],
+      ["worker", "maven"],
+    ]);
+  });
+
+  it("keeps primary order when replacing a selected framework", () => {
+    const specs = ["backend:go:gin:api", "backend:go:echo:worker"];
+    const view = getComposerEditorSpecs(specs, { backend: "api" });
+    const result = getComposerParts(
+      reconcileComposerSpecs(specs, view, ["backend:python:fastapi"], { backend: "api" }),
+    );
+    expect(result.map((part) => [part.id, part.toolId])).toEqual([
+      ["api", "fastapi"],
+      ["worker", "echo"],
+    ]);
+  });
+
   it("preserves named services and their capabilities when the frontend changes", () => {
     const current = [
       "frontend:typescript:next",

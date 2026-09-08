@@ -190,9 +190,7 @@ test("editing one of two Gin services preserves both named application identitie
   await expect(commandOutput(page)).toContainText("backend:go:gin:worker");
 });
 
-test("a build-tool edit updates the service represented by the projected value", async ({
-  page,
-}) => {
+test("selecting a later named service edits only that service", async ({ page }) => {
   const specs = [
     "backend:java:spring-boot:api",
     "api.buildTool:java:maven",
@@ -203,7 +201,8 @@ test("a build-tool edit updates the service represented by the projected value",
   await expect(commandOutput(page)).toContainText("worker.buildTool:java:gradle", {
     timeout: 15_000,
   });
-  await clickVisibleTestId(page, "multi-step-backend");
+  await clickVisibleTestId(page, "multi-step-review");
+  await clickVisibleTestId(page, "multi-edit-worker");
   await clickVisibleTestId(page, "multi-backend-javaBuildTool-toggle");
   await expect(page.getByTestId("multi-backend-javaBuildTool-gradle")).toHaveAttribute(
     "aria-pressed",
@@ -213,6 +212,15 @@ test("a build-tool edit updates the service represented by the projected value",
   await expect(commandOutput(page)).toContainText("worker.buildTool:java:maven");
   await expect(commandOutput(page)).toContainText("api.buildTool:java:maven");
   await expect(commandOutput(page)).not.toContainText("buildTool:java:gradle");
+  await clickVisibleTestId(page, "multi-backend-language-python");
+  await expect(commandOutput(page)).toContainText("backend:python:fastapi:worker");
+  await expect(commandOutput(page)).toContainText("backend:java:spring-boot:api");
+  await expect(commandOutput(page)).toContainText("api.buildTool:java:maven");
+  await page.reload();
+  await expect(commandOutput(page)).toContainText("backend:python:fastapi:worker", {
+    timeout: 15_000,
+  });
+  await expect(commandOutput(page)).toContainText("backend:java:spring-boot:api");
 });
 
 test("review lists every named service with the paths present in its download", async ({

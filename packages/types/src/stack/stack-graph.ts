@@ -8,6 +8,12 @@ import type {
 } from "@/config/types";
 
 import {
+  getToolingCapability,
+  getToolingCategory,
+  getToolingSelectionOptions,
+  TOOLING_CAPABILITIES,
+} from "@/capabilities/tooling-capabilities";
+import {
   API_VALUES,
   AUTH_VALUES,
   AI_VALUES,
@@ -177,12 +183,6 @@ import {
   requiresChatSdkVercelAIForExamples,
   UI_LIBRARY_COMPATIBILITY,
 } from "@/stack/stack-compatibility-rules";
-import {
-  getToolingCapability,
-  getToolingCategory,
-  getToolingSelectionOptions,
-  TOOLING_CAPABILITIES,
-} from "@/capabilities/tooling-capabilities";
 
 export type StackPrimaryRole = Extract<
   StackPartRole,
@@ -3955,6 +3955,12 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
       label: "TypeScript web frontend",
       parts: selectedPrimaryParts.filter(
         (part) => part.role === "frontend" && part.ecosystem === "typescript",
+      ),
+    },
+    {
+      label: "Rust web frontend",
+      parts: selectedPrimaryParts.filter(
+        (part) => part.role === "frontend" && part.ecosystem === "rust",
       ),
     },
     {

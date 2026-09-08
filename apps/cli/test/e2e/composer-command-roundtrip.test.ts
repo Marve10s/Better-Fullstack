@@ -93,9 +93,18 @@ for (const scenario of cases) {
         const root = JSON.parse(await readFile(rootPackage, "utf8")) as {
           scripts: Record<string, string>;
         };
-        expect(root.scripts.dev).toContain("go run");
+        expect(root.scripts.dev).toContain("bash scripts/native/");
+        const serverScript = root.scripts["dev:server"];
+        if (!serverScript) throw new Error("Missing native server script");
+        expect(
+          await readFile(join(result.projectDir, serverScript.slice("bash ".length)), "utf8"),
+        ).toContain("go run");
         if (scenario.name === "named-services") {
-          expect(root.scripts.dev).toContain("poetry run uvicorn");
+          const workerScript = root.scripts["dev:worker"];
+          if (!workerScript) throw new Error("Missing worker script");
+          expect(
+            await readFile(join(result.projectDir, workerScript.slice("bash ".length)), "utf8"),
+          ).toContain("poetry run uvicorn");
           expect(root.scripts.dev).toContain("concurrently --kill-others");
         }
       } else {
