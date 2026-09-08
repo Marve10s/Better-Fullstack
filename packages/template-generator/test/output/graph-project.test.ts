@@ -23,6 +23,31 @@ async function generate(part: string[]) {
 }
 
 describe("multi-ecosystem project output", () => {
+  it("does not pin native backend CORS to only one of multiple web frontends", async () => {
+    const specs = [
+      "frontend:dotnet:blazor-webassembly:store",
+      "frontend:rust:leptos:admin",
+      "backend:go:gin:api",
+      "backend:python:fastapi:worker",
+    ];
+    const output = await generate(specs);
+    for (const connection of getGraphBackendConnections(configFor(specs))) {
+      expect(connection.webOrigin).toBeNull();
+      const env = output.get(`${connection.targetPath}/.env.example`);
+      expect(env).toBeDefined();
+      expect(env).toMatch(/^CORS_ORIGIN=$/m);
+      expect(output.get(`${connection.targetPath}/.env`) ?? "").not.toMatch(
+        /^CORS_ORIGIN=.+$/m,
+      );
+    }
+  });
+
+  it("keeps single-frontend backend CORS pinned to its dev origin", async () => {
+    const output = await generate(["frontend:dotnet:blazor-webassembly", "backend:go:gin"]);
+    expect(output.get("apps/server/.env")).toContain("CORS_ORIGIN=http://localhost:5173");
+    expect(output.get("apps/server/.env.example")).toContain("CORS_ORIGIN=http://localhost:5173");
+  });
+
   it("generates a native-only project without a JavaScript root or install instructions", async () => {
     const output = await generate(["frontend:dotnet:blazor-webassembly", "backend:go:gin"]);
     expect(output.has("package.json")).toBe(false);

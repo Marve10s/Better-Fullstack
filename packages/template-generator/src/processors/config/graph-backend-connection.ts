@@ -11,8 +11,8 @@ import {
 /**
  * Pins the non-TypeScript backend's CORS to the web frontend's dev origin by
  * writing CORS_ORIGIN into the backend .env/.env.example. The backend templates
- * fall back to permissive CORS when the variable is unset, so solo-mode
- * (backend-only) scaffolds are unaffected.
+ * fall back to permissive CORS when the variable is unset. Backend-only and
+ * multiple-frontend scaffolds keep that default instead of blocking a frontend.
  */
 export function processGraphBackendEnv(vfs: VirtualFileSystem, config: ProjectConfig): void {
   for (const connection of getGraphBackendConnections(config)) {

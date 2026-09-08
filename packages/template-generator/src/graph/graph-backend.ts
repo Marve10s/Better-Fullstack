@@ -13,7 +13,7 @@ export type GraphBackendConnection = {
   toolId: string;
   label: string;
   targetPath: string;
-  /** Dev-server origin of the web frontend (null when the graph has no web frontend). */
+  /** Single web dev origin, or null when CORS cannot be pinned to one frontend. */
   webOrigin: string | null;
   serverUrl: string;
   healthPath: string;
@@ -24,8 +24,8 @@ export type GraphBackendConnection = {
   testCommand: string | null;
 };
 
-function getGraphWebFrontend(config: ProjectConfig): StackPart | undefined {
-  return (config.stackParts ?? []).find(
+function getGraphWebFrontends(config: ProjectConfig): StackPart[] {
+  return (config.stackParts ?? []).filter(
     (part) =>
       part.role === "frontend" &&
       !part.ownerPartId &&
@@ -75,13 +75,15 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
 
   const targetPath = backend.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
   const label = BACKEND_LABELS[backend.toolId] ?? `${backend.ecosystem} ${backend.toolId}`;
-  const graphFrontend = getGraphWebFrontend(config);
+  const graphFrontends = getGraphWebFrontends(config);
+  const graphFrontend = graphFrontends[0];
   const webPort = graphFrontend
     ? getGraphFrontendPorts(config).get(graphFrontend.id)
     : hasWebFrontend(config)
       ? getLocalWebDevPort(config.frontend)
       : null;
-  const webOrigin = webPort ? `http://localhost:${webPort}` : null;
+  // Native templates accept one pinned origin or their permissive development default.
+  const webOrigin = graphFrontends.length <= 1 && webPort ? `http://localhost:${webPort}` : null;
 
   switch (backend.ecosystem) {
     case "elixir": {
