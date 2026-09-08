@@ -125,6 +125,38 @@ test("a standalone database can be changed and removed without adding a backend"
   await expect(page.getByTestId("multi-edit-data")).toHaveCount(0);
 });
 
+for (const removal of ["application toggle", "framework picker"]) {
+  test(`removing a backend through the ${removal} preserves its standalone database`, async ({ page }) => {
+    const specs = [
+      "frontend:typescript:react-vite",
+      "backend:go:gin:api",
+      "api.orm:go:gorm",
+      "database:universal:postgres:data",
+    ];
+    await gotoAppPage(page, `/new?mode=multi&part=${encodeURIComponent(specs.join(","))}`);
+    await expect(commandOutput(page)).toContainText("backend:go:gin:api", {
+      timeout: 15_000,
+    });
+    if (removal === "application toggle") {
+      await clickVisibleTestId(page, "multi-application-backend");
+    } else {
+      await clickVisibleTestId(page, "multi-step-backend");
+      await clickVisibleTestId(page, "multi-backend-tool-none");
+    }
+    await expect(commandOutput(page)).not.toContainText("--part backend:");
+    await expect(commandOutput(page)).not.toContainText("gorm");
+    await expect(commandOutput(page)).toContainText("database:universal:postgres:data");
+    await page.reload();
+    await expect(page.locator("html[data-hydrated]")).toBeAttached({ timeout: 30_000 });
+    await expect(commandOutput(page)).toContainText("database:universal:postgres:data");
+    await expect(commandOutput(page)).not.toContainText("--part backend:");
+    await clickVisibleTestId(page, "multi-step-review");
+    await expect(page.getByTestId("multi-edit-api")).toHaveCount(0);
+    await clickVisibleTestId(page, "multi-edit-data");
+    await expect(page.getByTestId("multi-database-tool-postgres")).toBeVisible();
+  });
+}
+
 test("editing a shared project preserves its named services and owned capabilities", async ({
   page,
 }) => {

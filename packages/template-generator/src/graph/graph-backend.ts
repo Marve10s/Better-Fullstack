@@ -317,17 +317,19 @@ export function getGraphBackendConnections(config: ProjectConfig): GraphBackendC
         part.role === "api" &&
         part.source !== "provided" &&
         ((part.ecosystem === "go" && part.toolId === "grpc-go") ||
-          (part.ecosystem === "rust" && part.toolId === "tonic")),
+          (part.ecosystem === "rust" && part.toolId === "tonic") ||
+          (part.ecosystem === "java" && part.toolId === "grpc")),
     );
     if (!usesGrpc) return connection;
-    let grpcPort = 50051;
+    const grpcPortVariable = connection.ecosystem === "java" ? "GRPC_SERVER_PORT" : "GRPC_PORT";
+    let grpcPort = connection.ecosystem === "java" ? 9090 : 50051;
     while (usedPorts.has(grpcPort)) grpcPort += 1;
     usedPorts.add(grpcPort);
     return {
       ...connection,
       devCommand: connection.devCommand.replace(
         `cd ${connection.targetPath} && `,
-        `cd ${connection.targetPath} && export GRPC_PORT=${grpcPort} && `,
+        `cd ${connection.targetPath} && export ${grpcPortVariable}=${grpcPort} && `,
       ),
     };
   });

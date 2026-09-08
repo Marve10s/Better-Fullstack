@@ -2569,14 +2569,12 @@ function CreationModeComposer({
                 const nextSelection: GraphSelection = {
                   ...graphSelection,
                   backend,
-                  database: backend === "none" ? "none" : graphSelection.database,
                   backendOrm: backend === "none" ? "none" : graphSelection.backendOrm,
                   backendApi: backend === "none" ? "none" : graphSelection.backendApi,
                   backendAuth: backend === "none" ? "none" : graphSelection.backendAuth,
                 };
                 updateGraphSelection({
                   backend,
-                  database: nextSelection.database,
                   ...reconcileBackendCapabilities(nextSelection, backendConfig),
                 });
               }}
@@ -2761,7 +2759,7 @@ function CreationModeComposer({
       updateGraphSelection({
         [role]: "none",
         ...(role === "backend"
-          ? { database: "none", backendOrm: "none", backendApi: "none", backendAuth: "none" }
+          ? { backendOrm: "none", backendApi: "none", backendAuth: "none" }
           : {}),
       });
       return;

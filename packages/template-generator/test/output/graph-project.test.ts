@@ -295,7 +295,7 @@ it("launches native package scripts through Bash with their paths and assigned p
   }
 });
 
-it("exports distinct gRPC ports when launching named Go and Rust services", async () => {
+it("exports distinct gRPC ports when launching named Go, Rust, and Spring services", async () => {
   const { mkdtemp, mkdir, writeFile, readFile, rm } = await import("node:fs/promises");
   const { tmpdir } = await import("node:os");
   const { dirname, join } = await import("node:path");
@@ -311,6 +311,10 @@ it("exports distinct gRPC ports when launching named Go and Rust services", asyn
       "events.api:rust:tonic",
       "backend:rust:axum:jobs",
       "jobs.api:rust:tonic",
+      "backend:java:spring-boot:reports",
+      "reports.api:java:grpc",
+      "backend:java:spring-boot:billing",
+      "billing.api:java:grpc",
     ]);
     const root = JSON.parse(output.get("package.json") ?? "{}") as {
       scripts: Record<string, string>;
@@ -329,8 +333,15 @@ it("exports distinct gRPC ports when launching named Go and Rust services", asyn
       );
     }
     const log = join(directory, "ports.log");
-    for (const id of ["api", "worker", "events", "jobs"]) {
+    for (const id of ["api", "worker", "events", "jobs", "reports", "billing"]) {
       await mkdir(join(directory, "services", id), { recursive: true });
+      if (id === "reports" || id === "billing") {
+        await writeFile(
+          join(directory, "services", id, "mvnw"),
+          '#!/usr/bin/env bash\nprintf "%s\\n" "${GRPC_SERVER_PORT:-9090}" >> "$GRAPH_COMMAND_LOG"\n',
+          { mode: 0o755 },
+        );
+      }
       const command = root.scripts[`dev:part:${id}`];
       if (!command) throw new Error(`Missing dev script for ${id}`);
       const child = Bun.spawn(command.split(" "), {
@@ -339,6 +350,7 @@ it("exports distinct gRPC ports when launching named Go and Rust services", asyn
           ...process.env,
           PATH: `${join(directory, "bin")}:${process.env.PATH}`,
           GRPC_PORT: "",
+          GRPC_SERVER_PORT: "",
           GRAPH_COMMAND_LOG: log,
         },
         stdout: "pipe",
@@ -352,6 +364,8 @@ it("exports distinct gRPC ports when launching named Go and Rust services", asyn
       "50052",
       "50053",
       "50054",
+      "9090",
+      "9091",
     ]);
   } finally {
     await rm(directory, { recursive: true, force: true });
