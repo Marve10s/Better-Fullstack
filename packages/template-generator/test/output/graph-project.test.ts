@@ -47,7 +47,7 @@ describe("multi-ecosystem project output", () => {
       expect(defaultScript).toBe(root.scripts[`${action}:part:api`]);
       for (const id of ["server", "foo.bar", "foo-bar"]) {
         const script = root.scripts[`${action}:part:${id}`];
-        expect(script).toBeDefined();
+        if (!script) throw new Error(`Missing ${action} script for ${id}`);
         expect(script).not.toBe(defaultScript);
         expect(output.get(script.replace(/^bash /, ""))).toContain(`services/${id}`);
       }
