@@ -156,6 +156,7 @@ describe("processPackageConfigs", () => {
       "packages/db/package.json",
     ]);
     vfs.writeJson("package.json", { name: "starter", scripts: {}, workspaces: [] });
+    vfs.writeJson("apps/web/package.json", { name: "web", scripts: { dev: "next dev" } });
 
     processPackageConfigs(
       vfs,
