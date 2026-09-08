@@ -215,7 +215,14 @@ test("selecting a later named service edits only that service", async ({ page })
   await clickVisibleTestId(page, "multi-backend-language-python");
   await expect(commandOutput(page)).toContainText("backend:python:fastapi:worker");
   await expect(commandOutput(page)).toContainText("backend:java:spring-boot:api");
-  await expect(commandOutput(page)).toContainText("api.buildTool:java:maven");
+  const editedCommand = await commandOutput(page).textContent();
+  const editedParts = parseStackPartSpecs(
+    [...(editedCommand ?? "").matchAll(/--part (\S+)/g)].map((match) => match[1] ?? ""),
+    "selected",
+  );
+  expect(
+    editedParts.find((part) => part.role === "buildTool" && part.toolId === "maven")?.ownerPartId,
+  ).toBe("api");
   await page.reload();
   await expect(commandOutput(page)).toContainText("backend:python:fastapi:worker", {
     timeout: 15_000,
