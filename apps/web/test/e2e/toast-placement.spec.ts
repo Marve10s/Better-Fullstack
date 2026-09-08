@@ -19,6 +19,8 @@ test.beforeAll(async () => {
       "build",
       resolve(import.meta.dirname, "fixtures/toast-placement.tsx"),
       "--target=browser",
+      "--define",
+      "import.meta.env.SSR=false",
       "--outfile",
       output,
     ],
@@ -46,6 +48,9 @@ for (const viewport of [
     test.use({ viewport });
     for (const position of positions) {
       test(`close all stays next to ${position} notifications`, async ({ page }, testInfo) => {
+        page.on("pageerror", (error) => {
+          throw error;
+        });
         await gotoAppPage(page, "/new");
         const styles = await page.locator("style").allTextContents();
         const links = await page

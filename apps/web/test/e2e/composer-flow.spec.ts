@@ -66,6 +66,7 @@ test("native applications omit JavaScript setup, round-trip their URL, and previ
   await expect(commandOutput(page)).not.toContainText("turborepo");
   await expect(commandOutput(page)).toContainText("--part backend:go:");
   await page.reload();
+  await expect(page.locator("html[data-hydrated]")).toBeAttached({ timeout: 30_000 });
   await expect(commandOutput(page)).toContainText("--part backend:go:", { timeout: 15_000 });
   await clickVisibleTestId(page, "multi-step-review");
   await expect(page.getByTestId("multi-project-review")).toContainText("Blazor");

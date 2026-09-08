@@ -1,17 +1,17 @@
 import { test, expect } from "@playwright/test";
-import { commandOutput, gotoAppPage, openBuilder, visibleTestId } from "@test/e2e/test-helpers";
+import { commandOutput, gotoAppPage, openBuilder } from "@test/e2e/test-helpers";
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 test.describe("Stack Builder - Mobile", () => {
   test("builder page loads on mobile viewport", async ({ page }) => {
     await gotoAppPage(page, "/new");
-    await expect(visibleTestId(page, "tab-builder")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "What are you building?" })).toBeVisible();
   });
 
   test("no horizontal overflow on mobile", async ({ page }) => {
     await gotoAppPage(page, "/new");
-    await expect(visibleTestId(page, "tab-builder")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "What are you building?" })).toBeVisible();
 
     const bodyWidth = await page.evaluate(() => document.body.scrollWidth);
     const viewportWidth = await page.evaluate(() => window.innerWidth);
