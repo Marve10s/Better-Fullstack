@@ -151,6 +151,7 @@ it("launches native package scripts through Bash with their paths and assigned p
     const log = join(directory, "commands.log");
     for (const id of ["admin", "worker", "jobs"]) {
       const command = root.scripts[`dev:${id}`];
+      if (!command) throw new Error(`Missing dev script for ${id}`);
       expect(command).toMatch(/^bash scripts\/native\/[a-zA-Z0-9-]+\.sh$/);
       const child = Bun.spawn(command.split(" "), {
         cwd: directory,
@@ -345,7 +346,9 @@ it("includes a native service named workspace in the JavaScript root dev command
     scripts: Record<string, string>;
   };
   expect(root.scripts.dev).toContain("bash scripts/native/");
-  expect(output.get(root.scripts["dev:workspace"].replace("bash ", ""))).toContain(
+  const command = root.scripts["dev:workspace"];
+  if (!command) throw new Error("Missing workspace service dev script");
+  expect(output.get(command.replace("bash ", ""))).toContain(
     "cd apps/server && go run cmd/server/main.go",
   );
   expect(
@@ -373,7 +376,9 @@ it("reserves the JavaScript frontend port before starting a .NET frontend", asyn
   const root = JSON.parse(output.get("package.json") ?? "{}") as {
     scripts: Record<string, string>;
   };
-  expect(output.get(root.scripts["dev:admin"].replace("bash ", ""))).toContain(
+  const command = root.scripts["dev:admin"];
+  if (!command) throw new Error("Missing admin frontend dev script");
+  expect(output.get(command.replace("bash ", ""))).toContain(
     "http://localhost:5174",
   );
 });
