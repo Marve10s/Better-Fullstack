@@ -173,11 +173,11 @@ describe("processPackageConfigs", () => {
     );
 
     expect(vfs.readJson<PackageJson>("package.json")?.scripts).toMatchObject({
-      dev: 'concurrently --kill-others "vp run --fail-if-no-match --filter web dev" "cd apps/server && go run cmd/server/main.go"',
+      dev: 'concurrently --kill-others "vp run --fail-if-no-match --filter web dev" "bash scripts/native/task-1.sh"',
       build: "vp run -r build",
       "check-types": "vp run -r check-types",
       "dev:web": "vp run --fail-if-no-match --filter web dev",
-      "dev:server": "cd apps/server && go run cmd/server/main.go",
+      "dev:server": "bash scripts/native/task-1.sh",
       "db:push": "vp run --fail-if-no-match --filter @vite-plus-demo/db db:push",
       check: "vp run -r check",
       lint: "vp run -r lint",
@@ -503,11 +503,11 @@ describe("processPackageConfigs", () => {
 
     const scripts = backendOnly.readJson<PackageJson>("package.json")?.scripts;
     expect(scripts).toMatchObject({
-      dev: "cd apps/server && go run cmd/server/main.go",
-      "setup:server": "cd apps/server && go mod tidy",
-      "dev:server": "cd apps/server && go run cmd/server/main.go",
-      "check:server": "cd apps/server && go mod tidy && go test ./...",
-      "test:server": "cd apps/server && go mod tidy && go test ./...",
+      dev: "bash scripts/native/task-1.sh",
+      "setup:server": "bash scripts/native/task-2.sh",
+      "dev:server": "bash scripts/native/task-1.sh",
+      "check:server": "bash scripts/native/task-3.sh",
+      "test:server": "bash scripts/native/task-3.sh",
     });
     expect(scripts?.["dev:web"]).toBeUndefined();
     expect(scripts?.["dev:native"]).toBeUndefined();

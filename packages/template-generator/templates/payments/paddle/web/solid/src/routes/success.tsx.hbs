@@ -1,8 +1,15 @@
-import { useSearchParams } from "@solidjs/router";
+import { createFileRoute } from "@tanstack/solid-router";
 
-export default function SuccessPage() {
-	const [searchParams] = useSearchParams();
-	const transactionId = () => searchParams.transaction_id;
+export const Route = createFileRoute("/success")({
+	component: SuccessPage,
+	validateSearch: (search) => ({
+		transaction_id: typeof search.transaction_id === "string" ? search.transaction_id : undefined,
+	}),
+});
+
+function SuccessPage() {
+	const searchParams = Route.useSearch();
+	const transactionId = () => searchParams().transaction_id;
 
 	return (
 		<div class="container mx-auto px-4 py-8">

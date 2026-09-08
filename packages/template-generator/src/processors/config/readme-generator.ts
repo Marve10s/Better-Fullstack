@@ -117,7 +117,7 @@ ${parts.map((part) => `- **${part.toolId}** (${part.ecosystem}, ${part.role}): \
 
 Install the SDKs for the selected languages before preparing dependencies. SwiftUI needs macOS, Xcode, and XcodeGen; Kotlin Android apps need a JDK and Android SDK; Flutter needs the Flutter SDK. Rust web apps also need the WebAssembly target and Trunk or Dioxus CLI.
 
-${hasJavaScript ? "JavaScript dependencies are installed at the workspace root. Each native application keeps its own toolchain." : "This project uses native toolchains. It has no JavaScript root package or JavaScript package-manager requirement. The root scripts use Bash, available on macOS/Linux or through Git Bash on Windows."}
+${hasJavaScript ? "JavaScript dependencies are installed at the workspace root. Each native application keeps its own toolchain. Native package scripts require `bash` on PATH; install Git Bash on Windows. Run the shell commands below in Bash." : "This project uses native toolchains. It has no JavaScript root package or JavaScript package-manager requirement. The root scripts use Bash, available on macOS/Linux or through Git Bash on Windows."}
 
 If dependencies were not prepared during creation, run:
 

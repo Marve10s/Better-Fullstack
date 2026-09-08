@@ -71,8 +71,10 @@ describe("multi-ecosystem project output", () => {
     };
     expect(root.scripts.dev).toContain("concurrently --kill-others");
     expect(root.scripts.dev).toContain("web");
-    expect(root.scripts.dev).toContain("go run");
-    expect(root.scripts.dev).toContain("uvicorn");
+    expect(root.scripts.dev).toContain("bash scripts/native/");
+    const nativeScripts = [...output].filter(([path]) => path.startsWith("scripts/native/"));
+    expect(nativeScripts.some(([, content]) => content.includes("go run"))).toBe(true);
+    expect(nativeScripts.some(([, content]) => content.includes("uvicorn"))).toBe(true);
     expect(root.devDependencies.concurrently).toBeDefined();
   });
 
@@ -116,6 +118,62 @@ describe("multi-ecosystem project output", () => {
     expect(tasks[0]?.setup).toContain("poetry install");
     expect(tasks[0]?.dev).toContain("poetry run uvicorn");
   });
+});
+
+it("launches native package scripts through Bash with their paths and assigned ports", async () => {
+  const { mkdtemp, mkdir, writeFile, readFile, realpath, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const { dirname, join } = await import("node:path");
+  const directory = await realpath(await mkdtemp(join(tmpdir(), "bfs mixed commands ")));
+  try {
+    const output = await generate([
+      "frontend:typescript:react-vite",
+      "frontend:dotnet:blazor-webassembly:admin",
+      "backend:go:gin:api",
+      "backend:go:gin:worker",
+      "backend:java:quarkus:jobs",
+      "jobs.buildTool:java:gradle",
+    ]);
+    const root = JSON.parse(output.get("package.json") ?? "{}") as {
+      scripts: Record<string, string>;
+    };
+    expect(output.get("README.md")).toContain("Git Bash on Windows");
+    for (const [path, content] of output) {
+      if (!path.startsWith("scripts/native/")) continue;
+      await mkdir(dirname(join(directory, path)), { recursive: true });
+      await writeFile(join(directory, path), content);
+    }
+    for (const path of ["bin", "apps/admin", "services/worker", "services/jobs"])
+      await mkdir(join(directory, path), { recursive: true });
+    const recorder = '#!/usr/bin/env bash\nprintf "%s|%s|%s\\n" "$PWD" "$PORT" "$*" >> "$GRAPH_COMMAND_LOG"\n';
+    for (const path of ["bin/dotnet", "bin/go", "services/jobs/gradlew"])
+      await writeFile(join(directory, path), recorder, { mode: 0o755 });
+    const log = join(directory, "commands.log");
+    for (const id of ["admin", "worker", "jobs"]) {
+      const command = root.scripts[`dev:${id}`];
+      expect(command).toMatch(/^bash scripts\/native\/[a-zA-Z0-9-]+\.sh$/);
+      const child = Bun.spawn(command.split(" "), {
+        cwd: directory,
+        env: {
+          ...process.env,
+          PATH: `${join(directory, "bin")}:${process.env.PATH}`,
+          PORT: "",
+          GRAPH_COMMAND_LOG: log,
+        },
+        stdout: "pipe",
+        stderr: "pipe",
+      });
+      const stderr = await new Response(child.stderr).text();
+      expect(await child.exited, stderr).toBe(0);
+    }
+    expect((await readFile(log, "utf8")).trim().split("\n")).toEqual([
+      `${directory}/apps/admin||watch run --urls http://localhost:5174`,
+      `${directory}/services/worker|8081|run cmd/server/main.go`,
+      `${directory}/services/jobs|8082|quarkusDev`,
+    ]);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 it("runs every native setup command from the project root", async () => {
@@ -286,7 +344,10 @@ it("includes a native service named workspace in the JavaScript root dev command
   const root = JSON.parse(output.get("package.json") ?? "{}") as {
     scripts: Record<string, string>;
   };
-  expect(root.scripts.dev).toContain("cd apps/server && go run cmd/server/main.go");
+  expect(root.scripts.dev).toContain("bash scripts/native/");
+  expect(output.get(root.scripts["dev:workspace"].replace("bash ", ""))).toContain(
+    "cd apps/server && go run cmd/server/main.go",
+  );
   expect(
     getGraphProjectTasks(configFor(specs)).find((task) => task.path === "apps/server")?.kind,
   ).toBe("application");
@@ -312,7 +373,9 @@ it("reserves the JavaScript frontend port before starting a .NET frontend", asyn
   const root = JSON.parse(output.get("package.json") ?? "{}") as {
     scripts: Record<string, string>;
   };
-  expect(root.scripts.dev).toContain("http://localhost:5174");
+  expect(output.get(root.scripts["dev:admin"].replace("bash ", ""))).toContain(
+    "http://localhost:5174",
+  );
 });
 
 it("reserves every native frontend port before starting backend services", async () => {
