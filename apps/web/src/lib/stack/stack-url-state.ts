@@ -17,10 +17,7 @@ import type { StackSearchParams } from "@/lib/stack/stack-search-schema";
 import { normalizeCampaignSlug } from "@/lib/campaign/campaign";
 import { PRESET_TEMPLATES } from "@/lib/stack/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack/stack-defaults";
-import {
-  createDefaultMultiEcosystemShareStack,
-  getStackSharePath,
-} from "@/lib/stack/stack-share-paths";
+import { getStackSharePath } from "@/lib/stack/stack-share-paths";
 
 type BuilderViewMode = "command" | "preview" | "run" | "presets" | "saved";
 
@@ -45,7 +42,7 @@ export function getInitialBuilderState(
 ): InitialBuilderState {
   if (!search) {
     return {
-      stack: fallbackStack ?? createDefaultMultiEcosystemShareStack(),
+      stack: fallbackStack ?? DEFAULT_STACK,
       viewMode: "command",
       selectedFile: "",
       campaign: undefined,
@@ -65,7 +62,7 @@ export function getInitialBuilderState(
       ? ({ ...DEFAULT_STACK, ...preset.stack } as StackState)
       : hasStackSelection
         ? searchToStack(search)
-        : (fallbackStack ?? createDefaultMultiEcosystemShareStack()),
+        : (fallbackStack ?? DEFAULT_STACK),
     viewMode: search.view || "command",
     selectedFile: search.file || "",
     campaign: normalizeCampaignSlug(search.campaign),

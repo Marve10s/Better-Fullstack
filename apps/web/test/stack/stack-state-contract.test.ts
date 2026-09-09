@@ -292,9 +292,14 @@ describe("StackState contract", () => {
   });
 });
 
-it("starts fresh projects in the application flow while preserving explicit solo links", () => {
-  expect(getInitialBuilderState({}).stack.stackMode).toBe("multi");
-  expect(getInitialBuilderState(undefined).stack.stackMode).toBe("multi");
+it("starts fresh projects in solo mode while preserving explicit stack links", () => {
+  expect(getInitialBuilderState({}).stack).toEqual(DEFAULT_STACK);
+  expect(getInitialBuilderState(undefined).stack).toEqual(DEFAULT_STACK);
+  expect(getInitialBuilderState({ view: "command", file: "" }).stack).toEqual(DEFAULT_STACK);
   expect(getInitialBuilderState({ mode: "solo" }).stack.stackMode).toBe("solo");
+  expect(getInitialBuilderState({ mode: "multi" }).stack.stackMode).toBe("multi");
+  const multiStack = createDefaultMultiEcosystemShareStack();
+  expect(getInitialBuilderState({}, multiStack).stack).toEqual(multiStack);
+  expect(getInitialBuilderState(undefined, multiStack).stack).toEqual(multiStack);
   expect(getInitialBuilderState({ eco: "go" }).stack.ecosystem).toBe("go");
 });
