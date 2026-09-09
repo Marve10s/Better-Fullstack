@@ -31,10 +31,25 @@ function gradientArtwork(): ChangelogRelease["image"] {
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v2.6.5",
+    publishedAt: "2026-09-09T00:00:00Z",
+    displayDate: "September 9, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v2.6.5`,
+    title: "Multi-ecosystem v2",
+    summary: "Build frontend, backend, and mobile apps together, each with its own stack.",
+    highlights: [
+      "Choose and configure each app",
+      "Add services with their own tools",
+      "Preview files or download a ZIP",
+      "Share your setup with a link",
+      "Start mixed stacks together",
+    ],
+  },
+  {
     version: "v2.6.0",
     publishedAt: "2026-08-18T21:36:36Z",
     displayDate: "August 18, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v2.6.0`,
     title: "One command to start, Vite+ toolchain, and bot protection",
     summary:

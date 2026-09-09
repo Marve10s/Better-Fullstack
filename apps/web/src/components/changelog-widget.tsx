@@ -1,5 +1,9 @@
+import { Link } from "@tanstack/react-router";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 
+import { TbArrowRight } from "react-icons/tb";
+
+import { buttonVariants } from "@/components/ui/button";
 import { registerVisit } from "@/lib/analytics/visitor";
 import { latestChangelogRelease } from "@/lib/content/changelog";
 import {
@@ -7,10 +11,13 @@ import {
   markChangelogReleaseInteracted,
   shouldShowChangelogRelease,
 } from "@/lib/content/changelog-visibility";
+import { ChangelogHighlightIcon } from "@/components/changelog-highlight-icon";
 import { getLocalizedChangelogRelease } from "@/lib/i18n/changelog-copy";
 import { getLocaleDateTag } from "@/lib/i18n/locales";
 import { m } from "@/paraglide/messages.js";
 import { getLocale } from "@/paraglide/runtime.js";
+
+const MULTI_ECOSYSTEM_PARAMS = { stackShare: "multi-ecosystem" };
 
 const ChangelogModal = lazy(async () => {
   const { ChangelogModal } = await import("@/components/changelog-modal");
@@ -74,6 +81,11 @@ export function ChangelogWidget() {
     setIsModalOpen(true);
   }, [markInteracted]);
 
+  const openBuilder = useCallback(() => {
+    markInteracted("opened");
+    setIsVisible(false);
+  }, [markInteracted]);
+
   if (!latestChangelogRelease) return null;
 
   const latestRelease = getLocalizedChangelogRelease(latestChangelogRelease);
@@ -127,6 +139,35 @@ export function ChangelogWidget() {
                 </span>
               ) : null}
             </button>
+
+            {latestRelease.highlights?.length ? (
+              <ul className="space-y-2 px-5 pb-4 text-ink text-sm">
+                {latestRelease.highlights.map((highlight, index) => (
+                  <li key={highlight} className="flex items-start gap-2.5">
+                    <ChangelogHighlightIcon
+                      version={latestRelease.version}
+                      index={index}
+                      className="mt-0.5 size-4 shrink-0 text-soft"
+                    />
+                    <span>{highlight}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            {latestRelease.version === "v2.6.5" ? (
+              <div className="px-5 pb-4">
+                <Link
+                  to="/$stackShare"
+                  params={MULTI_ECOSYSTEM_PARAMS}
+                  className={`${buttonVariants()} w-full cursor-pointer`}
+                  onClick={openBuilder}
+                >
+                  {m.navMultiEcosystem()}
+                  <TbArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+              </div>
+            ) : null}
 
             {/* Collapsed to zero height until hover or keyboard focus, so the
                 card grows from the bottom instead of the actions popping in. */}

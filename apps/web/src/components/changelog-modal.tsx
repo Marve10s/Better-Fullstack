@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { changelogReleases, latestChangelogRelease } from "@/lib/content/changelog";
+import { ChangelogHighlightIcon } from "@/components/changelog-highlight-icon";
 import { getLocalizedChangelogRelease } from "@/lib/i18n/changelog-copy";
 import { getLocaleDateTag } from "@/lib/i18n/locales";
 import { m } from "@/paraglide/messages.js";
@@ -65,9 +66,13 @@ export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
             <section className="mt-5 border-border border-y py-4">
               <h3 className="font-medium text-xs">{m.changelogLatestUpdate()}</h3>
               <ul className="mt-3 space-y-2 text-muted-foreground text-xs">
-                {latestRelease.highlights.map((highlight) => (
+                {latestRelease.highlights.map((highlight, index) => (
                   <li key={highlight} className="flex gap-2.5">
-                    <span className="mt-1.5 size-1 shrink-0 bg-foreground/60" aria-hidden="true" />
+                    <ChangelogHighlightIcon
+                      version={latestRelease.version}
+                      index={index}
+                      className="size-4 shrink-0"
+                    />
                     <span>{highlight}</span>
                   </li>
                 ))}
