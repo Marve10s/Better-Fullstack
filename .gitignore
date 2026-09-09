@@ -63,6 +63,8 @@ templates-binary
 
 # Auto-generated at build time (avoids merge conflicts)
 packages/template-generator/src/templates.generated.ts
+packages/template-generator/src/template-families.generated.ts
+packages/template-generator/src/templates.generated/
 apps/web/public/docs/
 
 # Ralph (autonomous agent loop)

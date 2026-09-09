@@ -9,6 +9,7 @@ import {
 } from "@better-fullstack/types";
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
+import { AjvJsonSchemaValidator } from "@modelcontextprotocol/server/validators/ajv";
 import { afterAll, afterEach, describe, expect, it } from "bun:test";
 import fs from "fs-extra";
 import { tmpdir } from "node:os";
@@ -149,6 +150,25 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
     expect(tools.tools.some((tool) => tool.name === "bfs_get_guidance")).toBe(true);
     expect(tools.tools.some((tool) => tool.name === "bfs_get_capability_evidence")).toBe(true);
     expect(tools.tools.some((tool) => tool.name === "bfs_list_starter_tracks")).toBe(true);
+    expect(
+      tools.tools.filter(
+        (tool) => tool.outputSchema && Object.hasOwn(tool.outputSchema, "$defs"),
+      ).length,
+    ).toBeGreaterThan(0);
+    const jsonSchemaValidator = new AjvJsonSchemaValidator();
+    for (const tool of tools.tools) {
+      if (tool.outputSchema) jsonSchemaValidator.getValidator(tool.outputSchema);
+    }
+    const guidanceSchema = tools.tools.find((tool) => tool.name === "bfs_get_guidance")
+      ?.outputSchema;
+    expect(guidanceSchema).toBeDefined();
+    if (guidanceSchema) {
+      expect(jsonSchemaValidator.getValidator(guidanceSchema)(guidanceResult.structuredContent)).toEqual({
+        valid: true,
+        data: guidanceResult.structuredContent,
+        errorMessage: undefined,
+      });
+    }
     expect(resources.ttlMs).toBe(300_000);
     expect(resources.cacheScope).toBe("public");
     expect(resources.resources.some((resource) => resource.uri === "docs://stack-options")).toBe(

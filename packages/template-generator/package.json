@@ -19,6 +19,7 @@
   },
   "files": [
     "dist",
+    "!dist/**/*.map",
     "LICENSE",
     "templates-binary"
   ],
@@ -31,6 +32,10 @@
     "./browser": {
       "types": "./dist/browser.d.mts",
       "default": "./dist/browser.mjs"
+    },
+    "./browser-loader": {
+      "types": "./dist/browser-loader.d.mts",
+      "default": "./dist/browser-loader.mjs"
     },
     "./fs-writer": {
       "types": "./dist/fs-writer.d.mts",

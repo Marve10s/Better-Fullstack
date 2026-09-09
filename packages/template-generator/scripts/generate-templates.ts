@@ -10,6 +10,8 @@ const __dirname = path.dirname(__filename);
 
 const TEMPLATES_DIR = path.join(__dirname, "../templates");
 const OUTPUT_FILE = path.join(__dirname, "../src/templates.generated.ts");
+const FAMILY_OUTPUT_DIR = path.join(__dirname, "../src/templates.generated");
+const FAMILY_MANIFEST_FILE = path.join(__dirname, "../src/template-families.generated.ts");
 const BINARY_OUTPUT_DIR = path.join(__dirname, "../templates-binary");
 const GENERATE_TEMPLATES_LOCK_DIR = path.join(__dirname, "../.generate-templates.lock");
 const LOCK_STALE_MS = 5 * 60 * 1000;
@@ -22,7 +24,7 @@ async function generateTemplates() {
   const files = await glob("**/*", { cwd: TEMPLATES_DIR, dot: true, onlyFiles: true });
   console.log(` Found ${files.length} template files`);
 
-  const entries: string[] = [];
+  const familyEntries = new Map<string, string[]>();
   const binaryFiles: string[] = [];
 
   for (const file of files) {
@@ -31,28 +33,74 @@ async function generateTemplates() {
 
     if (isBinaryPath(file)) {
       binaryFiles.push(normalizedPath);
+      const family = normalizedPath.split("/", 1)[0];
+      const entries = familyEntries.get(family) ?? [];
       entries.push(`  ["${normalizedPath}", \`[Binary file]\`]`);
+      familyEntries.set(family, entries);
     } else {
       const content = fs.readFileSync(fullPath, "utf-8");
       const escapedContent = content
         .replace(/\\/g, "\\\\")
         .replace(/`/g, "\\`")
         .replace(/\$\{/g, "\\${");
+      const family = normalizedPath.split("/", 1)[0];
+      const entries = familyEntries.get(family) ?? [];
       entries.push(`  ["${normalizedPath}", \`${escapedContent}\`]`);
+      familyEntries.set(family, entries);
     }
   }
 
+  fs.rmSync(FAMILY_OUTPUT_DIR, { recursive: true, force: true });
+  fs.mkdirSync(FAMILY_OUTPUT_DIR, { recursive: true });
+
+  const families = [...familyEntries.keys()].sort();
+  for (const family of families) {
+    const entries = familyEntries.get(family) ?? [];
+    const familyOutput = `// Auto-generated - DO NOT EDIT
+// Run 'bun run generate-templates' to regenerate
+
+export const TEMPLATES: ReadonlyMap<string, string> = new Map([
+${entries.join(",\n")}
+]);
+`;
+    fs.writeFileSync(path.join(FAMILY_OUTPUT_DIR, `${family}.ts`), familyOutput);
+  }
+
+  const eagerImports = families
+    .map((family, index) => `import { TEMPLATES as templates${index} } from "@/templates.generated/${family}";`)
+    .join("\n");
+  const eagerEntries = families.map((_family, index) => `  ...templates${index},`).join("\n");
   const output = `// Auto-generated - DO NOT EDIT
 // Run 'bun run generate-templates' to regenerate
 
+${eagerImports}
+
 export const EMBEDDED_TEMPLATES: Map<string, string> = new Map([
-${entries.join(",\n")}
+${eagerEntries}
 ]);
 
 export const TEMPLATE_COUNT = ${files.length};
 `;
 
   fs.writeFileSync(OUTPUT_FILE, output);
+
+  const loaders = families
+    .map(
+      (family) =>
+        `  "${family}": () => import("@/templates.generated/${family}").then((module) => module.TEMPLATES),`,
+    )
+    .join("\n");
+  const manifestOutput = `// Auto-generated - DO NOT EDIT
+// Run 'bun run generate-templates' to regenerate
+
+export const TEMPLATE_FAMILY_LOADERS = {
+${loaders}
+} as const;
+
+export type TemplateFamily = keyof typeof TEMPLATE_FAMILY_LOADERS;
+export const TEMPLATE_COUNT = ${files.length};
+`;
+  fs.writeFileSync(FAMILY_MANIFEST_FILE, manifestOutput);
 
   const stats = fs.statSync(OUTPUT_FILE);
   const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);

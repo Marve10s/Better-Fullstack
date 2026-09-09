@@ -147,9 +147,9 @@ export async function createRunnableProject(stack: StackState): Promise<Runnable
     throw new Error("This stack is not supported by the browser runtime.");
   }
 
-  const [{ generateVirtualProject, EMBEDDED_TEMPLATES }, { loadBinaryTemplate }] =
+  const [{ generateVirtualProject, loadTemplatesForConfig }, { loadBinaryTemplate }] =
     await Promise.all([
-      import("@better-fullstack/template-generator/browser"),
+      import("@better-fullstack/template-generator/browser-loader"),
       import("@/lib/project/project-binary-assets"),
     ]);
   const config = {
@@ -158,7 +158,8 @@ export async function createRunnableProject(stack: StackState): Promise<Runnable
     // execution copy; downloads keep the user's selected package manager.
     packageManager: "npm" as const,
   };
-  const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
+  const templates = await loadTemplatesForConfig(config);
+  const result = await generateVirtualProject({ config, templates });
 
   if (!result.success || !result.tree) {
     throw new Error(result.error || "The runnable project could not be generated.");

@@ -4,6 +4,7 @@ import Handlebars from "handlebars";
 import { extname } from "pathe";
 
 import { BINARY_EXTENSIONS } from "@/core/binary-extensions";
+import { getCompiledTemplate } from "@/core/compiled-template-cache";
 import { composeTheme, type BaseColorName, type AccentColorName } from "@/shadcn-themes";
 
 Handlebars.registerHelper("eq", (a, b) => a === b);
@@ -421,8 +422,12 @@ Handlebars.registerHelper("shadcnFontIsMono", function (this: ProjectConfig) {
   return font === "jetbrains-mono" || font === "geist-mono";
 });
 
-export function processTemplateString(content: string, context: ProjectConfig): string {
-  return Handlebars.compile(content)(context);
+export function processTemplateString(
+  content: string,
+  context: ProjectConfig,
+  options?: CompileOptions,
+): string {
+  return getCompiledTemplate(content, options)(context);
 }
 
 export function isBinaryFile(filePath: string): boolean {

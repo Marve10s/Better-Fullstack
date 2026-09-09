@@ -12,12 +12,17 @@ Never make a durable fix only in generated output.
 
 - Source: `packages/template-generator/templates/**`
 - Producer: `packages/template-generator/scripts/generate-templates.ts`
-- Output: `packages/template-generator/src/templates.generated.ts`
+- Outputs: `packages/template-generator/src/templates.generated.ts`,
+  `packages/template-generator/src/template-families.generated.ts`, and
+  `packages/template-generator/src/templates.generated/**`
 - Command: `bun run --cwd packages/template-generator generate-templates`
 
 Rules:
 
-- Edit `.hbs` and static source templates, never the embedded map.
+- Edit `.hbs` and static source templates, never the eager map, family manifest, or family modules.
+- The eager map preserves the package API. The browser loader selects generated top-level families
+  from the complete stack graph; new template top-level families are added to the manifest by the
+  producer and must be routed by `src/browser-template-loader.ts` when they are conditional.
 - Keep binary inputs in the template source tree; the producer copies them separately.
 - Generated template paths use forward slashes.
 - Template generation has a lock; do not start competing generators or delete a live lock.

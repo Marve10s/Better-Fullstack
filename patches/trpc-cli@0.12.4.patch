@@ -1,0 +1,47 @@
+diff --git a/dist/json-schema.js b/dist/json-schema.js
+index 8dc9ff4bfe7bb9095caa8dccdee28c6dc4175b8f..1da044b3243d6c2e333d6b3994332037dfbce531 100644
+--- a/dist/json-schema.js
++++ b/dist/json-schema.js
+@@ -1,8 +1,8 @@
++import { createRequire } from 'node:module';
+ import { zodToJsonSchema as zodV3ToJsonSchema } from './zod-to-json-schema/index.js';
+-const [valibotOrError, valibotToJsonSchemaOrError, effectOrError, zod4CoreOrError] = await Promise.all([
++const [valibotOrError, valibotToJsonSchemaOrError, zod4CoreOrError] = await Promise.all([
+     import('valibot').catch(String),
+     import('@valibot/to-json-schema').catch(String),
+-    import('effect').catch(String),
+     import('zod/v4/core').catch(String),
+ ]);
+ const capitaliseFromCamelCase = (camel) => {
+@@ -236,6 +236,19 @@ const getModule = (moduleOrError) => {
+     }
+     return moduleOrError;
+ };
++const require = createRequire(import.meta.url);
++let effectOrError;
++const getEffect = () => {
++    effectOrError ??= (() => {
++        try {
++            return require('effect');
++        }
++        catch (error) {
++            return String(error);
++        }
++    })();
++    return getModule(effectOrError);
++};
+ /**
+  * Attempts to convert a trpc procedure input to JSON schema.
+  * Uses @see jsonSchemaConverters to convert the input to JSON schema.
+@@ -315,10 +328,7 @@ const getJsonSchemaConverters = (dependencies) => {
+             return parent.required?.length === 0 ? Object.assign(child, { optional: true }) : child;
+         },
+         effect: (input) => {
+-            const effect = dependencies.effect || getModule(effectOrError);
+-            if (!effect) {
+-                throw new Error(`effect dependency could not be found - try installing it and re-running`);
+-            }
++            const effect = dependencies.effect || getEffect();
+             if (!effect.Schema.isSchema(input)) {
+                 const message = `input was not an effect schema - please use effect version 3.14.2 or higher. See https://github.com/mmkal/trpc-cli/pull/63`;
+                 throw new Error(message);

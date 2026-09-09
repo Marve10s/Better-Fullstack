@@ -107,8 +107,8 @@ belongs in the CLI or shared packages.
 - Schema, metadata, aliases, and compatibility belong in `packages/types`.
 - File inclusion decisions belong in template handlers, not scattered processors.
 - Package mutation belongs in processors, not repeated inside templates.
-- A generated example belongs in a source `.hbs` template, not
-  `src/templates.generated.ts`.
+- A generated example belongs in a source `.hbs` template, not the generated eager map,
+  family manifest, or family modules under `src/templates.generated*`.
 - CLI/MCP shared behavior belongs in a core helper with thin transport adapters.
 - Browser state belongs in web builder modules; reusable stack semantics belong in shared types.
 - User documentation belongs in `apps/web/content`; agent engineering rules belong in

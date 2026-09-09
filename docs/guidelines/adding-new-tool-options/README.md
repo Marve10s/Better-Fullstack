@@ -1092,6 +1092,12 @@ bun run --filter=@better-fullstack/template-generator build
 bun run --filter=create-better-fullstack build
 ```
 
+Template generation updates the eager embedded map and the browser family manifest/modules. When a
+new category introduces a new top-level template directory, also route its selection in
+`packages/template-generator/src/browser-template-loader.ts` and cover eager-versus-selected tree
+equality for a representative stack, including a mixed-ecosystem graph when the category can be
+part-scoped.
+
 ### Step 2 - Auto-sync test (catches missing builder/prompt/schema entries)
 
 ```bash
@@ -1171,7 +1177,8 @@ Before running `git add` and `git commit`, verify:
 | **Lint**          | `turbo lint` across all packages           | `bun run --cwd apps/cli check-types && bun run --cwd apps/web typecheck` |
 | **Test**          | `bun run test:coverage` (all 2500+ tests)  | `bun test apps/cli/test/`                                                |
 | **Release Guard** | Snapshot verification + CLI/builder parity | `bun run test:release`                                                   |
-| **Build Check**   | Full build of all packages                 | Step 1 above                                                             |
+| **Web Build**     | Web production build                      | `bun run build:web`                                                      |
+| **Build Check**   | Final prerequisite gate                  | Run the release, lint, test, and web build lanes above                    |
 | **Smoke Test**    | Curated preset generation                  | `bun run test:smoke -- --preset <name>`                                  |
 | **CodeQL**        | Security analysis                          | (runs remotely only)                                                     |
 

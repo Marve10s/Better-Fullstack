@@ -1,7 +1,3 @@
-import {
-  getGeneratedPackageJsonPins,
-  getLatestChannelPinnedVersion,
-} from "@better-fullstack/template-generator";
 import { log } from "@clack/prompts";
 import fs from "fs-extra";
 import path from "node:path";
@@ -351,6 +347,8 @@ export async function planDependencyVersionChannel(
 
   if (packageNames.size === 0) return [];
 
+  const { getGeneratedPackageJsonPins, getLatestChannelPinnedVersion } =
+    await import("@better-fullstack/template-generator");
   const resolvedVersions = new Map<string, string>();
   const packageInfos = new Map<string, NpmPackageInfo>();
   const latestChannelHolds = new Map<string, string>();

@@ -340,14 +340,16 @@ export async function createProjectArchive(
 }
 
 export async function createStackProjectArchive(stack: StackState): Promise<ProjectArchive> {
-  const [{ generateVirtualProject, EMBEDDED_TEMPLATES }, { loadBinaryTemplate }] =
+  const config = stackStateToProjectConfig(stack);
+  const [{ generateVirtualProject, loadTemplatesForConfig }, { loadBinaryTemplate }] =
     await Promise.all([
-      import("@better-fullstack/template-generator/browser"),
+      import("@better-fullstack/template-generator/browser-loader"),
       import("@/lib/project/project-binary-assets"),
     ]);
+  const templates = await loadTemplatesForConfig(config);
   const result = await generateVirtualProject({
-    config: stackStateToProjectConfig(stack),
-    templates: EMBEDDED_TEMPLATES,
+    config,
+    templates,
   });
 
   if (!result.success || !result.tree) {
@@ -355,7 +357,7 @@ export async function createStackProjectArchive(stack: StackState): Promise<Proj
   }
 
   return createProjectArchive(result.tree.root, loadBinaryTemplate, {
-    config: stackStateToProjectConfig(stack),
+    config,
     cliVersion: __BFS_CLI_VERSION__,
   });
 }

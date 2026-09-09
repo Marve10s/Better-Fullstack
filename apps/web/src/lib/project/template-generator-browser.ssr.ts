@@ -3,5 +3,6 @@ const clientOnlyError = (): never => {
 };
 
 export const EMBEDDED_TEMPLATES = new Map<string, string>();
+export const loadTemplatesForConfig = async () => new Map<string, string>();
 export const generateVirtualProject = clientOnlyError;
 export const validatePreflightConfig = clientOnlyError;

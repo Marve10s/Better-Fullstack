@@ -2,6 +2,12 @@ import { makeConfig } from "@test/_fixtures/config-factory";
 import { describe, expect, it } from "bun:test";
 
 import {
+  COMPILED_TEMPLATE_CACHE_LIMIT,
+  clearCompiledTemplateCache,
+  getCompiledTemplate,
+  getCompiledTemplateCacheSize,
+} from "@/core/compiled-template-cache";
+import {
   isBinaryFile,
   nativeApplicationId,
   processFileContent,
@@ -10,6 +16,59 @@ import {
 } from "@/core/template-processor";
 
 describe("template processor", () => {
+  it("reuses compiled functions per content while rendering each context fresh", () => {
+    clearCompiledTemplateCache();
+    const template = "{{projectName}}:{{#if (eq auth 'none')}}open{{else}}{{auth}}{{/if}}";
+
+    const first = processTemplateString(template, makeConfig({ projectName: "alpha" }));
+    const second = processTemplateString(
+      template,
+      makeConfig({ projectName: "beta", auth: "better-auth" }),
+    );
+    const changed = processTemplateString(`${template}!`, makeConfig({ projectName: "alpha" }));
+
+    expect(first).toBe("alpha:open");
+    expect(second).toBe("beta:better-auth");
+    expect(changed).toBe("alpha:open!");
+    expect(getCompiledTemplate(template)).toBe(getCompiledTemplate(template));
+    expect(getCompiledTemplate(template)).not.toBe(getCompiledTemplate(`${template}!`));
+    expect(getCompiledTemplateCacheSize()).toBe(2);
+  });
+
+  it("keys the compiled cache by compiler options", () => {
+    clearCompiledTemplateCache();
+    const config = makeConfig({ projectName: "<b>" });
+
+    expect(processTemplateString("{{projectName}}", config)).toBe("&lt;b&gt;");
+    expect(processTemplateString("{{projectName}}", config, { noEscape: true })).toBe("<b>");
+    expect(getCompiledTemplateCacheSize()).toBe(2);
+  });
+
+  it("cannot alias option metadata with template content", () => {
+    clearCompiledTemplateCache();
+    const contentWithOptionPrefix = `${JSON.stringify({})}\0{{projectName}}`;
+
+    expect(getCompiledTemplate(contentWithOptionPrefix)).not.toBe(
+      getCompiledTemplate("{{projectName}}", {}),
+    );
+    expect(getCompiledTemplateCacheSize()).toBe(2);
+  });
+
+  it("evicts the least recently used compiled template at the cache bound", () => {
+    clearCompiledTemplateCache();
+    const oldest = getCompiledTemplate("oldest {{projectName}}");
+    for (let index = 1; index < COMPILED_TEMPLATE_CACHE_LIMIT; index += 1) {
+      getCompiledTemplate(`template-${index} {{projectName}}`);
+    }
+
+    const recentlyUsed = getCompiledTemplate("template-1 {{projectName}}");
+    getCompiledTemplate("overflow {{projectName}}");
+
+    expect(getCompiledTemplateCacheSize()).toBe(COMPILED_TEMPLATE_CACHE_LIMIT);
+    expect(getCompiledTemplate("template-1 {{projectName}}")).toBe(recentlyUsed);
+    expect(getCompiledTemplate("oldest {{projectName}}")).not.toBe(oldest);
+  });
+
   it("renders logical and string helpers inside templates", () => {
     const result = processTemplateString(
       [
