@@ -58,6 +58,18 @@ describe("browser template family loader", () => {
     );
   });
 
+  it("loads kotlin-ktor templates for a Java stack that selects Ktor", async () => {
+    const config = graphConfig(["backend:java:ktor"]);
+    const requiredFamilies = getRequiredTemplateFamilies(config);
+    const selectedTemplates = await loadTemplatesForConfig(config);
+
+    expect(requiredFamilies).toContain("java-base");
+    expect(requiredFamilies).toContain("kotlin-ktor");
+    const files = await generatedFiles(config, selectedTemplates);
+    expect(await generatedFiles(config, EMBEDDED_TEMPLATES)).toEqual(files);
+    expect(files.some(([path]) => path.includes("Application.kt"))).toBe(true);
+  });
+
   it("keeps graph-global add-on templates for native and mixed ecosystem graphs", async () => {
     for (const parts of [
       ["backend:go:gin"],

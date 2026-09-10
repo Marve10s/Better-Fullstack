@@ -45,6 +45,9 @@ function addLegacyTemplateFamilies(families: Set<TemplateFamily>, config: Projec
   if (!usesJavaScriptTemplates) {
     const ecosystemFamily = ECOSYSTEM_TEMPLATE_FAMILY[config.ecosystem];
     if (ecosystemFamily) families.add(ecosystemFamily);
+    if (config.ecosystem === "java" && config.javaWebFramework === "ktor") {
+      families.add("kotlin-ktor");
+    }
     return;
   }
 
