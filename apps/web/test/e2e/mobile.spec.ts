@@ -5,12 +5,12 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 test.describe("Stack Builder - Mobile", () => {
   test("builder page loads on mobile viewport", async ({ page }) => {
-    await gotoAppPage(page, "/new");
+    await gotoAppPage(page, "/new?mode=multi");
     await expect(page.getByRole("heading", { name: "What are you building?" })).toBeVisible();
   });
 
   test("no horizontal overflow on mobile", async ({ page }) => {
-    await gotoAppPage(page, "/new");
+    await gotoAppPage(page, "/new?mode=multi");
     await expect(page.getByRole("heading", { name: "What are you building?" })).toBeVisible();
 
     const bodyWidth = await page.evaluate(() => document.body.scrollWidth);
