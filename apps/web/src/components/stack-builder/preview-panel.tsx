@@ -23,15 +23,16 @@ import { stackStateToProjectConfig } from "@/lib/builder/preview-config";
 import { cn } from "@/lib/platform/utils";
 import * as m from "@/paraglide/messages";
 
-// Client-side generation via dynamic import - the ~354KB template-generator
-// bundle is only loaded when the user actually opens the Preview tab.
+// Client-side generation and only the selected template families load when the
+// user opens Preview.
 const generatePreview = async (stack: StackState) => {
-  const { generateVirtualProject, EMBEDDED_TEMPLATES, validatePreflightConfig } =
-    await import("@better-fullstack/template-generator/browser");
   const config = stackStateToProjectConfig(stack);
+  const { generateVirtualProject, loadTemplatesForConfig, validatePreflightConfig } =
+    await import("@better-fullstack/template-generator/browser-loader");
+  const templates = await loadTemplatesForConfig(config);
   const result = await generateVirtualProject({
     config,
-    templates: EMBEDDED_TEMPLATES,
+    templates,
   });
   const preflight = validatePreflightConfig(config);
   return {

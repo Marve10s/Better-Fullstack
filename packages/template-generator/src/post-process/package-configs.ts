@@ -577,8 +577,8 @@ function getPackageManagerConfig(
       };
     case "bun":
       return {
-        dev: "bun run --filter '*' dev",
-        build: "bun run --filter '*' build",
+        dev: "bun run --if-present --filter '*' dev",
+        build: "bun run --if-present --filter '*' build",
         checkTypes: "bun run --if-present --filter '*' check-types",
         filter: (workspace, script) => `bun run --filter ${workspace} ${script}`,
       };

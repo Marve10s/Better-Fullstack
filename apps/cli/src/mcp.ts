@@ -200,24 +200,17 @@ import { type CallToolResult, McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import z from "zod";
 
-import { applyGen, planGen } from "@/commands/generation/gen";
-import { getRecipesResult } from "@/commands/generation/recipes";
+import type { planMcpPartRemoval } from "@/mcp/mcp-project-lifecycle";
+
 import {
   getStarterTrackRecommendation,
   getStarterTracksResult,
 } from "@/commands/stack/starter-tracks";
 import { readBtsConfig } from "@/config/bts-config";
-import { applyConfigDriftRepair, planConfigDriftRepair } from "@/config/config-drift-repair";
 import { applyEffectBackendDefaults } from "@/config/config-processing";
 import { getEffectiveStack, getGraphSummary } from "@/config/graph-summary";
 import { getCompatibilityBackend } from "@/config/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "@/config/templates";
-import {
-  applyPrimaryRoleReplacement,
-  planPrimaryRoleReplacement,
-} from "@/helpers/core/primary-role-replacement";
-import { applyPackInstall, planPackInstall } from "@/helpers/core/registry-handler";
-import { applyStackUpdate, planStackUpdate } from "@/helpers/core/stack-update";
 import { generateReproducibleCommand } from "@/lifecycle/generate-reproducible-command";
 import {
   lifecycleResultOutputSchema,
@@ -233,26 +226,10 @@ import {
   recipesOutputSchema,
   registryMutationOutputSchema,
 } from "@/mcp/mcp-lifecycle-output-schemas";
-import {
-  applyMcpPartRemoval,
-  applyMcpProjectUpdate,
-  checkMcpProject,
-  confirmMcpProjectAdoption,
-  getMcpProjectRecoveryPoint,
-  getMcpProjectStatus,
-  listMcpProjectRecoveryPoints,
-  planMcpPartRemoval,
-  planMcpProjectAdoption,
-  planMcpProjectUpdate,
-  pruneMcpProjectRecoveryPoints,
-  recoverMcpProjectTransaction,
-  verifyMcpProjectRecoveryPoint,
-} from "@/mcp/mcp-project-lifecycle";
 import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
 import { runWithContextAsync } from "@/presentation/context";
 import { getCapabilityEvidenceReport } from "@/project/capability-evidence";
 import { getExpectedCapabilityProducerFingerprint } from "@/project/capability-producer";
-import { getProjectContext } from "@/project/project-context";
 import { trackEvent, trackProjectCreation, withCommandTelemetry } from "@/telemetry/analytics";
 
 const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
@@ -260,6 +237,38 @@ const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce(
   0,
 );
 const ECOSYSTEM_LIST = EcosystemSchema.options.join(", ");
+
+const referenceOptimizedSchemas = new WeakMap<z.ZodType, z.ZodType>();
+
+function reuseLocalOutputSchemaDefinitions<Schema extends z.ZodType>(schema: Schema): Schema {
+  const cached = referenceOptimizedSchemas.get(schema);
+  if (cached) return cached as Schema;
+
+  const standard = schema["~standard"];
+  const jsonSchema = standard.jsonSchema;
+  // MCP advertises each tool schema independently, so references must stay local.
+  // Output shapes benefit from reuse; the broad input enums grow when referenced.
+  const optimizedStandard = {
+    ...standard,
+    jsonSchema: {
+      ...jsonSchema,
+      output: (params: Parameters<typeof jsonSchema.output>[0]) =>
+        jsonSchema.output({
+          ...params,
+          libraryOptions: { ...params?.libraryOptions, reused: "ref" },
+        }),
+    },
+  };
+  const optimized = new Proxy(schema, {
+    get(target, property, receiver) {
+      return property === "~standard"
+        ? optimizedStandard
+        : Reflect.get(target, property, receiver);
+    },
+  });
+  referenceOptimizedSchemas.set(schema, optimized);
+  return optimized as Schema;
+}
 
 const INSTRUCTIONS = `Better-Fullstack scaffolds fullstack projects across ${ECOSYSTEM_LIST} ecosystems with ${OPTION_ENTRY_COUNT} configurable options.
 
@@ -1740,28 +1749,39 @@ export function createMcpServer(): McpServer {
     },
     cb: (input: Input) => CallToolResult | Promise<CallToolResult>,
   ): void => {
-    server.registerTool(name, config, async (input) =>
-      withCommandTelemetry(
-        name,
-        async () => {
-          const result = await cb(input);
-          if (result.isError || !config.outputSchema) return result;
+    server.registerTool(
+      name,
+      {
+        ...config,
+        inputSchema: config.inputSchema,
+        outputSchema: config.outputSchema
+          ? reuseLocalOutputSchemaDefinitions(config.outputSchema)
+          : undefined,
+      },
+      async (input) =>
+        withCommandTelemetry(
+          name,
+          async () => {
+            const result = await cb(input);
+            if (result.isError || !config.outputSchema) return result;
 
-          // The SDK validates output but sends the original, unparsed object.
-          // Project both representations to the schema advertised to clients.
-          const structuredContent = config.outputSchema.parse(result.structuredContent);
-          return {
-            ...result,
-            content: [{ type: "text" as const, text: JSON.stringify(structuredContent, null, 2) }],
-            structuredContent,
-          };
-        },
-        {
-          source: "mcp",
-          mode: config.annotations?.readOnlyHint ? "read" : "write",
-          resultStatus: (result) => (result.isError ? "failed" : "succeeded"),
-        },
-      ),
+            // The SDK validates output but sends the original, unparsed object.
+            // Project both representations to the schema advertised to clients.
+            const structuredContent = config.outputSchema.parse(result.structuredContent);
+            return {
+              ...result,
+              content: [
+                { type: "text" as const, text: JSON.stringify(structuredContent, null, 2) },
+              ],
+              structuredContent,
+            };
+          },
+          {
+            source: "mcp",
+            mode: config.annotations?.readOnlyHint ? "read" : "write",
+            resultStatus: (result) => (result.isError ? "failed" : "succeeded"),
+          },
+        ),
     );
   };
 
@@ -2308,6 +2328,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string }) => {
+      const { getMcpProjectStatus } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = await getMcpProjectStatus(sanitizePath(input.projectDir));
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
@@ -2334,6 +2355,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string }) => {
+      const { checkMcpProject } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = await checkMcpProject(sanitizePath(input.projectDir));
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
@@ -2360,6 +2382,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string }) => {
+      const { planConfigDriftRepair } = await import("@/config/config-drift-repair.js");
       const payload = await planConfigDriftRepair(sanitizePath(input.projectDir));
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
@@ -2391,6 +2414,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string; reviewToken: string }) => {
+      const { applyConfigDriftRepair } = await import("@/config/config-drift-repair.js");
       const payload = await applyConfigDriftRepair(
         sanitizePath(input.projectDir),
         input.reviewToken,
@@ -2422,6 +2446,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string; kind: "resource" | "route"; name: string }) => {
+      const { planGen } = await import("@/commands/generation/gen.js");
       const payload = await planGen({
         dir: sanitizePath(input.projectDir),
         kind: input.kind,
@@ -2461,6 +2486,7 @@ export function createMcpServer(): McpServer {
       name: string;
       reviewToken: string;
     }) => {
+      const { applyGen } = await import("@/commands/generation/gen.js");
       const payload = await applyGen(
         { dir: sanitizePath(input.projectDir), kind: input.kind, name: input.name },
         input.reviewToken,
@@ -2491,6 +2517,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string; name?: string }) => {
+      const { getRecipesResult } = await import("@/commands/generation/recipes.js");
       const payload = await getRecipesResult({
         action: "check",
         dir: sanitizePath(input.projectDir),
@@ -2521,6 +2548,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string }) => {
+      const { getRecipesResult } = await import("@/commands/generation/recipes.js");
       const payload = await getRecipesResult({
         action: "history",
         dir: sanitizePath(input.projectDir),
@@ -2549,6 +2577,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string }) => {
+      const { getProjectContext } = await import("@/project/project-context.js");
       const payload = await getProjectContext(sanitizePath(input.projectDir));
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
@@ -2575,6 +2604,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string; source: string }) => {
+      const { planPackInstall } = await import("@/helpers/core/registry-handler.js");
       const payload = await planPackInstall({
         projectDir: sanitizePath(input.projectDir),
         source: input.source,
@@ -2610,6 +2640,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string; source: string; reviewToken: string }) => {
+      const { applyPackInstall } = await import("@/helpers/core/registry-handler.js");
       const payload = await applyPackInstall(
         { projectDir: sanitizePath(input.projectDir), source: input.source },
         input.reviewToken,
@@ -2642,6 +2673,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string; target: string }) => {
+      const { planMcpPartRemoval } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = projectPartRemovalPayload(
         await planMcpPartRemoval(sanitizePath(input.projectDir), input.target),
       );
@@ -2689,6 +2721,7 @@ export function createMcpServer(): McpServer {
       reviewToken: string;
       acknowledgeArchitectureChange: boolean;
     }) => {
+      const { applyMcpPartRemoval } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = projectPartRemovalPayload(
         await applyMcpPartRemoval(
           sanitizePath(input.projectDir),
@@ -2722,6 +2755,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string }) => {
+      const { planMcpProjectAdoption } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = await planMcpProjectAdoption(sanitizePath(input.projectDir));
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
@@ -2753,6 +2787,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string; confirmationToken: string }) => {
+      const { confirmMcpProjectAdoption } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = await confirmMcpProjectAdoption(
         sanitizePath(input.projectDir),
         input.confirmationToken,
@@ -2782,6 +2817,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string }) => {
+      const { planMcpProjectUpdate } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = await planMcpProjectUpdate(sanitizePath(input.projectDir));
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
@@ -2823,6 +2859,7 @@ export function createMcpServer(): McpServer {
       reviewToken: string;
       acknowledgeUnprovenManifestV1: boolean;
     }) => {
+      const { applyMcpProjectUpdate } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = await applyMcpProjectUpdate(
         sanitizePath(input.projectDir),
         input.reviewToken,
@@ -2853,6 +2890,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string }) => {
+      const { listMcpProjectRecoveryPoints } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = await listMcpProjectRecoveryPoints(sanitizePath(input.projectDir));
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
@@ -2880,6 +2918,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string; transactionId: string }) => {
+      const { getMcpProjectRecoveryPoint } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = await getMcpProjectRecoveryPoint(
         sanitizePath(input.projectDir),
         input.transactionId,
@@ -2910,6 +2949,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string; transactionId: string }) => {
+      const { verifyMcpProjectRecoveryPoint } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = await verifyMcpProjectRecoveryPoint(
         sanitizePath(input.projectDir),
         input.transactionId,
@@ -2973,6 +3013,7 @@ export function createMcpServer(): McpServer {
       apply: boolean;
       reviewToken?: string;
     }) => {
+      const { pruneMcpProjectRecoveryPoints } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = await pruneMcpProjectRecoveryPoints(
         sanitizePath(input.projectDir),
         input.olderThanDays,
@@ -3007,6 +3048,7 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string; transactionId: string }) => {
+      const { recoverMcpProjectTransaction } = await import("@/mcp/mcp-project-lifecycle.js");
       const payload = await recoverMcpProjectTransaction(
         sanitizePath(input.projectDir),
         input.transactionId,
@@ -3038,6 +3080,8 @@ export function createMcpServer(): McpServer {
       },
     },
     async (input: { projectDir: string; target: string; replacement: string }) => {
+      const { planPrimaryRoleReplacement } =
+        await import("@/helpers/core/primary-role-replacement.js");
       const result = await planPrimaryRoleReplacement(
         sanitizePath(input.projectDir),
         input.target,
@@ -3092,6 +3136,8 @@ export function createMcpServer(): McpServer {
       reviewToken: string;
       acknowledgeArchitectureChange: boolean;
     }) => {
+      const { applyPrimaryRoleReplacement } =
+        await import("@/helpers/core/primary-role-replacement.js");
       const result = await applyPrimaryRoleReplacement(
         sanitizePath(input.projectDir),
         input.target,
@@ -3132,6 +3178,7 @@ export function createMcpServer(): McpServer {
       try {
         const safePath = sanitizePath(input.projectDir);
         const { projectDir: _projectDir, projectName: _projectName, ...requestedChanges } = input;
+        const { planStackUpdate } = await import("@/helpers/core/stack-update.js");
         const plan = await planStackUpdate(safePath, requestedChanges);
         if (!plan.success) {
           return {
@@ -3198,6 +3245,7 @@ export function createMcpServer(): McpServer {
       const { projectDir: _projectDir, projectName: _projectName, ...requestedChanges } = input;
       try {
         const safePath = sanitizePath(input.projectDir);
+        const { applyStackUpdate } = await import("@/helpers/core/stack-update.js");
         const result = await applyStackUpdate(safePath, requestedChanges);
         await trackEvent("stack_updated", requestedChanges, {
           source: "mcp",
@@ -3292,6 +3340,7 @@ export function createMcpServer(): McpServer {
         const replacesWorkspaceRunner =
           requestedRunner !== undefined &&
           existingAddons.some((addon) => WORKSPACE_RUNNERS.has(addon) && addon !== requestedRunner);
+        const { planStackUpdate } = await import("@/helpers/core/stack-update.js");
         const plan = await planStackUpdate(
           safePath,
           {

@@ -50,6 +50,21 @@ describe("processEnvVariables", () => {
     expect(webEnv.NEXT_PUBLIC_SERVER_URL).toBeUndefined();
   });
 
+  it("creates a fresh generated secret for each new project tree", () => {
+    const firstVfs = createSeededVFS(["apps/web/package.json"]);
+    const secondVfs = createSeededVFS(["apps/web/package.json"]);
+    const config = makeConfig({ frontend: ["next"], backend: "self", auth: "better-auth" });
+
+    processEnvVariables(firstVfs, config);
+    processEnvVariables(secondVfs, config);
+
+    const firstSecret = getEnvVars(firstVfs, "apps/web/.env").BETTER_AUTH_SECRET;
+    const secondSecret = getEnvVars(secondVfs, "apps/web/.env").BETTER_AUTH_SECRET;
+    expect(firstSecret).toMatch(/^[A-Za-z0-9]{32}$/);
+    expect(secondSecret).toMatch(/^[A-Za-z0-9]{32}$/);
+    expect(secondSecret).not.toBe(firstSecret);
+  });
+
   it("writes convex web and backend env files with frontend-specific prefixes", () => {
     const vfs = createSeededVFS(["apps/web/package.json", "packages/backend/package.json"]);
 

@@ -44,7 +44,9 @@ Additional focused release-facing checks:
 
 ## Release workflow expectations
 
-- `.github/workflows/test.yaml` runs a dedicated `Release Guard` job before broader build checks.
+- `.github/workflows/test.yaml` runs `Release Guard`, lint, tests, and the web build in parallel.
+  The final `Build Check` preserves the required check name and fails when any prerequisite fails.
+  Release Guard owns the core package and CLI builds; Web Build owns the Vercel-parity web build.
 - `.github/workflows/release.yaml` also runs the release verification lane before publishing packages.
 - `.github/workflows/pr-preview-build.yaml` builds preview tarballs without secrets. Once the protected `npm-preview` environment has its package-scoped token, `.github/workflows/pr-preview.yaml` publishes them and runs the published-package smoke lane; it fails closed while that owner setting is absent. `.github/workflows/release.yaml` also runs the published-package smoke lane after publishing npm packages, because that check needs the real npm tag/version to be visible.
 - Published packages are versioned independently inside the release workflow. Do not hand-edit version bumps casually during unrelated feature work.

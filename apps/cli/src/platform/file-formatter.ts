@@ -1,6 +1,7 @@
+import type { FormatOptions } from "oxfmt";
+
 import fs from "fs-extra";
 import path from "node:path";
-import { format, type FormatOptions } from "oxfmt";
 
 const formatOptions: FormatOptions = {
   experimentalSortPackageJson: true,
@@ -11,6 +12,7 @@ const formatOptions: FormatOptions = {
 
 export async function formatCode(filePath: string, content: string): Promise<string | null> {
   try {
+    const { format } = await import("oxfmt");
     const result = await format(path.basename(filePath), content, formatOptions);
 
     if (result.errors && result.errors.length > 0) {

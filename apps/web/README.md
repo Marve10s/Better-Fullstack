@@ -24,7 +24,8 @@ Open [http://localhost:3333](http://localhost:3333) with your browser to see the
 
 ## Performance Budget CI
 
-This app enforces JS/CSS bundle-size budgets in CI.
+CI compares JS/CSS bundle sizes with the baseline after the web build, fails on an
+over-budget regression, and adds the report to the job summary.
 
 ```bash
 # Compare current build assets with baseline and fail on over-budget regressions

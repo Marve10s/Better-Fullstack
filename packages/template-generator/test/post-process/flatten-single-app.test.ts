@@ -27,7 +27,7 @@ function seedThinSelfMonorepo(projectName = "flatapp"): VirtualFileSystem {
         "@types/node": "^26.0.1",
       },
     },
-    scripts: { dev: "bun run --filter '*' dev" },
+    scripts: { dev: "bun run --if-present --filter '*' dev" },
     packageManager: "bun@1.3.5",
     dependencies: { dotenv: "catalog:", zod: "catalog:", [`@${projectName}/env`]: "workspace:*" },
     devDependencies: {
@@ -286,7 +286,7 @@ describe("flattenSingleApp", () => {
     vfs.writeJson("package.json", {
       ...rootPkg,
       scripts: {
-        dev: "bun run --filter '*' dev",
+        dev: "bun run --if-present --filter '*' dev",
         "secrets:scan": "gitleaks git --redact --verbose",
         "secrets:scan:staged": "gitleaks git --pre-commit --redact --staged --verbose",
       },

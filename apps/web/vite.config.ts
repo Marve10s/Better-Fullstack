@@ -82,7 +82,11 @@ function ssrTemplateGeneratorAliasPlugin(): PluginOption {
       const isServerEnvironment =
         options.ssr || environmentName === "ssr" || environmentName === "nitro";
 
-      if (isServerEnvironment && source === "@better-fullstack/template-generator/browser") {
+      if (
+        isServerEnvironment &&
+        (source === "@better-fullstack/template-generator/browser" ||
+          source === "@better-fullstack/template-generator/browser-loader")
+      ) {
         return ssrTemplateGeneratorStub;
       }
 

@@ -139,7 +139,7 @@
     "dev": "tsdown --watch",
     "lint": "oxlint . && tsc --noEmit && bun test test/recommendations/cli-builder-sync.test.ts",
     "check-types": "tsc --noEmit",
-    "test": "bun test ./test/{architecture,benchmarks,ecosystems,features,generation,lifecycle,mcp,prompts,recommendations,support,telemetry}/*.test.ts",
+    "test": "bun test --parallel=2 --isolate --timeout=180000 ./test/{architecture,benchmarks,ecosystems,features,generation,lifecycle,mcp,prompts,recommendations,support,telemetry}/*.test.ts",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage ./test/{architecture,benchmarks,ecosystems,features,generation,lifecycle,mcp,prompts,recommendations,support,telemetry}/*.test.ts",
     "test:ci": "CI=1 bun test --bail=5",
@@ -166,7 +166,7 @@
     "jsonc-parser": "^3.3.1",
     "oxfmt": "^0.19.0",
     "picocolors": "^1.1.1",
-    "trpc-cli": "^0.12.1",
+    "trpc-cli": "0.12.4",
     "ts-morph": "^27.0.2",
     "yaml": "^2.9.0",
     "zod": "4.5.4"

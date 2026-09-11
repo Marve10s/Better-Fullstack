@@ -23,10 +23,10 @@ test.afterEach(async ({ page }, testInfo) => {
   expect(widths.content).toBeLessThanOrEqual(widths.viewport);
 });
 
-test("new projects start with applications and expose every mobile ecosystem", async ({
+test("the composer starts with applications and exposes every mobile ecosystem", async ({
   page,
 }, testInfo) => {
-  await gotoAppPage(page, "/new");
+  await gotoAppPage(page, "/multi-ecosystem");
   await expect(commandOutput(page)).toContainText("bun create better-fullstack", {
     timeout: 15_000,
   });
@@ -51,7 +51,7 @@ test("new projects start with applications and expose every mobile ecosystem", a
 test("native applications omit JavaScript setup, round-trip their URL, and preview native output", async ({
   page,
 }) => {
-  await gotoAppPage(page, "/new");
+  await gotoAppPage(page, "/multi-ecosystem");
   await expect(commandOutput(page)).toContainText("bun create better-fullstack", {
     timeout: 15_000,
   });
@@ -87,7 +87,7 @@ test("native applications omit JavaScript setup, round-trip their URL, and previ
 });
 
 test("an empty application selection cannot generate a default project", async ({ page }) => {
-  await gotoAppPage(page, "/new");
+  await gotoAppPage(page, "/multi-ecosystem");
   await expect(commandOutput(page)).toContainText("bun create better-fullstack", {
     timeout: 15_000,
   });
@@ -191,7 +191,7 @@ test("editing a shared project preserves its named services and owned capabiliti
 });
 
 test("the application flow remains usable on a narrow screen", async ({ page }, testInfo) => {
-  await gotoAppPage(page, "/new");
+  await gotoAppPage(page, "/multi-ecosystem");
   // The compact mobile command bar hides its text, but generation still signals hydration.
   const generatedCommand = page.getByTestId("command-output");
   await expect(generatedCommand).toContainText("bun create better-fullstack", {

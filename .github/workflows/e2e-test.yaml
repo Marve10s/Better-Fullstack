@@ -579,7 +579,6 @@ jobs:
         with:
           path: |
             node_modules
-            ~/.bun/install/cache
           key: benchmark-install-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
           restore-keys: benchmark-install-${{ runner.os }}-bun-
 
@@ -625,7 +624,6 @@ jobs:
         with:
           path: |
             node_modules
-            ~/.bun/install/cache
           key: package-managers-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
           restore-keys: package-managers-${{ runner.os }}-bun-
 

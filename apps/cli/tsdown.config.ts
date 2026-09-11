@@ -14,7 +14,7 @@ export default defineConfig({
   shims: true,
   outDir: "dist",
   dts: true,
-  noExternal: ["@better-fullstack/project-lifecycle"],
+  noExternal: ["@better-fullstack/project-lifecycle", "trpc-cli"],
   copy: [{ from: "../../plugin/skills", to: "dist/skills", flatten: false }],
   outputOptions: {
     banner: "#!/usr/bin/env node",

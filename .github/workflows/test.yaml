@@ -120,11 +120,10 @@ jobs:
       - name: Run Turbo Tests
         run: bun run test
 
-  build:
-    name: Build Check
+  web-build:
+    name: Web Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [release-guard, lint, test]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -160,7 +159,33 @@ jobs:
         env:
           NODE_OPTIONS: "--max-old-space-size=6144"
 
-      - name: Build All Packages
-        run: bun run build
-        env:
-          NODE_OPTIONS: "--max-old-space-size=6144"
+      - name: Check Web Performance Budget
+        id: web-performance
+        run: bun run --cwd apps/web perf:check
+
+      - name: Summarize Web Performance
+        if: always() && steps.web-performance.outcome != 'skipped'
+        run: |
+          if [ -f apps/web/reports/performance/summary.md ]; then
+            cat apps/web/reports/performance/summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Web performance report could not be generated. See the budget step logs.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [release-guard, lint, test, web-build]
+    if: ${{ !cancelled() }}
+    steps:
+      # Keep the existing required check red when a prerequisite fails.
+      - name: Require successful checks
+        if: >-
+          needs.release-guard.result != 'success' ||
+          needs.lint.result != 'success' ||
+          needs.test.result != 'success' ||
+          needs.web-build.result != 'success'
+        run: |
+          echo 'All required checks must pass.' >&2
+          exit 1
