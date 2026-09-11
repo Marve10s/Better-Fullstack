@@ -197,6 +197,74 @@ export const KOTLIN_UNSUPPORTED_JAVA_TESTING_LIBRARIES: ReadonlySet<string> = ne
 // blocks: data classes replace Lombok, and MapStruct would need kapt.
 export const KOTLIN_DROPPED_JAVA_LIBRARIES: ReadonlySet<string> = new Set(["lombok", "mapstruct"]);
 
+export const KOTLIN_SUPPORTED_JAVA_WEB_FRAMEWORKS: ReadonlySet<string> = new Set([
+  "spring-boot",
+  "ktor",
+  "none",
+]);
+
+export const KOTLIN_SUPPORTED_JAVA_ORM: ReadonlySet<string> = new Set(["spring-data-jpa", "none"]);
+
+export const KOTLIN_SUPPORTED_JAVA_API: ReadonlySet<string> = new Set([
+  "spring-graphql",
+  "none",
+]);
+
+export const KOTLIN_JAVA_ONLY_SHARED_TOOLS: Readonly<Record<string, ReadonlySet<string>>> = {
+  email: new Set(["resend"]),
+  search: new Set(["meilisearch"]),
+  caching: new Set(["upstash-redis"]),
+  observability: new Set(["sentry"]),
+};
+
+export const KOTLIN_HIDDEN_SHARED_CATEGORIES: ReadonlySet<string> = new Set([
+  "caching",
+  "search",
+  "email",
+  "observability",
+]);
+
+export function isKotlinJavaStack(stack: {
+  ecosystem?: string;
+  javaLanguage?: string;
+}): boolean {
+  return stack.ecosystem === "java" && stack.javaLanguage === "kotlin";
+}
+
+export function isKotlinBackendSelection(
+  backendEcosystem: string | undefined,
+  backendLanguage: string | undefined,
+): boolean {
+  return backendEcosystem === "java" && backendLanguage === "kotlin";
+}
+
+export function isKotlinIncompatibleOption(category: string, optionId: string): boolean {
+  switch (category) {
+    case "javaWebFramework":
+      if (optionId === "none") return false;
+      return !KOTLIN_SUPPORTED_JAVA_WEB_FRAMEWORKS.has(optionId);
+    case "javaBuildTool":
+      return optionId === "none";
+    case "javaOrm":
+    case "javaApi":
+      if (optionId === "none") return false;
+      return category === "javaOrm"
+        ? !KOTLIN_SUPPORTED_JAVA_ORM.has(optionId)
+        : !KOTLIN_SUPPORTED_JAVA_API.has(optionId);
+    case "javaLibraries":
+      return KOTLIN_DROPPED_JAVA_LIBRARIES.has(optionId);
+    case "javaTestingLibraries":
+      return KOTLIN_UNSUPPORTED_JAVA_TESTING_LIBRARIES.has(optionId);
+    case "email":
+    case "search":
+    case "caching":
+    case "observability":
+      return KOTLIN_JAVA_ONLY_SHARED_TOOLS[category]?.has(optionId) ?? false;
+    default:
+      return false;
+  }
+}
+
 export type KotlinJavaGateInput = {
   javaWebFramework?: string;
   javaBuildTool?: string;

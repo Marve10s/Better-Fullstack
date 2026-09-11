@@ -33,12 +33,30 @@ type CachingPromptContext = {
   caching?: Caching;
   backend?: Backend;
   ecosystem?: Ecosystem;
+  javaLanguage?: string;
 };
 
 export function resolveCachingPrompt(
   context: CachingPromptContext = {},
 ): PromptSingleResolution<Caching> {
   if (context.ecosystem === "react-native" || context.ecosystem === "elixir") {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
+
+  if (context.ecosystem === "java" && context.javaLanguage === "kotlin") {
+    if (context.caching !== undefined) {
+      return {
+        shouldPrompt: false,
+        mode: "single",
+        options: [],
+        autoValue: context.caching,
+      };
+    }
     return {
       shouldPrompt: false,
       mode: "single",
@@ -87,8 +105,13 @@ export function resolveCachingPrompt(
       };
 }
 
-export async function getCachingChoice(caching?: Caching, backend?: Backend, ecosystem?: Ecosystem) {
-  const resolution = resolveCachingPrompt({ caching, backend, ecosystem });
+export async function getCachingChoice(
+  caching?: Caching,
+  backend?: Backend,
+  ecosystem?: Ecosystem,
+  javaLanguage?: string,
+) {
+  const resolution = resolveCachingPrompt({ caching, backend, ecosystem, javaLanguage });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }
