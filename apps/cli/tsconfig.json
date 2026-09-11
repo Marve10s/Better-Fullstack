@@ -12,7 +12,6 @@
     "types": ["node"],
     "paths": {
       "@/*": ["./src/*"],
-      "@scaffbench/*": ["../../scripts/scaffbench/*"],
       "@test/*": ["./test/*"],
       "@testing/*": ["../../testing/*"],
       "@web/*": ["../web/src/*"]

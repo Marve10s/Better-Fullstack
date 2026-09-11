@@ -1,7 +1,3 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
-
-import { getPresetCombos } from "@testing/lib/presets";
 import {
   evaluatePublishedPackageEvidence,
   evaluateReleaseGuardEvidence,
@@ -11,6 +7,9 @@ import {
   SOURCE_EVIDENCE_MAX_AGE_MS,
   type SourceEvidenceContext,
 } from "@scripts/verified-combinations/evidence";
+import { getPresetCombos } from "@testing/lib/presets";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 
 type SmokeStep = {
   step: string;
@@ -768,9 +767,8 @@ async function renderScaffbenchSection(claimSummary: VerifiedClaimSummary): Prom
                   compactActionLinks([
                     repoActionLink("source", input.path),
                     { label: "owner", href: repoUrl(ownerArea) },
-                    { label: "runner", href: repoUrl("scripts/benchmarks/scaffbench-v2.ts") },
                   ]),
-                  "bun run scaffbench:2:canonical",
+                  "regenerate the ScaffBench summary in the archived run dir",
                 ),
               ]
                 .map(escapeTableCell)
@@ -1083,10 +1081,9 @@ async function buildVerifiedClaimSummary(
       ownerArea,
       actionLinks: compactActionLinks([
         repoActionLink("source", input.path),
-        { label: "runner", href: repoUrl("scripts/benchmarks/scaffbench-v2.ts") },
         { label: "owner", href: repoUrl(ownerArea) },
       ]),
-      rerunCommand: "bun run scaffbench:2:canonical",
+      rerunCommand: "regenerate the ScaffBench summary in the archived run dir",
       failureHint:
         "Inspect failureTags and validation steps in the ScaffBench summary, then follow the owner area for the stack family.",
     });

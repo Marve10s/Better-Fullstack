@@ -70,11 +70,11 @@ export type VerifiedCombinationSummary = {
 };
 
 export const verifiedCombinationsSummary: VerifiedCombinationSummary = {
-  "generatedAt": "2026-08-11T11:11:08.988Z",
-  "expiresAt": "2026-08-12T23:11:08.988Z",
-  "gitHead": "0c1bc90f735bb15b3fdd7aa1131ec7d48a0f274d",
+  "generatedAt": "2026-09-11T12:56:09.511Z",
+  "expiresAt": "2026-09-13T00:56:09.511Z",
+  "gitHead": "7528e1424ff55d916d822cb145fe63dba1cf6aaa",
   "expectedTotals": {
-    "releaseGuard": 17,
+    "releaseGuard": 24,
     "publishedPackage": 3
   },
   "smoke": [
@@ -113,15 +113,11 @@ export const verifiedCombinationsSummary: VerifiedCombinationSummary = {
       "ownerArea": "packages/template-generator/templates",
       "actionLinks": [
         {
-          "label": "runner",
-          "href": "https://github.com/Marve10s/Better-Fullstack/blob/main/scripts/benchmarks/scaffbench-v2.ts"
-        },
-        {
           "label": "owner",
           "href": "https://github.com/Marve10s/Better-Fullstack/blob/main/packages/template-generator/templates"
         }
       ],
-      "rerunCommand": "bun run scaffbench:2:canonical",
+      "rerunCommand": "regenerate the ScaffBench summary in the archived run dir",
       "failureHint": "Inspect failureTags and validation steps in the ScaffBench summary, then follow the owner area for the stack family.",
       "current": false,
       "reasons": [

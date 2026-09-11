@@ -36,7 +36,6 @@ const projects: Project[] = [
       { directory: "src", prefix: "@/" },
       { directory: "test", prefix: "@test/" },
       { directory: "scripts", prefix: "@scripts/" },
-      { directory: "../../scripts/scaffbench", prefix: "@scaffbench/" },
       { directory: "../../testing", prefix: "@testing/" },
       { directory: "../web/src", prefix: "@web/" },
     ],
@@ -89,7 +88,6 @@ const projects: Project[] = [
   {
     root: "scripts",
     aliases: [
-      { directory: "scaffbench", prefix: "@scaffbench/" },
       { directory: ".", prefix: "@scripts/" },
       { directory: "../.github/actions", prefix: "@actions/" },
       { directory: "..", prefix: "@root/" },
@@ -102,13 +100,6 @@ const projects: Project[] = [
     aliases: [
       { directory: ".", prefix: "@testing/" },
       { directory: "../scripts", prefix: "@scripts/" },
-    ],
-  },
-  {
-    root: "videos",
-    aliases: [
-      { directory: "src", prefix: "@/" },
-      { directory: "scripts", prefix: "@scripts/" },
     ],
   },
   {
@@ -241,22 +232,7 @@ async function canonicalExistingAlias(
   }
 
   if (project.root === "scripts") {
-    const suffix = value.slice(2);
-    const scaffbenchRoot = path.join(projectRoot, "scaffbench");
-    const scriptTarget = path.join(projectRoot, suffix);
-    const scaffbenchTarget = path.join(scaffbenchRoot, suffix);
-    const scriptTargetExists = await moduleTargetExists(scriptTarget);
-    const scaffbenchTargetExists = await moduleTargetExists(scaffbenchTarget);
-
-    if (isWithin(scaffbenchRoot, sourceFile)) {
-      return scriptTargetExists && !scaffbenchTargetExists
-        ? `@scripts/${suffix}`
-        : `@scaffbench/${suffix}`;
-    }
-    if (!scriptTargetExists && scaffbenchTargetExists) {
-      return `@scaffbench/${suffix}`;
-    }
-    return `@scripts/${suffix}`;
+    return `@scripts/${value.slice(2)}`;
   }
 
   if (

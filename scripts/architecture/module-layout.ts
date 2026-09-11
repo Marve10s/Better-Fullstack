@@ -58,13 +58,6 @@ const projects: Project[] = [
   },
   { root: "scripts", aliases: [{ directory: ".", prefix: "@scripts/" }] },
   { root: "testing", aliases: [{ directory: ".", prefix: "@testing/" }] },
-  {
-    root: "videos",
-    aliases: [
-      { directory: "src", prefix: "@/" },
-      { directory: "scripts", prefix: "@scripts/" },
-    ],
-  },
   { root: ".github/actions/update-check", aliases: [{ directory: ".", prefix: "@/" }] },
 ];
 
@@ -383,19 +376,6 @@ const groupedFiles: Record<string, Record<string, string[]>> = {
     platform: ["project-paths.ts"],
   },
   scripts: {
-    benchmarks: [
-      "build-benchmark-data.test.ts",
-      "build-benchmark-data.ts",
-      "build-scaffbench-3-data.ts",
-      "cli-matrix-harness.ts",
-      "record-scaffbench-canonical.test.ts",
-      "record-scaffbench-canonical.ts",
-      "scaffbench-executor.test.ts",
-      "scaffbench-hardening-round-2.test.ts",
-      "scaffbench-hardening.test.ts",
-      "scaffbench-v2-lib.test.ts",
-      "scaffbench-v2.ts",
-    ],
     evidence: [
       "capability-evidence-audit.test.ts",
       "capability-evidence-audit.ts",
