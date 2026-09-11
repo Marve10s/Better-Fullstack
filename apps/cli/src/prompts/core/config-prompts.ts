@@ -975,7 +975,19 @@ export async function gatherConfig(
       if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
         return Promise.resolve("none" as Email);
       }
-      return getEmailChoice(flags.email, results.backend, results.ecosystem);
+      if (
+        results.ecosystem === "java" &&
+        (results.javaLanguage === "kotlin" || flags.javaLanguage === "kotlin") &&
+        flags.email === undefined
+      ) {
+        return Promise.resolve("none" as Email);
+      }
+      return getEmailChoice(
+        flags.email,
+        results.backend,
+        results.ecosystem,
+        results.javaLanguage ?? flags.javaLanguage,
+      );
     },
     effect: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Effect);
@@ -1109,7 +1121,19 @@ export async function gatherConfig(
       if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
         return Promise.resolve("none" as Observability);
       }
-      return getObservabilityChoice(flags.observability, results.backend, results.ecosystem);
+      if (
+        results.ecosystem === "java" &&
+        (results.javaLanguage === "kotlin" || flags.javaLanguage === "kotlin") &&
+        flags.observability === undefined
+      ) {
+        return Promise.resolve("none" as Observability);
+      }
+      return getObservabilityChoice(
+        flags.observability,
+        results.backend,
+        results.ecosystem,
+        results.javaLanguage ?? flags.javaLanguage,
+      );
     },
     featureFlags: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as FeatureFlags);
@@ -1140,7 +1164,19 @@ export async function gatherConfig(
       if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
         return Promise.resolve("none" as Caching);
       }
-      return getCachingChoice(flags.caching, results.backend, results.ecosystem);
+      if (
+        results.ecosystem === "java" &&
+        (results.javaLanguage === "kotlin" || flags.javaLanguage === "kotlin") &&
+        flags.caching === undefined
+      ) {
+        return Promise.resolve("none" as Caching);
+      }
+      return getCachingChoice(
+        flags.caching,
+        results.backend,
+        results.ecosystem,
+        results.javaLanguage ?? flags.javaLanguage,
+      );
     },
     rateLimit: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as RateLimit);
@@ -1164,7 +1200,19 @@ export async function gatherConfig(
       if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
         return Promise.resolve("none" as Search);
       }
-      return getSearchChoice(flags.search, results.backend, results.ecosystem);
+      if (
+        results.ecosystem === "java" &&
+        (results.javaLanguage === "kotlin" || flags.javaLanguage === "kotlin") &&
+        flags.search === undefined
+      ) {
+        return Promise.resolve("none" as Search);
+      }
+      return getSearchChoice(
+        flags.search,
+        results.backend,
+        results.ecosystem,
+        results.javaLanguage ?? flags.javaLanguage,
+      );
     },
     vectorDb: ({ results }) => {
       if (results.ecosystem !== "typescript") {

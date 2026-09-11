@@ -61,12 +61,30 @@ type EmailPromptContext = {
   email?: Email;
   backend?: Backend;
   ecosystem?: Ecosystem;
+  javaLanguage?: string;
 };
 
 export function resolveEmailPrompt(
   context: EmailPromptContext = {},
 ): PromptSingleResolution<Email> {
   if (context.ecosystem === "react-native" || context.ecosystem === "elixir") {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
+
+  if (context.ecosystem === "java" && context.javaLanguage === "kotlin") {
+    if (context.email !== undefined) {
+      return {
+        shouldPrompt: false,
+        mode: "single",
+        options: [],
+        autoValue: context.email,
+      };
+    }
     return {
       shouldPrompt: false,
       mode: "single",
@@ -107,8 +125,13 @@ export function resolveEmailPrompt(
       };
 }
 
-export async function getEmailChoice(email?: Email, backend?: Backend, ecosystem?: Ecosystem) {
-  const resolution = resolveEmailPrompt({ email, backend, ecosystem });
+export async function getEmailChoice(
+  email?: Email,
+  backend?: Backend,
+  ecosystem?: Ecosystem,
+  javaLanguage?: string,
+) {
+  const resolution = resolveEmailPrompt({ email, backend, ecosystem, javaLanguage });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }
