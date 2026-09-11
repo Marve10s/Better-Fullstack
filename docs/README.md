@@ -28,7 +28,6 @@ behavior. Reference and completed documents must never override them.
 - `docs/update-support-policy.md` - rolling update-window contract and current qualification state
 - `docs/verified-combinations.md` - generated compatibility evidence
 - `testing/README.md` - production-package and smoke-test workspace
-- `benchmarks/README.md` - committed benchmark summaries
 - `apps/web/content/docs/` - user-facing product documentation
 
 ## Maintenance
