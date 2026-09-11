@@ -2334,8 +2334,18 @@ function CreationModeComposer({
 
   useEffect(() => {
     if (!kotlinAdvancedPatch) return;
-    onChange(kotlinAdvancedPatch);
-  }, [kotlinAdvancedPatch, onChange]);
+    onChange((current) => {
+      const view = getEditorStack(current);
+      const nextView = patchGraphScopedSelections(view, kotlinAdvancedPatch);
+      const specs = reconcileComposerSpecs(
+        current.stackPartSpecs,
+        view.stackPartSpecs,
+        nextView.stackPartSpecs ?? view.stackPartSpecs,
+        getGraphSelection(view).rootIds,
+      );
+      return { ...kotlinAdvancedPatch, ...stackPatchFromGraphSpecs(specs) };
+    });
+  }, [kotlinAdvancedPatch, onChange, getEditorStack]);
 
   const getStepSelection = (
     stepId: ComposerRole,
@@ -3789,7 +3799,30 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   };
 
   const handleTechSelect = (category: keyof typeof TECH_OPTIONS, techId: string) => {
-    if (!isOptionCompatible(getCompatibilityStackForCategory(category), category, techId)) return;
+    const compatibilityStack = getCompatibilityStackForCategory(category);
+    if (
+      category === "javaLanguage" &&
+      techId === "kotlin" &&
+      (compatibilityStack.ecosystem as string) === "java"
+    ) {
+      const prospective: StackState = {
+        ...compatibilityStack,
+        caching: "none",
+        search: "none",
+        email: "none",
+        observability: "none",
+        javaLibraries: ((compatibilityStack.javaLibraries ?? []) as string[]).filter(
+          (library) => !isKotlinIncompatibleOption("javaLibraries", library),
+        ),
+        javaTestingLibraries: ((compatibilityStack.javaTestingLibraries ?? []) as string[]).filter(
+          (library) => !isKotlinIncompatibleOption("javaTestingLibraries", library),
+        ),
+        ...(compatibilityStack.javaBuildTool === "none" ? { javaBuildTool: "maven" } : null),
+      };
+      if (!isOptionCompatible(prospective, category, techId)) return;
+    } else if (!isOptionCompatible(compatibilityStack, category, techId)) {
+      return;
+    }
 
     selectionEngagedRef.current = true;
     selectionCompletedRef.current = false;
@@ -3820,6 +3853,9 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
           );
           if (filteredTesting.length !== testingLibraries.length) {
             (update as Record<string, unknown>).javaTestingLibraries = filteredTesting;
+          }
+          if (currentStack.javaBuildTool === "none") {
+            (update as Record<string, unknown>).javaBuildTool = "maven";
           }
         }
         return Object.keys(update).length > 0 ? update : {};

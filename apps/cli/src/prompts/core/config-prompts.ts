@@ -975,19 +975,10 @@ export async function gatherConfig(
       if (results.ecosystem === "react-native" || results.ecosystem === "elixir") {
         return Promise.resolve("none" as Email);
       }
-      if (
-        results.ecosystem === "java" &&
-        (results.javaLanguage === "kotlin" || flags.javaLanguage === "kotlin") &&
-        flags.email === undefined
-      ) {
+      if (results.ecosystem === "java" && results.javaLanguage === "kotlin" && flags.email === undefined) {
         return Promise.resolve("none" as Email);
       }
-      return getEmailChoice(
-        flags.email,
-        results.backend,
-        results.ecosystem,
-        results.javaLanguage ?? flags.javaLanguage,
-      );
+      return getEmailChoice(flags.email, results.backend, results.ecosystem, results.javaLanguage);
     },
     effect: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Effect);
@@ -1123,7 +1114,7 @@ export async function gatherConfig(
       }
       if (
         results.ecosystem === "java" &&
-        (results.javaLanguage === "kotlin" || flags.javaLanguage === "kotlin") &&
+        results.javaLanguage === "kotlin" &&
         flags.observability === undefined
       ) {
         return Promise.resolve("none" as Observability);
@@ -1132,7 +1123,7 @@ export async function gatherConfig(
         flags.observability,
         results.backend,
         results.ecosystem,
-        results.javaLanguage ?? flags.javaLanguage,
+        results.javaLanguage,
       );
     },
     featureFlags: ({ results }) => {
@@ -1166,17 +1157,12 @@ export async function gatherConfig(
       }
       if (
         results.ecosystem === "java" &&
-        (results.javaLanguage === "kotlin" || flags.javaLanguage === "kotlin") &&
+        results.javaLanguage === "kotlin" &&
         flags.caching === undefined
       ) {
         return Promise.resolve("none" as Caching);
       }
-      return getCachingChoice(
-        flags.caching,
-        results.backend,
-        results.ecosystem,
-        results.javaLanguage ?? flags.javaLanguage,
-      );
+      return getCachingChoice(flags.caching, results.backend, results.ecosystem, results.javaLanguage);
     },
     rateLimit: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as RateLimit);
@@ -1202,17 +1188,12 @@ export async function gatherConfig(
       }
       if (
         results.ecosystem === "java" &&
-        (results.javaLanguage === "kotlin" || flags.javaLanguage === "kotlin") &&
+        results.javaLanguage === "kotlin" &&
         flags.search === undefined
       ) {
         return Promise.resolve("none" as Search);
       }
-      return getSearchChoice(
-        flags.search,
-        results.backend,
-        results.ecosystem,
-        results.javaLanguage ?? flags.javaLanguage,
-      );
+      return getSearchChoice(flags.search, results.backend, results.ecosystem, results.javaLanguage);
     },
     vectorDb: ({ results }) => {
       if (results.ecosystem !== "typescript") {
