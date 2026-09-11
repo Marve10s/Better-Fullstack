@@ -108,6 +108,4 @@ When multiple installed skills overlap, use them in this order:
 ## Tech stack
 
 - Remotion + Tailwind for video generation.
-- Project location: `videos/` directory.
-- Render: `npx remotion render MainVideo out/video.mp4`
-- Preview: `npx remotion studio`
+- No checked-in video workspace; create a scratch Remotion project when a video is needed.
