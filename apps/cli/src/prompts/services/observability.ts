@@ -55,12 +55,30 @@ type ObservabilityPromptContext = {
   observability?: Observability;
   backend?: Backend;
   ecosystem?: Ecosystem;
+  javaLanguage?: string;
 };
 
 export function resolveObservabilityPrompt(
   context: ObservabilityPromptContext = {},
 ): PromptSingleResolution<Observability> {
   if (context.ecosystem === "react-native" || context.ecosystem === "elixir") {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
+
+  if (context.ecosystem === "java" && context.javaLanguage === "kotlin") {
+    if (context.observability !== undefined) {
+      return {
+        shouldPrompt: false,
+        mode: "single",
+        options: [],
+        autoValue: context.observability,
+      };
+    }
     return {
       shouldPrompt: false,
       mode: "single",
@@ -105,8 +123,9 @@ export async function getObservabilityChoice(
   observability?: Observability,
   backend?: Backend,
   ecosystem?: Ecosystem,
+  javaLanguage?: string,
 ) {
-  const resolution = resolveObservabilityPrompt({ observability, backend, ecosystem });
+  const resolution = resolveObservabilityPrompt({ observability, backend, ecosystem, javaLanguage });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

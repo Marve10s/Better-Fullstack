@@ -72,12 +72,30 @@ type SearchPromptContext = {
   search?: Search;
   backend?: Backend;
   ecosystem?: Ecosystem;
+  javaLanguage?: string;
 };
 
 export function resolveSearchPrompt(
   context: SearchPromptContext = {},
 ): PromptSingleResolution<Search> {
   if (context.ecosystem === "react-native" || context.ecosystem === "elixir") {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
+
+  if (context.ecosystem === "java" && context.javaLanguage === "kotlin") {
+    if (context.search !== undefined) {
+      return {
+        shouldPrompt: false,
+        mode: "single",
+        options: [],
+        autoValue: context.search,
+      };
+    }
     return {
       shouldPrompt: false,
       mode: "single",
@@ -126,8 +144,9 @@ export async function getSearchChoice(
   search?: Search,
   backend?: Backend,
   ecosystem?: Ecosystem,
+  javaLanguage?: string,
 ) {
-  const resolution = resolveSearchPrompt({ search, backend, ecosystem });
+  const resolution = resolveSearchPrompt({ search, backend, ecosystem, javaLanguage });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

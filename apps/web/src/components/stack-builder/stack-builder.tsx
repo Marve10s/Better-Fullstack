@@ -3,7 +3,10 @@ import {
   getCategoryOrderForEcosystem,
   getStarterTrackCatalog,
   getStackPartOptions,
+  isKotlinBackendSelection,
+  isKotlinIncompatibleOption,
   isMultiSelectCategory,
+  KOTLIN_HIDDEN_SHARED_CATEGORIES,
   parseStackPartSpecs,
   stackPartsToLegacyProjectConfigPartial,
   STARTER_TRACK_DEFINITIONS,
@@ -475,16 +478,22 @@ function BuilderSearchField({
 
 function filterKotlinBackendCapabilityOptions(
   selection: Pick<GraphSelection, "backendEcosystem" | "backendLanguage">,
-  role: Extract<StackPartRole, "orm" | "api">,
+  role: Extract<StackPartRole, "orm" | "api" | "libraries" | "testing" | "buildTool">,
   options: TechOption[],
 ) {
-  if (selection.backendEcosystem !== "java" || selection.backendLanguage !== "kotlin") {
+  if (!isKotlinBackendSelection(selection.backendEcosystem, selection.backendLanguage)) {
     return options;
   }
 
-  const supportedIds =
-    role === "orm" ? new Set(["spring-data-jpa", "none"]) : new Set(["spring-graphql", "none"]);
-  return options.filter((option) => supportedIds.has(option.id));
+  const categoryByRole = {
+    orm: "javaOrm",
+    api: "javaApi",
+    libraries: "javaLibraries",
+    testing: "javaTestingLibraries",
+    buildTool: "javaBuildTool",
+  } as const;
+  const category = categoryByRole[role];
+  return options.filter((option) => !isKotlinIncompatibleOption(category, option.id));
 }
 
 const GRAPH_FRONTEND_CONFIGS: GraphFrontendConfig[] = [
@@ -1261,6 +1270,18 @@ function stackPatchFromGraphSpecs(specs: string[]): Partial<StackState> {
         backend && isGraphBackendEcosystem(backend.ecosystem) ? backend.ecosystem : undefined,
       ),
     );
+
+    if (backend?.ecosystem === "java") {
+      const languagePart = selectedParts.find(
+        (part) => part.role === "language" && part.ownerPartId === backend.id,
+      );
+      if (languagePart?.toolId === "kotlin") {
+        (patch as Record<string, unknown>).caching = "none";
+        (patch as Record<string, unknown>).search = "none";
+        (patch as Record<string, unknown>).email = "none";
+        (patch as Record<string, unknown>).observability = "none";
+      }
+    }
   } catch {
     return patch;
   }
@@ -1696,6 +1717,13 @@ function categoryHasNonDefaultSelection(
 }
 
 function shouldSkipCategory(stack: StackState, categoryKey: string): boolean {
+  if (
+    stack.ecosystem === "java" &&
+    stack.javaLanguage === "kotlin" &&
+    KOTLIN_HIDDEN_SHARED_CATEGORIES.has(categoryKey)
+  ) {
+    return true;
+  }
   return (
     categoryKey === "astroIntegration" ||
     SHADCN_SUB_CATEGORIES.has(categoryKey as keyof typeof TECH_OPTIONS) ||
@@ -2025,12 +2053,12 @@ function CreationModeComposer({
     "backend",
     graphSelection.backendEcosystem,
   );
-  const backendOptions =
-    graphSelection.backendEcosystem === "java" && graphSelection.backendLanguage === "kotlin"
-      ? allBackendOptions.filter(
-          (option) => option.id === "spring-boot" || option.id === "ktor" || option.id === "none",
-        )
-      : allBackendOptions;
+  const backendOptions = isKotlinBackendSelection(
+    graphSelection.backendEcosystem,
+    graphSelection.backendLanguage,
+  )
+    ? allBackendOptions.filter((option) => !isKotlinIncompatibleOption("javaWebFramework", option.id))
+    : allBackendOptions;
   const databaseOptions = getGraphToolOptions("database", "database", "universal");
   const allBackendOrmOptions = getGraphToolOptions(
     backendConfig.ormCategory,
@@ -2069,7 +2097,15 @@ function CreationModeComposer({
   const backendAdvancedCategories =
     graphSelection.backend === "none"
       ? []
-      : getGraphBackendAdvancedCategoryOrder(graphSelection.backendEcosystem);
+      : getGraphBackendAdvancedCategoryOrder(graphSelection.backendEcosystem).filter(
+          (category) =>
+            !(
+              isKotlinBackendSelection(
+                graphSelection.backendEcosystem,
+                graphSelection.backendLanguage,
+              ) && KOTLIN_HIDDEN_SHARED_CATEGORIES.has(category as string)
+            ),
+        );
   const backendCompatibilityStack: StackState = {
     ...optionStack,
     ecosystem: graphSelection.backendEcosystem as Ecosystem,
@@ -2264,6 +2300,52 @@ function CreationModeComposer({
     if (!hasStaleKotlinBackendCapability) return;
     updateGraphSelection(reconciledBackendCapabilities);
   }, [hasStaleKotlinBackendCapability, reconciledBackendCapabilities, updateGraphSelection]);
+
+  const kotlinAdvancedPatch = useMemo(() => {
+    if (!isKotlinBackendSelection(graphSelection.backendEcosystem, graphSelection.backendLanguage)) {
+      return null;
+    }
+    const patch: Partial<StackState> = {};
+    const libraries = (optionStack.javaLibraries ?? []) as string[];
+    const filteredLibraries = libraries.filter(
+      (library) => !isKotlinIncompatibleOption("javaLibraries", library),
+    );
+    if (filteredLibraries.length !== libraries.length) {
+      (patch as Record<string, unknown>).javaLibraries = filteredLibraries;
+    }
+    const testingLibraries = (optionStack.javaTestingLibraries ?? []) as string[];
+    const filteredTesting = testingLibraries.filter(
+      (library) => !isKotlinIncompatibleOption("javaTestingLibraries", library),
+    );
+    if (filteredTesting.length !== testingLibraries.length) {
+      (patch as Record<string, unknown>).javaTestingLibraries = filteredTesting;
+    }
+    if ((optionStack.javaBuildTool as string) === "none" && graphSelection.backend !== "none") {
+      (patch as Record<string, unknown>).javaBuildTool = "maven";
+    }
+    for (const category of KOTLIN_HIDDEN_SHARED_CATEGORIES) {
+      const key = getStackKeyForCategory(category as keyof typeof TECH_OPTIONS);
+      if ((optionStack as Record<string, unknown>)[key] !== "none") {
+        (patch as Record<string, unknown>)[key] = "none";
+      }
+    }
+    return Object.keys(patch).length > 0 ? patch : null;
+  }, [graphSelection, optionStack]);
+
+  useEffect(() => {
+    if (!kotlinAdvancedPatch) return;
+    onChange((current) => {
+      const view = getEditorStack(current);
+      const nextView = patchGraphScopedSelections(view, kotlinAdvancedPatch);
+      const specs = reconcileComposerSpecs(
+        current.stackPartSpecs,
+        view.stackPartSpecs,
+        nextView.stackPartSpecs ?? view.stackPartSpecs,
+        getGraphSelection(view).rootIds,
+      );
+      return { ...kotlinAdvancedPatch, ...stackPatchFromGraphSpecs(specs) };
+    });
+  }, [kotlinAdvancedPatch, onChange, getEditorStack]);
 
   const getStepSelection = (
     stepId: ComposerRole,
@@ -3717,13 +3799,65 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   };
 
   const handleTechSelect = (category: keyof typeof TECH_OPTIONS, techId: string) => {
-    if (!isOptionCompatible(getCompatibilityStackForCategory(category), category, techId)) return;
+    const compatibilityStack = getCompatibilityStackForCategory(category);
+    if (
+      category === "javaLanguage" &&
+      techId === "kotlin" &&
+      (compatibilityStack.ecosystem as string) === "java"
+    ) {
+      const prospective: StackState = {
+        ...compatibilityStack,
+        caching: "none",
+        search: "none",
+        email: "none",
+        observability: "none",
+        javaLibraries: ((compatibilityStack.javaLibraries ?? []) as string[]).filter(
+          (library) => !isKotlinIncompatibleOption("javaLibraries", library),
+        ),
+        javaTestingLibraries: ((compatibilityStack.javaTestingLibraries ?? []) as string[]).filter(
+          (library) => !isKotlinIncompatibleOption("javaTestingLibraries", library),
+        ),
+        ...(compatibilityStack.javaBuildTool === "none" ? { javaBuildTool: "maven" } : null),
+      };
+      if (!isOptionCompatible(prospective, category, techId)) return;
+    } else if (!isOptionCompatible(compatibilityStack, category, techId)) {
+      return;
+    }
 
     selectionEngagedRef.current = true;
     selectionCompletedRef.current = false;
     startTransition(() => {
       setStack((currentStack: StackState) => {
         const update = getStackOptionUpdate(currentStack, category, techId);
+        const nextEcosystem = (update.ecosystem ?? currentStack.ecosystem) as string;
+        const nextLanguage =
+          ((update as Record<string, unknown>).javaLanguage as string | undefined) ??
+          currentStack.javaLanguage;
+        if (nextEcosystem === "java" && nextLanguage === "kotlin") {
+          for (const hidden of KOTLIN_HIDDEN_SHARED_CATEGORIES) {
+            const key = getStackKeyForCategory(hidden as keyof typeof TECH_OPTIONS);
+            if ((currentStack as Record<string, unknown>)[key] !== "none") {
+              (update as Record<string, unknown>)[key] = "none";
+            }
+          }
+          const libraries = (currentStack.javaLibraries ?? []) as string[];
+          const filteredLibraries = libraries.filter(
+            (library) => !isKotlinIncompatibleOption("javaLibraries", library),
+          );
+          if (filteredLibraries.length !== libraries.length) {
+            (update as Record<string, unknown>).javaLibraries = filteredLibraries;
+          }
+          const testingLibraries = (currentStack.javaTestingLibraries ?? []) as string[];
+          const filteredTesting = testingLibraries.filter(
+            (library) => !isKotlinIncompatibleOption("javaTestingLibraries", library),
+          );
+          if (filteredTesting.length !== testingLibraries.length) {
+            (update as Record<string, unknown>).javaTestingLibraries = filteredTesting;
+          }
+          if (currentStack.javaBuildTool === "none") {
+            (update as Record<string, unknown>).javaBuildTool = "maven";
+          }
+        }
         return Object.keys(update).length > 0 ? update : {};
       });
     });

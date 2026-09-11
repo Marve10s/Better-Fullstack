@@ -9,7 +9,9 @@ import {
   getToolingSelectionOptions,
   hasPWACompatibleFrontend,
   hasTauriCompatibleFrontend,
+  isKotlinIncompatibleOption,
   isOptionCompatible as isOptionCompatibleShared,
+  KOTLIN_HIDDEN_SHARED_CATEGORIES,
   validateProjectName,
 } from "@better-fullstack/types";
 
@@ -142,6 +144,25 @@ export const getVisibleOptions = (
   category: keyof typeof TECH_OPTIONS,
   options: (typeof TECH_OPTIONS)[keyof typeof TECH_OPTIONS],
 ) => {
+  const isKotlin =
+    currentStack.ecosystem === "java" && currentStack.javaLanguage === "kotlin";
+
+  if (isKotlin) {
+    if (KOTLIN_HIDDEN_SHARED_CATEGORIES.has(category as string)) {
+      return options.filter((option) => option.id === "none");
+    }
+    if (
+      category === "javaWebFramework" ||
+      category === "javaBuildTool" ||
+      category === "javaOrm" ||
+      category === "javaApi" ||
+      category === "javaLibraries" ||
+      category === "javaTestingLibraries"
+    ) {
+      return options.filter((option) => !isKotlinIncompatibleOption(category, option.id));
+    }
+  }
+
   if (category !== "auth") return options;
 
   switch (currentStack.ecosystem) {
