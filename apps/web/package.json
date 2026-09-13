@@ -18,7 +18,7 @@
     "dev": "bun run i18n:compile && vite dev --port 3333",
     "start": "node .output/server/index.mjs",
     "lint": "bun run i18n:compile && oxlint -c ../../.oxlintrc.json . && tsc --noEmit",
-    "test": "bun run i18n:compile && bun test ./test/{builder,content,ecosystems,interface,project,stack,telemetry}/*.test.ts",
+    "test": "bun run i18n:compile && bun test ./test/*.test.ts ./test/{builder,content,ecosystems,interface,project,stack,telemetry}/*.test.ts",
     "typecheck": "bun run i18n:compile && tsc --noEmit",
     "validate:tech-links": "bun run scripts/validate-tech-resource-links.ts",
     "validate:tech-icons": "bun run scripts/validate-tech-icons.ts",

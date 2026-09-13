@@ -193,26 +193,18 @@ The harness emits stable failure tags:
   127 (a broken `build`/`test` script) stays a `model-failure`, as does a generation timeout (cf.
   SWE-bench).
 
-## Per-spec solvability gate
+## Retired per-spec solvability gate
 
-`apps/cli/test/e2e/scaffbench-solvability.test.ts` scaffolds each spec from its
-**own `canonicalFlags`** (not a hand-maintained preset that can drift) and runs
-the harness's `validateProject` to assert the expected stack installs / builds /
-type-checks. This guarantees a Better-Fullstack generator regression surfaces
-here rather than being silently charged to the model in the benchmark. It is
-toolchain-gated (a spec is skipped, with a logged warning, when its toolchain is
-absent) and runs as the scheduled / `workflow_dispatch` `scaffbench-solvability`
-CI job across all five ecosystems - it does not block per-PR checks. Run a
-single ecosystem locally with
-`SCAFFBENCH_SOLVABILITY_SPECS=<id> bun run scaffbench:solvability`.
+The ScaffBench harness, `apps/cli/test/e2e/scaffbench-solvability.test.ts`, and
+the `scaffbench:solvability` script were removed in commit `146990cd8`. PR #429
+removed the leftover `scaffbench-solvability` CI job and `run_solvability`
+workflow input. This gate no longer runs locally or in CI.
 
-Build dependencies beyond the language toolchain: `rust-leptos-axum` uses
-Tonic/gRPC, whose build script compiles `.proto` files with `protoc` at
-`cargo check` time, so `protobuf-compiler` must be installed (the CI job does
-this). The first full CI run validated `ai-search-workbench`, `python-ingestion-api`,
-`go-realtime-api`, and `multi-dotnet-ops`; `rust-leptos-axum` surfaced the missing
-`protoc` build dependency - exactly the kind of environment gap this gate exists
-to catch.
+Historically, the gate scaffolded each spec from its own `canonicalFlags` and
+used `validateProject` to check installation, builds, and types. Missing
+toolchains caused specs to be skipped. Its first full CI run validated
+`ai-search-workbench`, `python-ingestion-api`, `go-realtime-api`, and
+`multi-dotnet-ops`; `rust-leptos-axum` exposed a missing `protoc` build dependency.
 
 ## Notes
 
