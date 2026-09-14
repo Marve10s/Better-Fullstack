@@ -328,6 +328,73 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
     },
   );
 
+  it("enforces complete Code Quality profiles when planning and creating through MCP", async () => {
+    const client = await connectClient(mode);
+    const targetDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-quality-"));
+    roots.push(targetDir);
+    for (const selection of [
+      { addons: ["eslint"] },
+      { addons: ["biome", "ultracite"] },
+      { part: ["frontend:typescript:react-vite", "codeQuality:universal:eslint"] },
+      { part: ["codeQuality:universal:eslint"] },
+    ]) {
+      for (const name of ["bfs_plan_project", "bfs_create_project"]) {
+        const rejected = await callTool(client, {
+          name,
+          arguments: { projectName: "invalid", targetDir, ...selection },
+        });
+        expect(rejected.isError, JSON.stringify(rejected.content)).toBe(true);
+        expect(JSON.stringify(rejected.content)).toContain("Code Quality profile");
+      }
+    }
+    expect(await fs.readdir(targetDir)).toEqual([]);
+    for (const [index, selection] of [
+      { addons: ["eslint", "prettier", "shadcn-lint"] },
+      {
+        part: [
+          "frontend:typescript:react-vite",
+          "frontend.css:typescript:tailwind",
+          "codeQuality:universal:oxlint",
+          "codeQuality:universal:shadcn-lint",
+        ],
+      },
+    ].entries()) {
+      const args = { projectName: `valid-${index}`, targetDir, ...selection };
+      for (const name of ["bfs_plan_project", "bfs_create_project"]) {
+        const result = await callTool(client, { name, arguments: args });
+        expect(result.isError, JSON.stringify(result.content)).not.toBe(true);
+      }
+      expect((await readBtsConfig(path.join(targetDir, args.projectName)))?.addons).toContain(
+        "shadcn-lint",
+      );
+    }
+  });
+
+  it("keeps legacy Code Quality update warnings consistent with applied files", async () => {
+    const client = await connectClient(mode);
+    const root = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-legacy-quality-"));
+    roots.push(root);
+    const projectDir = path.join(root, "app");
+    await scaffoldProject(projectDir, { addons: ["biome", "ultracite"] });
+    const args = { projectDir, part: ["staticAnalysis:universal:gitleaks"] };
+    for (const name of ["bfs_plan_stack_update", "bfs_apply_stack_update"]) {
+      const result = await callTool(client, { name, arguments: args });
+      expect(result.isError, JSON.stringify(result.content)).not.toBe(true);
+      expect(JSON.stringify(result.structuredContent?.compatibilityWarnings ?? [])).not.toContain(
+        "Code Quality adjusted",
+      );
+      expect(result.structuredContent?.proposedConfig).toMatchObject({
+        addons: expect.arrayContaining(["biome", "ultracite", "gitleaks"]),
+      });
+    }
+    expect((await readBtsConfig(projectDir))?.addons?.toSorted()).toEqual([
+      "biome",
+      "gitleaks",
+      "ultracite",
+    ]);
+    expect(await fs.pathExists(path.join(projectDir, ".gitleaks.toml"))).toBe(true);
+  });
+
   it("rejects invalid creates and preserves existing files after a duplicate create", async () => {
     const client = await connectClient(mode);
     const targetDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-create-errors-"));

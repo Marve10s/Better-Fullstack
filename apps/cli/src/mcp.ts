@@ -190,9 +190,11 @@ import {
   evaluateCompatibility,
   CATEGORY_ORDER,
   getCategoryOrderForEcosystem,
+  getCodeQualitySelectionIssue,
   getToolingCapability,
   getToolingSelectionOptions,
   isToolingOverlayOnly,
+  validateStackParts,
   TEMPLATE_VALUES,
   type Template,
 } from "@better-fullstack/types";
@@ -772,8 +774,18 @@ function getMcpProjectConfigDefaults(input: Record<string, unknown>) {
 
 export function validateMcpProjectConfigCompatibility(
   config: Pick<ProjectConfig, "ecosystem" | "integrations"> &
-    Partial<Pick<ProjectConfig, "backend" | "runtime" | "webDeploy" | "stackParts">>,
+    Partial<Pick<ProjectConfig, "backend" | "runtime" | "webDeploy" | "stackParts" | "addons">>,
 ): void {
+  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
+    const qualityIssues = validateStackParts(config.stackParts).issues.filter(
+      (issue) => issue.role === "codeQuality",
+    );
+    if (qualityIssues.length)
+      throw new Error(qualityIssues.map((issue) => issue.message).join("\n"));
+  } else {
+    const qualityIssue = getCodeQualitySelectionIssue(config.addons ?? []);
+    if (qualityIssue) throw new Error(qualityIssue);
+  }
   if (config.integrations !== "nango") return;
 
   const nangoPart = config.stackParts?.find(
@@ -2308,7 +2320,9 @@ export function createMcpServer(): McpServer {
   function compatibilityWarningsForStackUpdate(
     proposedConfig: BetterTStackConfig,
   ): string[] | undefined {
-    const compatResult = analyzeStackCompatibility(buildMcpCompatibilityInput(proposedConfig));
+    const compatResult = analyzeStackCompatibility(buildMcpCompatibilityInput(proposedConfig), {
+      normalizeCodeQualityProfiles: false,
+    });
     return compatResult.changes.length > 0
       ? compatResult.changes.map((change) => change.message)
       : undefined;

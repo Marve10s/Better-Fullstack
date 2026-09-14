@@ -7,6 +7,7 @@ import type { PackageManager } from "@/types";
 
 import { addPackageDependency } from "@/platform/add-package-deps";
 import { getPackageExecutionArgs } from "@/platform/package-runner";
+import { isSilent } from "@/presentation/context";
 
 export async function setupOxlint(projectDir: string, packageManager: PackageManager) {
   await addPackageDependency({
@@ -26,9 +27,9 @@ export async function setupOxlint(projectDir: string, packageManager: PackageMan
     await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
   }
 
-  const s = spinner();
+  const s = isSilent() ? undefined : spinner();
 
-  s.start("Initializing oxlint and oxfmt...");
+  s?.start("Initializing oxlint and oxfmt...");
   if (!(await fs.pathExists(path.join(projectDir, ".oxlintrc.json")))) {
     const oxlintArgs = getPackageExecutionArgs(packageManager, "oxlint@latest --init");
     await $({ cwd: projectDir, env: { CI: "true" } })`${oxlintArgs}`;
@@ -36,5 +37,5 @@ export async function setupOxlint(projectDir: string, packageManager: PackageMan
 
   const oxfmtArgs = getPackageExecutionArgs(packageManager, "oxfmt@latest --init");
   await $({ cwd: projectDir, env: { CI: "true" } })`${oxfmtArgs}`;
-  s.stop("oxlint and oxfmt initialized successfully!");
+  s?.stop("oxlint and oxfmt initialized successfully!");
 }
