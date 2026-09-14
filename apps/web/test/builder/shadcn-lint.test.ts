@@ -14,6 +14,21 @@ import { DEFAULT_STACK } from "@/lib/stack/stack-defaults";
 import { generateStackCommand } from "@/lib/stack/stack-utils";
 
 describe("shadcn/lint builder", () => {
+  it.each([
+    ["biome,oxlint", ["biome"]],
+    ["eslint,prettier,oxlint,shadcn-lint", ["eslint", "prettier", "shadcn-lint"]],
+    ["oxlint,biome,shadcn-lint", ["oxlint", "shadcn-lint"]],
+  ] as const)("repairs conflicting profiles from a shared URL: %s", async (cq, expected) => {
+    const restored = parseStackSelectionFromSearch({ cq, css: "tailwind" });
+    const analysis = analyzeStackCompatibility(restored);
+    expect(analysis.adjustedStack?.codeQuality).toEqual([...expected]);
+    expect(analysis.changes.some((change) => change.category === "codeQuality")).toBe(true);
+    const config = stackStateToProjectConfig(restored);
+    expect(config.addons.filter((addon) => addon !== "turborepo")).toEqual([...expected]);
+    const generated = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
+    expect(generated.success, generated.error).toBe(true);
+  });
+
   it("removes the supplemental check after changing to an unsupported frontend", () => {
     const analysis = analyzeStackCompatibility({
       ...DEFAULT_STACK,

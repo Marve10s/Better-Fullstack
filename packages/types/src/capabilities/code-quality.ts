@@ -17,6 +17,16 @@ const BASE_TOOLS = new Set(BASE_PROFILES.flatMap((profile) => profile.toolIds));
 const supportsDesignLint = (toolIds: readonly string[]) =>
   toolIds.includes("eslint") || toolIds.includes("oxlint");
 
+/** Keep the first selected base profile when repairing a shared builder selection. */
+export function normalizeCodeQualityProfiles(toolIds: readonly string[]) {
+  const firstBaseTool = toolIds.find((toolId) => BASE_TOOLS.has(toolId));
+  const profile = BASE_PROFILES.find((candidate) =>
+    candidate.toolIds.includes(firstBaseTool ?? ""),
+  );
+  if (!profile) return [...toolIds];
+  return toolIds.filter((toolId) => !BASE_TOOLS.has(toolId) || profile.toolIds.includes(toolId));
+}
+
 export function getCodeQualitySelectionIssue(toolIds: readonly string[]): string | undefined {
   const profiles = BASE_PROFILES.filter((profile) =>
     profile.toolIds.some((toolId) => toolIds.includes(toolId)),

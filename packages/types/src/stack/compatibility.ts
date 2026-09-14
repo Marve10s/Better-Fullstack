@@ -23,6 +23,7 @@ import {
 import {
   getCodeQualitySelectionIssue,
   getShadcnLintFrontendIssue,
+  normalizeCodeQualityProfiles,
   SHADCN_LINT_FRONTENDS,
 } from "@/capabilities/code-quality";
 import {
@@ -2630,6 +2631,17 @@ export const analyzeStackCompatibility = (
       category: "workspaceShape",
       message:
         "Workspace shape set to 'Monorepo' (single-app only supports a thin self app: Next.js or TanStack Start fullstack with no separate database/auth/api/server packages)",
+    });
+  }
+
+  const normalizedProfiles = normalizeCodeQualityProfiles(nextStack.codeQuality);
+  if (normalizedProfiles.length !== nextStack.codeQuality.length) {
+    nextStack.codeQuality = normalizedProfiles;
+    changed = true;
+    changes.push({
+      category: "codeQuality",
+      message:
+        "Kept the first Code Quality profile; only shadcn/lint can accompany ESLint or Oxlint.",
     });
   }
 
