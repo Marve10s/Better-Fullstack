@@ -175,6 +175,7 @@ export interface NavigableMultiselectOptions<T> {
   options: SelectOption<T>[];
   initialValues?: T[];
   required?: boolean;
+  validate?: (values: T[]) => string | undefined;
 }
 
 export async function navigableMultiselect<T>(
@@ -222,6 +223,8 @@ export async function navigableMultiselect<T>(
     initialValues: opts.initialValues,
     required,
     validate(selected: T[] | undefined) {
+      const issue = opts.validate?.(selected ?? []);
+      if (issue) return issue;
       if (required && (selected === undefined || selected.length === 0)) {
         return `Please select at least one option.\n${pc.reset(pc.dim(`Press ${pc.gray(pc.bgWhite(pc.inverse(" space ")))} to select, ${pc.gray(pc.bgWhite(pc.inverse(" enter ")))} to submit`))}`;
       }

@@ -1,5 +1,8 @@
+import { getCompatibleAddons, validateAddonCompatibility } from "@/config/compatibility-rules";
 import { DEFAULT_CONFIG } from "@/constants";
 import { ADDONS_REQUIRING_IMPERATIVE_SETUP } from "@/helpers/addons/addons-setup";
+import { exitCancelled } from "@/presentation/errors";
+import { isCancel, navigableMultiselect, navigableSelect } from "@/prompts/core/navigable";
 import {
   type Addons,
   AddonsSchema,
@@ -10,6 +13,8 @@ import {
   type Frontend,
   FrontendSchema,
   getToolingCapability,
+  getCodeQualitySelectionIssue,
+  getShadcnLintFrontendIssue,
   getSelectedToolingOption,
   getToolingSelectionOptions,
   hasVitePlusWorkspaceRoot,
@@ -19,9 +24,6 @@ import {
   TOOLING_CATEGORIES,
   type ToolingCategoryId,
 } from "@/types";
-import { getCompatibleAddons, validateAddonCompatibility } from "@/config/compatibility-rules";
-import { exitCancelled } from "@/presentation/errors";
-import { isCancel, navigableMultiselect, navigableSelect } from "@/prompts/core/navigable";
 
 function validateCapability(
   toolId: Addons,
@@ -99,6 +101,13 @@ export function getCompatibleSelections(
   selected: readonly Addons[],
 ) {
   return getToolingSelectionOptions(category).filter((selection) => {
+    if (category === "codeQuality" && selection.id === "none") return false;
+    if (
+      selection.id === "shadcn-lint" &&
+      getShadcnLintFrontendIssue(context.frontends, context.config.cssFramework)
+    ) {
+      return false;
+    }
     if (
       context.additionsOnly &&
       selection.toolIds.length > 0 &&
@@ -197,6 +206,16 @@ export async function promptCapabilities(
             )
             .map((selection) => selection.id),
       required: false,
+      validate:
+        category.id === "codeQuality"
+          ? (selectionIds) =>
+              getCodeQualitySelectionIssue([
+                ...(context.additionsOnly ? context.existing : []),
+                ...options
+                  .filter((option) => selectionIds.includes(option.id))
+                  .flatMap((option) => option.toolIds),
+              ])
+          : undefined,
     });
     if (isCancel(response)) return exitCancelled("Operation cancelled");
 

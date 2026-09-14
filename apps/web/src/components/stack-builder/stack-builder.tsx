@@ -1,5 +1,6 @@
 import {
   CATEGORY_ORDER,
+  updateCodeQualitySelection,
   getCategoryOrderForEcosystem,
   getStarterTrackCatalog,
   getStackPartOptions,
@@ -198,6 +199,20 @@ export function buildRandomStack(stack: StackState): Partial<StackState> {
     const options = compatibleOptions.length > 0 ? compatibleOptions : visibleOptions;
     if (options.length === 0) continue;
     const catKey = getStackKeyForCategory(categoryKey);
+    if (getToolingCategoryForUi(categoryKey) === "codeQuality") {
+      const bases = options.filter((option) => option.id !== "shadcn-lint");
+      const base = bases[Math.floor(Math.random() * bases.length)];
+      const selected = updateCodeQualitySelection(
+        randomStack.codeQuality ?? [],
+        getToolingOptionForUi(categoryKey, base?.id ?? "none")?.toolIds ?? [],
+      );
+      const candidate = { ...workingStack, codeQuality: selected };
+      randomStack.codeQuality =
+        Math.random() < 0.5 && getDisabledReason(candidate, categoryKey, "shadcn-lint") === null
+          ? [...selected, "shadcn-lint"]
+          : selected;
+      continue;
+    }
     if (getToolingCategoryForUi(categoryKey)) {
       const picks = isMultiSelectCategory(category as OptionCategory)
         ? [...options]
@@ -1606,6 +1621,12 @@ function getStackOptionFieldUpdate(
   const toolingCategory = getToolingCategoryForUi(category);
   const toolingOption = getToolingOptionForUi(category, techId);
 
+  if (toolingCategory === "codeQuality" && toolingOption) {
+    return {
+      codeQuality: updateCodeQualitySelection(currentStack.codeQuality, toolingOption.toolIds),
+    };
+  }
+
   if (toolingCategory && toolingOption) {
     const currentArray = Array.isArray(currentValue) ? [...currentValue] : [];
     const categoryToolIds = new Set(
@@ -2057,7 +2078,9 @@ function CreationModeComposer({
     graphSelection.backendEcosystem,
     graphSelection.backendLanguage,
   )
-    ? allBackendOptions.filter((option) => !isKotlinIncompatibleOption("javaWebFramework", option.id))
+    ? allBackendOptions.filter(
+        (option) => !isKotlinIncompatibleOption("javaWebFramework", option.id),
+      )
     : allBackendOptions;
   const databaseOptions = getGraphToolOptions("database", "database", "universal");
   const allBackendOrmOptions = getGraphToolOptions(

@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
-  "jsPlugins": ["./scripts/oxlint-plugins/no-em-dash.mts"],
+  "jsPlugins": ["./scripts/oxlint-plugins/no-em-dash.mts", "@shadcn/lint"],
   "plugins": [
     "eslint",
     "typescript",
@@ -93,6 +93,22 @@
     "oxc/misrefactored-assign-op": "error"
   },
   "overrides": [
+    {
+      "files": ["apps/web/src/**/*.tsx"],
+      "rules": {
+        "shadcn/no-restyle": [
+          "error",
+          {
+            "allow": ["*"],
+            "contracts": [{ "pattern": "^Button$", "allow": ["layout"] }]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["apps/web/src/components/ui/**"],
+      "rules": { "shadcn/no-restyle": "off" }
+    },
     {
       "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
       "rules": {

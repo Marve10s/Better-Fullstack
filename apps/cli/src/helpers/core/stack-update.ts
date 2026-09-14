@@ -59,6 +59,7 @@ import {
   analyzeStackCompatibility,
   createStackPart,
   formatStackPartSpec,
+  getReplacedCodeQualityTools,
   getToolingCapability,
   getToolingCategory,
   legacyProjectConfigToStackParts,
@@ -367,6 +368,10 @@ function mergeProjectConfig(
             (item) => item !== "turborepo" && item !== "nx" && item !== "vite-plus",
           );
         }
+        if (key === "addons") {
+          const replacedQualityTools = getReplacedCodeQualityTools(requested);
+          existing = existing.filter((toolId) => !replacedQualityTools.includes(toolId));
+        }
         (next as Record<string, unknown>)[key] = [...new Set([...existing, ...requested])];
       }
       continue;
@@ -431,6 +436,17 @@ function mergeStackPartSpecs(
   }
   const stackParts = combinedParts.filter((part) => {
     if (requestedParts.includes(part)) return true;
+    if (part.role === "codeQuality" && part.ecosystem === "universal") {
+      const requestedQualityTools = requestedParts
+        .filter(
+          (requested) =>
+            requested.role === part.role &&
+            requested.ecosystem === part.ecosystem &&
+            requested.ownerPartId === part.ownerPartId,
+        )
+        .map((requested) => requested.toolId);
+      if (getReplacedCodeQualityTools(requestedQualityTools).includes(part.toolId)) return false;
+    }
     const capability = getToolingCapability(part.toolId);
     if (!capability) return true;
     return !requestedSingleCategories.has(`${part.ownerPartId ?? "root"}:${capability.category}`);

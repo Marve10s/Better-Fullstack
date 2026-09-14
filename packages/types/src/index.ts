@@ -10,6 +10,7 @@ export * from "@/config/defaults";
 export * from "@/stack/stack-translation";
 export * from "@/stack/stack-graph";
 export * from "@/capabilities/tooling-capabilities";
+export * from "@/capabilities/code-quality";
 export * from "@/catalog/registry";
 export * from "@/capabilities/evidence";
 export * from "@/capabilities/capability-inventory";

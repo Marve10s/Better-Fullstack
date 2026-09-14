@@ -345,14 +345,16 @@ export function displayConfig(config: Partial<ProjectConfig>) {
       if (toolIds.length === 0) continue;
       const label =
         category.selectionMode === "multiple"
-          ? toolIds
-              .map(
-                (toolId) =>
-                  getToolingSelectionOptions(category.id).find((option) =>
-                    option.toolIds.includes(toolId),
-                  )?.label ?? toolId,
-              )
-              .join(", ")
+          ? [
+              ...new Set(
+                toolIds.map(
+                  (toolId) =>
+                    getToolingSelectionOptions(category.id).find((option) =>
+                      option.toolIds.includes(toolId),
+                    )?.label ?? toolId,
+                ),
+              ),
+            ].join(", ")
           : (getSelectedToolingOption(category.id, toolIds)?.label ?? toolIds.join(", "));
       configDisplay.push(`${pc.blue(`${category.label}:`)} ${label}`);
     }

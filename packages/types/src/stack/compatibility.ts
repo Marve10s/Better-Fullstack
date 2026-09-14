@@ -16,7 +16,15 @@ import type {
   UILibrary,
 } from "@/config/types";
 
-import { getCapabilityDisabledReason, normalizeCapabilitySelection } from "@/capabilities/capabilities";
+import {
+  getCapabilityDisabledReason,
+  normalizeCapabilitySelection,
+} from "@/capabilities/capabilities";
+import {
+  getCodeQualitySelectionIssue,
+  getShadcnLintFrontendIssue,
+  SHADCN_LINT_FRONTENDS,
+} from "@/capabilities/code-quality";
 import {
   CATEGORY_ORDER,
   getCategoryDisplayName,
@@ -205,10 +213,7 @@ export const KOTLIN_SUPPORTED_JAVA_WEB_FRAMEWORKS: ReadonlySet<string> = new Set
 
 export const KOTLIN_SUPPORTED_JAVA_ORM: ReadonlySet<string> = new Set(["spring-data-jpa", "none"]);
 
-export const KOTLIN_SUPPORTED_JAVA_API: ReadonlySet<string> = new Set([
-  "spring-graphql",
-  "none",
-]);
+export const KOTLIN_SUPPORTED_JAVA_API: ReadonlySet<string> = new Set(["spring-graphql", "none"]);
 
 export const KOTLIN_JAVA_ONLY_SHARED_TOOLS: Readonly<Record<string, ReadonlySet<string>>> = {
   email: new Set(["resend"]),
@@ -224,10 +229,7 @@ export const KOTLIN_HIDDEN_SHARED_CATEGORIES: ReadonlySet<string> = new Set([
   "observability",
 ]);
 
-export function isKotlinJavaStack(stack: {
-  ecosystem?: string;
-  javaLanguage?: string;
-}): boolean {
+export function isKotlinJavaStack(stack: { ecosystem?: string; javaLanguage?: string }): boolean {
   return stack.ecosystem === "java" && stack.javaLanguage === "kotlin";
 }
 
@@ -2631,6 +2633,17 @@ export const analyzeStackCompatibility = (
     });
   }
 
+  if (nextStack.codeQuality.includes("shadcn-lint")) {
+    const reason =
+      getCodeQualitySelectionIssue(nextStack.codeQuality) ??
+      getShadcnLintFrontendIssue(nextStack.webFrontend, nextStack.cssFramework);
+    if (reason) {
+      nextStack.codeQuality = nextStack.codeQuality.filter((toolId) => toolId !== "shadcn-lint");
+      changed = true;
+      changes.push({ category: "codeQuality", message: `Removed shadcn/lint: ${reason}` });
+    }
+  }
+
   return {
     adjustedStack: changed ? nextStack : null,
     notes,
@@ -4473,7 +4486,7 @@ function getAddonOrExampleGraphBinding(
     };
   }
 
-  if (category !== "appPlatforms") return undefined;
+  if (category !== "appPlatforms" && category !== "codeQuality") return undefined;
 
   const binding = getAddonStackPartBinding(optionId);
   if (!binding) return undefined;
@@ -5252,6 +5265,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
   mcp: [],
   skills: [],
   oxlint: [],
+  "shadcn-lint": SHADCN_LINT_FRONTENDS,
   fumadocs: [],
   opentui: [],
   wxt: [],

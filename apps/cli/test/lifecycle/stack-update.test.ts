@@ -42,6 +42,7 @@ import {
   planStackUpdate,
   SUPPORTED_STACK_UPDATE_KEYS,
 } from "@/helpers/core/stack-update";
+import { planReviewedProjectUpdate } from "@/lifecycle/project-lifecycle";
 import {
   hashContent,
   readScaffoldManifest,
@@ -375,6 +376,78 @@ describe("stack update planner", () => {
     expect(manifest?.modes?.[emailPath]).toBe(
       (await stat(join(projectDir, emailPath))).mode & 0o7777,
     );
+  });
+
+  it("adds shadcn/lint, replaces its base profile, and preserves local files", async () => {
+    const root = await makeTempRoot("bfs-stack-update-shadcn-lint-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, {
+        frontend: ["react-vite"],
+        backend: "none",
+        runtime: "none",
+        api: "none",
+        database: "none",
+        orm: "none",
+        auth: "none",
+        addons: ["eslint", "prettier"],
+        cssFramework: "tailwind",
+        examples: [],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+      }),
+    );
+    await writeFile(join(projectDir, "local-notes.txt"), "Keep this local file.\n");
+    const input = { part: ["codeQuality:universal:shadcn-lint"] };
+    const plan = await planStackUpdate(projectDir, input);
+    expect(plan.success).toBe(true);
+    if (!plan.success) throw new Error(plan.error);
+    expect(plan.proposedConfig.addons).toEqual(
+      expect.arrayContaining(["eslint", "prettier", "shadcn-lint"]),
+    );
+    expect(plan.manualReviewBlockers).toEqual([]);
+    const applied = await applyStackUpdate(projectDir, input);
+    expect(applied.success).toBe(true);
+    await expectFileContains(join(projectDir, "eslint.config.mjs"), "@shadcn/lint");
+    await expectFileContains(join(projectDir, "package.json"), '"lint:design"');
+    expect(await readFile(join(projectDir, "local-notes.txt"), "utf8")).toBe(
+      "Keep this local file.\n",
+    );
+
+    const replacement = { part: ["codeQuality:universal:oxlint"] };
+    const replaced = await applyStackUpdate(projectDir, replacement);
+    expect(replaced.success, replaced.success ? undefined : replaced.error).toBe(true);
+    const unchanged = await planStackUpdate(projectDir, replacement);
+    expect(unchanged.success).toBe(true);
+    if (!unchanged.success) throw new Error(unchanged.error);
+    expect(unchanged.proposedConfig.addons.toSorted()).toEqual(["oxlint", "shadcn-lint"]);
+    await expectFileContains(join(projectDir, ".oxlintrc.json"), "@shadcn/lint");
+
+    const biome = await applyStackUpdate(projectDir, { part: ["codeQuality:universal:biome"] });
+    expect(biome.success, biome.success ? undefined : biome.error).toBe(true);
+    const flatReplacement = await planStackUpdate(projectDir, { addons: ["eslint", "prettier"] });
+    expect(flatReplacement.success).toBe(true);
+    if (!flatReplacement.success) throw new Error(flatReplacement.error);
+    expect(flatReplacement.proposedConfig.addons).toEqual(["eslint", "prettier"]);
+    expect((await readBtsConfig(projectDir))?.addons).toEqual(["biome"]);
+  });
+
+  it("still plans template updates for legacy projects with two base linters", async () => {
+    const root = await makeTempRoot("bfs-legacy-quality-update-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { addons: ["biome"] }));
+    const config = await readJsonc(join(projectDir, "bts.jsonc"));
+    await writeFile(
+      join(projectDir, "bts.jsonc"),
+      JSON.stringify({
+        ...config,
+        stackParts: undefined,
+        addons: ["biome", "ultracite"],
+      }),
+    );
+    const plan = await planReviewedProjectUpdate(projectDir);
+    expect(plan.success, plan.success ? undefined : plan.error).toBe(true);
   });
 
   it("plans and applies the Ultracite addon through generic stack updates", async () => {

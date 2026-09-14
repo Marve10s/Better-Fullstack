@@ -552,6 +552,9 @@ function filterCompatibilityResult(
 }
 
 const MCP_CODE_QUALITY_ADDONS = new Set([
+  "eslint",
+  "prettier",
+  "shadcn-lint",
   "biome",
   "oxlint",
   "ultracite",

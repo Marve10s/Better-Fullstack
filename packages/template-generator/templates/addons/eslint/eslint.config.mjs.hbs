@@ -1,11 +1,30 @@
 import eslint from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+{{#if (includes addons "shadcn-lint")}}
+import { plugin as shadcn } from "@shadcn/lint";
+{{/if}}
 
 export default tseslint.config(
   { ignores: ["**/dist/**", "**/.output/**", "**/.next/**", "**/coverage/**"] },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
+{{#if (includes addons "shadcn-lint")}}
+  {
+    files: ["**/*.{jsx,tsx}"],
+    plugins: { shadcn },
+    rules: {
+      "shadcn/no-restyle": ["error", {
+        allow: ["*"],
+        contracts: [{ pattern: "^Button$", allow: ["layout"] }],
+      }],
+    },
+  },
+  {
+    files: ["**/components/ui/**"],
+    rules: { "shadcn/no-restyle": "off" },
+  },
+{{/if}}
   {
     files: ["**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     languageOptions: {

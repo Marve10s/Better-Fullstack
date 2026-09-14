@@ -2,7 +2,7 @@
 title: Multi-Ecosystem
 description: Compose one Better Fullstack project from frontend, backend, database, and mobile parts across ecosystems.
 translationStatus: pending
-updated: 2026-09-04
+updated: 2026-09-14
 ---
 
 Multi-Ecosystem mode models a project as connected stack parts instead of one flat ecosystem selection. Use it when a product spans languages: a TypeScript frontend, a Go API, a shared PostgreSQL database, and a React Native app in one workspace. Open it in the [Stack Builder](https://better-fullstack.dev/new?mode=multi) or pass repeated `--part` flags.
@@ -38,6 +38,18 @@ npm create better-fullstack@latest my-mixed-app -- \
   --part workspaceRunner:universal:turborepo \
   --part containerOrchestration:universal:docker-compose
 ```
+
+## Design-system lint
+
+For a supported React web frontend, add these Stack Parts to use shadcn/lint alongside Oxlint:
+
+```text
+--part frontend.css:typescript:tailwind
+--part codeQuality:universal:oxlint
+--part codeQuality:universal:shadcn-lint
+```
+
+Use `codeQuality:universal:eslint` and `codeQuality:universal:prettier` for the ESLint + Prettier profile instead of Oxlint. The plugin checks the React application; backend tools such as Ruff or golangci-lint keep their own Role Bindings. See [Code Quality in the builder](/docs/builder/#code-quality) for supported frontends and the generated rule policy.
 
 ## Source of truth
 

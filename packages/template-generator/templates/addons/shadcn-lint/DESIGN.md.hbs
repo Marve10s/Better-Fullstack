@@ -1,0 +1,17 @@
+# Design-system lint
+
+Run `{{packageManager}} run lint:design` to check UI changes with [shadcn/lint](https://github.com/shadcn-ui/lint).
+
+The initial `shadcn/no-restyle` contract lets Button call sites change layout, such as margins and full width. Use Button's `size` and `variant` props for its appearance. Change the component itself when adding a reusable design variant.
+
+Components under `components/ui` can style their own internals. Other component contracts are unrestricted until you define them.
+
+{{#if (includes addons "oxlint")}}
+Configure contracts in `.oxlintrc.json`. This setup requires Oxlint 1.80 or later.
+{{else}}
+Configure contracts in `eslint.config.mjs`. This setup requires ESLint 9.30 or later.
+{{/if}}
+
+The plugin requires Node.js 20.19 or later and Tailwind CSS v4. It discovers components and the theme through `components.json`, or the conventional `components/ui` and `src/components/ui` directories. For custom component imports, set `settings.shadcn.ui` in the lint configuration.
+
+See the [available rules](https://github.com/shadcn-ui/lint#rules) to configure color tokens, arbitrary values, inline styles, unknown classes, or static class expressions.

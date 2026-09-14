@@ -54,6 +54,7 @@ import {
 } from "@/telemetry/analytics";
 import {
   getKotlinJavaIncompatibilityReason,
+  getReplacedCodeQualityTools,
   getToolingCapability,
   getToolingCategory,
   hasJavaScriptWorkspaceRoot,
@@ -301,8 +302,9 @@ function expandToolingOverlay(config: ProjectConfig): ProjectConfig {
     categoriesToReplace.add("gitHooks");
   }
 
+  const replacedQualityTools = getReplacedCodeQualityTools(overlayToolIds);
   const addons = (config.addons ?? []).filter((toolId) => {
-    if (toolId === "none") return false;
+    if (toolId === "none" || replacedQualityTools.includes(toolId)) return false;
     const capability = getToolingCapability(toolId);
     return !capability || !categoriesToReplace.has(capability.category);
   });

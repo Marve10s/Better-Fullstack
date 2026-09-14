@@ -28,9 +28,11 @@ export async function setupOxlint(projectDir: string, packageManager: PackageMan
 
   const s = spinner();
 
-  const oxlintArgs = getPackageExecutionArgs(packageManager, "oxlint@latest --init");
   s.start("Initializing oxlint and oxfmt...");
-  await $({ cwd: projectDir, env: { CI: "true" } })`${oxlintArgs}`;
+  if (!(await fs.pathExists(path.join(projectDir, ".oxlintrc.json")))) {
+    const oxlintArgs = getPackageExecutionArgs(packageManager, "oxlint@latest --init");
+    await $({ cwd: projectDir, env: { CI: "true" } })`${oxlintArgs}`;
+  }
 
   const oxfmtArgs = getPackageExecutionArgs(packageManager, "oxfmt@latest --init");
   await $({ cwd: projectDir, env: { CI: "true" } })`${oxfmtArgs}`;

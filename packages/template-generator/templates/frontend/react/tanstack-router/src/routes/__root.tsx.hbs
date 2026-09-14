@@ -38,7 +38,7 @@ export interface RouterAppContext {
   queryClient: QueryClient;
 }
 {{else}}
-export interface RouterAppContext {}
+export type RouterAppContext = Record<string, never>;
 {{/if}}
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({

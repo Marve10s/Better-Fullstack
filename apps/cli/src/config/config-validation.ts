@@ -4,19 +4,6 @@ import pc from "picocolors";
 import type { CLIInput, Database, DatabaseSetup, Frontend, ProjectConfig, Runtime } from "@/types";
 
 import {
-  formatStackGraphIssue,
-  getDisabledReason,
-  hasVitePlusWorkspaceRoot,
-  hasSignozSupportedGoServerTarget,
-  isBotIdWebFrontend,
-  isSignozSupportedPythonWebFramework,
-  isToolingOverlayOnly,
-  isTurnstileWebFrontend,
-  normalizeCapabilitySelection,
-  stackGraphToLegacyProjectConfigForEcosystem,
-  validateStackParts,
-} from "@/types";
-import {
   ensureSingleWebAndNative,
   isWebFrontend,
   validateAddonCompatibility,
@@ -38,14 +25,32 @@ import {
   validateRustExpansionCompatibility,
   validateWorkersCompatibility,
 } from "@/config/compatibility-rules";
-import { isSilent } from "@/presentation/context";
-import { constraintError, incompatibilityError, missingRequirementError } from "@/presentation/error-formatter";
-import { exitWithError } from "@/presentation/errors";
-import { validatePeerDependencies } from "@/platform/peer-dependency-validator";
 import {
   buildCompatibilityInputFromConfig,
   hasSelectedTypeScriptBackendPart,
 } from "@/config/stack-compatibility";
+import { validatePeerDependencies } from "@/platform/peer-dependency-validator";
+import { isSilent } from "@/presentation/context";
+import {
+  constraintError,
+  incompatibilityError,
+  missingRequirementError,
+} from "@/presentation/error-formatter";
+import { exitWithError } from "@/presentation/errors";
+import {
+  formatStackGraphIssue,
+  getDisabledReason,
+  getShadcnLintFrontendIssue,
+  hasVitePlusWorkspaceRoot,
+  hasSignozSupportedGoServerTarget,
+  isBotIdWebFrontend,
+  isSignozSupportedPythonWebFramework,
+  isToolingOverlayOnly,
+  isTurnstileWebFrontend,
+  normalizeCapabilitySelection,
+  stackGraphToLegacyProjectConfigForEcosystem,
+  validateStackParts,
+} from "@/types";
 
 const INTLAYER_COMPATIBLE_FRONTENDS = new Set<Frontend>([
   "next",
@@ -1604,11 +1609,19 @@ function getAddonValidationConfig(config: Partial<ProjectConfig>): Partial<Proje
   };
 }
 
+function validateDesignLintConstraints(config: Partial<ProjectConfig>) {
+  if (!config.addons?.includes("shadcn-lint")) return;
+  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) return;
+  const issue = getShadcnLintFrontendIssue(config.frontend ?? [], config.cssFramework);
+  if (issue) exitWithError(issue);
+}
+
 export function validateFullConfig(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
   options: CLIInput,
 ) {
+  validateDesignLintConstraints(config);
   if (config.stackParts && !isToolingOverlayOnly(config.stackParts) && !options.yolo) {
     const graphValidation = validateStackParts(config.stackParts);
     if (graphValidation.issues.length > 0) {
@@ -1785,6 +1798,7 @@ export function validateFullConfig(
 
 export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>) {
   try {
+    validateDesignLintConstraints(config);
     if (config.stackParts) {
       const graphValidation = validateStackParts(config.stackParts);
       if (graphValidation.issues.length > 0) {

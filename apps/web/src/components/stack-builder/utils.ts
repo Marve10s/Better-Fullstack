@@ -7,6 +7,8 @@ import {
   getCompatibilityDecision,
   getToolingCategory,
   getToolingSelectionOptions,
+  getCodeQualitySelectionIssue,
+  updateCodeQualitySelection,
   hasPWACompatibleFrontend,
   hasTauriCompatibleFrontend,
   isKotlinIncompatibleOption,
@@ -86,7 +88,10 @@ export const getDisabledReason = (
   }
 
   const replacementCategories =
-    getToolingCategory(toolingCategory)?.selectionMode === "single" ? [toolingCategory] : [];
+    getToolingCategory(toolingCategory)?.selectionMode === "single" ||
+    toolingCategory === "codeQuality"
+      ? [toolingCategory]
+      : [];
   if (toolingCategory === "toolchain" && optionId === "vite-plus") {
     replacementCategories.push("workspaceRunner", "codeQuality", "gitHooks");
   }
@@ -101,6 +106,15 @@ export const getDisabledReason = (
     codeQuality: currentStack.codeQuality.filter((toolId) => !replacedToolIds.has(toolId)),
     documentation: currentStack.documentation.filter((toolId) => !replacedToolIds.has(toolId)),
   };
+
+  if (toolingCategory === "codeQuality") {
+    compatibilityStack.codeQuality = updateCodeQualitySelection(
+      currentStack.codeQuality,
+      selection.toolIds,
+    );
+    const reason = getCodeQualitySelectionIssue(compatibilityStack.codeQuality);
+    if (reason) return reason;
+  }
 
   if (
     currentStack.appPlatforms.includes("vite-plus") &&

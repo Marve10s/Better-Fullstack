@@ -7,6 +7,7 @@ import {
   getCompatibleUILibraries as getCompatibleUILibrariesShared,
   getUnsupportedWebDeployFrontend,
   getToolingCapability,
+  getCodeQualitySelectionIssue,
   hasVitePlusWorkspaceRoot,
   hasDockerComposeCompatibleFrontend,
   hasWebStyling as hasWebStylingShared,
@@ -763,6 +764,8 @@ export function validateAddonsAgainstFrontends(
   javaApi?: ProjectConfig["javaApi"],
   hasJavaScriptStackPart = false,
 ) {
+  const codeQualityIssue = getCodeQualitySelectionIssue(addons);
+  if (codeQualityIssue) exitWithError(codeQualityIssue);
   const workspaceRunners = new Set(
     addons.filter((addon) => ["turborepo", "nx", "vite-plus"].includes(addon)),
   );

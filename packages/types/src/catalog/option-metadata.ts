@@ -1,4 +1,5 @@
 import { getCapabilityDefinitions } from "@/capabilities/capabilities";
+import { getToolingSelectionOptions } from "@/capabilities/tooling-capabilities";
 import {
   AI_DOCS_VALUES,
   AI_VALUES,
@@ -159,7 +160,6 @@ import {
   WEB_DEPLOY_VALUES,
   WEB_MCP_VALUES,
 } from "@/config/schemas";
-import { getToolingSelectionOptions } from "@/capabilities/tooling-capabilities";
 
 export type OptionCategory =
   | "api"
@@ -862,6 +862,7 @@ const BACKEND_BUILDER_VALUES = [
 ] as const satisfies readonly string[];
 
 const CODE_QUALITY_VALUES = [
+  "shadcn-lint",
   "biome",
   "eslint",
   "prettier",
@@ -911,6 +912,7 @@ const EXAMPLE_VALUES = ["ai", "chat-sdk"] as const satisfies readonly string[];
 const BOOLEAN_OPTION_VALUES = ["true", "false"] as const satisfies readonly string[];
 
 const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
+  "codeQualityProfile",
   "webFrontend",
   "nativeFrontend",
   "codeQuality",
@@ -1394,6 +1396,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     eslint: "ESLint",
     prettier: "Prettier",
     oxlint: "Oxlint",
+    "shadcn-lint": "shadcn/lint",
     ultracite: "Ultracite",
     lefthook: "Lefthook",
     husky: "Husky",

@@ -2,17 +2,25 @@
 title: Stack Builder
 description: Compose, preview, run, share, and download Better Fullstack projects in the browser.
 translationStatus: pending
-updated: 2026-09-04
+updated: 2026-09-14
 ---
 
 The [Stack Builder](https://better-fullstack.dev/new) uses the same schemas, compatibility rules, and template generator as the CLI. Every change updates the reproducible command and the shareable URL.
 
+## Code Quality
+
+Choose one base profile: Biome, ESLint + Prettier, Oxlint + Oxfmt, or Ultracite. With ESLint or Oxlint selected, you can also select **shadcn/lint**. This is the only supported second Code Quality selection. Switching to Biome, Ultracite, or None removes the supplemental check.
+
+shadcn/lint requires Tailwind CSS v4 and a Next.js, Vinext, TanStack Router/Start, React Router, or React + Vite frontend. The same frontend can belong to a multi-ecosystem project with a backend in another language. Native-only projects and other frontend adapters cannot select it.
+
+Generated projects include the plugin configuration, a `lint:design` command, and `DESIGN.md`. The initial contract protects Button appearance: call sites use `size` and `variant` props and may add layout classes. Component implementations under `components/ui` are excluded. Edit the contract in `.oxlintrc.json` or `eslint.config.mjs` to change the policy or cover other components. [Upstream rule reference](https://github.com/shadcn-ui/lint#rules).
+
 ## Views
 
 | View       | What it does                                                                        |
-| ---------- | ------------------------------------------------------------------------------------ |
-| Build      | Select compatible stack options and copy the generated CLI command.                  |
-| Preview    | Inspect the generated file tree without writing anything to disk.                    |
+| ---------- | ----------------------------------------------------------------------------------- |
+| Build      | Select compatible stack options and copy the generated CLI command.                 |
+| Preview    | Inspect the generated file tree without writing anything to disk.                   |
 | Edit & Run | Generate, edit, install, and run supported TypeScript web stacks in a WebContainer. |
 | Presets    | Apply curated stack selections. Solo mode only.                                      |
 | Saved      | Store named configurations in this browser. Solo mode only.                          |
