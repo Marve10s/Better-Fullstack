@@ -15,7 +15,7 @@ const BASE_PROFILES = getToolingSelectionOptions("codeQuality").filter(
 const BASE_TOOLS = new Set(BASE_PROFILES.flatMap((profile) => profile.toolIds));
 
 const supportsDesignLint = (toolIds: readonly string[]) =>
-  toolIds.includes("eslint") || toolIds.includes("oxlint");
+  toolIds.includes("oxlint") || (toolIds.includes("eslint") && toolIds.includes("prettier"));
 
 /** Keep the first selected base profile when repairing a shared builder selection. */
 export function normalizeCodeQualityProfiles(toolIds: readonly string[]) {
@@ -35,7 +35,7 @@ export function getCodeQualitySelectionIssue(toolIds: readonly string[]): string
     return "Choose one Code Quality profile; only shadcn/lint can accompany ESLint or Oxlint.";
   }
   if (toolIds.includes("shadcn-lint") && !supportsDesignLint(toolIds)) {
-    return "shadcn/lint requires ESLint or Oxlint as the Code Quality profile.";
+    return "shadcn/lint requires ESLint + Prettier or Oxlint + Oxfmt as the Code Quality profile.";
   }
 }
 

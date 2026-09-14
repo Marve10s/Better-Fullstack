@@ -9,6 +9,18 @@ import { runWithContext } from "@/presentation/context";
 import { getCompatibleSelections } from "@/prompts/developer/addons";
 
 describe("shadcn/lint generation", () => {
+  it("rejects the incomplete ESLint profile through direct generation", async () => {
+    const result = await createVirtual({
+      frontend: ["react-vite"],
+      backend: "none",
+      api: "none",
+      cssFramework: "tailwind",
+      addons: ["eslint", "shadcn-lint"],
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("ESLint + Prettier");
+  });
+
   it("replaces a template's base profile when applying a tooling overlay", async () => {
     const result = await create("design-template-overlay", {
       template: "t3",
@@ -44,7 +56,7 @@ describe("shadcn/lint generation", () => {
           auth: "none",
           cssFramework: "tailwind",
           uiLibrary: "shadcn-ui",
-          addons: [linter, "shadcn-lint"],
+          addons: [linter, ...(linter === "eslint" ? ["prettier" as const] : []), "shadcn-lint"],
         });
         expect(result.success, result.error).toBe(true);
         if (!result.tree) throw new Error(result.error);

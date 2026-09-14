@@ -48,7 +48,7 @@ describe("shadcn/lint builder", () => {
       codeQuality: [] as string[],
     };
     expect(getDisabledReason(stack, "codeQualityProfile", "shadcn-lint")).toContain(
-      "ESLint or Oxlint",
+      "ESLint + Prettier or Oxlint + Oxfmt",
     );
     stack.codeQuality = ["oxlint"];
     expect(getDisabledReason(stack, "codeQualityProfile", "shadcn-lint")).toBeNull();

@@ -14,6 +14,7 @@ import {
   FrontendSchema,
   getToolingCapability,
   getCodeQualitySelectionIssue,
+  getReplacedCodeQualityTools,
   getShadcnLintFrontendIssue,
   getSelectedToolingOption,
   getToolingSelectionOptions,
@@ -208,13 +209,16 @@ export async function promptCapabilities(
       required: false,
       validate:
         category.id === "codeQuality"
-          ? (selectionIds) =>
-              getCodeQualitySelectionIssue([
-                ...(context.additionsOnly ? context.existing : []),
-                ...options
-                  .filter((option) => selectionIds.includes(option.id))
-                  .flatMap((option) => option.toolIds),
-              ])
+          ? (selectionIds) => {
+              const requested = options
+                .filter((option) => selectionIds.includes(option.id))
+                .flatMap((option) => option.toolIds);
+              const replaced = getReplacedCodeQualityTools(requested);
+              const retained = context.additionsOnly
+                ? context.existing.filter((toolId) => !replaced.includes(toolId))
+                : [];
+              return getCodeQualitySelectionIssue([...retained, ...requested]);
+            }
           : undefined,
     });
     if (isCancel(response)) return exitCancelled("Operation cancelled");

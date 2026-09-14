@@ -23,6 +23,7 @@ describe("Code Quality pairing", () => {
     ["eslint", "oxlint"],
     ["ultracite", "biome"],
     ["shadcn-lint"],
+    ["eslint", "shadcn-lint"],
     ["biome", "shadcn-lint"],
     ["prettier", "shadcn-lint"],
     ["oxlint", "prettier", "shadcn-lint"],
@@ -54,6 +55,7 @@ describe("Code Quality pairing", () => {
         "backend:go:gin",
         "backend.codeQuality:go:golangci-lint",
         `codeQuality:universal:${linter}`,
+        ...(linter === "eslint" ? ["codeQuality:universal:prettier"] : []),
         "codeQuality:universal:shadcn-lint",
       ]);
       expect(validateStackParts(parts).issues).toEqual([]);

@@ -22,7 +22,7 @@ for (const mode of ["solo", "multi"] as const) {
     await clickVisibleTestId(page, "section-toggle-qualityTesting");
 
     const supplemental = visibleTestId(page, "option-codeQualityProfile-shadcn-lint");
-    await expect(supplemental).toHaveAttribute("title", /ESLint or Oxlint/);
+    await expect(supplemental).toHaveAttribute("title", /ESLint \+ Prettier or Oxlint \+ Oxfmt/);
     await clickVisibleTestId(page, "option-codeQualityProfile-oxlint");
     await expect(supplemental).not.toHaveAttribute("title");
     await supplemental.click();

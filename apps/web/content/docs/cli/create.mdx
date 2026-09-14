@@ -18,7 +18,7 @@ For npm, Better Fullstack flags go after `--`.
 
 ## Design-system lint
 
-Select `shadcn-lint` together with `oxlint` or `eslint` through `--addons`, or use the graph forms `--part codeQuality:universal:oxlint --part codeQuality:universal:shadcn-lint`. Add `prettier` if you choose the ESLint + Prettier profile. The interactive Code Quality prompt accepts one base profile and this optional second check.
+Select `shadcn-lint` together with `oxlint`, or with both `eslint` and `prettier`, through `--addons`. For graph input, use `--part codeQuality:universal:oxlint --part codeQuality:universal:shadcn-lint`, or replace the Oxlint part with both `codeQuality:universal:eslint` and `codeQuality:universal:prettier`. The interactive Code Quality prompt accepts one base profile and this optional second check.
 
 This requires Tailwind CSS v4 and one of `next`, `vinext`, `tanstack-router`, `tanstack-start`, `react-router`, or `react-vite`. Generated `DESIGN.md` explains the initial Button contract and `lint:design` command. The configuration and dependencies are also present with `--no-install` and in builder downloads.
 
