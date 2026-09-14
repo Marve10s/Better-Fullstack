@@ -433,22 +433,59 @@ describe("stack update planner", () => {
     expect((await readBtsConfig(projectDir))?.addons).toEqual(["biome"]);
   });
 
-  it("still plans template updates for legacy projects with two base linters", async () => {
-    const root = await makeTempRoot("bfs-legacy-quality-update-");
-    const projectDir = join(root, "app");
-    await scaffoldGeneratedProject(makeConfig(projectDir, { addons: ["biome"] }));
-    const config = await readJsonc(join(projectDir, "bts.jsonc"));
-    await writeFile(
-      join(projectDir, "bts.jsonc"),
-      JSON.stringify({
-        ...config,
-        stackParts: undefined,
-        addons: ["biome", "ultracite"],
-      }),
-    );
-    const plan = await planReviewedProjectUpdate(projectDir);
-    expect(plan.success, plan.success ? undefined : plan.error).toBe(true);
-  });
+  it.each([{ part: ["staticAnalysis:universal:gitleaks"] }, { addons: ["gitleaks"] }])(
+    "preserves legacy base linters during template updates and unrelated addon changes: %j",
+    async (input) => {
+      const root = await makeTempRoot("bfs-legacy-quality-update-");
+      const projectDir = join(root, "app");
+      await scaffoldGeneratedProject(makeConfig(projectDir, { addons: ["biome", "ultracite"] }));
+      const config = await readJsonc(join(projectDir, "bts.jsonc"));
+      await writeFile(
+        join(projectDir, "bts.jsonc"),
+        JSON.stringify({
+          ...config,
+          stackParts: undefined,
+          addons: ["biome", "ultracite"],
+        }),
+      );
+      const plan = await planReviewedProjectUpdate(projectDir);
+      expect(plan.success, plan.success ? undefined : plan.error).toBe(true);
+      await writeFile(join(projectDir, "local-notes.txt"), "Keep this local file.\n");
+      const addonPlan = await planStackUpdate(projectDir, input);
+      expect(addonPlan.success, addonPlan.success ? undefined : addonPlan.error).toBe(true);
+      if (!addonPlan.success) throw new Error(addonPlan.error);
+      expect(addonPlan.proposedConfig.addons.toSorted()).toEqual([
+        "biome",
+        "gitleaks",
+        "ultracite",
+      ]);
+      const applied = await applyStackUpdate(projectDir, input);
+      expect(applied.success, applied.success ? undefined : applied.error).toBe(true);
+      expect((await readBtsConfig(projectDir))?.addons?.toSorted()).toEqual([
+        "biome",
+        "gitleaks",
+        "ultracite",
+      ]);
+      await expectFileContains(join(projectDir, ".gitleaks.toml"), "[extend]");
+      expect(await readFile(join(projectDir, "local-notes.txt"), "utf8")).toBe(
+        "Keep this local file.\n",
+      );
+      for (const invalid of [
+        { addons: ["biome", "ultracite"] },
+        { part: ["codeQuality:universal:biome", "codeQuality:universal:ultracite"] },
+        { addons: ["eslint"] },
+        { part: ["codeQuality:universal:eslint"] },
+      ]) {
+        const rejected = await planStackUpdate(projectDir, invalid);
+        expect(rejected.success).toBe(false);
+        if (rejected.success) throw new Error("Expected invalid Code Quality selection to fail.");
+        expect(rejected.error).toContain("Code Quality profile");
+      }
+      const replacement = await applyStackUpdate(projectDir, { addons: ["oxlint"] });
+      expect(replacement.success, replacement.success ? undefined : replacement.error).toBe(true);
+      expect((await readBtsConfig(projectDir))?.addons?.toSorted()).toEqual(["gitleaks", "oxlint"]);
+    },
+  );
 
   it("plans and applies the Ultracite addon through generic stack updates", async () => {
     const root = await makeTempRoot("bfs-stack-update-ultracite-");

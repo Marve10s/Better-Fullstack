@@ -40,6 +40,7 @@ import { exitWithError } from "@/presentation/errors";
 import {
   formatStackGraphIssue,
   getDisabledReason,
+  getCodeQualitySelectionIssue,
   getShadcnLintFrontendIssue,
   hasVitePlusWorkspaceRoot,
   hasSignozSupportedGoServerTarget,
@@ -1609,9 +1610,11 @@ function getAddonValidationConfig(config: Partial<ProjectConfig>): Partial<Proje
   };
 }
 
-function validateDesignLintConstraints(config: Partial<ProjectConfig>) {
-  if (!config.addons?.includes("shadcn-lint")) return;
+function validateCodeQualityConstraints(config: Partial<ProjectConfig>) {
   if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) return;
+  const selectionIssue = getCodeQualitySelectionIssue(config.addons ?? []);
+  if (selectionIssue) exitWithError(selectionIssue);
+  if (!config.addons?.includes("shadcn-lint")) return;
   const issue = getShadcnLintFrontendIssue(config.frontend ?? [], config.cssFramework);
   if (issue) exitWithError(issue);
 }
@@ -1621,7 +1624,7 @@ export function validateFullConfig(
   providedFlags: Set<string>,
   options: CLIInput,
 ) {
-  validateDesignLintConstraints(config);
+  validateCodeQualityConstraints(config);
   if (config.stackParts && !isToolingOverlayOnly(config.stackParts) && !options.yolo) {
     const graphValidation = validateStackParts(config.stackParts);
     if (graphValidation.issues.length > 0) {
@@ -1798,7 +1801,7 @@ export function validateFullConfig(
 
 export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>) {
   try {
-    validateDesignLintConstraints(config);
+    validateCodeQualityConstraints(config);
     if (config.stackParts) {
       const graphValidation = validateStackParts(config.stackParts);
       if (graphValidation.issues.length > 0) {

@@ -452,7 +452,19 @@ function mergeStackPartSpecs(
     return !requestedSingleCategories.has(`${part.ownerPartId ?? "root"}:${capability.category}`);
   });
   const stackPartsWithSettings = mergeProjectConfigSettingsIntoStackParts(
-    restoreUnchangedStackPartMetadata(stackParts, currentStackParts),
+    restoreUnchangedStackPartMetadata(
+      stackParts,
+      currentStackParts.map((part) =>
+        part.role === "codeQuality" &&
+        part.source === "legacy" &&
+        requestedParts.some(
+          (requested) =>
+            stackPartIdentity(requested) === stackPartIdentity({ ...part, source: "selected" }),
+        )
+          ? { ...part, source: "selected" }
+          : part,
+      ),
+    ),
     currentConfig,
   );
   return {
@@ -481,8 +493,14 @@ function restoreUnchangedStackPartMetadata(
   parts: readonly StackPart[],
   originals: readonly StackPart[],
 ): StackPart[] {
+  // Re-parsing retained specs must not turn historical quality profiles into new selections.
   const originalsByIdentity = new Map(
-    originals.map((part) => [stackPartIdentity(part), part] as const),
+    originals.flatMap((part) => [
+      [stackPartIdentity(part), part] as const,
+      ...(part.role === "codeQuality" && part.source === "legacy"
+        ? [[stackPartIdentity({ ...part, source: "selected" }), part] as const]
+        : []),
+    ]),
   );
   return parts.map((part) => {
     const original = originalsByIdentity.get(stackPartIdentity(part));
@@ -1775,7 +1793,9 @@ export async function planStackUpdate(
   const shouldApplyCompatibilityAdjustments =
     proposedConfig.ecosystem === "typescript" || proposedConfig.ecosystem === "react-native";
   const compatibilityResult = shouldApplyCompatibilityAdjustments
-    ? analyzeStackCompatibility(buildCompatibilityInputFromConfig(proposedConfig))
+    ? analyzeStackCompatibility(buildCompatibilityInputFromConfig(proposedConfig), {
+        normalizeCodeQualityProfiles: false,
+      })
     : { adjustedStack: null, changes: [] };
   const compatibilityAdjustments = [
     ...dependencyExpansion.adjustments,
@@ -1790,6 +1810,13 @@ export async function planStackUpdate(
   proposedConfig.stackParts = options.stackPartsOverride
     ? [...options.stackPartsOverride]
     : mergeDerivedStackPartsWithExistingGraph(currentConfig, proposedConfig);
+  proposedConfig.stackParts = proposedConfig.stackParts.map((part) =>
+    part.role === "codeQuality" &&
+    !part.ownerPartId &&
+    requestedChanges.addons?.some((addon) => addon === part.toolId)
+      ? { ...part, source: "selected" }
+      : part,
+  );
   Object.assign(proposedConfig, mergeStackPartSpecs(proposedConfig, stackPartSpecs));
 
   if (options.stackPartsOverride) {
@@ -1802,7 +1829,9 @@ export async function planStackUpdate(
       projectName,
     );
     const finalCompatibilityResult = shouldApplyCompatibilityAdjustments
-      ? analyzeStackCompatibility(buildCompatibilityInputFromConfig(graphProjectedConfig))
+      ? analyzeStackCompatibility(buildCompatibilityInputFromConfig(graphProjectedConfig), {
+          normalizeCodeQualityProfiles: false,
+        })
       : { adjustedStack: null, changes: [] };
     compatibilityAdjustments.push(
       ...finalCompatibilityResult.changes.map((change) => `${change.category}: ${change.message}`),

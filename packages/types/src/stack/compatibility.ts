@@ -737,6 +737,7 @@ const usesCloudflareFullstackRuntime = (stack: CompatibilityInput): boolean =>
 
 export const analyzeStackCompatibility = (
   stack: CompatibilityInput,
+  options: { normalizeCodeQualityProfiles?: boolean } = {},
 ): CompatibilityAnalysisResult => {
   // Skip all validation if YOLO mode is enabled
   if (stack.yolo === "true") {
@@ -2634,7 +2635,11 @@ export const analyzeStackCompatibility = (
     });
   }
 
-  const normalizedProfiles = normalizeCodeQualityProfiles(nextStack.codeQuality);
+  // Lifecycle updates validate requested profiles through the graph and retain legacy profiles.
+  const normalizedProfiles =
+    options.normalizeCodeQualityProfiles === false
+      ? nextStack.codeQuality
+      : normalizeCodeQualityProfiles(nextStack.codeQuality);
   if (
     normalizedProfiles.length !== nextStack.codeQuality.length ||
     normalizedProfiles.some((toolId, index) => toolId !== nextStack.codeQuality[index])
