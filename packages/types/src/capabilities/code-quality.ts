@@ -17,14 +17,17 @@ const BASE_TOOLS = new Set(BASE_PROFILES.flatMap((profile) => profile.toolIds));
 const supportsDesignLint = (toolIds: readonly string[]) =>
   toolIds.includes("oxlint") || (toolIds.includes("eslint") && toolIds.includes("prettier"));
 
-/** Keep the first selected base profile when repairing a shared builder selection. */
+/** Complete the first base profile when repairing a shared builder selection. */
 export function normalizeCodeQualityProfiles(toolIds: readonly string[]) {
   const firstBaseTool = toolIds.find((toolId) => BASE_TOOLS.has(toolId));
   const profile = BASE_PROFILES.find((candidate) =>
     candidate.toolIds.includes(firstBaseTool ?? ""),
   );
   if (!profile) return [...toolIds];
-  return toolIds.filter((toolId) => !BASE_TOOLS.has(toolId) || profile.toolIds.includes(toolId));
+  return [
+    ...toolIds.filter((toolId) => !BASE_TOOLS.has(toolId) || profile.toolIds.includes(toolId)),
+    ...profile.toolIds.filter((toolId) => !toolIds.includes(toolId)),
+  ];
 }
 
 export function getCodeQualitySelectionIssue(toolIds: readonly string[]): string | undefined {
@@ -33,6 +36,10 @@ export function getCodeQualitySelectionIssue(toolIds: readonly string[]): string
   );
   if (profiles.length > 1) {
     return "Choose one Code Quality profile; only shadcn/lint can accompany ESLint or Oxlint.";
+  }
+  const profile = profiles[0];
+  if (profile && !profile.toolIds.every((toolId) => toolIds.includes(toolId))) {
+    return `Choose the complete ${profile.label} Code Quality profile.`;
   }
   if (toolIds.includes("shadcn-lint") && !supportsDesignLint(toolIds)) {
     return "shadcn/lint requires ESLint + Prettier or Oxlint + Oxfmt as the Code Quality profile.";

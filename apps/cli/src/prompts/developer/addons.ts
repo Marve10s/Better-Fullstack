@@ -213,6 +213,7 @@ export async function promptCapabilities(
               const requested = options
                 .filter((option) => selectionIds.includes(option.id))
                 .flatMap((option) => option.toolIds);
+              if (context.additionsOnly && requested.length === 0) return undefined;
               const replaced = getReplacedCodeQualityTools(requested);
               const retained = context.additionsOnly
                 ? context.existing.filter((toolId) => !replaced.includes(toolId))

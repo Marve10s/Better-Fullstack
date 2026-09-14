@@ -2635,13 +2635,16 @@ export const analyzeStackCompatibility = (
   }
 
   const normalizedProfiles = normalizeCodeQualityProfiles(nextStack.codeQuality);
-  if (normalizedProfiles.length !== nextStack.codeQuality.length) {
+  if (
+    normalizedProfiles.length !== nextStack.codeQuality.length ||
+    normalizedProfiles.some((toolId, index) => toolId !== nextStack.codeQuality[index])
+  ) {
     nextStack.codeQuality = normalizedProfiles;
     changed = true;
     changes.push({
       category: "codeQuality",
       message:
-        "Kept the first Code Quality profile; only shadcn/lint can accompany ESLint or Oxlint.",
+        "Code Quality adjusted to one complete base profile, with shadcn/lint as the optional second selection.",
     });
   }
 

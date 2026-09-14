@@ -15,10 +15,13 @@ import { generateStackCommand } from "@/lib/stack/stack-utils";
 
 describe("shadcn/lint builder", () => {
   it.each([
+    ["eslint", ["eslint", "prettier"]],
+    ["prettier", ["prettier", "eslint"]],
+    ["eslint,biome", ["eslint", "prettier"]],
     ["biome,oxlint", ["biome"]],
     ["eslint,prettier,oxlint,shadcn-lint", ["eslint", "prettier", "shadcn-lint"]],
     ["oxlint,biome,shadcn-lint", ["oxlint", "shadcn-lint"]],
-  ] as const)("repairs conflicting profiles from a shared URL: %s", async (cq, expected) => {
+  ] as const)("normalizes shared Code Quality selections: %s", async (cq, expected) => {
     const restored = parseStackSelectionFromSearch({ cq, css: "tailwind" });
     const analysis = analyzeStackCompatibility(restored);
     expect(analysis.adjustedStack?.codeQuality).toEqual([...expected]);

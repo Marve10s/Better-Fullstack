@@ -19,6 +19,8 @@ describe("Code Quality pairing", () => {
     ).toBeGreaterThan(0);
   });
   it.each([
+    ["eslint"],
+    ["prettier"],
     ["biome", "oxlint"],
     ["eslint", "oxlint"],
     ["ultracite", "biome"],
@@ -29,6 +31,16 @@ describe("Code Quality pairing", () => {
     ["oxlint", "prettier", "shadcn-lint"],
   ])("rejects incompatible tools %j", (...tools: string[]) => {
     expect(getCodeQualitySelectionIssue(tools)).toBeDefined();
+  });
+
+  it.each(["eslint", "prettier"])("rejects incomplete graph profile %s", (toolId) => {
+    const specs = ["frontend:typescript:react-vite", `codeQuality:universal:${toolId}`];
+    expect(validateStackParts(parseStackPartSpecs(specs, "legacy")).issues).toEqual([]);
+    expect(
+      validateStackParts(parseStackPartSpecs(specs, "selected")).issues.some((issue) =>
+        issue.message.includes("complete ESLint + Prettier"),
+      ),
+    ).toBe(true);
   });
 
   it("keeps one base profile while toggling the supplemental check", () => {
