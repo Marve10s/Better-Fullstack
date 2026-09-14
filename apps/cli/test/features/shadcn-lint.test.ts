@@ -1,6 +1,9 @@
 import { cliInputToProjectConfigPartial, SHADCN_LINT_FRONTENDS } from "@better-fullstack/types";
+import { expectSuccess, runTRPCTest } from "@test/support/test-utils";
 import { readVirtualFileContent } from "@test/support/virtual-tree-utils";
 import { describe, expect, it } from "bun:test";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 import { validateConfigForProgrammaticUse } from "@/config/config-validation";
 import { displayConfig } from "@/config/display-config";
@@ -9,6 +12,47 @@ import { runWithContext } from "@/presentation/context";
 import { getCompatibleSelections } from "@/prompts/developer/addons";
 
 describe("shadcn/lint generation", () => {
+  it.each(["oxlint", "eslint"] as const)(
+    "preserves %s design rules through on-disk creation and addon setup",
+    async (linter) => {
+      const result = await runTRPCTest({
+        projectName: `design-lint-disk-${linter}`,
+        frontend: ["react-vite"],
+        backend: "none",
+        runtime: "none",
+        api: "none",
+        database: "none",
+        orm: "none",
+        auth: "none",
+        cssFramework: "tailwind",
+        uiLibrary: "shadcn-ui",
+        shadcnBase: "radix",
+        shadcnColorTheme: "neutral",
+        shadcnFont: "geist",
+        addons: [linter, ...(linter === "eslint" ? ["prettier" as const] : []), "shadcn-lint"],
+        install: false,
+        git: false,
+      });
+      expectSuccess(result);
+      if (!result.projectDir) throw new Error("Creation did not return a project directory");
+      const config = await readFile(
+        join(result.projectDir, linter === "oxlint" ? ".oxlintrc.json" : "eslint.config.mjs"),
+        "utf8",
+      );
+      expect(config).toContain("@shadcn/lint");
+      expect(config).toContain("shadcn/no-restyle");
+      expect(config).toContain("**/components/ui/**");
+      const packageJson = await readFile(join(result.projectDir, "package.json"), "utf8");
+      expect(packageJson).toContain('"@shadcn/lint": "0.1.0"');
+      expect(packageJson).toContain(
+        `"lint:design": "${linter === "oxlint" ? "oxlint" : "eslint ."}"`,
+      );
+      expect(await readFile(join(result.projectDir, "DESIGN.md"), "utf8")).toContain("Button");
+      expect(await readFile(join(result.projectDir, "bts.jsonc"), "utf8")).toContain("shadcn-lint");
+    },
+    60_000,
+  );
+
   it("rejects the incomplete ESLint profile through direct generation", async () => {
     const result = await createVirtual({
       frontend: ["react-vite"],
