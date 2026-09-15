@@ -120,9 +120,11 @@ export async function handleTelemetryIngest(
   }
   if (!body) return new Response(null, { status: 400, headers });
   const envelope = sanitizeIngestEnvelope(body);
+  const suppliedEventId = sanitizeTelemetryMachineId(body.eventId);
   if (
     !envelope.eventType ||
     !envelope.machineId ||
+    (body.eventId !== undefined && !suppliedEventId) ||
     ((envelope.eventType === "web_action" || envelope.eventType === "command_used") &&
       !envelope.action) ||
     (envelope.eventType === "command_used" && !envelope.status) ||
@@ -130,7 +132,7 @@ export async function handleTelemetryIngest(
     hasInvalidStackValues(body)
   )
     return new Response(null, { status: 400, headers });
-  const eventId = sanitizeTelemetryMachineId(body.eventId) ?? crypto.randomUUID();
+  const eventId = suppliedEventId ?? crypto.randomUUID();
   const page = pageProperties(body, options.allowedPages);
   if (
     (!page && pageKeys.some((key) => body[key] !== undefined)) ||

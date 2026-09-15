@@ -346,3 +346,27 @@ it("rejects malformed known stack choices at either location before capture", as
   }
   expect(batches).toEqual([]);
 });
+
+it("rejects supplied invalid event IDs and generates IDs only when omitted", async () => {
+  const batches = collectEvents();
+  const envelope = { eventType: "project_created", machineId: crypto.randomUUID() };
+  const ingestOptions = { ...options, trustedRequestKey: "event-identity-validation" };
+  for (const eventId of ["not-a-uuid", "", null, 123, false, [], {}]) {
+    const response = await handleTelemetryIngest(request({ ...envelope, eventId }), ingestOptions);
+    expect(response.status).toBe(400);
+  }
+  expect(batches).toEqual([]);
+  const response = await handleTelemetryIngest(request(envelope), ingestOptions);
+  expect(response.status).toBe(204);
+  expect(batches).toMatchObject([
+    {
+      batch: [
+        {
+          uuid: expect.stringMatching(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+          ),
+        },
+      ],
+    },
+  ]);
+});
