@@ -1,6 +1,10 @@
 {{#if (or (includes frontend "next") (includes frontend "vinext"))}}
 "use client";
+{{#if (includes frontend "vinext")}}
+import Link from "vinext/shims/link";
+{{else}}
 import Link from "next/link";
+{{/if}}
 {{else if (or (includes frontend "react-router") (includes frontend "react-vite"))}}
 import { NavLink } from "react-router";
 {{else if (or (includes frontend "tanstack-router") (includes frontend "tanstack-start"))}}
