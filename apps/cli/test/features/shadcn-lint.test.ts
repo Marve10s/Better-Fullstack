@@ -5,10 +5,8 @@ import { describe, expect, it } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { validateConfigForProgrammaticUse } from "@/config/config-validation";
 import { displayConfig } from "@/config/display-config";
 import { create, createVirtual } from "@/index";
-import { runWithContext } from "@/presentation/context";
 import { getCompatibleSelections } from "@/prompts/developer/addons";
 
 describe("shadcn/lint generation", () => {
@@ -163,19 +161,6 @@ describe("shadcn/lint generation", () => {
       expect(readVirtualFileContent(result.tree.root, "package.json")).toContain('"lint:design"');
     },
   );
-
-  it("rejects a non-Tailwind configuration through the programmatic API", () => {
-    expect(() =>
-      runWithContext({ silent: true }, () =>
-        validateConfigForProgrammaticUse({
-          ecosystem: "typescript",
-          frontend: ["react-vite"],
-          cssFramework: "none",
-          addons: ["oxlint", "shadcn-lint"],
-        }),
-      ),
-    ).toThrow("Tailwind CSS v4");
-  });
 
   it("offers the supplemental check in mixed-ecosystem CLI prompts only with Tailwind", () => {
     const context = {
