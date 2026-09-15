@@ -1042,6 +1042,7 @@ function generateFeaturesList(
     tauri: "- **Tauri** - Build native desktop applications",
     biome: "- **Biome** - Linting and formatting",
     oxlint: "- **Oxlint** - Oxlint + Oxfmt (linting & formatting)",
+    "shadcn-lint": "- **shadcn/lint** - Tailwind design-system checks with ESLint or Oxlint",
     husky: "- **Husky** - Git hooks for code quality",
     starlight: "- **Starlight** - Documentation site with Astro",
     turborepo: "- **Turborepo** - Optimized monorepo build system",
@@ -1171,6 +1172,11 @@ function generateScriptsList(
 
   if (addons.includes("oxlint")) {
     scripts += `\n- \`${packageManagerRunCmd} check\`: Run Oxlint and Oxfmt`;
+  }
+
+  if (addons.includes("shadcn-lint")) {
+    const lintConfig = addons.includes("oxlint") ? ".oxlintrc.json" : "eslint.config.mjs";
+    scripts += `\n- \`${packageManagerRunCmd} lint:design\`: Run the linter with shadcn/lint. Button appearance is controlled by its variants; call sites may use layout classes. Edit the \`shadcn/no-restyle\` contract in \`${lintConfig}\` to define your design-system policy. Component implementations under \`components/ui\` are excluded. See https://github.com/shadcn-ui/lint#rules.`;
   }
 
   if (addons.includes("pwa")) {

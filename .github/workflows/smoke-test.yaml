@@ -235,6 +235,9 @@ jobs:
           SMOKE_ECOSYSTEM: ${{ inputs.ecosystem }}
           SMOKE_COUNT: ${{ inputs.count || '14' }}
           FORCE_FLAGS: ${{ inputs.force_flags || steps.detect-changes.outputs.force_flags }}
+          # Build-only placeholders; smoke tests do not call PayPal.
+          PAYPAL_CLIENT_ID: smoke-test-client-id
+          PAYPAL_CLIENT_SECRET: smoke-test-client-secret
         run: |
           SEED="${INPUT_SEED:-$FALLBACK_SEED}"
 

@@ -47,8 +47,9 @@ export const TOOLING_CATEGORIES: readonly ToolingCategoryDefinition[] = [
   {
     id: "codeQuality",
     label: "Code Quality",
-    description: "Choose one coherent linting and formatting profile.",
-    selectionMode: "single",
+    description:
+      "Choose one linting and formatting profile, optionally with shadcn/lint for ESLint or Oxlint.",
+    selectionMode: "multiple",
   },
   {
     id: "gitHooks",
@@ -193,6 +194,12 @@ export const TOOLING_SELECTION_OPTIONS: readonly ToolingSelectionOption[] = [
     ["eslint", "prettier"],
   ),
   option("codeQuality", "oxlint", "Oxlint + Oxfmt", "Oxc linting and formatting.", ["oxlint"]),
+  option(
+    "codeQuality",
+    "shadcn-lint",
+    "shadcn/lint",
+    "Tailwind design-system checks alongside ESLint or Oxlint.",
+  ),
   option("codeQuality", "ultracite", "Ultracite", "Opinionated Biome profile with AI support."),
   option("gitHooks", "none", "None", "Do not generate a Git hook manager."),
   option("gitHooks", "lefthook", "Lefthook", "Fast language-independent Git hooks."),
@@ -294,6 +301,7 @@ export const TOOLING_CAPABILITIES: readonly ToolingCapabilityDefinition[] = [
   { toolId: "eslint", category: "codeQuality", role: "codeQuality", ecosystem: "universal" },
   { toolId: "prettier", category: "codeQuality", role: "codeQuality", ecosystem: "universal" },
   { toolId: "oxlint", category: "codeQuality", role: "codeQuality", ecosystem: "universal" },
+  { toolId: "shadcn-lint", category: "codeQuality", role: "codeQuality", ecosystem: "universal" },
   { toolId: "ultracite", category: "codeQuality", role: "codeQuality", ecosystem: "universal" },
   { toolId: "lefthook", category: "gitHooks", role: "gitHooks", ecosystem: "universal" },
   { toolId: "husky", category: "gitHooks", role: "gitHooks", ecosystem: "universal" },

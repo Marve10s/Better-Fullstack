@@ -1,10 +1,10 @@
+import { treeToSnapshot, treeToFileList } from "@test/support/snapshot-utils";
+import { getVirtualTreeFileContent } from "@test/support/virtual-tree-utils";
 import { describe, expect, it } from "bun:test";
 
 import type { ProjectConfig } from "@/types";
 
 import { createVirtual } from "@/index";
-import { treeToSnapshot, treeToFileList } from "@test/support/snapshot-utils";
-import { getVirtualTreeFileContent } from "@test/support/virtual-tree-utils";
 
 /**
  * Minimal configs representing key template combinations
@@ -15,6 +15,20 @@ const SNAPSHOT_CONFIGS: Array<{
   name: string;
   config: Partial<ProjectConfig>;
 }> = [
+  {
+    name: "react-vite-shadcn-lint",
+    config: {
+      frontend: ["react-vite"],
+      backend: "none",
+      api: "none",
+      database: "none",
+      orm: "none",
+      auth: "none",
+      cssFramework: "tailwind",
+      uiLibrary: "shadcn-ui",
+      addons: ["oxlint", "shadcn-lint"],
+    },
+  },
   // === FRONTEND VARIATIONS ===
   {
     name: "tanstack-router-minimal",

@@ -22,7 +22,7 @@ import appCss from "../index.css?url";
 import type { QueryClient } from "@tanstack/react-query";
 import type { ConvexQueryClient } from "@convex-dev/react-query";
 {{else}}
-{{#if (or (eq api "trpc") (eq api "orpc"))}}
+{{#if (or (eq api "trpc") (eq api "orpc") (eq api "garph"))}}
 import type { QueryClient } from "@tanstack/react-query";
 {{/if}}
 {{/if}}
@@ -72,9 +72,12 @@ export interface RouterAppContext {
   orpc: typeof orpc;
   queryClient: QueryClient;
 }
-  {{else}}
+  {{else if (eq api "garph")}}
 export interface RouterAppContext {
+  queryClient: QueryClient;
 }
+  {{else}}
+export type RouterAppContext = Record<string, never>;
   {{/if}}
 {{/if}}
 

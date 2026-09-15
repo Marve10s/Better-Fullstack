@@ -27,6 +27,7 @@ export interface VirtualFileTree {
 
 export interface GeneratorOptions {
   config: ProjectConfig;
+  skipDesignLintValidation?: boolean;
   templateBasePath?: string;
   templates?: Map<string, string>;
 }

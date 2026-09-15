@@ -656,9 +656,23 @@ describe("CLI add command", () => {
       const createResult = await createWithImperativeAddons(root, projectName, [
         "lefthook",
         "biome",
-        "ultracite",
       ]);
       expect(createResult.exitCode, createResult.all).toBe(0);
+      // Repair remains available to legacy projects that recorded multiple base linters.
+      const configPath = join(projectDir, "bts.jsonc");
+      const legacyConfig = await readJsoncFile(configPath);
+      await writeFile(
+        configPath,
+        JSON.stringify(
+          {
+            ...legacyConfig,
+            stackParts: undefined,
+            addons: ["lefthook", "biome", "ultracite"],
+          },
+          null,
+          2,
+        ),
+      );
 
       const lefthookPath = join(projectDir, "lefthook.yml");
       await writeFile(

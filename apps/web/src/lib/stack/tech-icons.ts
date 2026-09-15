@@ -395,6 +395,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   knip: { type: "local", src: "https://knip.dev/favicon.svg" },
   gitleaks: { type: "local", src: "https://github.com/gitleaks.png" },
   oxlint: { type: "si", slug: "oxc", hex: "FF915C" },
+  "shadcn-lint": { type: "si", slug: "shadcnui", hex: "000000" },
   ultracite: { type: "local", src: "/icon/ultracite.svg", needsInvert: "dark" }, // currentColor
 
   // ─── Documentation ─────────────────────────────────────────────────────────

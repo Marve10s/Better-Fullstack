@@ -83,6 +83,7 @@
     "@better-fullstack/types": "workspace:*",
     "@effect/platform": "^0.96.2",
     "@effect/platform-bun": "^0.90.0",
+    "@shadcn/lint": "0.1.0",
     "@types/bun": "^1.4.1",
     "@types/three": "^0.183.1",
     "changelogithub": "^14.0.0",

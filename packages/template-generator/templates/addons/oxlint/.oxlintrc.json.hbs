@@ -1,0 +1,22 @@
+{{#if (includes addons "shadcn-lint")}}
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "jsPlugins": ["@shadcn/lint"],
+  "overrides": [
+    {
+      "files": ["**/*.jsx", "**/*.tsx"],
+      "rules": {
+        "shadcn/no-restyle": ["error", {
+          "allow": ["*"],
+          "contracts": [{ "pattern": "^Button$", "allow": ["layout"] }]
+        }]
+      }
+    },
+    {
+      "files": ["**/components/ui/**"],
+      "rules": { "shadcn/no-restyle": "off" }
+    }
+  ],
+  "ignorePatterns": ["**/node_modules/**", "**/dist/**", "**/.next/**", "**/.output/**", "**/coverage/**"]
+}
+{{/if}}

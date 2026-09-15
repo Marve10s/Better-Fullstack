@@ -444,9 +444,8 @@ export function SavedStacksPanel({
                     <div className="grid grid-cols-3 gap-1">
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="muted-outline"
                         size="sm"
-                        className="rounded-md border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors duration-200"
                         onClick={() => onLoadEntry(entry.id)}
                       >
                         <FolderOpen className="h-3.5 w-3.5" />
@@ -454,9 +453,8 @@ export function SavedStacksPanel({
                       </Button>
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="muted-outline"
                         size="sm"
-                        className="rounded-md border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors duration-200"
                         onClick={() => setViewingEntryId(entry.id)}
                       >
                         <SlidersHorizontal className="h-3.5 w-3.5" />
@@ -464,9 +462,8 @@ export function SavedStacksPanel({
                       </Button>
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="muted-outline"
                         size="sm"
-                        className="rounded-md border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors duration-200"
                         onClick={() => onOverwriteEntry(entry.id)}
                       >
                         <Save className="h-3.5 w-3.5" />
