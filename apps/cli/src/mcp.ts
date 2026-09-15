@@ -776,15 +776,14 @@ export function validateMcpProjectConfigCompatibility(
   config: Pick<ProjectConfig, "ecosystem" | "integrations"> &
     Partial<Pick<ProjectConfig, "backend" | "runtime" | "webDeploy" | "stackParts" | "addons">>,
 ): void {
+  const qualityIssue = getCodeQualitySelectionIssue(config.addons ?? []);
+  if (qualityIssue) throw new Error(qualityIssue);
   if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
     const qualityIssues = validateStackParts(config.stackParts).issues.filter(
       (issue) => issue.role === "codeQuality",
     );
     if (qualityIssues.length)
       throw new Error(qualityIssues.map((issue) => issue.message).join("\n"));
-  } else {
-    const qualityIssue = getCodeQualitySelectionIssue(config.addons ?? []);
-    if (qualityIssue) throw new Error(qualityIssue);
   }
   if (config.integrations !== "nango") return;
 

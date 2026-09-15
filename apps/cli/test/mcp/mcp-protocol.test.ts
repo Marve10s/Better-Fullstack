@@ -151,19 +151,21 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
     expect(tools.tools.some((tool) => tool.name === "bfs_get_capability_evidence")).toBe(true);
     expect(tools.tools.some((tool) => tool.name === "bfs_list_starter_tracks")).toBe(true);
     expect(
-      tools.tools.filter(
-        (tool) => tool.outputSchema && Object.hasOwn(tool.outputSchema, "$defs"),
-      ).length,
+      tools.tools.filter((tool) => tool.outputSchema && Object.hasOwn(tool.outputSchema, "$defs"))
+        .length,
     ).toBeGreaterThan(0);
     const jsonSchemaValidator = new AjvJsonSchemaValidator();
     for (const tool of tools.tools) {
       if (tool.outputSchema) jsonSchemaValidator.getValidator(tool.outputSchema);
     }
-    const guidanceSchema = tools.tools.find((tool) => tool.name === "bfs_get_guidance")
-      ?.outputSchema;
+    const guidanceSchema = tools.tools.find(
+      (tool) => tool.name === "bfs_get_guidance",
+    )?.outputSchema;
     expect(guidanceSchema).toBeDefined();
     if (guidanceSchema) {
-      expect(jsonSchemaValidator.getValidator(guidanceSchema)(guidanceResult.structuredContent)).toEqual({
+      expect(
+        jsonSchemaValidator.getValidator(guidanceSchema)(guidanceResult.structuredContent),
+      ).toEqual({
         valid: true,
         data: guidanceResult.structuredContent,
         errorMessage: undefined,
@@ -334,6 +336,10 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
     roots.push(targetDir);
     for (const selection of [
       { addons: ["eslint"] },
+      {
+        part: ["frontend:typescript:react-vite", "frontend.css:typescript:tailwind"],
+        addons: ["eslint"],
+      },
       { addons: ["biome", "ultracite"] },
       { part: ["frontend:typescript:react-vite", "codeQuality:universal:eslint"] },
       { part: ["codeQuality:universal:eslint"] },
@@ -351,6 +357,7 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
     for (const [index, selection] of [
       { addons: ["eslint", "prettier", "shadcn-lint"] },
       {
+        addons: ["biome"],
         part: [
           "frontend:typescript:react-vite",
           "frontend.css:typescript:tailwind",
@@ -364,9 +371,9 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
         const result = await callTool(client, { name, arguments: args });
         expect(result.isError, JSON.stringify(result.content)).not.toBe(true);
       }
-      expect((await readBtsConfig(path.join(targetDir, args.projectName)))?.addons).toContain(
-        "shadcn-lint",
-      );
+      const addons = (await readBtsConfig(path.join(targetDir, args.projectName)))?.addons;
+      expect(addons).toContain("shadcn-lint");
+      expect(addons).not.toContain("biome");
     }
   });
 

@@ -4,6 +4,7 @@ import {
   hasJavaScriptWorkspaceRoot,
   getCodeQualitySelectionIssue,
   getShadcnLintFrontendIssue,
+  getShadcnLintGraphFrontendIssue,
   toolingRequiresJavaScriptWorkspace,
   formatStackGraphIssue,
   getRoleTargetPath,
@@ -455,7 +456,9 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
     if (!options.skipDesignLintValidation && toolingConfig.addons.includes("shadcn-lint")) {
       const qualityIssue =
         getCodeQualitySelectionIssue(toolingConfig.addons) ??
-        getShadcnLintFrontendIssue(toolingConfig.frontend, toolingConfig.cssFramework);
+        (usesGraphParts
+          ? getShadcnLintGraphFrontendIssue(config.stackParts ?? [])
+          : getShadcnLintFrontendIssue(toolingConfig.frontend, toolingConfig.cssFramework));
       if (qualityIssue) return { success: false, error: qualityIssue };
     }
 

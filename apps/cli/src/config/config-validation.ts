@@ -1610,11 +1610,12 @@ function getAddonValidationConfig(config: Partial<ProjectConfig>): Partial<Proje
   };
 }
 
-function validateCodeQualityConstraints(config: Partial<ProjectConfig>) {
+function validateCodeQualityConstraints(config: Partial<ProjectConfig>, partial = false) {
   if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) return;
   const selectionIssue = getCodeQualitySelectionIssue(config.addons ?? []);
   if (selectionIssue) exitWithError(selectionIssue);
   if (!config.addons?.includes("shadcn-lint")) return;
+  if (partial && (config.frontend === undefined || config.cssFramework === undefined)) return;
   const issue = getShadcnLintFrontendIssue(config.frontend ?? [], config.cssFramework);
   if (issue) exitWithError(issue);
 }
@@ -1623,8 +1624,9 @@ export function validateFullConfig(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
   options: CLIInput,
+  partial = false,
 ) {
-  validateCodeQualityConstraints(config);
+  validateCodeQualityConstraints(config, partial);
   if (config.stackParts && !isToolingOverlayOnly(config.stackParts) && !options.yolo) {
     const graphValidation = validateStackParts(config.stackParts);
     if (graphValidation.issues.length > 0) {
@@ -1745,8 +1747,12 @@ export function validateFullConfig(
 
   if (config.addons && config.addons.length > 0) {
     const addonConfig = getAddonValidationConfig(config);
+    const addonsToValidate =
+      partial && addonConfig.frontend === undefined
+        ? config.addons.filter((addon) => addon !== "shadcn-lint")
+        : config.addons;
     validateAddonsAgainstFrontends(
-      config.addons,
+      addonsToValidate,
       addonConfig.frontend,
       addonConfig.auth,
       addonConfig.backend,

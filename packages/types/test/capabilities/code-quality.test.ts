@@ -4,7 +4,7 @@ import {
   getCodeQualitySelectionIssue,
   updateCodeQualitySelection,
 } from "@/capabilities/code-quality";
-import { parseStackPartSpecs, validateStackParts } from "@/stack/stack-graph";
+import { createStackPart, parseStackPartSpecs, validateStackParts } from "@/stack/stack-graph";
 
 describe("Code Quality pairing", () => {
   it("preserves legacy profiles while rejecting newly selected combinations", () => {
@@ -71,6 +71,49 @@ describe("Code Quality pairing", () => {
         "codeQuality:universal:shadcn-lint",
       ]);
       expect(validateStackParts(parts).issues).toEqual([]);
+    },
+  );
+
+  it.each([false, true])(
+    "checks React-owned CSS independently of part order (reversed: %s)",
+    (reversed) => {
+      for (const reactCss of ["tailwind", "unocss"]) {
+        const react = createStackPart({
+          role: "frontend",
+          ecosystem: "typescript",
+          toolId: "react-vite",
+        });
+        const svelte = createStackPart({
+          role: "frontend",
+          ecosystem: "typescript",
+          toolId: "svelte",
+        });
+        const parts = [
+          react,
+          svelte,
+          createStackPart({
+            role: "css",
+            ecosystem: "typescript",
+            toolId: reactCss,
+            ownerPartId: react.id,
+          }),
+          createStackPart({
+            role: "css",
+            ecosystem: "typescript",
+            toolId: reactCss === "tailwind" ? "unocss" : "tailwind",
+            ownerPartId: svelte.id,
+          }),
+          ...parseStackPartSpecs([
+            "codeQuality:universal:oxlint",
+            "codeQuality:universal:shadcn-lint",
+          ]),
+        ];
+        if (reversed) parts.reverse();
+        const designIssues = validateStackParts(parts).issues.filter(
+          (issue) => issue.toolId === "shadcn-lint",
+        );
+        expect(designIssues.length > 0).toBe(reactCss !== "tailwind");
+      }
     },
   );
 

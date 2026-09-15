@@ -10,6 +10,7 @@ import type {
 import {
   getCodeQualitySelectionIssue,
   getShadcnLintFrontendIssue,
+  getShadcnLintGraphFrontendIssue,
 } from "@/capabilities/code-quality";
 import {
   getToolingCapability,
@@ -218,6 +219,7 @@ export type ToolDefinition = {
 };
 
 export type StackPartOptionContext = {
+  parts?: readonly StackPart[];
   role: StackPartRole;
   ecosystem?: StackPartEcosystem;
   ownerRole?: StackPrimaryRole;
@@ -2068,10 +2070,12 @@ function createAddonCompatibilityIssue(
           ]);
     const frontendIssue =
       part.toolId === "shadcn-lint"
-        ? getShadcnLintFrontendIssue(
-            context.selectedToolIdsByRoleList?.frontend ?? frontendTools,
-            context.selectedToolIdsByRole?.css,
-          )
+        ? context.parts
+          ? getShadcnLintGraphFrontendIssue(context.parts)
+          : getShadcnLintFrontendIssue(
+              context.selectedToolIdsByRoleList?.frontend ?? frontendTools,
+              context.selectedToolIdsByRole?.css,
+            )
         : undefined;
     const issue = selectionIssue ?? frontendIssue;
     if (issue) {
@@ -3326,6 +3330,7 @@ function getStackPartOptionContextForPart(
     ownerToolId: owner?.toolId,
     ownerEcosystem: owner?.ecosystem,
     settings: part.settings,
+    parts,
     siblingToolIdsByRole: getSiblingToolIdsByRole(part, parts),
     siblingToolIdsByRoleList: getSiblingToolIdsByRoleList(part, parts),
     selectedToolIdsByRole: getSelectedToolIdsByRole(parts),

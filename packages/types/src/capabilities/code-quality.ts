@@ -1,3 +1,5 @@
+import type { StackPart } from "@/config/types";
+
 import { getToolingSelectionOptions } from "@/capabilities/tooling-capabilities";
 
 export const SHADCN_LINT_FRONTENDS = [
@@ -80,4 +82,18 @@ export function updateCodeQualitySelection(
     next.push("shadcn-lint");
   }
   return next;
+}
+
+export function getShadcnLintGraphFrontendIssue(parts: readonly StackPart[]) {
+  const frontends = parts.filter((part) => part.role === "frontend");
+  const reactFrontends = frontends.filter((part) =>
+    SHADCN_LINT_FRONTENDS.some((toolId) => toolId === part.toolId),
+  );
+  if (!reactFrontends.length)
+    return getShadcnLintFrontendIssue(frontends.map((part) => part.toolId));
+  for (const frontend of reactFrontends) {
+    const css = parts.find((part) => part.role === "css" && part.ownerPartId === frontend.id);
+    const issue = getShadcnLintFrontendIssue([frontend.toolId], css?.toolId);
+    if (issue) return issue;
+  }
 }

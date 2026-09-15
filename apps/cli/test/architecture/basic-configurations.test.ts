@@ -6,7 +6,9 @@ import {
 } from "@test/support/test-utils";
 import { describe, expect, it } from "bun:test";
 
+import { runWithContext } from "@/presentation/context";
 import { ECOSYSTEM_PROMPT_OPTIONS } from "@/prompts/ecosystems/ecosystem";
+import { processAndValidateFlags, validateConfigCompatibility } from "@/validation";
 
 describe("Basic Configurations", () => {
   it("lists every supported ecosystem in the interactive CLI picker", () => {
@@ -262,6 +264,38 @@ describe("Basic Configurations", () => {
   });
 
   describe("Code Quality compatibility", () => {
+    it("defers design-lint frontend and CSS checks until interactive choices are known", () => {
+      runWithContext({ silent: true }, () => {
+        const options = { addons: ["oxlint", "shadcn-lint"] as const };
+        const input = { addons: [...options.addons] };
+        const flags = new Set(["addons"]);
+        const partial = processAndValidateFlags(input, flags, "interactive-design");
+        expect(partial.addons).toEqual(input.addons);
+        expect(() =>
+          validateConfigCompatibility(
+            {
+              ...partial,
+              frontend: ["react-vite"],
+              cssFramework: "tailwind",
+            },
+            flags,
+            input,
+          ),
+        ).not.toThrow();
+        expect(() =>
+          validateConfigCompatibility(
+            {
+              ...partial,
+              frontend: ["react-vite"],
+              cssFramework: "none",
+            },
+            flags,
+            input,
+          ),
+        ).toThrow("Tailwind CSS v4");
+      });
+    });
+
     it.each([
       { addons: ["eslint"], error: "complete ESLint + Prettier" },
       { addons: ["biome", "oxlint"], error: "Choose one Code Quality profile" },
