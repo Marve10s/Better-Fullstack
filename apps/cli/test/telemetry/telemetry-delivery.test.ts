@@ -31,6 +31,24 @@ describe("telemetry delivery queue", () => {
     expect(deliveryAborted).toBe(true);
   });
 
+  it("reserves capacity and replaces starts to preserve terminal outcomes under saturation", async () => {
+    const queue = new TelemetryDeliveryQueue();
+    let outcomes = 0;
+    for (let index = 0; index < 64; index++)
+      queue.enqueue(async (controller) => {
+        await new Promise<void>((resolve) => {
+          if (controller.signal.aborted) resolve();
+          else controller.signal.addEventListener("abort", () => resolve(), { once: true });
+        });
+      });
+    for (let index = 0; index < 40; index++)
+      queue.enqueue(async () => {
+        outcomes++;
+      }, true);
+    await queue.flush(20);
+    expect(outcomes).toBe(40);
+  });
+
   it("flushes completed deliveries without waiting for the deadline", async () => {
     const queue = new TelemetryDeliveryQueue();
     let delivered = false;
@@ -45,19 +63,19 @@ describe("telemetry delivery queue", () => {
 
 describe("shutdown flush budget", () => {
   const originalFetch = global.fetch;
-  const originalIngestUrl = process.env.CONVEX_INGEST_URL;
+  const originalIngestUrl = process.env.BFS_TELEMETRY_INGEST_URL;
   const originalDisabled = process.env.BTS_TELEMETRY_DISABLED;
 
   afterEach(() => {
     global.fetch = originalFetch;
-    if (originalIngestUrl === undefined) delete process.env.CONVEX_INGEST_URL;
-    else process.env.CONVEX_INGEST_URL = originalIngestUrl;
+    if (originalIngestUrl === undefined) delete process.env.BFS_TELEMETRY_INGEST_URL;
+    else process.env.BFS_TELEMETRY_INGEST_URL = originalIngestUrl;
     if (originalDisabled === undefined) delete process.env.BTS_TELEMETRY_DISABLED;
     else process.env.BTS_TELEMETRY_DISABLED = originalDisabled;
   });
 
   it("delivers an event enqueued immediately before shutdown", async () => {
-    process.env.CONVEX_INGEST_URL = "https://telemetry.invalid/api/analytics/ingest";
+    process.env.BFS_TELEMETRY_INGEST_URL = "https://telemetry.invalid/api/analytics/ingest";
     process.env.BTS_TELEMETRY_DISABLED = "0";
 
     let aborted = false;

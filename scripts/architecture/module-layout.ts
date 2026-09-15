@@ -11,16 +11,9 @@ const dryRun = process.argv.includes("--check");
 
 const projects: Project[] = [
   {
-    root: "apps/analytics",
-    aliases: [
-      { directory: "convex", prefix: "@/" },
-      { directory: "test", prefix: "@test/" },
-    ],
-  },
-  {
     root: "packages/backend",
     aliases: [
-      { directory: "convex", prefix: "@/" },
+      { directory: "src", prefix: "@/" },
       { directory: "test", prefix: "@test/" },
     ],
   },
@@ -206,7 +199,6 @@ const groupedFiles: Record<string, Record<string, string[]>> = {
   },
   "apps/web/src/lib": {
     analytics: [
-      "analytics-aggregate.ts",
       "builder-failure-analytics.ts",
       "campaign-analytics.ts",
       "product-analytics.ts",
@@ -235,7 +227,7 @@ const groupedFiles: Record<string, Record<string, string[]>> = {
       "registry-theme.ts",
       "theme.tsx",
     ],
-    platform: ["convex.ts", "utils.ts"],
+    platform: ["utils.ts"],
     project: [
       "project-binary-assets.ts",
       "project-download.ts",
@@ -258,7 +250,7 @@ const groupedFiles: Record<string, Record<string, string[]>> = {
       "tech-resource-links.ts",
       "types.ts",
     ],
-    telemetry: ["telemetry-auth.server.ts", "telemetry-dashboard.ts", "telemetry-data.server.ts"],
+    telemetry: ["telemetry-auth.server.ts", "telemetry-data.server.ts"],
   },
   "packages/types/src": {
     capabilities: [

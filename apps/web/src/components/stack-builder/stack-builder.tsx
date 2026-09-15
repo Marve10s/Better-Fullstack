@@ -4365,6 +4365,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
         {/* Single scroller: header + toolbar + content scroll together (header is not pinned) */}
         <div
           ref={scrollContainerRef}
+          data-telemetry-scroll="builder"
           onScroll={(e) => {
             const next = e.currentTarget.scrollTop > 120;
             setShowScrollTop((prev) => (prev === next ? prev : next));

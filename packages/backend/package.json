@@ -2,20 +2,19 @@
   "name": "@better-fullstack/backend",
   "version": "1.0.1",
   "private": true,
-  "description": "",
+  "description": "Privacy-filtered PostHog analytics ingestion",
   "license": "ISC",
   "author": "",
+  "exports": {
+    "./telemetry-ingest": "./src/telemetry-ingest.ts",
+    "./telemetry-validation": "./src/telemetry-validation.ts",
+    "./posthog": "./src/posthog.ts"
+  },
   "scripts": {
-    "dev": "convex dev",
-    "dev:setup": "convex dev --configure --until-success",
-    "deploy": "convex deploy",
     "lint": "oxlint . && tsc --noEmit"
   },
   "dependencies": {
-    "@better-fullstack/types": "workspace:*",
-    "@convex-dev/crons": "^0.2.2",
-    "convex": "^1.45.0",
-    "convex-helpers": "^0.1.123"
+    "@better-fullstack/types": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

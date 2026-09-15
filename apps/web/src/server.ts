@@ -1,5 +1,10 @@
+import {
+  handleTelemetryIngest,
+  vercelRequestKey,
+} from "@better-fullstack/backend/telemetry-ingest";
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
 
+import { TELEMETRY_PAGES } from "@/lib/analytics/telemetry-pages";
 import {
   resolveCountryLocale,
   requestWithLocaleCookie,
@@ -15,6 +20,15 @@ import { paraglideMiddleware } from "@/paraglide/server.js";
 
 export default createServerEntry({
   async fetch(request) {
+    if (new URL(request.url).pathname === "/api/analytics/ingest") {
+      return handleTelemetryIngest(request, {
+        enabled: process.env.BFS_TELEMETRY_ENABLED === "1" && process.env.VERCEL_ENV !== "preview",
+        token: process.env.POSTHOG_PROJECT_TOKEN,
+        host: process.env.POSTHOG_HOST,
+        allowedPages: TELEMETRY_PAGES,
+        trustedRequestKey: vercelRequestKey(request, process.env.VERCEL === "1"),
+      });
+    }
     const telemetryRequest = isTelemetryPageRequest(request);
     if (telemetryRequest) {
       const access = getTelemetryPageAccess(request, process.env.TELEMETRY_DASHBOARD_SECRET);

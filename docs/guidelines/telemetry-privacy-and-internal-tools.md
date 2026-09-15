@@ -3,8 +3,11 @@
 Use this guide for CLI telemetry, analytics ingest, aggregate dashboards, decision-room access, and
 any event or query that could expose user or operational data.
 
-Active ingest, aggregates, and owner dashboards belong to `packages/backend`. `apps/analytics` is
-the retired legacy tombstone and historical-data boundary; do not add new events or callers there.
+Active ingest validation and PostHog delivery belong to `packages/backend/src`, served by `apps/web`.
+PostHog owns reporting; definitions live in `scripts/analytics/posthog-dashboard.json`. Both Convex
+services and the old aggregate dashboard have been removed from the repository. Preserve historical
+events in independent, checksum-verified archives. Import from those archives without a live database
+connection; see `packages/backend/README.md` for cutover and retention requirements.
 
 ## Independent Boundaries
 
@@ -107,5 +110,5 @@ An identifier sanitizer is not enough for a field whose semantic meaning is user
 ## Verification
 
 Run focused privacy tests for sanitization and ingest, authorization tests for protected analytics,
-and dashboard tests against aggregate fixtures. A rendered hidden route does not prove the backing
-data is protected.
+and archive integrity/resumption tests. A rendered hidden route does not prove the backing data
+is protected.
