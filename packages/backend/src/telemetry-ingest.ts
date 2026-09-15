@@ -51,34 +51,44 @@ async function readBody(request: Request): Promise<Record<string, unknown> | und
     : undefined;
 }
 
+const pageNumericLimits = {
+  active_ms: 86_400_000,
+  elapsed_ms: 86_400_000,
+  scroll_percent: 100,
+  max_scroll_percent: 100,
+  scroll_px: 10_000_000,
+  viewport_height: 20_000,
+};
+const pageEnums = {
+  scroll_surface: ["document", "builder"],
+  end_reason: ["navigation", "hidden", "pagehide"],
+  device: ["mobile", "tablet", "desktop"],
+};
+const pageKeys = [
+  "page_id",
+  "page_view_id",
+  ...Object.keys(pageNumericLimits),
+  ...Object.keys(pageEnums),
+];
+
 function pageProperties(body: Record<string, unknown>, pages: ReadonlySet<string> | undefined) {
   if (typeof body.page_id !== "string" || !pages?.has(body.page_id)) return undefined;
   const page: Record<string, string | number> = { page_id: body.page_id };
   const viewId = sanitizeTelemetryMachineId(body.page_view_id);
   if (!viewId) return undefined;
   page.page_view_id = viewId;
-  for (const [key, max] of Object.entries({
-    active_ms: 86_400_000,
-    elapsed_ms: 86_400_000,
-    scroll_percent: 100,
-    max_scroll_percent: 100,
-    scroll_px: 10_000_000,
-    viewport_height: 20_000,
-  })) {
+  for (const [key, max] of Object.entries(pageNumericLimits)) {
     const value = body[key];
-    if (typeof value === "number" && Number.isFinite(value) && value >= 0)
-      page[key] = Math.min(Math.round(value), max);
+    if (value === undefined) continue;
+    if (typeof value !== "number" || !Number.isFinite(value) || value < 0) return undefined;
+    page[key] = Math.min(Math.round(value), max);
   }
-  if (body.scroll_surface === "document" || body.scroll_surface === "builder")
-    page.scroll_surface = body.scroll_surface;
-  if (
-    body.end_reason === "navigation" ||
-    body.end_reason === "hidden" ||
-    body.end_reason === "pagehide"
-  )
-    page.end_reason = body.end_reason;
-  if (body.device === "mobile" || body.device === "tablet" || body.device === "desktop")
-    page.device = body.device;
+  for (const [key, values] of Object.entries(pageEnums)) {
+    const value = body[key];
+    if (value === undefined) continue;
+    if (typeof value !== "string" || !values.includes(value)) return undefined;
+    page[key] = value;
+  }
   return page;
 }
 
@@ -121,8 +131,9 @@ export async function handleTelemetryIngest(
   const eventId = sanitizeTelemetryMachineId(body.eventId) ?? crypto.randomUUID();
   const page = pageProperties(body, options.allowedPages);
   if (
-    (body.action === "page-viewed" || body.action === "page-engagement") &&
-    (!page || envelope.eventType !== "web_action")
+    (!page && pageKeys.some((key) => body[key] !== undefined)) ||
+    ((body.action === "page-viewed" || body.action === "page-engagement") &&
+      (!page || envelope.eventType !== "web_action"))
   )
     return new Response(null, { status: 400, headers });
   try {

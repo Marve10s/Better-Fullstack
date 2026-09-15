@@ -111,7 +111,6 @@ describe("PostHog ingestion boundary", () => {
               active_ms: 1500.8,
               scroll_percent: 999,
               end_reason: "pagehide",
-              viewport_height: -1,
             }),
             options,
           )
@@ -272,4 +271,46 @@ it("rejects malformed explicit outcomes, measurements and aliases before capture
     ).toBe(400);
   }
   expect(batches).toEqual([]);
+});
+
+it("rejects explicitly malformed page properties without recording partial engagement", async () => {
+  const batches = collectEvents();
+  for (const invalid of [
+    { active_ms: -1 },
+    { elapsed_ms: null },
+    { scroll_percent: -1 },
+    { max_scroll_percent: "100" },
+    { scroll_px: -1 },
+    { viewport_height: "800" },
+    { end_reason: "other" },
+    { scroll_surface: "private-pane" },
+    { device: false },
+    { page_id: "unknown-page" },
+    { page_view_id: "not-a-uuid" },
+  ]) {
+    const response = await handleTelemetryIngest(
+      request({
+        eventType: "web_action",
+        action: "page-engagement",
+        machineId: crypto.randomUUID(),
+        page_id: "builder",
+        page_view_id: crypto.randomUUID(),
+        ...invalid,
+      }),
+      options,
+    );
+    expect(response.status).toBe(400);
+  }
+  expect(batches).toEqual([]);
+  const response = await handleTelemetryIngest(
+    request({
+      eventType: "web_action",
+      action: "page-viewed",
+      machineId: crypto.randomUUID(),
+      page_id: "builder",
+      page_view_id: crypto.randomUUID(),
+    }),
+    options,
+  );
+  expect(response.status).toBe(204);
 });
