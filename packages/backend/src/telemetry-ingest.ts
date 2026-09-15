@@ -1,9 +1,13 @@
 import { sanitizeTelemetryMachineId } from "@better-fullstack/types/telemetry";
 
+import { createTelemetryRateLimit } from "./telemetry-rate-limit";
+
+export { vercelRequestKey } from "./telemetry-rate-limit";
+
 import { capturePosthog, posthogEvent, posthogHost } from "./posthog";
 import {
   CORS_HEADERS,
-  invalidExplicitValue,
+  hasInvalidEnvelopeValues,
   MAX_PAYLOAD_BYTES,
   sanitizeIngestEnvelope,
 } from "./telemetry-validation";
@@ -12,6 +16,7 @@ type IngestOptions = {
   enabled: boolean;
   host: string | undefined;
   token: string | undefined;
+  trustedRequestKey?: string;
   allowedPages?: ReadonlySet<string>;
 };
 
@@ -20,17 +25,7 @@ const headers = {
   "Cache-Control": "no-store",
   "X-Content-Type-Options": "nosniff",
 };
-const buckets = new Map<string, { start: number; count: number }>();
-
-// Per-instance protection complements the hosting platform's ingress rate limit.
-function acceptsEvent(id: string, now: number) {
-  for (const [key, bucket] of buckets) if (now - bucket.start >= 60_000) buckets.delete(key);
-  const bucket = buckets.get(id);
-  if (bucket) return ++bucket.count <= 120;
-  if (buckets.size >= 2_000) return false;
-  buckets.set(id, { start: now, count: 1 });
-  return true;
-}
+const acceptsRequest = createTelemetryRateLimit();
 
 async function readBody(request: Request): Promise<Record<string, unknown> | undefined> {
   const reader = request.body?.getReader();
@@ -97,6 +92,8 @@ export async function handleTelemetryIngest(
   const host = posthogHost(options.host);
   if (!options.enabled || !options.token || !host)
     return new Response(null, { status: 503, headers });
+  if (!acceptsRequest(options.trustedRequestKey))
+    return new Response(null, { status: 429, headers: { ...headers, "Retry-After": "60" } });
   if (request.headers.get("Content-Type")?.split(";")[0]?.trim() !== "application/json")
     return new Response(null, { status: 415, headers });
   if (Number(request.headers.get("Content-Length")) > MAX_PAYLOAD_BYTES)
@@ -113,9 +110,12 @@ export async function handleTelemetryIngest(
   if (!body) return new Response(null, { status: 400, headers });
   const envelope = sanitizeIngestEnvelope(body);
   if (
-    ["eventType", "source", "client", "status", "action", "machineId"].some((key) =>
-      invalidExplicitValue(body[key], envelope[key as keyof typeof envelope]),
-    )
+    !envelope.eventType ||
+    !envelope.machineId ||
+    ((envelope.eventType === "web_action" || envelope.eventType === "command_used") &&
+      !envelope.action) ||
+    (envelope.eventType === "command_used" && !envelope.status) ||
+    hasInvalidEnvelopeValues(body)
   )
     return new Response(null, { status: 400, headers });
   const eventId = sanitizeTelemetryMachineId(body.eventId) ?? crypto.randomUUID();
@@ -125,8 +125,6 @@ export async function handleTelemetryIngest(
     (!page || envelope.eventType !== "web_action")
   )
     return new Response(null, { status: 400, headers });
-  if (!acceptsEvent(envelope.machineId ?? "legacy-unattributed", Date.now()))
-    return new Response(null, { status: 429, headers: { ...headers, "Retry-After": "60" } });
   try {
     await capturePosthog([posthogEvent(body, { eventId, timestamp: Date.now(), page })], {
       host,

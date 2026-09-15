@@ -84,7 +84,8 @@ as part of running the script. All imported timestamps must be at least 48 hours
 The importer reads the sanitized `posthog-events.jsonl` and `manifest.json` from a local archive.
 It needs no Convex account, CLI, schema or running deployment. It verifies the checksum and unique
 event IDs, rechecks the privacy allowlist, and preserves timestamps and deterministic UUIDs. The
-existing archive format remains compatible. Archives up to 256 MiB are supported by this importer.
+manifest must identify conversion version 2. Rebuild earlier conversions from the original ZIP
+into a new directory; retain the earlier files for comparison. Archives up to 256 MiB are supported.
 
 Set `BFS_ANALYTICS_ARCHIVE_DIRECTORY` to the archive directory. This read-only command verifies all
 rows and prints monthly counts; it was verified against all 12,361 saved production events:
@@ -125,15 +126,21 @@ bun run scripts/analytics/archive-convex.ts
 
 The script reads only `analyticsEvents/documents.jsonl` and creates `posthog-events.jsonl` plus a
 manifest with a checksum, monthly counts and the timestamp range. It preserves original event
-timestamps and retains stable event UUIDs across repeated conversions and imports. It refuses an existing output
-directory or duplicate source IDs. No data is uploaded. The JSONL file remains readable with local
+timestamps and retains stable event UUIDs across repeated conversions and imports. It stages both
+files in a temporary directory and publishes the complete directory with one rename. It refuses an
+existing output directory or duplicate source IDs. Failed conversions clean up staging files; a hard
+process interruption can leave a `.partial-*` sibling, which can be discarded after a successful retry.
+No data is uploaded. The JSONL file remains readable with local
 tools such as DuckDB independently of either service. Preserve a second copy on an existing backup
 drive or backup service; a single laptop copy is vulnerable to disk loss.
 
 The production backup verified on 2026-09-15 contains 12,361 unique analytics events spanning
 2026-01-21 through 2026-09-15. ZIP integrity passed and its monthly counts matched the production
-audit. The archive importer also reproduced all 12,361 saved events without changing any event
-properties. Reconcile this snapshot with events collected after its timestamp before retiring Convex.
+audit. Conversion version 2 restores envelope fields buried in old `stack` records, recovers library
+dimensions from `options`, and counts universal database selections once. It preserves all 12,361
+event IDs and timestamps. In this backup, it restores envelope fields on 377 events and corrects
+library selections on 6,549 events. Use the new conversion for import; the original ZIP and first
+archive remain intact. Reconcile events collected after the snapshot before retiring Convex.
 
 Future PostHog exports are not configured yet. Before the oldest new event reaches one year, export
 it to independent storage and verify counts and timestamps. The historical archive protects past
@@ -159,8 +166,12 @@ events only; creating it does not automatically archive future PostHog events.
   A failed run or abandoned page can suggest friction; neither proves the user was annoyed.
 
 No replay, autocapture, surveys, DOM text, URLs or raw errors are collected. Both client and server
-apply allowlists. The server has a bounded per-instance rate limit; configure hosting ingress limits
-as well because client IDs can be rotated and serverless instances do not share memory.
+apply allowlists. The server limits each trusted request origin to 120 requests per minute and each
+instance to 1,200.
+On Vercel, an ephemeral HMAC of `x-vercel-forwarded-for` identifies the origin; raw addresses never
+enter analytics or the limiter map. Other hosts share a conservative unknown-origin bucket until a
+trusted adapter is supplied. Caller-selected machine IDs do not allocate buckets. These in-memory
+limits reset with the instance; configure hosting ingress limits for protection across instances.
 
 ## Free allowance and baseline
 

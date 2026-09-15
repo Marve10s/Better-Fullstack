@@ -44,6 +44,17 @@ export function posthogEvent(
           (value) => value === "universal" || ecosystems.includes(value),
         );
         if (!definition.legacyCategory || !ecosystem || !definition.roles[0]) return [];
+        if (
+          ecosystem !== "universal" &&
+          STACK_TOOL_DEFINITIONS.some(
+            (candidate) =>
+              candidate.toolId === definition.toolId &&
+              candidate.legacyCategory === definition.legacyCategory &&
+              candidate.roles[0] === definition.roles[0] &&
+              candidate.ecosystems.includes("universal"),
+          )
+        )
+          return [];
         const value = stack[definition.legacyCategory];
         const values = Array.isArray(value)
           ? value

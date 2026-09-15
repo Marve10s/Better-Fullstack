@@ -52,9 +52,11 @@ export function stackAnalyticsProperties(
 ): CampaignProperties {
   const selections: CampaignProperties = {};
   let config: Record<string, unknown> = stack;
+  let translationFailed = false;
   try {
     config = stackSelectionToProjectConfig(stack, { projectDir: "", relativePath: "" });
   } catch {
+    translationFailed = true;
     // An incomplete selection must never make a product action fail for analytics.
   }
   for (const [key, value] of Object.entries(config)) {
@@ -88,6 +90,7 @@ export function stackAnalyticsProperties(
       ),
     ];
     return {
+      ...(translationFailed ? selections : {}),
       ...graphSelections,
       ecosystem: ecosystems.join(",") || stack.ecosystem,
       mode: stack.stackMode,

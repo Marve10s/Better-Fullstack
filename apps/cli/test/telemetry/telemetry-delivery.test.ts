@@ -31,6 +31,24 @@ describe("telemetry delivery queue", () => {
     expect(deliveryAborted).toBe(true);
   });
 
+  it("reserves capacity and replaces starts to preserve terminal outcomes under saturation", async () => {
+    const queue = new TelemetryDeliveryQueue();
+    let outcomes = 0;
+    for (let index = 0; index < 64; index++)
+      queue.enqueue(async (controller) => {
+        await new Promise<void>((resolve) => {
+          if (controller.signal.aborted) resolve();
+          else controller.signal.addEventListener("abort", () => resolve(), { once: true });
+        });
+      });
+    for (let index = 0; index < 40; index++)
+      queue.enqueue(async () => {
+        outcomes++;
+      }, true);
+    await queue.flush(20);
+    expect(outcomes).toBe(40);
+  });
+
   it("flushes completed deliveries without waiting for the deadline", async () => {
     const queue = new TelemetryDeliveryQueue();
     let delivered = false;

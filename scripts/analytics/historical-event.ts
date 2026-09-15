@@ -20,6 +20,18 @@ function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+// Older deployments put envelope fields in stack and extra library dimensions in options.
+function normalizeHistoricalRow(row: Record<string, unknown>) {
+  const stack = record(row.stack) ? row.stack : {};
+  const options = record(row.options) ? row.options : {};
+  const normalized = { ...options, ...stack, ...row };
+  for (const [key, value] of Object.entries(stack)) {
+    if (normalized[key] === undefined) normalized[key] = value;
+  }
+  normalized.stack = { ...options, ...stack };
+  return normalized;
+}
+
 export function historicalEvent(value: unknown, deployment: string) {
   if (
     !record(value) ||
@@ -29,7 +41,7 @@ export function historicalEvent(value: unknown, deployment: string) {
   ) {
     throw new Error("Invalid source event metadata; checkpoint was not advanced");
   }
-  return posthogEvent(value, {
+  return posthogEvent(normalizeHistoricalRow(value), {
     eventId: historicalEventId(deployment, value._id),
     timestamp: value._creationTime,
     historical: true,

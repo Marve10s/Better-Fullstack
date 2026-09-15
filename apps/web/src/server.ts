@@ -1,4 +1,7 @@
-import { handleTelemetryIngest } from "@better-fullstack/backend/telemetry-ingest";
+import {
+  handleTelemetryIngest,
+  vercelRequestKey,
+} from "@better-fullstack/backend/telemetry-ingest";
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
 
 import { TELEMETRY_PAGES } from "@/lib/analytics/telemetry-pages";
@@ -23,6 +26,7 @@ export default createServerEntry({
         token: process.env.POSTHOG_PROJECT_TOKEN,
         host: process.env.POSTHOG_HOST,
         allowedPages: TELEMETRY_PAGES,
+        trustedRequestKey: vercelRequestKey(request, process.env.VERCEL === "1"),
       });
     }
     const telemetryRequest = isTelemetryPageRequest(request);

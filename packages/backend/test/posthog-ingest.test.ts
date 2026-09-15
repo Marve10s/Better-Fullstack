@@ -136,6 +136,10 @@ describe("PostHog ingestion boundary", () => {
     const batches = collectEvents();
     for (const body of [
       [],
+      {},
+      { eventType: "project_created" },
+      { eventType: "web_action", machineId: crypto.randomUUID() },
+      { eventType: "command_used", machineId: crypto.randomUUID(), action: "create" },
       { eventType: "private-event" },
       { machineId: "person@example.com" },
       {
@@ -173,7 +177,12 @@ describe("PostHog ingestion boundary", () => {
     expect(batches).toEqual([]);
     fetchSpy.mockImplementation(async () => new Response(null, { status: 429 }));
     expect(
-      (await handleTelemetryIngest(request({ eventType: "project_created" }), options)).status,
+      (
+        await handleTelemetryIngest(
+          request({ eventType: "project_created", machineId: crypto.randomUUID() }),
+          options,
+        )
+      ).status,
     ).toBe(502);
   });
 });
@@ -197,4 +206,70 @@ it("derives flat library choices only from the active ecosystem and honors graph
   );
   expect(graph.properties.library_selections).toEqual(["backend:go:gin"]);
   expect(graph.properties.ecosystems).toEqual(["go"]);
+});
+
+it("counts a legacy database once using the universal graph identity", () => {
+  const event = posthogEvent(
+    { ecosystem: "typescript", database: "postgres" },
+    { eventId: crypto.randomUUID(), timestamp: Date.now() },
+  );
+  expect(
+    event.properties.library_selections.filter((value) => value.endsWith(":postgres")),
+  ).toEqual(["database:universal:postgres"]);
+});
+
+it("bounds requests independently of rotating caller machine IDs", async () => {
+  const batches = collectEvents();
+  const limited = { ...options, trustedRequestKey: "trusted-origin-one" };
+  // oxlint-disable-next-line no-await-in-loop -- Exercise the sequential admission boundary.
+  for (let index = 0; index < 120; index++)
+    expect(
+      (
+        await handleTelemetryIngest(
+          request({ eventType: "project_created", machineId: crypto.randomUUID() }),
+          limited,
+        )
+      ).status,
+    ).toBe(204);
+  expect(
+    (
+      await handleTelemetryIngest(
+        request({ eventType: "project_created", machineId: crypto.randomUUID() }),
+        limited,
+      )
+    ).status,
+  ).toBe(429);
+  expect(
+    (
+      await handleTelemetryIngest(
+        request({ eventType: "project_created", machineId: crypto.randomUUID() }),
+        { ...options, trustedRequestKey: "trusted-origin-two" },
+      )
+    ).status,
+  ).toBe(204);
+  expect(batches.length).toBe(121);
+});
+
+it("rejects malformed explicit outcomes, measurements and aliases before capture", async () => {
+  const batches = collectEvents();
+  for (const invalid of [
+    { success: "false" },
+    { durationMs: -1 },
+    { duration_ms: -1 },
+    { fileCount: -1 },
+    { ci: "false" },
+    { retry: 1 },
+    { durationMs: 12, duration_ms: "wrong" },
+  ]) {
+    // oxlint-disable-next-line no-await-in-loop -- Every input must be rejected separately.
+    expect(
+      (
+        await handleTelemetryIngest(
+          request({ eventType: "project_created", machineId: crypto.randomUUID(), ...invalid }),
+          options,
+        )
+      ).status,
+    ).toBe(400);
+  }
+  expect(batches).toEqual([]);
 });

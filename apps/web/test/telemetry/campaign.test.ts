@@ -138,6 +138,20 @@ describe("Run Before You Clone campaign", () => {
     expect(JSON.stringify(properties)).not.toContain("private-project");
   });
 
+  it("retains safe fallback selections when a multi-stack graph is malformed", () => {
+    const properties = stackAnalyticsProperties({
+      ...DEFAULT_STACK,
+      stackMode: "multi",
+      stackPartSpecs: ["malformed"],
+      auth: "clerk",
+      projectName: "private-project",
+      unexpected: { token: "private-token" },
+    } as StackState);
+    expect(properties.auth).toBe("clerk");
+    expect(JSON.stringify(properties)).not.toContain("private-project");
+    expect(JSON.stringify(properties)).not.toContain("private-token");
+  });
+
   it("keeps only published campaign identifiers in analytics", () => {
     expect(
       sanitizeCampaignProperties({

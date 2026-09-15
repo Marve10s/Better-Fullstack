@@ -24,9 +24,12 @@ export async function readArchive(directory: string) {
   if (
     !record(manifest) ||
     manifest.format !== "better-fullstack-analytics-archive-v1" ||
+    manifest.conversionVersion !== 2 ||
     manifest.sha256 !== sha256
   ) {
-    throw new Error("Archive manifest or checksum is invalid");
+    throw new Error(
+      "Archive manifest or checksum is invalid; rebuild older conversions from the original backup",
+    );
   }
   const ids = new Set<string>();
   const events = contents

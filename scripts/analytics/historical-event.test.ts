@@ -23,3 +23,44 @@ it("preserves old event time and stable UUIDs across resumed imports without for
   expect(JSON.stringify(event)).not.toContain("convex-row");
   expect(() => historicalEvent({ _id: "row" }, "source")).toThrow("Invalid source event metadata");
 });
+
+it("recovers historical nested envelopes and options without bypassing privacy filters", () => {
+  const event = historicalEvent(
+    {
+      _id: "old-command",
+      _creationTime: Date.UTC(2026, 7, 8),
+      stack: {
+        eventType: "command_used",
+        source: "mcp",
+        action: "add",
+        status: "failed",
+        failure_reason: "network",
+        projectName: "private-name",
+      },
+      options: { ecosystem: "go", goWebFramework: "gin", secret: "private-token" },
+    },
+    "source:project:prod",
+  );
+  expect(event.event).toBe("command_used");
+  expect(event.properties).toMatchObject({
+    source: "mcp",
+    action: "add",
+    status: "failed",
+    failureReason: "network",
+    goWebFramework: "gin",
+  });
+  expect(event.properties.library_selections).toContain("backend:go:gin");
+  expect(JSON.stringify(event)).not.toContain("private-name");
+  expect(JSON.stringify(event)).not.toContain("private-token");
+  const current = historicalEvent(
+    {
+      _id: "new-command",
+      _creationTime: 1,
+      eventType: "web_action",
+      action: "builder-viewed",
+      stack: { eventType: "project_created", action: "add" },
+    },
+    "source",
+  );
+  expect(current.event).toBe("builder_viewed");
+});

@@ -193,3 +193,23 @@ export function sanitizeIngestEnvelope(body: Record<string, unknown>) {
 export function invalidExplicitValue(value: unknown, sanitized: unknown): boolean {
   return value !== undefined && sanitized === undefined;
 }
+
+export function hasInvalidEnvelopeValues(body: Record<string, unknown>) {
+  const envelope = sanitizeIngestEnvelope(body);
+  if (Object.entries(envelope).some(([key, value]) => invalidExplicitValue(body[key], value)))
+    return true;
+  const aliases = {
+    error_name: "errorName",
+    failure_stage: "failureStage",
+    stage: "failureStage",
+    failure_reason: "failureReason",
+    reason: "failureReason",
+    duration_ms: "durationMs",
+    archive_bytes: "archiveBytes",
+  } as const;
+  return Object.entries(aliases).some(
+    ([alias, canonical]) =>
+      body[alias] !== undefined &&
+      sanitizeIngestEnvelope({ [alias]: body[alias] })[canonical] === undefined,
+  );
+}

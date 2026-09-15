@@ -35,6 +35,7 @@ async function fixture(count = 1) {
     join(directory, "manifest.json"),
     JSON.stringify({
       format: "better-fullstack-analytics-archive-v1",
+      conversionVersion: 2,
       events: count,
       sha256: createHash("sha256").update(contents).digest("hex"),
     }),

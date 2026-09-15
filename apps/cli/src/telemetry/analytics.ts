@@ -424,7 +424,7 @@ export async function trackEvent(
       },
       controller,
     );
-  });
+  }, safeOutcome.status !== "started");
 }
 
 export function statusFromCommandResult(
