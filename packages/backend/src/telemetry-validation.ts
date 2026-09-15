@@ -106,22 +106,36 @@ export function sanitizeTelemetryIdentifier(value: string): string | undefined {
   return IDENTIFIER_PATTERN.test(trimmed) ? trimmed : undefined;
 }
 
-export function extractStack(body: Record<string, unknown>): Record<string, TelemetryStackValue> {
-  const stack: Record<string, TelemetryStackValue> = {};
+function stackDimensionEntries(body: Record<string, unknown>) {
   const explicitStack =
     body.stack && typeof body.stack === "object" && !Array.isArray(body.stack)
       ? (body.stack as Record<string, unknown>)
       : {};
-  for (const [key, value] of [...Object.entries(body), ...Object.entries(explicitStack)]) {
-    if (Object.keys(stack).length >= MAX_STACK_KEYS) break;
+  return [...Object.entries(body), ...Object.entries(explicitStack)].filter(([key]) => {
     const normalizedKey = key.toLowerCase();
-    if (
-      META_KEYS.has(normalizedKey) ||
-      BLOCKED_KEYS.has(normalizedKey) ||
-      !TELEMETRY_STACK_KEYS.has(key)
-    ) {
-      continue;
-    }
+    return (
+      !META_KEYS.has(normalizedKey) &&
+      !BLOCKED_KEYS.has(normalizedKey) &&
+      TELEMETRY_STACK_KEYS.has(key)
+    );
+  });
+}
+
+export function hasInvalidStackValues(body: Record<string, unknown>) {
+  if (
+    body.stack !== undefined &&
+    (!body.stack || typeof body.stack !== "object" || Array.isArray(body.stack))
+  )
+    return true;
+  return stackDimensionEntries(body).some(
+    ([key, value]) => sanitizeTelemetryStackDimension(key, value) === undefined,
+  );
+}
+
+export function extractStack(body: Record<string, unknown>): Record<string, TelemetryStackValue> {
+  const stack: Record<string, TelemetryStackValue> = {};
+  for (const [key, value] of stackDimensionEntries(body)) {
+    if (Object.keys(stack).length >= MAX_STACK_KEYS) break;
     const sanitized = sanitizeTelemetryStackDimension(key, value);
     if (sanitized !== undefined) stack[key] = sanitized;
   }

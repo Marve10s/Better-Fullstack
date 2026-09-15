@@ -50,14 +50,14 @@ describe("PostHog ingestion boundary", () => {
         stack: {
           ecosystem: "typescript",
           backend: "hono",
-          stackPartSelections: ["backend:typescript:hono", "backend:typescript:private-project"],
+          stackPartSelections: ["backend:typescript:hono"],
           projectName: "private-project",
           settings: { token: "private-token" },
         },
         projectName: "private-project",
         error: "private-token",
         url: "https://private.test",
-        email: "private@example.com",
+        contactEmail: "private@example.com",
         $ip: "192.0.2.1",
         $set: { email: "private@example.com" },
       }),
@@ -75,6 +75,7 @@ describe("PostHog ingestion boundary", () => {
               distinct_id: machineId,
               backend: "hono",
               ecosystems: ["typescript"],
+              library_selections: ["backend:typescript:hono"],
               setup_outcome: "complete",
               $process_person_profile: false,
               $ip: null,
@@ -313,4 +314,35 @@ it("rejects explicitly malformed page properties without recording partial engag
     options,
   );
   expect(response.status).toBe(204);
+});
+
+it("rejects malformed known stack choices at either location before capture", async () => {
+  const batches = collectEvents();
+  const invalidDimensions = [
+    { ecosystem: 123 },
+    { stackPartSelections: Array(65).fill("backend:typescript:hono") },
+    { stackPartSelections: ["backend:typescript:hono", "backend:typescript:private-project"] },
+    { frontend: ["next", "private-frontend"] },
+    { frontend: ["next", 123] },
+    { backend: null },
+    { multiEcosystem: "true" },
+    { email: "private@example.com" },
+  ];
+  const invalidBodies = [
+    ...invalidDimensions,
+    ...invalidDimensions.map((stack) => ({ stack })),
+    { ecosystem: 123, stack: { ecosystem: "typescript" } },
+    { ecosystem: "typescript", stack: { ecosystem: 123 } },
+    { stack: [] },
+    { stack: null },
+    { stack: "typescript" },
+  ];
+  for (const invalid of invalidBodies) {
+    const response = await handleTelemetryIngest(
+      request({ eventType: "project_created", machineId: crypto.randomUUID(), ...invalid }),
+      { ...options, trustedRequestKey: "invalid-stack-choices" },
+    );
+    expect(response.status).toBe(400);
+  }
+  expect(batches).toEqual([]);
 });

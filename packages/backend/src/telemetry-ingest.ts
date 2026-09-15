@@ -8,6 +8,7 @@ import { capturePosthog, posthogEvent, posthogHost } from "./posthog";
 import {
   CORS_HEADERS,
   hasInvalidEnvelopeValues,
+  hasInvalidStackValues,
   MAX_PAYLOAD_BYTES,
   sanitizeIngestEnvelope,
 } from "./telemetry-validation";
@@ -125,7 +126,8 @@ export async function handleTelemetryIngest(
     ((envelope.eventType === "web_action" || envelope.eventType === "command_used") &&
       !envelope.action) ||
     (envelope.eventType === "command_used" && !envelope.status) ||
-    hasInvalidEnvelopeValues(body)
+    hasInvalidEnvelopeValues(body) ||
+    hasInvalidStackValues(body)
   )
     return new Response(null, { status: 400, headers });
   const eventId = sanitizeTelemetryMachineId(body.eventId) ?? crypto.randomUUID();
