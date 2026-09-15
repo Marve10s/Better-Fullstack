@@ -16,10 +16,12 @@
 
 import type { ProjectConfig } from "@better-fullstack/types";
 
-import { isToolingOverlayOnly } from "@better-fullstack/types";
+import { getToolingCapability, isToolingOverlayOnly } from "@better-fullstack/types";
 import yaml from "yaml";
 
 import type { VirtualFileSystem } from "@/core/virtual-fs";
+
+import { processAddonsDeps } from "@/processors/dependencies/addons-deps";
 
 /** Web frameworks whose flat layout is supported (both expose `@/*` -> ./src). */
 const SINGLE_APP_WEB_FRONTENDS = new Set(["next", "tanstack-start"]);
@@ -159,6 +161,14 @@ export function flattenSingleApp(vfs: VirtualFileSystem, config: ProjectConfig):
 
   // Write the merged flat root package.json (overwrites the moved web package.json).
   vfs.writeJson("package.json", flatPkg);
+  if (config.addons.includes("shadcn-lint")) {
+    processAddonsDeps(vfs, {
+      ...config,
+      addons: config.addons.filter(
+        (addon) => getToolingCapability(addon)?.category === "codeQuality",
+      ),
+    });
+  }
 
   // Drop the now-empty workspace scaffolding.
   vfs.removeDir("apps");

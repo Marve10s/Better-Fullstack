@@ -78,6 +78,38 @@ describe("shadcn/lint generation", () => {
     60_000,
   );
 
+  it.each(
+    (["next", "tanstack-start"] as const).flatMap((frontend) =>
+      (["oxlint", "eslint"] as const).map((linter) => ({ frontend, linter })),
+    ),
+  )("preserves design lint in single-app $frontend with $linter", async ({ frontend, linter }) => {
+    const result = await createVirtual({
+      frontend: [frontend],
+      backend: "self",
+      api: "none",
+      auth: "none",
+      database: "none",
+      orm: "none",
+      workspaceShape: "single-app",
+      cssFramework: "tailwind",
+      uiLibrary: "shadcn-ui",
+      addons: [linter, ...(linter === "eslint" ? ["prettier" as const] : []), "shadcn-lint"],
+    });
+    expect(result.success, result.error).toBe(true);
+    if (!result.tree) throw new Error(result.error);
+    const packageJson: unknown = JSON.parse(
+      readVirtualFileContent(result.tree.root, "package.json"),
+    );
+    expect(packageJson).not.toHaveProperty("workspaces");
+    expect(packageJson).toMatchObject({
+      devDependencies: { "@shadcn/lint": "0.1.0", [linter]: expect.any(String) },
+      scripts: { "lint:design": linter === "oxlint" ? "oxlint" : "eslint ." },
+    });
+    expect(readVirtualFileContent(result.tree.root, "src/components/header.tsx")).toContain(
+      "function Header",
+    );
+  });
+
   it("rejects the incomplete ESLint profile through direct generation", async () => {
     const result = await createVirtual({
       frontend: ["react-vite"],
