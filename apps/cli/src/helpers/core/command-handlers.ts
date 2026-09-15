@@ -809,6 +809,7 @@ export async function createProjectHandler(
           await import("@better-fullstack/template-generator");
         const result = await generateVirtualProject({
           config,
+          skipDesignLintValidation: cliInput.yolo,
           templates: EMBEDDED_TEMPLATES,
         });
 
@@ -892,6 +893,7 @@ export async function createProjectHandler(
 
       const createResult = await createProject(config, {
         manualDb: cliInput.manualDb ?? input.manualDb,
+        yolo: cliInput.yolo,
       });
       const setupFailures = createResult?.setupFailures ?? [];
 

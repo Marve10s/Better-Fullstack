@@ -33,6 +33,7 @@ import { isToolingOverlayOnly, type ProjectConfig } from "@/types";
 
 export interface CreateProjectOptions {
   manualDb?: boolean;
+  yolo?: boolean;
   allowExistingDirectory?: boolean;
 }
 
@@ -66,6 +67,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
 
     const result = await generateVirtualProject({
       config: options,
+      skipDesignLintValidation: cliInput.yolo,
       templates: EMBEDDED_TEMPLATES,
     });
 

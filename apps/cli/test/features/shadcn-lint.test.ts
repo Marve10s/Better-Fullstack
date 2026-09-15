@@ -12,6 +12,33 @@ import { runWithContext } from "@/presentation/context";
 import { getCompatibleSelections } from "@/prompts/developer/addons";
 
 describe("shadcn/lint generation", () => {
+  it.each([false, true])(
+    "honors --yolo for design lint compatibility (dryRun: %s)",
+    async (dryRun) => {
+      const result = await runTRPCTest({
+        projectName: `design-lint-yolo-${dryRun}`,
+        frontend: ["react-vite"],
+        backend: "none",
+        runtime: "none",
+        api: "none",
+        database: "none",
+        orm: "none",
+        auth: "none",
+        cssFramework: "none",
+        uiLibrary: "none",
+        addons: ["eslint", "prettier", "shadcn-lint"],
+        yolo: true,
+        dryRun,
+      });
+      expectSuccess(result);
+      if (!dryRun && result.projectDir) {
+        expect(await readFile(join(result.projectDir, "eslint.config.mjs"), "utf8")).toContain(
+          "@shadcn/lint",
+        );
+      }
+    },
+  );
+
   it.each(["oxlint", "eslint"] as const)(
     "preserves %s design rules through on-disk creation and addon setup",
     async (linter) => {

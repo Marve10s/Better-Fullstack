@@ -433,6 +433,51 @@ describe("stack update planner", () => {
     expect((await readBtsConfig(projectDir))?.addons).toEqual(["biome"]);
   });
 
+  it.each([false, true])(
+    "adds design lint to an initialized Oxlint project without overwriting local edits (edited: %s)",
+    async (edited) => {
+      const root = await makeTempRoot("bfs-initialized-oxlint-");
+      const projectDir = join(root, "app");
+      await scaffoldGeneratedProject(
+        makeConfig(projectDir, { addons: ["oxlint"], cssFramework: "tailwind" }),
+      );
+      const configPath = join(projectDir, ".oxlintrc.json");
+      const initialized = JSON.stringify({
+        $schema: "./node_modules/oxlint/configuration_schema.json",
+        plugins: ["typescript", "unicorn", "oxc"],
+        categories: { correctness: "error" },
+        rules: {},
+        env: { builtin: true },
+      });
+      await writeFile(configPath, initialized);
+      await recordScaffoldManifest(projectDir);
+      const original = edited
+        ? initialized.replace('"rules":{}', '"rules":{"eqeqeq":"error"}')
+        : initialized;
+      await writeFile(configPath, original);
+      const input = { part: ["codeQuality:universal:shadcn-lint"] };
+      const plan = await planStackUpdate(projectDir, input);
+      expect(plan.success, plan.success ? undefined : plan.error).toBe(true);
+      if (!plan.success) throw new Error(plan.error);
+      if (edited) {
+        expect(plan.manualReviewBlockers).toContain(
+          ".oxlintrc.json: existing file differs from the generated baseline",
+        );
+        const applied = await applyStackUpdate(projectDir, input);
+        expect(applied.success).toBe(false);
+        expect(await readFile(configPath, "utf8")).toBe(original);
+      } else {
+        expect(plan.manualReviewBlockers).toEqual([]);
+        const applied = await applyStackUpdate(projectDir, input);
+        expect(applied.success, applied.success ? undefined : applied.error).toBe(true);
+        await expectFileContains(configPath, "@shadcn/lint");
+        expect((await readBtsConfig(projectDir))?.addons).toEqual(
+          expect.arrayContaining(["oxlint", "shadcn-lint"]),
+        );
+      }
+    },
+  );
+
   it.each([{ part: ["staticAnalysis:universal:gitleaks"] }, { addons: ["gitleaks"] }])(
     "preserves legacy base linters during template updates and unrelated addon changes: %j",
     async (input) => {

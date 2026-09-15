@@ -452,7 +452,7 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
         )
       : config;
     // Legacy projects without design lint may predate the single-profile constraint.
-    if (toolingConfig.addons.includes("shadcn-lint")) {
+    if (!options.skipDesignLintValidation && toolingConfig.addons.includes("shadcn-lint")) {
       const qualityIssue =
         getCodeQualitySelectionIssue(toolingConfig.addons) ??
         getShadcnLintFrontendIssue(toolingConfig.frontend, toolingConfig.cssFramework);

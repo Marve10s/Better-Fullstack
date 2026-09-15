@@ -370,6 +370,31 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
     }
   });
 
+  it("adds design lint to an Oxlint project created through MCP", async () => {
+    const client = await connectClient(mode);
+    const root = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-oxlint-upgrade-"));
+    roots.push(root);
+    const projectDir = path.join(root, "app");
+    const created = await callTool(client, {
+      name: "bfs_create_project",
+      arguments: { projectName: "app", targetDir: root, addons: ["oxlint"] },
+    });
+    expect(created.isError, JSON.stringify(created.content)).not.toBe(true);
+    const args = { projectDir, part: ["codeQuality:universal:shadcn-lint"] };
+    for (const name of ["bfs_plan_stack_update", "bfs_apply_stack_update"]) {
+      const result = await callTool(client, { name, arguments: args });
+      expect(result.isError, JSON.stringify(result.content)).not.toBe(true);
+      expect(result.structuredContent?.manualReviewBlockers).toEqual([]);
+    }
+    expect(await fs.readFile(path.join(projectDir, ".oxlintrc.json"), "utf8")).toContain(
+      "@shadcn/lint",
+    );
+    const pkg = await fs.readJson(path.join(projectDir, "package.json"));
+    expect(pkg.scripts["lint:design"]).toBe("oxlint");
+    expect(pkg.devDependencies["@shadcn/lint"]).toBe("0.1.0");
+    expect((await readBtsConfig(projectDir))?.addons).toEqual(["oxlint", "shadcn-lint"]);
+  });
+
   it("keeps legacy Code Quality update warnings consistent with applied files", async () => {
     const client = await connectClient(mode);
     const root = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-legacy-quality-"));

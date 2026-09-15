@@ -1926,6 +1926,22 @@ export async function planStackUpdate(
     const existingContent =
       exists && existingBuffer && !isBinaryFile ? existingBuffer.toString("utf-8") : undefined;
 
+    // Oxlint setup changed these files after rendering; the hash proves they remain untouched.
+    const initializedOxlintBaseline =
+      (filePath === ".oxlintrc.json" || filePath === "package.json") &&
+      !currentGeneratedFiles.has(".oxlintrc.json") &&
+      currentConfig.addons.includes("oxlint") &&
+      !currentConfig.addons.includes("shadcn-lint") &&
+      normalizedProposedConfig.addons.includes("shadcn-lint") &&
+      existingContent !== undefined &&
+      existingBuffer &&
+      manifest.hashes[filePath] === hashContent(existingBuffer)
+        ? existingContent
+        : undefined;
+    if (initializedOxlintBaseline !== undefined) {
+      currentBaselineContents.push(initializedOxlintBaseline);
+    }
+
     if (!exists) {
       filesToAdd.push(filePath);
       operations.push({ kind: "add", path: filePath, writeMode: "generated" });
@@ -1970,7 +1986,7 @@ export async function planStackUpdate(
     if (filePath.endsWith("package.json")) {
       const merged = mergePackageJson(
         existingContent,
-        recordedBaseline ?? previousContent,
+        initializedOxlintBaseline ?? recordedBaseline ?? previousContent,
         proposedContent,
         options.removeObsoleteGeneratedArtifacts,
       );
