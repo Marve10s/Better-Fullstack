@@ -80,20 +80,13 @@ Owns public interaction and content:
 - compatibility presentation;
 - preview, ZIP, and WebContainer flows;
 - product docs, guides, blog, SEO, and localized messages;
-- public analytics presentation.
+- public analytics presentation;
+- telemetry ingest validation and PostHog delivery in `src/lib/telemetry`, served by the server
+  entry. Historical conversion and import tools live in `scripts/analytics`; the operations
+  reference in `docs/reference/posthog-analytics-operations.md` records archive preservation.
+  Convex remains a supported backend option for generated user projects only.
 
 The builder is not a schema authority. Options and compatibility originate in shared code.
-
-### `packages/backend`
-
-Owns privacy validation and PostHog delivery in `src`. The web server hosts its public ingest
-endpoint; CLI and browser clients send events there. PostHog owns private reporting. The package
-has no database service or deployment command and is not emitted into generated projects.
-
-The old Convex services and in-app aggregate dashboard have been removed. Offline historical
-conversion and import tools live in `scripts/analytics`; the backend README records archive
-preservation and the remaining production cutover. Never delete hosted data as a side effect of
-repository cleanup. Convex remains a supported backend option for generated user projects.
 
 ### `packages/create-bfs`
 

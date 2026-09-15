@@ -33,13 +33,13 @@
     },
     "apps/cli": {
       "name": "create-better-fullstack",
-      "version": "2.6.6",
+      "version": "2.6.7",
       "bin": {
         "create-better-fullstack": "dist/cli.mjs",
       },
       "dependencies": {
-        "@better-fullstack/template-generator": "^2.6.5",
-        "@better-fullstack/types": "^2.6.5",
+        "@better-fullstack/template-generator": "^2.6.7",
+        "@better-fullstack/types": "^2.6.7",
         "@clack/core": "^0.5.0",
         "@clack/prompts": "^1.7.0",
         "@modelcontextprotocol/server": "^2.0.0",
@@ -74,7 +74,6 @@
       "dependencies": {
         "@base-ui/react": "^1.8.0",
         "@base-ui/utils": "^0.2.9",
-        "@better-fullstack/backend": "workspace:*",
         "@better-fullstack/template-generator": "workspace:*",
         "@better-fullstack/types": "workspace:*",
         "@fontsource/opendyslexic": "^5.3.0",
@@ -145,19 +144,9 @@
         "yaml": "^2.9.0",
       },
     },
-    "packages/backend": {
-      "name": "@better-fullstack/backend",
-      "version": "1.0.1",
-      "dependencies": {
-        "@better-fullstack/types": "workspace:*",
-      },
-      "devDependencies": {
-        "typescript": "^5.9.3",
-      },
-    },
     "packages/create-bfs": {
       "name": "create-bfs",
-      "version": "2.6.6",
+      "version": "2.6.7",
       "bin": {
         "create-bfs": "cli.js",
       },
@@ -167,7 +156,7 @@
     },
     "packages/project-lifecycle": {
       "name": "@better-fullstack/project-lifecycle",
-      "version": "2.6.6",
+      "version": "2.6.7",
       "dependencies": {
         "fs-extra": "^11.4.0",
       },
@@ -180,9 +169,9 @@
     },
     "packages/template-generator": {
       "name": "@better-fullstack/template-generator",
-      "version": "2.6.6",
+      "version": "2.6.7",
       "dependencies": {
-        "@better-fullstack/types": "^2.6.5",
+        "@better-fullstack/types": "^2.6.7",
         "handlebars": "^4.7.9",
         "pathe": "^2.0.3",
         "ts-morph": "^27.0.2",
@@ -200,7 +189,7 @@
     },
     "packages/types": {
       "name": "@better-fullstack/types",
-      "version": "2.6.6",
+      "version": "2.6.7",
       "dependencies": {
         "zod": "4.5.4",
       },
@@ -265,8 +254,6 @@
     "@base-ui/react": ["@base-ui/react@1.8.0", "", { "dependencies": { "@babel/runtime": "^7.29.7", "@base-ui/utils": "0.4.0", "@floating-ui/react-dom": "^2.1.9", "@floating-ui/utils": "^0.2.12", "use-sync-external-store": "^1.6.0" }, "peerDependencies": { "@date-fns/tz": "^1.2.0", "@types/react": "^17 || ^18 || ^19", "date-fns": "^4.0.0", "react": "^17 || ^18 || ^19", "react-dom": "^17 || ^18 || ^19" }, "optionalPeers": ["@date-fns/tz", "@types/react", "date-fns"] }, "sha512-P0/1sxo6SBVZOklKMIedvTWqw2s2IQzi9x5bIVsXu980cuSOD4NeuRSs+/L7LZQfDkZP/uRZyGPyfFl/B1oH+Q=="],
 
     "@base-ui/utils": ["@base-ui/utils@0.2.9", "", { "dependencies": { "@babel/runtime": "^7.29.2", "@floating-ui/utils": "^0.2.11", "reselect": "^5.1.1", "use-sync-external-store": "^1.6.0" }, "peerDependencies": { "@types/react": "^17 || ^18 || ^19", "react": "^17 || ^18 || ^19", "react-dom": "^17 || ^18 || ^19" }, "optionalPeers": ["@types/react"] }, "sha512-x/PDDCYzoqPpjrdyb3VcyylTI2IjUXEtYDGi5foh7KsnmNJIIaVwA2GLgDH1dps1GgXiJbA60hM+AyuTfQzIvw=="],
-
-    "@better-fullstack/backend": ["@better-fullstack/backend@workspace:packages/backend"],
 
     "@better-fullstack/project-lifecycle": ["@better-fullstack/project-lifecycle@workspace:packages/project-lifecycle"],
 

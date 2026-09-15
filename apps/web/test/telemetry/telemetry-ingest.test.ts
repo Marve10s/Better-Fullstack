@@ -1,7 +1,7 @@
 import { afterAll, afterEach, describe, expect, it, spyOn } from "bun:test";
 
-import { posthogEvent } from "../src/posthog";
-import { handleTelemetryIngest } from "../src/telemetry-ingest";
+import { posthogEvent } from "@/lib/telemetry/posthog";
+import { handleTelemetryIngest } from "@/lib/telemetry/telemetry-ingest";
 
 const options = {
   enabled: true,
@@ -10,6 +10,9 @@ const options = {
   allowedPages: new Set(["builder"]),
 };
 const fetchSpy = spyOn(globalThis, "fetch");
+function mockFetch(impl: (url: URL | RequestInfo, init?: RequestInit) => Promise<Response>) {
+  fetchSpy.mockImplementation(impl as typeof fetch);
+}
 afterEach(() => fetchSpy.mockClear());
 afterAll(() => fetchSpy.mockRestore());
 
@@ -23,7 +26,7 @@ function request(body: unknown) {
 
 function collectEvents() {
   const batches: Array<Record<string, unknown>> = [];
-  fetchSpy.mockImplementation(async (_url, init) => {
+  mockFetch(async (_url, init) => {
     const payload: unknown = JSON.parse(String(init?.body));
     if (payload && typeof payload === "object") batches.push(payload as Record<string, unknown>);
     return new Response("{}", { status: 200 });
@@ -175,7 +178,7 @@ describe("PostHog ingestion boundary", () => {
         .status,
     ).toBe(503);
     expect(batches).toEqual([]);
-    fetchSpy.mockImplementation(async () => new Response(null, { status: 429 }));
+    mockFetch(async () => new Response(null, { status: 429 }));
     expect(
       (
         await handleTelemetryIngest(

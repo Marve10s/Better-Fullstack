@@ -1,6 +1,6 @@
 import { expect, it } from "bun:test";
 
-import { createTelemetryRateLimit, vercelRequestKey } from "../src/telemetry-rate-limit";
+import { createTelemetryRateLimit, vercelRequestKey } from "@/lib/telemetry/telemetry-rate-limit";
 
 it("caps total forwarded requests independently of origin rotation and resets the window", () => {
   const accepts = createTelemetryRateLimit();

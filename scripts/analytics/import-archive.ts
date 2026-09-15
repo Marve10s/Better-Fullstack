@@ -9,7 +9,7 @@ import {
   posthogEvent,
   posthogHost,
   type PostHogEvent,
-} from "../../packages/backend/src/posthog";
+} from "@web/lib/telemetry/posthog";
 
 function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);

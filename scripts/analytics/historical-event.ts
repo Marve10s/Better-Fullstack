@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { posthogEvent } from "../../packages/backend/src/posthog";
+import { posthogEvent } from "@web/lib/telemetry/posthog";
 
 const namespace = Buffer.from("3c41d010260a4ae6af03659c6bb88d39", "hex");
 

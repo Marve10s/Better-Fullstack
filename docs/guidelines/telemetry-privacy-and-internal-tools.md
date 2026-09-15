@@ -3,11 +3,12 @@
 Use this guide for CLI telemetry, analytics ingest, aggregate dashboards, decision-room access, and
 any event or query that could expose user or operational data.
 
-Active ingest validation and PostHog delivery belong to `packages/backend/src`, served by `apps/web`.
+Active ingest validation and PostHog delivery live in `apps/web/src/lib/telemetry`, served by the web
+server entry.
 PostHog owns reporting; definitions live in `scripts/analytics/posthog-dashboard.json`. Both Convex
 services and the old aggregate dashboard have been removed from the repository. Preserve historical
 events in independent, checksum-verified archives. Import from those archives without a live database
-connection; see `packages/backend/README.md` for cutover and retention requirements.
+connection; see `docs/reference/posthog-analytics-operations.md` for retention requirements.
 
 ## Independent Boundaries
 

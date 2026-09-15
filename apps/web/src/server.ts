@@ -1,7 +1,3 @@
-import {
-  handleTelemetryIngest,
-  vercelRequestKey,
-} from "@better-fullstack/backend/telemetry-ingest";
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
 
 import { TELEMETRY_PAGES } from "@/lib/analytics/telemetry-pages";
@@ -17,6 +13,7 @@ import {
   withPrivateTelemetryHeaders,
 } from "@/lib/telemetry/telemetry-auth.server";
 import { paraglideMiddleware } from "@/paraglide/server.js";
+import { handleTelemetryIngest, vercelRequestKey } from "@/lib/telemetry/telemetry-ingest";
 
 export default createServerEntry({
   async fetch(request) {

@@ -53,13 +53,6 @@ const projects: Project[] = [
     ],
   },
   {
-    root: "packages/backend",
-    aliases: [
-      { directory: "src", prefix: "@/" },
-      { directory: "test", prefix: "@test/" },
-    ],
-  },
-  {
     root: "packages/template-generator",
     aliases: [
       { directory: "src", prefix: "@/" },

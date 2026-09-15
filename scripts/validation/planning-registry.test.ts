@@ -86,6 +86,6 @@ describe("project lifecycle registry", () => {
     expect(reproducibleClaims).toBeGreaterThan(-1);
     expect(reproducibleClaims).toBeLessThan(supportedUpdates);
     expect(roadmap).toContain("[project lifecycle](projects/README.md)");
-    expect(roadmap).toContain("[backend runbook](../packages/backend/README.md)");
+    expect(roadmap).toContain("[analytics operations reference](reference/posthog-analytics-operations.md)");
   });
 });

@@ -1,17 +1,17 @@
 import { sanitizeTelemetryMachineId } from "@better-fullstack/types/telemetry";
 
-import { createTelemetryRateLimit } from "./telemetry-rate-limit";
+import { createTelemetryRateLimit } from "@/lib/telemetry/telemetry-rate-limit";
 
-export { vercelRequestKey } from "./telemetry-rate-limit";
+export { vercelRequestKey } from "@/lib/telemetry/telemetry-rate-limit";
 
-import { capturePosthog, posthogEvent, posthogHost } from "./posthog";
+import { capturePosthog, posthogEvent, posthogHost } from "@/lib/telemetry/posthog";
 import {
   CORS_HEADERS,
   hasInvalidEnvelopeValues,
   hasInvalidStackValues,
   MAX_PAYLOAD_BYTES,
   sanitizeIngestEnvelope,
-} from "./telemetry-validation";
+} from "@/lib/telemetry/telemetry-validation";
 
 type IngestOptions = {
   enabled: boolean;

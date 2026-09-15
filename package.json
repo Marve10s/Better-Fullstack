@@ -37,7 +37,7 @@
     "test:recipe-runtime": "bun run testing/recipe-generation-proof.ts",
     "test:update-qualification": "bun test scripts/release/validate-update-qualification.test.ts && bun run scripts/release/validate-update-qualification.ts",
     "test:update-action": "bun test scripts/release/update-check-action.test.ts && bun run scripts/release/validate-update-action.ts",
-    "test:operational-trust": "bun test packages/backend/test scripts/analytics scripts/validation/planning-registry.test.ts",
+    "test:operational-trust": "bun test apps/web/test/telemetry/telemetry-ingest.test.ts apps/web/test/telemetry/telemetry-rate-limit.test.ts apps/web/test/telemetry/telemetry-validation.test.ts scripts/analytics scripts/validation/planning-registry.test.ts",
     "test:external-upgrades": "bun run scripts/validation/validate-external-upgrades.ts",
     "test:published-package": "bun run scripts/release/published-package-smoke.ts",
     "check": "oxfmt . && oxlint .",

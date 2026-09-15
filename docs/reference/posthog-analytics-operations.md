@@ -1,13 +1,13 @@
 # Analytics migration and operations
 
-PostHog is the destination for Better Fullstack analytics. The web server owns the new public
-`/api/analytics/ingest` endpoint. This package validates events and forwards them to PostHog using
-its capture API. This package has no Convex dependency, database schema, generated client, or
-service deployment. PostHog owns reporting; offline archives preserve the historical data.
+PostHog is the destination for Better Fullstack analytics. The web server owns the public
+`/api/analytics/ingest` endpoint. `apps/web/src/lib/telemetry` validates events and forwards them to
+PostHog using its capture API. The repository has no Convex dependency, database schema, generated
+client, or service deployment. PostHog owns reporting; offline archives preserve the historical data.
 
-The cleanup removes both `packages/backend/convex` and the retired `apps/analytics` app, including
-queries, backfills, the old forwarding bridge, and unused content endpoints. The web app no longer
-contains the aggregate decision dashboard. Convex remains available as a backend choice in generated
+The former `packages/backend` workspace, its Convex service, and the retired `apps/analytics` app
+are gone, including queries, backfills, the old forwarding bridge, and unused content endpoints.
+The web app no longer contains the aggregate decision dashboard. Convex remains available as a backend choice in generated
 user projects; that product capability is separate from Better Fullstack's analytics infrastructure.
 
 ## Destination status
@@ -19,8 +19,10 @@ GiftSong retains its separate plugin connection.
 The private [Better Fullstack analytics dashboard](https://eu.posthog.com/project/275138/dashboard/954254)
 contains all ten reports from `scripts/analytics/posthog-dashboard.json`. On 2026-09-15, each SQL
 query and the saved dashboard executed successfully against the empty destination. This validates
-query execution, not event delivery or reconciliation. Production cutover, historical import and
-CLI publication remain pending.
+query execution, not event delivery or reconciliation. Production cutover completed on 2026-09-15:
+the web endpoint went live, CLI 2.6.7 shipped with the new endpoint, and the hosted Convex project
+was deleted after a final verified export. Historical import into PostHog was not performed; the
+verified archives below are the only source for events before that date.
 
 ## Deployment settings
 
@@ -65,8 +67,9 @@ requires its own login. No event bodies or PostHog management credentials are se
    credentials from hosting and CI settings after confirming they have no remaining consumers.
 7. Monitor the PostHog event counts, capture failures and free-plan usage after cutover.
 
-Removing source does not shut down a hosted Convex deployment. No hosted data has been deleted and
-production cutover remains pending. Do not deploy an empty Convex directory to perform this cleanup.
+The hosted Better-Fullstack Convex project was deleted on 2026-09-15 after the final export was
+reconciled against the archive (12,390 events, all 12,361 earlier IDs preserved). Raw exports and
+archives live outside the repository in the owner's local backup folder and iCloud Drive.
 
 There is no forwarding bridge in the final architecture. Already-published CLI versions have the
 old Convex hostname compiled in; once it is retired, those versions stop reporting analytics.

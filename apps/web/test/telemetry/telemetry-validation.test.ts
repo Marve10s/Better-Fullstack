@@ -1,13 +1,13 @@
 import { TELEMETRY_STACK_DIMENSION_KEYS } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
-import { classifyProjectSetupOutcome } from "../src/setup-outcome";
+import { classifyProjectSetupOutcome } from "@/lib/telemetry/setup-outcome";
 import {
   extractStack,
   sanitizeIngestEnvelope,
   sanitizeTelemetryIdentifier,
   TELEMETRY_STACK_KEYS,
-} from "../src/telemetry-validation";
+} from "@/lib/telemetry/telemetry-validation";
 
 describe("telemetry validation and setup outcomes", () => {
   it("separates completed setup from skipped and generation-only creation", () => {

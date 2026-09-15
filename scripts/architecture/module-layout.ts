@@ -11,13 +11,6 @@ const dryRun = process.argv.includes("--check");
 
 const projects: Project[] = [
   {
-    root: "packages/backend",
-    aliases: [
-      { directory: "src", prefix: "@/" },
-      { directory: "test", prefix: "@test/" },
-    ],
-  },
-  {
     root: "apps/cli",
     aliases: [
       { directory: "src", prefix: "@/" },
@@ -250,7 +243,15 @@ const groupedFiles: Record<string, Record<string, string[]>> = {
       "tech-resource-links.ts",
       "types.ts",
     ],
-    telemetry: ["telemetry-auth.server.ts", "telemetry-data.server.ts"],
+    telemetry: [
+      "posthog.ts",
+      "setup-outcome.ts",
+      "telemetry-auth.server.ts",
+      "telemetry-data.server.ts",
+      "telemetry-ingest.ts",
+      "telemetry-rate-limit.ts",
+      "telemetry-validation.ts",
+    ],
   },
   "packages/types/src": {
     capabilities: [
