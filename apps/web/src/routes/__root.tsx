@@ -1,10 +1,9 @@
 import { Outlet, HeadContent, Scripts, createRootRoute, Link } from "@tanstack/react-router";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
 import { lazy, Suspense, type ReactNode, useEffect, useSyncExternalStore } from "react";
 
 import geistSansUrl from "@/assets/fonts/Geist-Variable.woff2";
 import geistMonoUrl from "@/assets/fonts/GeistMono-Variable.woff2";
+import { PageAnalytics } from "@/components/analytics/page-analytics";
 import { Navbar } from "@/components/navbar";
 import Providers from "@/components/providers";
 import {
@@ -253,10 +252,5 @@ function BrowserAnalytics() {
     isBrowserTelemetryEnabled,
     () => false,
   );
-  return enabled ? (
-    <>
-      <Analytics />
-      <SpeedInsights />
-    </>
-  ) : null;
+  return enabled ? <PageAnalytics /> : null;
 }

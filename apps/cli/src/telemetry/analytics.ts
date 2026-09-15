@@ -3,6 +3,15 @@ import pc from "picocolors";
 
 import type { ProjectConfig } from "@/types";
 
+import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
+import { canPromptInteractively } from "@/presentation/prompt-environment";
+import { TelemetryDeliveryQueue } from "@/telemetry/telemetry-delivery";
+import {
+  getOrCreateMachineId,
+  getPersistedTelemetryPreference,
+  hasTelemetryNoticeBeenShown,
+  markTelemetryNoticeShown,
+} from "@/telemetry/telemetry-settings";
 import {
   getProjectConfigEvidence,
   isRegisteredTelemetryStackPartSelection,
@@ -14,15 +23,6 @@ import {
   sanitizeTelemetrySetupFailure,
   sanitizeTelemetryStackDimension,
 } from "@/types";
-import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
-import { canPromptInteractively } from "@/presentation/prompt-environment";
-import { TelemetryDeliveryQueue } from "@/telemetry/telemetry-delivery";
-import {
-  getOrCreateMachineId,
-  getPersistedTelemetryPreference,
-  hasTelemetryNoticeBeenShown,
-  markTelemetryNoticeShown,
-} from "@/telemetry/telemetry-settings";
 
 const TELEMETRY_DELIVERY_TIMEOUT_MS = 1_000;
 /**
@@ -117,11 +117,11 @@ function getTelemetryMachineId(): Promise<string | undefined> {
   return machineIdPromise;
 }
 
-async function sendConvexEvent(
+async function sendTelemetryEvent(
   payload: Record<string, unknown>,
   controller: AbortController,
 ): Promise<void> {
-  const ingestUrl = process.env.CONVEX_INGEST_URL;
+  const ingestUrl = process.env.BFS_TELEMETRY_INGEST_URL;
   if (!ingestUrl) return;
 
   const timeout = setTimeout(() => controller.abort(), TELEMETRY_DELIVERY_TIMEOUT_MS);
@@ -249,7 +249,7 @@ function sanitizeSetupFailure(value: unknown): string | undefined {
 
 /**
  * Keep telemetry values inside the product's identifier vocabulary. This is a
- * second privacy boundary in addition to the Convex ingest sanitizer: paths,
+ * second privacy boundary in addition to the server ingest sanitizer: paths,
  * prose, prompts, source code, env values, and other user content are dropped.
  */
 export function sanitizeTelemetryConfig(
@@ -393,7 +393,7 @@ export async function trackEvent(
   outcome: TelemetryOutcome = {},
   disableAnalytics = false,
 ) {
-  if (disableAnalytics || !process.env.CONVEX_INGEST_URL) return;
+  if (disableAnalytics || !process.env.BFS_TELEMETRY_INGEST_URL) return;
 
   const safeConfig = sanitizeTelemetryConfig(config);
   const safeOutcome = sanitizeTelemetryOutcome(outcome);
@@ -410,9 +410,10 @@ export async function trackEvent(
 
   telemetryDeliveryQueue.enqueue(async (controller) => {
     if (!(await isTelemetryEnabled())) return;
-    await sendConvexEvent(
+    await sendTelemetryEvent(
       {
         ...safeConfig,
+        eventId: crypto.randomUUID(),
         eventType,
         ...safeOutcome,
         ...runtimeContext(),

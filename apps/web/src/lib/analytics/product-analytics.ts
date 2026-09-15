@@ -1,6 +1,17 @@
-type ProductValue = string | number | boolean | null | undefined;
+import {
+  sanitizeTelemetryStackDimension,
+  TELEMETRY_STACK_DIMENSION_KEYS,
+} from "@better-fullstack/types/telemetry";
+
+type ProductValue = string | string[] | number | boolean | null | undefined;
 
 export type ProductAnalyticsProperties = Record<string, ProductValue>;
+
+let pageContext: { page_id: string; page_view_id: string } | undefined;
+
+export function setTelemetryPageContext(context: typeof pageContext) {
+  pageContext = context;
+}
 
 const ID_KEY = "better-fullstack-anonymous-id";
 export const BROWSER_TELEMETRY_DISABLED_KEY = "better-fullstack-telemetry-disabled";
@@ -8,6 +19,17 @@ const BROWSER_TELEMETRY_CHANGE_EVENT = "better-fullstack:telemetry-change";
 const IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9_.:+,-]{0,99}$/;
 const KEY = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
 const ALLOWED_PROPERTY_KEYS = new Set([
+  "page_id",
+  "page_view_id",
+  "active_ms",
+  "elapsed_ms",
+  "scroll_percent",
+  "max_scroll_percent",
+  "scroll_px",
+  "viewport_height",
+  "scroll_surface",
+  "end_reason",
+  "device",
   "archive_bytes",
   "backend",
   "campaign",
@@ -72,12 +94,7 @@ const BLOCKED_KEYS = new Set([
 ]);
 
 function ingestUrl(): string | null {
-  const explicit = import.meta.env.VITE_CONVEX_INGEST_URL;
-  if (typeof explicit === "string" && explicit.startsWith("https://")) return explicit;
-
-  const deployment = import.meta.env.VITE_CONVEX_URL;
-  if (typeof deployment !== "string" || !deployment.startsWith("https://")) return null;
-  return `${deployment.replace(/\.convex\.cloud\/?$/, ".convex.site")}/api/analytics/ingest`;
+  return import.meta.env.VITE_BFS_TELEMETRY_ENABLED === "1" ? "/api/analytics/ingest" : null;
 }
 
 export type BrowserTelemetryStatus = {
@@ -162,7 +179,22 @@ export function sanitizeProductProperties(
 ): ProductAnalyticsProperties {
   const safe: ProductAnalyticsProperties = {};
   for (const [key, value] of Object.entries(properties)) {
-    if (!KEY.test(key) || !ALLOWED_PROPERTY_KEYS.has(key) || BLOCKED_KEYS.has(key.toLowerCase())) {
+    if (!KEY.test(key) || BLOCKED_KEYS.has(key.toLowerCase())) continue;
+    const dimension = sanitizeTelemetryStackDimension(key, value);
+    if (dimension !== undefined) {
+      safe[key] = dimension;
+      continue;
+    }
+    if ((TELEMETRY_STACK_DIMENSION_KEYS as readonly string[]).includes(key)) continue;
+    if (
+      key === "page_id" &&
+      typeof value === "string" &&
+      /^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,255}$/.test(value)
+    ) {
+      safe[key] = value;
+      continue;
+    }
+    if (!ALLOWED_PROPERTY_KEYS.has(key)) {
       continue;
     }
     if (typeof value === "boolean") safe[key] = value;
@@ -188,7 +220,8 @@ export function trackProductEvent(
   const success = status === "succeeded" ? true : status === "failed" ? false : undefined;
 
   const payload = JSON.stringify({
-    ...sanitizeProductProperties(properties),
+    ...sanitizeProductProperties({ ...pageContext, ...properties }),
+    eventId: crypto.randomUUID(),
     eventType: "web_action",
     source: "web-builder",
     client: "web",
@@ -206,5 +239,6 @@ export function trackProductEvent(
     headers: { "Content-Type": "application/json" },
     body: payload,
     keepalive: true,
+    credentials: "omit",
   }).catch(() => undefined);
 }

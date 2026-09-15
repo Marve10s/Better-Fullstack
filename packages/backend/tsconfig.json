@@ -5,8 +5,9 @@
     "paths": {
       "@/*": ["./convex/*"],
       "@test/*": ["./test/*"]
-    }
+    },
+    "lib": ["ESNext", "DOM"]
   },
-  "include": ["convex/**/*"],
+  "include": ["convex/**/*", "src/**/*"],
   "exclude": ["convex/_generated", "node_modules"]
 }

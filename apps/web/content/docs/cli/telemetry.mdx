@@ -2,7 +2,7 @@
 title: Anonymous Telemetry
 description: What Better Fullstack CLI and browser telemetry collect when enabled, what they never collect, and how to turn them off.
 translationStatus: pending
-updated: 2026-08-23
+updated: 2026-09-15
 ---
 
 ```npm
@@ -32,29 +32,18 @@ Delivery is best-effort with a one-second timeout and can never fail a command. 
 
 ## Browser analytics
 
-The Stack Builder uses a separate browser-local anonymous ID for bounded run, edit, and ZIP outcomes. One browser preference gates Vercel Web Analytics, Speed Insights, and the product-event stream together. Do Not Track and Global Privacy Control disable all three. Campaign attribution accepts only published campaign identifiers; arbitrary URL values are discarded.
+The website uses a browser-local anonymous ID for page views and bounded builder actions, including run, edit, command-copy and ZIP outcomes. PostHog receives these events through Better Fullstack's validating server endpoint. One browser preference, Do Not Track and Global Privacy Control gate this event stream.
+
+Page engagement records a published page identifier, time in the foreground, device size category and scroll depth. The builder measures its main scroll container. Query strings, shared-stack URLs, page contents and user-entered text are excluded. No session replay or automatic DOM capture runs.
 
 <BrowserTelemetryControls />
 
 Disabling here saves a local preference in this browser only. It does not affect CLI telemetry on the same machine.
 
-## Decision coverage
+## Interpreting analytics
 
-The private decision room treats an event as eligible only when it represents a terminal selection
-decision, such as create completion, a builder handoff, compatibility recovery, or an abandoned
-plan. A decision is covered when it also contains a bounded stage, outcome, and evidence level.
-Failed creates and abandoned plans additionally require a bounded problem class.
+Project creation, copied commands, browser previews and ZIP downloads are separate outcomes. A completed generation does not always mean dependency installation succeeded. Failure reports contain fixed stage and reason codes.
 
-Coverage is `covered decisions / eligible decisions`. General page views and command starts are
-not part of the denominator. Window reporting activates at 80 percent coverage; otherwise the
-decision room falls back to current all-time aggregates. Old aggregates use a different version
-and are excluded instead of being reinterpreted as covered.
+Page engagement is best-effort. Closing a browser can prevent a final report, and foreground time can include idle time. An abandoned page suggests where to investigate; it does not establish why someone left.
 
-Problem classes separate `discoverability`, `missing-capability`, `compatibility`, and
-`reliability`. These are fixed identifiers, not user text. Repeat lifecycle use counts terminal
-existing-project actions on distinct UTC dates. It does not treat general visits or creation alone
-as lifecycle return.
-
-Production reporting still requires the maintenance-owner activation and reconciliation drill.
-Repository tests prove the contract and aggregation behavior, but they do not prove that a deployed
-environment has reached 80 percent coverage.
+CLI and browser IDs remain separate. Repeat-use reports measure anonymous devices, not identified people. Selected libraries are catalog identifiers, not an export of generated files or installed dependencies.

@@ -3,8 +3,10 @@
 Use this guide for CLI telemetry, analytics ingest, aggregate dashboards, decision-room access, and
 any event or query that could expose user or operational data.
 
-Active ingest, aggregates, and owner dashboards belong to `packages/backend`. `apps/analytics` is
-the retired legacy tombstone and historical-data boundary; do not add new events or callers there.
+Active ingest validation and PostHog delivery belong to `packages/backend/src`, served by `apps/web`.
+PostHog owns reporting; definitions live in `scripts/analytics/posthog-dashboard.json`. The Convex
+HTTP route is a temporary forwarding bridge for old clients, and its tables are an archive.
+`apps/analytics` is the retired legacy tombstone; do not add events or callers there.
 
 ## Independent Boundaries
 

@@ -13,6 +13,7 @@ export class TelemetryDeliveryQueue {
   private readonly pending = new Set<PendingTelemetryDelivery>();
 
   enqueue(deliver: TelemetryDelivery): void {
+    if (this.pending.size >= 64) return;
     const controller = new AbortController();
     const pending = {
       controller,

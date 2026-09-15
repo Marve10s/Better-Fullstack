@@ -64,6 +64,8 @@ export const TELEMETRY_ACTION_IDS = [
   "bfs_recommend_stack",
   "bfs_recover_project_transaction",
   "bfs_verify_project_recovery_point",
+  "page-viewed",
+  "page-engagement",
   "campaign-viewed",
   "campaign-preset-opened",
   "builder-viewed",

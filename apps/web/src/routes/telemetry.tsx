@@ -58,8 +58,7 @@ function TelemetryRoute() {
 
 function TelemetryUnavailable({ status }: { status: Exclude<LoaderResult["status"], "ready"> }) {
   const copy = {
-    unconfigured:
-      "Set the same TELEMETRY_DASHBOARD_SECRET in the web and Convex deployments, then connect the web deployment to Convex.",
+    unconfigured: "The PostHog dashboard is not connected yet.",
     empty: "The telemetry store is connected, but no aggregate events are available yet.",
     unavailable:
       "The aggregate telemetry query is temporarily unavailable. No raw event data was requested.",

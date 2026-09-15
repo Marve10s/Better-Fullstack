@@ -1,21 +1,21 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  sanitizeCampaignProperties,
+  stackAnalyticsProperties,
+} from "@/lib/analytics/campaign-analytics";
+import {
   CAMPAIGN_BUILDER_SEARCH,
   CAMPAIGN_PRESETS,
   getCampaignPresetUrl,
 } from "@/lib/campaign/campaign";
 import {
-  sanitizeCampaignProperties,
-  stackAnalyticsProperties,
-} from "@/lib/analytics/campaign-analytics";
-import {
   getCampaignShareMessage,
   getCampaignShareTitle,
   getCampaignShareUrl,
 } from "@/lib/campaign/campaign-share";
-import { PRESET_TEMPLATES } from "@/lib/stack/constant";
 import { getStackRunSupport } from "@/lib/project/run-support";
+import { PRESET_TEMPLATES } from "@/lib/stack/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack/stack-defaults";
 
 describe("Run Before You Clone campaign", () => {
@@ -119,6 +119,23 @@ describe("Run Before You Clone campaign", () => {
     expect(properties.frontend).toBe("next");
     expect(properties.backend).toBe("gin");
     expect(properties.database).toBe("postgres");
+  });
+
+  it("captures scoped graph libraries without leaking inactive flat defaults or project names", () => {
+    const properties = stackAnalyticsProperties({
+      ...DEFAULT_STACK,
+      projectName: "private-project",
+      stackMode: "multi",
+      stackPartSpecs: [
+        "frontend:typescript:next",
+        "backend:go:gin",
+        "backend.orm:go:gorm",
+        "database:universal:postgres",
+      ],
+    });
+    expect(properties.stackPartSelections).toContain("orm:go:gorm");
+    expect(properties.orm).toBeUndefined();
+    expect(JSON.stringify(properties)).not.toContain("private-project");
   });
 
   it("keeps only published campaign identifiers in analytics", () => {
