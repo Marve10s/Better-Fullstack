@@ -191,6 +191,8 @@ import {
   CATEGORY_ORDER,
   getCategoryOrderForEcosystem,
   getCodeQualitySelectionIssue,
+  getReplacedCodeQualityTools,
+  getToolingCategory,
   getToolingCapability,
   getToolingSelectionOptions,
   isToolingOverlayOnly,
@@ -877,7 +879,7 @@ function buildProjectConfig(
   }
 
   if (Array.isArray(input.part) && input.part.length > 0) {
-    const stackParts = mergeProjectConfigSettingsIntoStackParts(
+    let stackParts = mergeProjectConfigSettingsIntoStackParts(
       parseStackPartSpecs(
         input.part.filter((part): part is string => typeof part === "string"),
         "selected",
@@ -890,6 +892,39 @@ function buildProjectConfig(
         ...new Set([...config.addons, ...stackParts.map((part) => part.toolId)]),
       ] as ProjectConfig["addons"];
     } else {
+      const graphTools = stackParts.flatMap((part) =>
+        getToolingCapability(part.toolId) ? [part.toolId] : [],
+      );
+      const replacedCategories = new Set(
+        graphTools.flatMap((toolId) => {
+          const category = getToolingCapability(toolId)?.category;
+          return category && getToolingCategory(category)?.selectionMode === "single"
+            ? [category]
+            : [];
+        }),
+      );
+      if (graphTools.includes("vite-plus")) {
+        replacedCategories.add("workspaceRunner");
+        replacedCategories.add("codeQuality");
+        replacedCategories.add("gitHooks");
+      }
+      const replacedQualityTools = getReplacedCodeQualityTools(graphTools);
+      const retainedAddons = config.addons.filter((toolId) => {
+        if (toolId === "none" || replacedQualityTools.includes(toolId)) return false;
+        const capability = getToolingCapability(toolId);
+        return !capability || !replacedCategories.has(capability.category);
+      });
+      if (retainedAddons.length) {
+        const specs = mergeLegacyAddonParts(
+          input.part.filter((part): part is string => typeof part === "string"),
+          retainedAddons,
+          { completeProfiles: false },
+        );
+        stackParts = mergeProjectConfigSettingsIntoStackParts(
+          parseStackPartSpecs(specs ?? [], "selected"),
+          config,
+        );
+      }
       Object.assign(config, stackPartsToLegacyProjectConfigPartial(stackParts), { stackParts });
     }
   }
@@ -921,7 +956,11 @@ function diffAddedCapabilities(
 
 const WORKSPACE_RUNNERS: ReadonlySet<string> = new Set(["turborepo", "nx", "vite-plus"]);
 
-function mergeLegacyAddonParts(part?: string[], addons?: string[]): string[] | undefined {
+function mergeLegacyAddonParts(
+  part?: string[],
+  addons?: string[],
+  options = { completeProfiles: true },
+): string[] | undefined {
   const addonSpecs = (addons ?? [])
     .filter((addon) => addon !== "none")
     .flatMap((addon) => {
@@ -930,7 +969,9 @@ function mergeLegacyAddonParts(part?: string[], addons?: string[]): string[] | u
       const profile = getToolingSelectionOptions(capability.category).find((option) =>
         option.toolIds.includes(addon),
       );
-      return (profile?.toolIds.length ? [...profile.toolIds] : [addon]).map((toolId) => {
+      return (
+        options.completeProfiles && profile?.toolIds.length ? [...profile.toolIds] : [addon]
+      ).map((toolId) => {
         const toolCapability = getToolingCapability(toolId);
         if (!toolCapability) throw new Error(`Unknown addon '${toolId}'`);
         const owner = toolCapability.ownerRole ? `${toolCapability.ownerRole}.` : "";

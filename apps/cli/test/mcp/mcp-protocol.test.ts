@@ -365,15 +365,35 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
           "codeQuality:universal:shadcn-lint",
         ],
       },
+      ...[
+        { graph: ["workspaceRunner:universal:turborepo"], addons: ["oxlint", "shadcn-lint"] },
+        { graph: ["codeQuality:universal:shadcn-lint"], addons: ["oxlint"] },
+        { graph: ["codeQuality:universal:oxlint"], addons: ["shadcn-lint"] },
+      ].map(({ graph, addons }) => ({
+        part: ["frontend:typescript:react-vite", "frontend.css:typescript:tailwind", ...graph],
+        addons,
+      })),
     ].entries()) {
       const args = { projectName: `valid-${index}`, targetDir, ...selection };
       for (const name of ["bfs_plan_project", "bfs_create_project"]) {
         const result = await callTool(client, { name, arguments: args });
         expect(result.isError, JSON.stringify(result.content)).not.toBe(true);
       }
-      const addons = (await readBtsConfig(path.join(targetDir, args.projectName)))?.addons;
+      const persisted = await readBtsConfig(path.join(targetDir, args.projectName));
+      const addons = persisted?.addons;
+      expect(persisted?.stackParts).toContainEqual(
+        expect.objectContaining({ role: "codeQuality", toolId: "shadcn-lint" }),
+      );
       expect(addons).toContain("shadcn-lint");
       expect(addons).not.toContain("biome");
+      const projectDir = path.join(targetDir, args.projectName);
+      const packageJson: unknown = await fs.readJson(path.join(projectDir, "package.json"));
+      expect(packageJson).toMatchObject({ devDependencies: { "@shadcn/lint": "0.1.0" } });
+      if (addons?.includes("oxlint")) {
+        expect(await fs.readFile(path.join(projectDir, ".oxlintrc.json"), "utf8")).toContain(
+          "@shadcn/lint",
+        );
+      }
     }
   });
 
