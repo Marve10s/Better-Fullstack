@@ -411,6 +411,144 @@ describe("stack update planner", () => {
     30_000,
   );
 
+  it.each(["flat", "graph"])(
+    "removes obsolete quality artifacts through %s add plans and apply",
+    async (mode) => {
+      const root = await makeTempRoot("bfs-quality-replacement-");
+      const cases = [
+        {
+          before: ["biome"],
+          after: ["eslint", "prettier"],
+          file: "biome.json",
+          dependency: "@biomejs/biome",
+          script: "check",
+        },
+        {
+          before: ["oxlint", "shadcn-lint"],
+          after: ["eslint", "prettier"],
+          file: ".oxlintrc.json",
+          dependency: "oxlint",
+          script: "check",
+        },
+      ] as const;
+      for (const [index, scenario] of cases.entries()) {
+        const projectDir = join(root, String(index));
+        await scaffoldGeneratedProject(
+          makeConfig(projectDir, {
+            ...TYPESCRIPT_FRONTEND_ONLY_CONFIG,
+            addons: [...scenario.before],
+            cssFramework: "tailwind",
+          }),
+        );
+        await writeFile(join(projectDir, "local-notes.txt"), "Keep this file.\n");
+        const input =
+          mode === "flat"
+            ? { addons: [...scenario.after] }
+            : { part: scenario.after.map((toolId) => `codeQuality:universal:${toolId}`) };
+        const plan = await addHandler({ projectDir, ...input, dryRun: true }, { silent: true });
+        expect(plan.success, plan.error).toBe(true);
+        expect(plan.plan).toMatchObject({
+          filesToRemove: expect.arrayContaining([scenario.file]),
+          manualReviewBlockers: [],
+        });
+        expect(await pathExists(join(projectDir, scenario.file))).toBe(true);
+        const applied = await addHandler(
+          { projectDir, ...input, install: false },
+          { silent: true },
+        );
+        expect(applied.success, applied.error).toBe(true);
+        expect(await pathExists(join(projectDir, scenario.file))).toBe(false);
+        const packageJson = await readJsonc(join(projectDir, "package.json"));
+        expect(packageJson).not.toHaveProperty(["devDependencies", scenario.dependency]);
+        expect(packageJson).not.toHaveProperty(["scripts", scenario.script]);
+        expect(await readFile(join(projectDir, "local-notes.txt"), "utf8")).toBe(
+          "Keep this file.\n",
+        );
+        if (scenario.before.some((toolId) => toolId === "shadcn-lint")) {
+          expect(packageJson).toMatchObject({ scripts: { "lint:design": "eslint ." } });
+        }
+      }
+    },
+    30_000,
+  );
+
+  it.each(["untouched", "package.json", ".oxfmtrc.json"])(
+    "replaces initialized Oxlint with baseline-safe cleanup (%s)",
+    async (editedFile) => {
+      const root = await makeTempRoot("bfs-initialized-quality-replacement-");
+      const projectDir = join(root, "app");
+      await scaffoldGeneratedProject(makeConfig(projectDir, { addons: ["oxlint"] }));
+      const packagePath = join(projectDir, "package.json");
+      const baselinePackage = await readFile(packagePath, "utf8");
+      const packageJson = await readJsonc(packagePath);
+      await writeFile(
+        packagePath,
+        JSON.stringify({
+          ...packageJson,
+          devDependencies: {
+            ...(packageJson.devDependencies as Record<string, string>),
+            oxlint: "^1.81.0",
+            oxfmt: "^0.46.0",
+          },
+          scripts: {
+            ...(packageJson.scripts as Record<string, string>),
+            check: "oxlint && oxfmt --write",
+          },
+        }),
+      );
+      await writeFile(join(projectDir, ".oxlintrc.json"), '{"rules":{}}');
+      await writeFile(join(projectDir, ".oxfmtrc.json"), '{"ignorePatterns":[]}');
+      await recordScaffoldManifest(projectDir, { baselines: { "package.json": baselinePackage } });
+      if (editedFile !== "untouched") {
+        const filePath = join(projectDir, editedFile);
+        await writeFile(filePath, `${await readFile(filePath, "utf8")}\n`);
+      }
+      const input = { part: ["codeQuality:universal:eslint", "codeQuality:universal:prettier"] };
+      const plan = await planStackUpdate(projectDir, input);
+      expect(plan.success).toBe(true);
+      if (!plan.success) throw new Error(plan.error);
+      const applied = await applyStackUpdate(projectDir, input);
+      if (editedFile !== "untouched") {
+        expect(plan.manualReviewBlockers.length).toBeGreaterThan(0);
+        expect(applied.success).toBe(false);
+        expect((await readBtsConfig(projectDir))?.addons).toEqual(["oxlint"]);
+        expect(await pathExists(join(projectDir, ".oxlintrc.json"))).toBe(true);
+      } else {
+        expect(plan.manualReviewBlockers).toEqual([]);
+        expect(plan.filesToRemove).toEqual(
+          expect.arrayContaining([".oxlintrc.json", ".oxfmtrc.json"]),
+        );
+        expect(applied.success, applied.success ? undefined : applied.error).toBe(true);
+        expect(await pathExists(join(projectDir, ".oxlintrc.json"))).toBe(false);
+        expect(await pathExists(join(projectDir, ".oxfmtrc.json"))).toBe(false);
+        const updatedPackage = await readJsonc(packagePath);
+        expect(updatedPackage).not.toHaveProperty(["devDependencies", "oxlint"]);
+        expect(updatedPackage).not.toHaveProperty(["devDependencies", "oxfmt"]);
+        expect(updatedPackage).not.toHaveProperty(["scripts", "check"]);
+      }
+    },
+  );
+
+  it("blocks quality replacement when its obsolete configuration has local edits", async () => {
+    const root = await makeTempRoot("bfs-quality-local-edit-");
+    const projectDir = join(root, "app");
+    await scaffoldGeneratedProject(makeConfig(projectDir, { addons: ["biome"] }));
+    const configPath = join(projectDir, "biome.json");
+    const edited = `${await readFile(configPath, "utf8")}\n`;
+    await writeFile(configPath, edited);
+    const input = { part: ["codeQuality:universal:eslint", "codeQuality:universal:prettier"] };
+    const plan = await planStackUpdate(projectDir, input);
+    expect(plan.success).toBe(true);
+    if (!plan.success) throw new Error(plan.error);
+    expect(plan.manualReviewBlockers).toContain(
+      "biome.json: obsolete generated file differs from the generated baseline",
+    );
+    const applied = await applyStackUpdate(projectDir, input);
+    expect(applied.success).toBe(false);
+    expect(await readFile(configPath, "utf8")).toBe(edited);
+    expect((await readBtsConfig(projectDir))?.addons).toEqual(["biome"]);
+  });
+
   it("adds shadcn/lint, replaces its base profile, and preserves local files", async () => {
     const root = await makeTempRoot("bfs-stack-update-shadcn-lint-");
     const projectDir = join(root, "app");
@@ -459,6 +597,13 @@ describe("stack update planner", () => {
 
     const biome = await applyStackUpdate(projectDir, { part: ["codeQuality:universal:biome"] });
     expect(biome.success, biome.success ? undefined : biome.error).toBe(true);
+    expect(await pathExists(join(projectDir, ".oxlintrc.json"))).toBe(false);
+    expect(await pathExists(join(projectDir, "eslint.config.mjs"))).toBe(false);
+    const packageJson = await readJsonc(join(projectDir, "package.json"));
+    for (const dependency of ["eslint", "prettier", "oxlint", "oxfmt", "@shadcn/lint"]) {
+      expect(packageJson).not.toHaveProperty(["devDependencies", dependency]);
+    }
+    expect(packageJson).not.toHaveProperty(["scripts", "lint:design"]);
     const flatReplacement = await planStackUpdate(projectDir, { addons: ["eslint", "prettier"] });
     expect(flatReplacement.success).toBe(true);
     if (!flatReplacement.success) throw new Error(flatReplacement.error);

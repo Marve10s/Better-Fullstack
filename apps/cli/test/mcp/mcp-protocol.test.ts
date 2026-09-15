@@ -397,7 +397,7 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
     }
   }, 30_000);
 
-  it("adds design lint to an Oxlint project created through MCP", async () => {
+  it("adds design lint and replaces Oxlint through MCP", async () => {
     const client = await connectClient(mode);
     const root = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-oxlint-upgrade-"));
     roots.push(root);
@@ -420,7 +420,32 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
     expect(pkg.scripts["lint:design"]).toBe("oxlint");
     expect(pkg.devDependencies["@shadcn/lint"]).toBe("0.1.0");
     expect((await readBtsConfig(projectDir))?.addons).toEqual(["oxlint", "shadcn-lint"]);
-  });
+    const replacement = {
+      projectDir,
+      part: ["codeQuality:universal:eslint", "codeQuality:universal:prettier"],
+    };
+    const plan = await callTool(client, { name: "bfs_plan_addition", arguments: replacement });
+    expect(plan.isError, JSON.stringify(plan.content)).not.toBe(true);
+    expect(plan.structuredContent?.manualReviewBlockers).toEqual([]);
+    expect(plan.structuredContent?.filesToRemove).toEqual(
+      expect.arrayContaining([".oxlintrc.json", ".oxfmtrc.json"]),
+    );
+    expect(await fs.pathExists(path.join(projectDir, ".oxlintrc.json"))).toBe(true);
+    const applied = await callTool(client, { name: "bfs_add_feature", arguments: replacement });
+    expect(applied.isError, JSON.stringify(applied.content)).not.toBe(true);
+    expect(await fs.pathExists(path.join(projectDir, ".oxlintrc.json"))).toBe(false);
+    expect(await fs.pathExists(path.join(projectDir, ".oxfmtrc.json"))).toBe(false);
+    const updatedPackage: unknown = await fs.readJson(path.join(projectDir, "package.json"));
+    expect(updatedPackage).toMatchObject({ scripts: { "lint:design": "eslint ." } });
+    expect(updatedPackage).not.toHaveProperty(["devDependencies", "oxlint"]);
+    expect(updatedPackage).not.toHaveProperty(["devDependencies", "oxfmt"]);
+    expect(updatedPackage).not.toHaveProperty(["scripts", "check"]);
+    expect((await readBtsConfig(projectDir))?.addons?.toSorted()).toEqual([
+      "eslint",
+      "prettier",
+      "shadcn-lint",
+    ]);
+  }, 30_000);
 
   it("keeps legacy Code Quality update warnings consistent with applied files", async () => {
     const client = await connectClient(mode);

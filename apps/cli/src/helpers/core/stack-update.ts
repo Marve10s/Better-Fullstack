@@ -1867,6 +1867,15 @@ export async function planStackUpdate(
     projectDir,
     projectName,
   );
+  const removeObsoleteGeneratedArtifacts =
+    options.removeObsoleteGeneratedArtifacts ||
+    currentConfig.addons.some(
+      (addon) =>
+        getToolingCapability(addon)?.category === "codeQuality" &&
+        !normalizedProposedConfig.addons.includes(addon),
+    );
+  const removesOxlint =
+    currentConfig.addons.includes("oxlint") && !normalizedProposedConfig.addons.includes("oxlint");
 
   let currentTree: VirtualFileTree;
   let proposedTree: VirtualFileTree;
@@ -1932,7 +1941,7 @@ export async function planStackUpdate(
       !currentGeneratedFiles.has(".oxlintrc.json") &&
       currentConfig.addons.includes("oxlint") &&
       !currentConfig.addons.includes("shadcn-lint") &&
-      normalizedProposedConfig.addons.includes("shadcn-lint") &&
+      (normalizedProposedConfig.addons.includes("shadcn-lint") || removesOxlint) &&
       existingContent !== undefined &&
       existingBuffer &&
       manifest.hashes[filePath] === hashContent(existingBuffer)
@@ -1940,6 +1949,18 @@ export async function planStackUpdate(
         : undefined;
     if (initializedOxlintBaseline !== undefined) {
       currentBaselineContents.push(initializedOxlintBaseline);
+    }
+    if (
+      filePath === "package.json" &&
+      removesOxlint &&
+      !currentGeneratedFiles.has(".oxlintrc.json") &&
+      exists &&
+      initializedOxlintBaseline === undefined
+    ) {
+      manualReviewBlockers.push(
+        "package.json: initialized Oxlint setup differs from the recorded baseline",
+      );
+      continue;
     }
 
     if (!exists) {
@@ -1988,7 +2009,7 @@ export async function planStackUpdate(
         existingContent,
         initializedOxlintBaseline ?? recordedBaseline ?? previousContent,
         proposedContent,
-        options.removeObsoleteGeneratedArtifacts,
+        removeObsoleteGeneratedArtifacts,
       );
       for (const blocker of merged.blockers) {
         manualReviewBlockers.push(`${filePath}: ${blocker}`);
@@ -2050,8 +2071,13 @@ export async function planStackUpdate(
     manualReviewBlockers.push(`${filePath}: existing file differs from the generated baseline`);
   }
 
-  if (options.removeObsoleteGeneratedArtifacts) {
-    for (const filePath of currentGeneratedFiles.keys()) {
+  if (removeObsoleteGeneratedArtifacts) {
+    const obsoleteCandidates = new Set(currentGeneratedFiles.keys());
+    if (removesOxlint) {
+      obsoleteCandidates.add(".oxlintrc.json");
+      obsoleteCandidates.add(".oxfmtrc.json");
+    }
+    for (const filePath of obsoleteCandidates) {
       if (proposedGeneratedFiles.has(filePath)) continue;
       const targetPath = path.join(projectDir, filePath);
       let existingBuffer: Buffer;
