@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { mkdir, rename } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import { historicalEvent } from "./import-convex";
+import { historicalEvent } from "./historical-event";
 
 async function main() {
   const backup = process.env.CONVEX_BACKUP_ZIP;

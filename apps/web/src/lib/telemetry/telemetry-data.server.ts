@@ -1,13 +1,9 @@
 import { redirect } from "@tanstack/react-router";
 import { getRequest, setResponseHeader } from "@tanstack/react-start/server";
 
-import type { TelemetryDashboardData } from "@/lib/telemetry/telemetry-dashboard";
-
 import { getTelemetryPageAccess } from "@/lib/telemetry/telemetry-auth.server";
 
-export type TelemetryLoaderResult =
-  | { status: "ready"; data: TelemetryDashboardData }
-  | { status: "unconfigured" | "empty" | "unavailable" | "unauthorized" };
+export type TelemetryLoaderResult = { status: "unconfigured" | "unauthorized" };
 
 export async function loadTelemetryForOwner(): Promise<TelemetryLoaderResult> {
   setResponseHeader("Cache-Control", "private, no-store");

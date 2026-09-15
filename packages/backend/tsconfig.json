@@ -3,11 +3,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./convex/*"],
+      "@/*": ["./src/*"],
       "@test/*": ["./test/*"]
     },
     "lib": ["ESNext", "DOM"]
   },
-  "include": ["convex/**/*", "src/**/*"],
-  "exclude": ["convex/_generated", "node_modules"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }

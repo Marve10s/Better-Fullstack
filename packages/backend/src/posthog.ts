@@ -1,7 +1,7 @@
 import { STACK_TOOL_DEFINITIONS } from "@better-fullstack/types/stack-graph";
 import { sanitizeTelemetryMachineId } from "@better-fullstack/types/telemetry";
 
-import { classifyProjectSetupOutcome } from "../convex/analytics_core";
+import { classifyProjectSetupOutcome } from "./setup-outcome";
 import { extractStack, sanitizeIngestEnvelope } from "./telemetry-validation";
 
 export const POSTHOG_HOSTS = ["https://eu.i.posthog.com", "https://us.i.posthog.com"] as const;

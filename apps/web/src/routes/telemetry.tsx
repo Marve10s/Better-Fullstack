@@ -1,18 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 
-import type { TelemetryDashboardData } from "@/lib/telemetry/telemetry-dashboard";
-
-import { TelemetryDecisionDashboard } from "@/components/analytics/telemetry-decision-dashboard";
 import Footer from "@/components/home/footer";
 import { NOINDEX_ROBOTS } from "@/lib/seo/robots";
 import { canonicalUrl } from "@/lib/seo/seo";
 
-type LoaderResult =
-  | { status: "ready"; data: TelemetryDashboardData }
-  | { status: "unconfigured" | "empty" | "unavailable" | "unauthorized" };
-
-const loadTelemetry = createServerFn({ method: "GET" }).handler(async (): Promise<LoaderResult> => {
+const loadTelemetry = createServerFn({ method: "GET" }).handler(async () => {
   const { loadTelemetryForOwner } = await import("@/lib/telemetry/telemetry-data.server");
   return loadTelemetryForOwner();
 });
@@ -45,25 +38,17 @@ function TelemetryRoute() {
   return (
     <main className="min-h-svh">
       <div className="mx-auto max-w-[1480px] border-x border-border px-3 py-12 sm:px-6 sm:py-16 lg:px-10">
-        {result.status === "ready" ? (
-          <TelemetryDecisionDashboard data={result.data} />
-        ) : (
-          <TelemetryUnavailable status={result.status} />
-        )}
+        <TelemetryUnavailable status={result.status} />
       </div>
       <Footer />
     </main>
   );
 }
 
-function TelemetryUnavailable({ status }: { status: Exclude<LoaderResult["status"], "ready"> }) {
+function TelemetryUnavailable({ status }: { status: "unconfigured" | "unauthorized" }) {
   const copy = {
     unconfigured: "The PostHog dashboard is not connected yet.",
-    empty: "The telemetry store is connected, but no aggregate events are available yet.",
-    unavailable:
-      "The aggregate telemetry query is temporarily unavailable. No raw event data was requested.",
-    unauthorized:
-      "Telemetry access was denied. Verify the owner credentials and matching deployment secrets.",
+    unauthorized: "Telemetry access was denied. Verify the owner credentials.",
   }[status];
 
   return (

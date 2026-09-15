@@ -86,16 +86,14 @@ The builder is not a schema authority. Options and compatibility originate in sh
 
 ### `packages/backend`
 
-Owns the active Convex service and is the sole owner of telemetry ingestion, analytics aggregates,
-the owner dashboard API, showcase data, and health checks. It serves the web app and CLI telemetry
-endpoint; it is not emitted into generated projects. Authorization must remain server-side.
-Generated Convex files are projections and are not hand-edited.
+Owns privacy validation and PostHog delivery in `src`. The web server hosts its public ingest
+endpoint; CLI and browser clients send events there. PostHog owns private reporting. The package
+has no database service or deployment command and is not emitted into generated projects.
 
-### `apps/analytics`
-
-Is retired legacy Convex source retained as a no-mutation `/track` tombstone and historical-data
-boundary. Do not add features or callers, reactivate ingest, or delete the app/data during ordinary
-maintenance. Deployment quarantine requires the owner runbook in `apps/analytics/README.md`.
+The old Convex services and in-app aggregate dashboard have been removed. Offline historical
+conversion and import tools live in `scripts/analytics`; the backend README records archive
+preservation and the remaining production cutover. Never delete hosted data as a side effect of
+repository cleanup. Convex remains a supported backend option for generated user projects.
 
 ### `packages/create-bfs`
 

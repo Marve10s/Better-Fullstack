@@ -1,70 +1,15 @@
-import {
-  CAPABILITY_EVIDENCE_LEVEL_IDS,
-  STARTER_TRACK_IDS,
-  TELEMETRY_STACK_DIMENSION_KEYS,
-} from "@better-fullstack/types";
+import { TELEMETRY_STACK_DIMENSION_KEYS } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
-import {
-  applyFailureClassifications,
-  classifySelectionDecision,
-  classifyProjectSetupOutcome,
-  countReturningMachinesFromActivity,
-  isLifecycleTerminalEvent,
-  type FailureAggregates,
-} from "@/analytics_core";
+import { classifyProjectSetupOutcome } from "../src/setup-outcome";
 import {
   extractStack,
-  legacyStackFields,
   sanitizeIngestEnvelope,
   sanitizeTelemetryIdentifier,
   TELEMETRY_STACK_KEYS,
-} from "@/http";
+} from "../src/telemetry-validation";
 
-function emptyFailureAggregates(): FailureAggregates {
-  return {
-    failureStages: {},
-    failureReasons: {},
-    actionFailureStages: {},
-    actionFailureReasons: {},
-  };
-}
-
-describe("analytics aggregate helpers", () => {
-  it("counts a machine as returning only after activity on a second date", () => {
-    expect(
-      countReturningMachinesFromActivity([
-        { machineId: "first", date: "2026-08-01" },
-        { machineId: "first", date: "2026-08-01" },
-        { machineId: "first", date: "2026-08-02" },
-        { machineId: "second", date: "2026-08-03" },
-      ]),
-    ).toBe(1);
-  });
-
-  it("aggregates safe builder failure stage and reason by action", () => {
-    const stats = emptyFailureAggregates();
-    applyFailureClassifications(stats, {
-      action: "builder-generate",
-      success: false,
-      failureStage: "request",
-      failureReason: "network",
-    });
-    applyFailureClassifications(stats, {
-      action: "builder-generate",
-      success: true,
-      failureStage: "request",
-      failureReason: "network",
-    });
-
-    expect(stats).toEqual({
-      failureStages: { request: 1 },
-      failureReasons: { network: 1 },
-      actionFailureStages: { "builder-generate:request": 1 },
-      actionFailureReasons: { "builder-generate:network": 1 },
-    });
-  });
-
+describe("telemetry validation and setup outcomes", () => {
   it("separates completed setup from skipped and generation-only creation", () => {
     expect(
       classifyProjectSetupOutcome({
@@ -120,129 +65,6 @@ describe("analytics aggregate helpers", () => {
         setupFailures: [],
       }),
     ).toBeUndefined();
-  });
-
-  it("counts decision coverage only when the bounded selection fields are complete", () => {
-    expect(
-      classifySelectionDecision({
-        eventType: "web_action",
-        action: "builder-plan-abandoned",
-        status: "cancelled",
-        stack: {
-          decision_stage: "plan",
-          selection_outcome: "plan-abandoned",
-          selected_evidence_level: "listed",
-          selection_problem: "missing-capability",
-        },
-      }),
-    ).toMatchObject({
-      eligible: true,
-      covered: true,
-      decisionStage: "plan",
-      selectionOutcome: "plan-abandoned",
-      evidenceLevel: "listed",
-      selectionProblem: "missing-capability",
-    });
-    expect(
-      classifySelectionDecision({
-        eventType: "web_action",
-        action: "builder-plan-abandoned",
-        status: "cancelled",
-        stack: { selection_outcome: "plan-abandoned" },
-      }),
-    ).toMatchObject({ eligible: true, covered: false });
-    expect(
-      classifySelectionDecision({
-        eventType: "web_action",
-        action: "builder-viewed",
-        status: "started",
-      }),
-    ).toEqual({ eligible: false, covered: false });
-  });
-
-  it("uses project creation as the single source for create decisions", () => {
-    for (const status of ["failed", "cancelled"] as const) {
-      expect(
-        classifySelectionDecision({
-          eventType: "command_used",
-          action: "create",
-          status,
-          stack: {
-            decision_stage: "create",
-            selected_evidence_level: "listed",
-            selection_problem: "reliability",
-          },
-        }),
-      ).toEqual({ eligible: false, covered: false });
-    }
-
-    expect(
-      classifySelectionDecision({
-        eventType: "project_created",
-        status: "failed",
-        success: false,
-        stack: {
-          decision_stage: "create",
-          selection_outcome: "create-failed",
-          selected_evidence_level: "listed",
-          selection_problem: "reliability",
-        },
-      }),
-    ).toMatchObject({ eligible: true, covered: true, selectionOutcome: "create-failed" });
-  });
-
-  it("accepts every canonical capability evidence level", () => {
-    for (const evidenceLevel of CAPABILITY_EVIDENCE_LEVEL_IDS) {
-      expect(
-        classifySelectionDecision({
-          eventType: "project_created",
-          status: "succeeded",
-          success: true,
-          stack: {
-            decision_stage: "create",
-            selection_outcome: "create-completed",
-            selected_evidence_level: evidenceLevel,
-          },
-        }),
-      ).toMatchObject({
-        covered: true,
-        evidenceLevel,
-      });
-    }
-  });
-
-  it("accepts only canonical starter-track IDs", () => {
-    for (const starterTrack of STARTER_TRACK_IDS) {
-      expect(
-        classifySelectionDecision({
-          eventType: "project_created",
-          status: "succeeded",
-          success: true,
-          stack: { starter_track: starterTrack },
-        }).starterTrack,
-      ).toBe(starterTrack);
-    }
-
-    expect(
-      classifySelectionDecision({
-        eventType: "project_created",
-        status: "succeeded",
-        success: true,
-        stack: { starter_track: "customer-private-project" },
-      }).starterTrack,
-    ).toBeUndefined();
-
-    expect(
-      extractStack({
-        stack: {
-          starter_track: "customer-private-project",
-          backend: "hono",
-        },
-      }),
-    ).toEqual({ backend: "hono" });
-    expect(extractStack({ starter_track: STARTER_TRACK_IDS[0] })).toEqual({
-      starter_track: STARTER_TRACK_IDS[0],
-    });
   });
 
   it("persists only allowlisted stack dimensions", () => {
@@ -430,41 +252,5 @@ describe("analytics aggregate helpers", () => {
   it("rejects oversized values instead of truncating them into valid identifiers", () => {
     expect(extractStack({ backend: `hono${"x".repeat(100)}` })).toEqual({});
     expect(sanitizeTelemetryIdentifier(`valid${"x".repeat(100)}`)).toBeUndefined();
-  });
-
-  it("derives legacy aggregate fields only from the validated stack", () => {
-    const rejected = extractStack({ backend: "customer-private-backend" });
-    expect(legacyStackFields(rejected).backend).toBeUndefined();
-
-    const stack = extractStack({
-      backend: "customer-private-backend",
-      stack: {
-        backend: "hono",
-        frontend: ["next"],
-        git: true,
-      },
-    });
-    expect(legacyStackFields(stack)).toMatchObject({
-      backend: "hono",
-      frontend: ["next"],
-      git: true,
-    });
-  });
-
-  it("classifies only terminal existing-project commands as lifecycle use", () => {
-    expect(isLifecycleTerminalEvent({ action: "update", status: "succeeded" })).toBe(true);
-    expect(isLifecycleTerminalEvent({ action: "recovery", status: "succeeded" })).toBe(true);
-    expect(isLifecycleTerminalEvent({ action: "replace", status: "succeeded" })).toBe(true);
-    expect(isLifecycleTerminalEvent({ action: "registry", status: "succeeded" })).toBe(true);
-    expect(isLifecycleTerminalEvent({ action: "adopt", status: "succeeded" })).toBe(true);
-    expect(isLifecycleTerminalEvent({ action: "bfs_apply_project_update", status: "failed" })).toBe(
-      true,
-    );
-    expect(isLifecycleTerminalEvent({ action: "update", status: "started" })).toBe(false);
-    expect(isLifecycleTerminalEvent({ action: "create", status: "succeeded" })).toBe(false);
-    expect(isLifecycleTerminalEvent({ action: "recover", status: "succeeded" })).toBe(false);
-    expect(isLifecycleTerminalEvent({ action: "bfs_recommend_stack", status: "succeeded" })).toBe(
-      false,
-    );
   });
 });

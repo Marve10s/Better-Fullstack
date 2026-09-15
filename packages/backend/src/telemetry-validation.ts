@@ -128,63 +128,6 @@ export function extractStack(body: Record<string, unknown>): Record<string, Tele
   return stack;
 }
 
-const stackString = (stack: Record<string, TelemetryStackValue>, key: string): string | undefined =>
-  typeof stack[key] === "string" ? stack[key] : undefined;
-const stackBoolean = (
-  stack: Record<string, TelemetryStackValue>,
-  key: string,
-): boolean | undefined => (typeof stack[key] === "boolean" ? stack[key] : undefined);
-const stackStringArray = (
-  stack: Record<string, TelemetryStackValue>,
-  key: string,
-): string[] | undefined => (Array.isArray(stack[key]) ? stack[key] : undefined);
-
-export function legacyStackFields(stack: Record<string, TelemetryStackValue>) {
-  return {
-    ecosystem: stackString(stack, "ecosystem"),
-    database: stackString(stack, "database"),
-    orm: stackString(stack, "orm"),
-    backend: stackString(stack, "backend"),
-    runtime: stackString(stack, "runtime"),
-    frontend: stackStringArray(stack, "frontend"),
-    api: stackString(stack, "api"),
-    auth: stackString(stack, "auth"),
-    dbSetup: stackString(stack, "dbSetup"),
-    webDeploy: stackString(stack, "webDeploy"),
-    serverDeploy: stackString(stack, "serverDeploy"),
-    addons: stackStringArray(stack, "addons"),
-    examples: stackStringArray(stack, "examples"),
-    payments: stackString(stack, "payments"),
-    email: stackString(stack, "email"),
-    fileUpload: stackString(stack, "fileUpload"),
-    astroIntegration: stackString(stack, "astroIntegration"),
-    cssFramework: stackString(stack, "cssFramework"),
-    uiLibrary: stackString(stack, "uiLibrary"),
-    stateManagement: stackString(stack, "stateManagement"),
-    forms: stackString(stack, "forms"),
-    animation: stackString(stack, "animation"),
-    validation: stackString(stack, "validation"),
-    realtime: stackString(stack, "realtime"),
-    jobQueue: stackString(stack, "jobQueue"),
-    caching: stackString(stack, "caching"),
-    logging: stackString(stack, "logging"),
-    observability: stackString(stack, "observability"),
-    ai: stackString(stack, "ai"),
-    cms: stackString(stack, "cms"),
-    testing: stackString(stack, "testing"),
-    effect: stackString(stack, "effect"),
-    rustWebFramework: stackString(stack, "rustWebFramework"),
-    rustFrontend: stackString(stack, "rustFrontend"),
-    rustOrm: stackString(stack, "rustOrm"),
-    rustApi: stackString(stack, "rustApi"),
-    rustCli: stackString(stack, "rustCli"),
-    rustLibraries: stackStringArray(stack, "rustLibraries"),
-    git: stackBoolean(stack, "git"),
-    packageManager: stackString(stack, "packageManager"),
-    install: stackBoolean(stack, "install"),
-  };
-}
-
 const oneOf = <T extends string>(value: unknown, allowed: readonly T[]): T | undefined =>
   typeof value === "string" && allowed.includes(value as T) ? (value as T) : undefined;
 const bool = (value: unknown): boolean | undefined =>

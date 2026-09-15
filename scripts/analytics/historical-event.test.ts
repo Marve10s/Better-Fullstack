@@ -1,6 +1,6 @@
 import { expect, it } from "bun:test";
 
-import { historicalEvent, historicalEventId } from "./import-convex";
+import { historicalEvent, historicalEventId } from "./historical-event";
 
 it("preserves old event time and stable UUIDs across resumed imports without forwarding row IDs or private data", () => {
   const row = {
