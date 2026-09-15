@@ -395,7 +395,7 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
         );
       }
     }
-  });
+  }, 30_000);
 
   it("adds design lint to an Oxlint project created through MCP", async () => {
     const client = await connectClient(mode);

@@ -266,6 +266,17 @@ export async function getAddonsChoice(
   });
 }
 
+export function getCapabilityAdditions(selected: readonly Addons[], existing: readonly Addons[]) {
+  const additions = selected.filter((toolId) => !existing.includes(toolId));
+  const requestedProfile = getToolingSelectionOptions("codeQuality").find(
+    (profile) =>
+      profile.id !== "shadcn-lint" && additions.some((toolId) => profile.toolIds.includes(toolId)),
+  );
+  return selected.filter(
+    (toolId) => additions.includes(toolId) || requestedProfile?.toolIds.includes(toolId),
+  );
+}
+
 export async function getAddonsToAdd(
   frontend: Frontend[],
   existingAddons: Addons[] = [],
@@ -285,7 +296,7 @@ export async function getAddonsToAdd(
     config,
     additionsOnly: true,
   });
-  return selected.filter((toolId) => !existingAddons.includes(toolId));
+  return getCapabilityAdditions(selected, existingAddons);
 }
 
 export async function getCapabilityPartSpecsToAdd(config: Partial<ProjectConfig>) {
@@ -328,12 +339,10 @@ export async function getCapabilityPartSpecsToAdd(config: Partial<ProjectConfig>
     },
     rootCategories,
   );
-  const specs: string[] = rootSelected
-    .filter((toolId) => !rootExisting.includes(toolId))
-    .flatMap((toolId) => {
-      const capability = getToolingCapability(toolId);
-      return capability ? [`${capability.role}:${capability.ecosystem}:${toolId}`] : [];
-    });
+  const specs: string[] = getCapabilityAdditions(rootSelected, rootExisting).flatMap((toolId) => {
+    const capability = getToolingCapability(toolId);
+    return capability ? [`${capability.role}:${capability.ecosystem}:${toolId}`] : [];
+  });
 
   const ownerGroups = [
     ...typeScriptFrontends.map(({ part, frontend }) => ({

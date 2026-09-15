@@ -49,6 +49,7 @@ import {
   recordScaffoldManifest,
 } from "@/lifecycle/scaffold-manifest";
 import { MCP_STACK_UPDATE_SCHEMA } from "@/mcp";
+import { getCapabilityAdditions } from "@/prompts/developer/addons";
 
 const TEMP_ROOTS: string[] = [];
 
@@ -377,6 +378,38 @@ describe("stack update planner", () => {
       (await stat(join(projectDir, emailPath))).mode & 0o7777,
     );
   });
+
+  it.each(["flat", "graph"])(
+    "repairs a legacy partial quality profile from a %s prompt selection",
+    async (mode) => {
+      const root = await makeTempRoot("bfs-quality-repair-");
+      for (const existing of [["eslint"], ["prettier"], ["biome", "eslint"]] as const) {
+        const projectDir = join(root, existing.join("-"));
+        await scaffoldGeneratedProject(makeConfig(projectDir, { addons: [...existing] }));
+        const selected = [...new Set([...existing, "eslint", "prettier"] as const)];
+        const addons = getCapabilityAdditions(selected, existing);
+        const input =
+          mode === "flat"
+            ? { addons }
+            : { part: addons.map((toolId) => `codeQuality:universal:${toolId}`) };
+        const result = await applyStackUpdate(projectDir, input);
+        expect(result.success, result.success ? undefined : result.error).toBe(true);
+        expect((await readBtsConfig(projectDir))?.addons?.toSorted()).toEqual([
+          "eslint",
+          "prettier",
+        ]);
+        await expectFileContains(join(projectDir, "eslint.config.mjs"), "eslint");
+        const packageJson = await readJsonc(join(projectDir, "package.json"));
+        expect(packageJson).toMatchObject({
+          devDependencies: { eslint: expect.any(String), prettier: expect.any(String) },
+        });
+      }
+      expect(
+        getCapabilityAdditions(["eslint", "prettier", "shadcn-lint"], ["eslint", "prettier"]),
+      ).toEqual(["shadcn-lint"]);
+    },
+    30_000,
+  );
 
   it("adds shadcn/lint, replaces its base profile, and preserves local files", async () => {
     const root = await makeTempRoot("bfs-stack-update-shadcn-lint-");
