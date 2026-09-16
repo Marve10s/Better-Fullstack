@@ -233,6 +233,7 @@ export const AddonsSchema = z
     "fumadocs",
     "ultracite",
     "oxlint",
+    "shadcn-lint",
     "opentui",
     "wxt",
     "msw",

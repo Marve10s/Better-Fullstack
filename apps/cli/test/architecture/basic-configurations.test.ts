@@ -1,7 +1,14 @@
+import {
+  expectError,
+  expectSuccess,
+  PACKAGE_MANAGERS,
+  runTRPCTest,
+} from "@test/support/test-utils";
 import { describe, expect, it } from "bun:test";
 
+import { runWithContext } from "@/presentation/context";
 import { ECOSYSTEM_PROMPT_OPTIONS } from "@/prompts/ecosystems/ecosystem";
-import { expectError, expectSuccess, PACKAGE_MANAGERS, runTRPCTest } from "@test/support/test-utils";
+import { processAndValidateFlags, validateConfigCompatibility } from "@/validation";
 
 describe("Basic Configurations", () => {
   it("lists every supported ecosystem in the interactive CLI picker", () => {
@@ -188,15 +195,9 @@ describe("Basic Configurations", () => {
       expect(toolingParts).toContainEqual(
         expect.objectContaining({ role: "toolchain", toolId: "vite-plus" }),
       );
-      expect(toolingParts).not.toContainEqual(
-        expect.objectContaining({ role: "workspaceRunner" }),
-      );
-      expect(toolingParts).not.toContainEqual(
-        expect.objectContaining({ role: "codeQuality" }),
-      );
-      expect(toolingParts).not.toContainEqual(
-        expect.objectContaining({ role: "gitHooks" }),
-      );
+      expect(toolingParts).not.toContainEqual(expect.objectContaining({ role: "workspaceRunner" }));
+      expect(toolingParts).not.toContainEqual(expect.objectContaining({ role: "codeQuality" }));
+      expect(toolingParts).not.toContainEqual(expect.objectContaining({ role: "gitHooks" }));
       expect(result.result?.projectConfig.packageManager).toBe("bun");
     });
 
@@ -260,6 +261,79 @@ describe("Basic Configurations", () => {
 
       expectError(result, "Cannot combine 'none' with other python ai libraries");
     });
+  });
+
+  describe("Code Quality compatibility", () => {
+    it("defers design-lint frontend and CSS checks until interactive choices are known", () => {
+      runWithContext({ silent: true }, () => {
+        const options = { addons: ["oxlint", "shadcn-lint"] as const };
+        const input = { addons: [...options.addons] };
+        const flags = new Set(["addons"]);
+        const partial = processAndValidateFlags(input, flags, "interactive-design");
+        expect(partial.addons).toEqual(input.addons);
+        expect(() =>
+          validateConfigCompatibility(
+            {
+              ...partial,
+              frontend: ["react-vite"],
+              cssFramework: "tailwind",
+            },
+            flags,
+            input,
+          ),
+        ).not.toThrow();
+        expect(() =>
+          validateConfigCompatibility(
+            {
+              ...partial,
+              frontend: ["react-vite"],
+              cssFramework: "none",
+            },
+            flags,
+            input,
+          ),
+        ).toThrow("Tailwind CSS v4");
+      });
+    });
+
+    it.each([
+      { addons: ["eslint"], error: "complete ESLint + Prettier" },
+      { addons: ["biome", "oxlint"], error: "Choose one Code Quality profile" },
+      { addons: ["biome", "shadcn-lint"], error: "requires ESLint + Prettier or Oxlint" },
+    ] as const)("rejects invalid profile $addons", async ({ addons, error }) => {
+      const result = await runTRPCTest({
+        projectName: `invalid-quality-${addons.join("-")}`,
+        frontend: ["react-vite"],
+        cssFramework: "tailwind",
+        addons: [...addons],
+        dryRun: true,
+        install: false,
+        expectError: true,
+      });
+
+      expectError(result, error);
+    });
+
+    it.each([
+      { frontend: "react-vite", cssFramework: "none", error: "Tailwind CSS v4" },
+      { frontend: "svelte", cssFramework: "tailwind", error: "React web frontend" },
+    ] as const)(
+      "rejects shadcn/lint with $frontend and $cssFramework",
+      async ({ frontend, cssFramework, error }) => {
+        const result = await runTRPCTest({
+          projectName: `invalid-design-lint-${frontend}-${cssFramework}`,
+          frontend: [frontend],
+          cssFramework,
+          uiLibrary: "none",
+          addons: ["oxlint", "shadcn-lint"],
+          dryRun: true,
+          install: false,
+          expectError: true,
+        });
+
+        expectError(result, error);
+      },
+    );
   });
 
   describe("Package Managers", () => {

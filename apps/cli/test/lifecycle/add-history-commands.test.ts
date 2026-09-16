@@ -180,11 +180,11 @@ describe("CLI add command", () => {
   it("classifies tooling part additions as feature telemetry", async () => {
     const root = await makeTempRoot("bfs-add-telemetry-test-");
     const originalFetch = globalThis.fetch;
-    const originalIngestUrl = process.env.CONVEX_INGEST_URL;
+    const originalIngestUrl = process.env.BFS_TELEMETRY_INGEST_URL;
     const originalTelemetryOverride = process.env.BTS_TELEMETRY_DISABLED;
     const events: Record<string, unknown>[] = [];
 
-    process.env.CONVEX_INGEST_URL = "https://telemetry.test/events";
+    process.env.BFS_TELEMETRY_INGEST_URL = "https://telemetry.test/events";
     process.env.BTS_TELEMETRY_DISABLED = "0";
     globalThis.fetch = (async (_input, init) => {
       if (typeof init?.body === "string") {
@@ -213,8 +213,8 @@ describe("CLI add command", () => {
       await flushTelemetry(1_000);
     } finally {
       globalThis.fetch = originalFetch;
-      if (originalIngestUrl === undefined) delete process.env.CONVEX_INGEST_URL;
-      else process.env.CONVEX_INGEST_URL = originalIngestUrl;
+      if (originalIngestUrl === undefined) delete process.env.BFS_TELEMETRY_INGEST_URL;
+      else process.env.BFS_TELEMETRY_INGEST_URL = originalIngestUrl;
       if (originalTelemetryOverride === undefined) delete process.env.BTS_TELEMETRY_DISABLED;
       else process.env.BTS_TELEMETRY_DISABLED = originalTelemetryOverride;
     }
@@ -656,9 +656,23 @@ describe("CLI add command", () => {
       const createResult = await createWithImperativeAddons(root, projectName, [
         "lefthook",
         "biome",
-        "ultracite",
       ]);
       expect(createResult.exitCode, createResult.all).toBe(0);
+      // Repair remains available to legacy projects that recorded multiple base linters.
+      const configPath = join(projectDir, "bts.jsonc");
+      const legacyConfig = await readJsoncFile(configPath);
+      await writeFile(
+        configPath,
+        JSON.stringify(
+          {
+            ...legacyConfig,
+            stackParts: undefined,
+            addons: ["lefthook", "biome", "ultracite"],
+          },
+          null,
+          2,
+        ),
+      );
 
       const lefthookPath = join(projectDir, "lefthook.yml");
       await writeFile(

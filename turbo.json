@@ -5,7 +5,9 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$"],
-      "outputs": ["dist/**", ".output/**", ".vercel/output/**", ".nitro/**"]
+      "outputs": ["dist/**", ".output/**", ".vercel/output/**", ".nitro/**"],
+      "env": ["BTS_TELEMETRY", "BFS_TELEMETRY_INGEST_URL", "VITE_BFS_TELEMETRY_ENABLED"],
+      "passThroughEnv": ["BTS_TELEMETRY_DISABLED"]
     },
     "lint": {
       "dependsOn": ["^build", "^lint"],
@@ -44,10 +46,6 @@
       "persistent": true
     },
     "deploy": {
-      "cache": false,
-      "persistent": true
-    },
-    "deploy:convex": {
       "cache": false,
       "persistent": true
     }

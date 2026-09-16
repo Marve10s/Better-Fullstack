@@ -1,0 +1,170 @@
+{
+  "name": "Better Fullstack analytics",
+  "description": "Project creation, selected ecosystems and libraries, and passive page engagement. Private owner reporting. SQL tiles use the explicit UTC ranges in their descriptions.",
+  "tags": [
+    "better-fullstack",
+    "analytics-v2"
+  ],
+  "insights": [
+    {
+      "name": "Project creation by month",
+      "description": "Successful CLI/MCP creation and browser ZIP downloads are separate columns. Old events without success stay in an unknown-outcome column. Copied commands and previews are not created projects.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT toStartOfMonth(timestamp) AS period,\ncountIf(event = 'project_created' AND properties.success = true) AS cli_mcp_created,\ncountIf(event = 'builder_zip_downloaded' AND properties.status = 'succeeded') AS web_zips,\ncountIf(event = 'project_created' AND properties.success IS NULL) AS historical_unknown_outcome,\ncountIf(event = 'project_created' AND properties.success = false) AS failed_creates\nFROM events WHERE timestamp >= now() - INTERVAL 365 DAY\nGROUP BY period ORDER BY period DESC LIMIT 366"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    },
+    {
+      "name": "Project creation by day",
+      "description": "Successful CLI/MCP creation and browser ZIP downloads are separate columns. Old events without success stay in an unknown-outcome column. Copied commands and previews are not created projects.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT toStartOfDay(timestamp) AS period,\ncountIf(event = 'project_created' AND properties.success = true) AS cli_mcp_created,\ncountIf(event = 'builder_zip_downloaded' AND properties.status = 'succeeded') AS web_zips,\ncountIf(event = 'project_created' AND properties.success IS NULL) AS historical_unknown_outcome,\ncountIf(event = 'project_created' AND properties.success = false) AS failed_creates\nFROM events WHERE timestamp >= now() - INTERVAL 30 DAY\nGROUP BY period ORDER BY period DESC LIMIT 366"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    },
+    {
+      "name": "Creation sources and setup outcomes",
+      "description": "Last 30 days. MCP generation does not imply dependencies were installed. Client and source are recorded separately.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT event, coalesce(properties.source, 'unknown') AS source,\ncoalesce(properties.client, 'unknown') AS client, coalesce(properties.setup_outcome, 'unknown') AS setup_outcome, count() AS events\nFROM events WHERE timestamp >= now() - INTERVAL 30 DAY AND event IN ('project_created', 'builder_zip_downloaded')\nGROUP BY event, source, client, setup_outcome ORDER BY events DESC LIMIT 100"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    },
+    {
+      "name": "Selected libraries on successful creations",
+      "description": "Last 30 days. Canonical role:ecosystem:tool choices, with at least five creation events per row. Graph selections take precedence. Historical rows without enough selection metadata are omitted. Counts measure adoption, not library quality.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT JSONExtractString(arrayJoin(JSONExtractArrayRaw(properties.library_selections ?? '[]'))) AS selection,\ncount() AS creations FROM events\nWHERE timestamp >= now() - INTERVAL 30 DAY\nAND ((event = 'project_created' AND properties.success = true) OR (event = 'builder_zip_downloaded' AND properties.status = 'succeeded'))\nGROUP BY selection HAVING creations >= 5 ORDER BY creations DESC LIMIT 200"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    },
+    {
+      "name": "Ecosystems on successful creations",
+      "description": "Last 30 days. A multi-ecosystem project contributes to each selected ecosystem. Totals across ecosystems can exceed project counts.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT JSONExtractString(arrayJoin(JSONExtractArrayRaw(properties.ecosystems ?? '[]'))) AS ecosystem,\ncount() AS creations FROM events\nWHERE timestamp >= now() - INTERVAL 30 DAY\nAND ((event = 'project_created' AND properties.success = true) OR (event = 'builder_zip_downloaded' AND properties.status = 'succeeded'))\nGROUP BY ecosystem HAVING creations >= 5 ORDER BY creations DESC LIMIT 20"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    },
+    {
+      "name": "Page engagement and measurement coverage",
+      "description": "Last 30 days. One row per published page, minimum five views. Cumulative checkpoints use the maximum per page_view_id, never their sum. Missing checkpoints do not count as zero-duration visits. Foreground time can include idle time.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT page, count() AS views, countIf(has_engagement > 0) AS measured_views,\nround(avgIf(active_ms / 1000, has_engagement > 0), 1) AS avg_foreground_seconds,\nround(avgIf(scroll_depth, has_engagement > 0), 1) AS avg_max_scroll_percent\nFROM (\nSELECT properties.page_view_id AS view_id, properties.page_id AS page,\ncountIf(event = 'page_viewed') AS has_view,\ncountIf(event = 'page_engagement') AS has_engagement,\nmax(toFloat(properties.active_ms)) AS active_ms,\nmax(toFloat(properties.max_scroll_percent)) AS scroll_depth\nFROM events WHERE timestamp >= now() - INTERVAL 30 DAY AND event IN ('page_viewed', 'page_engagement')\nAND properties.page_view_id IS NOT NULL GROUP BY view_id, page\n) WHERE has_view > 0 GROUP BY page HAVING views >= 5 ORDER BY views DESC LIMIT 200"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    },
+    {
+      "name": "Builder visits without a handoff",
+      "description": "Last 30 days, excluding views with activity in the last 30 minutes. A handoff means copying a command or downloading a ZIP. Time bins are observed foreground time; missing engagement is labeled unknown. This is a behavioral signal, not proof a person was annoyed.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT multiIf(has_engagement = 0, 'unknown', active_ms < 10000, 'under 10s', active_ms < 60000, '10-60s', active_ms < 300000, '1-5m', '5m+') AS time_bucket,\ncount() AS visits, countIf(handoffs = 0) AS without_handoff,\nround(avgIf(scroll_depth, handoffs = 0 AND has_engagement > 0), 1) AS avg_dropoff_scroll_percent\nFROM (\nSELECT properties.page_view_id AS view_id, countIf(event = 'page_viewed') AS has_view,\ncountIf(event = 'page_engagement') AS has_engagement,\ncountIf(event IN ('builder_command_copied', 'builder_zip_downloaded') AND properties.status = 'succeeded') AS handoffs,\nmax(toFloat(properties.active_ms)) AS active_ms, max(toFloat(properties.max_scroll_percent)) AS scroll_depth,\nmax(timestamp) AS last_activity\nFROM events WHERE timestamp >= now() - INTERVAL 30 DAY AND properties.page_id IN ('builder', 'shared-builder', 'shared-stack')\nAND properties.page_view_id IS NOT NULL GROUP BY view_id\n) WHERE has_view > 0 AND last_activity < now() - INTERVAL 30 MINUTE\nGROUP BY time_bucket HAVING visits >= 5 ORDER BY visits DESC LIMIT 10"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    },
+    {
+      "name": "Builder actions and failures",
+      "description": "Last 30 days. Run-ready, copied commands, downloads, compatibility recoveries and abandonment remain distinct. Failure fields contain normalized codes only.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT event, coalesce(properties.status, 'unknown') AS status,\ncoalesce(properties.failureStage, 'none') AS stage, coalesce(properties.failureReason, 'none') AS reason,\ncount() AS events FROM events\nWHERE timestamp >= now() - INTERVAL 30 DAY AND event LIKE 'builder_%'\nGROUP BY event, status, stage, reason ORDER BY events DESC LIMIT 100"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    },
+    {
+      "name": "Anonymous repeat use",
+      "description": "Last 30 days. Counts observed anonymous devices, excluding legacy events without a UUID. CLI and browser identities are separate; these are not known people.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT client, count() AS active_devices, countIf(active_days > 1) AS returning_devices\nFROM (SELECT distinct_id, coalesce(properties.client, 'unknown') AS client,\ncount(DISTINCT toDate(timestamp)) AS active_days FROM events\nWHERE timestamp >= now() - INTERVAL 30 DAY AND properties.identity_quality = 'anonymous-device'\nGROUP BY distinct_id, client) GROUP BY client LIMIT 10"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    },
+    {
+      "name": "Analytics events by month",
+      "description": "Event-time counts over the last year for reconciliation. Historical migration requires a paid-plan enrollment but has no standard ingestion fee. PostHog Billing remains the source for current usage and limits.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT toStartOfMonth(timestamp) AS month, count() AS events,\ncountIf(properties.historical_import = true) AS imported_events,\ncountIf(event = 'page_viewed') AS pageviews\nFROM events WHERE timestamp >= now() - INTERVAL 365 DAY GROUP BY month ORDER BY month DESC LIMIT 13"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    }
+  ]
+}

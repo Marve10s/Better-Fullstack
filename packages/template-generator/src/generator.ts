@@ -2,6 +2,9 @@ import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
 import {
   hasJavaScriptWorkspaceRoot,
+  getCodeQualitySelectionIssue,
+  getShadcnLintFrontendIssue,
+  getShadcnLintGraphFrontendIssue,
   toolingRequiresJavaScriptWorkspace,
   formatStackGraphIssue,
   getRoleTargetPath,
@@ -442,6 +445,22 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
 
     const usesGraphParts =
       Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+
+    const toolingConfig = usesGraphParts
+      ? withGraphAddonSelections(
+          config,
+          stackGraphToLegacyProjectConfigForEcosystem(config, "typescript"),
+        )
+      : config;
+    // Legacy projects without design lint may predate the single-profile constraint.
+    if (!options.skipDesignLintValidation && toolingConfig.addons.includes("shadcn-lint")) {
+      const qualityIssue =
+        getCodeQualitySelectionIssue(toolingConfig.addons) ??
+        (usesGraphParts
+          ? getShadcnLintGraphFrontendIssue(config.stackParts ?? [])
+          : getShadcnLintFrontendIssue(toolingConfig.frontend, toolingConfig.cssFramework));
+      if (qualityIssue) return { success: false, error: qualityIssue };
+    }
 
     const hasVitePlusRoot = usesGraphParts
       ? hasVitePlusWorkspaceRoot(config.stackParts)

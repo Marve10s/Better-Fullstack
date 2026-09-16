@@ -1,3 +1,4 @@
+import { DEFAULT_STACK, isStackDefault, type StackState } from "#web/lib/stack/stack-defaults";
 import {
   getCapabilityDefinitions,
   getCategoryOrderForEcosystem,
@@ -7,8 +8,6 @@ import {
 } from "@better-fullstack/types";
 
 import type { Ecosystem, TechCategory } from "@/lib/stack/types";
-
-import { DEFAULT_STACK, isStackDefault, type StackState } from "#web/lib/stack/stack-defaults";
 
 const AUTH_TECH_OPTIONS = getCapabilityDefinitions("auth").map((cap) => ({
   id: cap.id,
@@ -25,6 +24,7 @@ const TOOLING_ICONS: Record<string, string> = {
   nx: "https://cdn.simpleicons.org/nx/143055",
   biome: "https://cdn.simpleicons.org/biome/60A5FA",
   oxlint: "https://cdn.simpleicons.org/oxc/FF915C",
+  "shadcn-lint": "https://cdn.simpleicons.org/shadcnui/000000",
   starlight: "/icon/starlight.svg",
   fumadocs: "/icon/fumadocs.svg",
   electron: "https://cdn.simpleicons.org/electron/47848F",
@@ -2465,6 +2465,13 @@ export const TECH_OPTIONS: Record<
     },
   ],
   codeQuality: [
+    {
+      id: "shadcn-lint",
+      name: "shadcn/lint",
+      description: "Tailwind design-system checks alongside ESLint or Oxlint",
+      icon: "https://cdn.simpleicons.org/shadcnui/000000",
+      color: "from-slate-500 to-slate-700",
+    },
     {
       id: "biome",
       name: "Biome",

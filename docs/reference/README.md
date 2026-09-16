@@ -7,6 +7,7 @@ priority. Verify time-sensitive claims before using them.
 - `capability-evidence-inventory.md` - evidence levels, golden runtime recipes, freshness, quarantine, and maintenance cost
 - `existing-project-mutation-audit.md` - mutation safety inventory and resolved gaps
 - `lifecycle-contract-v2.md` - machine-readable plan/result schema and client fallback rules
+- `posthog-analytics-operations.md` - PostHog analytics operations: deployment settings, archive preservation, historical import, retention, and report definitions (Convex retirement completed 2026-09-15)
 - `recipe-generation-contract.md` - registered adapters, managed ownership, runtime proof, and agent context
 - `next-big-features.md` - superseded opportunity analysis
 - `new-ecosystems-watch-list.md` - candidates not yet accepted as implementation backlog

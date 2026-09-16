@@ -1,6 +1,5 @@
 import {
   getStarterTrackCatalog,
-  STARTER_TRACK_DEFINITIONS,
   type StarterTrackCatalogEntry,
   type StarterTrackFilters as StarterTrackFilterState,
 } from "@better-fullstack/types";
@@ -231,9 +230,6 @@ export function PresetsPanel({
   const filteredPresets = PRESET_TEMPLATES.filter((p) =>
     filteredCategories.some((c) => c.id === p.category),
   );
-  const ecosystemHasStarterTracks = STARTER_TRACK_DEFINITIONS.some(
-    (track) => track.ecosystem === ecosystem,
-  );
   const starterTracks = useMemo(
     () =>
       getStarterTrackCatalog({
@@ -286,23 +282,6 @@ export function PresetsPanel({
                   );
                 })}
               </div>
-            </section>
-          )}
-
-          {ecosystemHasStarterTracks && starterTracks.length === 0 && (
-            <section>
-              <div className="mb-3 flex items-center gap-2">
-                <Zap className="h-4 w-4 text-primary" />
-                <h2 className="font-mono text-sm font-medium">{m.presetStarterTracks()}</h2>
-              </div>
-              <StarterTrackFilters
-                filters={starterTrackFilters}
-                onChange={onStarterTrackFiltersChange}
-              />
-              <p className="border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
-                No schema-valid starter track matches these filters. Clear a filter or customize a
-                preset below.
-              </p>
             </section>
           )}
 

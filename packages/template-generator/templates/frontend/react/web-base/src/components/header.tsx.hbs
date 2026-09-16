@@ -1,6 +1,10 @@
-{{#if (includes frontend "next")}}
+{{#if (or (includes frontend "next") (includes frontend "vinext"))}}
 "use client";
+{{#if (includes frontend "vinext")}}
+import Link from "vinext/shims/link";
+{{else}}
 import Link from "next/link";
+{{/if}}
 {{else if (or (includes frontend "react-router") (includes frontend "react-vite"))}}
 import { NavLink } from "react-router";
 {{else if (or (includes frontend "tanstack-router") (includes frontend "tanstack-start"))}}
@@ -33,7 +37,7 @@ export default function Header() {
       <div className="flex flex-row items-center justify-between px-2 py-1">
         <nav className="flex gap-4 text-lg">
           {links.map(({ to, label }) => {
-            {{#if (includes frontend "next")}}
+            {{#if (or (includes frontend "next") (includes frontend "vinext"))}}
             return (
               <Link key={to} href={to}>
                 {label}

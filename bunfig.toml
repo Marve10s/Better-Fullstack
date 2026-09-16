@@ -4,6 +4,8 @@ linker = "isolated"
 # supply-chain margin, and keeps `bun update --latest` (codebase-deps
 # workflow) off releases Yarn hardened mode would quarantine anyway.
 minimumReleaseAge = 172800
+# Explicitly approved for the initial shadcn/lint integration; its version is pinned.
+minimumReleaseAgeExcludes = ["@shadcn/lint"]
 
 [test]
 coverage = true

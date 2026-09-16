@@ -1,9 +1,8 @@
-import { MikroORM, type Options } from "@mikro-orm/core";
-import { PostgreSqlDriver } from "@mikro-orm/postgresql";
+import { MikroORM } from "@mikro-orm/core";
+import { PostgreSqlDriver, defineConfig } from "@mikro-orm/postgresql";
 import { env } from "@{{projectName}}/env/server";
 
-const config = {
-	driver: PostgreSqlDriver,
+const config = defineConfig({
 	clientUrl: env.DATABASE_URL,
 	entities: ["./src/entities"],
 	entitiesTs: ["./src/entities"],
@@ -17,7 +16,7 @@ const config = {
 		},
 	},
 	{{/if}}
-} as Options<PostgreSqlDriver>;
+});
 
 let orm: MikroORM<PostgreSqlDriver> | null = null;
 

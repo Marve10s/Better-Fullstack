@@ -1030,6 +1030,7 @@ export async function gatherConfig(
         results.backend,
         results.runtime,
         results.api,
+        { ecosystem: "typescript", cssFramework: results.cssFramework },
       );
     },
     examples: ({ results }) => {

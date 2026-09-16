@@ -21,7 +21,8 @@ export default defineConfig({
   },
   env: {
     BTS_TELEMETRY: process.env.BTS_TELEMETRY || "0",
-    CONVEX_INGEST_URL: process.env.CONVEX_INGEST_URL || "",
+    BFS_TELEMETRY_INGEST_URL:
+      process.env.BFS_TELEMETRY_INGEST_URL || "https://better-fullstack.dev/api/analytics/ingest",
     BTS_CAPABILITY_PRODUCER_FINGERPRINT: producerFingerprint,
   },
 });

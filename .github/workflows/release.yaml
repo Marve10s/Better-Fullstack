@@ -115,6 +115,8 @@ jobs:
 
       - name: Build and pack every publishable workspace package
         env:
+          BTS_TELEMETRY: 1
+          BFS_TELEMETRY_INGEST_URL: https://better-fullstack.dev/api/analytics/ingest
           ARTIFACT_DIR: ${{ runner.temp }}/npm-release
           RELEASE_VERSION: ${{ steps.release.outputs.release_version }}
           SOURCE_SHA: ${{ steps.release.outputs.source_sha }}
@@ -142,6 +144,8 @@ jobs:
       - name: Qualify the previous executable release fixture
         env:
           ARTIFACT_DIR: ${{ runner.temp }}/npm-release
+          BUN_INSTALL_CACHE_DIR: ${{ runner.temp }}/upgrade-qualification-bun-cache
+          BUN_CONFIG_MAX_HTTP_REQUESTS: 16
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
         run: >-

@@ -1,5 +1,8 @@
+import { getCompatibleAddons, validateAddonCompatibility } from "@/config/compatibility-rules";
 import { DEFAULT_CONFIG } from "@/constants";
 import { ADDONS_REQUIRING_IMPERATIVE_SETUP } from "@/helpers/addons/addons-setup";
+import { exitCancelled } from "@/presentation/errors";
+import { isCancel, navigableMultiselect, navigableSelect } from "@/prompts/core/navigable";
 import {
   type Addons,
   AddonsSchema,
@@ -10,6 +13,9 @@ import {
   type Frontend,
   FrontendSchema,
   getToolingCapability,
+  getCodeQualitySelectionIssue,
+  getReplacedCodeQualityTools,
+  getShadcnLintFrontendIssue,
   getSelectedToolingOption,
   getToolingSelectionOptions,
   hasVitePlusWorkspaceRoot,
@@ -19,9 +25,6 @@ import {
   TOOLING_CATEGORIES,
   type ToolingCategoryId,
 } from "@/types";
-import { getCompatibleAddons, validateAddonCompatibility } from "@/config/compatibility-rules";
-import { exitCancelled } from "@/presentation/errors";
-import { isCancel, navigableMultiselect, navigableSelect } from "@/prompts/core/navigable";
 
 function validateCapability(
   toolId: Addons,
@@ -99,6 +102,13 @@ export function getCompatibleSelections(
   selected: readonly Addons[],
 ) {
   return getToolingSelectionOptions(category).filter((selection) => {
+    if (category === "codeQuality" && selection.id === "none") return false;
+    if (
+      selection.id === "shadcn-lint" &&
+      getShadcnLintFrontendIssue(context.frontends, context.config.cssFramework)
+    ) {
+      return false;
+    }
     if (
       context.additionsOnly &&
       selection.toolIds.length > 0 &&
@@ -197,6 +207,20 @@ export async function promptCapabilities(
             )
             .map((selection) => selection.id),
       required: false,
+      validate:
+        category.id === "codeQuality"
+          ? (selectionIds) => {
+              const requested = options
+                .filter((option) => selectionIds.includes(option.id))
+                .flatMap((option) => option.toolIds);
+              if (context.additionsOnly && requested.length === 0) return undefined;
+              const replaced = getReplacedCodeQualityTools(requested);
+              const retained = context.additionsOnly
+                ? context.existing.filter((toolId) => !replaced.includes(toolId))
+                : [];
+              return getCodeQualitySelectionIssue([...retained, ...requested]);
+            }
+          : undefined,
     });
     if (isCancel(response)) return exitCancelled("Operation cancelled");
 
@@ -242,6 +266,17 @@ export async function getAddonsChoice(
   });
 }
 
+export function getCapabilityAdditions(selected: readonly Addons[], existing: readonly Addons[]) {
+  const additions = selected.filter((toolId) => !existing.includes(toolId));
+  const requestedProfile = getToolingSelectionOptions("codeQuality").find(
+    (profile) =>
+      profile.id !== "shadcn-lint" && additions.some((toolId) => profile.toolIds.includes(toolId)),
+  );
+  return selected.filter(
+    (toolId) => additions.includes(toolId) || requestedProfile?.toolIds.includes(toolId),
+  );
+}
+
 export async function getAddonsToAdd(
   frontend: Frontend[],
   existingAddons: Addons[] = [],
@@ -261,7 +296,7 @@ export async function getAddonsToAdd(
     config,
     additionsOnly: true,
   });
-  return selected.filter((toolId) => !existingAddons.includes(toolId));
+  return getCapabilityAdditions(selected, existingAddons);
 }
 
 export async function getCapabilityPartSpecsToAdd(config: Partial<ProjectConfig>) {
@@ -304,12 +339,10 @@ export async function getCapabilityPartSpecsToAdd(config: Partial<ProjectConfig>
     },
     rootCategories,
   );
-  const specs: string[] = rootSelected
-    .filter((toolId) => !rootExisting.includes(toolId))
-    .flatMap((toolId) => {
-      const capability = getToolingCapability(toolId);
-      return capability ? [`${capability.role}:${capability.ecosystem}:${toolId}`] : [];
-    });
+  const specs: string[] = getCapabilityAdditions(rootSelected, rootExisting).flatMap((toolId) => {
+    const capability = getToolingCapability(toolId);
+    return capability ? [`${capability.role}:${capability.ecosystem}:${toolId}`] : [];
+  });
 
   const ownerGroups = [
     ...typeScriptFrontends.map(({ part, frontend }) => ({

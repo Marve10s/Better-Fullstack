@@ -4,19 +4,6 @@ import pc from "picocolors";
 import type { CLIInput, Database, DatabaseSetup, Frontend, ProjectConfig, Runtime } from "@/types";
 
 import {
-  formatStackGraphIssue,
-  getDisabledReason,
-  hasVitePlusWorkspaceRoot,
-  hasSignozSupportedGoServerTarget,
-  isBotIdWebFrontend,
-  isSignozSupportedPythonWebFramework,
-  isToolingOverlayOnly,
-  isTurnstileWebFrontend,
-  normalizeCapabilitySelection,
-  stackGraphToLegacyProjectConfigForEcosystem,
-  validateStackParts,
-} from "@/types";
-import {
   ensureSingleWebAndNative,
   isWebFrontend,
   validateAddonCompatibility,
@@ -38,14 +25,33 @@ import {
   validateRustExpansionCompatibility,
   validateWorkersCompatibility,
 } from "@/config/compatibility-rules";
-import { isSilent } from "@/presentation/context";
-import { constraintError, incompatibilityError, missingRequirementError } from "@/presentation/error-formatter";
-import { exitWithError } from "@/presentation/errors";
-import { validatePeerDependencies } from "@/platform/peer-dependency-validator";
 import {
   buildCompatibilityInputFromConfig,
   hasSelectedTypeScriptBackendPart,
 } from "@/config/stack-compatibility";
+import { validatePeerDependencies } from "@/platform/peer-dependency-validator";
+import { isSilent } from "@/presentation/context";
+import {
+  constraintError,
+  incompatibilityError,
+  missingRequirementError,
+} from "@/presentation/error-formatter";
+import { exitWithError } from "@/presentation/errors";
+import {
+  formatStackGraphIssue,
+  getDisabledReason,
+  getCodeQualitySelectionIssue,
+  getShadcnLintFrontendIssue,
+  hasVitePlusWorkspaceRoot,
+  hasSignozSupportedGoServerTarget,
+  isBotIdWebFrontend,
+  isSignozSupportedPythonWebFramework,
+  isToolingOverlayOnly,
+  isTurnstileWebFrontend,
+  normalizeCapabilitySelection,
+  stackGraphToLegacyProjectConfigForEcosystem,
+  validateStackParts,
+} from "@/types";
 
 const INTLAYER_COMPATIBLE_FRONTENDS = new Set<Frontend>([
   "next",
@@ -1604,11 +1610,23 @@ function getAddonValidationConfig(config: Partial<ProjectConfig>): Partial<Proje
   };
 }
 
+function validateCodeQualityConstraints(config: Partial<ProjectConfig>, partial = false) {
+  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) return;
+  const selectionIssue = getCodeQualitySelectionIssue(config.addons ?? []);
+  if (selectionIssue) exitWithError(selectionIssue);
+  if (!config.addons?.includes("shadcn-lint")) return;
+  if (partial && (config.frontend === undefined || config.cssFramework === undefined)) return;
+  const issue = getShadcnLintFrontendIssue(config.frontend ?? [], config.cssFramework);
+  if (issue) exitWithError(issue);
+}
+
 export function validateFullConfig(
   config: Partial<ProjectConfig>,
   providedFlags: Set<string>,
   options: CLIInput,
+  partial = false,
 ) {
+  validateCodeQualityConstraints(config, partial);
   if (config.stackParts && !isToolingOverlayOnly(config.stackParts) && !options.yolo) {
     const graphValidation = validateStackParts(config.stackParts);
     if (graphValidation.issues.length > 0) {
@@ -1729,8 +1747,12 @@ export function validateFullConfig(
 
   if (config.addons && config.addons.length > 0) {
     const addonConfig = getAddonValidationConfig(config);
+    const addonsToValidate =
+      partial && addonConfig.frontend === undefined
+        ? config.addons.filter((addon) => addon !== "shadcn-lint")
+        : config.addons;
     validateAddonsAgainstFrontends(
-      config.addons,
+      addonsToValidate,
       addonConfig.frontend,
       addonConfig.auth,
       addonConfig.backend,
@@ -1785,6 +1807,7 @@ export function validateFullConfig(
 
 export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>) {
   try {
+    validateCodeQualityConstraints(config);
     if (config.stackParts) {
       const graphValidation = validateStackParts(config.stackParts);
       if (graphValidation.issues.length > 0) {
