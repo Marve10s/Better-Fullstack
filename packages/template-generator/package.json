@@ -76,7 +76,7 @@
     "handlebars": "^4.7.9",
     "pathe": "^2.0.3",
     "ts-morph": "^27.0.2",
-    "yaml": "^2.9.0"
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
