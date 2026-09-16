@@ -70,26 +70,25 @@ export async function setupWxt(config: Pick<ProjectConfig, "packageManager" | "p
 
   try {
     await $({ cwd: appsDir, env: { CI: "true" } })`${args}`;
+
+    if (await fs.pathExists(packageJsonPath)) {
+      const packageJson = await fs.readJson(packageJsonPath);
+      packageJson.name = "extension";
+
+      if (packageJson.scripts?.dev) {
+        packageJson.scripts.dev = `${packageJson.scripts.dev} --port 5555`;
+      }
+
+      await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+    }
+
+    s.stop("WXT setup complete!");
   } catch (error) {
     // A spinner that is never stopped keeps the event loop alive, so the CLI
-    // would hang after a failed init instead of exiting.
+    // would hang after a failed setup instead of exiting.
     s.stop(pc.red("Failed to set up WXT"));
     if (error instanceof Error) {
       console.error(pc.red(error.message));
     }
-    return;
   }
-
-  if (await fs.pathExists(packageJsonPath)) {
-    const packageJson = await fs.readJson(packageJsonPath);
-    packageJson.name = "extension";
-
-    if (packageJson.scripts?.dev) {
-      packageJson.scripts.dev = `${packageJson.scripts.dev} --port 5555`;
-    }
-
-    await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
-  }
-
-  s.stop("WXT setup complete!");
 }
