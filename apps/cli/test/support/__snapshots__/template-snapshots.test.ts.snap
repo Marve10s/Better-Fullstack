@@ -1922,7 +1922,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: react-vite-sha
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
     "typescript": "^5",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "@snapshot-react-vite-shadcn-lint/config": "workspace:*"
   }
 }
@@ -2419,7 +2419,7 @@ export default app;
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-tanstack-router-minimal/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -3225,7 +3225,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: react-vite-web
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
     "typescript": "^5",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "@snapshot-react-vite-webmcp/config": "workspace:*"
   }
 }
@@ -4471,7 +4471,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: astro-react-in
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^7.3.1",
+    "astro": "^7.3.2",
     "@astrojs/react": "^6.0.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -5051,7 +5051,7 @@ export default defineNuxtConfig({
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/ui": "^4.11.0",
+    "@nuxt/ui": "^4.11.1",
     "@nuxt/content": "^3.16.0",
     "@nuxtjs/mdc": "^0.22.2",
     "nuxt": "4.4.8",
@@ -5072,7 +5072,7 @@ export default defineNuxtConfig({
   },
   "devDependencies": {
     "tailwindcss": "^4.3.3",
-    "@iconify-json/lucide": "^1.2.129",
+    "@iconify-json/lucide": "^1.2.131",
     "typescript": "catalog:",
     "@snapshot-nuxt-standalone/config": "workspace:*",
     "@tanstack/vue-query-devtools": "^6.1.38"
@@ -5514,7 +5514,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: solid-start-v2
   "dependencies": {
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.16.2",
-    "@solidjs/start": "^2.0.4",
+    "@solidjs/start": "^2.0.5",
     "nitro": "^3.0.260610-beta",
     "solid-js": "^1.9.15",
     "@tailwindcss/vite": "^4.3.3",
@@ -5536,7 +5536,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: solid-start-v2
     "better-auth": "catalog:"
   },
   "devDependencies": {
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-solid-start-v2-fullstack/config": "workspace:*",
     "@tanstack/solid-router-devtools": "1.167.0"
@@ -6517,7 +6517,7 @@ app.listen(3000, () => {
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-express-node-trpc/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -7313,7 +7313,7 @@ export default app;
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-hono-bun-orpc/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -8164,7 +8164,7 @@ export default app;
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-hono-openapi/config": "workspace:*"
   }
@@ -9252,7 +9252,7 @@ export default app;
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-hono-apollo-server/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -10356,7 +10356,7 @@ export default app;
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-better-auth-full/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -11435,7 +11435,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: convex-clerk 1
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-convex-clerk/config": "workspace:*"
   }
@@ -12597,7 +12597,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.1",
     "jsdom": "^29.1.1",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "web-vitals": "^5.3.0",
     "typescript": "catalog:",
     "@snapshot-self-tanstack-start-clerk/config": "workspace:*"
@@ -13400,7 +13400,7 @@ export default app;
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-mongodb-mongoose/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -14134,7 +14134,7 @@ export default app;
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-postgres-prisma/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -14895,7 +14895,7 @@ export default app;
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-algolia-search-hono/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -15819,7 +15819,7 @@ export default app;
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-opensearch-search-hono/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -17416,7 +17416,7 @@ export default app;
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-i18n-paraglide-tanstack-router/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4",
@@ -18350,7 +18350,7 @@ export default app;
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-ai-cli-root-tooling/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -19275,7 +19275,7 @@ export default app;
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-nx-root-tooling/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.101.4"
@@ -20088,7 +20088,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: frontend-only-
     "@vitejs/plugin-react": "^6.1.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "typescript": "catalog:",
     "@snapshot-frontend-only-no-backend/config": "workspace:*"
   }
@@ -20720,7 +20720,7 @@ fontWeight: "bold",
     "react-dom": "19.2.8",
     "@babel/runtime": "^7.26.0",
     "react-native": "^0.86.2",
-    "react-native-gesture-handler": "^3.2.1",
+    "react-native-gesture-handler": "^3.3.0",
     "react-native-reanimated": "^4.5.3",
     "react-native-safe-area-context": "^5.9.1",
     "react-native-screens": "^4.27.0",
@@ -21477,7 +21477,7 @@ registerRootComponent(App);
     "@babel/runtime": "^7.26.0",
     "react-native": "^0.86.2",
     "react-native-mmkv": "^4.3.2",
-    "react-native-gesture-handler": "^3.2.1",
+    "react-native-gesture-handler": "^3.3.0",
     "react-native-reanimated": "^4.5.3",
     "react-native-safe-area-context": "^5.9.1",
     "react-native-screens": "^4.27.0",
