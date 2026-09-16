@@ -24,13 +24,6 @@ const mode = process.argv.includes("--write") ? "write" : "check";
 
 const projects: Project[] = [
   {
-    root: "apps/analytics",
-    aliases: [
-      { directory: "convex", prefix: "@/" },
-      { directory: "test", prefix: "@test/" },
-    ],
-  },
-  {
     root: "apps/cli",
     aliases: [
       { directory: "src", prefix: "@/" },
@@ -57,13 +50,6 @@ const projects: Project[] = [
       { directory: ".", prefix: "@web-root/" },
       { directory: ".", prefix: "#web-root/" },
       { directory: "../cli", prefix: "@cli/" },
-    ],
-  },
-  {
-    root: "packages/backend",
-    aliases: [
-      { directory: "convex", prefix: "@/" },
-      { directory: "test", prefix: "@test/" },
     ],
   },
   {

@@ -27,7 +27,6 @@ bun dev:web    # Website development
 └── packages/
     ├── template-generator/     # Handlebars templates → generated output
     ├── types/                  # Shared TypeScript types & schemas
-    ├── backend/                # Convex backend
     └── create-bfs/             # Project bootstrapper
 ```
 

@@ -151,19 +151,21 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
     expect(tools.tools.some((tool) => tool.name === "bfs_get_capability_evidence")).toBe(true);
     expect(tools.tools.some((tool) => tool.name === "bfs_list_starter_tracks")).toBe(true);
     expect(
-      tools.tools.filter(
-        (tool) => tool.outputSchema && Object.hasOwn(tool.outputSchema, "$defs"),
-      ).length,
+      tools.tools.filter((tool) => tool.outputSchema && Object.hasOwn(tool.outputSchema, "$defs"))
+        .length,
     ).toBeGreaterThan(0);
     const jsonSchemaValidator = new AjvJsonSchemaValidator();
     for (const tool of tools.tools) {
       if (tool.outputSchema) jsonSchemaValidator.getValidator(tool.outputSchema);
     }
-    const guidanceSchema = tools.tools.find((tool) => tool.name === "bfs_get_guidance")
-      ?.outputSchema;
+    const guidanceSchema = tools.tools.find(
+      (tool) => tool.name === "bfs_get_guidance",
+    )?.outputSchema;
     expect(guidanceSchema).toBeDefined();
     if (guidanceSchema) {
-      expect(jsonSchemaValidator.getValidator(guidanceSchema)(guidanceResult.structuredContent)).toEqual({
+      expect(
+        jsonSchemaValidator.getValidator(guidanceSchema)(guidanceResult.structuredContent),
+      ).toEqual({
         valid: true,
         data: guidanceResult.structuredContent,
         errorMessage: undefined,
@@ -327,6 +329,148 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
       expect(await fs.pathExists(path.join(projectDir, ".git"))).toBe(false);
     },
   );
+
+  it("enforces complete Code Quality profiles when planning and creating through MCP", async () => {
+    const client = await connectClient(mode);
+    const targetDir = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-quality-"));
+    roots.push(targetDir);
+    for (const selection of [
+      { addons: ["eslint"] },
+      {
+        part: ["frontend:typescript:react-vite", "frontend.css:typescript:tailwind"],
+        addons: ["eslint"],
+      },
+      { addons: ["biome", "ultracite"] },
+      { part: ["frontend:typescript:react-vite", "codeQuality:universal:eslint"] },
+      { part: ["codeQuality:universal:eslint"] },
+    ]) {
+      for (const name of ["bfs_plan_project", "bfs_create_project"]) {
+        const rejected = await callTool(client, {
+          name,
+          arguments: { projectName: "invalid", targetDir, ...selection },
+        });
+        expect(rejected.isError, JSON.stringify(rejected.content)).toBe(true);
+        expect(JSON.stringify(rejected.content)).toContain("Code Quality profile");
+      }
+    }
+    expect(await fs.readdir(targetDir)).toEqual([]);
+    for (const [index, selection] of [
+      { addons: ["eslint", "prettier", "shadcn-lint"] },
+      {
+        addons: ["biome"],
+        part: [
+          "frontend:typescript:react-vite",
+          "frontend.css:typescript:tailwind",
+          "codeQuality:universal:oxlint",
+          "codeQuality:universal:shadcn-lint",
+        ],
+      },
+      ...[
+        { graph: ["workspaceRunner:universal:turborepo"], addons: ["oxlint", "shadcn-lint"] },
+        { graph: ["codeQuality:universal:shadcn-lint"], addons: ["oxlint"] },
+        { graph: ["codeQuality:universal:oxlint"], addons: ["shadcn-lint"] },
+      ].map(({ graph, addons }) => ({
+        part: ["frontend:typescript:react-vite", "frontend.css:typescript:tailwind", ...graph],
+        addons,
+      })),
+    ].entries()) {
+      const args = { projectName: `valid-${index}`, targetDir, ...selection };
+      for (const name of ["bfs_plan_project", "bfs_create_project"]) {
+        const result = await callTool(client, { name, arguments: args });
+        expect(result.isError, JSON.stringify(result.content)).not.toBe(true);
+      }
+      const persisted = await readBtsConfig(path.join(targetDir, args.projectName));
+      const addons = persisted?.addons;
+      expect(persisted?.stackParts).toContainEqual(
+        expect.objectContaining({ role: "codeQuality", toolId: "shadcn-lint" }),
+      );
+      expect(addons).toContain("shadcn-lint");
+      expect(addons).not.toContain("biome");
+      const projectDir = path.join(targetDir, args.projectName);
+      const packageJson: unknown = await fs.readJson(path.join(projectDir, "package.json"));
+      expect(packageJson).toMatchObject({ devDependencies: { "@shadcn/lint": "0.1.0" } });
+      if (addons?.includes("oxlint")) {
+        expect(await fs.readFile(path.join(projectDir, ".oxlintrc.json"), "utf8")).toContain(
+          "@shadcn/lint",
+        );
+      }
+    }
+  }, 30_000);
+
+  it("adds design lint and replaces Oxlint through MCP", async () => {
+    const client = await connectClient(mode);
+    const root = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-oxlint-upgrade-"));
+    roots.push(root);
+    const projectDir = path.join(root, "app");
+    const created = await callTool(client, {
+      name: "bfs_create_project",
+      arguments: { projectName: "app", targetDir: root, addons: ["oxlint"] },
+    });
+    expect(created.isError, JSON.stringify(created.content)).not.toBe(true);
+    const args = { projectDir, part: ["codeQuality:universal:shadcn-lint"] };
+    for (const name of ["bfs_plan_stack_update", "bfs_apply_stack_update"]) {
+      const result = await callTool(client, { name, arguments: args });
+      expect(result.isError, JSON.stringify(result.content)).not.toBe(true);
+      expect(result.structuredContent?.manualReviewBlockers).toEqual([]);
+    }
+    expect(await fs.readFile(path.join(projectDir, ".oxlintrc.json"), "utf8")).toContain(
+      "@shadcn/lint",
+    );
+    const pkg = await fs.readJson(path.join(projectDir, "package.json"));
+    expect(pkg.scripts["lint:design"]).toBe("oxlint");
+    expect(pkg.devDependencies["@shadcn/lint"]).toBe("0.1.0");
+    expect((await readBtsConfig(projectDir))?.addons).toEqual(["oxlint", "shadcn-lint"]);
+    const replacement = {
+      projectDir,
+      part: ["codeQuality:universal:eslint", "codeQuality:universal:prettier"],
+    };
+    const plan = await callTool(client, { name: "bfs_plan_addition", arguments: replacement });
+    expect(plan.isError, JSON.stringify(plan.content)).not.toBe(true);
+    expect(plan.structuredContent?.manualReviewBlockers).toEqual([]);
+    expect(plan.structuredContent?.filesToRemove).toEqual(
+      expect.arrayContaining([".oxlintrc.json", ".oxfmtrc.json"]),
+    );
+    expect(await fs.pathExists(path.join(projectDir, ".oxlintrc.json"))).toBe(true);
+    const applied = await callTool(client, { name: "bfs_add_feature", arguments: replacement });
+    expect(applied.isError, JSON.stringify(applied.content)).not.toBe(true);
+    expect(await fs.pathExists(path.join(projectDir, ".oxlintrc.json"))).toBe(false);
+    expect(await fs.pathExists(path.join(projectDir, ".oxfmtrc.json"))).toBe(false);
+    const updatedPackage: unknown = await fs.readJson(path.join(projectDir, "package.json"));
+    expect(updatedPackage).toMatchObject({ scripts: { "lint:design": "eslint ." } });
+    expect(updatedPackage).not.toHaveProperty(["devDependencies", "oxlint"]);
+    expect(updatedPackage).not.toHaveProperty(["devDependencies", "oxfmt"]);
+    expect(updatedPackage).not.toHaveProperty(["scripts", "check"]);
+    expect((await readBtsConfig(projectDir))?.addons?.toSorted()).toEqual([
+      "eslint",
+      "prettier",
+      "shadcn-lint",
+    ]);
+  }, 30_000);
+
+  it("keeps legacy Code Quality update warnings consistent with applied files", async () => {
+    const client = await connectClient(mode);
+    const root = await fs.mkdtemp(path.join(tmpdir(), "bfs-mcp-legacy-quality-"));
+    roots.push(root);
+    const projectDir = path.join(root, "app");
+    await scaffoldProject(projectDir, { addons: ["biome", "ultracite"] });
+    const args = { projectDir, part: ["staticAnalysis:universal:gitleaks"] };
+    for (const name of ["bfs_plan_stack_update", "bfs_apply_stack_update"]) {
+      const result = await callTool(client, { name, arguments: args });
+      expect(result.isError, JSON.stringify(result.content)).not.toBe(true);
+      expect(JSON.stringify(result.structuredContent?.compatibilityWarnings ?? [])).not.toContain(
+        "Code Quality adjusted",
+      );
+      expect(result.structuredContent?.proposedConfig).toMatchObject({
+        addons: expect.arrayContaining(["biome", "ultracite", "gitleaks"]),
+      });
+    }
+    expect((await readBtsConfig(projectDir))?.addons?.toSorted()).toEqual([
+      "biome",
+      "gitleaks",
+      "ultracite",
+    ]);
+    expect(await fs.pathExists(path.join(projectDir, ".gitleaks.toml"))).toBe(true);
+  });
 
   it("rejects invalid creates and preserves existing files after a duplicate create", async () => {
     const client = await connectClient(mode);

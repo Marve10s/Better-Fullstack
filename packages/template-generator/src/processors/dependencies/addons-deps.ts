@@ -116,6 +116,26 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
   const webPkgPath = getWebPackagePath(config.frontend, config.backend);
   const serverPkgPath = getServerPackagePath(config.frontend, config.backend);
 
+  if (config.addons.includes("shadcn-lint")) {
+    addPackageDependency({
+      vfs,
+      packagePath: "package.json",
+      devDependencies: config.addons.includes("oxlint")
+        ? ["@shadcn/lint", "oxlint", "oxfmt"]
+        : ["@shadcn/lint"],
+    });
+    const rootPkg = vfs.readJson<PackageJson>("package.json");
+    if (rootPkg) {
+      const lintCommand = config.addons.includes("oxlint") ? "oxlint" : "eslint .";
+      rootPkg.scripts = {
+        ...rootPkg.scripts,
+        "lint:design": lintCommand,
+        ...(config.addons.includes("oxlint") ? { check: "oxlint && oxfmt --write" } : {}),
+      };
+      vfs.writeJson("package.json", rootPkg);
+    }
+  }
+
   if (config.addons.includes("turborepo")) {
     addPackageDependency({ vfs, packagePath: "package.json", devDependencies: ["turbo"] });
   }

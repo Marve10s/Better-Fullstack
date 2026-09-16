@@ -59,6 +59,7 @@ import {
   analyzeStackCompatibility,
   createStackPart,
   formatStackPartSpec,
+  getReplacedCodeQualityTools,
   getToolingCapability,
   getToolingCategory,
   legacyProjectConfigToStackParts,
@@ -367,6 +368,10 @@ function mergeProjectConfig(
             (item) => item !== "turborepo" && item !== "nx" && item !== "vite-plus",
           );
         }
+        if (key === "addons") {
+          const replacedQualityTools = getReplacedCodeQualityTools(requested);
+          existing = existing.filter((toolId) => !replacedQualityTools.includes(toolId));
+        }
         (next as Record<string, unknown>)[key] = [...new Set([...existing, ...requested])];
       }
       continue;
@@ -431,12 +436,35 @@ function mergeStackPartSpecs(
   }
   const stackParts = combinedParts.filter((part) => {
     if (requestedParts.includes(part)) return true;
+    if (part.role === "codeQuality" && part.ecosystem === "universal") {
+      const requestedQualityTools = requestedParts
+        .filter(
+          (requested) =>
+            requested.role === part.role &&
+            requested.ecosystem === part.ecosystem &&
+            requested.ownerPartId === part.ownerPartId,
+        )
+        .map((requested) => requested.toolId);
+      if (getReplacedCodeQualityTools(requestedQualityTools).includes(part.toolId)) return false;
+    }
     const capability = getToolingCapability(part.toolId);
     if (!capability) return true;
     return !requestedSingleCategories.has(`${part.ownerPartId ?? "root"}:${capability.category}`);
   });
   const stackPartsWithSettings = mergeProjectConfigSettingsIntoStackParts(
-    restoreUnchangedStackPartMetadata(stackParts, currentStackParts),
+    restoreUnchangedStackPartMetadata(
+      stackParts,
+      currentStackParts.map((part) =>
+        part.role === "codeQuality" &&
+        part.source === "legacy" &&
+        requestedParts.some(
+          (requested) =>
+            stackPartIdentity(requested) === stackPartIdentity({ ...part, source: "selected" }),
+        )
+          ? { ...part, source: "selected" }
+          : part,
+      ),
+    ),
     currentConfig,
   );
   return {
@@ -465,8 +493,14 @@ function restoreUnchangedStackPartMetadata(
   parts: readonly StackPart[],
   originals: readonly StackPart[],
 ): StackPart[] {
+  // Re-parsing retained specs must not turn historical quality profiles into new selections.
   const originalsByIdentity = new Map(
-    originals.map((part) => [stackPartIdentity(part), part] as const),
+    originals.flatMap((part) => [
+      [stackPartIdentity(part), part] as const,
+      ...(part.role === "codeQuality" && part.source === "legacy"
+        ? [[stackPartIdentity({ ...part, source: "selected" }), part] as const]
+        : []),
+    ]),
   );
   return parts.map((part) => {
     const original = originalsByIdentity.get(stackPartIdentity(part));
@@ -1759,7 +1793,9 @@ export async function planStackUpdate(
   const shouldApplyCompatibilityAdjustments =
     proposedConfig.ecosystem === "typescript" || proposedConfig.ecosystem === "react-native";
   const compatibilityResult = shouldApplyCompatibilityAdjustments
-    ? analyzeStackCompatibility(buildCompatibilityInputFromConfig(proposedConfig))
+    ? analyzeStackCompatibility(buildCompatibilityInputFromConfig(proposedConfig), {
+        normalizeCodeQualityProfiles: false,
+      })
     : { adjustedStack: null, changes: [] };
   const compatibilityAdjustments = [
     ...dependencyExpansion.adjustments,
@@ -1774,6 +1810,13 @@ export async function planStackUpdate(
   proposedConfig.stackParts = options.stackPartsOverride
     ? [...options.stackPartsOverride]
     : mergeDerivedStackPartsWithExistingGraph(currentConfig, proposedConfig);
+  proposedConfig.stackParts = proposedConfig.stackParts.map((part) =>
+    part.role === "codeQuality" &&
+    !part.ownerPartId &&
+    requestedChanges.addons?.some((addon) => addon === part.toolId)
+      ? { ...part, source: "selected" }
+      : part,
+  );
   Object.assign(proposedConfig, mergeStackPartSpecs(proposedConfig, stackPartSpecs));
 
   if (options.stackPartsOverride) {
@@ -1786,7 +1829,9 @@ export async function planStackUpdate(
       projectName,
     );
     const finalCompatibilityResult = shouldApplyCompatibilityAdjustments
-      ? analyzeStackCompatibility(buildCompatibilityInputFromConfig(graphProjectedConfig))
+      ? analyzeStackCompatibility(buildCompatibilityInputFromConfig(graphProjectedConfig), {
+          normalizeCodeQualityProfiles: false,
+        })
       : { adjustedStack: null, changes: [] };
     compatibilityAdjustments.push(
       ...finalCompatibilityResult.changes.map((change) => `${change.category}: ${change.message}`),
@@ -1822,6 +1867,15 @@ export async function planStackUpdate(
     projectDir,
     projectName,
   );
+  const removeObsoleteGeneratedArtifacts =
+    options.removeObsoleteGeneratedArtifacts ||
+    currentConfig.addons.some(
+      (addon) =>
+        getToolingCapability(addon)?.category === "codeQuality" &&
+        !normalizedProposedConfig.addons.includes(addon),
+    );
+  const removesOxlint =
+    currentConfig.addons.includes("oxlint") && !normalizedProposedConfig.addons.includes("oxlint");
 
   let currentTree: VirtualFileTree;
   let proposedTree: VirtualFileTree;
@@ -1881,6 +1935,34 @@ export async function planStackUpdate(
     const existingContent =
       exists && existingBuffer && !isBinaryFile ? existingBuffer.toString("utf-8") : undefined;
 
+    // Oxlint setup changed these files after rendering; the hash proves they remain untouched.
+    const initializedOxlintBaseline =
+      (filePath === ".oxlintrc.json" || filePath === "package.json") &&
+      !currentGeneratedFiles.has(".oxlintrc.json") &&
+      currentConfig.addons.includes("oxlint") &&
+      !currentConfig.addons.includes("shadcn-lint") &&
+      (normalizedProposedConfig.addons.includes("shadcn-lint") || removesOxlint) &&
+      existingContent !== undefined &&
+      existingBuffer &&
+      manifest.hashes[filePath] === hashContent(existingBuffer)
+        ? existingContent
+        : undefined;
+    if (initializedOxlintBaseline !== undefined) {
+      currentBaselineContents.push(initializedOxlintBaseline);
+    }
+    if (
+      filePath === "package.json" &&
+      removesOxlint &&
+      !currentGeneratedFiles.has(".oxlintrc.json") &&
+      exists &&
+      initializedOxlintBaseline === undefined
+    ) {
+      manualReviewBlockers.push(
+        "package.json: initialized Oxlint setup differs from the recorded baseline",
+      );
+      continue;
+    }
+
     if (!exists) {
       filesToAdd.push(filePath);
       operations.push({ kind: "add", path: filePath, writeMode: "generated" });
@@ -1925,9 +2007,9 @@ export async function planStackUpdate(
     if (filePath.endsWith("package.json")) {
       const merged = mergePackageJson(
         existingContent,
-        recordedBaseline ?? previousContent,
+        initializedOxlintBaseline ?? recordedBaseline ?? previousContent,
         proposedContent,
-        options.removeObsoleteGeneratedArtifacts,
+        removeObsoleteGeneratedArtifacts,
       );
       for (const blocker of merged.blockers) {
         manualReviewBlockers.push(`${filePath}: ${blocker}`);
@@ -1989,8 +2071,13 @@ export async function planStackUpdate(
     manualReviewBlockers.push(`${filePath}: existing file differs from the generated baseline`);
   }
 
-  if (options.removeObsoleteGeneratedArtifacts) {
-    for (const filePath of currentGeneratedFiles.keys()) {
+  if (removeObsoleteGeneratedArtifacts) {
+    const obsoleteCandidates = new Set(currentGeneratedFiles.keys());
+    if (removesOxlint) {
+      obsoleteCandidates.add(".oxlintrc.json");
+      obsoleteCandidates.add(".oxfmtrc.json");
+    }
+    for (const filePath of obsoleteCandidates) {
       if (proposedGeneratedFiles.has(filePath)) continue;
       const targetPath = path.join(projectDir, filePath);
       let existingBuffer: Buffer;

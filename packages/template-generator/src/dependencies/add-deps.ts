@@ -112,7 +112,8 @@ export const dependencyVersionMap = {
   ultracite: "^7.10.6",
   knip: "^6.32.2",
 
-  oxlint: "^1.79.0",
+  oxlint: "^1.81.0",
+  "@shadcn/lint": "0.1.0",
   oxfmt: "^0.56.0",
 
   husky: "^9.1.7",

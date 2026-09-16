@@ -8,6 +8,11 @@ import type {
 } from "@/config/types";
 
 import {
+  getCodeQualitySelectionIssue,
+  getShadcnLintFrontendIssue,
+  getShadcnLintGraphFrontendIssue,
+} from "@/capabilities/code-quality";
+import {
   getToolingCapability,
   getToolingCategory,
   getToolingSelectionOptions,
@@ -214,6 +219,7 @@ export type ToolDefinition = {
 };
 
 export type StackPartOptionContext = {
+  parts?: readonly StackPart[];
   role: StackPartRole;
   ecosystem?: StackPartEcosystem;
   ownerRole?: StackPrimaryRole;
@@ -2039,7 +2045,8 @@ function createInfrastructureCompatibilityIssue(
 }
 
 function createAddonCompatibilityIssue(
-  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem"> &
+    Partial<Pick<StackPart, "source">>,
   context: StackPartOptionContext,
 ): StackGraphIssue | undefined {
   const frontendTool = context.primaryToolIdsByRole?.frontend;
@@ -2049,6 +2056,38 @@ function createAddonCompatibilityIssue(
   const backendEcosystem = context.primaryEcosystemsByRole?.backend;
   const runtimeTool = context.selectedToolIdsByRole?.runtime ?? "bun";
   const apiTool = context.selectedToolIdsByRole?.api;
+
+  if (part.role === "codeQuality" && part.ecosystem === "universal") {
+    // Preserve historical profiles when rendering old baselines; new selections stay strict.
+    const selectionIssue =
+      part.source === "legacy" && part.toolId !== "shadcn-lint"
+        ? undefined
+        : getCodeQualitySelectionIssue([
+            ...(context.siblingToolIdsByRoleList?.codeQuality ??
+              context.selectedToolIdsByRoleList?.codeQuality ??
+              []),
+            part.toolId,
+          ]);
+    const frontendIssue =
+      part.toolId === "shadcn-lint"
+        ? context.parts
+          ? getShadcnLintGraphFrontendIssue(context.parts)
+          : getShadcnLintFrontendIssue(
+              context.selectedToolIdsByRoleList?.frontend ?? frontendTools,
+              context.selectedToolIdsByRole?.css,
+            )
+        : undefined;
+    const issue = selectionIssue ?? frontendIssue;
+    if (issue) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: issue,
+      });
+    }
+  }
 
   if (
     part.toolId === "graphql-codegen" &&
@@ -2656,7 +2695,8 @@ function createJavaCompatibilityIssue(
 }
 
 function getStackPartCompatibilityIssue(
-  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem"> &
+    Partial<Pick<StackPart, "source">>,
   context: StackPartOptionContext,
 ): StackGraphIssue | undefined {
   if (
@@ -3290,6 +3330,7 @@ function getStackPartOptionContextForPart(
     ownerToolId: owner?.toolId,
     ownerEcosystem: owner?.ecosystem,
     settings: part.settings,
+    parts,
     siblingToolIdsByRole: getSiblingToolIdsByRole(part, parts),
     siblingToolIdsByRoleList: getSiblingToolIdsByRoleList(part, parts),
     selectedToolIdsByRole: getSelectedToolIdsByRole(parts),

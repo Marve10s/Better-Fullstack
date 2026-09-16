@@ -6,7 +6,7 @@
 > this file wins.
 
 Execution records follow the [project lifecycle](projects/README.md). Production telemetry work
-follows the [backend runbook](../packages/backend/README.md).
+follows the [analytics operations reference](reference/posthog-analytics-operations.md).
 
 ## Product decision
 

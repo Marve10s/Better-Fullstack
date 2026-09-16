@@ -80,22 +80,13 @@ Owns public interaction and content:
 - compatibility presentation;
 - preview, ZIP, and WebContainer flows;
 - product docs, guides, blog, SEO, and localized messages;
-- public analytics presentation.
+- public analytics presentation;
+- telemetry ingest validation and PostHog delivery in `src/lib/telemetry`, served by the server
+  entry. Historical conversion and import tools live in `scripts/analytics`; the operations
+  reference in `docs/reference/posthog-analytics-operations.md` records archive preservation.
+  Convex remains a supported backend option for generated user projects only.
 
 The builder is not a schema authority. Options and compatibility originate in shared code.
-
-### `packages/backend`
-
-Owns the active Convex service and is the sole owner of telemetry ingestion, analytics aggregates,
-the owner dashboard API, showcase data, and health checks. It serves the web app and CLI telemetry
-endpoint; it is not emitted into generated projects. Authorization must remain server-side.
-Generated Convex files are projections and are not hand-edited.
-
-### `apps/analytics`
-
-Is retired legacy Convex source retained as a no-mutation `/track` tombstone and historical-data
-boundary. Do not add features or callers, reactivate ingest, or delete the app/data during ordinary
-maintenance. Deployment quarantine requires the owner runbook in `apps/analytics/README.md`.
 
 ### `packages/create-bfs`
 

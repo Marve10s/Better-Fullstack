@@ -1,0 +1,3 @@
+[mcp_servers.posthog_betterfulstack]
+url = "https://mcp.posthog.com/mcp"
+http_headers = { "x-posthog-project-id" = "275138" }

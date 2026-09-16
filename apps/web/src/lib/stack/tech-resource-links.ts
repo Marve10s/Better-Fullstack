@@ -1112,6 +1112,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://oxc.rs/docs/guide/usage/linter.html",
     githubUrl: "https://github.com/oxc-project/oxc",
   },
+  "shadcn-lint": {
+    docsUrl: "https://github.com/shadcn-ui/lint#readme",
+    githubUrl: "https://github.com/shadcn-ui/lint",
+  },
   ultracite: {
     docsUrl: "https://www.ultracite.ai/",
     githubUrl: "https://github.com/haydenbleasel/ultracite",

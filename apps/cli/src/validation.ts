@@ -285,7 +285,7 @@ export function processAndValidateFlags(
     config.projectName = validatedProjectName;
   }
 
-  validateFullConfig(config, providedFlags, options);
+  validateFullConfig(config, providedFlags, options, true);
 
   return config;
 }

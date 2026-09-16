@@ -23,6 +23,29 @@ function makeProjectConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfi
 }
 
 describe("MCP graph preview", () => {
+  it.each(["oxlint", "eslint"])("checks shadcn/lint compatibility with %s", (linter) => {
+    const addons = [linter, ...(linter === "eslint" ? ["prettier"] : []), "shadcn-lint"];
+    const supported = buildMcpCompatibilityInput({
+      frontend: ["react-vite"],
+      cssFramework: "tailwind",
+      addons,
+    });
+    const valid = analyzeStackCompatibility(supported);
+    expect(valid.adjustedStack?.codeQuality ?? supported.codeQuality).toContain("shadcn-lint");
+    expect(supported.appPlatforms).not.toContain("shadcn-lint");
+    const invalid = analyzeStackCompatibility(
+      buildMcpCompatibilityInput({
+        frontend: ["svelte"],
+        cssFramework: "tailwind",
+        addons,
+      }),
+    );
+    expect(invalid.changes.some((change) => change.message.includes("Removed shadcn/lint"))).toBe(
+      true,
+    );
+    expect(invalid.adjustedStack?.codeQuality).not.toContain("shadcn-lint");
+  });
+
   it("rejects Nango for non-TypeScript MCP project input", () => {
     expect(() =>
       validateMcpProjectConfigCompatibility({ ecosystem: "python", integrations: "nango" }),

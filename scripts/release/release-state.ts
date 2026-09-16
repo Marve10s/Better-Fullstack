@@ -90,7 +90,8 @@ const runCommand: CommandRunner = async (command, cwd) => {
 function processEnv(): Record<string, string | undefined> {
   return {
     ...process.env,
-    BTS_TELEMETRY: "0",
+    BTS_TELEMETRY: process.env.BTS_TELEMETRY ?? "0",
+    BTS_TELEMETRY_DISABLED: "1",
     NO_COLOR: "1",
   };
 }

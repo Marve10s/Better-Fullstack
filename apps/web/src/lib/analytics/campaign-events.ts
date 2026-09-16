@@ -1,5 +1,3 @@
-import { track } from "@vercel/analytics";
-
 import {
   isBrowserTelemetryEnabled,
   sanitizeProductProperties,
@@ -28,12 +26,14 @@ export type CampaignEvent =
   | "builder_incompatibility_recovered"
   | "builder_plan_abandoned";
 
-export type CampaignProperties = Record<string, string | number | boolean | null | undefined>;
+export type CampaignProperties = Record<
+  string,
+  string | string[] | number | boolean | null | undefined
+>;
 
 export function trackCampaignEvent(event: CampaignEvent, properties?: CampaignProperties) {
   if (!isBrowserTelemetryEnabled()) return;
   const safeProperties = sanitizeCampaignProperties(properties);
-  track(event, safeProperties);
   const status = event.endsWith("_failed")
     ? "failed"
     : event.endsWith("_abandoned")

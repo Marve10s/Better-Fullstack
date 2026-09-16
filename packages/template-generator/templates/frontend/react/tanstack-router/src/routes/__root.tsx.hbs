@@ -26,6 +26,9 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import "../index.css";
+{{#if (or (eq api "garph") (eq api "graphql-yoga") (eq api "apollo-server"))}}
+import type { QueryClient } from "@tanstack/react-query";
+{{/if}}
 
 {{#if (eq api "orpc")}}
 export interface RouterAppContext {
@@ -37,8 +40,12 @@ export interface RouterAppContext {
   trpc: typeof trpc;
   queryClient: QueryClient;
 }
+{{else if (or (eq api "garph") (eq api "graphql-yoga") (eq api "apollo-server"))}}
+export interface RouterAppContext {
+  queryClient: QueryClient;
+}
 {{else}}
-export interface RouterAppContext {}
+export type RouterAppContext = Record<string, never>;
 {{/if}}
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({

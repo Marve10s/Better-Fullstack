@@ -5,6 +5,8 @@ import {
   type CapabilityInventoryRecord,
   type Ecosystem,
 } from "@better-fullstack/types";
+import { stackSelectionToProjectConfig } from "@better-fullstack/types/stack-translation";
+import { sanitizeTelemetryStackDimension } from "@better-fullstack/types/telemetry";
 
 import type { CampaignProperties } from "@/lib/analytics/campaign-events";
 import type { StackState } from "@/lib/stack/stack-defaults";
@@ -48,10 +50,35 @@ export function stackAnalyticsProperties(
   stack: StackState,
   extra?: CampaignProperties,
 ): CampaignProperties {
+  const selections: CampaignProperties = {};
+  let config: Record<string, unknown> = stack;
+  let translationFailed = false;
+  try {
+    config = stackSelectionToProjectConfig(stack, { projectDir: "", relativePath: "" });
+  } catch {
+    translationFailed = true;
+    // An incomplete selection must never make a product action fail for analytics.
+  }
+  for (const [key, value] of Object.entries(config)) {
+    const safe = sanitizeTelemetryStackDimension(key, value);
+    if (safe !== undefined) selections[key] = safe;
+  }
   if (stack.stackMode === "multi") {
-    const primaryParts = parseStackPartSpecs(stack.stackPartSpecs, "selected").filter(
-      (part) => !part.ownerPartId,
+    const allParts = (() => {
+      try {
+        return parseStackPartSpecs(stack.stackPartSpecs, "selected").filter(
+          (part) => part.source !== "provided" && part.toolId !== "none",
+        );
+      } catch {
+        return [];
+      }
+    })();
+    const safeParts = sanitizeTelemetryStackDimension(
+      "stackPartSelections",
+      allParts.map((part) => `${part.role}:${part.ecosystem}:${part.toolId}`),
     );
+    const graphSelections = safeParts === undefined ? {} : { stackPartSelections: safeParts };
+    const primaryParts = allParts.filter((part) => !part.ownerPartId);
     const partValue = (role: "frontend" | "backend" | "database") =>
       primaryParts
         .filter((part) => part.role === role && part.toolId !== "none")
@@ -63,6 +90,8 @@ export function stackAnalyticsProperties(
       ),
     ];
     return {
+      ...(translationFailed ? selections : {}),
+      ...graphSelections,
       ecosystem: ecosystems.join(",") || stack.ecosystem,
       mode: stack.stackMode,
       frontend: partValue("frontend"),
@@ -73,6 +102,7 @@ export function stackAnalyticsProperties(
   }
 
   return {
+    ...selections,
     ecosystem: stack.ecosystem,
     mode: stack.stackMode,
     frontend: soloFrontend(stack),
