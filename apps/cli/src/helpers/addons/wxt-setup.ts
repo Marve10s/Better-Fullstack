@@ -34,36 +34,42 @@ const TEMPLATES = {
   },
 } as const;
 
-export async function setupWxt(config: ProjectConfig) {
+export async function setupWxt(config: Pick<ProjectConfig, "packageManager" | "projectDir">) {
   const { packageManager, projectDir } = config;
+  const extensionDir = path.join(projectDir, "apps", "extension");
+  const packageJsonPath = path.join(extensionDir, "package.json");
+
+  // The wxt addon template already generates a complete extension app, and
+  // `wxt init` aborts on a non-empty directory. Only scaffold when nothing
+  // generated the app.
+  if (await fs.pathExists(packageJsonPath)) {
+    return;
+  }
+
+  log.info("Setting up WXT...");
+
+  const template = await selectAddonOptionOrDefault<WxtTemplate>({
+    addonName: "WXT",
+    message: "Choose a template",
+    options: Object.entries(TEMPLATES).map(([key, template]) => ({
+      value: key as WxtTemplate,
+      label: template.label,
+      hint: template.hint,
+    })),
+    defaultValue: "react",
+  });
+
+  const commandWithArgs = `wxt@latest init extension --template ${template} --pm ${packageManager}`;
+  const args = getPackageExecutionArgs(packageManager, commandWithArgs);
+
+  const appsDir = path.join(projectDir, "apps");
+  await fs.ensureDir(appsDir);
+
+  const s = spinner();
+  s.start("Running WXT init command...");
 
   try {
-    log.info("Setting up WXT...");
-
-    const template = await selectAddonOptionOrDefault<WxtTemplate>({
-      addonName: "WXT",
-      message: "Choose a template",
-      options: Object.entries(TEMPLATES).map(([key, template]) => ({
-        value: key as WxtTemplate,
-        label: template.label,
-        hint: template.hint,
-      })),
-      defaultValue: "react",
-    });
-
-    const commandWithArgs = `wxt@latest init extension --template ${template} --pm ${packageManager}`;
-    const args = getPackageExecutionArgs(packageManager, commandWithArgs);
-
-    const appsDir = path.join(projectDir, "apps");
-    await fs.ensureDir(appsDir);
-
-    const s = spinner();
-    s.start("Running WXT init command...");
-
     await $({ cwd: appsDir, env: { CI: "true" } })`${args}`;
-
-    const extensionDir = path.join(projectDir, "apps", "extension");
-    const packageJsonPath = path.join(extensionDir, "package.json");
 
     if (await fs.pathExists(packageJsonPath)) {
       const packageJson = await fs.readJson(packageJsonPath);
@@ -78,7 +84,9 @@ export async function setupWxt(config: ProjectConfig) {
 
     s.stop("WXT setup complete!");
   } catch (error) {
-    log.error(pc.red("Failed to set up WXT"));
+    // A spinner that is never stopped keeps the event loop alive, so the CLI
+    // would hang after a failed setup instead of exiting.
+    s.stop(pc.red("Failed to set up WXT"));
     if (error instanceof Error) {
       console.error(pc.red(error.message));
     }
