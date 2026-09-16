@@ -3,6 +3,7 @@ import type { VirtualDirectory } from "@better-fullstack/template-generator/brow
 import { describe, expect, it } from "bun:test";
 
 import {
+  applyBrowserRuntimeOverrides,
   collectRunnableSourceFiles,
   getDefaultRunnableFile,
   getDevelopmentTarget,
@@ -136,6 +137,30 @@ describe("project runner", () => {
       }),
     ).toBe(false);
     expect(hasDependencyManifestChanges(files, { "package.json": "{}" })).toBe(true);
+  });
+
+  it("pins rolldown for the disposable browser install and keeps existing overrides", () => {
+    const packageFile = {
+      type: "file" as const,
+      path: "package.json",
+      name: "package.json",
+      extension: "json",
+      content: '{"name":"demo","overrides":{"left-pad":"1.0.0"},"scripts":{"dev":"vite"}}',
+    };
+    const tree: VirtualDirectory = {
+      type: "directory",
+      path: "",
+      name: "project",
+      children: [packageFile],
+    };
+
+    applyBrowserRuntimeOverrides(tree);
+
+    expect(JSON.parse(packageFile.content)).toEqual({
+      name: "demo",
+      overrides: { "left-pad": "1.0.0", rolldown: "1.2.8" },
+      scripts: { dev: "vite" },
+    });
   });
 
   it("targets the web workspace instead of running the whole monorepo", () => {

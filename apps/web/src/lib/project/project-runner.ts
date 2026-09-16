@@ -114,6 +114,23 @@ function findVirtualFile(directory: VirtualDirectory, path: string): VirtualFile
   return null;
 }
 
+// rolldown 1.2.9 publishes a wasm binding whose generated loader rejects the
+// binding's own `__napiBindingTarget` export (ERR_NAPI_BINDING_TARGET_CONFLICT),
+// which crashes `vite dev` inside WebContainers. Native installs are fine, so
+// only the disposable browser copy pins the last working release.
+const BROWSER_RUNTIME_OVERRIDES = { rolldown: "1.2.8" };
+
+export function applyBrowserRuntimeOverrides(root: VirtualDirectory): void {
+  const packageFile = findVirtualFile(root, "package.json");
+  if (!packageFile) return;
+
+  const packageJson = JSON.parse(packageFile.content) as {
+    overrides?: Record<string, string>;
+  };
+  packageJson.overrides = { ...packageJson.overrides, ...BROWSER_RUNTIME_OVERRIDES };
+  packageFile.content = `${JSON.stringify(packageJson, null, 2)}\n`;
+}
+
 export function getDevelopmentTarget(root: VirtualDirectory): {
   script: "dev:web" | "dev";
   workspace: string | null;
@@ -165,6 +182,7 @@ export async function createRunnableProject(stack: StackState): Promise<Runnable
     throw new Error(result.error || "The runnable project could not be generated.");
   }
 
+  applyBrowserRuntimeOverrides(result.tree.root);
   const developmentTarget = getDevelopmentTarget(result.tree.root);
   return {
     files: await virtualDirectoryToWebContainerTree(result.tree.root, loadBinaryTemplate),
