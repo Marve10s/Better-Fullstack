@@ -19,6 +19,7 @@ const NON_SCAFFOLD_COMMANDS = new Set([
   "check",
   "compatibility",
   "context",
+  "devtools",
   "docs",
   "doctor",
   "evidence",

@@ -67,7 +67,9 @@ Owns terminal and agent-facing orchestration:
 - create, add, update, check/doctor, gen, registry, history, and telemetry commands;
 - `bts.jsonc` persistence and `bts.lock.json` baselines;
 - installation and post-install instructions;
-- MCP tool schemas, plan/apply pairs, and structured responses.
+- MCP tool schemas, plan/apply pairs, and structured responses;
+- the operations table in `src/operations/` and the Devframe definition in `src/devtools/` that
+  projects it onto the `devtools` server and its HTTP MCP route.
 
 Core mutations belong in reusable helpers. CLI presentation and MCP adapters should call the same
 core operation instead of implementing parallel behavior.
@@ -87,6 +89,16 @@ Owns public interaction and content:
   Convex remains a supported backend option for generated user projects only.
 
 The builder is not a schema authority. Options and compatibility originate in shared code.
+
+### `packages/devtools-ui`
+
+Owns the browser panel served by `create-better-fullstack devtools`:
+
+- a Vite and React SPA that mirrors the web app's tokens and primitives;
+- views over the operations table only; it never redefines a schema or calls a core helper.
+
+It is private, built before the CLI, and copied into the CLI package's `dist/devtools-ui`. Browser
+code here must not import from apps or Node-only packages.
 
 ### `packages/create-bfs`
 
@@ -110,6 +122,7 @@ belongs in the CLI or shared packages.
 ## Dependency Direction
 
 - Apps may depend on packages.
+- `devtools-ui` depends on nothing in the workspace; the CLI consumes only its built output.
 - `template-generator` may depend on `types`.
 - CLI and repository tooling may depend on `project-lifecycle` for project mutations.
 - `project-lifecycle` must remain independent of apps, prompts, and terminal presentation.

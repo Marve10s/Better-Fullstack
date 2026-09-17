@@ -47,6 +47,7 @@ const PENDING_TRANSLATION_PATHS = [
   "content/docs/choosing-a-stack.mdx",
   "content/docs/cli/add.mdx",
   "content/docs/cli/create.mdx",
+  "content/docs/cli/devtools.mdx",
   "content/docs/cli/experimental.mdx",
   "content/docs/cli/gen.mdx",
   "content/docs/cli/index.mdx",
@@ -501,10 +502,18 @@ describe("docs content contract", () => {
 
   it("documents the exact live MCP tool surface", () => {
     const mcpSource = readFileSync(join(WEB_ROOT, "../cli/src/mcp.ts"), "utf8");
+    // Operations declared once in the operations table are advertised as `bfs_<name>`.
+    const operationsDir = join(WEB_ROOT, "../cli/src/operations");
+    const operationsSource = readdirSync(operationsDir)
+      .map((file) => readFileSync(join(operationsDir, file), "utf8"))
+      .join("\n");
     const reference = readFileSync(join(DOCS_ROOT, "ai/mcp.mdx"), "utf8");
-    const registeredTools = new Set(
-      [...mcpSource.matchAll(/registerTool\(\s*"(bfs_[a-z_]+)"/g)].map((match) => match[1]),
-    );
+    const registeredTools = new Set([
+      ...[...mcpSource.matchAll(/registerTool\(\s*"(bfs_[a-z_]+)"/g)].map((match) => match[1]),
+      ...[...operationsSource.matchAll(/^\s*name: "([a-z_]+)",$/gm)].map(
+        (match) => `bfs_${match[1]}`,
+      ),
+    ]);
     const documentedTools = new Set(
       [...reference.matchAll(/`(bfs_[a-z_]+)`/g)].map((match) => match[1]),
     );

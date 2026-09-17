@@ -1,0 +1,76 @@
+---
+title: Devtools
+description: Open a live panel for a generated project, expose the same lifecycle operations to coding agents over HTTP, or bake a static report.
+translationStatus: pending
+updated: 2026-09-17
+---
+
+`devtools` starts a local server for one Better Fullstack project. It serves a browser panel, the
+lifecycle operations over RPC, and an MCP endpoint that coding agents discover without any
+per-agent setup. Every operation is the same one the CLI and the stdio MCP server use, so the panel
+never claims more than `status`, `check`, `update`, or `doctor` would.
+
+```bash
+npx create-better-fullstack@latest devtools --project-dir ./my-app --open
+```
+
+| Flag                   | Behavior                                                                                  |
+| ---------------------- | ----------------------------------------------------------------------------------------- |
+| `--project-dir <path>` | Project to serve; defaults to the current directory.                                      |
+| `--port <number>`      | Port to listen on; defaults to a free port.                                               |
+| `--host <name>`        | Bind host; defaults to `localhost`. Keep it there unless you understand the trust model.  |
+| `--open`               | Open the panel in a browser with a magic link that skips the code prompt.                 |
+| `--report <dir>`       | Write a static report to `<dir>` and exit. The panel renders it without a running server. |
+
+## The panel
+
+The panel has five tabs.
+
+- **Overview** shows the project report: health, stack graph, lifecycle baseline, provenance,
+  recovery eligibility, the update window, and template drift counts.
+- **Checks** runs the generated targets, the same as `check`. Build tools may write their normal
+  caches and output.
+- **Update** plans a template update and a config repair. Apply is only enabled when the plan
+  issued a review token, and it writes inside a recoverable transaction exactly like `update
+--apply` and `doctor --fix`.
+- **Recovery** lists recovery points, verifies them, restores one, and previews or applies pruning
+  with the same review token the MCP tool requires.
+- **Evidence** shows the project context: roles, capabilities, their evidence level, compatibility
+  issues, and safe next actions.
+
+Every view keeps the raw payload one click away, so what an agent sees over MCP and what you see in
+the panel is the same document.
+
+## Authorization
+
+The server trusts a browser only after a one-time code. Without `--open`, the panel asks the server
+to print a six digit code in the terminal; enter it once and that browser stays trusted. The
+server binds to `localhost` and never trusts a request that arrives from another machine.
+
+## Agents
+
+While `devtools` runs, its MCP endpoint is listed in the Devframe instance registry. Agents that
+have the `devframe` gateway configured find it automatically:
+
+```json
+{
+  "mcpServers": {
+    "devframe": { "command": "npx", "args": ["devframe", "connect"] }
+  }
+}
+```
+
+The gateway lists running devtools and forwards calls to the same `bfs_*` tools the stdio server
+advertises, with identical input and output schemas. The route rejects browser requests from other
+origins and non-loopback peers by design; a direct HTTP MCP client must send a loopback `Origin`
+header.
+
+## Static report
+
+```bash
+npx create-better-fullstack@latest devtools --project-dir ./my-app --report ./devtools-report
+```
+
+The report contains the panel plus the result of every read operation for that project, baked at
+build time. Serve the directory from any static host. Actions that need a live server, such as
+running checks or applying an update, are disabled in a report.

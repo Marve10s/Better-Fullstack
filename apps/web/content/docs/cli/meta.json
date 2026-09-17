@@ -1,5 +1,15 @@
 {
   "title": "CLI",
   "defaultOpen": false,
-  "pages": ["index", "install", "create", "add", "update", "gen", "experimental", "telemetry"]
+  "pages": [
+    "index",
+    "install",
+    "create",
+    "add",
+    "update",
+    "devtools",
+    "gen",
+    "experimental",
+    "telemetry"
+  ]
 }
