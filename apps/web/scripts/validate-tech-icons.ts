@@ -7,6 +7,10 @@ type IconTarget = {
 };
 
 const REQUEST_TIMEOUT_MS = 15_000;
+// Icon CDNs sometimes close a connection mid-run. Only a failed connection is retried; an HTTP
+// status such as 404 still fails at once.
+const CONNECTION_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 1_000;
 
 function addTarget(targets: Map<string, Set<string>>, owner: string, src: string) {
   const value = src.trim();
@@ -46,6 +50,17 @@ function addRenderedTechIconTarget(
 function getFetchErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   return String(error);
+}
+
+async function fetchStatusWithRetry(url: string): Promise<number> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fetchStatus(url);
+    } catch (error) {
+      if (attempt === CONNECTION_ATTEMPTS) throw error;
+      await Bun.sleep(RETRY_DELAY_MS * attempt);
+    }
+  }
 }
 
 async function fetchStatus(url: string): Promise<number> {
@@ -130,7 +145,7 @@ async function run() {
     }
 
     try {
-      const status = await fetchStatus(target.src);
+      const status = await fetchStatusWithRetry(target.src);
       if (status >= 400) {
         errors.push(`${target.owner} icon returned ${status}: ${target.src}`);
       }
