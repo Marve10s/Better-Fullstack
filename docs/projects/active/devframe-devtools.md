@@ -70,7 +70,10 @@ the "understand" step of the roadmap promise and the same-contract goal of roadm
   build is copied into the CLI package's `dist/devtools-ui` by tsdown, and the definition resolves
   that directory or the workspace build when running from source.
 - Read operations that accept a project directory are marked `snapshot` in build mode, so
-  `devtools --report <dir>` bakes their results and the panel renders them without a server.
+  `devtools --report <dir>` bakes their results and the panel renders them without a server. Plans
+  are excluded because they carry review tokens and proposed file contents. Devframe's `createBuild`
+  deletes the output directory first, so the command refuses a non-empty directory that is not a
+  previous report.
 - The panel reads the served project only after the browser is trusted; RPC is gated before that.
 
 ## Verification lane

@@ -63,9 +63,25 @@ describe("devtools static report", () => {
       const combined = dumps.join("\n");
       expect(combined).toContain("bfs:get_project_status");
       expect(combined).toContain(projectDir);
-      // Mutations are never baked.
+      // Mutations are never baked, and neither are plans: they carry review tokens.
       expect(combined).not.toContain("bfs:apply_project_update");
+      expect(dumpFiles.filter((file) => file.includes("plan_"))).toEqual([]);
+
+      // Rebuilding over a previous report is allowed.
+      await buildDevtoolsReport({ projectDir, outDir });
     },
     { timeout: 120_000 },
   );
+
+  it("refuses a report directory that holds anything but a previous report", async () => {
+    const root = await fs.mkdtemp(path.join(tmpdir(), "bfs-devtools-report-"));
+    roots.push(root);
+    const kept = path.join(root, "keep.txt");
+    await fs.writeFile(kept, "user data");
+
+    await expect(buildDevtoolsReport({ projectDir: root, outDir: root })).rejects.toThrow(
+      /not empty/,
+    );
+    expect(await fs.readFile(kept, "utf8")).toBe("user data");
+  });
 });

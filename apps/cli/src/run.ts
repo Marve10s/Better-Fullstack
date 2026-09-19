@@ -958,7 +958,7 @@ export const router = os.router({
           .string()
           .optional()
           .describe(
-            "Write a static report (the panel plus every read operation's result) to this directory and exit",
+            "Write a static report (the panel plus the project's baked reads) to a new or empty directory and exit",
           ),
       }),
     )

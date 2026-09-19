@@ -100,9 +100,12 @@ export function createDevtoolsDefinition(options: DevtoolsDefinitionOptions = {}
       for (const operation of allOperations) {
         const takesProjectDir =
           operation.input instanceof z.ZodObject && "projectDir" in operation.input.shape;
+        // Plans are reads too, but they carry review tokens and proposed file
+        // contents, and a report is meant to be published.
         const snapshot =
           ctx.mode === "build" &&
           operation.safety === "read" &&
+          !operation.name.startsWith("plan_") &&
           (takesProjectDir || SNAPSHOT_CATALOG_OPERATIONS.has(operation.name)) &&
           operation.input.safeParse({ projectDir }).success;
 

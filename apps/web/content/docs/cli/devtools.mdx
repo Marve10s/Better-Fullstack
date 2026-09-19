@@ -71,6 +71,10 @@ header.
 npx create-better-fullstack@latest devtools --project-dir ./my-app --report ./devtools-report
 ```
 
-The report contains the panel plus the result of every read operation for that project, baked at
-build time. Serve the directory from any static host. Actions that need a live server, such as
-running checks or applying an update, are disabled in a report.
+The report contains the panel plus the project reads (status, context, history, recovery points,
+evidence), baked at build time. Plans are left out because they carry review tokens and proposed
+file contents. Serve the directory from any static host. Actions that need a live server, such as
+planning, running checks, or applying an update, are disabled in a report.
+
+`--report` replaces the target directory, so it only accepts a new directory, an empty one, or a
+previous report.
