@@ -64,7 +64,11 @@ export function AuthGate({
         <Button
           variant="ghost"
           size="xs"
-          onClick={() => void client.requestAuthCode({ reissue: true })}
+          onClick={() =>
+            void client
+              .requestAuthCode({ reissue: true })
+              .catch((error: unknown) => setMessage(errorText(error)))
+          }
         >
           Print a new code
         </Button>

@@ -134,7 +134,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsdown --publint && bun run scripts/copy-devtools-ui.ts",
+    "build": "bun run --cwd ../../packages/devtools-ui build && tsdown --publint && bun run scripts/copy-devtools-ui.ts",
     "dev": "tsdown --watch",
     "lint": "oxlint . && tsc --noEmit && bun test test/recommendations/cli-builder-sync.test.ts",
     "check-types": "tsc --noEmit",

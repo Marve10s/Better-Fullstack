@@ -48,12 +48,16 @@ function TemplateUpdate() {
         <Button
           variant="outline"
           onClick={() => void plan.run()}
-          disabled={plan.state.status === "loading"}
+          disabled={connection.isStatic || plan.state.status === "loading"}
           data-action="plan-update"
         >
           Plan update
         </Button>
-        <StatusLine state={plan.state} idle="Plan before applying." />
+        {connection.isStatic ? (
+          <span className="text-xs text-muted-foreground">Not available in a static report.</span>
+        ) : (
+          <StatusLine state={plan.state} idle="Plan before applying." />
+        )}
       </div>
 
       {planned ? (
@@ -159,11 +163,15 @@ function ConfigRepairSection() {
         <Button
           variant="outline"
           onClick={() => void plan.run()}
-          disabled={plan.state.status === "loading"}
+          disabled={connection.isStatic || plan.state.status === "loading"}
         >
           Plan repair
         </Button>
-        <StatusLine state={plan.state} idle="Plan before applying." />
+        {connection.isStatic ? (
+          <span className="text-xs text-muted-foreground">Not available in a static report.</span>
+        ) : (
+          <StatusLine state={plan.state} idle="Plan before applying." />
+        )}
       </div>
       {planned ? (
         <div className="flex flex-col gap-2 text-xs">

@@ -174,6 +174,9 @@ describeE2E("devtools panel", () => {
       await expect(page.getByRole("button", { name: "Run checks" }).isDisabled()).resolves.toBe(
         true,
       );
+      // Plans are not baked either, so planning stays off as well.
+      await page.getByRole("tab", { name: "Update" }).click();
+      await expect(page.locator('[data-action="plan-update"]').isDisabled()).resolves.toBe(true);
     },
     { timeout: 300_000 },
   );

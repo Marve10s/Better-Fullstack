@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { type Connection, callOperation, errorText } from "@/lib/devframe";
 
@@ -11,15 +11,18 @@ export type OperationState<T> =
 /** Runs one operation on demand and tracks its lifecycle for the view. */
 export function useOperation<T>(connection: Connection, name: string) {
   const [state, setState] = useState<OperationState<T>>({ status: "idle" });
+  const latest = useRef(0);
   const run = useCallback(
     async (input: Record<string, unknown> = {}) => {
+      // An older call that settles last must not overwrite the newer result.
+      const call = ++latest.current;
       setState({ status: "loading" });
       try {
         const data = await callOperation<T>(connection, name, input);
-        setState({ status: "done", data });
+        if (call === latest.current) setState({ status: "done", data });
         return data;
       } catch (error) {
-        setState({ status: "error", message: errorText(error) });
+        if (call === latest.current) setState({ status: "error", message: errorText(error) });
         return undefined;
       }
     },

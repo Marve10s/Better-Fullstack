@@ -117,32 +117,46 @@ function Prune({ connection, onChanged }: { connection: Connection; onChanged: (
   async function applyPrune() {
     const token = previewed?.prune?.reviewToken;
     if (!token) return;
-    const result = await callOperation<RecoveryManagement>(
-      connection,
-      "prune_project_recovery_points",
-      {
-        apply: true,
-        reviewToken: token,
-      },
-    );
-    setApplied(
-      result.success
-        ? `Pruned ${result.prune?.pruned.length ?? 0} points.`
-        : (result.error ?? "Prune failed."),
-    );
-    onChanged();
+    setApplied(null);
+    try {
+      const result = await callOperation<RecoveryManagement>(
+        connection,
+        "prune_project_recovery_points",
+        {
+          apply: true,
+          reviewToken: token,
+        },
+      );
+      setApplied(
+        result.success
+          ? `Pruned ${result.prune?.pruned.length ?? 0} points.`
+          : (result.error ?? "Prune failed."),
+      );
+      onChanged();
+    } catch (error) {
+      setApplied(errorText(error));
+    }
   }
 
   return (
     <div className="flex flex-col gap-2 border-t border-border pt-3">
       <div className="flex items-center gap-2">
-        <Button size="sm" variant="outline" onClick={() => void preview.run({ apply: false })}>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={connection.isStatic}
+          onClick={() => void preview.run({ apply: false })}
+        >
           Preview prune
         </Button>
-        <StatusLine
-          state={preview.state}
-          idle="Keeps the newest five valid points and anything younger than 30 days."
-        />
+        {connection.isStatic ? (
+          <span className="text-xs text-muted-foreground">Not available in a static report.</span>
+        ) : (
+          <StatusLine
+            state={preview.state}
+            idle="Keeps the newest five valid points and anything younger than 30 days."
+          />
+        )}
       </div>
       {previewed?.prune ? (
         <div className="flex flex-col gap-2 text-xs">
