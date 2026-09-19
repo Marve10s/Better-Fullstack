@@ -8,8 +8,9 @@
 Better Fullstack gets a devtool built on [Devframe](https://devfra.me): one definition that serves a
 project panel over RPC, an HTTP MCP route inside the running devtool, a standalone command, and
 a static report. Every lifecycle operation is declared once in an operations table and
-projected onto the stdio MCP server, the CLI router, and the devtool. This is the "understand" step
-of the roadmap promise and the same-contract goal of roadmap T0.10.
+projected onto the stdio MCP server and the devtool. CLI commands keep their own flag schemas in
+`run.ts` and call the same core modules; routing them through the table is follow-up work. This is
+the "understand" step of the roadmap promise and the same-contract goal of roadmap T0.10.
 
 ## Decisions
 
@@ -51,14 +52,14 @@ of the roadmap promise and the same-contract goal of roadmap T0.10.
 
 ## Phases
 
-| Phase               | Outcome                                                                                     | Exit gate                                                                |
-| ------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| 0. Spike            | `devtools` command serving status and check over RPC and HTTP MCP, parity test              | Done on the branch                                                       |
-| 1. Operations table | Every structured MCP tool and the matching CLI command read from `apps/cli/src/operations/` | Existing MCP protocol test unchanged, parity test covers every operation |
-| 2. Devtool surface  | Panel UI package, `clientAssets` wired, OTP auth on, Playwright proof                       | Panel loads the project report and runs a plan                           |
-| 3. Panel depth      | Preview and apply through review tokens, history, recovery points, evidence                 | Same safeguards as CLI and MCP                                           |
-| 4. Static build     | `devtools --report <dir>` bakes status and evidence into a static page                      | Feeds the roadmap T0.7 verification page                                 |
-| 5. Deferred         | Optional addon mounting the panel into generated projects via Vite, Next, or Nuxt hubs      | Only after telemetry shows demand                                        |
+| Phase               | Outcome                                                                                  | Exit gate                                                                |
+| ------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| 0. Spike            | `devtools` command serving status and check over RPC and HTTP MCP, parity test           | Done on the branch                                                       |
+| 1. Operations table | Every structured MCP tool reads from `apps/cli/src/operations/`; CLI commands do not yet | Existing MCP protocol test unchanged, parity test covers every operation |
+| 2. Devtool surface  | Panel UI package, `clientAssets` wired, OTP auth on, Playwright proof                    | Panel loads the project report and runs a plan                           |
+| 3. Panel depth      | Preview and apply through review tokens, history, recovery points, evidence              | Same safeguards as CLI and MCP                                           |
+| 4. Static build     | `devtools --report <dir>` bakes status and evidence into a static page                   | Feeds the roadmap T0.7 verification page                                 |
+| 5. Deferred         | Optional addon mounting the panel into generated projects via Vite, Next, or Nuxt hubs   | Only after telemetry shows demand                                        |
 
 ## How it is wired
 

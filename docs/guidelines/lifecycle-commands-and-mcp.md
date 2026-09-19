@@ -78,9 +78,10 @@ MCP is a transport for the product model, not a separate product.
 - MCP guidance points agents toward schema, compatibility, plan, then apply/create.
 - MCP tool input uses the same schemas and aliases as CLI.
 - Project lifecycle operations are declared once in `apps/cli/src/operations/` with their input
-  schema, output schema, safety, and handler. The stdio MCP server, the `devtools` server, and CLI
-  commands are projections of that table; do not register a tool or command with its own copy of
-  the schema.
+  schema, output schema, safety, and handler. The stdio MCP server and the `devtools` server are
+  projections of that table; do not register a tool with its own copy of the schema. CLI commands
+  in `apps/cli/src/run.ts` still declare their own flag schemas and call the same core modules, so
+  a change to an operation's input needs the matching CLI command checked by hand.
 - Plan/create and plan/apply pairs return matching compatibility adjustments and warnings.
 - MCP create/add/update do not claim dependencies were installed when they were not.
 - Error codes are stable identifiers; free-form internal exceptions are not an API.
