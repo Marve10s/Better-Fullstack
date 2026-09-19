@@ -4,6 +4,7 @@ import {
   writeProjectTransactionFile,
 } from "@better-fullstack/project-lifecycle/transaction";
 import { parseStackPartSpecs, type ProjectConfig } from "@better-fullstack/types";
+import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterEach, describe, expect, it } from "bun:test";
 import fs from "fs-extra";
 import { tmpdir } from "node:os";
@@ -20,6 +21,7 @@ import {
   recordScaffoldManifest,
   writeScaffoldManifest,
 } from "@/lifecycle/scaffold-manifest";
+import { createMcpServer } from "@/mcp";
 import {
   partRemovalOutputSchema,
   projectAdoptionOutputSchema,
@@ -46,6 +48,9 @@ import {
   verifyMcpProjectRecoveryPoint,
   MCP_UPDATE_REVIEW_CONTENT_LIMIT_BYTES,
 } from "@/mcp/mcp-project-lifecycle";
+import { allOperations, operationToolName } from "@/operations";
+import { applyProjectUpdateOperation } from "@/operations/project-mutate";
+import { checkProjectOperation } from "@/operations/project-read";
 import { inspectProject } from "@/project/project-status";
 
 const historicalFixture = path.join(import.meta.dir, "../fixtures/cross-version/2.4.0");
@@ -204,32 +209,40 @@ describe("MCP project lifecycle parity", () => {
   );
 
   it("truthfully annotates executable checks and recoverable apply", async () => {
-    const source = await Bun.file(path.join(import.meta.dir, "../../src/mcp.ts")).text();
-    const structuredToolBlocks = source
-      .split("\n  registerTool(")
-      .slice(1)
-      .filter((block) => block.includes("structuredContent"));
-    expect(structuredToolBlocks.length).toBeGreaterThan(0);
-    for (const block of structuredToolBlocks) {
-      const outputSchemaIndex = block.indexOf("outputSchema:");
-      expect(outputSchemaIndex).toBeGreaterThan(-1);
-      expect(outputSchemaIndex).toBeLessThan(block.indexOf("structuredContent"));
+    // Every structured operation advertises its output schema, and the
+    // annotations agents rely on come from the declared safety of each
+    // operation rather than from prose.
+    const structuredOperations = allOperations.filter((operation) => operation.output);
+    expect(structuredOperations.length).toBeGreaterThan(0);
+    expect(checkProjectOperation.safety).not.toBe("read");
+    expect(checkProjectOperation.openWorld).toBe(true);
+    expect(checkProjectOperation.description).toContain("fetch dependencies");
+    expect(applyProjectUpdateOperation.safety).toBe("destructive");
+    expect(applyProjectUpdateOperation.description).toContain("recoverable transaction");
+    expect(
+      applyProjectUpdateOperation.input.parse({ projectDir: "x", reviewToken: "0".repeat(64) }),
+    ).toMatchObject({ acknowledgeUnprovenManifestV1: false });
+    expect(
+      allOperations.some((operation) => operation.name === "recover_project_transaction"),
+    ).toBe(true);
+
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    await createMcpServer().connect(serverTransport);
+    const client = new Client({ name: "annotation-check", version: "0.0.0" });
+    await client.connect(clientTransport);
+    try {
+      const tools = new Map((await client.listTools()).tools.map((tool) => [tool.name, tool]));
+      for (const operation of structuredOperations) {
+        expect(tools.get(operationToolName(operation))?.outputSchema).toBeDefined();
+      }
+      const checkTool = tools.get("bfs_check_project");
+      expect(checkTool?.annotations).toMatchObject({ readOnlyHint: false, openWorldHint: true });
+      expect(checkTool?.description).toContain("fetch dependencies");
+      const applyTool = tools.get("bfs_apply_project_update");
+      expect(applyTool?.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: true });
+    } finally {
+      await client.close();
     }
-    const checkBlock = source.slice(
-      source.indexOf('registerTool(\n    "bfs_check_project"'),
-      source.indexOf('registerTool(\n    "bfs_plan_project_update"'),
-    );
-    expect(checkBlock).toContain("readOnlyHint: false");
-    expect(checkBlock).toContain("openWorldHint: true");
-    expect(checkBlock).toContain("fetch dependencies");
-    const applyBlock = source.slice(
-      source.indexOf('registerTool(\n    "bfs_apply_project_update"'),
-      source.indexOf('registerTool(\n    "bfs_plan_stack_update"'),
-    );
-    expect(applyBlock).toContain("destructiveHint: true");
-    expect(applyBlock).toContain("recoverable transaction");
-    expect(applyBlock).toContain("bfs_recover_project_transaction");
-    expect(applyBlock).toContain("acknowledgeUnprovenManifestV1");
   });
 
   it("reports status with explicit Wave 1 prerequisites", async () => {

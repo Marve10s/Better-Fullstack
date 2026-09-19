@@ -5,7 +5,8 @@ linker = "isolated"
 # workflow) off releases Yarn hardened mode would quarantine anyway.
 minimumReleaseAge = 172800
 # Explicitly approved for the initial shadcn/lint integration; its version is pinned.
-minimumReleaseAgeExcludes = ["@shadcn/lint"]
+# devframe and @devframes/agentic: 1.0.0 is pinned exactly for the devtools surface.
+minimumReleaseAgeExcludes = ["@shadcn/lint", "devframe", "@devframes/agentic"]
 
 [test]
 coverage = true
