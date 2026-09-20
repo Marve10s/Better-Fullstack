@@ -1,8 +1,6 @@
 # Architecture and Ownership
 
 Use this guide when a change crosses packages or when it is unclear which layer owns a behavior.
-Use the domain terms in `CONTEXT.md`: Stack Part, Role Binding, Primary Role, Capability Role,
-Provided Capability, and Legacy Flat Config.
 
 ## System Flow
 
