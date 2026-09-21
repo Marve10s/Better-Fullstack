@@ -16,6 +16,7 @@ import type { StackSearchParams } from "@/lib/stack/stack-search-schema";
 
 import { normalizeCampaignSlug } from "@/lib/campaign/campaign";
 import { PRESET_TEMPLATES } from "@/lib/stack/constant";
+import { resolvePresetStack } from "@/lib/stack/preset-stack";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack/stack-defaults";
 import { getStackSharePath } from "@/lib/stack/stack-share-paths";
 
@@ -59,7 +60,7 @@ export function getInitialBuilderState(
 
   return {
     stack: preset
-      ? ({ ...DEFAULT_STACK, ...preset.stack } as StackState)
+      ? resolvePresetStack({ ...DEFAULT_STACK, ...preset.stack } as StackState)
       : hasStackSelection
         ? searchToStack(search)
         : (fallbackStack ?? DEFAULT_STACK),

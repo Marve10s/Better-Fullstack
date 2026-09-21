@@ -1,4 +1,8 @@
-import { getStarterTrackCatalog, type StarterTrackCatalogEntry } from "@better-fullstack/types";
+import {
+  getStarterTrackCatalog,
+  type StarterTrackCatalogEntry,
+  type StarterTrackFilters,
+} from "@better-fullstack/types";
 import { type ReactNode, useMemo } from "react";
 import { TbCheck as Check, TbPencil as Pencil, TbBolt as Zap } from "react-icons/tb";
 
@@ -6,10 +10,11 @@ import type { StackState } from "@/lib/stack/constant";
 
 import { useCapabilityEvidenceInventory } from "@/components/stack-builder/capability-evidence-badge";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
-import { getRelevantStackKeys, resolvePresetStack } from "@/components/stack-builder/utils";
+import { getRelevantStackKeys } from "@/components/stack-builder/utils";
 import { getLocalizedPresetTemplate } from "@/lib/i18n/builder-copy";
 import { cn } from "@/lib/platform/utils";
 import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/stack/constant";
+import { resolvePresetStack } from "@/lib/stack/preset-stack";
 import { DEFAULT_STACK } from "@/lib/stack/stack-defaults";
 import { ICON_REGISTRY } from "@/lib/stack/tech-icons";
 import { m } from "@/paraglide/messages.js";
@@ -19,6 +24,8 @@ interface PresetsPanelProps {
   ecosystem: string;
   onApplyPreset: (presetId: string) => void;
   onCustomizePreset: (presetId: string) => void;
+  /** Read from the URL. The page has no control for them, but shared filtered links still narrow. */
+  starterTrackFilters: StarterTrackFilters;
 }
 
 /** Stack keys worth showing on a card, per ecosystem. */
@@ -215,6 +222,7 @@ export function PresetsPanel({
   ecosystem,
   onApplyPreset,
   onCustomizePreset,
+  starterTrackFilters,
 }: PresetsPanelProps) {
   const evidenceInventory = useCapabilityEvidenceInventory();
   const filteredCategories = PRESET_CATEGORIES.filter((c) => c.ecosystem === ecosystem);
@@ -223,10 +231,11 @@ export function PresetsPanel({
   );
   const starterTracks = useMemo(
     () =>
-      getStarterTrackCatalog({ inventory: evidenceInventory }).tracks.filter(
-        (track) => track.ecosystem === ecosystem,
-      ),
-    [ecosystem, evidenceInventory],
+      getStarterTrackCatalog({
+        inventory: evidenceInventory,
+        filters: starterTrackFilters,
+      }).tracks.filter((track) => track.ecosystem === ecosystem),
+    [ecosystem, evidenceInventory, starterTrackFilters],
   );
   const grid = "grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4";
 

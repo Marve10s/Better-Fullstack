@@ -47,7 +47,7 @@ const GLASS = "border border-ink/10 backdrop-blur-xl dark:border-white/15";
  */
 function Backdrop() {
   const image =
-    "absolute inset-0 size-full object-cover object-[50%_35%] transition-opacity duration-1000 ease-in-out";
+    "absolute inset-0 size-full object-cover object-[50%_35%] transition-opacity duration-1000 ease-in-out motion-reduce:transition-none";
 
   // Both images are always in the page. This section is server-rendered, where the theme is
   // unknown, so picking one by theme disagrees with the browser on hydration and can leave a

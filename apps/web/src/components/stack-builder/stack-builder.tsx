@@ -101,7 +101,6 @@ import {
   getVisibleOptions,
   isOptionCompatible,
   validateProjectName,
-  resolvePresetStack,
 } from "@/components/stack-builder/utils";
 import { YoloToggle } from "@/components/stack-builder/yolo-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -172,6 +171,7 @@ import {
   type StackState,
   TECH_OPTIONS,
 } from "@/lib/stack/constant";
+import { resolvePresetStack } from "@/lib/stack/preset-stack";
 import { useStackState } from "@/lib/stack/stack-url-state";
 import {
   generateStackCommand,
@@ -5852,6 +5852,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                         applyPreset(presetId);
                         setViewMode("command");
                       }}
+                      starterTrackFilters={starterTrackFilters}
                     />
                   </Suspense>
                 </div>
