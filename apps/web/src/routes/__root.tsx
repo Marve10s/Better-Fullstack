@@ -29,7 +29,7 @@ import { m } from "@/paraglide/messages.js";
 import { getLocale, getTextDirection } from "@/paraglide/runtime.js";
 import "@/styles/global.css";
 
-const DARK_THEME_COLOR = "#050505";
+const DARK_THEME_COLOR = "#171614";
 const LIGHT_THEME_COLOR = "#f7f0df";
 const THEME_INIT_SCRIPT = `
 (() => {

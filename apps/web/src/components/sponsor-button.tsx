@@ -1,13 +1,18 @@
 import { TbBrandGithub as Github, TbHeart as Heart } from "react-icons/tb";
 
+import { useOnBuilderRoute } from "@/components/navbar";
+
 const GITHUB_SPONSORS_URL = "https://github.com/sponsors/Marve10s";
 
 /**
  * Floating support button pinned to the bottom-right corner. It opens GitHub
  * Sponsors, the project's primary sponsorship channel, and expands on hover or
- * focus without obscuring the page at rest.
+ * focus without obscuring the page at rest. Hidden on the builder.
  */
 export function SponsorButton() {
+  // The builder's command bar owns the bottom edge; a second floating control crowds it.
+  if (useOnBuilderRoute()) return null;
+
   return (
     <div className="group fixed right-3 bottom-3 z-40 sm:right-4 sm:bottom-4">
       <div

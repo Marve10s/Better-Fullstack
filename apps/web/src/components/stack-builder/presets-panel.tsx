@@ -1,20 +1,22 @@
 import {
   getStarterTrackCatalog,
   type StarterTrackCatalogEntry,
-  type StarterTrackFilters as StarterTrackFilterState,
+  type StarterTrackFilters,
 } from "@better-fullstack/types";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { TbCheck as Check, TbPencil as Pencil, TbBolt as Zap } from "react-icons/tb";
 
 import type { StackState } from "@/lib/stack/constant";
 
 import { useCapabilityEvidenceInventory } from "@/components/stack-builder/capability-evidence-badge";
-import { StarterTrackFilters } from "@/components/stack-builder/starter-track-filters";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
+import { getRelevantStackKeys } from "@/components/stack-builder/utils";
 import { getLocalizedPresetTemplate } from "@/lib/i18n/builder-copy";
 import { cn } from "@/lib/platform/utils";
 import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/stack/constant";
+import { resolvePresetStack } from "@/lib/stack/preset-stack";
 import { DEFAULT_STACK } from "@/lib/stack/stack-defaults";
+import { ICON_REGISTRY } from "@/lib/stack/tech-icons";
 import { m } from "@/paraglide/messages.js";
 
 interface PresetsPanelProps {
@@ -22,38 +24,20 @@ interface PresetsPanelProps {
   ecosystem: string;
   onApplyPreset: (presetId: string) => void;
   onCustomizePreset: (presetId: string) => void;
-  starterTrackFilters: StarterTrackFilterState;
-  onStarterTrackFiltersChange: (filters: StarterTrackFilterState) => void;
+  /** Read from the URL. The page has no control for them, but shared filtered links still narrow. */
+  starterTrackFilters: StarterTrackFilters;
 }
 
-const HIGHLIGHT_SCALAR_KEYS = [
-  "backend",
-  "database",
-  "orm",
-  "api",
-  "auth",
-  "uiLibrary",
-  // Rust
-  "rustWebFramework",
-  "rustFrontend",
-  "rustOrm",
-  "rustApi",
-  "rustCli",
-  // Python
-  "pythonWebFramework",
-  "pythonOrm",
-  "pythonAi",
-  "pythonApi",
-  "pythonTaskQueue",
-  // Go
-  "goWebFramework",
-  "goOrm",
-  "goApi",
-  "goCli",
-  "goLogging",
-] as const satisfies readonly (keyof StackState)[];
+/** Stack keys worth showing on a card, per ecosystem. */
+const HIGHLIGHT_KEYS = {
+  typescript: ["backend", "database", "orm", "api", "auth", "uiLibrary"],
+  "react-native": ["backend", "database", "orm", "api", "auth"],
+  rust: ["rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli"],
+  python: ["pythonWebFramework", "pythonOrm", "pythonAi", "pythonApi", "pythonTaskQueue"],
+  go: ["goWebFramework", "goOrm", "goApi", "goCli", "goLogging"],
+} as const satisfies Record<string, readonly (keyof StackState)[]>;
 
-function getPresetHighlights(presetStack: Partial<StackState>): string[] {
+function getPresetHighlights(presetStack: Partial<StackState>, ecosystem: string): string[] {
   const highlights: string[] = [];
 
   for (const fe of presetStack.webFrontend ?? []) {
@@ -62,19 +46,39 @@ function getPresetHighlights(presetStack: Partial<StackState>): string[] {
   for (const n of presetStack.nativeFrontend ?? []) {
     if (n !== "none") highlights.push(n);
   }
-  for (const key of HIGHLIGHT_SCALAR_KEYS) {
+  const keys =
+    ecosystem in HIGHLIGHT_KEYS ? HIGHLIGHT_KEYS[ecosystem as keyof typeof HIGHLIGHT_KEYS] : [];
+  for (const key of keys) {
     const val = presetStack[key];
     if (typeof val === "string" && val !== "none") highlights.push(val);
   }
 
-  return highlights;
+  // Icon-only cards: a framework and its built-in backend share a logo, so show it once.
+  const seen = new Set<string>();
+  return highlights.filter((tech) => {
+    const config = ICON_REGISTRY[tech];
+    const icon = config ? (config.type === "si" ? config.slug : config.src) : tech;
+    if (seen.has(icon)) return false;
+    seen.add(icon);
+    return true;
+  });
 }
 
 function isPresetActive(presetStack: Partial<StackState>, currentStack: StackState): boolean {
-  const merged = { ...DEFAULT_STACK, ...presetStack };
+  // Compare against what applying the preset produces, not against its raw definition.
+  const applied = resolvePresetStack({ ...DEFAULT_STACK, ...presetStack } as StackState);
+  // Starter tracks carry every field, including other languages' defaults that the builder
+  // rewrites for the active language. Only fields that mean something for this language count.
+  const relevant = new Set<keyof StackState>([
+    ...getRelevantStackKeys(applied.ecosystem),
+    "javaLanguage",
+    "stackMode",
+    "stackPartSpecs",
+  ]);
 
   for (const key of Object.keys(presetStack) as (keyof StackState)[]) {
-    const presetVal = merged[key];
+    if (!relevant.has(key)) continue;
+    const presetVal = applied[key];
     const currentVal = currentStack[key];
 
     if (Array.isArray(presetVal) && Array.isArray(currentVal)) {
@@ -113,6 +117,7 @@ type PresetTemplate = (typeof PRESET_TEMPLATES)[number];
 interface PresetCardProps {
   preset: PresetTemplate;
   stack: StackState;
+  ecosystem: string;
   title?: string;
   onApplyPreset: (presetId: string) => void;
   onCustomizePreset: (presetId: string) => void;
@@ -122,6 +127,7 @@ interface PresetCardProps {
 function PresetCard({
   preset,
   stack,
+  ecosystem,
   title,
   onApplyPreset,
   onCustomizePreset,
@@ -129,91 +135,85 @@ function PresetCard({
 }: PresetCardProps) {
   const localizedPreset = getLocalizedPresetTemplate(preset);
   const active = isPresetActive(preset.stack, stack);
-  const highlights = getPresetHighlights(preset.stack);
+  const highlights = getPresetHighlights(preset.stack, ecosystem);
+  const verified =
+    starterTrack?.evidence.level === "runtime-verified" &&
+    starterTrack.evidence.freshness === "current";
 
   return (
-    <button
-      type="button"
-      tabIndex={0}
-      onClick={() => onApplyPreset(preset.id)}
+    <div
       className={cn(
-        "group relative flex cursor-pointer flex-col gap-3 rounded-lg border p-4 text-left transition-all",
+        "group relative flex flex-col rounded-xl border transition-colors",
         active
-          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-          : "border-border bg-fd-background hover:border-muted-foreground/30 hover:bg-muted/50",
+          ? "border-ink bg-ink/[0.05] dark:border-brand/80 dark:bg-brand/[0.08]"
+          : "border-foreground/10 bg-foreground/[0.03] hover:border-foreground/25 hover:bg-foreground/[0.06]",
       )}
     >
-      <div className="absolute top-3 right-3 flex items-center gap-1">
-        {/* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role */}
-        <span
-          role="button" // eslint-disable-line
-          tabIndex={0}
-          title={m.presetCustomize()}
-          onClick={(e) => {
-            e.stopPropagation();
-            onCustomizePreset(preset.id);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.stopPropagation();
-              e.preventDefault();
-              onCustomizePreset(preset.id);
-            }
-          }}
-          className={cn(
-            "flex h-5 w-5 cursor-pointer items-center justify-center rounded-full transition-colors",
-            active
-              ? "text-primary hover:bg-primary/20"
-              : "text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted",
-          )}
-        >
-          <Pencil className="h-2.5 w-2.5" />
+      <button
+        type="button"
+        onClick={() => onApplyPreset(preset.id)}
+        className="flex flex-1 cursor-pointer flex-col gap-4 rounded-xl p-4 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand sm:p-5"
+      >
+        <span className="space-y-1.5 pr-8">
+          <span
+            className={cn(
+              "flex items-center gap-2 font-mono text-base font-bold tracking-[-0.02em]",
+              active ? "text-ink dark:text-brand" : "text-foreground",
+            )}
+          >
+            {title ?? localizedPreset.name}
+            {active && <Check className="size-4 shrink-0" aria-hidden />}
+          </span>
+          <span className="block text-muted-foreground text-sm leading-snug">
+            {localizedPreset.description}
+          </span>
         </span>
-        {active && (
-          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <Check className="h-3 w-3" />
-          </div>
-        )}
-      </div>
 
-      <div className="space-y-1 pr-6">
-        <h3 className="font-mono text-sm font-medium">{title ?? localizedPreset.name}</h3>
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          {localizedPreset.description}
-        </p>
-        {starterTrack ? (
-          <span
-            title={starterTrack.evidence.limitations.join(" ")}
-            className={cn(
-              "inline-flex border px-1.5 py-0.5 font-mono text-[9px]",
-              starterTrack.evidence.level === "runtime-verified" &&
-                starterTrack.evidence.freshness === "current"
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                : "border-border bg-muted/40 text-muted-foreground",
-            )}
-          >
-            {starterTrack.evidence.level.replace("-", " ")} evidence
-          </span>
-        ) : null}
-      </div>
+        <span className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2">
+          {highlights.map((tech) => (
+            <span key={tech} title={tech} className="flex items-center">
+              <TechIcon techId={tech} name={tech} className="size-5" />
+            </span>
+          ))}
+          {starterTrack && (
+            <span
+              title={starterTrack.evidence.limitations.join(" ")}
+              className="ml-auto flex items-center gap-1.5 text-[11px] text-muted-foreground"
+            >
+              <span
+                className={cn(
+                  "size-1.5 rounded-full",
+                  verified ? "bg-emerald-500" : "bg-foreground/30",
+                )}
+              />
+              {starterTrack.evidence.level.replace("-", " ")}
+            </span>
+          )}
+        </span>
+      </button>
 
-      <div className="flex flex-wrap gap-1.5">
-        {highlights.map((tech) => (
-          <span
-            key={tech}
-            className={cn(
-              "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px]",
-              active
-                ? "border-primary/20 bg-primary/10 text-primary"
-                : "border-border bg-muted/50 text-muted-foreground group-hover:border-muted-foreground/20",
-            )}
-          >
-            <TechIcon techId={tech} name={tech} className="h-3 w-3" />
-            {tech}
-          </span>
-        ))}
-      </div>
-    </button>
+      <button
+        type="button"
+        aria-label={m.presetCustomize()}
+        title={m.presetCustomize()}
+        onClick={() => onCustomizePreset(preset.id)}
+        className="absolute top-3 right-3 flex size-8 cursor-pointer items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-foreground/10 hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+      >
+        <Pencil className="size-4" />
+      </button>
+    </div>
+  );
+}
+
+function GroupHeading({ icon, name, count }: { icon: ReactNode; name: string; count: number }) {
+  return (
+    <div className="mb-3 flex items-center gap-2">
+      {icon}
+      <h2 className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+        {name}
+      </h2>
+      <span className="font-mono text-[11px] text-muted-foreground/60">{count}</span>
+    </div>
   );
 }
 
@@ -223,7 +223,6 @@ export function PresetsPanel({
   onApplyPreset,
   onCustomizePreset,
   starterTrackFilters,
-  onStarterTrackFiltersChange,
 }: PresetsPanelProps) {
   const evidenceInventory = useCapabilityEvidenceInventory();
   const filteredCategories = PRESET_CATEGORIES.filter((c) => c.ecosystem === ecosystem);
@@ -238,80 +237,66 @@ export function PresetsPanel({
       }).tracks.filter((track) => track.ecosystem === ecosystem),
     [ecosystem, evidenceInventory, starterTrackFilters],
   );
+  const grid = "grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4";
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex items-center gap-2 border-b border-border bg-muted/20 px-3 py-1.5 sm:gap-4">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Zap className="h-3.5 w-3.5" />
-          <span>{m.presetCount({ count: filteredPresets.length })}</span>
-        </div>
-        <span className="ml-auto text-xs text-muted-foreground">{m.presetClickToApply()}</span>
-      </div>
+    <div className="h-full overflow-y-auto px-3 pt-2 pb-24 sm:px-4">
+      <div className="space-y-8">
+        {starterTracks.length > 0 && (
+          <section>
+            <GroupHeading
+              icon={<Zap className="size-4 text-ink dark:text-brand" />}
+              name={m.presetStarterTracks()}
+              count={starterTracks.length}
+            />
+            <div className={grid}>
+              {starterTracks.map((track) => {
+                const preset = PRESET_TEMPLATES.find((p) => p.id === track.presetId);
+                if (!preset) return null;
 
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4">
-        <div className="space-y-6">
-          {starterTracks.length > 0 && (
-            <section>
-              <div className="mb-3 flex items-center gap-2">
-                <Zap className="h-4 w-4 text-primary" />
-                <h2 className="font-mono text-sm font-medium">{m.presetStarterTracks()}</h2>
-                <span className="text-xs text-muted-foreground">{starterTracks.length}</span>
-              </div>
+                return (
+                  <PresetCard
+                    key={track.id}
+                    preset={preset}
+                    stack={stack}
+                    ecosystem={ecosystem}
+                    title={getStarterTrackName(track)}
+                    starterTrack={track}
+                    onApplyPreset={onApplyPreset}
+                    onCustomizePreset={onCustomizePreset}
+                  />
+                );
+              })}
+            </div>
+          </section>
+        )}
 
-              <StarterTrackFilters
-                filters={starterTrackFilters}
-                onChange={onStarterTrackFiltersChange}
+        {filteredCategories.map((category) => {
+          const categoryPresets = filteredPresets.filter((p) => p.category === category.id);
+          if (categoryPresets.length === 0) return null;
+
+          return (
+            <section key={category.id}>
+              <GroupHeading
+                icon={<TechIcon techId={category.icon} name={category.name} className="size-4" />}
+                name={category.name}
+                count={categoryPresets.length}
               />
-
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {starterTracks.map((track) => {
-                  const preset = PRESET_TEMPLATES.find((p) => p.id === track.presetId);
-                  if (!preset) return null;
-
-                  return (
-                    <PresetCard
-                      key={track.id}
-                      preset={preset}
-                      stack={stack}
-                      title={getStarterTrackName(track)}
-                      starterTrack={track}
-                      onApplyPreset={onApplyPreset}
-                      onCustomizePreset={onCustomizePreset}
-                    />
-                  );
-                })}
+              <div className={grid}>
+                {categoryPresets.map((preset) => (
+                  <PresetCard
+                    key={preset.id}
+                    preset={preset}
+                    stack={stack}
+                    ecosystem={ecosystem}
+                    onApplyPreset={onApplyPreset}
+                    onCustomizePreset={onCustomizePreset}
+                  />
+                ))}
               </div>
             </section>
-          )}
-
-          {filteredCategories.map((category) => {
-            const categoryPresets = filteredPresets.filter((p) => p.category === category.id);
-            if (categoryPresets.length === 0) return null;
-
-            return (
-              <section key={category.id}>
-                <div className="mb-3 flex items-center gap-2">
-                  <TechIcon techId={category.icon} name={category.name} className="h-4 w-4" />
-                  <h2 className="font-mono text-sm font-medium">{category.name}</h2>
-                  <span className="text-xs text-muted-foreground">{categoryPresets.length}</span>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {categoryPresets.map((preset) => (
-                    <PresetCard
-                      key={preset.id}
-                      preset={preset}
-                      stack={stack}
-                      onApplyPreset={onApplyPreset}
-                      onCustomizePreset={onCustomizePreset}
-                    />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
-        </div>
+          );
+        })}
       </div>
     </div>
   );

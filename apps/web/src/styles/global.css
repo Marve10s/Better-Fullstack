@@ -161,6 +161,22 @@
   }
 }
 
+/* Builder language switch: the options dissolve, the bar stays live so its
+   sliding language pill is not ghosted by a snapshot of itself. */
+::view-transition-old(builder-content),
+::view-transition-new(builder-content) {
+  animation-duration: 0.32s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(builder-bar) {
+  display: none;
+}
+
+::view-transition-new(builder-bar) {
+  animation: none;
+}
+
 .border-beam {
   animation: border-beam 3s linear infinite;
 }
@@ -331,43 +347,43 @@
 .dark {
   --brand: #c6e853;
   --ink: #fafafa;
-  --surface: #0a0a0a;
-  --surface-raised: #111111;
-  --edge: #1f1f1f;
+  --surface: #171614;
+  --surface-raised: #1e1d1a;
+  --edge: #2b2926;
   --soft: #a3a3a3;
   --color-fd-primary: #f2eeee;
   --color-fd-primary-foreground: #0c0c0e;
-  --color-fd-background: #0e0e10;
-  --background: #0e0e10;
+  --color-fd-background: #171614;
+  --background: #171614;
   --foreground: #f2eeee;
-  --card: #0e0e10;
+  --card: #171614;
   --card-foreground: #f2eeee;
-  --popover: #131212;
+  --popover: #1c1b18;
   --popover-foreground: #f2eeee;
   --primary: #f2eeee;
   --primary-foreground: #0c0c0e;
-  --secondary: #1a1a1a;
+  --secondary: #24221f;
   --secondary-foreground: #f2eeee;
-  --muted: #1a1a1a;
+  --muted: #24221f;
   --muted-foreground: #b3b0b0;
   --accent: #f2eeee;
   --accent-foreground: #0c0c0e;
   --destructive: #ef4444;
-  --border: #2a2a2a;
-  --input: #1a1a1a;
+  --border: #33302c;
+  --input: #24221f;
   --ring: #f2eeee;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: #0e0e10;
+  --sidebar: #171614;
   --sidebar-foreground: #f2eeee;
   --sidebar-primary: #f2eeee;
   --sidebar-primary-foreground: #0c0c0e;
   --sidebar-accent: #f2eeee;
   --sidebar-accent-foreground: #0c0c0e;
-  --sidebar-border: #2a2a2a;
+  --sidebar-border: #33302c;
   --sidebar-ring: #f2eeee;
   --destructive-foreground: #f2eeee;
   --radius: 0.35rem;
@@ -393,9 +409,9 @@
   --code-fg: #e6edf3;
   --code-muted: #8b949e;
   --code-chrome-bg: #21262d;
-  --docs-surface: #111113;
-  --docs-surface-elevated: #151518;
-  --docs-border-subtle: #2a2a2e;
+  --docs-surface: #1a1917;
+  --docs-surface-elevated: #1f1e1b;
+  --docs-border-subtle: #33302c;
   --docs-border-strong: color-mix(in srgb, var(--docs-link) 30%, transparent);
   --docs-accent: #f2eeee;
   --docs-accent-soft: rgb(242 238 238 / 0.08);
