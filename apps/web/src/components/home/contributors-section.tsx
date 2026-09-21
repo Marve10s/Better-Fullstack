@@ -87,7 +87,7 @@ export default function ContributorsSection() {
         <div className="grid grid-cols-12 gap-x-4 gap-y-6">
           <div className="col-span-12 sm:col-span-7">
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink dark:text-brand">
-              ✦ {m.homeContributorsEyebrow()}
+              {m.homeContributorsEyebrow()}
             </p>
             <h2
               className="mt-4 max-w-[18ch] text-balance font-mono font-bold tracking-[-0.04em]"

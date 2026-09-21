@@ -14,7 +14,7 @@ type ResolvedTheme = "light" | "dark";
 
 export const THEME_STORAGE_KEY = "theme";
 const DARK_THEME_COLOR = "#050505";
-const LIGHT_THEME_COLOR = "#ffffff";
+const LIGHT_THEME_COLOR = "#f7f0df";
 
 interface ThemeContextValue {
   theme: Theme;

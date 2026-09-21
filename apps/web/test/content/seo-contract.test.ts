@@ -147,8 +147,8 @@ describe("SEO contracts", () => {
     expect(rootRouteSource).toContain("errorComponent: RootErrorComponent");
     expect(rootRouteSource).toContain('<meta name="robots" content={NOINDEX_ROBOTS} />');
     expect(rootRouteSource).toContain("<title>{ERROR_PAGE_TITLE}</title>");
-    expect(navbarSource).toContain('data-brand-short="b/f"');
-    expect(navbarSource).toContain('data-brand-full="better/fullstack"');
+    expect(navbarSource).toContain("src={logoLight}");
+    expect(navbarSource).toContain("src={logoDark}");
     expect(navbarSource).not.toContain('<span className="sm:hidden">');
   });
 

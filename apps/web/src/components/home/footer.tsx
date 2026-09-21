@@ -1,4 +1,3 @@
-import { PACKAGE_MANAGER_COMMANDS } from "@/lib/project/home-display-data";
 import { Link } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "motion/react";
 import { useState, type ReactNode } from "react";
@@ -6,6 +5,7 @@ import { TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 
 import { requestLaunchRadarOpen } from "@/lib/content/launch-radar";
 import { cn } from "@/lib/platform/utils";
+import { PACKAGE_MANAGER_COMMANDS } from "@/lib/project/home-display-data";
 import { m } from "@/paraglide/messages.js";
 
 const GUIDE_LINKS = [
@@ -35,7 +35,7 @@ function LinkColumn({
 }) {
   return (
     <nav aria-label={title} className={className}>
-      <p className={COLUMN_TITLE}>✦ {title}</p>
+      <p className={COLUMN_TITLE}>{title}</p>
       <ul className="mt-4 space-y-2.5">{children}</ul>
     </nav>
   );

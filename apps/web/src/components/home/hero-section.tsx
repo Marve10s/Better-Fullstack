@@ -5,8 +5,13 @@ import {
   TbArrowRight as ArrowRight,
   TbCheck as Check,
   TbCopy as Copy,
+  TbAppWindow as AppWindow,
+  TbDeviceMobile as DeviceMobile,
+  TbServer as Server,
+  TbStack2 as Stack,
 } from "react-icons/tb";
 
+import { type Scene, sceneImage, useHeroScene, useThemePair } from "@/components/home/hero-scene";
 import { LIKED_BY } from "@/components/home/testimonials-data";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/platform/utils";
@@ -24,18 +29,69 @@ const ACCENT_TEXT = "text-ink dark:text-brand";
  * hidden behind the short command.
  */
 const SHAPES = [
-  { id: "fullstack", label: m.homeStarterShapeFullstack, flags: "" },
-  { id: "frontend", label: m.homeStarterShapeFrontend, flags: "--shape frontend" },
-  { id: "backend", label: m.homeStarterShapeBackend, flags: "--shape backend" },
-  { id: "mobile", label: m.homeStarterShapeMobile, flags: "--shape mobile" },
+  { id: "fullstack", label: m.homeStarterShapeFullstack, icon: Stack, flags: "" },
+  { id: "frontend", label: m.homeStarterShapeFrontend, icon: AppWindow, flags: "--shape frontend" },
+  { id: "backend", label: m.homeStarterShapeBackend, icon: Server, flags: "--shape backend" },
+  { id: "mobile", label: m.homeStarterShapeMobile, icon: DeviceMobile, flags: "--shape mobile" },
 ] as const;
 
 type ShapeId = (typeof SHAPES)[number]["id"];
+
+const WORD_STAGGER_SECONDS = 0.09;
+
+function HeroWords({ text, from = 0 }: { text: string; from?: number }) {
+  return text.split(" ").map((word, index) => (
+    <Fragment key={`${word}-${index}`}>
+      {index > 0 && " "}
+      <span
+        className="hero-word"
+        style={{ animationDelay: `${(from + index) * WORD_STAGGER_SECONDS}s` }}
+      >
+        {word}
+      </span>
+    </Fragment>
+  ));
+}
+
+function HeroBackdrop({ scene }: { scene: Scene }) {
+  const image =
+    "absolute inset-0 size-full object-cover transition-opacity duration-1000 ease-in-out";
+  const style = { objectPosition: `${scene.focus} 100%` };
+  const show = useThemePair();
+
+  return (
+    <div
+      aria-hidden
+      className="hero-backdrop pointer-events-none absolute inset-x-0 bottom-0 -z-10 aspect-[2/1] min-h-[26rem]"
+    >
+      {show.day && (
+        <img
+          src={sceneImage(scene, "day")}
+          alt=""
+          decoding="async"
+          style={style}
+          className={cn(image, "opacity-100 dark:opacity-0")}
+        />
+      )}
+      {show.night && (
+        <img
+          src={sceneImage(scene, "night")}
+          alt=""
+          decoding="async"
+          style={style}
+          className={cn(image, "opacity-0 dark:opacity-100")}
+        />
+      )}
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--surface)_0%,color-mix(in_oklab,var(--surface)_70%,transparent)_7%,color-mix(in_oklab,var(--surface)_30%,transparent)_16%,transparent_30%,transparent_88%,var(--surface)_100%)]" />
+    </div>
+  );
+}
 
 export default function HeroSection() {
   const [shape, setShape] = useState<ShapeId>("fullstack");
   const [pm, setPm] = useState<PM>("bun");
   const [copied, setCopied] = useState(false);
+  const scene = useHeroScene();
 
   const flags = SHAPES.find((entry) => entry.id === shape)?.flags ?? "";
   const command = [PACKAGE_MANAGER_COMMANDS[pm], flags].filter(Boolean).join(" ");
@@ -52,17 +108,26 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative bg-surface text-ink">
-      <div className="mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-3xl flex-col items-center justify-center px-4 py-16 sm:py-20">
+    <section className="relative isolate overflow-hidden bg-surface text-ink">
+      {scene && <HeroBackdrop scene={scene} />}
+      <div className="mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-3xl flex-col items-center justify-center px-4 pt-16 pb-[clamp(15rem,27vw,26rem)] sm:pt-20">
         <h1
           className="text-balance text-center font-mono font-bold tracking-[-0.045em] text-ink"
           style={{ fontSize: "clamp(2.25rem, 6.5vw, 4.5rem)", lineHeight: 1 }}
         >
-          {m.homeStarterTitleA()}{" "}
-          <span className={cn("italic", ACCENT_TEXT)}>{m.homeStarterTitleB()}</span>
+          <HeroWords text={m.homeStarterTitleA()} />{" "}
+          <span className={cn("italic", ACCENT_TEXT)}>
+            <HeroWords
+              text={m.homeStarterTitleB()}
+              from={m.homeStarterTitleA().split(" ").length}
+            />
+          </span>
         </h1>
 
-        <p className="mt-5 max-w-2xl whitespace-pre-line text-center text-sm leading-relaxed text-soft sm:mt-6 sm:text-base">
+        <p
+          style={{ animationDelay: "0.45s" }}
+          className="hero-rise mt-5 max-w-2xl whitespace-pre-line text-center text-sm leading-relaxed text-soft sm:mt-6 sm:text-base"
+        >
           {m
             .homeStarterSubtitle()
             .split("→")
@@ -94,7 +159,7 @@ export default function HeroSection() {
             ))}
         </p>
 
-        <div className="mt-8 w-full sm:mt-10">
+        <div style={{ animationDelay: "0.6s" }} className="hero-rise mt-8 w-full sm:mt-10">
           <div className="flex flex-wrap justify-center gap-2">
             {SHAPES.map((entry) => (
               <button
@@ -103,19 +168,20 @@ export default function HeroSection() {
                 onClick={() => setShape(entry.id)}
                 aria-pressed={shape === entry.id}
                 className={cn(
-                  "cursor-pointer rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                  "inline-flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-md transition-colors",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
                   shape === entry.id
-                    ? "border-brand bg-brand text-[#0a0a0a]"
-                    : "border-edge bg-surface-raised text-ink hover:border-soft",
+                    ? "border-brand bg-brand/85 text-[#0a0a0a]"
+                    : "border-ink/10 bg-surface/45 text-ink hover:bg-surface/70 dark:border-white/15",
                 )}
               >
+                <entry.icon aria-hidden className="size-4 stroke-[1.75]" />
                 {entry.label()}
               </button>
             ))}
           </div>
 
-          <div className="mt-6 flex items-center gap-3 rounded-2xl border border-edge bg-surface-raised px-4 py-3.5 sm:mt-8 sm:rounded-full sm:px-6">
+          <div className="mt-6 flex items-center gap-3 rounded-2xl border border-ink/10 bg-surface/45 px-4 py-3.5 backdrop-blur-md sm:mt-8 dark:border-white/15 sm:rounded-full sm:px-6">
             <span className={cn("shrink-0 font-mono text-sm", ACCENT_TEXT)}>$</span>
             <code className="no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-xs sm:text-sm">
               {PACKAGE_MANAGER_COMMANDS[pm]}
@@ -174,7 +240,10 @@ export default function HeroSection() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-x-4 gap-y-3">
+        <div
+          style={{ animationDelay: "0.75s" }}
+          className="hero-rise mt-12 flex flex-wrap items-center justify-center gap-x-4 gap-y-3"
+        >
           <ul className="isolate flex -space-x-2.5" aria-label={m.homeLikedOnX()}>
             {LIKED_BY.map((person) => (
               <li
@@ -225,7 +294,7 @@ export default function HeroSection() {
 
           <div className="border-l border-edge pl-4">
             <p className={cn("font-mono text-[10px] uppercase tracking-[0.2em]", ACCENT_TEXT)}>
-              ✦ {m.homeLikedOnX()}
+              {m.homeLikedOnX()}
             </p>
           </div>
         </div>

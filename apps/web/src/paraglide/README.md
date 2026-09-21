@@ -2,7 +2,7 @@
 
 > Auto-generated i18n message functions. Import `messages.js` to use translated strings.
 
-Compiled from: `/Users/ibrahime/Documents/Projects/Better-Fullstack-posthog/apps/web/project.inlang`
+Compiled from: `./project.inlang`
 
 
 ## What is this folder?

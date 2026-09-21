@@ -6,10 +6,10 @@ import type { TechCategory } from "@/lib/stack/types";
 export { PACKAGE_MANAGER_COMMANDS } from "@better-fullstack/types";
 
 export const HOME_COMBINATIONS_METRICS = {
+  totalDigits: combinationsMetrics.totalCombinations.toString(),
   totalScientific: combinationsMetrics.totalScientific,
   yearsAtOneMillisecondScientific: combinationsMetrics.yearsAtOneMillisecondScientific,
   universeLifetimesScientific: combinationsMetrics.universeLifetimesScientific,
-  universeSandRatioScientific: combinationsMetrics.universeSandRatioScientific,
 };
 
 function getOptions(categories: TechCategory[]) {

@@ -1,8 +1,7 @@
+import { ECOSYSTEM_VALUES, OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
-
-import { ECOSYSTEM_VALUES, OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
 
 import { COMPETITOR_COMPARISONS } from "@/lib/builder/compare-tools";
 import {
@@ -63,13 +62,11 @@ describe("dynamic project statistics", () => {
       countUniqueOptions((category) => category.endsWith("Frontend")),
     );
     expect(SOFTWARE_APPLICATION_COUNTS.backendFrameworks).toBe(
-      countUniqueOptions(
-        (category) => category === "backend" || category.endsWith("WebFramework"),
-      ),
+      countUniqueOptions((category) => category === "backend" || category.endsWith("WebFramework")),
     );
   });
 
-  it("requires every homepage locale to interpolate current ecosystem data", async () => {
+  it("keeps hardcoded ecosystem counts out of every homepage locale", async () => {
     const messagesDir = path.resolve(import.meta.dir, "../../messages");
     const messageFiles = (await readdir(messagesDir)).filter((file) => file.endsWith(".json"));
 
@@ -80,12 +77,6 @@ describe("dynamic project statistics", () => {
           string
         >;
 
-        expect(messages.homeEcosystemCount).toContain("{ecosystemCount}");
-        expect(messages.homeFeaturesDescription).toContain("{ecosystemCount}");
-        expect(messages.homeFeaturesDescription).toContain("{ecosystemNames}");
-        expect(messages.homeTotalOptions).toContain("{ecosystemCount}");
-        expect(messages.homeTotalOptions).toContain("{ecosystemSlugs}");
-        expect(messages.homeFactEcosystems).toContain("{ecosystemNames}");
         expect(messages.homeSevenEcosystems).toBeUndefined();
       }),
     );

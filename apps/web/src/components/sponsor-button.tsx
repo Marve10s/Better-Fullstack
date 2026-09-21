@@ -31,7 +31,7 @@ export function SponsorButton() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Sponsor Better Fullstack on GitHub"
-        className="flex h-12 items-center overflow-hidden rounded-full border border-border bg-foreground text-background shadow-2xl shadow-black/10 outline-none transition-[background-color,box-shadow] duration-300 group-hover:border-[#ea4aaa] group-hover:bg-[#ea4aaa] group-hover:text-white group-focus-within:border-[#ea4aaa] group-focus-within:bg-[#ea4aaa] group-focus-within:text-white focus-visible:ring-2 focus-visible:ring-[#ea4aaa]/40"
+        className="flex h-12 items-center overflow-hidden rounded-full border border-ink/10 bg-surface/45 text-ink shadow-2xl shadow-black/10 outline-none backdrop-blur-md dark:border-white/15 transition-[background-color,box-shadow] duration-300 group-hover:border-[#ea4aaa] group-hover:bg-[#ea4aaa] group-hover:text-white group-focus-within:border-[#ea4aaa] group-focus-within:bg-[#ea4aaa] group-focus-within:text-white focus-visible:ring-2 focus-visible:ring-[#ea4aaa]/40"
       >
         <span className="relative flex size-12 shrink-0 items-center justify-center">
           <Heart

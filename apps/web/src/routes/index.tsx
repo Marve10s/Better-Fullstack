@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import AiAnswerSection from "@/components/home/ai-answer-section";
 import CombinationsSection from "@/components/home/combinations-section";
 import ContributorsSection from "@/components/home/contributors-section";
 import FeaturesSection from "@/components/home/features-section";
@@ -58,6 +59,7 @@ function HomePage() {
         <FeaturesSection />
         <CombinationsSection />
         <TestimonialsSection />
+        <AiAnswerSection />
         <ContributorsSection />
         <Footer />
       </div>

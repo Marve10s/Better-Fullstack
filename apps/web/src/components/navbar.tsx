@@ -19,6 +19,8 @@ import {
   TbSun as Sun,
 } from "react-icons/tb";
 
+import logoDark from "@/assets/brand/bf-logo-ascii-dark.png?no-inline";
+import logoLight from "@/assets/brand/bf-logo-ascii-light.png?no-inline";
 import { formatCompactStat, useProjectStats } from "@/components/home/hero-stats";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
@@ -76,50 +78,24 @@ function GithubStarButton() {
       rel="noopener noreferrer"
       aria-label={m.navGithubRepository()}
       title={stars === undefined ? m.navGithubRepository() : `${stars.toLocaleString()} stars`}
-      whileHover={reduceMotion ? undefined : { y: -2, scale: 1.025 }}
+      whileHover={reduceMotion ? undefined : { y: -1 }}
       whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-      transition={{
-        y: { duration: 0.18, ease: "easeOut" },
-        scale: { duration: 0.18, ease: "easeOut" },
-      }}
-      className="group relative isolate inline-flex h-9 transform-gpu overflow-hidden rounded-[10px] p-px font-mono text-[11px] font-semibold text-foreground shadow-[0_5px_16px_rgba(24,213,255,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#18D5FF] focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      transition={{ duration: 0.18, ease: "easeOut" }}
+      className="group inline-flex h-9 items-center gap-2 rounded-full border border-ink/10 bg-surface/45 px-3 font-mono text-[11px] font-semibold text-foreground backdrop-blur-md transition-colors hover:bg-surface/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:border-white/15"
     >
-      <motion.span
-        animate={
-          reduceMotion ? undefined : { backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }
-        }
-        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-        className="absolute inset-0 rounded-[10px] bg-[linear-gradient(105deg,#18D5FF_0%,#C6E853_38%,#FF5C8A_68%,#18D5FF_100%)] bg-[length:240%_240%] will-change-[background-position]"
+      <Github className="size-4" aria-hidden />
+      <span className="sr-only">GitHub</span>
+      <span className="h-3.5 w-px bg-ink/15 dark:bg-white/20" aria-hidden />
+      <Star
+        className="size-3.5 fill-current text-ink transition-transform duration-200 group-hover:rotate-[-12deg] group-hover:scale-110 dark:text-brand"
         aria-hidden
       />
-      <span className="relative z-10 flex h-full overflow-hidden rounded-[9px] bg-background/95 backdrop-blur-sm">
-        <span
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(110deg,transparent_20%,rgba(24,213,255,0.08)_45%,rgba(255,92,138,0.08)_65%,transparent_82%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-          aria-hidden
-        />
-        <span className="relative flex h-full items-center gap-2 px-2.5">
-          <Github
-            className="size-4 transition-transform duration-200 group-hover:rotate-[-6deg] group-hover:scale-110"
-            aria-hidden
-          />
-          <span className="sr-only">GitHub</span>
-        </span>
-        <span className="relative flex h-full min-w-12 items-center justify-center gap-1.5 border-border/80 border-l bg-muted/35 px-2.5 tabular-nums">
-          <motion.span
-            animate={
-              reduceMotion ? undefined : { rotate: [0, -8, 10, 0], scale: [1, 1.13, 1.13, 1] }
-            }
-            transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 2.8, ease: "easeInOut" }}
-            className="text-[#FF5C8A] drop-shadow-[0_0_5px_rgba(255,92,138,0.45)]"
-          >
-            <Star className="size-3.5 fill-current" aria-hidden />
-          </motion.span>
-          {stars === undefined ? (
-            <span className="h-2.5 w-5 animate-pulse rounded-sm bg-[#18D5FF]/25" aria-hidden />
-          ) : (
-            formatCompactStat(stars)
-          )}
-        </span>
+      <span className="tabular-nums">
+        {stars === undefined ? (
+          <span className="block h-2.5 w-5 animate-pulse rounded-sm bg-ink/15 dark:bg-white/20" />
+        ) : (
+          formatCompactStat(stars)
+        )}
       </span>
     </motion.a>
   );
@@ -533,14 +509,24 @@ export function Navbar() {
         <div className="flex min-w-0 items-center gap-5 sm:gap-7">
           <Link
             to="/"
-            className="flex items-center font-mono text-sm font-bold tracking-[-0.02em] text-foreground sm:text-base"
+            className="flex shrink-0 items-center"
             aria-label={`${SITE_NAME}, ${m.navHome()}`}
           >
-            <span
-              aria-hidden
-              data-brand-short="b/f"
-              data-brand-full="better/fullstack"
-              className="before:content-[attr(data-brand-short)] sm:before:content-[attr(data-brand-full)]"
+            <img
+              src={logoLight}
+              alt=""
+              width={32}
+              height={32}
+              fetchPriority="high"
+              className="size-8 dark:hidden"
+            />
+            <img
+              src={logoDark}
+              alt=""
+              width={32}
+              height={32}
+              fetchPriority="high"
+              className="hidden size-8 dark:block"
             />
           </Link>
           {!onBuilder && (

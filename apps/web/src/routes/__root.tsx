@@ -30,7 +30,7 @@ import { getLocale, getTextDirection } from "@/paraglide/runtime.js";
 import "@/styles/global.css";
 
 const DARK_THEME_COLOR = "#050505";
-const LIGHT_THEME_COLOR = "#ffffff";
+const LIGHT_THEME_COLOR = "#f7f0df";
 const THEME_INIT_SCRIPT = `
 (() => {
   try {
