@@ -34,6 +34,7 @@ the executable source.
 - `completed/competitive-analysis-2026-05-21.md`
 - `completed/deployment-docs-and-docker-foundation-2026-05-21.md`
 - `completed/dependable-recipe-generation-2026-08-23.md`
+- `completed/devframe-devtools-2026-09-21.md`
 - `completed/documentation-site-2026-04-29.md`
 - `completed/dotnet-ecosystem-2026-06-10.md`
 - `completed/domain-authority-and-mutation-contracts-2026-08-23.md`
