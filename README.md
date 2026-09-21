@@ -1,9 +1,9 @@
 <div align="center">
 
 <p>
-<a href="https://better-fullstack.dev"><img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/apps/web/public/favicon/favicon.svg" width="72" height="72" alt="Better Fullstack" align="middle"></a>
+<a href="https://better-fullstack.dev"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme-icons/bf-logo-ascii-dark.png"><img src=".github/media/readme-icons/bf-logo-ascii-light.png" width="72" height="72" alt="Better Fullstack" align="middle"></picture></a>
 &nbsp;&nbsp;&nbsp;
-<img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/arrow-right.svg" width="40" height="40" alt="to" align="middle">
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme-icons/arrow-ascii-dark.png"><img src=".github/media/readme-icons/arrow-ascii-light.png" width="40" height="40" alt="to" align="middle"></picture>
 &nbsp;&nbsp;&nbsp;
 <picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme-icons/typescript-ascii-dark.png"><img src=".github/media/readme-icons/typescript-ascii-light.png" width="44" height="44" alt="TypeScript" title="TypeScript" align="middle"></picture>
 &nbsp;&nbsp;&nbsp;
