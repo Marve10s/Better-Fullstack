@@ -83,6 +83,13 @@ describe("devtools MCP projection", () => {
     expect(payload).toMatchObject({ success: false, projectDir: missingProject });
   });
 
+  it("defaults the project directory to the served project for agents", async () => {
+    const devtools = await connectDevtoolsProjection();
+    const result = await devtools.callTool({ name: "bfs_get_project_status", arguments: {} });
+    expect(result.isError).toBeFalsy();
+    expect(result.structuredContent).toMatchObject({ projectDir: path.resolve(tmpdir()) });
+  });
+
   it("is discovered by the devframe connect gateway", async () => {
     const server = await startDevtoolsServer({ projectDir: tmpdir() });
     closers.push(() => server.close());

@@ -109,20 +109,24 @@ export function createDevtoolsDefinition(options: DevtoolsDefinitionOptions = {}
           (takesProjectDir || SNAPSHOT_CATALOG_OPERATIONS.has(operation.name)) &&
           operation.input.safeParse({ projectDir }).success;
 
-        // Panel-facing RPC. The project directory defaults to the served project
-        // so a static build can bake the no-argument call of every read.
+        // This server serves one project, so the project directory defaults to
+        // it on both routes. A static build also needs that to bake the
+        // no-argument call of every read.
+        const invoke = async (input?: Record<string, unknown>) =>
+          (
+            await operation.invoke({
+              ...input,
+              ...(takesProjectDir && !input?.projectDir ? { projectDir } : {}),
+            })
+          ).output;
+
+        // Panel-facing RPC.
         scope.rpc.register({
           name: operation.name,
           type: operation.safety === "read" ? "query" : "action",
           jsonSerializable: true,
           ...(snapshot ? { snapshot: true } : {}),
-          handler: async (input?: Record<string, unknown>) =>
-            (
-              await operation.invoke({
-                ...input,
-                ...(takesProjectDir && !input?.projectDir ? { projectDir } : {}),
-              })
-            ).output,
+          handler: invoke,
         });
 
         // Agent-facing tool with explicit JSON schemas so the input stays the
@@ -136,7 +140,7 @@ export function createDevtoolsDefinition(options: DevtoolsDefinitionOptions = {}
           ...(operation.output
             ? { outputSchema: toMcpJsonSchema(operation.output, "output") }
             : {}),
-          handler: async (input: unknown) => (await operation.invoke(input)).output,
+          handler: invoke,
         });
       }
     },
