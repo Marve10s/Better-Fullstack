@@ -1,4 +1,3 @@
-import { getCategoryOrderForEcosystem } from "@better-fullstack/types";
 import { useState } from "react";
 import {
   TbCopy as Copy,
@@ -19,6 +18,7 @@ import {
   stackStateToStackParts,
 } from "@/components/stack-builder/stack-graph-comparison";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
+import { getRelevantStackKeys } from "@/components/stack-builder/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,7 +36,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { getLocalizedCategoryDisplayName } from "@/lib/i18n/builder-copy";
 import { cn } from "@/lib/platform/utils";
-import { getStackKeyForCategory } from "@/lib/stack/stack-utils";
 import { m } from "@/paraglide/messages.js";
 
 /** Subset of keys used for the card highlight badges. */
@@ -84,15 +83,6 @@ function formatSavedAt(value: string) {
   } catch {
     return value;
   }
-}
-
-function getRelevantStackKeys(ecosystem: StackState["ecosystem"]): readonly (keyof StackState)[] {
-  return [
-    "ecosystem",
-    "projectName",
-    ...getCategoryOrderForEcosystem(ecosystem).map(getStackKeyForCategory),
-    "yolo",
-  ];
 }
 
 function getStackHighlights(stack: StackState) {
@@ -144,6 +134,9 @@ function renderConfigValue(value: string | string[]) {
     </span>
   );
 }
+
+const QUIET_ACTION =
+  "flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-3 text-muted-foreground text-xs transition-colors hover:bg-foreground/10 hover:text-foreground";
 
 export function SavedStacksPanel({
   entries,
@@ -297,27 +290,19 @@ export function SavedStacksPanel({
         </DialogContent>
       </Dialog>
       <div className="flex h-full flex-col overflow-hidden">
-        <div className="border-b border-border bg-muted/20 px-3 py-3">
-          <div className="space-y-1">
-            <div className="font-mono text-xs text-foreground">{m.savedTitle()}</div>
-            <p className="text-xs text-muted-foreground">{m.savedDescription()}</p>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4">
+        <div className="flex-1 overflow-y-auto px-3 pt-2 pb-24 sm:px-4">
           {sortedEntries.length === 0 ? (
-            <div className="flex h-full min-h-64 items-center justify-center p-6 text-center">
-              <div className="space-y-2">
-                <div className="text-sm font-light tracking-tight text-muted-foreground/60">
-                  {m.savedEmptyTitle()}
-                </div>
-                <p className="max-w-md text-xs leading-relaxed text-muted-foreground">
-                  {m.savedEmptyDescription()}
-                </p>
+            <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-foreground/15 p-8 text-center">
+              <Save className="size-6 text-muted-foreground/60" aria-hidden />
+              <div className="font-mono text-base font-bold tracking-[-0.02em]">
+                {m.savedEmptyTitle()}
               </div>
+              <p className="max-w-md text-muted-foreground text-sm leading-relaxed">
+                {m.savedEmptyDescription()}
+              </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {sortedEntries.map((entry) => {
                 const highlights = getStackHighlights(entry.stack);
                 const isEditing = editingId === entry.id;
@@ -325,7 +310,7 @@ export function SavedStacksPanel({
                 return (
                   <div
                     key={entry.id}
-                    className="relative flex flex-col gap-3 rounded-lg border border-border/60 bg-transparent p-4 transition-colors duration-300 hover:bg-muted/[0.04]"
+                    className="relative flex flex-col gap-4 rounded-xl border border-foreground/10 bg-foreground/[0.03] p-4 transition-colors hover:border-foreground/25 hover:bg-foreground/[0.06] sm:p-5"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1 space-y-1">
@@ -425,50 +410,40 @@ export function SavedStacksPanel({
                       </DropdownMenu>
                     </div>
 
-                    <div className="flex flex-wrap gap-1.5">
-                      {highlights.map((tech, i) => (
-                        <span
-                          key={tech}
-                          className={cn(
-                            "inline-flex items-center gap-1 px-0 py-0 font-mono text-[10px] text-muted-foreground/50",
-                            i < highlights.length - 1 &&
-                              "after:content-['/'] after:ml-1.5 after:text-border/60",
-                          )}
-                        >
-                          <TechIcon techId={tech} name={tech} className="h-3 w-3" />
-                          {tech}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                      {highlights.map((tech) => (
+                        <span key={tech} title={tech} className="flex items-center">
+                          <TechIcon techId={tech} name={tech} className="size-5" />
                         </span>
                       ))}
                     </div>
 
-                    <div className="grid grid-cols-3 gap-1">
-                      <Button
+                    {/* Load is the point of a saved stack, so it is the one filled action. */}
+                    <div className="mt-auto flex flex-wrap items-center gap-1">
+                      <button
                         type="button"
-                        variant="muted-outline"
-                        size="sm"
                         onClick={() => onLoadEntry(entry.id)}
+                        className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-foreground px-3.5 font-medium text-background text-xs transition-opacity hover:opacity-85"
                       >
-                        <FolderOpen className="h-3.5 w-3.5" />
+                        <FolderOpen className="size-3.5" />
                         {m.savedLoad()}
-                      </Button>
-                      <Button
+                      </button>
+                      <button
                         type="button"
-                        variant="muted-outline"
-                        size="sm"
                         onClick={() => setViewingEntryId(entry.id)}
+                        className={QUIET_ACTION}
                       >
-                        <SlidersHorizontal className="h-3.5 w-3.5" />
+                        <SlidersHorizontal className="size-3.5" />
                         {m.savedViewFullStack()}
-                      </Button>
-                      <Button
+                      </button>
+                      <button
                         type="button"
-                        variant="muted-outline"
-                        size="sm"
                         onClick={() => onOverwriteEntry(entry.id)}
+                        className={QUIET_ACTION}
                       >
-                        <Save className="h-3.5 w-3.5" />
+                        <Save className="size-3.5" />
                         {m.savedUpdate()}
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 );

@@ -1,5 +1,5 @@
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
-import { motion, LayoutGroup, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import {
   TbArrowRight as ArrowRight,
@@ -7,7 +7,6 @@ import {
   TbBook as BookOpen,
   TbCheck as Check,
   TbChevronDown as ChevronDown,
-  TbClipboardCopy as ClipboardCopy,
   TbBrandGithub as Github,
   TbStack3 as Layers3,
   TbLanguage as Languages,
@@ -24,10 +23,6 @@ import logoLight from "@/assets/brand/bf-logo-ascii-light.png?no-inline";
 import { formatCompactStat, useProjectStats } from "@/components/home/hero-stats";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
-  CREATION_MODE_INDICATOR_ID,
-  CREATION_MODE_INDICATOR_TRANSITION,
-} from "@/components/ui/chrome-button";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -39,7 +34,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { type BuilderMode, useBuilderMode } from "@/lib/builder/builder-mode-bridge";
 import { useTheme } from "@/lib/content/theme";
 import { LOCALE_LABELS } from "@/lib/i18n/locales";
 import { cn } from "@/lib/platform/utils";
@@ -61,10 +55,6 @@ const MOBILE_MENU_ITEM_CLASS =
 const MOBILE_MENU_LABEL_CLASS =
   "px-1.5 pb-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70";
 const MOBILE_MENU_GROUP_CLASS = "rounded-lg border border-border/50 bg-muted/20 p-1";
-
-function getFirstPathSegment(pathname: string): string {
-  return pathname.split("/").find(Boolean) ?? "";
-}
 
 function GithubStarButton() {
   const stats = useProjectStats();
@@ -98,116 +88,6 @@ function GithubStarButton() {
         )}
       </span>
     </motion.a>
-  );
-}
-
-// On the builder page the "Try now" CTA (which links to /new) is redundant, so it
-// becomes a Copy button. The builder syncs the live stack to the URL via
-// replaceState, so we read it at click-time and regenerate the same command.
-function HeaderCopyButton() {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      // Loaded at click time: these pull in the stack-translation +
-      // compatibility bundle, which must stay out of the app entry chunk.
-      const [
-        { parseStackSelectionFromUrlRecord: parseStackFromUrlRecord },
-        { parseStackShareSlug },
-        { generateStackCommand },
-      ] = await Promise.all([
-        import("@better-fullstack/types/stack-translation"),
-        import("@/lib/stack/stack-share-paths"),
-        import("@/lib/stack/stack-utils"),
-      ]);
-      const sp = new URLSearchParams(window.location.search);
-      const record: Record<string, string | string[]> = {};
-      for (const key of sp.keys()) {
-        if (key in record) continue;
-        const values = sp.getAll(key);
-        record[key] = values.length > 1 ? values : (values[0] ?? "");
-      }
-      const pathSlug = getFirstPathSegment(window.location.pathname);
-      const stack =
-        (sp.size === 0 && pathSlug
-          ? parseStackShareSlug(pathSlug)
-          : parseStackFromUrlRecord(record)) ?? parseStackFromUrlRecord({});
-      await navigator.clipboard.writeText(generateStackCommand(stack));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {}
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      aria-label={copied ? m.navCommandCopied() : m.navCopyInstallCommand()}
-      className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-colors hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]"
-    >
-      {copied ? (
-        <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-      ) : (
-        <ClipboardCopy className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-      )}
-      {copied ? m.navCopied() : m.navCopy()}
-    </button>
-  );
-}
-
-// The builder's creation-mode switch, rendered in the header on the builder
-// page. State lives in the StackBuilder and is bridged here via useBuilderMode.
-const TOGGLE_SEGMENT_CLASS =
-  "relative cursor-pointer rounded-full px-4 py-1.5 text-center text-xs font-medium transition-[color,background-color,box-shadow] duration-300 ease-in-out sm:px-5 sm:py-2";
-
-function StackModeToggle({
-  mode,
-  onChange,
-}: {
-  mode: BuilderMode;
-  onChange: (mode: BuilderMode) => void;
-}) {
-  const options: Array<{ value: BuilderMode; label: string }> = [
-    { value: "solo", label: m.navSolo() },
-    { value: "multi", label: m.navMultiEcosystem() },
-  ];
-
-  return (
-    <LayoutGroup id="creation-mode-toggle">
-      <fieldset
-        aria-label={m.navCreationMethod()}
-        className="relative inline-flex items-center gap-0.5 overflow-visible rounded-full border border-border/60 bg-muted/30 p-0.5"
-      >
-        {options.map((option) => {
-          const active = mode === option.value;
-
-          return (
-            <button
-              key={option.value}
-              type="button"
-              data-testid={`stack-mode-${option.value}`}
-              aria-pressed={active}
-              onClick={() => onChange(option.value)}
-              className={cn(
-                TOGGLE_SEGMENT_CLASS,
-                active
-                  ? "font-semibold text-[#0c0c0e]"
-                  : "text-muted-foreground hover:bg-background/70 hover:text-foreground",
-              )}
-            >
-              {active && (
-                <motion.span
-                  layoutId={CREATION_MODE_INDICATOR_ID}
-                  className="absolute inset-0 rounded-full bg-[#C6E853] shadow-sm ring-1 ring-[#2A3303]/15"
-                  transition={CREATION_MODE_INDICATOR_TRANSITION}
-                />
-              )}
-              <span className="relative z-10 block">{option.label}</span>
-            </button>
-          );
-        })}
-      </fieldset>
-    </LayoutGroup>
   );
 }
 
@@ -268,39 +148,7 @@ function DocsMenu() {
   );
 }
 
-// On the builder page the full nav is hidden to make room for the stack
-// controls, so docs entry points live in a compact dropdown instead. The label
-// itself navigates to /docs; the chevron opens the related entry points.
-function BuilderDocsMenu() {
-  return (
-    <div className="inline-flex items-center">
-      <Link to="/docs" className={cn(NAV_LINK_CLASS, "cursor-pointer")}>
-        {m.navDocs()}
-      </Link>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <button
-              type="button"
-              aria-label={m.navOpenDocsMenu()}
-              className="group ml-1 inline-flex cursor-pointer items-center text-muted-foreground transition-colors hover:text-foreground"
-            />
-          }
-        >
-          <ChevronDown
-            className="h-3 w-3 transition-transform duration-200 ease-out group-data-[popup-open]:rotate-180"
-            aria-hidden
-          />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="min-w-36">
-          <DocsMenuItems />
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-}
-
-function LocaleMenu() {
+export function LocaleMenu() {
   const locale = getLocale();
 
   return (
@@ -397,7 +245,7 @@ function MobileLocaleMenu() {
   );
 }
 
-function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
+function MobileNavMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -416,29 +264,27 @@ function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
         sideOffset={8}
         className="w-72 max-w-[calc(100vw-1rem)] space-y-2 rounded-2xl border-border/70 bg-background/95 p-2 shadow-2xl shadow-black/15 backdrop-blur-xl"
       >
-        {!onBuilder ? (
-          <DropdownMenuGroup>
-            <DropdownMenuLabel className={MOBILE_MENU_LABEL_CLASS}>
-              {m.navSectionCreate()}
-            </DropdownMenuLabel>
-            <div className={MOBILE_MENU_GROUP_CLASS}>
-              <DropdownMenuItem
-                render={<Link to="/new" search={BUILDER_COMMAND_SEARCH} />}
-                className={MOBILE_MENU_ITEM_CLASS}
-              >
-                <Blocks className="size-4" />
-                {m.navBuilder()}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                render={<Link to="/new" search={BUILDER_PRESETS_SEARCH} />}
-                className={MOBILE_MENU_ITEM_CLASS}
-              >
-                <Layers3 className="size-4" />
-                {m.navPresets()}
-              </DropdownMenuItem>
-            </div>
-          </DropdownMenuGroup>
-        ) : null}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className={MOBILE_MENU_LABEL_CLASS}>
+            {m.navSectionCreate()}
+          </DropdownMenuLabel>
+          <div className={MOBILE_MENU_GROUP_CLASS}>
+            <DropdownMenuItem
+              render={<Link to="/new" search={BUILDER_COMMAND_SEARCH} />}
+              className={MOBILE_MENU_ITEM_CLASS}
+            >
+              <Blocks className="size-4" />
+              {m.navBuilder()}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              render={<Link to="/new" search={BUILDER_PRESETS_SEARCH} />}
+              className={MOBILE_MENU_ITEM_CLASS}
+            >
+              <Layers3 className="size-4" />
+              {m.navPresets()}
+            </DropdownMenuItem>
+          </div>
+        </DropdownMenuGroup>
 
         <DropdownMenuGroup>
           <DropdownMenuLabel className={MOBILE_MENU_LABEL_CLASS}>
@@ -491,17 +337,22 @@ function MobileNavMenu({ onBuilder }: { onBuilder: boolean }) {
   );
 }
 
-export function Navbar() {
+/** True on every route that renders the stack builder, including shared stack slugs. */
+export function useOnBuilderRoute() {
   const matchRoute = useMatchRoute();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const pathSegments = pathname.split("/").filter(Boolean);
   const shareSlug = pathSegments[0] ?? "";
-  const onBuilder =
+  return (
     Boolean(matchRoute({ to: "/new" })) ||
     pathname === "/stack" ||
-    (pathSegments.length === 1 && isStackShareSlug(shareSlug));
-  const builderMode = useBuilderMode();
-  const showModeToggle = onBuilder && builderMode.active;
+    (pathSegments.length === 1 && isStackShareSlug(shareSlug))
+  );
+}
+
+export function Navbar() {
+  // The builder folds the brand, languages and preferences into its own bar.
+  if (useOnBuilderRoute()) return null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/85 backdrop-blur-md">
@@ -529,76 +380,52 @@ export function Navbar() {
               className="hidden size-8 dark:block"
             />
           </Link>
-          {!onBuilder && (
-            <>
-              <span className="hidden h-4 w-px bg-border lg:block" aria-hidden />
-              <div className="hidden items-center gap-7 lg:flex">
-                <Link
-                  to="/new"
-                  search={BUILDER_COMMAND_SEARCH}
-                  className={NAV_LINK_CLASS}
-                  activeProps={DOCS_ACTIVE_PROPS}
-                >
-                  {m.navBuilder()}
-                </Link>
-                <Link
-                  to="/new"
-                  search={BUILDER_PRESETS_SEARCH}
-                  className={NAV_LINK_CLASS}
-                  activeProps={DOCS_ACTIVE_PROPS}
-                >
-                  {m.navPresets()}
-                </Link>
-                <DocsMenu />
-              </div>
-            </>
-          )}
-          {onBuilder && (
-            <>
-              <span className="hidden h-4 w-px bg-border lg:block" aria-hidden />
-              <div className="hidden lg:block">
-                <BuilderDocsMenu />
-              </div>
-            </>
-          )}
-        </div>
-
-        {showModeToggle && (
-          <div className="absolute left-1/2 z-10 -translate-x-1/2 overflow-visible">
-            <StackModeToggle mode={builderMode.mode} onChange={builderMode.setMode} />
+          <span className="hidden h-4 w-px bg-border lg:block" aria-hidden />
+          <div className="hidden items-center gap-7 lg:flex">
+            <Link
+              to="/new"
+              search={BUILDER_COMMAND_SEARCH}
+              className={NAV_LINK_CLASS}
+              activeProps={DOCS_ACTIVE_PROPS}
+            >
+              {m.navBuilder()}
+            </Link>
+            <Link
+              to="/new"
+              search={BUILDER_PRESETS_SEARCH}
+              className={NAV_LINK_CLASS}
+              activeProps={DOCS_ACTIVE_PROPS}
+            >
+              {m.navPresets()}
+            </Link>
+            <DocsMenu />
           </div>
-        )}
+        </div>
 
         <div className="hidden shrink-0 items-center gap-3 lg:flex">
           <GithubStarButton />
           <ThemeToggle />
           <LocaleMenu />
           <span className="hidden h-4 w-px bg-border sm:block" aria-hidden />
-          {onBuilder ? (
-            <HeaderCopyButton />
-          ) : (
-            <Link
-              to="/new"
-              search={BUILDER_COMMAND_SEARCH}
-              className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-all hover:gap-2 hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]"
-            >
-              {m.navTryNow()}
-              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 sm:h-3.5 sm:w-3.5" />
-            </Link>
-          )}
+          <Link
+            to="/new"
+            search={BUILDER_COMMAND_SEARCH}
+            className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-all hover:gap-2 hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]"
+          >
+            {m.navTryNow()}
+            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 sm:h-3.5 sm:w-3.5" />
+          </Link>
         </div>
         <div className="flex shrink-0 items-center gap-2 lg:hidden">
-          {!onBuilder ? (
-            <Link
-              to="/new"
-              search={BUILDER_COMMAND_SEARCH}
-              className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-all hover:gap-2 hover:bg-[#d2ee72]"
-            >
-              {m.navTryNow()}
-              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-          ) : null}
-          <MobileNavMenu onBuilder={onBuilder} />
+          <Link
+            to="/new"
+            search={BUILDER_COMMAND_SEARCH}
+            className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-all hover:gap-2 hover:bg-[#d2ee72]"
+          >
+            {m.navTryNow()}
+            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <MobileNavMenu />
         </div>
       </nav>
     </header>

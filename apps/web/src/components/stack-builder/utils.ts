@@ -3,6 +3,7 @@ import type { CompatibilityAnalysisResult, CompatibilityCategory } from "@better
 import {
   analyzeStackCompatibility as analyzeStackCompatibilityShared,
   formatCompatibilityDecision,
+  getCategoryOrderForEcosystem,
   getCategoryDisplayName,
   getCompatibilityDecision,
   getToolingCategory,
@@ -19,7 +20,11 @@ import {
 
 import type { StackState, TECH_OPTIONS } from "@/lib/stack/constant";
 
-import { getToolingCategoryForUi, getToolingOptionForUi } from "@/lib/stack/stack-utils";
+import {
+  getStackKeyForCategory,
+  getToolingCategoryForUi,
+  getToolingOptionForUi,
+} from "@/lib/stack/stack-utils";
 
 export {
   getCategoryDisplayName,
@@ -158,8 +163,7 @@ export const getVisibleOptions = (
   category: keyof typeof TECH_OPTIONS,
   options: (typeof TECH_OPTIONS)[keyof typeof TECH_OPTIONS],
 ) => {
-  const isKotlin =
-    currentStack.ecosystem === "java" && currentStack.javaLanguage === "kotlin";
+  const isKotlin = currentStack.ecosystem === "java" && currentStack.javaLanguage === "kotlin";
 
   if (isKotlin) {
     if (KOTLIN_HIDDEN_SHARED_CATEGORIES.has(category as string)) {
@@ -188,3 +192,37 @@ export const getVisibleOptions = (
       return options.filter((option) => option.id === "none");
   }
 };
+
+/** True for a multi-mode stack whose parts ("role:ecosystem:tool") all share one language. */
+function isSingleLanguageGraph(stack: Pick<StackState, "stackMode" | "stackPartSpecs">): boolean {
+  if (stack.stackMode !== "multi") return false;
+  const languages = new Set(
+    stack.stackPartSpecs
+      .map((spec) => spec.split(":")[1])
+      .filter((language) => language !== undefined && language !== "universal"),
+  );
+  return languages.size <= 1;
+}
+
+/**
+ * The stack a preset turns into when applied. Starter tracks are defined as a graph of Stack
+ * Parts, so they arrive in multi mode even when every part is one language. Those belong in the
+ * solo builder; their flat fields already carry the same picks.
+ */
+export function resolvePresetStack(presetStack: StackState): StackState {
+  return isSingleLanguageGraph(presetStack)
+    ? { ...presetStack, stackMode: "solo", stackPartSpecs: [] }
+    : presetStack;
+}
+
+/** The stack fields that mean something for a language; the rest are another language's defaults. */
+export function getRelevantStackKeys(
+  ecosystem: StackState["ecosystem"],
+): readonly (keyof StackState)[] {
+  return [
+    "ecosystem",
+    "projectName",
+    ...getCategoryOrderForEcosystem(ecosystem).map(getStackKeyForCategory),
+    "yolo",
+  ];
+}

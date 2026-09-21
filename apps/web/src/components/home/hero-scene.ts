@@ -46,7 +46,12 @@ export function sceneImage(scene: Scene, time: "day" | "night") {
   return SCENE_IMAGES[`../../assets/home/hero-${scene.id}-${time}.avif`];
 }
 
+const LOAD_FALLBACK_MS = 4000;
+
 /**
+ * Only for backdrops that first render in the browser, like the hero: on the server the theme is
+ * unknown, so choosing an image by theme there disagrees with the browser on hydration.
+ *
  * A day and night pair only needs the current theme's image up front. The other
  * one waits for the page to finish loading, so it never competes with first paint.
  */
@@ -61,7 +66,12 @@ export function useThemePair() {
     }
     const onLoad = () => setLoaded(true);
     window.addEventListener("load", onLoad, { once: true });
-    return () => window.removeEventListener("load", onLoad);
+    // One stalled request can hold the load event back for a long time, or for good.
+    const fallback = window.setTimeout(onLoad, LOAD_FALLBACK_MS);
+    return () => {
+      window.removeEventListener("load", onLoad);
+      window.clearTimeout(fallback);
+    };
   }, []);
 
   return { day: loaded || resolvedTheme !== "dark", night: loaded || resolvedTheme === "dark" };

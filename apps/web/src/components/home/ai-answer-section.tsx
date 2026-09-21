@@ -14,7 +14,6 @@ import marshesNight from "@/assets/home/chat-marshes-night.avif";
 import theoCaptions from "@/assets/home/theo-answer.en.vtt?url";
 import theoPoster from "@/assets/home/theo-answer.jpg";
 import theoClip from "@/assets/home/theo-answer.mp4";
-import { useThemePair } from "@/components/home/hero-scene";
 import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
@@ -47,28 +46,26 @@ const GLASS = "border border-ink/10 backdrop-blur-xl dark:border-white/15";
  * glass has something to blur. Deliberately not one of the hero scenes.
  */
 function Backdrop() {
-  const show = useThemePair();
   const image =
     "absolute inset-0 size-full object-cover object-[50%_35%] transition-opacity duration-1000 ease-in-out";
 
+  // Both images are always in the page. This section is server-rendered, where the theme is
+  // unknown, so picking one by theme disagrees with the browser on hydration and can leave a
+  // dark-mode visitor with no backdrop. They load lazily and sit far below the first screen.
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-      {show.day && (
-        <img
-          src={marshesDay}
-          alt=""
-          loading="lazy"
-          className={cn(image, "opacity-100 dark:opacity-0")}
-        />
-      )}
-      {show.night && (
-        <img
-          src={marshesNight}
-          alt=""
-          loading="lazy"
-          className={cn(image, "opacity-0 dark:opacity-100")}
-        />
-      )}
+      <img
+        src={marshesDay}
+        alt=""
+        loading="lazy"
+        className={cn(image, "opacity-100 dark:opacity-0")}
+      />
+      <img
+        src={marshesNight}
+        alt=""
+        loading="lazy"
+        className={cn(image, "opacity-0 dark:opacity-100")}
+      />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--background)_0%,transparent_28%,transparent_72%,var(--background)_100%)]" />
     </div>
   );
@@ -140,7 +137,12 @@ export default function AiAnswerSection() {
             )}
           >
             <p className="font-mono font-bold leading-[1.05] tracking-[-0.035em] text-ink [font-size:clamp(1.5rem,3.6vw,3rem)]">
-              &ldquo;{THEO_QUOTE}&rdquo;
+              &ldquo;{THEO_QUOTE}&rdquo;{" "}
+              {/* He never says "AI" in the clip. The reason is ours, so it stays outside the quote
+                  marks and looks different from his words. */}
+              <span className="whitespace-nowrap font-normal italic text-ink/55 [font-size:0.55em]">
+                {m.homeAiSkepticGloss()}
+              </span>
             </p>
             <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink/70">
               Theo Browne · {m.homeAiSkepticWhere()}
