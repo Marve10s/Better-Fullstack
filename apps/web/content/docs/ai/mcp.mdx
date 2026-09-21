@@ -107,23 +107,6 @@ The automatic installer copies two skills alongside the MCP connection. The
 [agent plugin](/docs/ai/overview/#agent-plugin) remains available for plugin marketplaces, and the
 [agent skill](/docs/ai/overview/#agent-skill) documents the CLI-only path.
 
-## Running project discovery
-
-`create-better-fullstack devtools` serves the same tools over HTTP for one running project and
-registers itself for the Devframe gateway. Configure the gateway once and every running project's
-tools appear without editing agent config again:
-
-```json
-{
-  "mcpServers": {
-    "devframe": { "command": "npx", "args": ["devframe", "connect"] }
-  }
-}
-```
-
-Tool names, input schemas, and output schemas are identical to the stdio server. See the
-[devtools command](/docs/cli/devtools) for the panel, authorization, and static reports.
-
 ## Resources
 
 | Resource                            | Contents                                                        |

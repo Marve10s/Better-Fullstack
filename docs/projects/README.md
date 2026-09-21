@@ -9,7 +9,6 @@ the executable source.
 
 ## Active
 
-- `active/devframe-devtools.md` - Devframe-based devtool surface, the shared operations table, and the static report
 - `active/non-social-growth.md` - measurement baseline, MCP distribution preparation, and the GPT-6 Astra article
 - `active/capability-recipe-evidence.md` - [Phase 3](../next-updates-roadmap.md#phase-3-replace-catalog-confidence-with-recipe-evidence): receipt-backed capability evidence and eight golden runtime recipes
 - `active/platform-features.md` - [Phase 1](../next-updates-roadmap.md#phase-1-establish-a-real-supported-update-window): executable release fixtures and supported-window proof
@@ -35,6 +34,7 @@ the executable source.
 - `completed/competitive-analysis-2026-05-21.md`
 - `completed/deployment-docs-and-docker-foundation-2026-05-21.md`
 - `completed/dependable-recipe-generation-2026-08-23.md`
+- `completed/devframe-devtools-2026-09-21.md`
 - `completed/documentation-site-2026-04-29.md`
 - `completed/dotnet-ecosystem-2026-06-10.md`
 - `completed/domain-authority-and-mutation-contracts-2026-08-23.md`

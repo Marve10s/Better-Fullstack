@@ -1,7 +1,28 @@
 # Devframe devtools surface
 
-> Active. Phases 0 through 4 are implemented on `feat/devframe-devtools`. Phase 5 stays deferred
-> until telemetry shows demand; move this document to `completed/` when that decision is recorded.
+> Retired on 2026-09-21. Phases 0 through 4 shipped in #436. The devtools surface was removed in
+> #438; the operations table from phase 1 stays and now feeds only the stdio MCP server. Phase 5
+> was never started. Everything below the retirement section describes the surface as it was built.
+
+## Retirement
+
+Running the panel against a real project showed it did not earn its place:
+
+- It displayed the project data `status` and `doctor` already print, but only after a user started
+  a server by hand and typed a one-time code.
+- It was not mounted in generated projects, so nobody would reach it unprompted.
+- Every project tool on the stdio MCP server already takes `projectDir`, so one global stdio config
+  covers every project and the HTTP route added little for agents.
+- It cost a new package, `devframe` pinned at 1.0.0 behind a release-age exemption, 364K in a 2.6M
+  published CLI, and a build step that deletes its target directory.
+
+What stays: `apps/cli/src/operations/` and the loop in `apps/cli/src/mcp.ts` that replaced about
+3,300 lines of hand-registered tools. The rule that tools are declared once lives in
+`docs/guidelines/lifecycle-commands-and-mcp.md`. Routing CLI commands through the table is still
+open follow-up work.
+
+If a verification page (roadmap T0.7) later needs a static report, start from the snapshot notes
+under "How it is wired" and keep plans out of anything meant to be published.
 
 ## Outcome
 

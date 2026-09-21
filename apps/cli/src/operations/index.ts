@@ -87,6 +87,3 @@ export const allOperations: readonly ProjectOperation[] = [
   addFeatureOperation,
   getCapabilityEvidenceOperation,
 ];
-
-/** Operations that only read project or catalog state. */
-export const readOperations = allOperations.filter((operation) => operation.safety === "read");

@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-/**
- * Prefix shared by every agent-facing tool name. The MCP stdio server
- * advertises `bfs_<name>`; the devtools surface registers `bfs:<name>`,
- * which Devframe sanitizes to the same wire name.
- */
+/** Prefix shared by every agent-facing tool name: the MCP server advertises `bfs_<name>`. */
 export const OPERATION_TOOL_PREFIX = "bfs";
 
 export type OperationSafety = "read" | "action" | "destructive";
@@ -30,9 +26,8 @@ export type OperationSpec<Input extends JsonObject, Output extends object> = {
 };
 
 /**
- * One lifecycle operation declared once and projected onto every transport:
- * the MCP stdio server, the devtools RPC surface, and the devtools MCP route.
- * The generic spec is erased so heterogeneous operations share one list.
+ * One lifecycle operation declared once and projected onto the MCP stdio
+ * server. The generic spec is erased so heterogeneous operations share one list.
  */
 export type ProjectOperation = Omit<
   OperationSpec<JsonObject, object>,
@@ -44,10 +39,6 @@ export type ProjectOperation = Omit<
 
 export function operationToolName(operation: { name: string }): string {
   return `${OPERATION_TOOL_PREFIX}_${operation.name}`;
-}
-
-export function operationToolId(operation: { name: string }): string {
-  return `${OPERATION_TOOL_PREFIX}:${operation.name}`;
 }
 
 export function defineOperation<Input extends JsonObject, Output extends object>(

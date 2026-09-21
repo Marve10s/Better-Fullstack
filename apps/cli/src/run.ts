@@ -943,58 +943,6 @@ export const router = os.router({
       log.message("MCP server is started via the 'mcp' subcommand intercepted in cli.ts.");
       log.message("Run: create-better-fullstack mcp");
     }),
-  devtools: os
-    .meta({
-      description:
-        "Start the Better Fullstack devtools: a project panel, live RPC, and an MCP endpoint that coding agents discover with 'devframe connect'. Use --report <dir> for a static report instead.",
-    })
-    .input(
-      z.object({
-        projectDir: z.string().optional().describe("Project directory (defaults to current)"),
-        port: z.number().int().positive().optional().describe("Port to listen on"),
-        host: z.string().optional().describe("Host to bind (defaults to localhost)"),
-        open: z.boolean().optional().default(false).describe("Open the devtools in a browser"),
-        report: z
-          .string()
-          .optional()
-          .describe(
-            "Write a static report (the panel plus the project's baked reads) to a new or empty directory and exit",
-          ),
-      }),
-    )
-    .handler(async ({ input }) => {
-      await withCommandTelemetry(
-        "devtools",
-        async () => {
-          const { buildDevtoolsReport, startDevtoolsServer, waitForShutdownSignal } =
-            await import("@/devtools/serve.js");
-          if (input.report) {
-            const outDir = await buildDevtoolsReport({
-              projectDir: input.projectDir,
-              outDir: input.report,
-            });
-            log.success(`Static devtools report written to ${pc.cyan(outDir)}`);
-            return;
-          }
-          const server = await startDevtoolsServer({
-            projectDir: input.projectDir,
-            port: input.port,
-            host: input.host,
-            open: input.open,
-            onReady: ({ origin }) => {
-              log.success(`Better Fullstack devtools ready at ${pc.cyan(origin)}`);
-              log.message(
-                pc.dim(`MCP endpoint: ${origin}/__mcp (discoverable via 'devframe connect')`),
-              );
-              log.message(pc.dim("Press Ctrl+C to stop."));
-            },
-          });
-          await waitForShutdownSignal();
-          await server.close();
-        },
-        { source: "cli-flags", mode: input.report ? "report" : "serve" },
-      );
-    }),
   doctor: os
     .meta({
       description:

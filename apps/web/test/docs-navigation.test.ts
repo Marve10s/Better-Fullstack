@@ -32,7 +32,6 @@ describe("docs navigation", () => {
       "create",
       "add",
       "update",
-      "devtools",
       "gen",
       "experimental",
       "telemetry",

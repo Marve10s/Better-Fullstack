@@ -78,8 +78,6 @@ npx create-better-fullstack@latest install
 
 After install, supported agents scaffold projects through the MCP server, 2.6x faster than hand-writing in ScaffBench; see the [AI docs](https://better-fullstack.dev/docs/ai/overview) for setup.
 
-For an existing project, `npx create-better-fullstack@latest devtools` opens a live panel and exposes the same lifecycle tools over HTTP, where agents discover them through `devframe connect`; see the [devtools docs](https://better-fullstack.dev/docs/cli/devtools).
-
 <br>
 
 ## Community
