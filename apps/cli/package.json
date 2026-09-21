@@ -134,7 +134,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "bun run --cwd ../../packages/devtools-ui build && tsdown --publint && bun run scripts/copy-devtools-ui.ts",
+    "build": "tsdown --publint",
     "dev": "tsdown --watch",
     "lint": "oxlint . && tsc --noEmit && bun test test/recommendations/cli-builder-sync.test.ts",
     "check-types": "tsc --noEmit",
@@ -148,19 +148,16 @@
     "test:matrix": "MATRIX_MODE=batched bun test ./test/matrix/matrix-test.test.ts",
     "test:matrix:fast": "MATRIX_MODE=sample MATRIX_SAMPLE=0.1 bun test ./test/matrix/matrix-test.test.ts",
     "test:matrix:full": "MATRIX_MODE=full bun test ./test/matrix/matrix-test.test.ts",
-    "prepublishOnly": "npm run build",
-    "test:e2e:devtools": "bun run --cwd ../../packages/devtools-ui build && E2E=1 bun test ./test/e2e/devtools-panel.e2e.ts --timeout 600000"
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@better-fullstack/template-generator": "^2.6.7",
     "@better-fullstack/types": "^2.6.7",
     "@clack/core": "^0.5.0",
     "@clack/prompts": "^1.8.0",
-    "@devframes/agentic": "1.0.0",
     "@modelcontextprotocol/server": "^2.0.0",
     "@orpc/server": "^1.15.0",
     "consola": "^3.4.2",
-    "devframe": "1.0.0",
     "env-paths": "^4.0.0",
     "execa": "^9.6.1",
     "fs-extra": "^11.4.0",
@@ -174,13 +171,11 @@
     "zod": "4.6.2"
   },
   "devDependencies": {
-    "@better-fullstack/devtools-ui": "workspace:*",
     "@better-fullstack/project-lifecycle": "workspace:*",
     "@modelcontextprotocol/client": "^2.0.0",
     "@types/bun": "^1.4.2",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.9.3",
-    "playwright-core": "1.63.0",
     "publint": "^0.3.24",
     "tsdown": "^0.18.2",
     "typescript": "^5.9.3"

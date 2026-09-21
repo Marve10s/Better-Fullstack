@@ -47,7 +47,6 @@ const PENDING_TRANSLATION_PATHS = [
   "content/docs/choosing-a-stack.mdx",
   "content/docs/cli/add.mdx",
   "content/docs/cli/create.mdx",
-  "content/docs/cli/devtools.mdx",
   "content/docs/cli/experimental.mdx",
   "content/docs/cli/gen.mdx",
   "content/docs/cli/index.mdx",
