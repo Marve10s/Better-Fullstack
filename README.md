@@ -5,21 +5,21 @@
 &nbsp;&nbsp;&nbsp;
 <img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/.github/media/arrow-right.svg" width="40" height="40" alt="to" align="middle">
 &nbsp;&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/typescript/3178C6" width="44" height="44" alt="TypeScript" title="TypeScript" align="middle">
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme-icons/typescript-ascii-dark.png"><img src=".github/media/readme-icons/typescript-ascii-light.png" width="44" height="44" alt="TypeScript" title="TypeScript" align="middle"></picture>
 &nbsp;&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/react/61DAFB" width="44" height="44" alt="React Native" title="React Native" align="middle">
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme-icons/react-ascii-dark.png"><img src=".github/media/readme-icons/react-ascii-light.png" width="44" height="44" alt="React Native" title="React Native" align="middle"></picture>
 &nbsp;&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/rust/DEA584" width="44" height="44" alt="Rust" title="Rust" align="middle">
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme-icons/rust-ascii-dark.png"><img src=".github/media/readme-icons/rust-ascii-light.png" width="44" height="44" alt="Rust" title="Rust" align="middle"></picture>
 &nbsp;&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/go/00ADD8" width="44" height="44" alt="Go" title="Go" align="middle">
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme-icons/go-ascii-dark.png"><img src=".github/media/readme-icons/go-ascii-light.png" width="44" height="44" alt="Go" title="Go" align="middle"></picture>
 &nbsp;&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/python/3776AB" width="44" height="44" alt="Python" title="Python" align="middle">
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme-icons/python-ascii-dark.png"><img src=".github/media/readme-icons/python-ascii-light.png" width="44" height="44" alt="Python" title="Python" align="middle"></picture>
 &nbsp;&nbsp;&nbsp;
-<img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/main/apps/web/public/icon/java.svg" width="44" height="44" alt="Java" title="Java" align="middle">
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme-icons/java-ascii-dark.png"><img src=".github/media/readme-icons/java-ascii-light.png" width="44" height="44" alt="Java" title="Java" align="middle"></picture>
 &nbsp;&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/dotnet/512BD4" width="44" height="44" alt=".NET" title=".NET" align="middle">
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme-icons/dotnet-ascii-dark.png"><img src=".github/media/readme-icons/dotnet-ascii-light.png" width="44" height="44" alt=".NET" title=".NET" align="middle"></picture>
 &nbsp;&nbsp;&nbsp;
-<img src="https://cdn.simpleicons.org/elixir/8A63A8" width="44" height="44" alt="Elixir" title="Elixir" align="middle">
+<picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme-icons/elixir-ascii-dark.png"><img src=".github/media/readme-icons/elixir-ascii-light.png" width="44" height="44" alt="Elixir" title="Elixir" align="middle"></picture>
 </p>
 
 Scaffold fullstack projects from a catalog of Stack Parts.<br>
