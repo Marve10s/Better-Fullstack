@@ -1,13 +1,13 @@
 # Dependency Version Check Report
 
-Generated: 2026-09-21T15:53:21.585Z
+Generated: 2026-09-22T17:45:16.281Z
 
 ## Summary
 
-- **Outdated**: 385
-- **Template-only** (not in version map): 48
+- **Outdated**: 390
+- **Template-only** (not in version map): 50
 - **Downgrades detected**: 0
-- **Up to date**: 358
+- **Up to date**: 353
 - **Errors**: 0
 
 ## Outdated Packages
@@ -35,10 +35,10 @@ Generated: 2026-09-21T15:53:21.585Z
 | vite-plus | ^0.2.9 | ^0.3.3 | - | map |
 | @voidzero-dev/vite-plus-core | ^0.2.9 | ^0.3.3 | - | map |
 | @openai/agents | ^0.12.0 | ^0.18.0 | - | map |
-| openai | ^6.49.0 | ^7.19.0 | - | map |
+| openai | ^6.49.0 | ^7.20.0 | - | map |
 | @anthropic-ai/sdk | ^0.110.0 | ^0.127.0 | - | map |
 | @google/adk | ^1.6.0 | ^2.1.0 | - | map |
-| ai-cli | ^0.3.1 | ^0.5.1 | - | map |
+| ai-cli | ^0.3.1 | ^0.5.2 | - | map |
 | @orpc/client | ^1.15.0 | ^2.0.0 | orpc | map |
 | @asteasolutions/zod-to-openapi | ^8.5.0 | ^9.1.0 | openapi | map |
 | @scalar/hono-api-reference | ^0.11.16 | ^0.12.2 | openapi | map |
@@ -59,7 +59,7 @@ Generated: 2026-09-21T15:53:21.585Z
 | @tanstack/ai | ^0.38.0 | ^0.55.0 | - | map |
 | @tanstack/ai-react | ^0.16.4 | ^0.27.0 | - | map |
 | @tanstack/ai-solid | ^0.14.3 | ^0.24.0 | - | map |
-| @cloudflare/workers-types | ^4.20260629.1 | ^5.20260919.1 | cloudflare | map |
+| @cloudflare/workers-types | ^4.20260629.1 | ^5.20260920.1 | cloudflare | map |
 | alchemy | ^0.93.12 | ^0.94.0 | - | map |
 | dotenv | ^17.4.2 | ^18.0.1 | - | map |
 | srvx | ^0.11.22 | ^1.0.5 | - | map |
@@ -127,17 +127,12 @@ Generated: 2026-09-21T15:53:21.585Z
 | @directus/sdk | ^22.0.0 | ^25.0.1 | - | map |
 | @tinacms/cli | ^2.6.0 | ^3.0.0 | - | map |
 | @keystatic/core | ^0.5.51 | ^0.6.9 | - | map |
-| intlayer | ^8.12.4 | ^9.5.4 | - | map |
-| react-intlayer | ^8.12.4 | ^9.5.4 | - | map |
-| next-intlayer | ^8.12.4 | ^9.5.4 | - | map |
-| vite-intlayer | ^8.12.4 | ^9.5.4 | - | map |
+| intlayer | ^8.12.4 | ^9.5.5 | - | map |
+| react-intlayer | ^8.12.4 | ^9.5.5 | - | map |
+| next-intlayer | ^8.12.4 | ^9.5.5 | - | map |
+| vite-intlayer | ^8.12.4 | ^9.5.5 | - | map |
 | meilisearch | ^0.58.0 | ^0.62.0 | - | map |
 | @pinecone-database/pinecone | ^8.2.0 | ^9.0.0 | - | map |
-| @solidjs/router | ^0.16.2 | ^1.0.0 | - | template |
-| @nuxtjs/mdc | ^0.22.2 | ^0.23.1 | - | template |
-| web-vitals | ^5.3.0 | ^6.2.2 | - | template |
-| vinext | ^0.1.8 | ^0.2.1 | - | template |
-| @expo/metro-runtime | ^56.0.15 | ^57.0.16 | - | template |
 | expo | ^56.0.12 | ^57.0.24 | - | template |
 | expo-audio | ~56.0.12 | ^57.0.5 | - | template |
 | expo-background-task | ~56.0.22 | ^57.0.19 | - | template |
@@ -160,8 +155,8 @@ Generated: 2026-09-21T15:53:21.585Z
 | expo-task-manager | ~56.0.22 | ^57.0.19 | - | template |
 | expo-video | ~56.1.4 | ^57.0.4 | - | template |
 | expo-device | ^56.0.4 | ^57.0.2 | - | template |
-| expo-font | ^56.0.7 | ^57.0.4 | - | template |
-| expo-haptics | ^56.0.3 | ^57.0.3 | - | template |
+| expo-crypto | ^56.0.4 | ^57.0.3 | - | template |
+| expo-navigation-bar | ^56.0.3 | ^57.0.2 | - | template |
 | expo-notifications | ^56.0.18 | ^57.0.20 | - | template |
 | expo-router | ^56.2.11 | ^57.0.22 | - | template |
 | expo-secure-store | ^56.0.4 | ^57.0.4 | - | template |
@@ -171,14 +166,19 @@ Generated: 2026-09-21T15:53:21.585Z
 | expo-updates | ^56.0.19 | ^57.0.23 | - | template |
 | @babel/runtime | ^7.26.0 | ^8.0.5 | - | template |
 | react-native | ^0.86.2 | ^0.87.1 | - | template |
+| @babel/core | ^7.26.0 | ^8.0.6 | - | template |
 | babel-preset-expo | ^56.0.15 | ^57.0.12 | - | template |
 | @react-native/jest-preset | ^0.86.2 | ^0.87.1 | - | template |
 | jest-expo | ^56.0.5 | ^57.0.5 | - | template |
-| expo-crypto | ^56.0.4 | ^57.0.3 | - | template |
-| expo-navigation-bar | ^56.0.3 | ^57.0.2 | - | template |
-| @babel/core | ^7.26.0 | ^8.0.6 | - | template |
+| @expo/metro-runtime | ^56.0.15 | ^57.0.16 | - | template |
+| expo-font | ^56.0.7 | ^57.0.4 | - | template |
+| expo-haptics | ^56.0.3 | ^57.0.3 | - | template |
 | expo-dev-client | ^56.0.20 | ^57.0.19 | - | template |
 | react-native-nitro-modules | ^0.35.10 | ^0.37.1 | - | template |
+| @nuxtjs/mdc | ^0.22.2 | ^0.23.1 | - | template |
+| @solidjs/router | ^0.16.2 | ^1.0.0 | - | template |
+| vinext | ^0.1.8 | ^0.2.1 | - | template |
+| web-vitals | ^5.3.0 | ^6.2.2 | - | template |
 | fumadocs-core | ^16.15.4 | ^17.0.0 | - | template |
 | fumadocs-ui | ^16.15.4 | ^17.0.0 | - | template |
 
@@ -242,6 +242,8 @@ Generated: 2026-09-21T15:53:21.585Z
 | resend | ^6.22.0 | ^6.28.1 | - | map |
 | react | 19.2.8 | ^19.3.0 | - | map |
 | react-dom | 19.2.8 | ^19.3.0 | - | map |
+| react-server-dom-webpack | 19.2.8 | ^19.3.0 | - | map |
+| react-test-renderer | 19.2.8 | ^19.3.0 | - | map |
 | @types/react | ^19.2.18 | ^19.3.0 | - | map |
 | @types/react-dom | ^19.2.4 | ^19.3.0 | - | map |
 | @aws-sdk/client-ses | ^3.1116.0 | ^3.1136.0 | - | map |
@@ -253,7 +255,7 @@ Generated: 2026-09-21T15:53:21.585Z
 | globals | ^17.11.0 | ^17.12.0 | - | map |
 | axios | ^1.19.0 | ^1.20.0 | - | map |
 | firebase | ^12.18.0 | ^12.19.0 | - | map |
-| @graphql-codegen/cli | ^7.3.0 | ^7.4.1 | - | map |
+| @graphql-codegen/cli | ^7.3.0 | ^7.4.2 | - | map |
 | @graphql-codegen/client-preset | ^6.1.3 | ^6.2.0 | - | map |
 | @apollo/client | ^4.2.12 | ^4.3.1 | - | map |
 | @paypal/react-paypal-js | ^10.3.0 | ^10.5.0 | - | map |
@@ -324,10 +326,11 @@ Generated: 2026-09-21T15:53:21.585Z
 | @workos-inc/authkit-nextjs | ^4.3.1 | ^4.3.2 | - | map |
 | typeorm | ^1.1.0 | ^1.1.1 | - | map |
 | kysely | ^0.29.5 | ^0.29.6 | - | map |
+| @tauri-apps/cli | ^2.11.4 | ^2.11.5 | - | map |
 | @biomejs/biome | ^2.5.10 | ^2.5.14 | - | map |
 | @shadcn/lint | 0.1.0 | ^0.1.1 | - | map |
 | lefthook | ^2.1.10 | ^2.1.14 | - | map |
-| tsx | ^4.23.12 | ^4.23.13 | - | map |
+| tsx | ^4.23.12 | ^4.23.15 | - | map |
 | @types/bun | ^1.4.0 | ^1.4.2 | - | map |
 | @elysiajs/openapi | ^1.4.15 | ^1.4.16 | openapi | map |
 | elysia | ^1.4.29 | ^1.4.30 | - | map |
@@ -344,7 +347,7 @@ Generated: 2026-09-21T15:53:21.585Z
 | @ai-sdk/react | ^4.0.80 | ^4.0.110 | - | map |
 | @ai-sdk/devtools | ^1.0.12 | ^1.0.22 | - | map |
 | @langchain/langgraph | ^1.4.12 | ^1.4.16 | - | map |
-| @langchain/core | ^1.2.9 | ^1.2.11 | - | map |
+| @langchain/core | ^1.2.9 | ^1.2.12 | - | map |
 | @langchain/google-genai | ^2.3.0 | ^2.3.2 | - | map |
 | langchain | ^1.5.10 | ^1.5.11 | - | map |
 | @orpc/server | ^1.15.0 | ^1.15.2 | orpc | map |
@@ -372,7 +375,7 @@ Generated: 2026-09-21T15:53:21.585Z
 | @capacitor/android | ^8.5.0 | ^8.5.2 | - | map |
 | contentful | ^11.12.9 | ^11.12.10 | - | map |
 | @heroui/react | ^3.2.4 | ^3.2.6 | - | map |
-| antd | ^6.6.1 | ^6.6.4 | - | map |
+| antd | ^6.6.1 | ^6.6.5 | - | map |
 | @hugeicons/core-free-icons | ^4.3.0 | ^4.3.4 | - | map |
 | @ark-ui/react | ^5.39.0 | ^5.39.2 | ark | map |
 | @ark-ui/vue | ^5.39.0 | ^5.39.2 | ark | map |
@@ -411,4 +414,6 @@ Generated: 2026-09-21T15:53:21.585Z
 | @elastic/elasticsearch | ^9.5.0 | ^9.5.1 | - | map |
 | @nangohq/node | ^0.71.4 | ^0.71.9 | - | map |
 | @launchdarkly/node-server-sdk | ^9.13.1 | ^9.13.6 | - | map |
+| @iconify-json/lucide | ^1.2.134 | ^1.2.135 | - | template |
+| fumadocs-mdx | ^15.4.1 | ^15.4.3 | - | template |
 
