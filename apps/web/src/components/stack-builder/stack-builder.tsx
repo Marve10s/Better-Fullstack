@@ -22,7 +22,8 @@ import {
   projectGraphScopedSelections,
   usesVirtualNoneStackSelection as usesVirtualNoneSelection,
 } from "@better-fullstack/types/stack-translation";
-import { AnimatePresence, motion } from "motion/react";
+import { Link as RouterLink } from "@tanstack/react-router";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Suspense,
   lazy,
@@ -36,11 +37,11 @@ import {
   useRef,
   useState,
 } from "react";
+import { flushSync } from "react-dom";
 import {
   TbArrowLeft as ArrowLeft,
   TbArrowRight as ArrowRight,
   TbArrowUp as ArrowUp,
-  TbBookmark as Bookmark,
   TbBook as BookOpen,
   TbCheck as Check,
   TbDeviceMobile as Smartphone,
@@ -69,6 +70,7 @@ import {
   TbArrowsShuffle as Shuffle,
   TbTerminal as Terminal,
   TbX as X,
+  TbStack3 as Layers3,
   TbBolt as Zap,
 } from "react-icons/tb";
 import { toast } from "sonner";
@@ -76,6 +78,9 @@ import { toast } from "sonner";
 import type { ShareMoment } from "@/lib/campaign/campaign-share";
 import type { Ecosystem } from "@/lib/stack/types";
 
+import logoDark from "@/assets/brand/bf-logo-ascii-dark.png?no-inline";
+import logoLight from "@/assets/brand/bf-logo-ascii-light.png?no-inline";
+import { LocaleMenu } from "@/components/navbar";
 import {
   CapabilityEvidenceProvider,
   useCapabilityEvidenceInventory,
@@ -98,6 +103,7 @@ import {
   validateProjectName,
 } from "@/components/stack-builder/utils";
 import { YoloToggle } from "@/components/stack-builder/yolo-toggle";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -126,7 +132,6 @@ import {
   stackAnalyticsProperties,
   trackCampaignEvent,
 } from "@/lib/analytics/campaign-analytics";
-import { clearBuilderMode, publishBuilderMode } from "@/lib/builder/builder-mode-bridge";
 import {
   buildBuilderSearchLookup,
   createBuilderSearchIndex,
@@ -161,10 +166,12 @@ import { getStackRunSupport } from "@/lib/project/run-support";
 import {
   DEFAULT_STACK,
   ECOSYSTEMS,
+  PRESET_CATEGORIES,
   PRESET_TEMPLATES,
   type StackState,
   TECH_OPTIONS,
 } from "@/lib/stack/constant";
+import { resolvePresetStack } from "@/lib/stack/preset-stack";
 import { useStackState } from "@/lib/stack/stack-url-state";
 import {
   generateStackCommand,
@@ -388,7 +395,7 @@ function BuilderSearchField({
 
   return (
     <div
-      className="relative ml-auto min-w-20 max-w-56 flex-1 sm:min-w-36"
+      className="relative order-last min-w-0 flex-1 basis-full sm:order-none sm:ml-auto sm:min-w-36 sm:max-w-72 sm:basis-0"
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
           setIsOpen(false);
@@ -1381,6 +1388,59 @@ function getCategoryRenderGroups(
   }));
 }
 
+/** Categories where one option is nearly always the pick: the rest wait behind "show more". */
+const QUIET_CATEGORIES: ReadonlySet<string> = new Set(["cssFramework"]);
+
+/** Categories that start as a single heading row with the current pick; a click opens them. */
+const COLLAPSED_CATEGORIES: ReadonlySet<string> = new Set(["webMcp"]);
+
+/** Sub-sections that start closed even though they have no section definition of their own. */
+const DEFAULT_COLLAPSED_KEYS: ReadonlySet<string> = new Set(["shadcnBase"]);
+
+const SHADCN_SUMMARY_KEYS = [
+  "shadcnBase",
+  "shadcnStyle",
+  "shadcnIconLibrary",
+  "shadcnColorTheme",
+  "shadcnBaseColor",
+  "shadcnFont",
+  "shadcnRadius",
+] as const;
+
+/** Rows shown as visual tokens instead of a list of names. */
+const SHADCN_TOKEN_KEYS: ReadonlySet<string> = new Set([
+  "shadcnColorTheme",
+  "shadcnBaseColor",
+  "shadcnRadius",
+]);
+
+/** Corner radius, in px, drawn on each Border Radius token. */
+const SHADCN_RADIUS_PREVIEW: Record<string, number> = { none: 0, small: 4, medium: 8, large: 12 };
+
+const SHADCN_SWATCH_KEYS: ReadonlySet<string> = new Set(["shadcnColorTheme", "shadcnBaseColor"]);
+
+const DOCK_PACKAGE_MANAGERS = ["bun", "pnpm", "npm", "yarn"] as const;
+
+const DOCK_ICON_BUTTON =
+  "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-[rgba(250,250,247,0.7)] transition-colors hover:bg-white/10 hover:text-[#FAFAF7]";
+
+/** A small glass label for the bar's icon-only controls. */
+function BarTip({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <Tooltip delay={40}>
+      <TooltipTrigger render={<span className="inline-flex shrink-0" />}>{children}</TooltipTrigger>
+      <TooltipContent
+        side="bottom"
+        sideOffset={8}
+        arrow={false}
+        className="rounded-full border border-ink/10 bg-surface/60 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink shadow-lg backdrop-blur-md dark:border-white/15"
+      >
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 const TechResourceButtons = memo(function TechResourceButtons({
   category,
   techId,
@@ -1462,12 +1522,12 @@ const TechOptionCard = memo(function TechOptionCard({
     <motion.div
       data-testid={`option-${category}-${tech.id}`}
       className={cn(
-        "group relative cursor-pointer rounded-lg border p-3 transition-all sm:p-4",
+        "group relative cursor-pointer rounded-xl border p-3 transition-colors sm:p-4",
         isSelected
-          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+          ? "border-ink bg-ink/[0.05] dark:border-brand/80 dark:bg-brand/[0.08]"
           : isDisabled
-            ? "border-destructive/30 bg-destructive/5 opacity-50 hover:opacity-75"
-            : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
+            ? "border-dashed border-foreground/10 bg-transparent opacity-55 hover:opacity-90"
+            : "border-foreground/10 bg-foreground/[0.03] hover:border-foreground/25 hover:bg-foreground/[0.06]",
       )}
       onClick={(e) => {
         e.stopPropagation();
@@ -1476,7 +1536,11 @@ const TechOptionCard = memo(function TechOptionCard({
       title={disabledReason || undefined}
     >
       <div className="absolute top-2 right-2 flex items-center gap-1">
-        <TechResourceButtons category={category} techId={tech.id} />
+        {/* Docs and GitHub links wait for hover or keyboard focus, so a grid of cards is not a
+            grid of buttons. Touch screens have no hover, so they stay visible there. */}
+        <div className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100">
+          <TechResourceButtons category={category} techId={tech.id} />
+        </div>
         {tech.default && !isSelected && (
           <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
             {m.builderDefault()}
@@ -1489,7 +1553,9 @@ const TechOptionCard = memo(function TechOptionCard({
             <div
               className={cn(
                 "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                isSelected ? "bg-primary/10" : "bg-muted/50 group-hover:bg-muted",
+                isSelected
+                  ? "bg-ink/10 dark:bg-brand/15"
+                  : "bg-foreground/[0.05] group-hover:bg-foreground/[0.08]",
               )}
             >
               <TechIcon techId={tech.id} icon={tech.icon} name={tech.name} className="h-5 w-5" />
@@ -1500,12 +1566,15 @@ const TechOptionCard = memo(function TechOptionCard({
           <span
             className={cn(
               "block font-semibold text-sm",
-              isSelected ? "text-primary" : "text-foreground",
+              isSelected ? "text-ink dark:text-brand" : "text-foreground",
             )}
           >
             {tech.name}
           </span>
-          <p className="mt-0.5 line-clamp-2 text-muted-foreground text-xs leading-relaxed">
+          <p
+            className="mt-0.5 truncate text-muted-foreground text-xs leading-relaxed"
+            title={description}
+          >
             {description}
           </p>
           {isDisabled && disabledReason && <DisabledReasonInline reason={disabledReason} />}
@@ -1517,15 +1586,17 @@ const TechOptionCard = memo(function TechOptionCard({
 
 function DisabledReasonInline({ reason, compact = false }: { reason: string; compact?: boolean }) {
   return (
-    <div
+    <p
       className={cn(
-        "mt-2 rounded-md border border-destructive/20 bg-destructive/5 px-2 py-1 text-destructive/90",
-        compact ? "text-[9px] leading-tight" : "text-[10px] leading-snug",
+        "mt-1.5 flex items-start gap-1.5 text-muted-foreground",
+        compact ? "text-[9px] leading-tight" : "text-[11px] leading-snug",
       )}
     >
-      <span className="font-medium">{m.builderUnavailable()}</span>{" "}
-      <span className={compact ? "line-clamp-1" : "line-clamp-2"}>{reason}</span>
-    </div>
+      <InfoIcon className="mt-px size-3 shrink-0" aria-hidden />
+      <span className={compact ? "line-clamp-1" : "line-clamp-2"}>
+        <span className="font-medium text-foreground/80">{m.builderUnavailable()}</span> {reason}
+      </span>
+    </p>
   );
 }
 
@@ -1544,6 +1615,13 @@ function getSelectionCountForValue(
   }
 
   return 0;
+}
+
+/** Names of the picked options in a category, leaving out "none". */
+function getSelectedOptionNames(category: keyof typeof TECH_OPTIONS, stack: StackState): string[] {
+  return (TECH_OPTIONS[category] ?? [])
+    .filter((option) => option.id !== "none" && isSelectedCheck(stack, category, option.id))
+    .map((option) => option.name);
 }
 
 function getSelectedCount(category: keyof typeof TECH_OPTIONS, stack: StackState): number {
@@ -2325,7 +2403,9 @@ function CreationModeComposer({
   }, [hasStaleKotlinBackendCapability, reconciledBackendCapabilities, updateGraphSelection]);
 
   const kotlinAdvancedPatch = useMemo(() => {
-    if (!isKotlinBackendSelection(graphSelection.backendEcosystem, graphSelection.backendLanguage)) {
+    if (
+      !isKotlinBackendSelection(graphSelection.backendEcosystem, graphSelection.backendLanguage)
+    ) {
       return null;
     }
     const patch: Partial<StackState> = {};
@@ -3359,7 +3439,6 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     setSelectedFile,
     campaign,
     starterTrackFilters,
-    setStarterTrackFilters,
   ] = useStackState(initialStack);
   const evidenceInventory = useCapabilityEvidenceInventory();
 
@@ -3535,6 +3614,13 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   const activeMultiStep = multiSteps.includes(multiActiveStep) ? multiActiveStep : "applications";
   const multiActiveStepIndex = multiSteps.indexOf(activeMultiStep);
   const isMultiMode = stack.stackMode === "multi";
+  const [expandedQuietCategories, setExpandedQuietCategories] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const packageManagerLabel = getLocalizedCategoryDisplayName("packageManager", "Package manager");
+  const reducedMotion = useReducedMotion();
+  // Saved stacks live inside Presets: both are places to load a stack from.
+  const isLibraryView = viewMode === "presets" || viewMode === "saved";
   const isFinalMultiStep = multiActiveStepIndex >= multiSteps.length - 1;
   const isMultiSummaryStep = isMultiMode && isFinalMultiStep;
   const builderSearchScope = getBuilderSearchScope(stack.ecosystem, stack.javaLanguage);
@@ -3921,25 +4007,52 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     setStack({ stackMode: "solo", stackPartSpecs: [] });
   };
 
-  // Publish the creation mode to the global Navbar (which renders the
-  // Solo / Multi-Ecosystem toggle in the header) and clear it on unmount.
-  // Handlers are read through refs so the toggle always acts on the latest
-  // stack, while we only re-publish when the mode itself changes.
-  const enableMultiModeRef = useRef(enableMultiMode);
-  const disableMultiModeRef = useRef(disableMultiMode);
-  enableMultiModeRef.current = enableMultiMode;
-  disableMultiModeRef.current = disableMultiMode;
+  // Kotlin is a language of the Java ecosystem, so it is active only when both match.
+  const isEcosystemActive = (ecosystemId: string) => {
+    if (isMultiMode) return false;
+    if (ecosystemId === "kotlin") {
+      return stack.ecosystem === "java" && stack.javaLanguage === "kotlin";
+    }
+    return (
+      stack.ecosystem === ecosystemId && (ecosystemId !== "java" || stack.javaLanguage !== "kotlin")
+    );
+  };
 
-  useEffect(() => {
-    publishBuilderMode(stack.stackMode === "multi" ? "multi" : "solo", (mode) => {
-      if (mode === "multi") {
-        enableMultiModeRef.current();
-      } else {
-        disableMultiModeRef.current();
-      }
+  const activeEcosystem = BUILDER_ECOSYSTEMS.find((eco) => isEcosystemActive(eco.id));
+
+  // Swapping a whole language's options under the cursor reads as a blink. A view
+  // transition keeps the old screen up until the new one has rendered, then
+  // dissolves between the two. Without support, or with reduced motion, it just swaps.
+  const withContentDissolve = (update: () => void) => {
+    if (reducedMotion || typeof document.startViewTransition !== "function") {
+      startTransition(update);
+      return;
+    }
+    document.startViewTransition(() => flushSync(update));
+  };
+
+  const selectEcosystem = (ecosystemId: string) => {
+    if (isEcosystemActive(ecosystemId)) return;
+    const isKotlin = ecosystemId === "kotlin";
+    withContentDissolve(() => {
+      // Fresh defaults per ecosystem: carrying the previous selection through
+      // the compat engine persists zeroed fields (e.g. react-native nulls
+      // webFrontend, hiding the Run tab back on TS) and stale
+      // foreign-ecosystem params in the URL.
+      setStack({
+        ...DEFAULT_STACK,
+        projectName: stack.projectName,
+        packageManager: stack.packageManager,
+        git: stack.git,
+        install: stack.install,
+        yolo: stack.yolo,
+        ecosystem: (isKotlin ? "java" : ecosystemId) as Ecosystem,
+        ...(isKotlin ? { javaLanguage: "kotlin" as const } : {}),
+        stackMode: "solo",
+        stackPartSpecs: [],
+      });
     });
-    return () => clearBuilderMode();
-  }, [stack.stackMode]);
+  };
 
   const resetStack = () => {
     selectionEngagedRef.current = true;
@@ -3965,7 +4078,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   const applyPreset = (presetId: string) => {
     const preset = PRESET_TEMPLATES.find((template) => template.id === presetId);
     if (preset) {
-      const fullStack = { ...DEFAULT_STACK, ...preset.stack } as StackState;
+      const fullStack = resolvePresetStack({ ...DEFAULT_STACK, ...preset.stack } as StackState);
       selectionEngagedRef.current = true;
       selectionCompletedRef.current = false;
       startTransition(() => {
@@ -3988,15 +4101,6 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
       toast.success(`Applied preset: ${preset.name}`);
     }
   };
-
-  const updateStarterTrackFilters = useCallback(
-    (filters: typeof starterTrackFilters) => {
-      selectionEngagedRef.current = true;
-      selectionCompletedRef.current = false;
-      setStarterTrackFilters(filters);
-    },
-    [setStarterTrackFilters],
-  );
 
   const persistSavedEntries = (entries: SavedStackEntry[]) => {
     setSavedStacks(entries);
@@ -4105,6 +4209,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   const isSectionCollapsed = (sectionKey: string): boolean => {
     const override = sectionCollapseOverrides.get(sectionKey);
     if (override !== undefined) return override;
+    if (DEFAULT_COLLAPSED_KEYS.has(sectionKey)) return true;
     const def = sectionDefByKey.get(sectionKey);
     if (!def?.defaultCollapsed) return false;
     return !def.categories.some((category) => categoryHasNonDefaultSelection(category, stack));
@@ -4165,6 +4270,10 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     goToCategory(entry.categoryKey);
 
     if (!entry.optionCategory || !entry.optionId) return;
+    const optionCategory = entry.optionCategory;
+    if (QUIET_CATEGORIES.has(optionCategory) || COLLAPSED_CATEGORIES.has(optionCategory)) {
+      setExpandedQuietCategories((current) => new Set(current).add(optionCategory));
+    }
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         document
@@ -4174,6 +4283,24 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     });
   };
 
+  // A quiet category shows only what is picked until it is expanded.
+  const getQuietOptions = (group: { category: string; options: readonly TechOption[] }) => {
+    const pickedOptions = group.options.filter((tech) =>
+      isSelectedCheck(stack, group.category, tech.id),
+    );
+    const collapsed =
+      QUIET_CATEGORIES.has(group.category) &&
+      !expandedQuietCategories.has(group.category) &&
+      pickedOptions.length > 0;
+    return { shown: collapsed ? pickedOptions : group.options, picked: pickedOptions.length };
+  };
+
+  const libraryPresetCount = PRESET_TEMPLATES.filter((preset) =>
+    PRESET_CATEGORIES.some(
+      (category) => category.ecosystem === stack.ecosystem && category.id === preset.category,
+    ),
+  ).length;
+
   const getToolbarTabClass = (isActive: boolean) =>
     cn(
       "relative flex cursor-pointer items-center gap-1 rounded-full px-2 py-1.5 font-mono text-[10px] uppercase tracking-wide transition-all sm:px-2.5 sm:text-[11px]",
@@ -4181,6 +4308,56 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
         ? "bg-foreground text-background shadow-sm"
         : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
     );
+
+  // Presets and Saved share one header: a title that names the view, and the switch between them.
+  const librarySwitch = (
+    <div className="flex shrink-0 flex-wrap items-end justify-between gap-x-6 gap-y-4 px-3 pt-6 pb-4 sm:px-4">
+      <div className="min-w-0">
+        <h1 className="font-mono font-bold tracking-[-0.04em] text-ink [font-size:clamp(1.75rem,3vw,2.5rem)] [line-height:1]">
+          {viewMode === "saved" ? m.builderTabSaved() : m.builderTabPresets()}
+        </h1>
+        <p className="mt-2 max-w-xl text-muted-foreground text-sm">
+          {viewMode === "saved" ? m.savedDescription() : m.presetClickToApply()}
+        </p>
+      </div>
+      <fieldset
+        aria-label={m.builderTabPresets()}
+        className="flex shrink-0 items-center rounded-full border border-foreground/10 bg-foreground/[0.03] p-1"
+      >
+        {(
+          [
+            { view: "presets", label: m.builderTabPresets(), count: libraryPresetCount },
+            { view: "saved", label: m.builderTabSaved(), count: savedStacks.length },
+          ] as const
+        ).map((entry) => {
+          const isActive = viewMode === entry.view;
+          return (
+            <button
+              key={entry.view}
+              type="button"
+              data-testid={`library-${entry.view}`}
+              aria-pressed={isActive}
+              onClick={() => setViewMode(entry.view)}
+              className={cn(
+                "relative flex h-9 cursor-pointer items-center gap-2 rounded-full px-4 font-mono text-xs uppercase tracking-[0.12em] transition-colors",
+                isActive ? "text-background" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {isActive && (
+                <motion.span
+                  layoutId="library-switch-pill"
+                  className="absolute inset-0 rounded-full bg-foreground"
+                  transition={{ type: "spring", bounce: 0.18, duration: 0.45 }}
+                />
+              )}
+              <span className="relative">{entry.label}</span>
+              <span className="relative tabular-nums opacity-60">{entry.count}</span>
+            </button>
+          );
+        })}
+      </fieldset>
+    </div>
+  );
 
   const multiReviewCommandBar = isMultiSummaryStep && (
     <>
@@ -4370,87 +4547,8 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
             const next = e.currentTarget.scrollTop > 120;
             setShowScrollTop((prev) => (prev === next ? prev : next));
           }}
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto [view-transition-name:builder-content]"
         >
-          {stack.stackMode !== "multi" && (
-            <div className="relative shrink-0 border-b border-border/60 bg-fd-background">
-              <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9">
-                {BUILDER_ECOSYSTEMS.map((eco) => {
-                  const isKotlin = eco.id === "kotlin";
-                  const isActive =
-                    stack.ecosystem === "java" && isKotlin
-                      ? stack.javaLanguage === "kotlin"
-                      : stack.ecosystem === eco.id &&
-                        (eco.id !== "java" || stack.javaLanguage !== "kotlin");
-                  return (
-                    <button
-                      key={eco.id}
-                      type="button"
-                      data-testid={`ecosystem-${eco.id}`}
-                      onClick={() => {
-                        if (isActive) return;
-                        startTransition(() => {
-                          // Fresh defaults per ecosystem: carrying the previous
-                          // selection through the compat engine persists zeroed
-                          // fields (e.g. react-native nulls webFrontend, hiding
-                          // the Run tab back on TS) and stale foreign-ecosystem
-                          // params in the URL.
-                          setStack({
-                            ...DEFAULT_STACK,
-                            projectName: stack.projectName,
-                            packageManager: stack.packageManager,
-                            git: stack.git,
-                            install: stack.install,
-                            yolo: stack.yolo,
-                            ecosystem: (isKotlin ? "java" : eco.id) as Ecosystem,
-                            ...(isKotlin ? { javaLanguage: "kotlin" as const } : {}),
-                            stackMode: "solo",
-                            stackPartSpecs: [],
-                          });
-                        });
-                      }}
-                      className={cn(
-                        "group relative flex cursor-pointer items-center justify-center gap-2 px-3 py-3 transition-all sm:gap-2.5 sm:px-4 sm:py-3.5",
-                        isActive
-                          ? "bg-muted/40 text-foreground"
-                          : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
-                      )}
-                    >
-                      {isActive && (
-                        <motion.div
-                          layoutId="ecosystem-indicator"
-                          className={cn(
-                            "absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r",
-                            eco.color,
-                          )}
-                          transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
-                        />
-                      )}
-
-                      <TechIcon
-                        techId={eco.id}
-                        icon={eco.icon}
-                        name={eco.name}
-                        className={cn(
-                          "relative h-4.5 w-4.5 transition-all sm:h-5 sm:w-5",
-                          isActive ? "scale-110" : "opacity-50 group-hover:opacity-75",
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "relative font-mono text-[10px] uppercase tracking-wide transition-all sm:text-xs",
-                          isActive ? "font-bold" : "",
-                        )}
-                      >
-                        {eco.name}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           <div
             className={cn("flex", viewMode === "command" ? "" : "min-h-0 flex-1 overflow-hidden")}
           >
@@ -4461,377 +4559,536 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                 viewMode === "command" ? "" : "overflow-hidden",
               )}
             >
-              {!isMultiMode && (
-                <div className="relative flex shrink-0 items-center gap-1 bg-fd-background py-2 pr-2 pl-2 sm:gap-2 sm:pr-4 sm:pl-0">
-                  {/* ─── Project name field ─────────────────────────────────────
+              {/* One bar for brand, languages, the stack views and its actions. It is a single row
+                  from xl up and wraps into two rows below that; phones get a language menu in
+                  place of the icon strip. */}
+              <div className="relative flex shrink-0 flex-wrap items-center gap-x-2 gap-y-2 border-b border-border/60 bg-fd-background px-3 py-2 [view-transition-name:builder-bar] sm:px-4 xl:flex-nowrap xl:gap-x-3">
+                <RouterLink to="/" aria-label={m.navHome()} className="flex shrink-0 items-center">
+                  <img
+                    src={logoLight}
+                    alt=""
+                    width={28}
+                    height={28}
+                    className="size-7 dark:hidden"
+                  />
+                  <img
+                    src={logoDark}
+                    alt=""
+                    width={28}
+                    height={28}
+                    className="hidden size-7 dark:block"
+                  />
+                </RouterLink>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <button
+                        type="button"
+                        aria-label={m.navLanguage()}
+                        className="flex h-8 min-w-0 cursor-pointer items-center gap-1.5 rounded-full border border-border/50 bg-muted/25 px-2.5 md:hidden"
+                      />
+                    }
+                  >
+                    {activeEcosystem ? (
+                      <TechIcon
+                        techId={activeEcosystem.id}
+                        icon={activeEcosystem.icon}
+                        name={activeEcosystem.name}
+                        className="size-4 shrink-0"
+                      />
+                    ) : (
+                      <Layers3 className="size-4 shrink-0" aria-hidden />
+                    )}
+                    <span className="truncate font-mono text-[11px] font-semibold uppercase tracking-wide">
+                      {activeEcosystem?.name ?? m.navMultiEcosystem()}
+                    </span>
+                    <ChevronDown className="size-3 shrink-0 text-muted-foreground" aria-hidden />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-52 bg-fd-background">
+                    {BUILDER_ECOSYSTEMS.map((eco) => (
+                      <DropdownMenuItem key={eco.id} onClick={() => selectEcosystem(eco.id)}>
+                        <TechIcon
+                          techId={eco.id}
+                          icon={eco.icon}
+                          name={eco.name}
+                          className="size-4"
+                        />
+                        <span className="flex-1">{eco.name}</span>
+                        {isEcosystemActive(eco.id) && <Check className="size-3.5" />}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <div className="hidden items-center rounded-full border border-border/50 bg-muted/25 p-0.5 md:flex">
+                  {BUILDER_ECOSYSTEMS.map((eco) => {
+                    const isActive = isEcosystemActive(eco.id);
+                    return (
+                      <BarTip key={eco.id} label={eco.name}>
+                        <button
+                          type="button"
+                          data-testid={`ecosystem-${eco.id}`}
+                          aria-pressed={isActive}
+                          aria-label={eco.name}
+                          onClick={() => selectEcosystem(eco.id)}
+                          className={cn(
+                            "relative flex h-7 cursor-pointer items-center gap-1.5 rounded-full px-2 transition-opacity",
+                            !isActive && "opacity-55 hover:opacity-100",
+                          )}
+                        >
+                          {isActive && (
+                            <motion.span
+                              layoutId="builder-language-pill"
+                              className="absolute inset-0 rounded-full bg-background shadow-sm"
+                              transition={{ type: "spring", bounce: 0.18, duration: 0.45 }}
+                            />
+                          )}
+                          <TechIcon
+                            techId={eco.id}
+                            icon={eco.icon}
+                            name={eco.name}
+                            className="relative size-4"
+                          />
+                          <AnimatePresence initial={false}>
+                            {isActive && (
+                              <motion.span
+                                key="label"
+                                initial={{ width: 0, opacity: 0 }}
+                                animate={{ width: "auto", opacity: 1 }}
+                                exit={{ width: 0, opacity: 0 }}
+                                transition={{ duration: 0.25, ease: "easeOut" }}
+                                className="relative overflow-hidden whitespace-nowrap font-mono text-[11px] font-semibold uppercase tracking-wide"
+                              >
+                                {eco.name}
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
+                        </button>
+                      </BarTip>
+                    );
+                  })}
+                </div>
+
+                {/* Several languages at once is a different way to build, not a tenth language. */}
+                <BarTip label={m.navMultiEcosystem()}>
+                  <button
+                    type="button"
+                    data-testid="stack-mode-multi"
+                    aria-pressed={isMultiMode}
+                    aria-label={m.navMultiEcosystem()}
+                    onClick={() => {
+                      if (!isMultiMode) withContentDissolve(enableMultiMode);
+                    }}
+                    className={cn(
+                      "flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-2.5 font-mono text-[11px] font-semibold uppercase tracking-wide transition-colors",
+                      isMultiMode
+                        ? "border-ink bg-ink/[0.06] text-ink dark:border-brand/80 dark:bg-brand/[0.1] dark:text-brand"
+                        : "border-border/50 bg-muted/25 text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <Layers3 className="size-4" aria-hidden />
+                    <span className="hidden whitespace-nowrap min-[1700px]:inline">
+                      {m.navMultiEcosystem()}
+                    </span>
+                  </button>
+                </BarTip>
+
+                {!isMultiMode && (
+                  <div className="order-last flex min-w-0 basis-full flex-wrap items-center gap-1 sm:flex-nowrap sm:gap-2 xl:order-none xl:basis-0 xl:flex-1">
+                    {/* ─── Project name field ─────────────────────────────────────
                     The wrapper mirrors the Preview/Run file-sidebar widths
                     (sm:w-48 md:w-56 lg:w-64) so its trailing separator lines
                     up with the sidebar border in the panels below. */}
-                  <div className="flex min-w-0 shrink-0 items-center gap-2 sm:w-48 sm:pl-4 md:w-56 lg:w-64">
-                    <label
-                      htmlFor="project-name"
-                      className={cn(
-                        "group relative inline-flex h-8 w-32 min-w-0 cursor-text items-center gap-2 rounded-full border border-transparent bg-muted/55 px-3 transition-all duration-300 hover:bg-card focus-within:bg-card sm:w-auto sm:flex-1",
-                        projectNameError
-                          ? "border-destructive focus-within:border-destructive focus-within:shadow-[0_0_0_4px_rgba(239,68,68,0.12)]"
-                          : "border-border focus-within:border-foreground focus-within:shadow-[0_0_0_4px_rgba(24,24,27,0.05)] dark:focus-within:shadow-[0_0_0_4px_rgba(255,255,255,0.06)]",
-                      )}
-                    >
-                      <span className="sr-only">{m.builderProjectName()}</span>
-                      <input
-                        id="project-name"
-                        value={stack.projectName || ""}
-                        onChange={(e) => setStack({ projectName: e.target.value })}
-                        placeholder="my-app"
-                        aria-label={m.builderProjectName()}
-                        aria-invalid={projectNameError ? true : undefined}
-                        title={
-                          projectNameError ||
-                          ((stack.projectName || "my-app").includes(" ")
-                            ? m.builderWillSaveAs({
-                                name: (stack.projectName || "my-app").replace(/\s+/g, "-"),
-                              })
-                            : undefined)
-                        }
+                    <div className="flex min-w-0 flex-1 items-center gap-2 sm:w-44 sm:flex-none">
+                      <label
+                        htmlFor="project-name"
                         className={cn(
-                          "min-w-0 flex-1 border-none bg-transparent p-0 font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground/50",
-                          projectNameError && "text-destructive",
+                          "group relative inline-flex h-8 w-full min-w-0 cursor-text items-center gap-2 rounded-full border border-transparent bg-muted/55 px-3 transition-all duration-300 hover:bg-card focus-within:bg-card sm:w-auto sm:flex-1",
+                          projectNameError
+                            ? "border-destructive focus-within:border-destructive focus-within:shadow-[0_0_0_4px_rgba(239,68,68,0.12)]"
+                            : "border-border focus-within:border-foreground focus-within:shadow-[0_0_0_4px_rgba(24,24,27,0.05)] dark:focus-within:shadow-[0_0_0_4px_rgba(255,255,255,0.06)]",
                         )}
+                      >
+                        <span className="sr-only">{m.builderProjectName()}</span>
+                        <input
+                          id="project-name"
+                          value={stack.projectName || ""}
+                          onChange={(e) => setStack({ projectName: e.target.value })}
+                          placeholder="my-app"
+                          aria-label={m.builderProjectName()}
+                          aria-invalid={projectNameError ? true : undefined}
+                          title={
+                            projectNameError ||
+                            ((stack.projectName || "my-app").includes(" ")
+                              ? m.builderWillSaveAs({
+                                  name: (stack.projectName || "my-app").replace(/\s+/g, "-"),
+                                })
+                              : undefined)
+                          }
+                          className={cn(
+                            "min-w-0 flex-1 border-none bg-transparent p-0 font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground/50",
+                            projectNameError && "text-destructive",
+                          )}
+                        />
+                        <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-focus-within:text-foreground" />
+                      </label>
+
+                      <div
+                        className="hidden h-6 w-px shrink-0 bg-border sm:block"
+                        aria-hidden="true"
                       />
-                      <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-focus-within:text-foreground" />
-                    </label>
+                    </div>
+
+                    <fieldset
+                      aria-label="Builder views"
+                      className="flex min-w-0 items-center gap-0.5 rounded-full border border-border/50 bg-muted/25 p-0.5"
+                    >
+                      <BarTip label={m.builderTabBuilder()}>
+                        <button
+                          type="button"
+                          onClick={() => setViewMode("command")}
+                          data-testid="tab-builder"
+                          aria-label={m.builderTabBuilder()}
+                          aria-pressed={viewMode === "command"}
+                          data-state={viewMode === "command" ? "active" : "inactive"}
+                          className={getToolbarTabClass(viewMode === "command")}
+                        >
+                          <Hammer className="h-3 w-3" />
+                          <span className="hidden whitespace-nowrap min-[480px]:inline xl:hidden 2xl:inline">
+                            {m.builderTabBuilder()}
+                          </span>
+                        </button>
+                      </BarTip>
+                      <BarTip label={m.builderTabPreview()}>
+                        <button
+                          type="button"
+                          onClick={() => setViewMode("preview")}
+                          data-testid="tab-preview"
+                          aria-label={m.builderTabPreview()}
+                          aria-pressed={viewMode === "preview"}
+                          data-state={viewMode === "preview" ? "active" : "inactive"}
+                          className={getToolbarTabClass(viewMode === "preview")}
+                        >
+                          <Eye className="h-3 w-3" />
+                          <span className="hidden whitespace-nowrap min-[480px]:inline xl:hidden 2xl:inline">
+                            {m.builderTabPreview()}
+                          </span>
+                        </button>
+                      </BarTip>
+                      {runSupported && (
+                        <BarTip label={m.builderTabRun()}>
+                          <button
+                            type="button"
+                            onClick={() => setViewMode("run")}
+                            onPointerEnter={warmRunPanel}
+                            onFocus={warmRunPanel}
+                            onTouchStart={warmRunPanel}
+                            data-testid="tab-run"
+                            aria-label={m.builderTabRun()}
+                            aria-pressed={viewMode === "run"}
+                            data-state={viewMode === "run" ? "active" : "inactive"}
+                            className={getToolbarTabClass(viewMode === "run")}
+                          >
+                            <Play className="h-3 w-3" />
+                            <span className="hidden whitespace-nowrap lg:inline xl:hidden 2xl:inline">
+                              {m.builderTabRun()}
+                            </span>
+                          </button>
+                        </BarTip>
+                      )}
+                      <BarTip label={m.builderTabPresets()}>
+                        <button
+                          type="button"
+                          onClick={() => setViewMode("presets")}
+                          data-testid="tab-presets"
+                          aria-label={m.builderTabPresets()}
+                          aria-pressed={isLibraryView}
+                          data-state={isLibraryView ? "active" : "inactive"}
+                          className={getToolbarTabClass(isLibraryView)}
+                        >
+                          <Zap className="h-3 w-3" />
+                          <span className="hidden whitespace-nowrap min-[480px]:inline xl:hidden 2xl:inline">
+                            {m.builderTabPresets()}
+                          </span>
+                        </button>
+                      </BarTip>
+                    </fieldset>
+
+                    {!isMultiMode && (
+                      <BuilderSearchField
+                        scope={builderSearchScope}
+                        placeholder={m.builderSearchPlaceholder({
+                          ecosystem: builderSearchEcosystemName,
+                        })}
+                        ariaLabel={m.builderSearchLabel({
+                          ecosystem: builderSearchEcosystemName,
+                        })}
+                        clearLabel={m.builderClearSearch()}
+                        emptyLabel={(query) => m.builderNoSearchResults({ query })}
+                        lookup={builderSearchData.lookup}
+                        onSelect={goToBuilderSearchResult}
+                        onFocus={() => setViewMode("command")}
+                      />
+                    )}
+
+                    <div className="relative shrink-0">
+                      <BarTip
+                        label={
+                          isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()
+                        }
+                      >
+                        <button
+                          type="button"
+                          onClick={handleDownloadProject}
+                          disabled={
+                            isDownloadingProject ||
+                            Boolean(commandError) ||
+                            (isMultiMode && !hasComposerApplication(stack.stackPartSpecs))
+                          }
+                          data-testid="download-project-zip"
+                          aria-label={
+                            isDownloadingProject
+                              ? m.builderDownloadingZip()
+                              : m.builderDownloadZip()
+                          }
+                          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-border/55 bg-muted/30 px-2.5 font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-all hover:border-foreground/30 hover:bg-background hover:text-foreground disabled:cursor-wait disabled:opacity-60"
+                        >
+                          {isDownloadingProject ? (
+                            <Loader2 className="size-3 animate-spin" aria-hidden />
+                          ) : (
+                            <Download className="size-3" aria-hidden />
+                          )}
+                        </button>
+                      </BarTip>
+                    </div>
 
                     <div
-                      className="hidden h-6 w-px shrink-0 bg-border sm:block"
-                      aria-hidden="true"
-                    />
-                  </div>
-
-                  <fieldset
-                    aria-label="Builder views"
-                    className="flex min-w-0 items-center gap-0.5 rounded-full border border-border/50 bg-muted/25 p-0.5"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("command")}
-                      data-testid="tab-builder"
-                      aria-pressed={viewMode === "command"}
-                      data-state={viewMode === "command" ? "active" : "inactive"}
-                      className={getToolbarTabClass(viewMode === "command")}
-                    >
-                      <Hammer className="h-3 w-3" />
-                      <span className="hidden min-[480px]:inline">{m.builderTabBuilder()}</span>
-                    </button>
-                    {!isMultiMode && (
-                      <button
-                        type="button"
-                        onClick={() => setViewMode("presets")}
-                        data-testid="tab-presets"
-                        aria-pressed={viewMode === "presets"}
-                        data-state={viewMode === "presets" ? "active" : "inactive"}
-                        className={getToolbarTabClass(viewMode === "presets")}
-                      >
-                        <Zap className="h-3 w-3" />
-                        <span className="hidden min-[480px]:inline">{m.builderTabPresets()}</span>
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("preview")}
-                      data-testid="tab-preview"
-                      aria-pressed={viewMode === "preview"}
-                      data-state={viewMode === "preview" ? "active" : "inactive"}
-                      className={getToolbarTabClass(viewMode === "preview")}
-                    >
-                      <Eye className="h-3 w-3" />
-                      <span className="hidden min-[480px]:inline">{m.builderTabPreview()}</span>
-                    </button>
-                    {runSupported && (
-                      <button
-                        type="button"
-                        onClick={() => setViewMode("run")}
-                        onPointerEnter={warmRunPanel}
-                        onFocus={warmRunPanel}
-                        onTouchStart={warmRunPanel}
-                        data-testid="tab-run"
-                        aria-pressed={viewMode === "run"}
-                        data-state={viewMode === "run" ? "active" : "inactive"}
-                        className={getToolbarTabClass(viewMode === "run")}
-                      >
-                        <Play className="h-3 w-3" />
-                        <span className="hidden lg:inline">{m.builderTabRun()}</span>
-                      </button>
-                    )}
-                    {!isMultiMode && (
-                      <button
-                        type="button"
-                        onClick={() => setViewMode("saved")}
-                        data-testid="tab-saved"
-                        aria-pressed={viewMode === "saved"}
-                        data-state={viewMode === "saved" ? "active" : "inactive"}
-                        className={getToolbarTabClass(viewMode === "saved")}
-                      >
-                        <Bookmark className="h-3 w-3" />
-                        <span className="hidden min-[480px]:inline">{m.builderTabSaved()}</span>
-                      </button>
-                    )}
-                  </fieldset>
-
-                  {!isMultiMode && (
-                    <BuilderSearchField
-                      scope={builderSearchScope}
-                      placeholder={m.builderSearchPlaceholder({
-                        ecosystem: builderSearchEcosystemName,
-                      })}
-                      ariaLabel={m.builderSearchLabel({
-                        ecosystem: builderSearchEcosystemName,
-                      })}
-                      clearLabel={m.builderClearSearch()}
-                      emptyLabel={(query) => m.builderNoSearchResults({ query })}
-                      lookup={builderSearchData.lookup}
-                      onSelect={goToBuilderSearchResult}
-                      onFocus={() => setViewMode("command")}
-                    />
-                  )}
-
-                  <div className="relative shrink-0">
-                    <button
-                      type="button"
-                      onClick={handleDownloadProject}
-                      disabled={
-                        isDownloadingProject ||
-                        Boolean(commandError) ||
-                        (isMultiMode && !hasComposerApplication(stack.stackPartSpecs))
-                      }
-                      data-testid="download-project-zip"
-                      aria-label={
-                        isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()
-                      }
-                      title={
-                        isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()
-                      }
-                      className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-border/55 bg-muted/30 px-2.5 font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-all hover:border-foreground/30 hover:bg-background hover:text-foreground disabled:cursor-wait disabled:opacity-60"
-                    >
-                      {isDownloadingProject ? (
-                        <Loader2 className="size-3 animate-spin" aria-hidden />
-                      ) : (
-                        <Download className="size-3" aria-hidden />
+                      className={cn(
+                        "flex items-center gap-1 rounded-full bg-muted/35 p-0.5",
+                        isMultiMode && "ml-auto",
                       )}
-                      <span className="hidden xl:inline">
-                        {isDownloadingProject ? m.builderDownloadingZip() : m.builderDownloadZip()}
-                      </span>
-                    </button>
-                  </div>
-
-                  <div
-                    className={cn(
-                      "flex items-center gap-1 rounded-full bg-muted/35 p-0.5",
-                      isMultiMode && "ml-auto",
-                    )}
-                  >
-                    {/* Desktop action buttons */}
-                    <AnimatePresence initial={false}>
-                      {!isMultiMode && isSaveInputVisible && (
-                        <motion.div
-                          initial={{ width: 0, opacity: 0 }}
-                          animate={{ width: 220, opacity: 1 }}
-                          exit={{ width: 0, opacity: 0 }}
-                          transition={{ duration: 0.2, ease: "easeInOut" }}
-                          className="hidden overflow-hidden sm:block"
-                        >
-                          <div className="flex items-center gap-1 pr-1">
-                            <Input
-                              value={savePresetName}
-                              onChange={(e) => setSavePresetName(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
+                    >
+                      {/* Desktop action buttons */}
+                      <AnimatePresence initial={false}>
+                        {!isMultiMode && isSaveInputVisible && (
+                          <motion.div
+                            initial={{ width: 0, opacity: 0 }}
+                            animate={{ width: 220, opacity: 1 }}
+                            exit={{ width: 0, opacity: 0 }}
+                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                            className="hidden overflow-hidden sm:block"
+                          >
+                            <div className="flex items-center gap-1 pr-1">
+                              <Input
+                                value={savePresetName}
+                                onChange={(e) => setSavePresetName(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    saveCurrentStack(
+                                      savePresetName ||
+                                        stack.projectName ||
+                                        m.savedPresetFallback(),
+                                    );
+                                  }
+                                  if (e.key === "Escape") {
+                                    setIsSaveInputVisible(false);
+                                    setSavePresetName("");
+                                  }
+                                }}
+                                placeholder={stack.projectName || m.savedPresetFallback()}
+                                className="h-8 min-w-0"
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
                                   saveCurrentStack(
                                     savePresetName || stack.projectName || m.savedPresetFallback(),
-                                  );
+                                  )
                                 }
-                                if (e.key === "Escape") {
-                                  setIsSaveInputVisible(false);
-                                  setSavePresetName("");
+                                className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                title={m.builderSavePreset()}
+                              >
+                                <Check className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      <div className="hidden items-center gap-1">
+                        {!isMultiMode && (
+                          <>
+                            <Tooltip>
+                              <TooltipTrigger
+                                render={
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const nextVisible = !isSaveInputVisible;
+                                      setIsSaveInputVisible(nextVisible);
+                                      setSavePresetName(nextVisible ? stack.projectName || "" : "");
+                                    }}
+                                    title={m.builderSaveCurrentPreset()}
+                                    aria-label={m.builderSaveCurrentPreset()}
+                                    className={cn(
+                                      "cursor-pointer rounded-md p-1.5 transition-colors",
+                                      isSaveInputVisible
+                                        ? "bg-primary/15 text-primary"
+                                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                                    )}
+                                  />
                                 }
-                              }}
-                              placeholder={stack.projectName || m.savedPresetFallback()}
-                              className="h-8 min-w-0"
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                saveCurrentStack(
-                                  savePresetName || stack.projectName || m.savedPresetFallback(),
-                                )
-                              }
-                              className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                              title={m.builderSavePreset()}
-                            >
-                              <Check className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                    <div className="hidden items-center gap-1">
-                      {!isMultiMode && (
-                        <>
-                          <Tooltip>
-                            <TooltipTrigger
+                              >
+                                <Save className="h-3.5 w-3.5" />
+                              </TooltipTrigger>
+                              <TooltipContent>{m.builderSaveCurrentStackTooltip()}</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger
+                                render={
+                                  <button
+                                    type="button"
+                                    onClick={resetStack}
+                                    title={m.builderResetDefaults()}
+                                    aria-label={m.builderResetDefaults()}
+                                    data-testid="btn-reset"
+                                    className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                  />
+                                }
+                              >
+                                <RefreshCw className="h-3.5 w-3.5" />
+                              </TooltipTrigger>
+                              <TooltipContent>{m.builderResetTooltip()}</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger
+                                render={
+                                  <button
+                                    type="button"
+                                    onClick={getRandomStack}
+                                    title={m.builderRandomTitle()}
+                                    aria-label={m.builderRandomTitle()}
+                                    data-testid="btn-random"
+                                    className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                  />
+                                }
+                              >
+                                <Shuffle className="h-3.5 w-3.5" />
+                              </TooltipTrigger>
+                              <TooltipContent>{m.builderRandomTooltip()}</TooltipContent>
+                            </Tooltip>
+                          </>
+                        )}
+                        <ShareButton stackUrl={getStackUrl()} />
+                        {!isMultiMode && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger
                               render={
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    const nextVisible = !isSaveInputVisible;
-                                    setIsSaveInputVisible(nextVisible);
-                                    setSavePresetName(nextVisible ? stack.projectName || "" : "");
-                                  }}
-                                  title={m.builderSaveCurrentPreset()}
-                                  aria-label={m.builderSaveCurrentPreset()}
-                                  className={cn(
-                                    "cursor-pointer rounded-md p-1.5 transition-colors",
-                                    isSaveInputVisible
-                                      ? "bg-primary/15 text-primary"
-                                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                                  )}
-                                />
-                              }
-                            >
-                              <Save className="h-3.5 w-3.5" />
-                            </TooltipTrigger>
-                            <TooltipContent>{m.builderSaveCurrentStackTooltip()}</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger
-                              render={
-                                <button
-                                  type="button"
-                                  onClick={resetStack}
-                                  title={m.builderResetDefaults()}
-                                  aria-label={m.builderResetDefaults()}
-                                  data-testid="btn-reset"
+                                  aria-label={m.builderSettings()}
+                                  title={m.builderSettings()}
                                   className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                                 />
                               }
                             >
-                              <RefreshCw className="h-3.5 w-3.5" />
-                            </TooltipTrigger>
-                            <TooltipContent>{m.builderResetTooltip()}</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger
-                              render={
-                                <button
-                                  type="button"
-                                  onClick={getRandomStack}
-                                  title={m.builderRandomTitle()}
-                                  aria-label={m.builderRandomTitle()}
-                                  data-testid="btn-random"
-                                  className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                                />
-                              }
-                            >
-                              <Shuffle className="h-3.5 w-3.5" />
-                            </TooltipTrigger>
-                            <TooltipContent>{m.builderRandomTooltip()}</TooltipContent>
-                          </Tooltip>
-                        </>
-                      )}
-                      <ShareButton stackUrl={getStackUrl()} />
-                      {!isMultiMode && (
+                              <Settings className="h-3.5 w-3.5" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-64 bg-fd-background">
+                              <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
+
+                      {/* Mobile three-dot menu */}
+                      <BarTip label={m.builderMoreActions()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger
                             render={
                               <button
                                 type="button"
-                                aria-label={m.builderSettings()}
-                                title={m.builderSettings()}
-                                className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                aria-label={m.builderMoreActions()}
+                                className={cn(
+                                  "flex items-center justify-center cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                                )}
                               />
                             }
                           >
-                            <Settings className="h-3.5 w-3.5" />
+                            <EllipsisVertical className="h-4 w-4" />
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-64 bg-fd-background">
-                            <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </div>
-
-                    {/* Mobile three-dot menu */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        render={
-                          <button
-                            type="button"
-                            aria-label={m.builderMoreActions()}
-                            title={m.builderMoreActions()}
-                            className={cn(
-                              "flex items-center justify-center cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                          <DropdownMenuContent
+                            align="end"
+                            sideOffset={8}
+                            className="w-48 bg-fd-background"
+                          >
+                            {!isMultiMode && (
+                              <>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    saveCurrentStack(stack.projectName || m.savedPresetFallback());
+                                  }}
+                                >
+                                  <Save className="h-3.5 w-3.5" />
+                                  {m.builderSavePreset()}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={resetStack}>
+                                  <RefreshCw className="h-3.5 w-3.5" />
+                                  {m.builderResetDefaults()}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={getRandomStack}>
+                                  <Shuffle className="h-3.5 w-3.5" />
+                                  {m.builderRandomTitle()}
+                                </DropdownMenuItem>
+                              </>
                             )}
-                          />
-                        }
-                      >
-                        <EllipsisVertical className="h-4 w-4" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        sideOffset={8}
-                        className="w-48 bg-fd-background"
-                      >
-                        {!isMultiMode && (
-                          <>
                             <DropdownMenuItem
                               onClick={() => {
-                                saveCurrentStack(stack.projectName || m.savedPresetFallback());
+                                setHasOpenedImport(true);
+                                setImportDialogOpen(true);
                               }}
                             >
-                              <Save className="h-3.5 w-3.5" />
-                              {m.builderSavePreset()}
+                              <FileImport className="h-3.5 w-3.5" />
+                              Import bts.jsonc
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={resetStack}>
-                              <RefreshCw className="h-3.5 w-3.5" />
-                              {m.builderResetDefaults()}
+                            <DropdownMenuItem
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(getStackUrl());
+                                  toast.success(m.builderShareLinkCopied());
+                                } catch {
+                                  toast.error(m.builderShareLinkFailed());
+                                }
+                              }}
+                            >
+                              <Link className="h-3.5 w-3.5" />
+                              {m.builderCopyShareLink()}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={getRandomStack}>
-                              <Shuffle className="h-3.5 w-3.5" />
-                              {m.builderRandomTitle()}
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setHasOpenedImport(true);
-                            setImportDialogOpen(true);
-                          }}
-                        >
-                          <FileImport className="h-3.5 w-3.5" />
-                          Import bts.jsonc
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={async () => {
-                            try {
-                              await navigator.clipboard.writeText(getStackUrl());
-                              toast.success(m.builderShareLinkCopied());
-                            } catch {
-                              toast.error(m.builderShareLinkFailed());
-                            }
-                          }}
-                        >
-                          <Link className="h-3.5 w-3.5" />
-                          {m.builderCopyShareLink()}
-                        </DropdownMenuItem>
-                        {!isMultiMode && (
-                          <div className="mt-1 border-border/60 border-t pt-1">
-                            <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
-                          </div>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                            {!isMultiMode && (
+                              <div className="mt-1 border-border/60 border-t pt-1">
+                                <YoloToggle stack={stack} onToggle={(yolo) => setStack({ yolo })} />
+                              </div>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </BarTip>
+                    </div>
                   </div>
+                )}
+                <div
+                  className={cn(
+                    "ml-auto flex shrink-0 items-center gap-1",
+                    !isMultiMode && "xl:ml-0",
+                  )}
+                >
+                  <BarTip label={m.themeToggle()}>
+                    <ThemeToggle />
+                  </BarTip>
+                  <BarTip label={m.navLanguage()}>
+                    <LocaleMenu />
+                  </BarTip>
                 </div>
-              )}
+              </div>
 
               {viewMode === "command" ? (
                 <div className={cn("p-3 sm:p-4", !isMultiMode && "pb-24 sm:pb-28")}>
@@ -4883,10 +5140,8 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                         builderSection.fallbackName,
                       );
                       const sectionCollapsed = isSectionCollapsed(builderSection.key);
-                      const sectionSelectedCount = visibleCategories.reduce(
-                        (total, categoryKey) =>
-                          total + getSelectedCount(categoryKey as keyof typeof TECH_OPTIONS, stack),
-                        0,
+                      const sectionPicks = visibleCategories.flatMap((categoryKey) =>
+                        getSelectedOptionNames(categoryKey as keyof typeof TECH_OPTIONS, stack),
                       );
                       const sectionHasIssue = visibleCategories.some(
                         (categoryKey) => getCategoryNotes(categoryKey)?.hasIssue,
@@ -4909,16 +5164,18 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                             className="mb-4 flex w-full cursor-pointer items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
                           >
                             <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
-                            <h2 className="flex-1 font-mono text-foreground text-sm sm:text-base">
+                            <h2 className="shrink-0 font-mono text-foreground text-sm sm:text-base">
                               {sectionName}
                             </h2>
+                            {/* The picks ride in the header, so a collapsed section still says what it holds. */}
+                            <span
+                              data-testid={`section-picks-${builderSection.key}`}
+                              className="min-w-0 flex-1 truncate text-muted-foreground text-xs sm:text-sm"
+                            >
+                              {sectionPicks.join(" · ")}
+                            </span>
                             {sectionHasIssue && (
                               <InfoIcon className="h-4 w-4 shrink-0 text-amber-500" />
-                            )}
-                            {sectionCollapsed && sectionSelectedCount > 0 && (
-                              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] font-semibold text-primary-foreground">
-                                {sectionSelectedCount}
-                              </span>
                             )}
                             <motion.div
                               animate={{ rotate: sectionCollapsed ? 0 : 180 }}
@@ -4955,15 +5212,60 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                         data-testid={`category-${categoryKey}`}
                                         className="scroll-mt-16"
                                       >
-                                        <div className="mb-2 flex items-center gap-2">
-                                          <h3 className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                                            {categoryDisplayName}
-                                          </h3>
-                                          {categoryNotes?.hasIssue && (
-                                            <InfoIcon className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                                        {COLLAPSED_CATEGORIES.has(categoryKey) ? (
+                                          <button
+                                            type="button"
+                                            data-testid={`category-toggle-${categoryKey}`}
+                                            aria-expanded={expandedQuietCategories.has(categoryKey)}
+                                            onClick={() =>
+                                              setExpandedQuietCategories((current) => {
+                                                const next = new Set(current);
+                                                if (!next.delete(categoryKey))
+                                                  next.add(categoryKey);
+                                                return next;
+                                              })
+                                            }
+                                            className="mb-2 flex w-full cursor-pointer items-center gap-2 text-left transition-opacity hover:opacity-80"
+                                          >
+                                            <h3 className="shrink-0 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                                              {categoryDisplayName}
+                                            </h3>
+                                            <span className="min-w-0 flex-1 truncate text-muted-foreground text-xs">
+                                              {getSelectedOptionNames(
+                                                categoryKey as keyof typeof TECH_OPTIONS,
+                                                stack,
+                                              ).join(" · ") || m.builderNone()}
+                                            </span>
+                                            {categoryNotes?.hasIssue && (
+                                              <InfoIcon className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                                            )}
+                                            <ChevronDown
+                                              className={cn(
+                                                "size-3.5 shrink-0 text-muted-foreground transition-transform",
+                                                expandedQuietCategories.has(categoryKey) &&
+                                                  "rotate-180",
+                                              )}
+                                              aria-hidden
+                                            />
+                                          </button>
+                                        ) : (
+                                          <div className="mb-2 flex items-center gap-2">
+                                            <h3 className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                                              {categoryDisplayName}
+                                            </h3>
+                                            {categoryNotes?.hasIssue && (
+                                              <InfoIcon className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                                            )}
+                                          </div>
+                                        )}
+                                        <div
+                                          className={cn(
+                                            "space-y-4",
+                                            COLLAPSED_CATEGORIES.has(categoryKey) &&
+                                              !expandedQuietCategories.has(categoryKey) &&
+                                              "hidden",
                                           )}
-                                        </div>
-                                        <div className="space-y-4">
+                                        >
                                           {categoryOptionGroups.map((group) => (
                                             <div key={group.key}>
                                               {group.heading && (
@@ -4972,7 +5274,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                 </h3>
                                               )}
                                               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
-                                                {group.options.map((tech) => {
+                                                {getQuietOptions(group).shown.map((tech) => {
                                                   const compatibilityStack =
                                                     getCompatibilityStackForCategory(
                                                       group.category,
@@ -5011,6 +5313,44 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                     />
                                                   );
                                                 })}
+                                                {QUIET_CATEGORIES.has(group.category) &&
+                                                  getQuietOptions(group).picked > 0 &&
+                                                  group.options.length >
+                                                    getQuietOptions(group).picked && (
+                                                    <button
+                                                      type="button"
+                                                      data-testid={`quiet-toggle-${group.category}`}
+                                                      aria-expanded={expandedQuietCategories.has(
+                                                        group.category,
+                                                      )}
+                                                      onClick={() =>
+                                                        setExpandedQuietCategories((current) => {
+                                                          const next = new Set(current);
+                                                          if (!next.delete(group.category))
+                                                            next.add(group.category);
+                                                          return next;
+                                                        })
+                                                      }
+                                                      className="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-dashed border-foreground/15 p-3 text-muted-foreground text-xs transition-colors hover:border-foreground/30 hover:text-foreground sm:p-4"
+                                                    >
+                                                      {expandedQuietCategories.has(group.category)
+                                                        ? m.builderShowLess()
+                                                        : m.builderShowMore({
+                                                            count:
+                                                              group.options.length -
+                                                              getQuietOptions(group).shown.length,
+                                                          })}
+                                                      <ChevronDown
+                                                        className={cn(
+                                                          "size-3.5 transition-transform",
+                                                          expandedQuietCategories.has(
+                                                            group.category,
+                                                          ) && "rotate-180",
+                                                        )}
+                                                        aria-hidden
+                                                      />
+                                                    </button>
+                                                  )}
                                               </div>
                                             </div>
                                           ))}
@@ -5035,12 +5375,35 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                   type="button"
                                                   onClick={() => toggleSection("shadcnBase")}
                                                   data-testid="category-toggle-shadcnBase"
-                                                  className="mb-3 flex w-full items-center gap-2 border-b border-border/60 pb-2 text-left transition-opacity hover:opacity-80"
+                                                  className="mb-3 flex w-full cursor-pointer items-center gap-2 border-b border-border/60 pb-2 text-left transition-opacity hover:opacity-80"
                                                 >
                                                   <Terminal className="h-3.5 w-3.5 shrink-0 text-muted-foreground sm:h-4 sm:w-4" />
-                                                  <h2 className="flex-1 font-mono text-foreground text-xs sm:text-sm">
+                                                  <h2 className="shrink-0 font-mono text-foreground text-xs sm:text-sm">
                                                     {m.builderShadcnConfiguration()}
                                                   </h2>
+                                                  <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate text-muted-foreground text-xs">
+                                                    {SHADCN_SUMMARY_KEYS.map((key) => {
+                                                      const picked = (TECH_OPTIONS[key] || []).find(
+                                                        (tech) =>
+                                                          tech.id ===
+                                                          stack[key as keyof StackState],
+                                                      );
+                                                      if (!picked) return null;
+                                                      return SHADCN_SWATCH_KEYS.has(key) ? (
+                                                        <span
+                                                          key={key}
+                                                          className={cn(
+                                                            "size-3 shrink-0 rounded-full bg-gradient-to-br",
+                                                            picked.color,
+                                                          )}
+                                                        />
+                                                      ) : (
+                                                        <span key={key} className="shrink-0">
+                                                          {picked.name}
+                                                        </span>
+                                                      );
+                                                    })}
+                                                  </span>
                                                   <motion.div
                                                     animate={{
                                                       rotate: isSectionCollapsed("shadcnBase")
@@ -5125,118 +5488,167 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                             },
                                                           ] as const
                                                         ).map(({ key, label }) => (
-                                                          <div key={key}>
-                                                            <h3 className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
+                                                          <div
+                                                            key={key}
+                                                            className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4"
+                                                          >
+                                                            <h3 className="w-28 shrink-0 font-medium text-muted-foreground text-xs uppercase tracking-wider">
                                                               {label}
                                                             </h3>
-                                                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 2xl:grid-cols-5">
-                                                              {(TECH_OPTIONS[key] || []).map(
-                                                                (tech) => {
-                                                                  const isSelected =
-                                                                    stack[
-                                                                      key as keyof StackState
-                                                                    ] === tech.id;
-                                                                  return (
-                                                                    <motion.div
-                                                                      key={tech.id}
-                                                                      data-testid={`option-${key}-${tech.id}`}
-                                                                      className={cn(
-                                                                        "group relative cursor-pointer rounded-lg border p-2.5 transition-all sm:p-3",
-                                                                        isSelected
-                                                                          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                                                          : "border-border bg-fd-background hover:border-primary/40 hover:bg-gradient-to-br hover:from-primary/6 hover:to-transparent hover:shadow-[0_0_10px_0px_hsl(var(--primary)/0.10)]",
-                                                                      )}
-                                                                      onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        handleTechSelect(
-                                                                          key,
-                                                                          tech.id,
-                                                                        );
-                                                                      }}
-                                                                    >
-                                                                      <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
-                                                                        <TechResourceButtons
-                                                                          category={key}
-                                                                          techId={tech.id}
-                                                                        />
-                                                                        {tech.default &&
-                                                                          !isSelected && (
-                                                                            <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[9px] text-muted-foreground">
-                                                                              {m.builderDefault()}
-                                                                            </span>
+                                                            {SHADCN_TOKEN_KEYS.has(key) ? (
+                                                              <div className="flex flex-wrap items-center gap-1.5">
+                                                                {(TECH_OPTIONS[key] || []).map(
+                                                                  (tech) => {
+                                                                    const isSelected =
+                                                                      stack[
+                                                                        key as keyof StackState
+                                                                      ] === tech.id;
+                                                                    // Colors and corners speak for themselves; the name is in the tooltip.
+                                                                    return (
+                                                                      <BarTip
+                                                                        key={tech.id}
+                                                                        label={tech.name}
+                                                                      >
+                                                                        <button
+                                                                          type="button"
+                                                                          data-testid={`option-${key}-${tech.id}`}
+                                                                          aria-label={tech.name}
+                                                                          aria-pressed={isSelected}
+                                                                          onClick={() =>
+                                                                            handleTechSelect(
+                                                                              key,
+                                                                              tech.id,
+                                                                            )
+                                                                          }
+                                                                          className={cn(
+                                                                            "flex size-8 cursor-pointer items-center justify-center border transition-colors",
+                                                                            key === "shadcnRadius"
+                                                                              ? "rounded-lg"
+                                                                              : "rounded-full",
+                                                                            isSelected
+                                                                              ? "border-ink text-ink dark:border-brand dark:text-brand"
+                                                                              : "border-transparent text-muted-foreground hover:border-foreground/25 hover:text-foreground",
                                                                           )}
-                                                                      </div>
-                                                                      <div className="flex items-start gap-2.5">
-                                                                        {key ===
-                                                                          "shadcnColorTheme" ||
-                                                                        key ===
-                                                                          "shadcnBaseColor" ? (
-                                                                          <div className="flex shrink-0 flex-col items-center gap-1">
-                                                                            <div
+                                                                        >
+                                                                          {key ===
+                                                                          "shadcnRadius" ? (
+                                                                            <span
                                                                               className={cn(
-                                                                                "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
-                                                                                isSelected
-                                                                                  ? "bg-primary/10"
-                                                                                  : "bg-muted/50 group-hover:bg-muted",
+                                                                                "size-4 border-current border-t-2 border-l-2",
+                                                                                tech.id ===
+                                                                                  "default" &&
+                                                                                  "border-dashed",
                                                                               )}
-                                                                            >
-                                                                              <div
-                                                                                className={cn(
-                                                                                  "h-4 w-4 rounded-full bg-gradient-to-br",
-                                                                                  tech.color,
-                                                                                )}
-                                                                              />
-                                                                            </div>
-                                                                          </div>
-                                                                        ) : (
-                                                                          (tech.icon !== "" ||
-                                                                            ICON_REGISTRY[
-                                                                              tech.id
-                                                                            ]) && (
-                                                                            <div className="flex shrink-0 flex-col items-center gap-1">
-                                                                              <div
-                                                                                className={cn(
-                                                                                  "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
-                                                                                  isSelected
-                                                                                    ? "bg-primary/10"
-                                                                                    : "bg-muted/50 group-hover:bg-muted",
-                                                                                )}
-                                                                              >
-                                                                                <TechIcon
-                                                                                  techId={tech.id}
-                                                                                  icon={tech.icon}
-                                                                                  name={tech.name}
-                                                                                  className="h-4 w-4"
-                                                                                />
-                                                                              </div>
-                                                                            </div>
-                                                                          )
+                                                                              style={{
+                                                                                borderTopLeftRadius:
+                                                                                  SHADCN_RADIUS_PREVIEW[
+                                                                                    tech.id
+                                                                                  ] ?? 6,
+                                                                              }}
+                                                                            />
+                                                                          ) : (
+                                                                            <span
+                                                                              className={cn(
+                                                                                "size-5 rounded-full bg-gradient-to-br",
+                                                                                tech.color,
+                                                                              )}
+                                                                            />
+                                                                          )}
+                                                                        </button>
+                                                                      </BarTip>
+                                                                    );
+                                                                  },
+                                                                )}
+                                                              </div>
+                                                            ) : (
+                                                              <DropdownMenu>
+                                                                <DropdownMenuTrigger
+                                                                  render={
+                                                                    <button
+                                                                      type="button"
+                                                                      data-testid={`select-${key}`}
+                                                                      aria-label={label}
+                                                                      className="flex h-9 w-full cursor-pointer items-center gap-2 rounded-lg border border-foreground/10 bg-foreground/[0.03] px-3 text-left text-sm transition-colors hover:border-foreground/25 hover:bg-foreground/[0.06] sm:w-60"
+                                                                    />
+                                                                  }
+                                                                >
+                                                                  {(() => {
+                                                                    const picked = (
+                                                                      TECH_OPTIONS[key] || []
+                                                                    ).find(
+                                                                      (tech) =>
+                                                                        tech.id ===
+                                                                        stack[
+                                                                          key as keyof StackState
+                                                                        ],
+                                                                    );
+                                                                    if (!picked) return null;
+                                                                    return (
+                                                                      <>
+                                                                        {(picked.icon !== "" ||
+                                                                          ICON_REGISTRY[
+                                                                            picked.id
+                                                                          ]) && (
+                                                                          <TechIcon
+                                                                            techId={picked.id}
+                                                                            icon={picked.icon}
+                                                                            name={picked.name}
+                                                                            className="size-4 shrink-0"
+                                                                          />
                                                                         )}
-                                                                        <div className="min-w-0 flex-1">
-                                                                          <span
-                                                                            className={cn(
-                                                                              "block font-semibold text-xs sm:text-sm",
-                                                                              isSelected
-                                                                                ? "text-primary"
-                                                                                : "text-foreground",
-                                                                            )}
-                                                                          >
-                                                                            {tech.name}
-                                                                          </span>
-                                                                          <p className="mt-0.5 line-clamp-1 text-muted-foreground text-[10px] sm:text-xs leading-relaxed">
-                                                                            {
-                                                                              getLocalizedTechOption(
-                                                                                tech,
-                                                                              ).description
-                                                                            }
-                                                                          </p>
-                                                                        </div>
-                                                                      </div>
-                                                                    </motion.div>
-                                                                  );
-                                                                },
-                                                              )}
-                                                            </div>
+                                                                        <span className="min-w-0 flex-1 truncate">
+                                                                          {picked.name}
+                                                                        </span>
+                                                                      </>
+                                                                    );
+                                                                  })()}
+                                                                  <ChevronDown
+                                                                    className="size-4 shrink-0 text-muted-foreground"
+                                                                    aria-hidden
+                                                                  />
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent
+                                                                  align="start"
+                                                                  className="max-h-72 w-60 overflow-y-auto rounded-lg bg-fd-background"
+                                                                >
+                                                                  {(TECH_OPTIONS[key] || []).map(
+                                                                    (tech) => (
+                                                                      <DropdownMenuItem
+                                                                        key={tech.id}
+                                                                        data-testid={`option-${key}-${tech.id}`}
+                                                                        onClick={() =>
+                                                                          handleTechSelect(
+                                                                            key,
+                                                                            tech.id,
+                                                                          )
+                                                                        }
+                                                                        className="cursor-pointer"
+                                                                      >
+                                                                        {(tech.icon !== "" ||
+                                                                          ICON_REGISTRY[
+                                                                            tech.id
+                                                                          ]) && (
+                                                                          <TechIcon
+                                                                            techId={tech.id}
+                                                                            icon={tech.icon}
+                                                                            name={tech.name}
+                                                                            className="size-4"
+                                                                          />
+                                                                        )}
+                                                                        <span className="flex-1">
+                                                                          {tech.name}
+                                                                        </span>
+                                                                        {stack[
+                                                                          key as keyof StackState
+                                                                        ] === tech.id && (
+                                                                          <Check className="size-3.5" />
+                                                                        )}
+                                                                      </DropdownMenuItem>
+                                                                    ),
+                                                                  )}
+                                                                </DropdownMenuContent>
+                                                              </DropdownMenu>
+                                                            )}
                                                           </div>
                                                         ))}
                                                       </div>
@@ -5425,7 +5837,8 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                   </Suspense>
                 </div>
               ) : viewMode === "presets" ? (
-                <div className="min-h-0 flex-1 overflow-hidden">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  {librarySwitch}
                   <Suspense
                     fallback={
                       <div className="p-4 text-sm text-muted-foreground">{m.builderLoading()}</div>
@@ -5440,12 +5853,12 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                         setViewMode("command");
                       }}
                       starterTrackFilters={starterTrackFilters}
-                      onStarterTrackFiltersChange={updateStarterTrackFilters}
                     />
                   </Suspense>
                 </div>
               ) : (
-                <div className="min-h-0 flex-1 overflow-hidden">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  {librarySwitch}
                   <Suspense
                     fallback={
                       <div className="p-4 text-sm text-muted-foreground">{m.builderLoading()}</div>
@@ -5468,120 +5881,99 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
         </div>
 
         {/* ─── Floating command bar ───────────────────────────────────────────
-            Hidden on the Edit & Run tab: the bar retracts to the right (as if
-            tucking behind its copy button) and the button itself flies to the
-            run sidebar via the shared "bf-copy-command" layoutId. */}
+            A small dock at the bottom right: section navigation, package manager,
+            copy, scroll to top. Hidden on the Edit & Run tab, where the copy button
+            flies to the run sidebar via the shared "bf-copy-command" layoutId. */}
         <AnimatePresence initial={false}>
           {viewMode !== "run" && !isMultiMode && (
             <motion.div
               key="floating-command-bar"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: 0.3 } }}
-              exit={{ opacity: 0, transition: { duration: 0.3, delay: 0.75 } }}
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-40 bg-gradient-to-t from-background via-background/85 to-transparent px-4 pt-6 pb-4 sm:px-6 sm:pb-5"
+              exit={{ opacity: 0, transition: { duration: 0.2 } }}
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex px-3 pb-3 sm:px-5 sm:pb-5"
             >
-              <div className="pointer-events-auto mx-auto flex w-full max-w-5xl items-center">
+              {/* One capsule: copy is the only large control, the rest are small icons. */}
+              <div className="pointer-events-auto ml-auto flex h-11 w-fit items-center gap-0.5 rounded-full border border-white/10 bg-[#18181B]/85 p-1 text-[#FAFAF7] shadow-[0_6px_18px_rgba(24,24,27,0.12)] backdrop-blur-md">
+                {/* The command is long and read-only, so it is not shown. It stays in the page
+                    for screen readers and for tests that read it. */}
+                <section aria-label={m.docsSectionCli()} className="sr-only">
+                  <code data-testid="command-output">{command}</code>
+                </section>
                 {viewMode === "command" && (
-                  <button
-                    type="button"
-                    onClick={() => setSidebarOpen((open) => !open)}
-                    aria-label={m.builderToggleSectionNavigation()}
-                    aria-pressed={sidebarOpen}
-                    title={m.builderSectionNavigation()}
-                    className="mr-2.5 flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-[14px] border border-transparent bg-[#18181B] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] transition-colors hover:bg-[#26262b] dark:border-white/10 dark:bg-[#1a1a1a] dark:hover:bg-[#242429]"
-                  >
-                    <PanelLeft className="h-4 w-4" />
-                  </button>
+                  <BarTip label={m.builderSectionNavigation()}>
+                    <button
+                      type="button"
+                      onClick={() => setSidebarOpen((open) => !open)}
+                      aria-label={m.builderToggleSectionNavigation()}
+                      aria-pressed={sidebarOpen}
+                      className={DOCK_ICON_BUTTON}
+                    >
+                      <PanelLeft className="size-4" />
+                    </button>
+                  </BarTip>
                 )}
-                <motion.div
-                  initial={{
-                    // Collapsed width must fit the widest copy button (sm:w-48 =
-                    // 192px) plus pl-4 + two gaps + the $ glyph + pr-1.5 (~242px),
-                    // or the capsule's overflow-hidden clips the button's right edge.
-                    maxWidth: 246,
-                    backgroundColor: "rgba(24, 24, 27, 0)",
-                    borderColor: "rgba(255, 255, 255, 0)",
-                    boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
+                <DropdownMenu>
+                  <BarTip label={packageManagerLabel}>
+                    <DropdownMenuTrigger
+                      render={
+                        <button
+                          type="button"
+                          data-testid="dock-pm"
+                          aria-label={packageManagerLabel}
+                          className="flex h-9 cursor-pointer items-center gap-1 rounded-full px-2.5 font-mono text-[11.5px] text-[#C6E853] transition-colors hover:bg-white/10"
+                        />
+                      }
+                    >
+                      {stack.packageManager}
+                      <ChevronDown className="size-3 opacity-70" aria-hidden />
+                    </DropdownMenuTrigger>
+                  </BarTip>
+                  <DropdownMenuContent align="end" side="top" className="w-36 bg-fd-background">
+                    {DOCK_PACKAGE_MANAGERS.map((id) => (
+                      <DropdownMenuItem
+                        key={id}
+                        data-testid={`dock-pm-${id}`}
+                        onClick={() => setStack({ packageManager: id })}
+                      >
+                        <span className="flex-1 font-mono text-xs">{id}</span>
+                        {stack.packageManager === id && <Check className="size-3.5" />}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <motion.button
+                  layoutId="bf-copy-command"
+                  layout
+                  style={{ zIndex: 70 }}
+                  transition={{
+                    layout: { type: "spring", stiffness: 150, damping: 25, delay: 0.05 },
                   }}
-                  animate={{
-                    maxWidth: 1024,
-                    backgroundColor: "rgba(24, 24, 27, 1)",
-                    borderColor: "rgba(255, 255, 255, 0.08)",
-                    boxShadow: "0 6px 18px rgba(24, 24, 27, 0.06)",
-                    transition: {
-                      maxWidth: { duration: 0.75, delay: 0.65, ease: [0.22, 1, 0.36, 1] },
-                      default: { duration: 0.2, delay: 0.6 },
-                    },
-                  }}
-                  exit={{
-                    maxWidth: 246,
-                    backgroundColor: "rgba(24, 24, 27, 0)",
-                    borderColor: "rgba(255, 255, 255, 0)",
-                    boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
-                    transition: {
-                      maxWidth: { duration: 0.7, ease: [0.4, 0, 0.2, 1] },
-                      default: { duration: 0.2, delay: 0.52 },
-                    },
-                  }}
-                  className="ml-auto flex h-12 min-w-0 flex-1 items-center gap-2.5 overflow-hidden rounded-[14px] border border-transparent bg-[#18181B] pr-1.5 pl-4 font-mono text-[12.5px] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] dark:border-white/10 dark:bg-[#1a1a1a]"
+                  type="button"
+                  onClick={copyToClipboard}
+                  disabled={!command}
+                  data-analytics-event="builder_command_copied"
+                  data-analytics-source="builder_solo"
+                  className="inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#C6E853] px-5 text-[11.5px] font-semibold text-[#2A3303] transition-colors hover:bg-[#d2ee72]"
                 >
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1, transition: { duration: 0.2, delay: 0.95 } }}
-                    exit={{ opacity: 0, transition: { duration: 0.18 } }}
-                    className="shrink-0 font-medium text-[#C6E853] select-none"
-                  >
-                    $
-                  </motion.span>
-                  <section
-                    aria-label={m.docsSectionCli()}
-                    tabIndex={0}
-                    className="no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap text-[12.5px] text-[rgba(250,250,247,0.88)]"
-                  >
-                    <code data-testid="command-output">{command}</code>
-                  </section>
-                  <motion.button
-                    layoutId="bf-copy-command"
-                    layout
-                    style={{ zIndex: 70 }}
-                    transition={{
-                      layout: { type: "spring", stiffness: 150, damping: 25, delay: 0.05 },
-                    }}
-                    type="button"
-                    onClick={copyToClipboard}
-                    disabled={!command}
-                    data-analytics-event="builder_command_copied"
-                    data-analytics-source="builder_solo"
-                    aria-label={copied ? m.builderCommandCopied() : m.builderCopyCommand()}
-                    className="inline-flex h-10 w-32 shrink-0 cursor-pointer items-center justify-center rounded-[11px] bg-[#C6E853] p-px text-[11.5px] font-semibold text-[#2A3303] transition-transform hover:scale-[1.02] hover:bg-[#d2ee72] min-[420px]:w-40 sm:w-48"
-                  >
-                    <span className="flex h-full w-full items-center justify-center gap-2 rounded-[10px] bg-[#C6E853] px-4 transition-colors hover:bg-[#d2ee72]">
-                      {copied ? (
-                        <Check className="h-3.5 w-3.5" />
-                      ) : (
-                        <ClipboardCopy className="h-3.5 w-3.5" />
-                      )}
-                      <span>{copied ? m.navCopied() : m.navCopy()}</span>
-                    </span>
-                  </motion.button>
-                </motion.div>
-                {viewMode === "command" && (
-                  <button
-                    type="button"
-                    onClick={scrollToTop}
-                    aria-label={m.builderScrollToTop()}
-                    title={m.builderScrollToTop()}
-                    tabIndex={showScrollTop ? 0 : -1}
-                    aria-hidden={!showScrollTop}
-                    className={cn(
-                      "ml-2.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] border border-transparent bg-[#18181B] text-[#FAFAF7] shadow-[0_1px_0_rgba(24,24,27,0.05),0_6px_18px_rgba(24,24,27,0.06)] transition-all duration-200 ease-out dark:border-white/10 dark:bg-[#1a1a1a]",
-                      showScrollTop
-                        ? "scale-100 cursor-pointer opacity-100 hover:bg-[#26262b] dark:hover:bg-[#242429]"
-                        : "pointer-events-none scale-90 opacity-0",
-                    )}
-                  >
-                    <ArrowUp className="h-4 w-4" />
-                  </button>
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <ClipboardCopy className="h-3.5 w-3.5" />
+                  )}
+                  <span>{copied ? m.builderCommandCopied() : m.builderCopyCommand()}</span>
+                </motion.button>
+                {viewMode === "command" && showScrollTop && (
+                  <BarTip label={m.builderScrollToTop()}>
+                    <button
+                      type="button"
+                      onClick={scrollToTop}
+                      aria-label={m.builderScrollToTop()}
+                      className={DOCK_ICON_BUTTON}
+                    >
+                      <ArrowUp className="size-4" />
+                    </button>
+                  </BarTip>
                 )}
               </div>
             </motion.div>

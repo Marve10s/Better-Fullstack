@@ -558,7 +558,7 @@ export function RunPanel({
               ) : (
                 <ClipboardCopy className="h-3.5 w-3.5" />
               )}
-              <span>{copied ? m.navCopied() : m.navCopy()}</span>
+              <span>{copied ? m.builderCommandCopied() : m.builderCopyCommand()}</span>
             </motion.button>
           </div>
         </section>

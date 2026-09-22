@@ -198,7 +198,6 @@ const groupedFiles: Record<string, Record<string, string[]>> = {
       "visitor.ts",
     ],
     builder: [
-      "builder-mode-bridge.ts",
       "builder-search-preferences.ts",
       "builder-share-modal-visibility.ts",
       "combinations-count.ts",
