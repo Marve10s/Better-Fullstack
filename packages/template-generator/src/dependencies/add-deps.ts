@@ -371,6 +371,8 @@ export const dependencyVersionMap = {
   "react-email": "^6.9.2",
   react: "19.2.8",
   "react-dom": "19.2.8",
+  "react-server-dom-webpack": "19.2.8",
+  "react-test-renderer": "19.2.8",
   "@types/react": "^19.2.18",
   "@wxt-dev/module-react": "^1.2.2",
   wxt: "^0.20.27",

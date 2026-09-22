@@ -85,6 +85,15 @@ describe("dependency update policy", () => {
     });
   });
 
+  it("keeps React-coupled packages on the same release as react", () => {
+    const { react } = dependencyVersionMap;
+    expect(dependencyVersionMap).toMatchObject({
+      "react-dom": react,
+      "react-server-dom-webpack": react,
+      "react-test-renderer": react,
+    });
+  });
+
   it("keeps the Better Auth family on the reviewed exact release", () => {
     expect(dependencyVersionMap).toMatchObject({
       "better-auth": "1.6.22",
