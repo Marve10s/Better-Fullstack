@@ -1,9 +1,5 @@
-import { Link } from "@tanstack/react-router";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 
-import { TbArrowRight } from "react-icons/tb";
-
-import { buttonVariants } from "@/components/ui/button";
 import { registerVisit } from "@/lib/analytics/visitor";
 import { latestChangelogRelease } from "@/lib/content/changelog";
 import {
@@ -16,8 +12,6 @@ import { getLocalizedChangelogRelease } from "@/lib/i18n/changelog-copy";
 import { getLocaleDateTag } from "@/lib/i18n/locales";
 import { m } from "@/paraglide/messages.js";
 import { getLocale } from "@/paraglide/runtime.js";
-
-const MULTI_ECOSYSTEM_PARAMS = { stackShare: "multi-ecosystem" };
 
 const ChangelogModal = lazy(async () => {
   const { ChangelogModal } = await import("@/components/changelog-modal");
@@ -81,11 +75,6 @@ export function ChangelogWidget() {
     setIsModalOpen(true);
   }, [markInteracted]);
 
-  const openBuilder = useCallback(() => {
-    markInteracted("opened");
-    setIsVisible(false);
-  }, [markInteracted]);
-
   if (!latestChangelogRelease) return null;
 
   const latestRelease = getLocalizedChangelogRelease(latestChangelogRelease);
@@ -100,15 +89,15 @@ export function ChangelogWidget() {
           {/* Stacked edges hint at the rest of the changelog without rendering it. */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-4 -top-2 h-4 rounded-t-2xl border border-edge border-b-0 bg-surface-raised opacity-60"
+            className="pointer-events-none absolute inset-x-4 -top-2 h-4 rounded-t-2xl border border-ink/10 border-b-0 bg-surface/30 backdrop-blur-md dark:border-white/15"
           />
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-2 -top-1 h-3 rounded-t-2xl border border-edge border-b-0 bg-surface-raised opacity-80"
+            className="pointer-events-none absolute inset-x-2 -top-1 h-3 rounded-t-2xl border border-ink/10 border-b-0 bg-surface/40 backdrop-blur-md dark:border-white/15"
           />
 
           <section
-            className="group relative overflow-hidden rounded-2xl border border-edge bg-surface shadow-2xl shadow-black/10"
+            className="group relative overflow-hidden rounded-2xl border border-ink/10 bg-surface/45 shadow-2xl shadow-black/10 backdrop-blur-md dark:border-white/15"
             aria-label={m.changelogAria()}
           >
             <button
@@ -153,20 +142,6 @@ export function ChangelogWidget() {
                   </li>
                 ))}
               </ul>
-            ) : null}
-
-            {latestRelease.version === "v2.6.5" ? (
-              <div className="px-5 pb-4">
-                <Link
-                  to="/$stackShare"
-                  params={MULTI_ECOSYSTEM_PARAMS}
-                  className={`${buttonVariants()} w-full cursor-pointer`}
-                  onClick={openBuilder}
-                >
-                  {m.navMultiEcosystem()}
-                  <TbArrowRight className="size-4" aria-hidden="true" />
-                </Link>
-              </div>
             ) : null}
 
             {/* Collapsed to zero height until hover or keyboard focus, so the

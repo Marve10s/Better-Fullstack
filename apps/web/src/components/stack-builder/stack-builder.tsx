@@ -1421,8 +1421,13 @@ const SHADCN_SWATCH_KEYS: ReadonlySet<string> = new Set(["shadcnColorTheme", "sh
 
 const DOCK_PACKAGE_MANAGERS = ["bun", "pnpm", "npm", "yarn"] as const;
 
+function PackageManagerIcon({ id }: { id: string }) {
+  const option = TECH_OPTIONS.packageManager.find((o) => o.id === id);
+  return <TechIcon techId={id} icon={option?.icon} name={id} className="size-3.5" />;
+}
+
 const DOCK_ICON_BUTTON =
-  "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-[rgba(250,250,247,0.7)] transition-colors hover:bg-white/10 hover:text-[#FAFAF7]";
+  "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink/70 transition-colors hover:bg-ink/10 hover:text-ink";
 
 /** A small glass label for the bar's icon-only controls. */
 function BarTip({ label, children }: { label: string; children: ReactNode }) {
@@ -5894,7 +5899,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
               className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex px-3 pb-3 sm:px-5 sm:pb-5"
             >
               {/* One capsule: copy is the only large control, the rest are small icons. */}
-              <div className="pointer-events-auto ml-auto flex h-11 w-fit items-center gap-0.5 rounded-full border border-white/10 bg-[#18181B]/85 p-1 text-[#FAFAF7] shadow-[0_6px_18px_rgba(24,24,27,0.12)] backdrop-blur-md">
+              <div className="pointer-events-auto ml-auto flex h-11 w-fit items-center gap-0.5 rounded-full border border-ink/10 bg-surface/45 p-1 text-ink shadow-2xl shadow-black/10 backdrop-blur-md dark:border-white/15">
                 {/* The command is long and read-only, so it is not shown. It stays in the page
                     for screen readers and for tests that read it. */}
                 <section aria-label={m.docsSectionCli()} className="sr-only">
@@ -5921,10 +5926,11 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                           type="button"
                           data-testid="dock-pm"
                           aria-label={packageManagerLabel}
-                          className="flex h-9 cursor-pointer items-center gap-1 rounded-full px-2.5 font-mono text-[11.5px] text-[#C6E853] transition-colors hover:bg-white/10"
+                          className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-2.5 font-mono text-[11.5px] text-[#4d7c0f] transition-colors hover:bg-ink/10 dark:text-[#C6E853]"
                         />
                       }
                     >
+                      <PackageManagerIcon id={stack.packageManager} />
                       {stack.packageManager}
                       <ChevronDown className="size-3 opacity-70" aria-hidden />
                     </DropdownMenuTrigger>
@@ -5936,6 +5942,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                         data-testid={`dock-pm-${id}`}
                         onClick={() => setStack({ packageManager: id })}
                       >
+                        <PackageManagerIcon id={id} />
                         <span className="flex-1 font-mono text-xs">{id}</span>
                         {stack.packageManager === id && <Check className="size-3.5" />}
                       </DropdownMenuItem>
