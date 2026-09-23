@@ -161,7 +161,7 @@ describe("Auth capability matrix", () => {
         },
         "nextauth",
       ),
-    ).toBe("In Better-Fullstack, Auth.js (NextAuth) currently requires the Next.js frontend");
+    ).toBe("Auth.js (NextAuth) needs the Next.js frontend");
   });
 
   it("normalizes unsupported auth selections during shared compatibility analysis", () => {
@@ -287,7 +287,7 @@ describe("Auth capability matrix", () => {
         "clerk",
       );
       expect(reason).toContain(match);
-      expect(reason).toContain("not yet supported");
+      expect(reason).toContain("isn't available");
     }
   });
 

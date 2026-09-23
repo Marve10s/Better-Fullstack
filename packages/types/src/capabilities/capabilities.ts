@@ -274,7 +274,7 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
 
     if (isSelfBackend(backend)) {
       if ((hasNextJs || hasTanStackStart) && hasNativeFrontend) {
-        return "In Better-Fullstack, Clerk with self backend is currently supported only for web-only Next.js or TanStack Start projects (no native companion app)";
+        return "Clerk with a fullstack backend needs a web-only Next.js or TanStack Start project (no mobile app)";
       }
 
       if (hasNextJs || hasTanStackStart) {
@@ -282,28 +282,28 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
       }
 
       if (backend === "self-astro" || webFrontend.includes("astro")) {
-        return "In Better-Fullstack, Clerk is not yet supported for Astro fullstack projects";
+        return "Clerk isn\'t available for fullstack Astro yet";
       }
       if (backend === "self-nuxt" || webFrontend.includes("nuxt")) {
-        return "In Better-Fullstack, Clerk is not yet supported for Nuxt fullstack projects";
+        return "Clerk isn\'t available for fullstack Nuxt yet";
       }
       if (backend === "self-svelte" || webFrontend.includes("svelte")) {
-        return "In Better-Fullstack, Clerk is not yet supported for SvelteKit fullstack projects";
+        return "Clerk isn\'t available for fullstack SvelteKit yet";
       }
       if (backend === "self-solid-start" || webFrontend.includes("solid-start")) {
-        return "In Better-Fullstack, Clerk is not yet supported for SolidStart fullstack projects";
+        return "Clerk isn\'t available for fullstack SolidStart yet";
       }
 
-      return "In Better-Fullstack, Clerk is currently supported with Convex, Next.js fullstack, or TanStack Start fullstack";
+      return "Clerk needs Convex, fullstack Next.js, or fullstack TanStack Start";
     }
 
-    return "In Better-Fullstack, Clerk is currently supported with Convex, Next.js fullstack, or TanStack Start fullstack";
+    return "Clerk needs Convex, fullstack Next.js, or fullstack TanStack Start";
   }
 
   if (optionId === "supabase-auth") {
     if (isSelfBackend(backend)) {
       if ((hasNextJs || hasTanStackStart) && hasNativeFrontend) {
-        return "In Better-Fullstack, Supabase Auth with self backend is currently supported only for web-only Next.js or TanStack Start projects (no native companion app)";
+        return "Supabase Auth with a fullstack backend needs a web-only Next.js or TanStack Start project (no mobile app)";
       }
 
       if (hasNextJs || hasTanStackStart) {
@@ -311,22 +311,22 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
       }
 
       if (backend === "self-astro" || webFrontend.includes("astro")) {
-        return "In Better-Fullstack, Supabase Auth is not yet supported for Astro fullstack projects";
+        return "Supabase Auth isn\'t available for fullstack Astro yet";
       }
       if (backend === "self-nuxt" || webFrontend.includes("nuxt")) {
-        return "In Better-Fullstack, Supabase Auth is not yet supported for Nuxt fullstack projects";
+        return "Supabase Auth isn\'t available for fullstack Nuxt yet";
       }
       if (backend === "self-svelte" || webFrontend.includes("svelte")) {
-        return "In Better-Fullstack, Supabase Auth is not yet supported for SvelteKit fullstack projects";
+        return "Supabase Auth isn\'t available for fullstack SvelteKit yet";
       }
       if (backend === "self-solid-start" || webFrontend.includes("solid-start")) {
-        return "In Better-Fullstack, Supabase Auth is not yet supported for SolidStart fullstack projects";
+        return "Supabase Auth isn\'t available for fullstack SolidStart yet";
       }
 
-      return "In Better-Fullstack, Supabase Auth is currently supported with Next.js fullstack or TanStack Start fullstack";
+      return "Supabase Auth needs fullstack Next.js or fullstack TanStack Start";
     }
 
-    return "In Better-Fullstack, Supabase Auth is currently supported only with the 'self' backend (fullstack Next.js or TanStack Start)";
+    return "Supabase Auth needs fullstack Next.js or fullstack TanStack Start";
   }
 
   if (optionId === "passport") {
@@ -337,11 +337,11 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
 
   const nextOnlyLabel = getNextOnlyAuthLabel(optionId);
   if (backend !== "self" && backend !== "self-next") {
-    return `In Better-Fullstack, ${nextOnlyLabel} is currently supported only with the 'self' backend (fullstack Next.js)`;
+    return `${nextOnlyLabel} needs fullstack Next.js`;
   }
 
   if (!hasNextJs) {
-    return `In Better-Fullstack, ${nextOnlyLabel} currently requires the Next.js frontend`;
+    return `${nextOnlyLabel} needs the Next.js frontend`;
   }
 
   return null;
