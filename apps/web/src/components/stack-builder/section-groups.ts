@@ -37,6 +37,9 @@ export const SECTION_EMBEDDED_CATEGORIES = new Set<TechCategory>([
   "shadcnRadius",
 ]);
 
+// Categories the solo builder leaves to presets. Multi-ecosystem mode still lists them.
+export const PRESET_ONLY_CATEGORIES = new Set<TechCategory>(["examples"]);
+
 export const MULTI_FRONTEND_LIBRARY_GROUPS = [
   "cssFramework",
   "uiLibrary",
@@ -55,13 +58,9 @@ export const MULTI_FRONTEND_LIBRARY_GROUPS = [
 ] satisfies readonly TechCategory[];
 
 const TYPESCRIPT_SECTIONS: readonly BuilderSectionDef[] = [
-  section("frontend", "Frontend", [
-    "webFrontend",
-    "cssFramework",
-    "uiLibrary",
-    "appShells",
-    "webMcp",
-  ]),
+  section("frontend", "Frontend", ["webFrontend", "appShells"]),
+  section("backendApi", "Backend & API", ["backend", "runtime", "api"]),
+  section("ui", "UI", ["cssFramework", "uiLibrary"]),
   section(
     "frontendLibraries",
     "Frontend Libraries",
@@ -73,18 +72,16 @@ const TYPESCRIPT_SECTIONS: readonly BuilderSectionDef[] = [
       "frontendUtilities",
       "httpClientTool",
       "i18n",
+      "webMcp",
     ],
     true,
   ),
-  section("backendApi", "Backend & API", [
-    "backend",
-    "runtime",
-    "api",
-    "validation",
-    "backendLibraries",
-    "backendUtilitiesTool",
-    "codeGeneration",
-  ]),
+  section(
+    "backendLibs",
+    "Backend Libraries",
+    ["validation", "backendLibraries", "backendUtilitiesTool", "codeGeneration"],
+    true,
+  ),
   section("data", "Data & Storage", [
     "database",
     "orm",

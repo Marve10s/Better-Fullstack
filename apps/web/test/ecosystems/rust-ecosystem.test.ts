@@ -98,8 +98,13 @@ describe("Rust Ecosystem Tab", () => {
       expect(ICON_REGISTRY.dioxus).toEqual({ type: "local", src: "/icon/dioxus.svg" });
       expect(ICON_REGISTRY["sea-orm"]).toEqual({ type: "local", src: "/icon/seaorm.svg" });
       expect(ICON_REGISTRY.tonic).toEqual({ type: "local", src: "/icon/tonic.svg" });
-      expect(ICON_REGISTRY.rocket).toBeUndefined();
-      expect(ICON_REGISTRY.diesel).toBeUndefined();
+      // Only a project's own logo; no generic Rust mark as a stand-in.
+      expect(ICON_REGISTRY.rocket).toEqual({ type: "si", slug: "rocket", hex: "D33847" });
+      expect(ICON_REGISTRY.diesel).toEqual({
+        type: "local",
+        src: "https://github.com/diesel-rs.png?size=64",
+      });
+      expect(ICON_REGISTRY["tokio-util"]).toEqual({ type: "si", slug: "tokio", hex: "000000" });
       expect(ICON_REGISTRY.uuid).toBeUndefined();
       expect(ICON_REGISTRY.chrono).toBeUndefined();
       expect(ICON_REGISTRY.reqwest).toBeUndefined();
@@ -107,7 +112,6 @@ describe("Rust Ecosystem Tab", () => {
       expect(ICON_REGISTRY.dashmap).toBeUndefined();
       expect(ICON_REGISTRY["parking-lot"]).toBeUndefined();
       expect(ICON_REGISTRY.secrecy).toBeUndefined();
-      expect(ICON_REGISTRY["tokio-util"]).toBeUndefined();
       expect(ICON_REGISTRY.utoipa).toBeUndefined();
       expect(ICON_REGISTRY.tracing).toBeUndefined();
       expect(ICON_REGISTRY["env-logger"]).toBeUndefined();
