@@ -282,16 +282,16 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
       }
 
       if (backend === "self-astro" || webFrontend.includes("astro")) {
-        return "Clerk isn\'t available for fullstack Astro yet";
+        return "Clerk isn't available for fullstack Astro yet";
       }
       if (backend === "self-nuxt" || webFrontend.includes("nuxt")) {
-        return "Clerk isn\'t available for fullstack Nuxt yet";
+        return "Clerk isn't available for fullstack Nuxt yet";
       }
       if (backend === "self-svelte" || webFrontend.includes("svelte")) {
-        return "Clerk isn\'t available for fullstack SvelteKit yet";
+        return "Clerk isn't available for fullstack SvelteKit yet";
       }
       if (backend === "self-solid-start" || webFrontend.includes("solid-start")) {
-        return "Clerk isn\'t available for fullstack SolidStart yet";
+        return "Clerk isn't available for fullstack SolidStart yet";
       }
 
       return "Clerk needs Convex, fullstack Next.js, or fullstack TanStack Start";
@@ -311,16 +311,16 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
       }
 
       if (backend === "self-astro" || webFrontend.includes("astro")) {
-        return "Supabase Auth isn\'t available for fullstack Astro yet";
+        return "Supabase Auth isn't available for fullstack Astro yet";
       }
       if (backend === "self-nuxt" || webFrontend.includes("nuxt")) {
-        return "Supabase Auth isn\'t available for fullstack Nuxt yet";
+        return "Supabase Auth isn't available for fullstack Nuxt yet";
       }
       if (backend === "self-svelte" || webFrontend.includes("svelte")) {
-        return "Supabase Auth isn\'t available for fullstack SvelteKit yet";
+        return "Supabase Auth isn't available for fullstack SvelteKit yet";
       }
       if (backend === "self-solid-start" || webFrontend.includes("solid-start")) {
-        return "Supabase Auth isn\'t available for fullstack SolidStart yet";
+        return "Supabase Auth isn't available for fullstack SolidStart yet";
       }
 
       return "Supabase Auth needs fullstack Next.js or fullstack TanStack Start";

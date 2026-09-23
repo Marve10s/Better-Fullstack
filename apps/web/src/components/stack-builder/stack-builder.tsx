@@ -5439,7 +5439,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                     className={
                                       item.picked
                                         ? "text-foreground/80"
-                                        : "text-muted-foreground/60"
+                                        : "text-muted-foreground"
                                     }
                                   >
                                     {item.label}
@@ -6279,7 +6279,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                           type="button"
                           data-testid="dock-pm"
                           aria-label={packageManagerLabel}
-                          className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-2.5 font-mono text-[11.5px] text-[#4d7c0f] transition-colors hover:bg-ink/10 dark:text-[#C6E853]"
+                          className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-2.5 font-mono text-[11.5px] text-[#3f6212] transition-colors hover:bg-ink/10 dark:text-[#C6E853]"
                         />
                       }
                     >
