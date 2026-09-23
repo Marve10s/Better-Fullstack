@@ -2821,10 +2821,10 @@ export const getDisabledReason = (
       return "File storage requires a standalone backend";
     }
     if (category === "webFrontend" && optionId === "solid") {
-      return "In Better-Fullstack, the Convex backend is currently not available with Solid";
+      return "Convex isn't available with Solid yet";
     }
     if (category === "webFrontend" && optionId === "astro") {
-      return "In Better-Fullstack, the Convex backend is currently not available with Astro";
+      return "Convex isn't available with Astro yet";
     }
     if (category === "examples" && optionId === "ai") {
       const hasIncompatibleFrontend = currentStack.webFrontend.some((f) =>
@@ -3269,17 +3269,17 @@ export const getDisabledReason = (
       return "Requires SolidStart frontend";
     }
     if (optionId === "convex" && currentStack.webFrontend.includes("solid")) {
-      return "In Better-Fullstack, Convex is currently not available with Solid";
+      return "Convex isn't available with Solid yet";
     }
     if (optionId === "convex" && currentStack.webFrontend.includes("solid-start")) {
-      return "In Better-Fullstack, Convex is currently not available with SolidStart";
+      return "Convex isn't available with SolidStart yet";
     }
     if (optionId === "convex" && currentStack.webFrontend.includes("astro")) {
-      return "In Better-Fullstack, Convex is currently not available with Astro";
+      return "Convex isn't available with Astro yet";
     }
     // Workers runtime only works with Hono backend
     if (currentStack.runtime === "workers" && optionId !== "hono" && optionId !== "none") {
-      return "In Better-Fullstack, Workers runtime is currently supported only with Hono";
+      return "The Workers runtime only works with Hono";
     }
   }
 
@@ -3294,7 +3294,7 @@ export const getDisabledReason = (
       return "Nango's Node SDK is not available on Workers runtime";
     }
     if (optionId === "workers" && currentStack.backend !== "hono") {
-      return "In Better-Fullstack, Workers runtime currently requires the Hono backend";
+      return "The Workers runtime needs the Hono backend";
     }
     if (
       optionId === "workers" &&
@@ -3327,7 +3327,7 @@ export const getDisabledReason = (
   // ============================================
   if (category === "database") {
     if (optionId === "mongodb" && currentStack.runtime === "workers") {
-      return "In Better-Fullstack, MongoDB is currently not available with Workers runtime";
+      return "MongoDB isn't available on the Workers runtime";
     }
     // Allow all databases when ORM is none - system will auto-select ORM
   }
@@ -3422,8 +3422,8 @@ export const getDisabledReason = (
     if (currentStack.backend === "self") {
       return "OpenAPI server scaffolding currently requires a standalone TypeScript backend";
     }
-    if (currentStack.nativeFrontend.length > 0) {
-      return "OpenAPI is currently available for web frontends, not React Native";
+    if (hasReactNativeApp(currentStack)) {
+      return "OpenAPI is only available for web frontends, not React Native";
     }
     if (!["hono", "effect", "express", "fastify", "elysia"].includes(currentStack.backend)) {
       return "OpenAPI currently supports Hono, Effect, Express, Fastify, and Elysia backends";
@@ -3446,8 +3446,8 @@ export const getDisabledReason = (
     if (currentStack.backend === "self") {
       return "Apollo Server scaffolding currently requires a standalone TypeScript backend";
     }
-    if (currentStack.nativeFrontend.length > 0) {
-      return "Apollo Server is currently available for web frontends, not React Native";
+    if (hasReactNativeApp(currentStack)) {
+      return "Apollo Server is only available for web frontends, not React Native";
     }
     if (!["hono", "effect", "express", "fastify", "elysia"].includes(currentStack.backend)) {
       return "Apollo Server currently supports Hono, Effect, Express, Fastify, and Elysia backends";
@@ -3997,10 +3997,10 @@ export const getDisabledReason = (
   if (category === "serverDeploy") {
     if (optionId === "cloudflare") {
       if (currentStack.runtime !== "workers") {
-        return "In Better-Fullstack, Cloudflare server deploy currently requires Workers runtime";
+        return "Cloudflare server deploy needs the Workers runtime";
       }
       if (currentStack.backend !== "hono") {
-        return "In Better-Fullstack, Cloudflare server deploy is currently supported only with Hono";
+        return "Cloudflare server deploy only works with Hono";
       }
     }
     if (optionId === "vercel") {

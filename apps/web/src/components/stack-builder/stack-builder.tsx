@@ -1,3 +1,5 @@
+import type { IconType } from "react-icons";
+
 import {
   CATEGORY_ORDER,
   updateCodeQualitySelection,
@@ -68,7 +70,30 @@ import {
   TbSearch as Search,
   TbSettings as Settings,
   TbArrowsShuffle as Shuffle,
+  TbBooks,
+  TbBoxMultiple,
+  TbBrain,
+  TbBroadcast,
+  TbChartLine,
+  TbCreditCard,
+  TbDatabase,
+  TbDeviceDesktop,
+  TbDeviceMobile,
+  TbFlask,
+  TbHammer,
+  TbLayoutGrid,
+  TbPalette,
+  TbPuzzle,
+  TbRocket,
+  TbServer,
+  TbShieldCheck,
+  TbShoppingBag,
+  TbSparkles,
+  TbStack2,
   TbTerminal as Terminal,
+  TbTestPipe,
+  TbTool,
+  TbWorld,
   TbX as X,
   TbStack3 as Layers3,
   TbBolt as Zap,
@@ -100,6 +125,7 @@ import {
   getCategoryDisplayName,
   getDisabledReason,
   getVisibleOptions,
+  OPT_OUT_IDS,
   isOptionCompatible,
   validateProjectName,
 } from "@/components/stack-builder/utils";
@@ -278,6 +304,18 @@ type BuilderSearchEntry = {
   searchIndex: string;
 };
 type GraphOptionContext = Omit<StackPartOptionContext, "role" | "ecosystem">;
+
+/** A library result shows its logo; sections and logo-less libraries keep a neutral mark. */
+function SearchResultIcon({ entry }: { entry: BuilderSearchEntry }) {
+  if (entry.kind === "section") return <Terminal className="h-3.5 w-3.5" />;
+  const option = entry.optionCategory
+    ? TECH_OPTIONS[entry.optionCategory]?.find((tech) => tech.id === entry.optionId)
+    : undefined;
+  if (!option || (option.icon === "" && !ICON_REGISTRY[option.id])) {
+    return <Search className="h-3.5 w-3.5" />;
+  }
+  return <TechIcon techId={option.id} icon={option.icon} name={option.name} className="h-4 w-4" />;
+}
 type GraphFrontendEcosystem = Extract<StackPartEcosystem, "typescript" | "rust" | "dotnet">;
 type GraphMobileEcosystem = Extract<
   StackPartEcosystem,
@@ -493,11 +531,7 @@ function BuilderSearchField({
                   )}
                 >
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-ink/5 text-muted-foreground">
-                    {entry.kind === "section" ? (
-                      <Terminal className="h-3.5 w-3.5" />
-                    ) : (
-                      <Search className="h-3.5 w-3.5" />
-                    )}
+                    <SearchResultIcon entry={entry} />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-mono text-xs">{entry.name}</span>
@@ -1412,8 +1446,49 @@ function getCategoryRenderGroups(
   }));
 }
 
+/** One icon per builder section; sections without an entry keep the terminal mark. */
+const SECTION_ICONS: Readonly<Record<string, IconType>> = {
+  frontend: TbDeviceDesktop,
+  backendApi: TbServer,
+  ui: TbPalette,
+  frontendLibraries: TbPuzzle,
+  backendLibs: TbBoxMultiple,
+  data: TbDatabase,
+  authSecurity: TbShieldCheck,
+  product: TbShoppingBag,
+  realtimeJobs: TbBroadcast,
+  ai: TbSparkles,
+  observability: TbChartLine,
+  qualityTesting: TbFlask,
+  workspaceTooling: TbTool,
+  coreTooling: TbTool,
+  deployScaffold: TbRocket,
+  mobileFrameworks: TbDeviceMobile,
+  appExperience: TbLayoutGrid,
+  testingDelivery: TbTestPipe,
+  authPayments: TbCreditCard,
+  webApi: TbWorld,
+  services: TbStack2,
+  aiData: TbBrain,
+  libraries: TbBooks,
+  frameworkBuild: TbHammer,
+};
+
+/** Shorter English names for the section summaries, where long names push picks out of view. */
+const SUMMARY_CATEGORY_LABELS: Readonly<Record<string, string>> = {
+  codeGeneration: "Codegen",
+  continuousIntegration: "CI",
+  developerEnvironment: "Dev Environment",
+  containerOrchestration: "Containers",
+};
+
 /** Categories where one option is nearly always the pick: the rest wait behind "show more". */
-const QUIET_CATEGORIES: ReadonlySet<string> = new Set(["cssFramework", "uiLibrary"]);
+const QUIET_CATEGORIES: ReadonlyMap<string, number> = new Map([
+  // How many of the top options stay visible before "show more"; picks always stay.
+  ["cssFramework", 0],
+  ["uiLibrary", 4],
+  ["auth", 4],
+]);
 
 /** Follows its content's height with an animation, so cards added or removed inside slide open. */
 function AnimatedHeight({ children }: { children: ReactNode }) {
@@ -1591,6 +1666,44 @@ const TechResourceButtons = memo(function TechResourceButtons({
     </div>
   );
 });
+
+/** "None"-style options: a small chip after the grid instead of a full card. */
+function OptOutChip({
+  tech,
+  category,
+  isSelected,
+  isDisabled,
+  disabledReason,
+  onSelect,
+}: {
+  tech: TechOption;
+  category: keyof typeof TECH_OPTIONS;
+  isSelected: boolean;
+  isDisabled: boolean;
+  disabledReason: string | null;
+  onSelect: (category: keyof typeof TECH_OPTIONS, techId: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      data-testid={`option-${category}-${tech.id}`}
+      aria-pressed={isSelected}
+      title={disabledReason || undefined}
+      onClick={() => onSelect(category, tech.id)}
+      className={cn(
+        "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[11px] transition-colors",
+        isSelected
+          ? "border-ink bg-ink/[0.05] text-foreground dark:border-brand/80 dark:bg-brand/[0.08]"
+          : isDisabled
+            ? "border-dashed border-foreground/10 text-muted-foreground opacity-55 hover:opacity-90"
+            : "border-foreground/10 text-muted-foreground hover:border-foreground/25 hover:text-foreground",
+      )}
+    >
+      {isSelected && <Check className="size-3" aria-hidden />}
+      {tech.name}
+    </button>
+  );
+}
 
 const TechOptionCard = memo(function TechOptionCard({
   tech,
@@ -4392,18 +4505,35 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   };
 
   // A quiet category shows only what is picked until it is expanded.
-  const getQuietOptions = (group: { category: string; options: readonly TechOption[] }) => {
-    const pickedOptions = group.options.filter((tech) =>
-      isSelectedCheck(stack, group.category, tech.id),
+  // A quiet category shows its top options, its picks and its opt-out until it is expanded.
+  const getQuietOptions = (group: {
+    category: keyof typeof TECH_OPTIONS;
+    options: readonly TechOption[];
+  }) => {
+    const minimum = QUIET_CATEGORIES.get(group.category);
+    if (minimum === undefined) return { shown: group.options, hidden: [], collapsible: false };
+    const compatibilityStack = getCompatibilityStackForCategory(group.category);
+    // Available options fill the top slots first; unavailable ones only make up the count.
+    const candidates = group.options.filter((tech) => !OPT_OUT_IDS.has(tech.id));
+    const available = candidates.filter((tech) =>
+      isOptionCompatible(compatibilityStack, group.category, tech.id),
     );
-    const collapsed =
-      QUIET_CATEGORIES.has(group.category) &&
-      !expandedQuietCategories.has(group.category) &&
-      pickedOptions.length > 0;
+    const top = new Set(
+      [...available, ...candidates.filter((tech) => !available.includes(tech))].slice(0, minimum),
+    );
+    const kept = group.options.filter(
+      (tech) =>
+        top.has(tech) ||
+        OPT_OUT_IDS.has(tech.id) ||
+        isSelectedCheck(stack, group.category, tech.id),
+    );
+    const collapsible =
+      kept.length < group.options.length && kept.some((tech) => !OPT_OUT_IDS.has(tech.id));
+    const collapsed = collapsible && !expandedQuietCategories.has(group.category);
     return {
-      shown: collapsed ? pickedOptions : group.options,
-      hidden: collapsed ? group.options.filter((tech) => !pickedOptions.includes(tech)) : [],
-      picked: pickedOptions.length,
+      shown: collapsed ? kept : group.options,
+      hidden: collapsed ? group.options.filter((tech) => !kept.includes(tech)) : [],
+      collapsible,
     };
   };
 
@@ -5252,6 +5382,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                         builderSection.fallbackName,
                       );
                       const sectionCollapsed = isSectionCollapsed(builderSection.key);
+                      const SectionIcon = SECTION_ICONS[builderSection.key] ?? Terminal;
                       // Each category shows its picks, or its own name when nothing is picked in it.
                       const sectionSummary = visibleCategories.flatMap((categoryKey) => {
                         const picks = getSelectedOptionNames(
@@ -5260,12 +5391,14 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                         );
                         if (picks.length > 0)
                           return picks.map((label) => ({ label, picked: true }));
+                        const englishName = getCategoryDisplayName(categoryKey);
+                        const label = getLocalizedCategoryDisplayName(categoryKey, englishName);
                         return [
                           {
-                            label: getLocalizedCategoryDisplayName(
-                              categoryKey,
-                              getCategoryDisplayName(categoryKey),
-                            ),
+                            label:
+                              label === englishName
+                                ? (SUMMARY_CATEGORY_LABELS[categoryKey] ?? label)
+                                : label,
                             picked: false,
                           },
                         ];
@@ -5290,7 +5423,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                             data-testid={`section-toggle-${builderSection.key}`}
                             className="mb-4 flex w-full cursor-pointer items-center gap-2 border-b border-border pb-2 text-left transition-opacity hover:opacity-80"
                           >
-                            <Terminal className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
+                            <SectionIcon className="h-4 w-4 shrink-0 text-muted-foreground sm:h-5 sm:w-5" />
                             <h2 className="shrink-0 font-mono text-foreground text-sm sm:text-base">
                               {sectionName}
                             </h2>
@@ -5411,114 +5544,156 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                         group.category,
                                                       )}
                                                     >
-                                                      {getQuietOptions(group).shown.map((tech) => {
-                                                        const compatibilityStack =
-                                                          getCompatibilityStackForCategory(
+                                                      {getQuietOptions(group)
+                                                        .shown.filter(
+                                                          (tech) => !OPT_OUT_IDS.has(tech.id),
+                                                        )
+                                                        .map((tech) => {
+                                                          const compatibilityStack =
+                                                            getCompatibilityStackForCategory(
+                                                              group.category,
+                                                            );
+                                                          const isSelected = isSelectedCheck(
+                                                            stack,
                                                             group.category,
+                                                            tech.id,
                                                           );
-                                                        const isSelected = isSelectedCheck(
-                                                          stack,
-                                                          group.category,
-                                                          tech.id,
-                                                        );
-                                                        const isDisabled = !isOptionCompatible(
-                                                          compatibilityStack,
-                                                          group.category,
-                                                          tech.id,
-                                                        );
-                                                        const disabledReason = isDisabled
-                                                          ? getDisabledReason(
+                                                          const isDisabled = !isOptionCompatible(
+                                                            compatibilityStack,
+                                                            group.category,
+                                                            tech.id,
+                                                          );
+                                                          const disabledReason = isDisabled
+                                                            ? getDisabledReason(
+                                                                compatibilityStack,
+                                                                group.category,
+                                                                tech.id,
+                                                              )
+                                                            : null;
+
+                                                          const card = (
+                                                            <TechOptionCard
+                                                              key={tech.id}
+                                                              tech={tech}
+                                                              category={group.category}
+                                                              ecosystem={stack.ecosystem}
+                                                              isSelected={isSelected}
+                                                              isDisabled={isDisabled}
+                                                              disabledReason={disabledReason}
+                                                              description={
+                                                                getLocalizedTechOption(tech)
+                                                                  .description
+                                                              }
+                                                              onSelect={selectTech}
+                                                            />
+                                                          );
+                                                          return QUIET_CATEGORIES.has(
+                                                            group.category,
+                                                          ) ? (
+                                                            <motion.div
+                                                              key={tech.id}
+                                                              initial={{ opacity: 0, scale: 0.97 }}
+                                                              animate={{ opacity: 1, scale: 1 }}
+                                                              exit={{ opacity: 0, scale: 0.97 }}
+                                                              transition={{ duration: 0.2 }}
+                                                            >
+                                                              {card}
+                                                            </motion.div>
+                                                          ) : (
+                                                            card
+                                                          );
+                                                        })}
+                                                      {getQuietOptions(group).collapsible && (
+                                                        <motion.button
+                                                          key="quiet-toggle"
+                                                          layout="position"
+                                                          type="button"
+                                                          data-testid={`quiet-toggle-${group.category}`}
+                                                          aria-expanded={expandedQuietCategories.has(
+                                                            group.category,
+                                                          )}
+                                                          onClick={() =>
+                                                            setExpandedQuietCategories(
+                                                              (current) => {
+                                                                const next = new Set(current);
+                                                                if (!next.delete(group.category))
+                                                                  next.add(group.category);
+                                                                return next;
+                                                              },
+                                                            )
+                                                          }
+                                                          className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 p-3 text-muted-foreground text-xs transition-colors hover:border-foreground/30 hover:text-foreground sm:p-4"
+                                                        >
+                                                          <HiddenOptionLogos
+                                                            options={getQuietOptions(group).hidden}
+                                                          />
+                                                          <span className="flex items-center gap-1.5">
+                                                            {expandedQuietCategories.has(
+                                                              group.category,
+                                                            )
+                                                              ? m.builderShowLess()
+                                                              : m.builderShowMore({
+                                                                  count:
+                                                                    getQuietOptions(group).hidden
+                                                                      .length,
+                                                                })}
+                                                            <ChevronDown
+                                                              className={cn(
+                                                                "size-3.5 transition-transform",
+                                                                expandedQuietCategories.has(
+                                                                  group.category,
+                                                                ) && "rotate-180",
+                                                              )}
+                                                              aria-hidden
+                                                            />
+                                                          </span>
+                                                        </motion.button>
+                                                      )}
+                                                    </OptionGrid>
+                                                    {getQuietOptions(group).shown.some((tech) =>
+                                                      OPT_OUT_IDS.has(tech.id),
+                                                    ) && (
+                                                      <div className="mt-2 flex flex-wrap gap-2">
+                                                        {getQuietOptions(group)
+                                                          .shown.filter((tech) =>
+                                                            OPT_OUT_IDS.has(tech.id),
+                                                          )
+                                                          .map((tech) => {
+                                                            const compatibilityStack =
+                                                              getCompatibilityStackForCategory(
+                                                                group.category,
+                                                              );
+                                                            const isDisabled = !isOptionCompatible(
                                                               compatibilityStack,
                                                               group.category,
                                                               tech.id,
-                                                            )
-                                                          : null;
-
-                                                        const card = (
-                                                          <TechOptionCard
-                                                            key={tech.id}
-                                                            tech={tech}
-                                                            category={group.category}
-                                                            ecosystem={stack.ecosystem}
-                                                            isSelected={isSelected}
-                                                            isDisabled={isDisabled}
-                                                            disabledReason={disabledReason}
-                                                            description={
-                                                              getLocalizedTechOption(tech)
-                                                                .description
-                                                            }
-                                                            onSelect={selectTech}
-                                                          />
-                                                        );
-                                                        return QUIET_CATEGORIES.has(
-                                                          group.category,
-                                                        ) ? (
-                                                          <motion.div
-                                                            key={tech.id}
-                                                            initial={{ opacity: 0, scale: 0.97 }}
-                                                            animate={{ opacity: 1, scale: 1 }}
-                                                            exit={{ opacity: 0, scale: 0.97 }}
-                                                            transition={{ duration: 0.2 }}
-                                                          >
-                                                            {card}
-                                                          </motion.div>
-                                                        ) : (
-                                                          card
-                                                        );
-                                                      })}
-                                                      {QUIET_CATEGORIES.has(group.category) &&
-                                                        getQuietOptions(group).picked > 0 &&
-                                                        group.options.length >
-                                                          getQuietOptions(group).picked && (
-                                                          <motion.button
-                                                            key="quiet-toggle"
-                                                            layout="position"
-                                                            type="button"
-                                                            data-testid={`quiet-toggle-${group.category}`}
-                                                            aria-expanded={expandedQuietCategories.has(
-                                                              group.category,
-                                                            )}
-                                                            onClick={() =>
-                                                              setExpandedQuietCategories(
-                                                                (current) => {
-                                                                  const next = new Set(current);
-                                                                  if (!next.delete(group.category))
-                                                                    next.add(group.category);
-                                                                  return next;
-                                                                },
-                                                              )
-                                                            }
-                                                            className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/15 p-3 text-muted-foreground text-xs transition-colors hover:border-foreground/30 hover:text-foreground sm:p-4"
-                                                          >
-                                                            <HiddenOptionLogos
-                                                              options={
-                                                                getQuietOptions(group).hidden
-                                                              }
-                                                            />
-                                                            <span className="flex items-center gap-1.5">
-                                                              {expandedQuietCategories.has(
-                                                                group.category,
-                                                              )
-                                                                ? m.builderShowLess()
-                                                                : m.builderShowMore({
-                                                                    count:
-                                                                      group.options.length -
-                                                                      getQuietOptions(group).shown
-                                                                        .length,
-                                                                  })}
-                                                              <ChevronDown
-                                                                className={cn(
-                                                                  "size-3.5 transition-transform",
-                                                                  expandedQuietCategories.has(
-                                                                    group.category,
-                                                                  ) && "rotate-180",
+                                                            );
+                                                            return (
+                                                              <OptOutChip
+                                                                key={tech.id}
+                                                                tech={tech}
+                                                                category={group.category}
+                                                                isSelected={isSelectedCheck(
+                                                                  stack,
+                                                                  group.category,
+                                                                  tech.id,
                                                                 )}
-                                                                aria-hidden
+                                                                isDisabled={isDisabled}
+                                                                disabledReason={
+                                                                  isDisabled
+                                                                    ? getDisabledReason(
+                                                                        compatibilityStack,
+                                                                        group.category,
+                                                                        tech.id,
+                                                                      )
+                                                                    : null
+                                                                }
+                                                                onSelect={selectTech}
                                                               />
-                                                            </span>
-                                                          </motion.button>
-                                                        )}
-                                                    </OptionGrid>
+                                                            );
+                                                          })}
+                                                      </div>
+                                                    )}
                                                   </div>
                                                 ))}
                                               </div>

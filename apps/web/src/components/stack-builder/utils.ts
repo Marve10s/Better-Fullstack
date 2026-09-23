@@ -159,7 +159,8 @@ export const isOptionCompatible = (
   return isOptionCompatibleShared(currentStack, toCompatibilityCategory(category), optionId);
 };
 
-const OPT_OUT_IDS: ReadonlySet<string> = new Set(["none", "false"]);
+/** Option ids that mean "leave this out" rather than a library. */
+export const OPT_OUT_IDS: ReadonlySet<string> = new Set(["none", "false"]);
 
 /**
  * Shows a category's default first, then the rest most popular first. Unranked ids keep their
@@ -171,7 +172,12 @@ function sortByDisplayOrder<T extends { id: string; default?: boolean }>(
 ): T[] {
   const order = OPTION_DISPLAY_ORDER[category] ?? [];
   const rank = new Map(order.map((id, index) => [id, index]));
-  const leadsList = (option: T) => option.default === true && !OPT_OUT_IDS.has(option.id);
+  const defaults = options
+    .filter((option) => option.default === true && !OPT_OUT_IDS.has(option.id))
+    .map((option) => option.id);
+  // The default leads, with its variants (e.g. better-auth-organizations) right behind it.
+  const leadsList = (option: T) =>
+    defaults.some((id) => option.id === id || option.id.startsWith(`${id}-`));
   return [...options].sort(
     (a, b) =>
       Number(leadsList(b)) - Number(leadsList(a)) ||

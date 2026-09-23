@@ -61,6 +61,16 @@ describe("compatibility issue helpers", () => {
     expect(issue?.explanation).toEqual(decision.explanation);
   });
 
+  it("offers Apollo Server and OpenAPI to web stacks that have no mobile app", () => {
+    const webStack = { ...DEFAULT_STACK_SELECTION, nativeFrontend: ["none"], backend: "hono" };
+    const mobileStack = { ...webStack, nativeFrontend: ["native-bare"] };
+
+    for (const api of ["apollo-server", "openapi"]) {
+      expect(getDisabledReason(webStack, "api", api)).toBeNull();
+      expect(getDisabledReason(mobileStack, "api", api)).toContain("not React Native");
+    }
+  });
+
   it("keeps bot protection within its generated auth and frontend boundaries", () => {
     const nextStack = { ...DEFAULT_STACK_SELECTION, webFrontend: ["next"] };
     const botIdStack = { ...nextStack, backend: "self-next" };
