@@ -89,15 +89,15 @@ export function ChangelogWidget() {
           {/* Stacked edges hint at the rest of the changelog without rendering it. */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-4 -top-2 h-4 rounded-t-2xl border border-ink/10 border-b-0 bg-surface/30 backdrop-blur-md dark:border-white/15"
+            className="pointer-events-none absolute inset-x-4 -top-2 h-4 rounded-t-2xl border border-edge border-b-0 bg-surface-raised opacity-60"
           />
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-2 -top-1 h-3 rounded-t-2xl border border-ink/10 border-b-0 bg-surface/40 backdrop-blur-md dark:border-white/15"
+            className="pointer-events-none absolute inset-x-2 -top-1 h-3 rounded-t-2xl border border-edge border-b-0 bg-surface-raised opacity-80"
           />
 
           <section
-            className="group relative overflow-hidden rounded-2xl border border-ink/10 bg-surface/45 shadow-2xl shadow-black/10 backdrop-blur-md dark:border-white/15"
+            className="group relative overflow-hidden rounded-2xl border border-edge bg-surface shadow-2xl shadow-black/10"
             aria-label={m.changelogAria()}
           >
             <button
