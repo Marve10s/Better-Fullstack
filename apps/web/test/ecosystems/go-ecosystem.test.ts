@@ -224,13 +224,15 @@ describe("Go Ecosystem Tab", () => {
       }
     });
 
-    it("should keep shared and unsupported Go tool icons out of the global registry", () => {
+    it("should keep OAuth2 on its Go fallback icon and give Buf its own logo", () => {
       expect(ICON_REGISTRY.oauth2).toBeUndefined();
       expect(TECH_OPTIONS.goAuth.find((option) => option.id === "oauth2")?.icon).toBe(
         "https://cdn.simpleicons.org/go/00ADD8",
       );
-      expect(ICON_REGISTRY.buf).toBeUndefined();
-      expect(TECH_OPTIONS.goProtoTooling.find((option) => option.id === "buf")?.icon).toBe("");
+      expect(ICON_REGISTRY.buf).toEqual({
+        type: "local",
+        src: "https://github.com/bufbuild.png?size=64",
+      });
     });
   });
 

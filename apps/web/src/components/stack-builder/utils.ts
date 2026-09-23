@@ -20,6 +20,7 @@ import {
 
 import type { StackState, TECH_OPTIONS } from "@/lib/stack/constant";
 
+import { OPTION_DISPLAY_ORDER } from "@/lib/stack/option-order";
 import {
   getStackKeyForCategory,
   getToolingCategoryForUi,
@@ -158,7 +159,33 @@ export const isOptionCompatible = (
   return isOptionCompatibleShared(currentStack, toCompatibilityCategory(category), optionId);
 };
 
+const OPT_OUT_IDS: ReadonlySet<string> = new Set(["none", "false"]);
+
+/**
+ * Shows a category's default first, then the rest most popular first. Unranked ids keep their
+ * place at the end; a "None" default stays where it is.
+ */
+function sortByDisplayOrder<T extends { id: string; default?: boolean }>(
+  category: string,
+  options: readonly T[],
+): T[] {
+  const order = OPTION_DISPLAY_ORDER[category] ?? [];
+  const rank = new Map(order.map((id, index) => [id, index]));
+  const leadsList = (option: T) => option.default === true && !OPT_OUT_IDS.has(option.id);
+  return [...options].sort(
+    (a, b) =>
+      Number(leadsList(b)) - Number(leadsList(a)) ||
+      (rank.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (rank.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+  );
+}
+
 export const getVisibleOptions = (
+  currentStack: StackState,
+  category: keyof typeof TECH_OPTIONS,
+  options: (typeof TECH_OPTIONS)[keyof typeof TECH_OPTIONS],
+) => sortByDisplayOrder(category, filterVisibleOptions(currentStack, category, options));
+
+const filterVisibleOptions = (
   currentStack: StackState,
   category: keyof typeof TECH_OPTIONS,
   options: (typeof TECH_OPTIONS)[keyof typeof TECH_OPTIONS],
@@ -179,6 +206,16 @@ export const getVisibleOptions = (
     ) {
       return options.filter((option) => !isKotlinIncompatibleOption(category, option.id));
     }
+  }
+
+  // shadcn-svelte only means something next to Svelte, so other frontends never see it.
+  if (category === "uiLibrary") {
+    return options.filter(
+      (option) =>
+        option.id !== "shadcn-svelte" ||
+        currentStack.uiLibrary === "shadcn-svelte" ||
+        isOptionCompatible(currentStack, category, option.id),
+    );
   }
 
   if (category !== "auth") return options;

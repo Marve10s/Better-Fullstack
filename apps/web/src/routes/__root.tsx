@@ -56,6 +56,8 @@ const THEME_INIT_SCRIPT = `
 })();
 `;
 const themeInitMarkup = { __html: THEME_INIT_SCRIPT };
+const STALE_CHUNK_RELOAD_KEY = "better-fullstack:stale-chunk-reload";
+const STALE_CHUNK_RELOAD_COOLDOWN_MS = 10_000;
 const ERROR_PAGE_TITLE = `Temporarily Unavailable | ${SITE_NAME}`;
 const ERROR_PAGE_DESCRIPTION =
   "Better Fullstack could not load this page. Please try again or return to the homepage.";
@@ -85,6 +87,10 @@ function NotFoundComponent() {
   );
 }
 
+function reloadPage() {
+  window.location.reload();
+}
+
 function RootErrorComponent() {
   return (
     <html lang="en" className="font-sans">
@@ -107,14 +113,13 @@ function RootErrorComponent() {
               The failure is temporary. Try the page again or return to the homepage.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <form method="get">
-                <button
-                  type="submit"
-                  className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90"
-                >
-                  Try again
-                </button>
-              </form>
+              <button
+                type="button"
+                onClick={reloadPage}
+                className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90"
+              >
+                Try again
+              </button>
               <a
                 href="/"
                 className="rounded-md border border-border px-4 py-2 font-medium text-sm transition-colors hover:bg-muted"
@@ -211,6 +216,19 @@ function RootComponent() {
   // interactive content whose handlers attach only after hydration.
   useEffect(() => {
     document.documentElement.dataset.hydrated = "true";
+  }, []);
+
+  // A deploy removes the previous build's chunks, so a page opened before it
+  // fails to load lazy panels. Reload once to pick up the new build.
+  useEffect(() => {
+    const reloadOnStaleChunk = () => {
+      const lastReload = Number(sessionStorage.getItem(STALE_CHUNK_RELOAD_KEY));
+      if (Date.now() - lastReload < STALE_CHUNK_RELOAD_COOLDOWN_MS) return;
+      sessionStorage.setItem(STALE_CHUNK_RELOAD_KEY, String(Date.now()));
+      window.location.reload();
+    };
+    window.addEventListener("vite:preloadError", reloadOnStaleChunk);
+    return () => window.removeEventListener("vite:preloadError", reloadOnStaleChunk);
   }, []);
 
   return (

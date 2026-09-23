@@ -1,0 +1,84 @@
+name: Start Release
+
+# Owner-only button that opens a release: it bumps every published version and pushes the
+# `chore(release): X.Y.Z` commit to main. That push runs the required CI, whose success starts
+# release.yaml exactly as a hand-made release commit would.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, e.g. 2.6.8"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-trigger
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    name: Bump versions and push the release commit
+    if: github.actor == 'Marve10s' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          # A push made with the default token would not start the required CI.
+          token: ${{ secrets.PAT_WORKFLOW }}
+
+      - name: Bump every published version
+        env:
+          NEW_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Version must be X.Y.Z"; exit 1; }
+          OLD_VERSION=$(jq -r '.version' apps/cli/package.json)
+          HIGHEST=$(printf '%s\n%s\n' "$OLD_VERSION" "$NEW_VERSION" | sort -V | tail -1)
+          if [[ "$NEW_VERSION" == "$OLD_VERSION" || "$HIGHEST" != "$NEW_VERSION" ]]; then
+            echo "Version $NEW_VERSION must be greater than $OLD_VERSION"; exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/v$NEW_VERSION" >/dev/null; then
+            echo "Tag v$NEW_VERSION already exists"; exit 1
+          fi
+          FILES=(
+            apps/cli/package.json
+            packages/create-bfs/package.json
+            packages/project-lifecycle/package.json
+            packages/template-generator/package.json
+            packages/types/package.json
+            plugin/.claude-plugin/plugin.json
+            plugin/.codex-plugin/plugin.json
+            plugin/plugin.json
+          )
+          OLD_PATTERN=${OLD_VERSION//./\\.}
+          for file in "${FILES[@]}"; do
+            sed -i -E "s/\"(\\^?)$OLD_PATTERN\"/\"\\1$NEW_VERSION\"/g" "$file"
+          done
+          for file in "${FILES[@]}"; do
+            if ! grep -q "\"$NEW_VERSION\"" "$file"; then
+              echo "$file does not carry $NEW_VERSION"; exit 1
+            fi
+          done
+          [[ "$(jq -r '.version' apps/cli/package.json)" == "$NEW_VERSION" ]]
+          CHANGED=$(git diff --name-only | sort)
+          EXPECTED=$(printf '%s\n' "${FILES[@]}" | sort)
+          [[ "$CHANGED" == "$EXPECTED" ]] || { echo "Unexpected changes:"; git diff --stat; exit 1; }
+          git diff
+
+      - name: Push the release commit to main
+        env:
+          NEW_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore(release): $NEW_VERSION"
+          git push origin HEAD:main
+          echo "Pushed chore(release): $NEW_VERSION. CI runs next, then Release waits for npm-publish approval." >> "$GITHUB_STEP_SUMMARY"

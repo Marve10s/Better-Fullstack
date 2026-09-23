@@ -7642,6 +7642,7 @@ export const PRESET_CATEGORIES = [
   { id: "qwik", name: "Qwik", icon: "qwik", ecosystem: "typescript" },
   { id: "mobile", name: "Mobile", icon: "native-uniwind", ecosystem: "react-native" },
   { id: "ai-tools", name: "AI Tools", icon: "ai-cli", ecosystem: "typescript" },
+  { id: "examples", name: "Examples", icon: "vercel-ai", ecosystem: "typescript" },
   { id: "rust", name: "Rust", icon: "", ecosystem: "rust" },
   { id: "python", name: "Python", icon: "fastapi", ecosystem: "python" },
   { id: "go", name: "Go", icon: "gin", ecosystem: "go" },
@@ -7661,6 +7662,15 @@ function starterTrackSelection(presetId: string): StackState {
   if (!selection) throw new Error(`Missing starter track selection for preset '${presetId}'.`);
   return selection;
 }
+
+// Example apps are only reachable through these presets; the builder has no Examples section.
+const EXAMPLE_BASE: Partial<StackState> = {
+  database: "none",
+  orm: "none",
+  dbSetup: "none",
+  auth: "none",
+  cssFramework: "tailwind",
+};
 
 export const PRESET_TEMPLATES: {
   id: string;
@@ -8841,6 +8851,64 @@ export const PRESET_TEMPLATES: {
       aiDocs: ["claude-md"],
       git: "true",
       install: "true",
+    },
+  },
+  {
+    id: "example-ai-chat",
+    name: "AI Chat Example",
+    description: "Next.js + Vercel AI SDK with a working streaming chat example",
+    category: "examples",
+    stack: {
+      ...EXAMPLE_BASE,
+      webFrontend: ["next"],
+      backend: "self-next",
+      runtime: "none",
+      uiLibrary: "shadcn-ui",
+      aiSdk: "vercel-ai",
+      examples: ["ai"],
+    },
+  },
+  {
+    id: "example-slack-bot",
+    name: "Slack Bot Example",
+    description: "Next.js + Chat SDK with a Slack bot example",
+    category: "examples",
+    stack: {
+      ...EXAMPLE_BASE,
+      webFrontend: ["next"],
+      backend: "self-next",
+      runtime: "none",
+      uiLibrary: "shadcn-ui",
+      examples: ["chat-sdk"],
+    },
+  },
+  {
+    id: "example-discord-bot",
+    name: "Discord Bot Example",
+    description: "Nuxt + Chat SDK + Vercel AI SDK with a Discord bot example",
+    category: "examples",
+    stack: {
+      ...EXAMPLE_BASE,
+      webFrontend: ["nuxt"],
+      backend: "self-nuxt",
+      runtime: "none",
+      uiLibrary: "none",
+      api: "orpc",
+      aiSdk: "vercel-ai",
+      examples: ["chat-sdk"],
+    },
+  },
+  {
+    id: "example-github-review-bot",
+    name: "GitHub Review Bot Example",
+    description: "Hono on Node + Chat SDK + Vercel AI SDK with a GitHub review bot example",
+    category: "examples",
+    stack: {
+      ...EXAMPLE_BASE,
+      backend: "hono",
+      runtime: "node",
+      aiSdk: "vercel-ai",
+      examples: ["chat-sdk"],
     },
   },
 ];

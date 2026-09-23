@@ -31,10 +31,26 @@ function gradientArtwork(): ChangelogRelease["image"] {
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v2.6.8",
+    publishedAt: "2026-09-23T00:00:00Z",
+    displayDate: "September 23, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v2.6.8`,
+    title: "A new look and fresher dependencies",
+    summary:
+      "The homepage and builder are redesigned, and generated projects ship with updated dependencies.",
+    highlights: [
+      "Homepage painted for day and night",
+      "Builder in one bar and a glass dock",
+      "Dependencies updated across templates",
+      "WXT scaffolds no longer hang",
+      "Slimmer MCP server, devtools panel retired",
+    ],
+  },
+  {
     version: "v2.6.5",
     publishedAt: "2026-09-09T00:00:00Z",
     displayDate: "September 9, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v2.6.5`,
     title: "Multi-ecosystem v2",
     summary: "Build frontend, backend, and mobile apps together, each with its own stack.",
