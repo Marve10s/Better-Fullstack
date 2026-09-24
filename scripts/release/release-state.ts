@@ -482,31 +482,49 @@ export async function preflightRelease(options: {
   return state;
 }
 
-async function waitForMatchingPackage(
-  pkg: ReleasePackage,
+// npm can take minutes to serve a new version, so every package is published first and all of
+// them are then awaited together; a slow registry costs one wait, not one failed run per package.
+const VISIBILITY_TIMEOUT_MS = 10 * 60_000;
+const VISIBILITY_POLL_MS = 10_000;
+
+async function waitForMatchingPackages(
+  packages: ReleasePackage[],
   registry: string,
-  attempts = 12,
-  runner: CommandRunner = runCommand,
+  runner: CommandRunner,
+  timing: { timeoutMs: number; pollMs: number; sleep: (ms: number) => Promise<void> },
 ): Promise<void> {
-  for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    const state = await registryState(pkg, registry, runner);
-    if (state.kind === "matching") return;
-    if (state.kind === "conflict") {
-      throw new Error(`npm returned different bytes after publishing ${pkg.name}@${pkg.version}`);
+  const deadline = Date.now() + timing.timeoutMs;
+  let pending = packages;
+  while (pending.length > 0) {
+    const stillPending: ReleasePackage[] = [];
+    for (const pkg of pending) {
+      // Registry reads stay sequential so the log order matches the publish order.
+      // oxlint-disable-next-line no-await-in-loop
+      const state = await registryState(pkg, registry, runner);
+      if (state.kind === "conflict") {
+        throw new Error(`npm returned different bytes after publishing ${pkg.name}@${pkg.version}`);
+      }
+      if (state.kind !== "matching") stillPending.push(pkg);
     }
-    if (attempt === attempts) break;
-    console.log(
-      `Waiting for ${pkg.name}@${pkg.version} to become visible (${attempt}/${attempts})`,
-    );
-    await Bun.sleep(10_000);
+    pending = stillPending;
+    if (pending.length === 0) return;
+    const identities = pending.map((pkg) => `${pkg.name}@${pkg.version}`).join(", ");
+    if (Date.now() >= deadline) {
+      throw new Error(`${identities} did not become visible with the published bytes`);
+    }
+    console.log(`Waiting for ${identities} to become visible`);
+    // oxlint-disable-next-line no-await-in-loop
+    await timing.sleep(timing.pollMs);
   }
-  throw new Error(`${pkg.name}@${pkg.version} did not become visible with the published bytes`);
 }
 
 export async function publishRelease(options: {
   manifestPath: string;
   registry?: string;
   runner?: CommandRunner;
+  visibilityTimeoutMs?: number;
+  visibilityPollMs?: number;
+  sleep?: (ms: number) => Promise<void>;
 }): Promise<void> {
   const registry = options.registry ?? DEFAULT_REGISTRY;
   const runner = options.runner ?? runCommand;
@@ -515,6 +533,7 @@ export async function publishRelease(options: {
   printState(initial);
   assertUnblocked(initial);
 
+  const published: ReleasePackage[] = [];
   for (const pkg of initial.packages) {
     if (pkg.registry.kind === "matching") {
       console.log(`Already published with matching bytes: ${pkg.name}@${pkg.version}`);
@@ -522,6 +541,8 @@ export async function publishRelease(options: {
     }
     const archive = resolve(dirname(options.manifestPath), pkg.filename);
     console.log(`Publishing exact artifact ${pkg.filename}`);
+    // Packages publish in manifest order; npm does not need a dependency to be visible first.
+    // oxlint-disable-next-line no-await-in-loop
     await requireSuccess(
       [
         "npm",
@@ -537,8 +558,14 @@ export async function publishRelease(options: {
       undefined,
       runner,
     );
-    await waitForMatchingPackage(pkg, registry, 12, runner);
+    published.push(pkg);
   }
+
+  await waitForMatchingPackages(published, registry, runner, {
+    timeoutMs: options.visibilityTimeoutMs ?? VISIBILITY_TIMEOUT_MS,
+    pollMs: options.visibilityPollMs ?? VISIBILITY_POLL_MS,
+    sleep: options.sleep ?? ((ms) => Bun.sleep(ms)),
+  });
 
   const finalState = await inspectPublication(manifest, registry, runner);
   printState(finalState);

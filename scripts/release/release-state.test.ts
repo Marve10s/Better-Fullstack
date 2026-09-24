@@ -189,6 +189,88 @@ describe("release publication state", () => {
     }
   });
 
+  test("publishes every package before waiting once for a slow registry", async () => {
+    const packages = [
+      packageArtifact("@better-fullstack/types", "3.0.0"),
+      packageArtifact("create-better-fullstack", "3.0.0"),
+    ];
+    const fixture = await manifestFixture(packages);
+    const published = new Set<string>();
+    // Each package shows up on the registry only after two reads that follow its publish.
+    const readsAfterPublish = new Map<string, number>();
+    const events: string[] = [];
+    const runner: CommandRunner = async (command) => {
+      const identity = command[2] ?? "";
+      if (command[0] === "npm" && command[1] === "view") {
+        const pkg = packages.find((item) => `${item.name}@${item.version}` === identity);
+        if (!pkg || !published.has(identity)) {
+          return registryView(pkg ?? packages[0]!, { kind: "absent" });
+        }
+        events.push(`read ${pkg.name}`);
+        const reads = (readsAfterPublish.get(identity) ?? 0) + 1;
+        readsAfterPublish.set(identity, reads);
+        return registryView(pkg, reads > 2 ? { kind: "matching" } : { kind: "absent" });
+      }
+      if (command[0] === "npm" && command[1] === "publish") {
+        const pkg = packages.find((item) => identity.endsWith(item.filename))!;
+        published.add(`${pkg.name}@${pkg.version}`);
+        events.push(`publish ${pkg.name}`);
+        return { exitCode: 0, stderr: "", stdout: "" };
+      }
+      throw new Error(`Unexpected command: ${command.join(" ")}`);
+    };
+
+    try {
+      await publishRelease({
+        manifestPath: fixture.manifestPath,
+        runner,
+        visibilityPollMs: 0,
+        sleep: async () => {
+          events.push("wait");
+        },
+      });
+      const lastPublish = events.lastIndexOf("publish create-better-fullstack");
+      const firstRead = events.findIndex((event) => event.startsWith("read "));
+      expect(events.indexOf("publish @better-fullstack/types")).toBe(0);
+      expect(lastPublish).toBeLessThan(firstRead);
+      expect(events).toContain("wait");
+    } finally {
+      await rm(fixture.directory, { force: true, recursive: true });
+    }
+  });
+
+  test("names every package still missing when the registry never catches up", async () => {
+    const packages = [
+      packageArtifact("@better-fullstack/types", "3.0.0"),
+      packageArtifact("create-better-fullstack", "3.0.0"),
+    ];
+    const fixture = await manifestFixture(packages);
+    const runner: CommandRunner = async (command) => {
+      if (command[0] === "npm" && command[1] === "view") {
+        return registryView(packages[0]!, { kind: "absent" });
+      }
+      if (command[0] === "npm" && command[1] === "publish") {
+        return { exitCode: 0, stderr: "", stdout: "" };
+      }
+      throw new Error(`Unexpected command: ${command.join(" ")}`);
+    };
+
+    try {
+      await expect(
+        publishRelease({
+          manifestPath: fixture.manifestPath,
+          runner,
+          visibilityTimeoutMs: 0,
+          sleep: async () => {},
+        }),
+      ).rejects.toThrow(
+        "@better-fullstack/types@3.0.0, create-better-fullstack@3.0.0 did not become visible",
+      );
+    } finally {
+      await rm(fixture.directory, { force: true, recursive: true });
+    }
+  });
+
   test("never reaches tag or release calls from a non-published package state", async () => {
     const types = packageArtifact("@better-fullstack/types", "3.0.0");
     const cli = packageArtifact("create-better-fullstack", "3.0.0");
