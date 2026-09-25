@@ -2,7 +2,6 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useCallback, useMemo, useState } from "react";
 
-import { DocsSearchTrigger } from "@/components/docs/search-dialog";
 import {
   type FolderNode,
   getLocalizedPageTree,
@@ -12,27 +11,26 @@ import {
 import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
-const ACTIVE_RAIL_TRANSITION = { type: "spring", stiffness: 380, damping: 32 } as const;
+const ACTIVE_BG_TRANSITION = { type: "spring", stiffness: 380, damping: 32 } as const;
 
 /**
- * Top-level docs sidebar. Renders the page tree as a list of sections, each a
- * `<details>` element so collapsed state survives a reload via `defaultOpen`.
+ * Top-level docs sidebar. Separators from `meta.json` render as section
+ * labels; folders are `<details>` elements so collapsed state survives a
+ * reload via `defaultOpen`.
  *
- * Active link styling uses a `motion.div` with `layoutId` so the indicator
- * rail animates between pages on client-side navigation, with no JS scroll
- * math needed.
+ * The active page's tinted background is a `motion.span` with `layoutId`, so
+ * it slides between pages on client-side navigation.
  */
-export function DocsSidebar({ className }: { className?: string }) {
+export function DocsSidebar({ tree, className }: { tree?: FolderNode; className?: string }) {
   const location = useLocation();
   const currentUrl = location.pathname.replace(/\/$/, "") || "/docs";
-  const pageTree = getLocalizedPageTree();
+  const pageTree = tree ?? getLocalizedPageTree();
 
   return (
     <nav
       aria-label={m.navDocs()}
-      className={cn("flex w-full flex-col gap-5 px-3 py-6 text-sm", className)}
+      className={cn("flex w-full flex-col gap-0.5 px-1 pt-2 pb-6 text-sm", className)}
     >
-      <DocsSearchTrigger className="w-full justify-between border-[var(--docs-border-subtle)] bg-[var(--docs-surface-elevated)]/85 px-3 py-2 text-[0.8125rem] shadow-sm backdrop-blur" />
       {pageTree.children.map((node, index) => (
         <SidebarNode key={getNodeKey(node, index)} node={node} currentUrl={currentUrl} depth={0} />
       ))}
@@ -55,7 +53,12 @@ function SidebarNode({
   currentUrl: string;
   depth: number;
 }) {
-  if (node.type === "separator") return null;
+  if (node.type === "separator")
+    return (
+      <p className="mt-5 mb-1 select-none px-2.5 font-semibold text-[0.75rem] text-foreground first:mt-1">
+        {node.name}
+      </p>
+    );
   if (node.type === "folder")
     return <SidebarFolder folder={node} currentUrl={currentUrl} depth={depth} />;
   return <SidebarPageLink page={node} currentUrl={currentUrl} depth={depth} />;
@@ -82,7 +85,7 @@ function SidebarFolder({
     });
   // Auto-expand when a descendant is active so deep links land with the
   // section already open even if `defaultOpen` was false.
-  const expanded = open || childContains(folder.children);
+  const expanded = open || folder.index?.url === currentUrl || childContains(folder.children);
   const indexPage = useMemo<PageNode | null>(() => {
     if (!folder.index) return null;
     return {
@@ -111,7 +114,7 @@ function SidebarFolder({
 
   return (
     <details open={expanded} onToggle={handleToggle} className="group select-none">
-      <summary className="flex cursor-pointer items-center justify-between rounded-md px-2.5 py-1.5 font-medium text-[0.8125rem] text-foreground transition-colors hover:bg-[var(--docs-surface-elevated)]">
+      <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-2.5 py-1.5 text-[0.8125rem] text-muted-foreground transition-colors hover:bg-[var(--docs-card)]/70 hover:text-foreground [&::-webkit-details-marker]:hidden">
         <span>{folder.name}</span>
         <ChevronIcon
           className={cn(
@@ -120,7 +123,7 @@ function SidebarFolder({
           )}
         />
       </summary>
-      <ul className="mt-1 ml-2 flex flex-col border-[var(--docs-border-subtle)] border-l pl-2">
+      <ul className="mt-0.5 mb-1 ml-3 flex flex-col gap-0.5 border-[var(--docs-panel-border)] border-l pl-1.5">
         {visibleIndexPage ? (
           <li>
             <SidebarPageLink page={visibleIndexPage} currentUrl={currentUrl} depth={depth + 1} />
@@ -147,7 +150,7 @@ function SidebarPageLink({
 }) {
   const isActive = page.url === currentUrl;
   const style = useMemo(
-    () => ({ "--sidebar-pad": `${0.5 + depth * 0.7}rem` }) as React.CSSProperties,
+    () => ({ "--sidebar-pad": `${0.625 + Math.max(0, depth - 1) * 0.5}rem` }) as React.CSSProperties,
     [depth],
   );
   return (
@@ -157,25 +160,20 @@ function SidebarPageLink({
         "relative flex items-center rounded-md py-1.5 text-[0.8125rem] leading-snug transition-colors",
         "pl-[var(--sidebar-pad)] pr-3",
         isActive
-          ? "bg-[var(--docs-accent-soft)] text-foreground"
-          : "text-muted-foreground hover:bg-[var(--docs-surface-elevated)] hover:text-foreground",
+          ? "font-medium text-[var(--docs-nav-active-fg)]"
+          : "text-muted-foreground hover:bg-[var(--docs-card)]/70 hover:text-foreground",
       )}
       style={style}
     >
       {isActive ? (
         <motion.span
-          layoutId="docs-sidebar-active-rail"
+          layoutId="docs-sidebar-active-bg"
           aria-hidden="true"
-          className="absolute top-1.5 bottom-1.5 left-0 w-0.5 rounded-full bg-[var(--docs-accent)]"
-          transition={ACTIVE_RAIL_TRANSITION}
+          className="absolute inset-0 rounded-md bg-[var(--docs-nav-active)]"
+          transition={ACTIVE_BG_TRANSITION}
         />
-      ) : (
-        <span
-          aria-hidden="true"
-          className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-transparent"
-        />
-      )}
-      <span className="truncate">{page.name}</span>
+      ) : null}
+      <span className="relative truncate">{page.name}</span>
     </Link>
   );
 }

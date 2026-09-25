@@ -5,12 +5,49 @@ translationStatus: pending
 updated: 2026-08-31
 ---
 
-Start with the automatic installer. It detects supported coding-agent CLIs and editors, registers
-the MCP server, and copies both Better Fullstack skills:
+<DocsBanner title="Read the skills" href="https://github.com/Marve10s/Better-Fullstack/tree/main/plugin/skills" actionLabel="Open on GitHub" tile="SKILL">
+See exactly what `scaffold-project` and `add-to-project` tell your agent to do.
+</DocsBanner>
 
-```bash
+<DocsQuickstart
+  title="Set up your agent"
+  description="The automatic installer detects supported coding-agent CLIs and editors, registers the MCP server, and copies both Better Fullstack skills. Add only the skills when your agent has shell access and no MCP."
+  actionLabel="Agent skill"
+  actionHref="#agent-skill"
+  npm={`# MCP server and skills for detected agents
 npx create-better-fullstack@latest install
-```
+
+# Only the two skills
+npx create-better-fullstack@latest install \\
+  --only skills`}
+  pnpm={`# MCP server and skills for detected agents
+pnpm dlx create-better-fullstack@latest install
+
+# Only the two skills
+pnpm dlx create-better-fullstack@latest install \\
+  --only skills`}
+  bun={`# MCP server and skills for detected agents
+bunx create-better-fullstack@latest install
+
+# Only the two skills
+bunx create-better-fullstack@latest install \\
+  --only skills`}
+  yarn={`# MCP server and skills for detected agents
+yarn dlx create-better-fullstack@latest install
+
+# Only the two skills
+yarn dlx create-better-fullstack@latest install \\
+  --only skills`}
+/>
+
+<DocsQuickLinks title="Quick links">
+  <DocsQuickLink title="MCP server" href="/docs/ai/mcp/" icon="plug" />
+  <DocsQuickLink title="Agent skill" href="#agent-skill" icon="sparkles" />
+  <DocsQuickLink title="Agent plugin" href="#agent-plugin" icon="puzzle" />
+  <DocsQuickLink title="Generated AI docs" href="#generated-ai-docs" icon="file" />
+  <DocsQuickLink title="CLI workflow" href="#cli-workflow" icon="terminal" />
+  <DocsQuickLink title="Install command" href="/docs/cli/install/" icon="download" />
+</DocsQuickLinks>
 
 All integration paths run the same generator code. Use the manual choices below when automatic
 installation is unavailable or you want a narrower setup.

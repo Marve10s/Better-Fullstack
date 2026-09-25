@@ -1,8 +1,10 @@
 import { MDXProvider } from "@mdx-js/react";
 import { Link } from "@tanstack/react-router";
-import { Suspense } from "react";
+import { type ReactNode, Suspense } from "react";
 
-import { TableOfContents } from "@/components/docs/table-of-contents";
+import { articleClassName, DocsLayout, DocsToc } from "@/components/docs/docs-layout";
+import { DocsCard, DocsCardGrid, DocsLinkItem, DocsLinkList } from "@/components/docs/mdx/docs-landing";
+import { getGuideCategories, guideIcon, GuidesSidebar } from "@/components/guides/guides-nav";
 import { localizedContentMdxComponents } from "@/components/mdx/localized-content-components";
 import { formatContentDate } from "@/lib/content/content-date";
 import {
@@ -14,36 +16,52 @@ import {
 import { localizeGuidePage, localizeTocEntries } from "@/lib/i18n/content-copy";
 import { m } from "@/paraglide/messages.js";
 
+const GUIDES_SIDEBAR = <GuidesSidebar />;
+
 export function GuidePageContent({ page }: { page: GuidePage }) {
-  if (!canRenderGuidePageContent()) return <GuidePageShell page={localizeGuidePage(page)} />;
+  const localizedPage = localizeGuidePage(page);
+  if (page.slug.length === 0) return <GuidesLanding page={localizedPage} />;
+  const canRender = canRenderGuidePageContent();
+  const header = <GuidePageHeader page={localizedPage} />;
+  // The layout stays mounted while the MDX chunk loads; only the article
+  // body and the "On this page" rail suspend.
   return (
-    <Suspense fallback={null}>
-      <GuidePageBody page={page} />
-    </Suspense>
-  );
-}
-
-function GuidePageShell({ page }: { page: GuidePage }) {
-  return (
-    <main className="docs-shell mx-auto grid w-full max-w-[94rem] grid-cols-1 border-[var(--docs-border-subtle)] border-t xl:grid-cols-[minmax(0,52rem)_17rem] xl:justify-center">
-      <article className="mx-auto w-full max-w-[52rem] px-5 py-12 sm:px-8 lg:py-14">
-        <GuidePageHeader page={page} isIndex={page.slug.length === 0} />
+    <DocsLayout
+      sidebar={GUIDES_SIDEBAR}
+      navLabel={m.navGuides()}
+      toc={
+        canRender ? (
+          <Suspense fallback={null}>
+            <GuidePageToc page={page} />
+          </Suspense>
+        ) : null
+      }
+    >
+      <article className={articleClassName(false)}>
+        {canRender ? (
+          <Suspense fallback={header}>
+            <GuidePageBody page={page} header={header} />
+          </Suspense>
+        ) : (
+          header
+        )}
       </article>
-    </main>
+    </DocsLayout>
   );
 }
 
-function GuidePageBody({ page }: { page: GuidePage }) {
+function GuidePageToc({ page }: { page: GuidePage }) {
+  return <DocsToc entries={localizeTocEntries(useGuidePageContent(page).toc)} />;
+}
+
+function GuidePageBody({ page, header }: { page: GuidePage; header: ReactNode }) {
   const content = useGuidePageContent(page);
   const Content = content.Component;
-  const localizedPage = localizeGuidePage(page);
-  const isIndex = localizedPage.slug.length === 0;
   const relatedGuides = getRelatedGuidePages(page).map(localizeGuidePage);
 
   return (
-    <main className="docs-shell mx-auto grid w-full max-w-[94rem] grid-cols-1 border-[var(--docs-border-subtle)] border-t xl:grid-cols-[minmax(0,52rem)_17rem] xl:justify-center">
-      <article className="mx-auto w-full max-w-[52rem] px-5 py-12 sm:px-8 lg:py-14">
-        <GuidePageHeader page={localizedPage} isIndex={isIndex} />
+    <>
+      {header}
 
         <div className="docs-prose">
           <MDXProvider components={localizedContentMdxComponents}>
@@ -53,10 +71,13 @@ function GuidePageBody({ page }: { page: GuidePage }) {
 
         {relatedGuides.length ? (
           <nav
-            className="mt-14 border-[var(--docs-border-subtle)] border-t pt-8"
+            className="mt-14 border-[var(--docs-panel-border)] border-t pt-8"
             aria-labelledby="related-guides"
           >
-            <h2 id="related-guides" className="font-semibold text-xl">
+            <h2
+              id="related-guides"
+              className="font-semibold text-[1.0625rem] text-foreground tracking-[-0.01em]"
+            >
               {m.guidesRelated()}
             </h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -65,13 +86,13 @@ function GuidePageBody({ page }: { page: GuidePage }) {
                   key={guide.url}
                   to="/guides/$"
                   params={{ _splat: guide.slug.join("/") }}
-                  className="rounded-lg border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 p-4 transition-colors hover:border-[var(--docs-accent)] hover:bg-[var(--docs-surface-elevated)]"
+                  className="rounded-xl border border-[var(--docs-panel-border)] p-4 transition-colors hover:border-[var(--docs-border-strong)] hover:bg-[var(--docs-panel)]"
                 >
                   <span className="block font-medium text-sm text-foreground">
                     {guide.frontmatter.title ?? guide.url}
                   </span>
                   {guide.frontmatter.description ? (
-                    <span className="mt-1 line-clamp-2 block text-muted-foreground text-xs">
+                    <span className="mt-1 line-clamp-2 block text-muted-foreground text-xs leading-5">
                       {guide.frontmatter.description}
                     </span>
                   ) : null}
@@ -80,49 +101,44 @@ function GuidePageBody({ page }: { page: GuidePage }) {
             </div>
           </nav>
         ) : null}
-      </article>
-      <aside className="hidden xl:block">
-        <TableOfContents toc={localizeTocEntries(content.toc)} />
-      </aside>
-    </main>
+    </>
   );
 }
 
-function GuidePageHeader({ page, isIndex }: { page: GuidePage; isIndex: boolean }) {
+function GuidePageHeader({ page }: { page: GuidePage }) {
+  const { category, title, description, updated, tags } = page.frontmatter;
   return (
     <header className="mb-10">
-      <p className="flex items-center gap-1.5 text-[0.8125rem] text-muted-foreground">
+      <p className="mb-3 flex items-center gap-1.5 font-medium text-[0.8125rem] text-muted-foreground">
         <Link to="/guides" className="transition-colors hover:text-foreground">
           {m.navGuides()}
         </Link>
-        {page.frontmatter.category && !isIndex ? (
+        {category ? (
           <>
-            <span aria-hidden>›</span>
-            <span className="text-foreground">{page.frontmatter.category}</span>
+            <span aria-hidden>/</span>
+            <span>{category}</span>
           </>
         ) : null}
       </p>
-      {page.frontmatter.title ? (
-        <h1 className="mt-5 font-semibold text-[2.5rem] text-foreground leading-[1.05] tracking-[-0.03em] md:text-5xl">
-          {page.frontmatter.title}
+      {title ? (
+        <h1 className="font-medium text-[2.25rem] text-foreground leading-[1.08] tracking-[-0.035em] md:text-[2.75rem]">
+          {title}
         </h1>
       ) : null}
-      {page.frontmatter.description ? (
-        <p className="mt-4 text-base text-muted-foreground leading-7 md:text-lg">
-          {page.frontmatter.description}
+      {description ? (
+        <p className="mt-4 text-base text-muted-foreground leading-7 md:text-[1.0625rem]">
+          {description}
         </p>
       ) : null}
-      {page.frontmatter.updated && !isIndex ? (
-        <p className="mt-4 text-[0.8125rem] text-muted-foreground">
-          {m.guidesUpdated({ date: formatContentDate(page.frontmatter.updated) })}
-        </p>
-      ) : null}
-      {page.frontmatter.tags?.length ? (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {page.frontmatter.tags.map((tag) => (
+      {updated || tags?.length ? (
+        <div className="mt-5 flex flex-wrap items-center gap-2 text-[0.75rem] text-muted-foreground">
+          {updated ? (
+            <span className="mr-1">{m.guidesUpdated({ date: formatContentDate(updated) })}</span>
+          ) : null}
+          {tags?.map((tag) => (
             <span
               key={tag}
-              className="rounded-md border border-[var(--docs-border-subtle)] bg-[var(--docs-surface)]/70 px-2 py-0.5 text-[0.75rem] text-muted-foreground"
+              className="rounded-full border border-[var(--docs-panel-border)] bg-[var(--docs-panel)] px-2 py-0.5"
             >
               {tag}
             </span>
@@ -130,5 +146,72 @@ function GuidePageHeader({ page, isIndex }: { page: GuidePage; isIndex: boolean 
         </div>
       ) : null}
     </header>
+  );
+}
+
+/**
+ * `/guides` index: starter packs as cards, then one two-column list per
+ * language category, built from guide frontmatter so it never drifts from
+ * the guides that exist.
+ */
+function GuidesLanding({ page }: { page: GuidePage }) {
+  const categories = getGuideCategories();
+  const packs = categories.find((category) => category.key === "Packs");
+  const languages = categories.filter((category) => category !== packs);
+  return (
+    <DocsLayout variant="landing" sidebar={GUIDES_SIDEBAR} navLabel={m.navGuides()}>
+      <article className={articleClassName(true)}>
+        <header className="mb-10">
+          <p className="mb-3 font-medium text-[0.8125rem] text-muted-foreground">
+            {m.navGuides()}
+          </p>
+          {page.frontmatter.title ? (
+            <h1 className="font-medium text-[2.25rem] text-foreground leading-[1.08] tracking-[-0.035em] md:text-[2.75rem]">
+              {page.frontmatter.title}
+            </h1>
+          ) : null}
+          {page.frontmatter.description ? (
+            <p className="mt-4 max-w-2xl text-base text-muted-foreground leading-7 md:text-[1.0625rem]">
+              {page.frontmatter.description}
+            </p>
+          ) : null}
+        </header>
+
+        {packs ? (
+          <section>
+            <h2 className="mb-4 font-semibold text-[1.0625rem] text-foreground tracking-[-0.01em]">
+              {packs.index?.frontmatter.title ?? packs.label}
+            </h2>
+            <DocsCardGrid>
+              {packs.pages.map((guide) => (
+                <DocsCard
+                  key={guide.url}
+                  title={guide.frontmatter.title ?? guide.url}
+                  href={guide.url}
+                  icon={guideIcon(guide, packs)}
+                >
+                  {guide.frontmatter.description}
+                </DocsCard>
+              ))}
+            </DocsCardGrid>
+          </section>
+        ) : null}
+
+        {languages.map((category) => (
+          <DocsLinkList key={category.key} title={category.label}>
+            {category.pages.map((guide) => (
+              <DocsLinkItem
+                key={guide.url}
+                title={guide.frontmatter.title ?? guide.url}
+                href={guide.url}
+                icon={guideIcon(guide, category)}
+              >
+                {guide.frontmatter.description}
+              </DocsLinkItem>
+            ))}
+          </DocsLinkList>
+        ))}
+      </article>
+    </DocsLayout>
   );
 }

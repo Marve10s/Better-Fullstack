@@ -7,34 +7,57 @@ import { TbMenu2 as Menu, TbX as X } from "react-icons/tb";
 
 import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 
+import { DocsPanelHeader } from "@/components/docs/docs-panel-header";
 import { DocsSidebar } from "@/components/docs/sidebar";
 import { TableOfContents } from "@/components/docs/table-of-contents";
 import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
 
+/** "On this page" rail, sticky below the navbar while the page scrolls. */
+export function DocsToc({ entries }: { entries: TocEntry[] }) {
+  return <TableOfContents toc={entries} className="top-[4.75rem] max-h-[calc(100dvh-6rem)]" />;
+}
+
+/** Reading column inside the content card; landing pages get a wider measure. */
+export function articleClassName(landing: boolean) {
+  return cn(
+    "mx-auto w-full px-5 py-10 sm:px-10",
+    landing ? "max-w-[72rem] lg:px-14 lg:py-14" : "max-w-[50rem] lg:py-12",
+  );
+}
+
 /**
- * Three-column docs shell rendered under `/docs/*`. Layout is:
+ * Docs shell rendered under `/docs/*` and `/guides/*`. The pages sit in a padded panel over a
+ * grainy purple backdrop:
  *
- *   ┌────────────────────────────────────────────────────────────┐
- *   │  navbar (from __root layout)                               │
- *   ├────────────┬──────────────────────────────────────┬────────┤
- *   │  sidebar   │  content (DocsArticle wraps MDX)     │  TOC   │
- *   │            │                                       │        │
- *   └────────────┴──────────────────────────────────────┴────────┘
+ *   ┌ grain ─────────────────────────────────────────────────────┐
+ *   │ ┌ panel ─────────────────────────────────────────────────┐ │
+ *   │ │  wordmark · version                          search    │ │
+ *   │ │  tabs                                                  │ │
+ *   │ │ ┌──────────┐ ┌ card ─────────────────────────┬───────┐ │ │
+ *   │ │ │ sidebar  │ │ article                       │  TOC  │ │ │
+ *   │ │ └──────────┘ └───────────────────────────────┴───────┘ │ │
+ *   │ └────────────────────────────────────────────────────────┘ │
+ *   └────────────────────────────────────────────────────────────┘
  *
  * The sidebar collapses into a slide-in drawer on small screens. The TOC
- * disappears entirely below `xl` so the reading column keeps a generous
- * measure on tablet-sized screens. Both rails are fixed at 17rem and the
- * reading column takes what is left, so the article's own `max-w` centers it
- * the same way at every width above `md`.
+ * lives inside the content card and disappears below `xl` so the reading
+ * column keeps a generous measure on tablet-sized screens.
  */
 export function DocsLayout({
   toc,
   variant = "default",
+  sidebar = <DocsSidebar />,
+  navLabel = m.navDocs(),
   children,
 }: {
-  toc: TocEntry[];
+  /** Right rail inside the content card; usually `<DocsToc>` behind a Suspense boundary. */
+  toc?: ReactNode;
   variant?: "default" | "landing";
+  /** Navigation rendered in the left rail and the mobile drawer. */
+  sidebar?: ReactNode;
+  /** Label for the mobile button that opens the sidebar drawer. */
+  navLabel?: string;
   children: ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -64,44 +87,48 @@ export function DocsLayout({
   }, [mobileOpen]);
 
   return (
-    <div className="docs-shell min-h-[calc(100vh-3.5rem)] border-[var(--docs-border-subtle)] border-t">
-      {/*
-        On small screens the nav opens from a sticky bar under the navbar
-        rather than a floating circle, which used to sit on top of the article
-        text and could not be dismissed.
-      */}
-      <div className="sticky top-14 z-20 border-[var(--docs-border-subtle)] border-b bg-background/95 backdrop-blur md:hidden">
-        <button
-          type="button"
-          onClick={() => setMobileOpen(true)}
-          aria-label={m.docsOpenNavigation()}
-          className="flex h-11 items-center gap-2 px-5 text-[0.8125rem] text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <Menu className="size-4" />
-          {m.navDocs()}
-        </button>
-      </div>
+    // The frame starts behind the sticky navbar (h-14 plus a 1px border) so the
+    // frosted bar has grain under it and the panel slides beneath it on scroll.
+    <div className="docs-grain -mt-[57px] min-h-dvh p-2 pt-[calc(57px+0.5rem)] sm:p-4 sm:pt-[calc(57px+1rem)] lg:p-8 lg:pt-[calc(57px+2rem)]">
+      <div className="docs-panel mx-auto w-full max-w-[100rem] rounded-2xl sm:rounded-[1.25rem]">
+        <DocsPanelHeader />
 
-      <div
-        className={cn(
-          "mx-auto grid w-full max-w-[100rem] grid-cols-1 md:grid-cols-[17rem_minmax(0,1fr)]",
-          variant === "default" && "xl:grid-cols-[17rem_minmax(0,1fr)_17rem]",
-        )}
-      >
-        {/* Desktop sidebar */}
-        <aside className="hidden border-[var(--docs-border-subtle)] border-r md:block">
-          <div className="sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto">
-            <DocsSidebar />
-          </div>
-        </aside>
+        {/*
+          On small screens the nav opens from a bar at the top of the panel
+          rather than a floating circle, which used to sit on top of the
+          article text and could not be dismissed.
+        */}
+        <div className="px-2 pb-2 md:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            aria-label={m.docsOpenNavigation()}
+            className="flex h-10 w-full items-center gap-2 rounded-lg px-2 text-[0.8125rem] text-muted-foreground transition-colors hover:bg-[var(--docs-card)] hover:text-foreground"
+          >
+            <Menu className="size-4" />
+            {navLabel}
+          </button>
+        </div>
 
-        <main className="min-w-0">{children}</main>
-
-        {variant === "default" ? (
-          <aside className="hidden xl:block">
-            <TableOfContents toc={toc} />
+        <div className="grid grid-cols-1 gap-3 px-2 pb-2 sm:px-3 sm:pb-3 md:grid-cols-[15.5rem_minmax(0,1fr)]">
+          {/* Desktop sidebar */}
+          <aside className="hidden md:block">
+            <div className="sticky top-[4.75rem] max-h-[calc(100dvh-6rem)] overflow-y-auto">
+              {sidebar}
+            </div>
           </aside>
-        ) : null}
+
+          <main
+            className={cn(
+              "docs-card min-w-0 rounded-xl sm:rounded-2xl",
+              variant === "default" && "xl:grid xl:grid-cols-[minmax(0,1fr)_15rem]",
+            )}
+          >
+            <div className="min-w-0">{children}</div>
+            {/* The rail stretches to the card's height so the TOC can stick inside it. */}
+            {variant === "default" ? <aside className="hidden xl:block">{toc}</aside> : null}
+          </main>
+        </div>
       </div>
 
       {/* Mobile slide-in drawer */}
@@ -122,7 +149,7 @@ export function DocsLayout({
             />
             <motion.div
               className={cn(
-                "absolute left-0 top-0 flex h-full w-72 flex-col border-[var(--docs-border-subtle)] border-r bg-[var(--docs-surface-elevated)]",
+                "absolute left-0 top-0 flex h-full w-72 flex-col border-[var(--docs-panel-border)] border-r bg-[var(--docs-panel)]",
               )}
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
@@ -131,7 +158,7 @@ export function DocsLayout({
             >
               <div className="flex items-center justify-between border-[var(--docs-border-subtle)] border-b px-4 py-3">
                 <span className="font-mono text-[0.72rem] uppercase text-muted-foreground">
-                  {m.navDocs()}
+                  {navLabel}
                 </span>
                 <button
                   type="button"
@@ -148,7 +175,7 @@ export function DocsLayout({
                 purely structural and stays free of event handlers.
               */}
               <div className="flex-1 overflow-y-auto">
-                <DocsSidebar />
+                {sidebar}
               </div>
             </motion.div>
           </motion.div>
