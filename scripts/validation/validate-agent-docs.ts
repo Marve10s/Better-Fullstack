@@ -100,7 +100,6 @@ function requireIndexed(directory: string, indexPath: string, additionalIndexes:
 requireIndexed("docs/guidelines", "docs/guidelines/README.md", ["AGENTS.md"]);
 requireIndexed("docs/projects/active", "docs/projects/README.md");
 requireIndexed("docs/projects/backlog", "docs/projects/README.md");
-requireIndexed("docs/projects/completed", "docs/projects/README.md");
 requireIndexed("docs/reference", "docs/reference/README.md");
 requireIndexed("docs", "docs/README.md");
 
@@ -151,14 +150,9 @@ const stalePlanningClaims = [
     description: "lists shipped lifecycle provenance or recovery work as unfinished",
   },
   {
-    path: "docs/projects/backlog/docker-and-devcontainers.md",
+    path: "docs/projects/backlog/integrations.md",
     pattern: /- \[ \] Add `--monorepo false` or `--single-app` flag/u,
     description: "lists the shipped constrained single-app mode as unimplemented",
-  },
-  {
-    path: "docs/projects/completed/deployment-docs-and-docker-foundation-2026-05-21.md",
-    pattern: /^- (?:DevContainer generation|Non-monorepo \/ single-app mode)\.$/mu,
-    description: "lists shipped deployment foundation work as still planned",
   },
 ];
 
@@ -184,7 +178,7 @@ for (const path of markdownFiles) {
   const text = readFileSync(resolve(root, path), "utf8");
   if (text.includes("docs/plans/")) errors.push(`${path}: references removed docs/plans/ path`);
   if (path.startsWith("docs/projects/backlog/") && /^\s*-\s*\[[xX]\]/mu.test(text)) {
-    errors.push(`${path}: contains completed checklist items; move shipped history to completed/`);
+    errors.push(`${path}: contains completed checklist items; remove finished work from the backlog`);
   }
 }
 

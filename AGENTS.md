@@ -18,22 +18,19 @@ See `docs/guidelines/` for deeper reference on these topics:
 - `telemetry-privacy-and-internal-tools.md` - telemetry allowlists, ingest privacy, aggregate access, and fail-closed internal tools
 - `public-docs-i18n-and-seo.md` - public content authority, translation fallback, schema-derived references, and agent/SEO surfaces
 - `stack-options-and-compatibility.md` - schema source of truth, canonical option metadata, aliases, and compatibility rules
-- `generator-change-playbook.md` - how option changes flow through templates, snapshots, CLI output, and web previews
+- `generator-change-playbook.md` - generated-output constraints, template changes, and verification
 - `web-builder-and-url-state.md` - stack builder state, URL parsing, lazy-route constraints, and preview wiring
 - `testing-release-and-upstream.md` - targeted verification commands, release guard expectations, and upstream backport workflow
 - `preview-publishing-security.md` - PR preview threat model, trusted artifact boundary, environment setup, and workflow guard
-- `scripted-cli-runs.md` - safe non-interactive CLI usage, prompt-avoidance flags, and matrix-testing caveats
-- `production-package-testing.md` - how to use the `testing/` workspace for published npm-package validation cycles
-- `template-output-and-validation.md` - template conditional logic, generated output validation, sync test discipline, and framework-specific constraints
-- `remotion-video-style.md` - default visual style, color system, motion rules, and branding for Remotion videos in this project
-- `design-reading-guide.md` - ordered index of design-related markdown (agent skills + BF video style), precedence when sources conflict, and commands to verify coverage
-- `adding-new-tool-options/` - **read this subfolder when adding any new library, tool, or category** to any ecosystem (TypeScript, Rust, Go, Python). Covers every file that must be touched, with worked examples, template handler reference, test patterns, and routing edge cases (Convex skips, self-backend, frontend array detection, processor ordering)
+- `adding-new-tool-options/` - **read this subfolder when adding any new library, tool, or category** to any ecosystem (TypeScript, Rust, Go, Python). Use its README for the source checklist, graph/CLI/MCP wiring, routing constraints, and verification
 
 ## Web UI
 
-`apps/web` has established primitives - tabs, copy buttons, command/code bars, cards. Before adding any UI control, grep `apps/web/src/components` for an existing one and reuse it. Do not introduce a second visual language for a control that already exists (no pills where the app uses tabs). New visual patterns need Ibrahim's sign-off; `docs/guidelines/design-reading-guide.md` covers new visual direction, not substitutes for existing components.
+`apps/web` has established primitives - tabs, copy buttons, command/code bars, cards. Before adding any UI control, grep `apps/web/src/components` for an existing one and reuse it. Do not introduce a second visual language for a control that already exists (no pills where the app uses tabs). New visual patterns need Ibrahim's sign-off.
 
 ## Workflow
+
+- Use `testing/README.md` for prompt-free scaffolds, published-package validation, and runtime-proof lanes.
 
 - Never start the dev server (`turbo dev`, `bun run dev`, `vite dev`, etc.) unless explicitly asked to.
 - After code changes, run the smallest verification set that proves the modified area still works. Prefer package-local `bun run lint`, `bun run test`, `bun run build`, or specific `bun test <file>` commands over broad workspace sweeps.

@@ -1,43 +1,40 @@
-# Web Builder And URL State
+# Web builder and URL state
 
-Use this guide for changes in `apps/web` that affect stack selection, builder state, preview generation, routes, or homepage sections.
+Use this guide for stack selection, share URLs, preview generation, and builder routing.
 
-## Builder state flow
+## State ownership
 
-- `packages/types/src/stack/stack-translation.ts` defines the shared `StackState` shape, defaults, short URL params, parsing, and serialization.
-- `apps/web/src/lib/stack/stack-defaults.ts` re-exports the shared stack state type and defaults under web-facing names.
-- Web callers import shared stack parsing, serialization, and normalization helpers directly from `@better-fullstack/types/stack-translation`.
-- `apps/web/src/lib/builder/preview-config.ts` converts normalized stack state into preview data.
-- Some UI category keys intentionally differ from stack keys. The TypeScript AI category is rendered as `TECH_OPTIONS.ai`, but stack state and command generation use `aiSdk`; map the category to the stack key anywhere selection state is read or written.
+- `packages/types/src/stack/stack-translation.ts` owns `StackSelectionState`, defaults, URL keys,
+  parsing, normalization, and serialization. Web re-exports the type as `StackState` from
+  `apps/web/src/lib/stack/stack-defaults.ts`.
+- Import shared helpers from `@better-fullstack/types/stack-translation`; do not add a web-only
+  parser or alias map.
+- `apps/web/src/lib/builder/preview-config.ts` projects normalized state into generator input.
+- UI category keys can differ from state keys: `TECH_OPTIONS.ai` maps to `aiSdk`. Preserve the
+  mapping in selection reads, writes, and command generation.
+- Add shareable fields to shared defaults and `STACK_SELECTION_URL_KEYS`. Check the search schema
+  in `apps/web/src/lib/stack/stack-search-schema.ts` and use its shared `EcosystemSchema`.
 
-If URL parsing changes without normalization, alias handling usually breaks somewhere between shared links and preview rendering.
+## Rendering and routing
 
-## Performance and routing constraints
+- Reuse existing controls in `apps/web/src/components`. Labels and category order should consume
+  shared metadata; for example, the Go builder order derives from `GO_CATEGORY_ORDER`.
+- Keep ecosystem visibility filtering in `apps/web/src/components/stack-builder/utils.ts`
+  consistent across every option render path. A disabled reason does not hide an irrelevant option.
+- Keep heavy parsing and generator imports behind the builder's lazy boundaries. Check the current
+  `stack-builder-page` entry before changing eager route imports or adding `validateSearch`.
+- Route modules generate `apps/web/src/routeTree.gen.ts` during the web build. Keep scratch files
+  outside `apps/web/src/routes`; do not assume a custom ignore rule exists in Vite configuration.
+- Docs source uses `virtual:content-meta`, `virtual:localized-content`, and MDX loaders with the
+  `@web-root/content/` alias. Preserve browser/SSR loader separation in `apps/web/vite.config.ts`.
+- Route loader data must be serializable. Resolve MDX components in the rendering layer.
 
-- Do not move heavy search parsing or schema validation into eager route code on `apps/web/src/routes/new.tsx` unless you have measured the bundle cost.
-- Route-level `validateSearch` can pull `zod` and search-schema code into the main client bundle. Prefer parsing inside the lazy-loaded builder path.
-- After adding or removing route files, `apps/web/src/routeTree.gen.ts` can be stale until a route-generator run such as `vite build`.
-- TanStack Start route ignore settings are read from `tanstackStart({ router: ... })` in `apps/web/vite.config.ts`. Scratch or design route files under `apps/web/src/routes` must match `routeFileIgnorePrefix` or `routeFileIgnorePattern` or they will be pulled into `routeTree.gen.ts`.
-- Docs content lives in `apps/web/content/docs`; `import.meta.glob` calls from `apps/web/src/lib/docs/*` should use `../../../content/docs/**` paths.
-- TanStack Start loaders must stay serializable. Docs routes should return slug/frontmatter from loaders and resolve MDX components inside route components.
+## Verification
 
-## Editing guidance
+Use focused preview, state, and command-parity tests in `apps/web/test/builder/` and
+`apps/web/test/stack/`. Run web lint for source changes and `bun run build:web` when route generation
+or bundling changes. Web lint compiles Paraglide, so inspect pre-existing generated changes first.
 
-- When adding a stack field to shareable URLs, update `DEFAULT_STACK_SELECTION` and `STACK_SELECTION_URL_KEYS` in `packages/types/src/stack/stack-translation.ts`; parsing and serialization are derived from those shared maps.
-- Keep builder labels aligned with canonical metadata from `packages/types` unless there is a deliberate UX reason to diverge.
-- Before cleaning up homepage sections, check whether a component is actually imported by `apps/web/src/routes/index.tsx`. The home component directory can contain dead marketing sections.
-- For SvelteKit or SolidStart with Tailwind + DaisyUI, plugin activation lives in `apps/web/src/app.css` via `@plugin "daisyui";`, not in `tailwind.config.ts`.
-- Keep `apps/web/src/lib/stack/stack-search-schema.ts` on the shared `EcosystemSchema` when adding or renaming ecosystems so URL parsing does not drift from `@better-fullstack/types`.
-
-## Ecosystem and auth rendering
-
-- Go builder rendering depends on `GO_CATEGORY_ORDER` in `packages/types/src/catalog/option-metadata.ts`; `ECOSYSTEM_CATEGORIES.go` in `apps/web/src/lib/stack/constant.ts` is derived from that shared order. If a Go option exists in the metadata but not the builder UI, check the shared ecosystem order first.
-- Auth capability metadata is intentionally global across ecosystems in `packages/types`, but the web builder should filter visible auth choices by ecosystem in `apps/web/src/components/stack-builder/utils.ts`. Do not assume disabled reasons alone are enough to produce the desired builder UI.
-- The builder has two auth option render paths in `apps/web/src/components/stack-builder/stack-builder.tsx` (sidebar accordion + main category grid). Apply auth visibility filtering in both paths to avoid inconsistent options between sidebar and main content.
-
-## Useful verification
-
-- `bun run --cwd apps/web lint`
-- `bun test apps/web/test/builder/preview-config.test.ts`
-- `bun run build:web` when route generation, bundling, or preview wiring changed
-- For Builder Playwright tests, click option cards directly unless a section is in `INITIALLY_COLLAPSED_SET`; clicking an already-open `category-toggle-*` collapses it. Scope `command-output` locators to visible elements.
+For browser checks, inspect the current controls rather than assuming an old accordion layout.
+Exercise the changed selection, its shared URL, and the resulting preview or command. Do not start
+a development server unless the user asks.

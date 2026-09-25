@@ -1,6 +1,6 @@
 # Telemetry Privacy and Internal Tools
 
-Use this guide for CLI telemetry, analytics ingest, aggregate dashboards, decision-room access, and
+Use this guide for CLI/browser telemetry, analytics ingest, owner dashboard access, and
 any event or query that could expose user or operational data.
 
 Active ingest validation and PostHog delivery live in `apps/web/src/lib/telemetry`, served by the web
@@ -65,7 +65,8 @@ An identifier sanitizer is not enough for a field whose semantic meaning is user
 
 - Use known statuses: started, succeeded, failed, cancelled.
 - Keep success unknown for started/cancelled when appropriate.
-- Send normalized error names only when they fit the identifier grammar.
+- Accept only registered error names from `packages/types/src/telemetry/telemetry.ts`.
+  Identifier-shaped strings are not sufficient.
 - Map known setup failures to stable identifiers.
 - Drop raw failure text.
 - Bound numeric values and reject non-finite/negative inputs.
@@ -85,28 +86,24 @@ An identifier sanitizer is not enough for a field whose semantic meaning is user
 - Validate content type, payload size, event type, key allowlist, value types, array lengths, and
   identifier lengths.
 - Strip or reject unknown keys before storage.
-- Keep raw ingest separate from public aggregate queries.
+- Keep ingest independent of reporting. The repository exposes no public event-query endpoint.
 - Rate-limit and monitor abuse without logging forbidden payload bodies.
 - Tests must send adversarial paths, secrets, free-form strings, nested settings, oversized arrays,
   invalid numbers, and unknown keys.
 
-## Aggregate Analytics
+## Owner dashboard access
 
-- Public/product dashboards consume aggregates, not raw user event bodies.
-- Small cohorts must not reveal a single user’s stack choices.
-- Query filters must be bounded and enumerated.
-- Cache keys must not contain secrets or raw query text.
-- A UI restriction is not authorization; enforce access in server queries.
+`apps/web/src/lib/telemetry/telemetry-data.server.ts` authenticates `/telemetry` and redirects to
+PostHog. It does not query or render event data. PostHog requires its own account access.
 
-## Internal Decision Tools
-
-- Fail closed when required owner identity or shared secret is missing.
-- Use a cryptographically strong secret; repository guidance requires at least 32 characters.
-- Compare authorization on the server for every protected loader/action/query.
-- Never expose the shared secret to client bundles, page data, logs, analytics, or error text.
-- Owner username checks and shared-secret checks solve different problems; keep both when both are
-  part of the access model.
-- Do not add a permissive development fallback that can reach production.
+- The server checks HTTP Basic username `owner` and `TELEMETRY_DASHBOARD_SECRET` using
+  `telemetry-auth.server.ts`. Missing or shorter-than-32-character secrets fail closed.
+- `POSTHOG_DASHBOARD_URL` must match the allowed EU/US PostHog project/dashboard URL form.
+  Missing or invalid destinations return an unconfigured result.
+- Keep responses private and uncached, vary on authorization, and exclude the route from indexing.
+- Never expose credentials in client bundles, loader data, logs, analytics, or error text.
+- Reporting definitions live in `scripts/analytics/posthog-dashboard.json`; deployment and archive
+  procedures live in `docs/reference/posthog-analytics-operations.md`.
 
 ## Verification
 

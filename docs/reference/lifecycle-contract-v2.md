@@ -1,8 +1,8 @@
 # Lifecycle contract version 2
 
 Better Fullstack returns a versioned lifecycle object for existing-project plans and results. The
-current contract version is `"2"`. The CLI source of truth is
-`apps/cli/src/lifecycle/lifecycle-contract.ts`; MCP output schemas are in
+current contract version is `"2"`. The shared source of truth is
+`packages/project-lifecycle/src/contracts/lifecycle.ts`; MCP output schemas are in
 `apps/cli/src/mcp/mcp-lifecycle-output-schemas.ts`.
 
 ## Client rule

@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readdir } from "node:fs/promises";
 
 const INDEX_PATH = "docs/projects/README.md";
-const LIFECYCLES = ["active", "backlog", "completed"] as const;
+const LIFECYCLES = ["active", "backlog"] as const;
 
 async function projectFiles(): Promise<string[]> {
   const entries = await Promise.all(
@@ -16,7 +16,7 @@ async function projectFiles(): Promise<string[]> {
 }
 
 function indexedProjects(source: string): string[] {
-  return [...source.matchAll(/^- `((?:active|backlog|completed)\/[^`]+\.md)`/gm)]
+  return [...source.matchAll(/^- `((?:active|backlog)\/[^`]+\.md)`/gm)]
     .flatMap((match) => (match[1] ? [match[1]] : []))
     .sort();
 }
@@ -66,17 +66,14 @@ describe("project lifecycle registry", () => {
     ]);
     const active = activeRows(index);
 
-    expect(active.map((row) => row.path).sort()).toEqual([
-      "active/capability-recipe-evidence.md",
-      "active/documentation-follow-ups.md",
-      "active/platform-features.md",
-    ]);
+    const activeFiles = (await projectFiles()).filter((path) => path.startsWith("active/"));
+    expect(active.map((row) => row.path).sort()).toEqual(activeFiles);
     for (const row of active) {
       expect(roadmap).toContain(`## ${row.lane}`);
     }
   });
 
-  test("Phase 0 is the first stop-the-line roadmap lane", async () => {
+  test("keeps phase ordering and canonical routing stable", async () => {
     const roadmap = await Bun.file("docs/next-updates-roadmap.md").text();
     const reproducibleClaims = roadmap.indexOf("## Phase 0: make every claim reproducible");
     const supportedUpdates = roadmap.indexOf(
