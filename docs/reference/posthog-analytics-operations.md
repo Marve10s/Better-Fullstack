@@ -1,4 +1,4 @@
-# Analytics migration and operations
+# Analytics operations and archives
 
 PostHog is the destination for Better Fullstack analytics. The web server owns the public
 `/api/analytics/ingest` endpoint. `apps/web/src/lib/telemetry` validates events and forwards them to
@@ -10,10 +10,14 @@ are gone, including queries, backfills, the old forwarding bridge, and unused co
 The web app no longer contains the aggregate decision dashboard. Convex remains available as a backend choice in generated
 user projects; that product capability is separate from Better Fullstack's analytics infrastructure.
 
-## Destination status
+## Recorded destination and cutover
+
+The following configuration and production checks were recorded on 2026-09-15. Recheck live
+connection, project, and dashboard settings before an operational change; this repository audit
+does not verify the current hosted state.
 
 The separate `posthog_betterfulstack` MCP connection uses OAuth for Better Fullstack's EU project
-`275138`, currently named **Default project**, in organization `01a0a4d2-d0db-0000-fe30-bad1bdb7dc29`.
+`275138`, then named **Default project**, in organization `01a0a4d2-d0db-0000-fe30-bad1bdb7dc29`.
 GiftSong retains its separate plugin connection.
 
 The private [Better Fullstack analytics dashboard](https://eu.posthog.com/project/275138/dashboard/954254)
@@ -45,44 +49,22 @@ builder disables telemetry execution without compiling that runtime override int
 The existing `/telemetry` page authenticates the owner before redirecting to PostHog. PostHog
 requires its own login. No event bodies or PostHog management credentials are served by that route.
 
-## Cutover order
-
-1. Reuse the configured Better Fullstack EU project and private dashboard. Verify the project
-   identity before setting the token. Keep GiftSong's connection separate.
-2. Configure and deploy the web settings above. Verify one consenting page view, route exit,
-   builder scroll, ZIP download and CLI event. Check that disabling telemetry, Do Not Track and
-   Global Privacy Control prevent browser capture.
-3. Publish the new CLI through the normal release workflow and verify its effective telemetry
-   default and delivery to the web endpoint.
-4. Before shutting down either hosted Convex deployment, export a fresh full backup with files.
-   The verified production source is `igrimanigroman:better-fullstack:prod`. Identify the separate
-   legacy deployment explicitly and export it too if it contains additional history. Do not assume
-   the production backup covers that older service. Keep environment backups separate and private.
-5. Stop old ingest at the hosting service, wait for in-flight requests to finish, then take and
-   verify the final snapshot. Retain the pre-stop snapshot too. Record the last event timestamp,
-   unique row counts, monthly totals and ZIP checksum, and build the independent archive below.
-6. Reconcile the final archive with the September 15 snapshot and events collected since it. Copy
-   the raw ZIP and sanitized archive to independent backup storage before deleting any hosted data.
-   Shut down the old deployments after preservation is verified. Remove obsolete Convex deployment
-   credentials from hosting and CI settings after confirming they have no remaining consumers.
-7. Monitor the PostHog event counts, capture failures and free-plan usage after cutover.
+## Preserved history
 
 The hosted Better-Fullstack Convex project was deleted on 2026-09-15 after the final export was
 reconciled against the archive (12,390 events, all 12,361 earlier IDs preserved). Raw exports and
 archives live outside the repository in the owner's local backup folder and iCloud Drive.
 
-There is no forwarding bridge in the final architecture. Already-published CLI versions have the
-old Convex hostname compiled in; once it is retired, those versions stop reporting analytics.
-Their product commands still work because telemetry failures are nonfatal. Their users need the
-new CLI release to report to PostHog. Old history remains available in the independent archive.
+There is no forwarding bridge. CLI versions built with the old Convex hostname stop reporting
+analytics after that endpoint is retired. Their product commands still work because telemetry
+failures are nonfatal. Reporting to PostHog requires a CLI release built with the new ingest URL. Old history remains available in the independent archive.
 
 ## Historical import
 
-PostHog's current [migration documentation](https://posthog.com/docs/migrate) requires enrollment in
-a paid Product Analytics plan for historical migrations, although the import itself has no standard
-ingestion fee. The no-card free plan is not a verified import destination. Do not run `--apply`
-until the owner accepts that plan requirement and the destination is configured. Do not enable billing
-as part of running the script. All imported timestamps must be at least 48 hours old.
+At the 2026-09-15 review, PostHog historical migration required a paid Product Analytics plan, so
+import was left unapplied. Recheck [migration requirements](https://posthog.com/docs/migrate) and
+the destination's plan before an import. Obtain authorization for any required billing change;
+running the script does not authorize one. The importer requires timestamps at least 48 hours old.
 
 The importer reads the sanitized `posthog-events.jsonl` and `manifest.json` from a local archive.
 It needs no Convex account, CLI, schema or running deployment. It verifies the checksum and unique
@@ -97,7 +79,7 @@ rows and prints monthly counts; it was verified against all 12,361 saved product
 bun run scripts/analytics/import-archive.ts
 ```
 
-After accepting the historical migration plan requirement, set `POSTHOG_PROJECT_TOKEN`,
+Once destination requirements and upload authorization are satisfied, set `POSTHOG_PROJECT_TOKEN`,
 `POSTHOG_HOST` and `BFS_ANALYTICS_IMPORT_CHECKPOINT` to a new checkpoint file outside the repository.
 This upload command has not been run against the destination:
 
@@ -113,10 +95,10 @@ queryable; reconcile monthly totals after ingestion completes. The importer neve
 
 ## Backup and long-term access
 
-PostHog's no-card free plan has a rolling one-year event retention window. Paid plans provide seven
-years. Older events can fall outside query results; saved dashboards do not preserve those rows.
-See [event retention](https://posthog.com/docs/data/events-retention). Keep an independent archive
-for multi-year reporting and export new events before they age out of that window.
+The 2026-09-15 review recorded a one-year retention window for the no-card plan and seven years
+for paid plans. Verify the actual project's current [event retention](https://posthog.com/docs/data/events-retention)
+before choosing an export schedule. Saved dashboards do not preserve underlying rows. Keep an
+independent archive and export new events before the applicable retention deadline.
 
 Keep the original Convex ZIP, including its aggregate tables, intact. To create a separate sanitized
 analytics archive without contacting Convex or PostHog, set `CONVEX_BACKUP_ZIP` to the production
@@ -143,11 +125,12 @@ audit. Conversion version 2 restores envelope fields buried in old `stack` recor
 dimensions from `options`, and counts universal database selections once. It preserves all 12,361
 event IDs and timestamps. In this backup, it restores envelope fields on 377 events and corrects
 library selections on 6,549 events. Use the new conversion for import; the original ZIP and first
-archive remain intact. Reconcile events collected after the snapshot before retiring Convex.
+archive remain intact. The final 12,390-event export described above supersedes this earlier
+snapshot for complete pre-cutover history; retain both for comparison.
 
-Future PostHog exports are not configured yet. Before the oldest new event reaches one year, export
-it to independent storage and verify counts and timestamps. The historical archive protects past
-events only; creating it does not automatically archive future PostHog events.
+Recurring PostHog exports were not configured at cutover. Verify whether they now exist, and
+export new events before their retention deadline with checked counts and timestamps. The historical
+archive protects past events only; creating it does not automatically archive future PostHog events.
 
 ## What the reports mean
 
@@ -186,8 +169,8 @@ At fewer than 10,000 monthly pageviews, one view plus up to seven engagement che
 adds at most about 80,000 events to the observed product-event baseline. Normal visits generate
 about two events. BFCache restores can add terminal checkpoints; real traffic remains the measure.
 Even a 70,000-event stress baseline plus 80,000 page events is
-well below the current one-million monthly analytics-event allowance. Historical migration has the
-separate paid-plan prerequisite described above. This is a capacity estimate,
+below the one-million monthly analytics-event allowance recorded at the September 15 review.
+Historical migration requirements are separate. This is a dated capacity estimate,
 not a guarantee against bots, growth or changed pricing. Check the project's Billing page.
 
 Sources: [PostHog pricing](https://posthog.com/pricing),

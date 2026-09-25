@@ -20,18 +20,19 @@ Same-repository preview artifacts can contain arbitrary contributor code; publis
 
 Configure the `npm-preview` environment as follows:
 
-- create a package-scoped `NPM_PREVIEW_TOKEN` only as an environment secret of that name; verify no repository or organization secret named `NPM_PREVIEW_TOKEN` exists, and never reuse or fall back to the release workflow's repository-level `NPM_TOKEN`;
+- create a package-scoped `NPM_PREVIEW_TOKEN` only as an environment secret of that name; verify no repository or organization secret named `NPM_PREVIEW_TOKEN` exists, and never reuse or fall back to the release workflow's `NPM_TOKEN` in the separate `npm-publish` environment;
 - require one or more trusted maintainers as reviewers;
 - disable administrator bypass;
 - restrict deployment branches to the protected default branch (the `workflow_run` workflow runs from that branch).
 
-For a repository with two or more trusted maintainers, enable **Prevent self-review** so the PR author cannot approve publication. This repository currently has one owner and one eligible reviewer, so `prevent_self_review` is deliberately disabled; enabling it would deadlock owner-authored previews. Enable it when a second trusted maintainer is available.
+Enable **Prevent self-review** when a second trusted reviewer can approve owner-authored previews.
+A single-reviewer setup needs an explicit decision about that setting to avoid blocking every
+owner-authored preview.
 
-### Current activation state (2026-08-09)
-
-The `npm-preview` environment exists with Marve10s as its required reviewer, administrator bypass disabled, and deployment restricted to protected branches. `NPM_PREVIEW_TOKEN` is not configured yet, so preview publication is intentionally inactive and fails closed. Adding that package-scoped environment secret is the remaining owner action; do not add the `preview` label until it is ready for an owner-controlled drill.
-
-The existing repository-level `NPM_TOKEN` belongs to the release workflow and is not a preview fallback. Moving that credential into the separate `npm-publish` environment is a distinct release-hardening operation; never copy its value into `npm-preview`.
+Environment configuration and secret presence are external state. Inspect GitHub environment
+metadata before a publishing drill; this document does not establish that a token or reviewer is
+currently configured. Never print secret values. The release workflow already uses the separate
+`npm-publish` environment; do not copy its credential into `npm-preview`.
 
 Use a granular npm access token with read/write access scoped only to the four preview packages. Enable npm's 2FA bypass for that token only if publishing on the owner account requires it, choose the shortest practical expiration, and rotate it before expiry. Do not add any other secrets to the build, smoke, or comment jobs.
 

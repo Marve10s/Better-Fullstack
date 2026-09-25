@@ -1,6 +1,8 @@
 # Testing, Release, And Upstream
 
 Use this guide when deciding what to verify after changes or when working on release-facing and upstream-maintenance tasks.
+Scaffold commands, published-package cycles, and runtime-proof procedures live in
+[testing/README.md](../../testing/README.md).
 
 ## Default verification strategy
 
@@ -17,13 +19,11 @@ For changes that affect stack options, generated output, compatibility, or previ
 bun run test:release
 ```
 
-That release lane currently covers:
-
-- installable plugin bundle validation
-- CLI template snapshots
-- AI example generated-output regression checks
-- CLI/web option parity
-- web preview config tests
+The root `package.json` is authoritative for the lane's exact composition. It builds core packages
+and checks CLI startup, docs/plugin/workflow contracts, public evidence, capability claims,
+recommendations, update qualification, lifecycle/MCP contracts, template output, and builder parity.
+Runtime and published-package proof have separate commands; passing structural tests does not
+establish that a generated application runs.
 
 Additional focused release-facing checks:
 
@@ -47,9 +47,17 @@ Additional focused release-facing checks:
 - `.github/workflows/test.yaml` runs `Release Guard`, lint, tests, and the web build in parallel.
   The final `Build Check` preserves the required check name and fails when any prerequisite fails.
   Release Guard owns the core package and CLI builds; Web Build owns the Vercel-parity web build.
-- `.github/workflows/release.yaml` also runs the release verification lane before publishing packages.
-- `.github/workflows/pr-preview-build.yaml` builds preview tarballs without secrets. Once the protected `npm-preview` environment has its package-scoped token, `.github/workflows/pr-preview.yaml` publishes them and runs the published-package smoke lane; it fails closed while that owner setting is absent. `.github/workflows/release.yaml` also runs the published-package smoke lane after publishing npm packages, because that check needs the real npm tag/version to be visible.
-- Published packages are versioned independently inside the release workflow. Do not hand-edit version bumps casually during unrelated feature work.
+- `.github/workflows/release.yaml` starts after successful required CI on the exact main-branch
+  release commit. It packs artifacts, runs generated-project proof, captures upgrade fixtures,
+  qualifies the previous fixture, and binds the evidence into a SHA-bound release receipt before
+  publication. It does not independently rerun the root `test:release` command.
+- `.github/workflows/pr-preview-build.yaml` builds preview tarballs without secrets. Publication
+  requires the protected `npm-preview` environment and its package-scoped credential. Preview and
+  release workflows run published-package smoke checks after npm publication. Verify live
+  environment settings separately; their current values are not recorded by the workflow file.
+- Release artifacts use the versions already recorded in each package manifest. The workflow
+  checks the release commit version against the CLI manifest; it does not choose or bump versions.
+  `scripts/release/release-state.ts` owns artifact identity, preflight, publication, and recovery.
 - Keep Bun pinned for deterministic release verification, but prefer the Node/npm publish path for actual package publishing. Treat publish-tooling changes in `.github/workflows/release.yaml` as release-sensitive.
 - See `preview-publishing-security.md` before changing preview workflow permissions, artifacts, secrets, or environments.
 
@@ -91,11 +99,9 @@ The report classifies likely backport candidates into `reliability`, `dependency
 1. Pick commits from the report by area and impact. Prefer reliability, DX, and compatibility fixes first; skip upstream architectural shifts that conflict with this fork.
 2. Implement manually - avoid large cherry-picks unless the change is isolated and low-risk.
 3. Keep Better-Fullstack-specific naming and architecture choices intact.
-4. Run gates:
-   - `bun run check`
-   - `bun run build`
-   - `cd apps/cli && bun test cli-builder-sync`
-   - `cd apps/web && bun run build`
-5. Open focused PRs by theme (stability, commands, web parity, etc.).
+4. Run affected package checks and `bun run test:release` for stack/generator changes. Add the web
+   build when routes or bundles change. Root `bun run check` formats the whole repository; avoid it
+   for a scoped backport in a dirty worktree.
+5. Keep each backport focused by theme. Commit, push, and PR creation need the user's authorization.
 
 Use `docs/projects/README.md` as the stable entry point for current project documents.

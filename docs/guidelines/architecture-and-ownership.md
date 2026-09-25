@@ -5,12 +5,12 @@ Use this guide when a change crosses packages or when it is unclear which layer 
 ## System Flow
 
 ```text
-packages/types
-  -> packages/project-lifecycle contracts and transactions
-  -> apps/cli prompts, commands, and MCP
-  -> apps/web builder, URLs, previews, docs, and downloads
-  -> packages/template-generator virtual project
-  -> generated project on disk or in the browser
+packages/types                     shared stack vocabulary
+  -> packages/template-generator   renders virtual project files
+  -> apps/cli and apps/web          consume shared rules and generator output
+
+packages/project-lifecycle         filesystem transactions and lifecycle contracts
+  -> apps/cli and repository tools  plan domain changes and apply transactions
 ```
 
 The shared model flows outward. UI or command code may present it, but must not redefine it.
@@ -36,12 +36,13 @@ this package.
 
 Owns project mutation contracts that must work outside the CLI:
 
-- transaction planning, application, rollback, and recovery;
+- filesystem transaction application, rollback, and recovery;
 - lifecycle result and evidence contracts;
 - review-token validation and content hashing;
 - recovery state inspection and repair.
 
-Keep terminal rendering, prompts, and command routing in `apps/cli`. Scripts, tests, and other apps
+Domain planners for stack updates, template updates, and recipes remain in `apps/cli`.
+Keep terminal rendering, prompts, and command routing there too. Scripts, tests, and other apps
 must consume this package instead of importing CLI internals.
 
 ### `packages/template-generator`
@@ -79,7 +80,7 @@ Owns public interaction and content:
 - compatibility presentation;
 - preview, ZIP, and WebContainer flows;
 - product docs, guides, blog, SEO, and localized messages;
-- public analytics presentation;
+- owner-authenticated redirect to the private PostHog dashboard;
 - telemetry ingest validation and PostHog delivery in `src/lib/telemetry`, served by the server
   entry. Historical conversion and import tools live in `scripts/analytics`; the operations
   reference in `docs/reference/posthog-analytics-operations.md` records archive preservation.
@@ -96,15 +97,17 @@ belongs in the CLI or shared packages.
 
 - Schema, metadata, aliases, and compatibility belong in `packages/types`.
 - File inclusion decisions belong in template handlers, not scattered processors.
-- Package mutation belongs in processors, not repeated inside templates.
+- TypeScript dependency mutation belongs in processors; native ecosystem manifest templates
+  retain their own dependency declarations.
 - A generated example belongs in a source `.hbs` template, not the generated eager map,
   family manifest, or family modules under `src/templates.generated*`.
 - CLI/MCP shared behavior belongs in a core helper with thin transport adapters.
 - Browser state belongs in web builder modules; reusable stack semantics belong in shared types.
 - User documentation belongs in `apps/web/content`; agent engineering rules belong in
   `docs/guidelines`.
-- One-off designs move through `docs/projects/{backlog,active,completed}`.
-- Research without accepted scope belongs in `docs/reference`.
+- Unfinished designs live in `docs/projects/backlog/` or `docs/projects/active/`. Delete completed
+  plans after preserving current constraints in their owning guide; Git history is the archive.
+- Keep `docs/reference/` for current contracts and operations, not speculative research.
 
 ## Dependency Direction
 
