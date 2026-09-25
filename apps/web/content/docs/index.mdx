@@ -3,39 +3,41 @@ title: Better Fullstack Docs
 description: One command scaffolds a configured fullstack project in TypeScript, React Native, Rust, Python, Go, Java, Elixir, or .NET. Start here.
 translationStatus: pending
 layout: landing
-updated: 2026-08-22
+updated: 2026-09-25
 ---
 
-<DocsHero
-  title="Scaffold anything with Better Fullstack"
-  subhead="Pick a frontend, backend, data layer, auth provider, services, and tooling. The CLI writes a working project you own."
-  actions={[
-    { label: "Create your first project", href: "/docs/getting-started/first-project/", primary: true },
-    { label: "Open Stack Builder", href: "/new" },
-  ]}
+<DocsWelcome
+  eyebrow="Getting Started"
+  title="Welcome to Better Fullstack"
+  subhead="Pick a frontend, backend, data layer, auth provider, services, and tooling. The CLI writes a working project you own. Nothing installs globally, and Node.js 20 or newer is the only requirement."
 >
 
 ```npm
 npm create better-fullstack@latest
 ```
 
-</DocsHero>
+</DocsWelcome>
 
-Nothing installs globally. Your package manager runs the CLI on demand and Node.js 20 or newer is the only requirement. No terminal handy? The [Stack Builder](/new) composes, previews, and runs projects in the browser.
+<DocsCardGrid>
+  <DocsCard title="Quick Start" href="/docs/getting-started/first-project/" icon="rocket">Scaffold, run, and verify your first project.</DocsCard>
+  <DocsCard title="CLI Reference" href="/docs/cli/" icon="terminal">Script a stack with flags, templates, or project shapes.</DocsCard>
+  <DocsCard title="Build with AI" href="/docs/ai/overview/" icon="sparkles">Hand the work to a coding agent through MCP or a skill.</DocsCard>
+</DocsCardGrid>
 
-## Where to go
+<DocsRecentReleases title="Recent releases" />
 
-| You want to                                        | Read                                                          |
-| -------------------------------------------------- | ------------------------------------------------------------- |
-| Scaffold, run, and verify a project                | [First Project](/docs/getting-started/first-project/)         |
-| Script a stack with flags, templates, or shapes    | [CLI Create](/docs/cli/create/)                               |
-| Add capabilities to an existing project            | [CLI Add](/docs/cli/add/)                                     |
-| Refresh templates or diagnose project health       | [Status, Check, Update](/docs/cli/update/)                    |
-| Build, preview, run, and download in the browser   | [Stack Builder](/docs/builder/)                               |
-| Pick a frontend, backend, database, auth, deploy   | [Choosing a Stack](/docs/choosing-a-stack/)                   |
-| Inspect current release evidence and its limits   | [Release Verification](/docs/verification/)                   |
-| See what each language ecosystem scaffolds         | [Ecosystems](/docs/ecosystems/)                               |
-| Combine languages in one project                   | [Multi-Ecosystem](/docs/ecosystems/multi-ecosystem/)          |
-| Hand the work to a coding agent                    | [AI Agents](/docs/ai/overview/)                               |
+<DocsLinkList title="Build a stack">
+  <DocsLinkItem title="Stack Builder" href="/docs/builder/" icon="browser">Build, preview, run, and download a project in the browser.</DocsLinkItem>
+  <DocsLinkItem title="Choosing a Stack" href="/docs/choosing-a-stack/" icon="adjustments">Pick a frontend, backend, database, auth provider, and deploy target.</DocsLinkItem>
+  <DocsLinkItem title="Ecosystems" href="/docs/ecosystems/" icon="grid">See what each language ecosystem scaffolds.</DocsLinkItem>
+  <DocsLinkItem title="Multi-Ecosystem" href="/docs/ecosystems/multi-ecosystem/" icon="relation">Combine languages in one project.</DocsLinkItem>
+  <DocsLinkItem title="Release Verification" href="/docs/verification/" icon="checklist">Inspect current release evidence and its limits.</DocsLinkItem>
+  <DocsLinkItem title="Project Lifecycle" href="/docs/getting-started/lifecycle/" icon="route">Map every command to the moment you need it.</DocsLinkItem>
+</DocsLinkList>
 
-After the first scaffold, three commands cover most of the work. `add` changes the selected stack, `update` refreshes templates under review, and `check` verifies the project builds. [Project Lifecycle](/docs/getting-started/lifecycle/) maps every command to the moment you need it.
+<DocsLinkList title="Change an existing project">
+  <DocsLinkItem title="CLI Add" href="/docs/cli/add/" icon="plus">`add` changes the selected stack of a generated project.</DocsLinkItem>
+  <DocsLinkItem title="Status, Check, Update" href="/docs/cli/update/" icon="refresh">`update` refreshes templates under review and `check` verifies the build.</DocsLinkItem>
+  <DocsLinkItem title="MCP Server" href="/docs/ai/mcp/" icon="plug">Let an agent plan, preview, and apply changes through structured tools.</DocsLinkItem>
+  <DocsLinkItem title="Install for Coding Agents" href="/docs/cli/install/" icon="download">Register the MCP server and both skills for every detected agent.</DocsLinkItem>
+</DocsLinkList>
