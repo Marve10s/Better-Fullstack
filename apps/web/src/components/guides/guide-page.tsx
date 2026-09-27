@@ -3,7 +3,12 @@ import { Link } from "@tanstack/react-router";
 import { type ReactNode, Suspense } from "react";
 
 import { articleClassName, DocsLayout, DocsToc } from "@/components/docs/docs-layout";
-import { DocsCard, DocsCardGrid, DocsLinkItem, DocsLinkList } from "@/components/docs/mdx/docs-landing";
+import {
+  DocsCard,
+  DocsCardGrid,
+  DocsLinkItem,
+  DocsLinkList,
+} from "@/components/docs/mdx/docs-landing";
 import { getGuideCategories, guideIcon, GuidesSidebar } from "@/components/guides/guides-nav";
 import { localizedContentMdxComponents } from "@/components/mdx/localized-content-components";
 import { formatContentDate } from "@/lib/content/content-date";
@@ -63,44 +68,44 @@ function GuidePageBody({ page, header }: { page: GuidePage; header: ReactNode })
     <>
       {header}
 
-        <div className="docs-prose">
-          <MDXProvider components={localizedContentMdxComponents}>
-            <Content components={localizedContentMdxComponents} />
-          </MDXProvider>
-        </div>
+      <div className="docs-prose">
+        <MDXProvider components={localizedContentMdxComponents}>
+          <Content components={localizedContentMdxComponents} />
+        </MDXProvider>
+      </div>
 
-        {relatedGuides.length ? (
-          <nav
-            className="mt-14 border-[var(--docs-panel-border)] border-t pt-8"
-            aria-labelledby="related-guides"
+      {relatedGuides.length ? (
+        <nav
+          className="mt-14 border-[var(--docs-panel-border)] border-t pt-8"
+          aria-labelledby="related-guides"
+        >
+          <h2
+            id="related-guides"
+            className="font-semibold text-[1.0625rem] text-foreground tracking-[-0.01em]"
           >
-            <h2
-              id="related-guides"
-              className="font-semibold text-[1.0625rem] text-foreground tracking-[-0.01em]"
-            >
-              {m.guidesRelated()}
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {relatedGuides.map((guide) => (
-                <Link
-                  key={guide.url}
-                  to="/guides/$"
-                  params={{ _splat: guide.slug.join("/") }}
-                  className="rounded-xl border border-[var(--docs-panel-border)] p-4 transition-colors hover:border-[var(--docs-border-strong)] hover:bg-[var(--docs-panel)]"
-                >
-                  <span className="block font-medium text-sm text-foreground">
-                    {guide.frontmatter.title ?? guide.url}
+            {m.guidesRelated()}
+          </h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {relatedGuides.map((guide) => (
+              <Link
+                key={guide.url}
+                to="/guides/$"
+                params={{ _splat: guide.slug.join("/") }}
+                className="rounded-xl border border-[var(--docs-panel-border)] p-4 transition-colors hover:border-[var(--docs-border-strong)] hover:bg-[var(--docs-panel)]"
+              >
+                <span className="block font-medium text-sm text-foreground">
+                  {guide.frontmatter.title ?? guide.url}
+                </span>
+                {guide.frontmatter.description ? (
+                  <span className="mt-1 line-clamp-2 block text-muted-foreground text-xs leading-5">
+                    {guide.frontmatter.description}
                   </span>
-                  {guide.frontmatter.description ? (
-                    <span className="mt-1 line-clamp-2 block text-muted-foreground text-xs leading-5">
-                      {guide.frontmatter.description}
-                    </span>
-                  ) : null}
-                </Link>
-              ))}
-            </div>
-          </nav>
-        ) : null}
+                ) : null}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      ) : null}
     </>
   );
 }
@@ -162,9 +167,7 @@ function GuidesLanding({ page }: { page: GuidePage }) {
     <DocsLayout variant="landing" sidebar={GUIDES_SIDEBAR} navLabel={m.navGuides()}>
       <article className={articleClassName(true)}>
         <header className="mb-10">
-          <p className="mb-3 font-medium text-[0.8125rem] text-muted-foreground">
-            {m.navGuides()}
-          </p>
+          <p className="mb-3 font-medium text-[0.8125rem] text-muted-foreground">{m.navGuides()}</p>
           {page.frontmatter.title ? (
             <h1 className="font-medium text-[2.25rem] text-foreground leading-[1.08] tracking-[-0.035em] md:text-[2.75rem]">
               {page.frontmatter.title}
@@ -180,7 +183,13 @@ function GuidesLanding({ page }: { page: GuidePage }) {
         {packs ? (
           <section>
             <h2 className="mb-4 font-semibold text-[1.0625rem] text-foreground tracking-[-0.01em]">
-              {packs.index?.frontmatter.title ?? packs.label}
+              {packs.index ? (
+                <Link to={packs.index.url} className="hover:underline">
+                  {packs.index.frontmatter.title ?? packs.label}
+                </Link>
+              ) : (
+                packs.label
+              )}
             </h2>
             <DocsCardGrid>
               {packs.pages.map((guide) => (

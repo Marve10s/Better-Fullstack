@@ -21,14 +21,22 @@ const ACTIVE_BG_TRANSITION = { type: "spring", stiffness: 380, damping: 32 } as 
  * The active page's tinted background is a `motion.span` with `layoutId`, so
  * it slides between pages on client-side navigation.
  */
-export function DocsSidebar({ tree, className }: { tree?: FolderNode; className?: string }) {
+export function DocsSidebar({
+  tree,
+  className,
+  label = m.navDocs(),
+}: {
+  tree?: FolderNode;
+  className?: string;
+  label?: string;
+}) {
   const location = useLocation();
   const currentUrl = location.pathname.replace(/\/$/, "") || "/docs";
   const pageTree = tree ?? getLocalizedPageTree();
 
   return (
     <nav
-      aria-label={m.navDocs()}
+      aria-label={label}
       className={cn("flex w-full flex-col gap-0.5 px-1 pt-2 pb-6 text-sm", className)}
     >
       {pageTree.children.map((node, index) => (
@@ -150,7 +158,8 @@ function SidebarPageLink({
 }) {
   const isActive = page.url === currentUrl;
   const style = useMemo(
-    () => ({ "--sidebar-pad": `${0.625 + Math.max(0, depth - 1) * 0.5}rem` }) as React.CSSProperties,
+    () =>
+      ({ "--sidebar-pad": `${0.625 + Math.max(0, depth - 1) * 0.5}rem` }) as React.CSSProperties,
     [depth],
   );
   return (

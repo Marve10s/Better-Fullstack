@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CodeBlockContent } from "@/components/ui/kibo-ui/code-block";
 import { cn } from "@/lib/platform/utils";
+import { m } from "@/paraglide/messages.js";
 
 const MANAGERS = ["npm", "pnpm", "bun", "yarn"] as const;
 type Manager = (typeof MANAGERS)[number];
@@ -122,7 +123,7 @@ export function DocsQuickstart({
           <button
             type="button"
             onClick={copy}
-            aria-label={copied ? "Copied" : "Copy code"}
+            aria-label={copied ? m.navCopied() : m.navCopy()}
             className="flex size-7 items-center justify-center rounded-md border border-[var(--code-border)] bg-[var(--code-chrome-bg)] text-[var(--code-muted)] transition-colors hover:text-[var(--code-fg)]"
           >
             {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}

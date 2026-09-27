@@ -1,7 +1,8 @@
+import type { IconType } from "react-icons";
+
 import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { IconType } from "react-icons";
 import {
   TbBrandGithub as Github,
   TbBrowser as Browser,
@@ -158,12 +159,14 @@ export function DocsSearchDialog({
         label: m.navCopyInstallCommand(),
         hint: INSTALL_COMMAND,
         icon: Terminal,
-        run: () => {
-          close();
-          navigator.clipboard
-            .writeText(INSTALL_COMMAND)
-            .then(() => toast.success(m.navCommandCopied()))
-            .catch(() => undefined);
+        run: async () => {
+          try {
+            await navigator.clipboard.writeText(INSTALL_COMMAND);
+            toast.success(m.navCommandCopied());
+            close();
+          } catch {
+            toast.error(m.stackCommandCopyFailed());
+          }
         },
       },
       {
@@ -184,7 +187,7 @@ export function DocsSearchDialog({
         },
       },
     ];
-    const pages = flattenPages(getLocalizedPageTree().children).map(({ page, section }) => ({
+    const pages = flattenPages([getLocalizedPageTree()]).map(({ page, section }) => ({
       id: `page:${page.url}`,
       group: m.docsSearchJumpTo(),
       label: page.name,
@@ -282,7 +285,7 @@ export function DocsSearchDialog({
                 </Empty>
               ) : (
                 grouped.map((group) => (
-                  <div key={group.label} className="pb-1">
+                  <div key={group.items[0]?.item.id} className="pb-1">
                     <p className="select-none px-2.5 pt-2 pb-1 font-medium text-[0.75rem] text-muted-foreground">
                       {group.label}
                     </p>
@@ -363,12 +366,10 @@ type Group = {
 
 function groupItems(items: PaletteItem[]): Group[] {
   const groups: Group[] = [];
-  const byLabel = new Map<string, Group>();
   items.forEach((item, index) => {
-    let group = byLabel.get(item.group);
-    if (!group) {
+    let group = groups.at(-1);
+    if (!group || group.label !== item.group) {
       group = { label: item.group, items: [] };
-      byLabel.set(item.group, group);
       groups.push(group);
     }
     group.items.push({ item, index });

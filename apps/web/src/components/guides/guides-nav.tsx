@@ -130,5 +130,5 @@ function guidesTree(): FolderNode {
 }
 
 export function GuidesSidebar() {
-  return <DocsSidebar tree={guidesTree()} />;
+  return <DocsSidebar tree={guidesTree()} label={m.navGuides()} />;
 }
