@@ -28,7 +28,7 @@ import {
 } from "@/lifecycle/scaffold-manifest";
 import { formatProject } from "@/platform/file-formatter";
 import { isSilent } from "@/presentation/context";
-import { CLIError } from "@/presentation/errors";
+import { ProjectCreationError, type CreationStage } from "@/telemetry/creation-failure";
 import { isToolingOverlayOnly, type ProjectConfig } from "@/types";
 
 export interface CreateProjectOptions {
@@ -49,11 +49,18 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
   const dirHadContentBefore =
     (await fs.pathExists(projectDir)) && (await fs.readdir(projectDir)).length > 0;
   if (dirHadContentBefore && cliInput.allowExistingDirectory === false) {
-    throw new CLIError(`Refusing to create a project in non-empty directory: ${projectDir}`);
+    throw new ProjectCreationError(
+      `Refusing to create a project in non-empty directory: ${projectDir}`,
+      "directory_preparation",
+      undefined,
+      "target-not-empty",
+    );
   }
 
+  let failureStage: CreationStage = "directory_preparation";
   try {
     await fs.ensureDir(projectDir);
+    failureStage = "generation";
 
     // Loaded here instead of at module top to keep CLI startup fast - the
     // template-generator bundle embeds all templates (~2.5 MB of source).
@@ -75,7 +82,9 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       throw new Error(result.error || "Failed to generate project templates");
     }
 
+    failureStage = "file_write";
     await writeTreeToFilesystem(result.tree, projectDir);
+    failureStage = "project_configuration";
     if (await fs.pathExists(path.join(projectDir, "package.json"))) {
       await setPackageManagerVersion(projectDir, options.packageManager);
       await ensurePackageManagerProjectFiles(projectDir, options.packageManager);
@@ -103,6 +112,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     // hashes so `bfs update` can structurally merge future template changes.
     // The versioned manifest is part of a complete scaffold transaction. A
     // project without it cannot prove lineage or recover future mutations.
+    failureStage = "scaffold_manifest";
     const manifest = await recordScaffoldManifest(projectDir, {
       baselines: collectStructuredBaselines(result.tree),
     });
@@ -112,8 +122,10 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
 
     if (!isSilent()) log.success("Project template successfully scaffolded!");
 
+    failureStage = "git_initialization";
     const repositoryInitialized = await initializeGit(projectDir, options.git);
 
+    failureStage = "dependency_install";
     const usesGraph =
       Boolean(options.stackParts?.length) && !isToolingOverlayOnly(options.stackParts);
     if (options.install && usesGraph) {
@@ -193,8 +205,10 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
       if (!result.success) setupFailures.push(result);
     }
 
+    failureStage = "git_commit";
     await commitInitialScaffold(projectDir, repositoryInitialized);
 
+    failureStage = "post_installation";
     if (!isSilent()) {
       await displayPostInstallInstructions({
         ...options,
@@ -232,10 +246,18 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
     await rollbackPartialProject(projectDir, dirHadContentBefore);
     if (error instanceof Error) {
       if (!isSilent()) console.error(error.stack);
-      throw new CLIError(`Error during project creation: ${error.message}`);
+      throw new ProjectCreationError(
+        `Error during project creation: ${error.message}`,
+        failureStage,
+        error,
+      );
     }
     if (!isSilent()) console.error(error);
-    throw new CLIError(`An unexpected error occurred: ${String(error)}`);
+    throw new ProjectCreationError(
+      `An unexpected error occurred: ${String(error)}`,
+      failureStage,
+      error,
+    );
   }
 }
 
