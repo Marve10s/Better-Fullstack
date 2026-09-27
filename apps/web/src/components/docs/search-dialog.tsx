@@ -85,6 +85,7 @@ export function DocsSearchDialog({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const locale = getLocale();
+  const paletteSession = useRef(0);
 
   useEffect(() => {
     setSearch(null);
@@ -135,6 +136,13 @@ export function DocsSearchDialog({
     setActiveIndex(0);
   }, [open]);
 
+  useEffect(() => {
+    paletteSession.current += 1;
+    return () => {
+      paletteSession.current += 1;
+    };
+  }, [open]);
+
   const close = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   const items = useMemo<PaletteItem[]>(() => {
@@ -160,10 +168,11 @@ export function DocsSearchDialog({
         hint: INSTALL_COMMAND,
         icon: Terminal,
         run: async () => {
+          const session = paletteSession.current;
           try {
             await navigator.clipboard.writeText(INSTALL_COMMAND);
             toast.success(m.navCommandCopied());
-            close();
+            if (session === paletteSession.current) close();
           } catch {
             toast.error(m.stackCommandCopyFailed());
           }

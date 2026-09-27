@@ -387,7 +387,6 @@ export function contentMetaPlugin(): Plugin {
     if (contentSubdir === "guides") {
       const index = entries.find((entry) => entry.slug === "");
       if (index) {
-        const frontmatter = extractFrontmatter(index.source);
         const groups = new Map<string, string[]>();
         const guides = entries
           .filter((entry) => entry.slug !== "")
@@ -396,19 +395,20 @@ export function contentMetaPlugin(): Plugin {
         for (const guide of guides) {
           const category = String(guide.frontmatter.category ?? "Guides");
           const links = groups.get(category) ?? [];
-          const title = String(guide.frontmatter.title ?? guide.slug).replace(/[[\]]/g, "\\$&");
+          const title = String(guide.frontmatter.title ?? guide.slug).replace(/[\\[\]]/g, "\\$&");
           const description = guide.frontmatter.description;
           links.push(`- [${title}](/guides/${guide.slug})${description ? `: ${description}` : ""}`);
           groups.set(category, links);
         }
         // All raw consumers (guides.md and llms-full.txt) share the HTML guide inventory.
-        index.source = [
-          `---\n${stringifyYaml(frontmatter)}---`,
-          `# ${frontmatter.title ?? "Guides"}`,
-          String(frontmatter.description ?? ""),
-          ...Array.from(groups, ([category, links]) => `## ${category}\n\n${links.join("\n")}`),
-          "",
-        ].join("\n\n");
+        const inventory = Array.from(
+          groups,
+          ([category, links]) => `## ${category}\n\n${links.join("\n")}`,
+        ).join("\n\n");
+        if (!index.source.includes("{/* guide-index */}")) {
+          throw new Error("Guide index is missing its inventory placeholder");
+        }
+        index.source = index.source.replace("{/* guide-index */}", () => inventory);
       }
     }
     const serialized = entries.map(

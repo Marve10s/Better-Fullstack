@@ -47,6 +47,31 @@ test("ArrowDown follows the visible full-text search result order", async ({ pag
   await expect(results.nth(2)).toHaveClass(/(?:^|\s)bg-\[var\(--docs-panel\)\](?:\s|$)/);
 });
 
+test("an earlier clipboard write cannot close a reopened palette", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: {
+        writeText: () =>
+          new Promise<void>((resolve) => {
+            window.addEventListener("finish-clipboard-write", () => resolve(), { once: true });
+          }),
+      },
+    });
+  });
+  await gotoAppPage(page, "/docs");
+  const trigger = page.getByRole("button", { name: "Search docs", exact: true });
+  const dialog = page.getByRole("dialog");
+  await trigger.click();
+  await dialog.getByRole("button", { name: /Copy install command/ }).click();
+  await dialog.getByRole("textbox").press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+  await page.evaluate(() => window.dispatchEvent(new Event("finish-clipboard-write")));
+  await expect(page.getByText("Command copied", { exact: true })).toBeVisible();
+  await expect(dialog).toBeVisible();
+});
+
 test("guide navigation and the pack overview remain accessible on mobile", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await gotoAppPage(page, "/guides");
@@ -55,7 +80,7 @@ test("guide navigation and the pack overview remain accessible on mobile", async
     .getByRole("link")
     .click();
   await expect(page).toHaveURL(/\/guides\/packs\/?$/);
-  await page.getByRole("button", { name: "Open docs navigation" }).click();
+  await page.getByRole("button", { name: "Open Guides navigation" }).click();
   const navigation = page.getByRole("navigation", { name: "Guides", exact: true });
   await expect(navigation).toBeVisible();
   await navigation.getByRole("link", { name: "Create a SaaS App", exact: true }).click();
@@ -68,6 +93,9 @@ test("quickstart copy labels follow the selected locale", async ({ page, context
   await gotoAppPage(page, "/docs/ai/mcp");
   // The pending article translation falls back to English while its controls stay localized.
   await expect(page.getByRole("heading", { name: "MCP Server", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Kopieren", exact: true }).first()).toBeVisible();
-  await expect(page.getByRole("button", { name: "Copy code", exact: true })).toHaveCount(0);
+  const quickstart = page.locator("section").filter({
+    has: page.getByRole("heading", { name: "Connect in one command", exact: true }),
+  });
+  await expect(quickstart.getByRole("button", { name: "Kopieren", exact: true })).toBeVisible();
+  await expect(quickstart.getByRole("button", { name: "Copy code", exact: true })).toHaveCount(0);
 });

@@ -102,7 +102,7 @@ export function DocsLayout({
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            aria-label={m.docsOpenNavigation()}
+            aria-label={m.docsOpenNavigation({ section: navLabel })}
             className="flex h-10 w-full items-center gap-2 rounded-lg px-2 text-[0.8125rem] text-muted-foreground transition-colors hover:bg-[var(--docs-card)] hover:text-foreground"
           >
             <Menu className="size-4" />
@@ -143,7 +143,7 @@ export function DocsLayout({
           >
             <button
               type="button"
-              aria-label={m.docsCloseNavigation()}
+              aria-label={m.docsCloseNavigation({ section: navLabel })}
               className="absolute inset-0 bg-background/80 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
             />
@@ -174,9 +174,7 @@ export function DocsLayout({
                 `location.pathname` effect above, so this wrapper is
                 purely structural and stays free of event handlers.
               */}
-              <div className="flex-1 overflow-y-auto">
-                {sidebar}
-              </div>
+              <div className="flex-1 overflow-y-auto">{sidebar}</div>
             </motion.div>
           </motion.div>
         ) : null}

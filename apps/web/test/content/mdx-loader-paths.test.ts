@@ -65,6 +65,15 @@ for (const ssr of [false, true]) {
                   throw new Error("Markdown guide description missing for " + slug);
                 }
               }
+              for (const authoredText of [
+                "Each guide gives you a scaffold command",
+                "[Stack Builder](/new)",
+                "[generated starter template catalog](/templates)",
+              ]) {
+                if (!rawGuidePages[""].includes(authoredText)) {
+                  throw new Error("Markdown guide index lost authored content: " + authoredText);
+                }
+              }
               const landing = docsMeta.find((page) => page.filePath.endsWith("/docs/index.mdx"));
               if (landing?.frontmatter.translationStatus !== "pending") {
                 throw new Error("Expected the docs landing page to exercise English fallback");
