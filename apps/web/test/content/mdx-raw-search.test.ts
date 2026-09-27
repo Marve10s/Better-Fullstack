@@ -1,21 +1,20 @@
+import { contentMetaPlugin } from "@vite-plugins/content-meta";
 import { mdxContentPlugin } from "@vite-plugins/mdx-content";
 import { expect, it } from "bun:test";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { runInNewContext } from "node:vm";
 import { build } from "vite";
 
-import { buildSearchSections, createDocSearch } from "@/lib/docs/search";
-
-it("indexes the body of raw MDX imports through the real MDX plugin", async () => {
+it("indexes raw MDX bodies in a browser bundle without Node globals", async () => {
   const entryId = "virtual:raw-search-test";
+  const webRoot = path.resolve(import.meta.dir, "../..");
   const result = await build({
     configFile: false,
-    root: path.resolve(import.meta.dir, "../.."),
+    root: webRoot,
     logLevel: "silent",
-    ssr: { noExternal: true },
+    resolve: { alias: { "@": path.join(webRoot, "src") } },
     plugins: [
+      contentMetaPlugin(),
       mdxContentPlugin({}),
       {
         name: "raw-search-test",
@@ -24,32 +23,46 @@ it("indexes the body of raw MDX imports through the real MDX plugin", async () =
         },
         load(id) {
           if (id === entryId)
-            return 'export { default as rawSource } from "/content/docs/cli/create.mdx?raw";';
+            return `
+            import rawSource from "/content/docs/cli/create.mdx?raw";
+            import { docsMeta } from "virtual:content-meta";
+            import { buildSearchSections, createDocSearch } from "/src/lib/docs/search.ts";
+            export async function query() {
+              const frontmatter = docsMeta.find(page => page.filePath === "/content/docs/cli/create.mdx").frontmatter;
+              const sections = buildSearchSections([{ url: "/docs/cli/create", rawSource, frontmatter }]);
+              const search = await createDocSearch(sections);
+              return {
+                rawType: typeof rawSource,
+                titles: (await search.query("auth")).map(hit => hit.pageTitle),
+                hasFrontmatterInBody: sections.some(section => section.body.includes("translationStatus")),
+              };
+            }
+          `;
         },
       },
     ],
     build: {
       write: false,
-      ssr: true,
-      rollupOptions: { input: entryId, preserveEntrySignatures: "strict" },
+      minify: false,
+      rollupOptions: {
+        input: entryId,
+        preserveEntrySignatures: "strict",
+        output: { format: "iife", name: "docsSearchProbe", inlineDynamicImports: true },
+      },
     },
   });
   if (!("output" in result)) throw new Error("Expected a single Vite build output");
   const entry = result.output.find((output) => output.type === "chunk" && output.isEntry);
   if (entry?.type !== "chunk") throw new Error("Missing raw search entry");
-  const directory = await mkdtemp(path.join(tmpdir(), "bf-raw-search-"));
-  try {
-    const file = path.join(directory, "raw.mjs");
-    await writeFile(file, entry.code);
-    const { rawSource }: { rawSource: unknown } = await import(pathToFileURL(file).href);
-    expect(typeof rawSource).toBe("string");
-    const search = await createDocSearch(
-      buildSearchSections([{ url: "/docs/cli/create", rawSource }]),
-    );
-    const hits = await search.query("auth");
-    expect(hits.length).toBeGreaterThan(0);
-    expect(hits[0].pageTitle).toBe("Create Command");
-  } finally {
-    await rm(directory, { recursive: true, force: true });
-  }
+  const resultInBrowser: unknown = await runInNewContext(`${entry.code}\ndocsSearchProbe.query()`, {
+    console,
+    crypto: globalThis.crypto,
+    setTimeout,
+    clearTimeout,
+  });
+  expect(resultInBrowser).toMatchObject({
+    rawType: "string",
+    titles: expect.arrayContaining(["Create Command"]),
+    hasFrontmatterInBody: false,
+  });
 });

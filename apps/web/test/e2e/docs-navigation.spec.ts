@@ -33,6 +33,9 @@ test("failed clipboard writes keep the palette open and report the failure", asy
 });
 
 test("ArrowDown follows the visible full-text search result order", async ({ page }) => {
+  page.on("pageerror", (error) => {
+    throw error;
+  });
   await gotoAppPage(page, "/docs");
   await page.getByRole("button", { name: "Search docs", exact: true }).click();
   const dialog = page.getByRole("dialog");
