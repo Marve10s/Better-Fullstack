@@ -63,7 +63,9 @@ Use `.github/workflows/generated-project-proof.yaml` for exact setup and version
 ```bash
 bun install --frozen-lockfile
 bun run --cwd packages/types build
+bun run --cwd packages/project-lifecycle build
 bun run --cwd packages/template-generator build
+bun run --cwd apps/cli build
 bun test testing/generated-project-proof.test.ts apps/web/test/project/project-download.test.ts
 bun test apps/web/test/project/browser-cli-lifecycle.test.ts --timeout 600000
 bun run test:recipe-runtime

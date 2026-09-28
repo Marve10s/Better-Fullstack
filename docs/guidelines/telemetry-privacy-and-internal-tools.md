@@ -93,8 +93,10 @@ An identifier sanitizer is not enough for a field whose semantic meaning is user
 
 ## Owner dashboard access
 
-`apps/web/src/lib/telemetry/telemetry-data.server.ts` authenticates `/telemetry` and redirects to
-PostHog. It does not query or render event data. PostHog requires its own account access.
+`apps/web/src/server.ts` checks `/telemetry` access with `getTelemetryPageAccess` before the page
+handler runs. The route loader in `apps/web/src/lib/telemetry/telemetry-data.server.ts` repeats the
+check and redirects to PostHog. Neither queries or renders event data. PostHog requires its own
+account access.
 
 - The server checks HTTP Basic username `owner` and `TELEMETRY_DASHBOARD_SECRET` using
   `telemetry-auth.server.ts`. Missing or shorter-than-32-character secrets fail closed.

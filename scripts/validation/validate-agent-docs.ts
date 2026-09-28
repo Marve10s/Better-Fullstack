@@ -177,8 +177,13 @@ for (const level of CAPABILITY_EVIDENCE_LEVELS) {
 for (const path of markdownFiles) {
   const text = readFileSync(resolve(root, path), "utf8");
   if (text.includes("docs/plans/")) errors.push(`${path}: references removed docs/plans/ path`);
+  if (path.startsWith("docs/projects/completed/")) {
+    errors.push(`${path}: completed plans stay in Git history; delete this file`);
+  }
   if (path.startsWith("docs/projects/backlog/") && /^\s*-\s*\[[xX]\]/mu.test(text)) {
-    errors.push(`${path}: contains completed checklist items; remove finished work from the backlog`);
+    errors.push(
+      `${path}: contains completed checklist items; remove finished work from the backlog`,
+    );
   }
 }
 
