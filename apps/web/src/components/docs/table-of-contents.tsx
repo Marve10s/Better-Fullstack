@@ -15,7 +15,7 @@ import { m } from "@/paraglide/messages.js";
  * indicator is animated via `motion.div` with `layoutId` so it slides
  * between entries on scroll.
  */
-export function TableOfContents({ toc }: { toc: TocEntry[] }) {
+export function TableOfContents({ toc, className }: { toc: TocEntry[]; className?: string }) {
   const [activeId, setActiveId] = useState<string | null>(toc[0]?.id ?? null);
   const containerRef = useRef<HTMLElement | null>(null);
 
@@ -71,7 +71,10 @@ export function TableOfContents({ toc }: { toc: TocEntry[] }) {
     <nav
       ref={containerRef}
       aria-label={m.tocOnThisPage()}
-      className="sticky top-14 hidden max-h-[calc(100vh-3.5rem)] overflow-y-auto px-5 py-8 xl:block"
+      className={cn(
+        "sticky top-14 hidden max-h-[calc(100vh-3.5rem)] overflow-y-auto px-5 py-8 xl:block",
+        className,
+      )}
     >
       <h2 className="mb-3 font-medium text-[0.8125rem] text-foreground">{m.tocOnThisPage()}</h2>
       <ul className="flex flex-col border-[var(--docs-border-subtle)] border-l">

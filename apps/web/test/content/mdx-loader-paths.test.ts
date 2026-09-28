@@ -1,11 +1,10 @@
+import { contentMetaPlugin } from "@vite-plugins/content-meta";
 import { expect, it } from "bun:test";
-import path from "node:path";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
+import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { build } from "vite";
-
-import { contentMetaPlugin } from "@vite-plugins/content-meta";
 
 const webRoot = path.resolve(import.meta.dir, "../..");
 const entryId = "virtual:mdx-loader-paths-test";
@@ -30,6 +29,7 @@ for (const ssr of [false, true]) {
             return `
               import { docsMeta, guidesMeta, blogMeta } from "virtual:content-meta";
               import * as localized from "virtual:localized-content";
+              import { rawGuidePages } from "virtual:guides-raw";
               import { docsMdxLoaders, docsRawMdxLoaders } from "/src/lib/docs/mdx-loaders${suffix}";
               import { guideMdxLoaders } from "/src/lib/guides/mdx-loaders${suffix}";
               import { blogMdxLoaders } from "/src/lib/blog/mdx-loaders${suffix}";
@@ -52,6 +52,26 @@ for (const ssr of [false, true]) {
                       throw new Error("Localized content loader missing for " + key);
                     }
                   }
+                }
+              }
+              for (const guide of guidesMeta) {
+                const slug = guide.filePath.replace("/content/guides/", "")
+                  .replace(/\\.mdx$/, "").replace(/(^|\\/)index$/, "").replace(/\\/$/, "");
+                if (slug && !rawGuidePages[""].includes("](/guides/" + slug + ")")) {
+                  throw new Error("Markdown guide index missing " + slug);
+                }
+                if (slug && guide.frontmatter.description &&
+                    !rawGuidePages[""].includes(guide.frontmatter.description)) {
+                  throw new Error("Markdown guide description missing for " + slug);
+                }
+              }
+              for (const authoredText of [
+                "Each guide gives you a scaffold command",
+                "[Stack Builder](/new)",
+                "[generated starter template catalog](/templates)",
+              ]) {
+                if (!rawGuidePages[""].includes(authoredText)) {
+                  throw new Error("Markdown guide index lost authored content: " + authoredText);
                 }
               }
               const landing = docsMeta.find((page) => page.filePath.endsWith("/docs/index.mdx"));

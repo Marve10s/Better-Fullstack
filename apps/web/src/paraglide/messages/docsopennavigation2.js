@@ -3,54 +3,54 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {import('../runtime.js').LocalizedString} LocalizedString */
 
-/** @typedef {{}} Docsopennavigation2Inputs */
+/** @typedef {{ section: NonNullable<unknown> }} Docsopennavigation2Inputs */
 
-const en_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Open docs navigation`)
+const en_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Open ${i?.section} navigation`)
 };
 
-const es_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abrir navegación de docs`)
+const es_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Abrir navegación de ${i?.section}`)
 };
 
-const zh_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打开文档导航`)
+const zh_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`打开${i?.section}导航`)
 };
 
-const ja_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ドキュメントを開くナビゲーション`)
+const ja_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.section}のナビゲーションを開く`)
 };
 
-const ko_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`문서 탐색 열기`)
+const ko_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.section} 탐색 열기`)
 };
 
-const zh_hant1_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`開啟文檔導航`)
+const zh_hant1_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`開啟${i?.section}導覽`)
 };
 
-const de_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Öffnen Sie die Dokumentennavigation`)
+const de_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`${i?.section}-Navigation öffnen`)
 };
 
-const fr_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ouvrir la navigation dans les documents`)
+const fr_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Ouvrir la navigation ${i?.section}`)
 };
 
-const uk_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкрити навігацію документації`)
+const uk_docsopennavigation2 = /** @type {(inputs: Docsopennavigation2Inputs) => LocalizedString} */ (i) => {
+	return /** @type {LocalizedString} */ (`Відкрити навігацію: ${i?.section}`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Open docs navigation" |
+* | "Open {section} navigation" |
 *
 * @param {Docsopennavigation2Inputs} inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const docsopennavigation2 = /** @type {((inputs?: Docsopennavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsopennavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+const docsopennavigation2 = /** @type {((inputs: Docsopennavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsopennavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
 	if (locale === "es") return es_docsopennavigation2(inputs)
 	if (locale === "zh") return zh_docsopennavigation2(inputs)

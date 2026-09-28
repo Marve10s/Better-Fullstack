@@ -1,12 +1,12 @@
 import type { ShikiTransformer } from "shiki";
 
 import { contentMetaPlugin } from "#vite-plugins/content-meta";
+import { mdxContentPlugin } from "#vite-plugins/mdx-content";
 import { projectStatsPlugin } from "#vite-plugins/project-stats";
 import { paraglideCompilerOptions } from "#web-root/paraglide.config";
 import { remarkExtractToc } from "#web/lib/docs/remark-extract-toc";
 import { remarkNpmTabs } from "#web/lib/docs/remark-npm-tabs";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
-import mdx from "@mdx-js/rollup";
 import rehypeShiki from "@shikijs/rehype";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -164,7 +164,7 @@ export default defineConfig({
     }),
     {
       enforce: "pre",
-      ...mdx({
+      ...mdxContentPlugin({
         providerImportSource: "@mdx-js/react",
         remarkPlugins: [
           remarkFrontmatter,

@@ -7,22 +7,47 @@ updated: 2026-09-05
 
 The `mcp` command starts the Better Fullstack MCP server over stdio. Agents use it to discover stacks, inspect schemas, validate compatibility, preview generated files, create projects, and evolve existing ones through structured tool calls instead of guessing CLI flags.
 
-Install the server and both Better Fullstack skills for every supported agent detected on your
-machine:
+<DocsBanner title="See the MCP server in action" href="/mcp" actionLabel="Open MCP page" tile="MCP">
+Pick your agent and copy a ready-made install command.
+</DocsBanner>
 
-```bash
+<DocsQuickstart
+  title="Connect in one command"
+  description="The installer detects supported coding agents, registers the MCP server, and copies both Better Fullstack skills. Start the server yourself when you configure a client by hand."
+  actionLabel="Manual setup"
+  actionHref="#manual-setup"
+  npm={`# Set up MCP and skills for detected agents
 npx create-better-fullstack@latest install
-```
+
+# Or start the stdio server yourself
+npx -y create-better-fullstack@latest mcp`}
+  pnpm={`# Set up MCP and skills for detected agents
+pnpm dlx create-better-fullstack@latest install
+
+# Or start the stdio server yourself
+pnpm dlx create-better-fullstack@latest mcp`}
+  bun={`# Set up MCP and skills for detected agents
+bunx create-better-fullstack@latest install
+
+# Or start the stdio server yourself
+bunx create-better-fullstack@latest mcp`}
+  yarn={`# Set up MCP and skills for detected agents
+yarn dlx create-better-fullstack@latest install
+
+# Or start the stdio server yourself
+yarn dlx create-better-fullstack@latest mcp`}
+/>
+
+<DocsQuickLinks title="Quick links">
+  <DocsQuickLink title="Manual setup" href="#manual-setup" icon="adjustments" />
+  <DocsQuickLink title="Resources" href="#resources" icon="database" />
+  <DocsQuickLink title="Tools" href="#tools" icon="tool" />
+  <DocsQuickLink title="Install command" href="/docs/cli/install/" icon="download" />
+  <DocsQuickLink title="Agent skill" href="/docs/ai/overview/#agent-skill" icon="sparkles" />
+  <DocsQuickLink title="Agent plugin" href="/docs/ai/overview/#agent-plugin" icon="puzzle" />
+</DocsQuickLinks>
 
 See [`install`](/docs/cli/install/) for target detection, dry runs, JSON receipts, and uninstall.
-The launcher commands below start the server directly and remain useful for manual setup.
-
-<PMTabs
-  npm="npx -y create-better-fullstack@latest mcp"
-  pnpm="pnpm dlx create-better-fullstack@latest mcp"
-  bun="bunx create-better-fullstack@latest mcp"
-  yarn="yarn dlx create-better-fullstack@latest mcp"
-/>
 
 <Callout kind="info" title="Protocol compatibility is automatic">
 The server negotiates both the 2025 MCP protocol family and MCP 2026-07-28 without client-specific flags. Modern clients get the stateless-core request model with cache hints; older clients continue through legacy initialization.

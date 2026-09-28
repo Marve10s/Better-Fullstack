@@ -5,6 +5,7 @@ import { TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 import PackageIcon from "@/components/home/icons";
 import { CodeBlockContent } from "@/components/ui/kibo-ui/code-block";
 import { cn } from "@/lib/platform/utils";
+import { m } from "@/paraglide/messages.js";
 
 const MANAGERS = ["npm", "pnpm", "bun", "yarn"] as const;
 type Manager = (typeof MANAGERS)[number];
@@ -22,11 +23,13 @@ export function PMTabs({
   pnpm,
   bun,
   yarn,
+  className,
 }: {
   npm: string;
   pnpm: string;
   bun: string;
   yarn: string;
+  className?: string;
 }) {
   const commands = useMemo<Record<Manager, string>>(
     () => ({ npm, pnpm, bun, yarn }),
@@ -48,6 +51,32 @@ export function PMTabs({
     [select],
   );
 
+  const handleTabKeyDown = useCallback((event: React.KeyboardEvent<HTMLButtonElement>) => {
+    const index = MANAGERS.indexOf(event.currentTarget.value as Manager);
+    let next: Manager;
+    switch (event.key) {
+      case "ArrowRight":
+        next = MANAGERS[(index + 1) % MANAGERS.length];
+        break;
+      case "ArrowLeft":
+        next = MANAGERS[(index + MANAGERS.length - 1) % MANAGERS.length];
+        break;
+      case "Home":
+        next = MANAGERS[0];
+        break;
+      case "End":
+        next = MANAGERS[MANAGERS.length - 1];
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    setActive(next);
+    event.currentTarget.parentElement
+      ?.querySelector<HTMLButtonElement>(`button[value="${next}"]`)
+      ?.focus();
+  }, []);
+
   useEffect(() => {
     if (!copied) return;
     const id = window.setTimeout(() => setCopied(false), 1600);
@@ -64,7 +93,12 @@ export function PMTabs({
   }, [active, commands]);
 
   return (
-    <div className="my-6 overflow-hidden rounded-lg border bg-[var(--code-bg)] border-[var(--code-border)]">
+    <div
+      className={cn(
+        "my-6 overflow-hidden rounded-lg border bg-[var(--code-bg)] border-[var(--code-border)]",
+        className,
+      )}
+    >
       <div
         role="tablist"
         aria-label="Package manager"
@@ -81,6 +115,7 @@ export function PMTabs({
               tabIndex={isActive ? 0 : -1}
               value={manager}
               onClick={handleTabClick}
+              onKeyDown={handleTabKeyDown}
               className={cn(
                 "relative flex items-center gap-2 px-4 py-2 text-[0.8125rem] transition-colors",
                 isActive
@@ -88,7 +123,9 @@ export function PMTabs({
                   : "text-[var(--code-muted)] hover:text-[var(--code-fg)]",
               )}
             >
-              <PackageIcon pm={manager} className="h-3.5 w-3.5 shrink-0" />
+              <span aria-hidden="true">
+                <PackageIcon pm={manager} className="h-3.5 w-3.5 shrink-0" />
+              </span>
               {manager}
               {isActive ? (
                 <motion.span
@@ -104,7 +141,7 @@ export function PMTabs({
           <button
             type="button"
             onClick={onCopy}
-            aria-label={copied ? "Copied" : "Copy command"}
+            aria-label={copied ? m.navCopied() : m.navCopy()}
             className="flex size-7 items-center justify-center rounded-md text-[var(--code-muted)] transition-colors hover:bg-[var(--code-bg)] hover:text-[var(--code-fg)]"
           >
             {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
