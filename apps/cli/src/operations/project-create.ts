@@ -11,6 +11,7 @@ import {
 import { MCP_PLAN_CREATE_SCHEMA } from "@/operations/stack-input";
 import { runWithContextAsync } from "@/presentation/context";
 import { trackEvent, trackProjectCreation } from "@/telemetry/analytics";
+import { projectCreationFailure, type CreationStage } from "@/telemetry/creation-failure";
 
 export const planProjectOperation = defineOperation({
   name: "plan_project",
@@ -61,16 +62,21 @@ export const createProjectOperation = defineOperation({
   failurePrefix: "Project creation failed",
   run: async (input) => {
     const startTime = Date.now();
+    let failureStage: CreationStage = "configuration";
+    let failureConfig: Record<string, unknown> = input;
     try {
       const path = await import("node:path");
       const projectName = sanitizeProjectName(input.projectName);
       const targetDir = input.targetDir ? sanitizePath(input.targetDir) : undefined;
       const projectDir = path.resolve(targetDir ?? process.cwd(), projectName);
       const config = buildProjectConfig(input, { projectDir });
+      failureConfig = config;
+      failureStage = "directory_preparation";
       const { createProject } = await import("@/helpers/core/create-project.js");
       const result = await runWithContextAsync({ silent: true }, () =>
         createProject(config, { allowExistingDirectory: false }),
       );
+      failureStage = "post_installation";
       const installCmd = getInstallCommand(
         input.ecosystem ?? "typescript",
         projectName,
@@ -97,16 +103,12 @@ export const createProjectOperation = defineOperation({
         message: `Project created at ${projectDir}. Tell the user to run: ${installCmd}`,
       };
     } catch (error) {
-      await trackEvent(
-        "project_created",
-        {},
-        {
-          source: "mcp",
-          success: false,
-          errorName: error instanceof Error ? error.name : "UnknownError",
-          durationMs: Date.now() - startTime,
-        },
-      );
+      await trackEvent("project_created", failureConfig, {
+        source: "mcp",
+        success: false,
+        ...projectCreationFailure(error, failureStage),
+        durationMs: Date.now() - startTime,
+      });
       throw error;
     }
   },

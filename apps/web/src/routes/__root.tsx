@@ -1,4 +1,5 @@
 import { Outlet, HeadContent, Scripts, createRootRoute, Link } from "@tanstack/react-router";
+import { Analytics, type BeforeSendEvent } from "@vercel/analytics/react";
 import { lazy, Suspense, type ReactNode, useEffect, useSyncExternalStore } from "react";
 
 import geistSansUrl from "@/assets/fonts/Geist-Variable.woff2";
@@ -264,11 +265,20 @@ function RootDocument({ children }: { children: ReactNode }) {
   );
 }
 
+function beforeSendAnalytics(event: BeforeSendEvent) {
+  return isBrowserTelemetryEnabled() ? event : null;
+}
+
 function BrowserAnalytics() {
   const enabled = useSyncExternalStore(
     subscribeBrowserTelemetry,
     isBrowserTelemetryEnabled,
     () => false,
   );
-  return enabled ? <PageAnalytics /> : null;
+  return enabled ? (
+    <>
+      <PageAnalytics />
+      <Analytics beforeSend={beforeSendAnalytics} />
+    </>
+  ) : null;
 }
