@@ -102,3 +102,28 @@ test("quickstart copy labels follow the selected locale", async ({ page, context
   await expect(quickstart.getByRole("button", { name: "Kopieren", exact: true })).toBeVisible();
   await expect(quickstart.getByRole("button", { name: "Copy code", exact: true })).toHaveCount(0);
 });
+
+test("quickstart tabs display and copy the selected package manager command", async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await gotoAppPage(page, "/docs/ai/mcp");
+  const quickstart = page.locator("section").filter({
+    has: page.getByRole("heading", { name: "Connect in one command", exact: true }),
+  });
+  const pnpm = quickstart.getByRole("tab", { name: "pnpm", exact: true });
+  await pnpm.click();
+  await expect(pnpm).toHaveAttribute("aria-selected", "true");
+  await expect(quickstart.locator("pre")).toContainText(
+    "pnpm dlx create-better-fullstack@latest install",
+  );
+  await expect(quickstart.locator("pre")).not.toContainText("npx");
+  await quickstart.getByRole("button", { name: "Copy", exact: true }).click();
+  await expect(quickstart.getByRole("button", { name: "Copied", exact: true })).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toBe(
+      "# Set up MCP and skills for detected agents\npnpm dlx create-better-fullstack@latest install\n\n# Or start the stdio server yourself\npnpm dlx create-better-fullstack@latest mcp",
+    );
+});

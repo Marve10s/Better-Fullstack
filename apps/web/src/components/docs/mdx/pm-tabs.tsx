@@ -5,6 +5,7 @@ import { TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 import PackageIcon from "@/components/home/icons";
 import { CodeBlockContent } from "@/components/ui/kibo-ui/code-block";
 import { cn } from "@/lib/platform/utils";
+import { m } from "@/paraglide/messages.js";
 
 const MANAGERS = ["npm", "pnpm", "bun", "yarn"] as const;
 type Manager = (typeof MANAGERS)[number];
@@ -22,11 +23,13 @@ export function PMTabs({
   pnpm,
   bun,
   yarn,
+  className,
 }: {
   npm: string;
   pnpm: string;
   bun: string;
   yarn: string;
+  className?: string;
 }) {
   const commands = useMemo<Record<Manager, string>>(
     () => ({ npm, pnpm, bun, yarn }),
@@ -64,7 +67,12 @@ export function PMTabs({
   }, [active, commands]);
 
   return (
-    <div className="my-6 overflow-hidden rounded-lg border bg-[var(--code-bg)] border-[var(--code-border)]">
+    <div
+      className={cn(
+        "my-6 overflow-hidden rounded-lg border bg-[var(--code-bg)] border-[var(--code-border)]",
+        className,
+      )}
+    >
       <div
         role="tablist"
         aria-label="Package manager"
@@ -104,7 +112,7 @@ export function PMTabs({
           <button
             type="button"
             onClick={onCopy}
-            aria-label={copied ? "Copied" : "Copy command"}
+            aria-label={copied ? m.navCopied() : m.navCopy()}
             className="flex size-7 items-center justify-center rounded-md text-[var(--code-muted)] transition-colors hover:bg-[var(--code-bg)] hover:text-[var(--code-fg)]"
           >
             {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}

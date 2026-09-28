@@ -1,31 +1,11 @@
 import type { ReactNode } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import {
-  TbArrowRight as ArrowRight,
-  TbArrowUpRight as ArrowUpRight,
-  TbCheck as Check,
-  TbChevronDown as ChevronDown,
-  TbCopy as Copy,
-} from "react-icons/tb";
+import { TbArrowRight as ArrowRight, TbArrowUpRight as ArrowUpRight } from "react-icons/tb";
 
 import { type DocsCardIcon, docsCardIcon } from "@/components/docs/mdx/docs-landing";
-import PackageIcon from "@/components/home/icons";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { CodeBlockContent } from "@/components/ui/kibo-ui/code-block";
+import { PMTabs } from "@/components/docs/mdx/pm-tabs";
 import { cn } from "@/lib/platform/utils";
-import { m } from "@/paraglide/messages.js";
-
-const MANAGERS = ["npm", "pnpm", "bun", "yarn"] as const;
-type Manager = (typeof MANAGERS)[number];
-
-const CODE_THEMES = { light: "github-light-default", dark: "github-dark-default" } as const;
 
 const LINE_NUMBERS = cn(
   "[&_code]:[counter-reset:line]",
@@ -63,26 +43,6 @@ export function DocsQuickstart({
   bun: string;
   yarn: string;
 }) {
-  const snippets = useMemo<Record<Manager, string>>(
-    () => ({ npm, pnpm, bun, yarn }),
-    [npm, pnpm, bun, yarn],
-  );
-  const [manager, setManager] = useState<Manager>("npm");
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (!copied) return;
-    const id = window.setTimeout(() => setCopied(false), 1600);
-    return () => window.clearTimeout(id);
-  }, [copied]);
-
-  const copy = () => {
-    navigator.clipboard
-      .writeText(snippets[manager])
-      .then(() => setCopied(true))
-      .catch(() => setCopied(false));
-  };
-
   return (
     <section className="not-prose my-8 grid grid-cols-1 gap-2 rounded-2xl border border-[var(--docs-panel-border)] bg-[var(--docs-panel)] p-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
       <div className="flex flex-col justify-between gap-6 p-4 lg:p-5">
@@ -105,47 +65,13 @@ export function DocsQuickstart({
         ) : null}
       </div>
 
-      <div className="flex min-w-0 flex-col justify-between overflow-hidden rounded-xl border border-[var(--code-border)] bg-[var(--code-bg)] shadow-sm">
-        <CodeBlockContent
-          language="bash"
-          themes={CODE_THEMES}
-          className={cn(
-            "text-[0.78rem] leading-6",
-            "[&_.shiki]:!bg-transparent [&_pre]:!bg-transparent",
-            "[&_pre]:overflow-x-auto [&_pre]:py-4 [&_pre]:pr-4 [&_pre]:pl-4",
-            "[&_code]:font-mono",
-            LINE_NUMBERS,
-          )}
-        >
-          {snippets[manager]}
-        </CodeBlockContent>
-        <div className="flex items-center justify-end gap-1.5 px-2 pb-2">
-          <button
-            type="button"
-            onClick={copy}
-            aria-label={copied ? m.navCopied() : m.navCopy()}
-            className="flex size-7 items-center justify-center rounded-md border border-[var(--code-border)] bg-[var(--code-chrome-bg)] text-[var(--code-muted)] transition-colors hover:text-[var(--code-fg)]"
-          >
-            {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-          </button>
-          <DropdownMenu>
-            <DropdownMenuTrigger className="inline-flex h-7 items-center gap-1.5 rounded-md border border-[var(--code-border)] bg-[var(--code-chrome-bg)] px-2 text-[0.75rem] text-[var(--code-fg)] transition-colors hover:border-[var(--code-muted)]">
-              <PackageIcon pm={manager} className="size-3.5" />
-              {manager}
-              <ChevronDown className="size-3 text-[var(--code-muted)]" aria-hidden />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32">
-              {MANAGERS.map((option) => (
-                <DropdownMenuItem key={option} onClick={() => setManager(option)}>
-                  <PackageIcon pm={option} className="size-3.5" />
-                  {option}
-                  {option === manager ? <Check className="ml-auto size-3.5" /> : null}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+      <PMTabs
+        npm={npm}
+        pnpm={pnpm}
+        bun={bun}
+        yarn={yarn}
+        className={cn("my-0 min-w-0 rounded-xl shadow-sm", LINE_NUMBERS)}
+      />
     </section>
   );
 }
