@@ -382,9 +382,39 @@ export function contentMetaPlugin(): Plugin {
         .replace(/\.mdx$/, "")
         .replace(/(^|\/)index$/, "")
         .replace(/\/$/, "");
-      return `${serializeModuleValue(slug)}: ${serializeModuleValue(fs.readFileSync(file, "utf8"))}`;
+      return { slug, source: fs.readFileSync(file, "utf8") };
     });
-    return `export const ${exportName} = {${entries.join(",")}};`;
+    if (contentSubdir === "guides") {
+      const index = entries.find((entry) => entry.slug === "");
+      if (index) {
+        const groups = new Map<string, string[]>();
+        const guides = entries
+          .filter((entry) => entry.slug !== "")
+          .map((entry) => ({ ...entry, frontmatter: extractFrontmatter(entry.source) }))
+          .sort((a, b) => String(a.frontmatter.title).localeCompare(String(b.frontmatter.title)));
+        for (const guide of guides) {
+          const category = String(guide.frontmatter.category ?? "Guides");
+          const links = groups.get(category) ?? [];
+          const title = String(guide.frontmatter.title ?? guide.slug).replace(/[\\[\]]/g, "\\$&");
+          const description = guide.frontmatter.description;
+          links.push(`- [${title}](/guides/${guide.slug})${description ? `: ${description}` : ""}`);
+          groups.set(category, links);
+        }
+        // All raw consumers (guides.md and llms-full.txt) share the HTML guide inventory.
+        const inventory = Array.from(
+          groups,
+          ([category, links]) => `## ${category}\n\n${links.join("\n")}`,
+        ).join("\n\n");
+        if (!index.source.includes("{/* guide-index */}")) {
+          throw new Error("Guide index is missing its inventory placeholder");
+        }
+        index.source = index.source.replace("{/* guide-index */}", () => inventory);
+      }
+    }
+    const serialized = entries.map(
+      ({ slug, source }) => `${serializeModuleValue(slug)}: ${serializeModuleValue(source)}`,
+    );
+    return `export const ${exportName} = {${serialized.join(",")}};`;
   }
 
   return {

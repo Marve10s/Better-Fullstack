@@ -350,12 +350,27 @@ export function useOnBuilderRoute() {
   );
 }
 
+// On the docs grain the lime button needs an edge to separate it from the lime backdrop.
+const TRY_NOW_ON_GRAIN = "shadow-[0_0_0_1px_rgb(27_26_23/0.22)] dark:shadow-none";
+
 export function Navbar() {
+  const onDocs = useRouterState({
+    select: (state) => /^\/(docs|guides)(\/|$)/.test(state.location.pathname),
+  });
   // The builder folds the brand, languages and preferences into its own bar.
   if (useOnBuilderRoute()) return null;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/85 backdrop-blur-md">
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full border-b",
+        // Docs and guides extend their grain frame behind this bar, so it is frosted
+        // glass there: the panel slides under it blurred instead of being cut off.
+        onDocs
+          ? "border-ink/10 bg-surface/15 backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/20"
+          : "border-border bg-background/85 backdrop-blur-md",
+      )}
+    >
       <nav className="container relative mx-auto flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-5 sm:gap-7">
           <Link
@@ -410,7 +425,10 @@ export function Navbar() {
           <Link
             to="/new"
             search={BUILDER_COMMAND_SEARCH}
-            className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-all hover:gap-2 hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]"
+            className={cn(
+              "group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-all hover:gap-2 hover:bg-[#d2ee72] sm:px-4 sm:py-2 sm:text-[12px]",
+              onDocs && TRY_NOW_ON_GRAIN,
+            )}
           >
             {m.navTryNow()}
             <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 sm:h-3.5 sm:w-3.5" />
@@ -420,7 +438,10 @@ export function Navbar() {
           <Link
             to="/new"
             search={BUILDER_COMMAND_SEARCH}
-            className="group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-all hover:gap-2 hover:bg-[#d2ee72]"
+            className={cn(
+              "group inline-flex items-center gap-1.5 rounded-md bg-[#C6E853] px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-black transition-all hover:gap-2 hover:bg-[#d2ee72]",
+              onDocs && TRY_NOW_ON_GRAIN,
+            )}
           >
             {m.navTryNow()}
             <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />

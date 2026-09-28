@@ -3,10 +3,9 @@ import { Link } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { TbArrowLeft as ArrowLeft, TbArrowRight as ArrowRight } from "react-icons/tb";
 
-import type { TocEntry } from "@/lib/docs/remark-extract-toc";
 import type { DocPage, PageNode } from "@/lib/docs/source";
 
-import { DocsLayout } from "@/components/docs/docs-layout";
+import { articleClassName, DocsLayout, DocsToc } from "@/components/docs/docs-layout";
 import { DocsPageActions } from "@/components/docs/docs-page-actions";
 import { mdxComponents } from "@/components/docs/mdx";
 import { canRenderDocPageContent, localizeDocPage, useDocPageContent } from "@/lib/docs/source";
@@ -25,64 +24,60 @@ export type DocsPageContentProps = {
 };
 
 export function DocsPageContent(props: DocsPageContentProps) {
-  const localizedPage = localizeDocPage(props.page);
-  const localizedNeighbors = {
-    previous: props.neighbors.previous,
-    next: props.neighbors.next,
-  };
-  if (!canRenderDocPageContent()) return <DocsPageShell page={localizedPage} />;
+  const page = localizeDocPage(props.page);
+  const landing = isLandingPage(page);
+  const canRender = canRenderDocPageContent();
+  const header = landing ? null : <DocsPageHeader page={page} />;
+  // The layout stays mounted while the MDX chunk loads so the content card,
+  // which is the desktop scroll container, is never swapped for a fallback copy.
   return (
-    <Suspense fallback={<DocsPageShell page={localizedPage} />}>
-      <DocsPageBody page={localizedPage} neighbors={localizedNeighbors} />
-    </Suspense>
+    <DocsLayout
+      variant={landing ? "landing" : "default"}
+      toc={
+        canRender && !landing ? (
+          <Suspense fallback={null}>
+            <DocsPageToc page={page} />
+          </Suspense>
+        ) : null
+      }
+    >
+      <article className={articleClassName(landing)}>
+        {canRender ? (
+          <Suspense fallback={header}>
+            <DocsPageBody page={page} neighbors={props.neighbors} />
+          </Suspense>
+        ) : (
+          header
+        )}
+      </article>
+    </DocsLayout>
   );
 }
-
-const EMPTY_TOC: TocEntry[] = [];
 
 function isLandingPage(page: DocPage) {
   return page.frontmatter.layout === "landing";
 }
 
-function articleClassName(landing: boolean) {
-  return cn(
-    "mx-auto w-full px-5 py-12 sm:px-8",
-    landing ? "max-w-[78rem] lg:py-16" : "max-w-[52rem] lg:py-14",
-  );
-}
-
-/** Header-only shell shown while the page's MDX chunk loads. */
-function DocsPageShell({ page }: { page: DocPage }) {
-  const landing = isLandingPage(page);
-  return (
-    <DocsLayout toc={EMPTY_TOC} variant={landing ? "landing" : "default"}>
-      <article className={articleClassName(landing)}>
-        {landing ? null : <DocsPageHeader page={page} />}
-      </article>
-    </DocsLayout>
-  );
+function DocsPageToc({ page }: { page: DocPage }) {
+  return <DocsToc entries={useDocPageContent(page).toc} />;
 }
 
 function DocsPageHeader({ page, markdown }: { page: DocPage; markdown?: string }) {
   const sectionLabel = formatSectionLabel(page.slug[0]);
   return (
     <header className="mb-10">
-      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="flex items-center gap-1.5 text-[0.8125rem] text-muted-foreground">
-          <span>{m.navDocs()}</span>
-          <span aria-hidden>›</span>
-          <span className="text-foreground">{sectionLabel}</span>
-        </p>
+      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="font-medium text-[0.8125rem] text-muted-foreground">{sectionLabel}</p>
         {markdown !== undefined ? <DocsPageActions path={page.path} markdown={markdown} /> : null}
       </div>
       <div className="max-w-3xl">
         {page.frontmatter.title ? (
-          <h1 className="font-semibold text-[2.5rem] text-foreground leading-[1.05] tracking-[-0.03em] md:text-5xl">
+          <h1 className="font-medium text-[2.25rem] text-foreground leading-[1.08] tracking-[-0.035em] md:text-[2.75rem]">
             {page.frontmatter.title}
           </h1>
         ) : null}
         {page.frontmatter.description ? (
-          <p className="mt-4 text-base text-muted-foreground leading-7 md:text-lg">
+          <p className="mt-4 text-base text-muted-foreground leading-7 md:text-[1.0625rem]">
             {page.frontmatter.description}
           </p>
         ) : null}
@@ -97,9 +92,8 @@ function DocsPageBody({ page, neighbors }: DocsPageContentProps) {
   const landing = isLandingPage(page);
 
   return (
-    <DocsLayout toc={landing ? EMPTY_TOC : content.toc} variant={landing ? "landing" : "default"}>
-      <article className={articleClassName(landing)}>
-        {landing ? null : <DocsPageHeader page={page} markdown={content.raw} />}
+    <>
+      {landing ? null : <DocsPageHeader page={page} markdown={content.raw} />}
 
         <div className={cn("docs-prose", landing && "docs-landing")}>
           <MDXProvider components={mdxComponents}>
@@ -110,12 +104,12 @@ function DocsPageBody({ page, neighbors }: DocsPageContentProps) {
         {!landing && (neighbors.previous || neighbors.next) && (
           <nav
             aria-label={m.docsPageNavigation()}
-            className="mt-14 grid grid-cols-1 gap-3 border-[var(--docs-border-subtle)] border-t pt-8 sm:grid-cols-2"
+            className="mt-14 grid grid-cols-1 gap-3 border-[var(--docs-panel-border)] border-t pt-8 sm:grid-cols-2"
           >
             {neighbors.previous ? (
               <Link
                 to={neighbors.previous.url}
-                className="flex flex-col gap-1 rounded-lg border border-[var(--docs-border-subtle)] p-4 transition-colors hover:border-[var(--docs-border-strong)] hover:bg-[var(--docs-surface-elevated)]"
+                className="flex flex-col gap-1 rounded-xl border border-[var(--docs-panel-border)] p-4 transition-colors hover:border-[var(--docs-border-strong)] hover:bg-[var(--docs-panel)]"
               >
                 <span className="flex items-center gap-1.5 text-[0.8125rem] text-muted-foreground">
                   <ArrowLeft className="size-3.5" />
@@ -131,7 +125,7 @@ function DocsPageBody({ page, neighbors }: DocsPageContentProps) {
             {neighbors.next ? (
               <Link
                 to={neighbors.next.url}
-                className="flex flex-col items-end gap-1 rounded-lg border border-[var(--docs-border-subtle)] p-4 transition-colors hover:border-[var(--docs-border-strong)] hover:bg-[var(--docs-surface-elevated)] sm:text-right"
+                className="flex flex-col items-end gap-1 rounded-xl border border-[var(--docs-panel-border)] p-4 transition-colors hover:border-[var(--docs-border-strong)] hover:bg-[var(--docs-panel)] sm:text-right"
               >
                 <span className="flex items-center gap-1.5 text-[0.8125rem] text-muted-foreground">
                   {m.docsNext()}
@@ -144,8 +138,7 @@ function DocsPageBody({ page, neighbors }: DocsPageContentProps) {
             )}
           </nav>
         )}
-      </article>
-    </DocsLayout>
+    </>
   );
 }
 

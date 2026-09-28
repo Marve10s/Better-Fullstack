@@ -1,5 +1,4 @@
 import { create, insertMultiple, search } from "@orama/orama";
-import matter from "gray-matter";
 
 import type { DocFrontmatter } from "@/lib/docs/source";
 
@@ -23,8 +22,8 @@ export function buildSearchSections(
 
   for (const page of pages) {
     const rawSource = typeof page.rawSource === "string" ? page.rawSource : "";
-    const { data, content } = matter(rawSource);
-    const pageTitle = (data?.title as string) ?? page.frontmatter?.title ?? page.url;
+    const content = rawSource.replace(/^---[ \t]*\r?\n[\s\S]*?\r?\n---[ \t]*(?:\r?\n|$)/, "");
+    const pageTitle = page.frontmatter?.title ?? page.url;
 
     const headingRe = /^(#{2,4})\s+(.+)$/gm;
     let lastIndex = 0;

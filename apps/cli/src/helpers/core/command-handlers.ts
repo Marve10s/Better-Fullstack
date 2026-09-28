@@ -53,6 +53,11 @@ import {
   trackProjectCreation,
 } from "@/telemetry/analytics";
 import {
+  ProjectCreationError,
+  projectCreationFailure,
+  type CreationStage,
+} from "@/telemetry/creation-failure";
+import {
   getKotlinJavaIncompatibilityReason,
   getReplacedCodeQualityTools,
   getToolingCapability,
@@ -384,7 +389,13 @@ export async function createProjectHandler(
   return runWithContextAsync({ silent }, async () => {
     const startTime = Date.now();
     const timeScaffolded = new Date().toISOString();
-    let telemetrySource: TelemetrySource = silent ? "programmatic" : "cli-interactive";
+    let telemetrySource: TelemetrySource = silent
+      ? "programmatic"
+      : input.yes || input.part?.length || input.config || input.fromHistory
+        ? "cli-flags"
+        : "cli-interactive";
+    let failureStage: CreationStage = "configuration";
+    let failureConfig: Partial<ProjectConfig> | Record<string, unknown> = input;
 
     try {
       if (!isSilent() && input.renderTitle !== false) {
@@ -436,12 +447,14 @@ export async function createProjectHandler(
         ...configBase,
         ...explicitInput,
       };
+      failureConfig = originalInput;
       const providedFlags = getProvidedFlags(explicitInput);
 
       // Input-only, so it runs before any directory is resolved, cleared, or
       // created. A rejected shape must never cost the user their files.
       assertShapeInputIsUsable(originalInput, providedFlags);
 
+      failureStage = "directory_preparation";
       const useDefaultsForName = Boolean(input.yes) || hasConfigBase;
       let currentPathInput: string;
       if (useDefaultsForName && input.projectName) {
@@ -665,6 +678,7 @@ export async function createProjectHandler(
         currentPathInput = finalPathInput;
       }
 
+      failureStage = "configuration";
       let cliInput = originalInput;
 
       if (input.template && input.template !== "none") {
@@ -755,6 +769,7 @@ export async function createProjectHandler(
           }
         }
 
+        failureConfig = config;
         validateConfigCompatibility(config, providedFlags, cliInput);
 
         const yesPreflight = validatePreflightConfig(config);
@@ -794,6 +809,7 @@ export async function createProjectHandler(
           }
         }
 
+        failureConfig = config;
         validateConfigCompatibility(config, providedFlags, cliInput);
       }
 
@@ -805,6 +821,7 @@ export async function createProjectHandler(
       }
 
       if (input.dryRun) {
+        failureStage = "generation";
         const { generateVirtualProject, EMBEDDED_TEMPLATES } =
           await import("@better-fullstack/template-generator");
         const result = await generateVirtualProject({
@@ -891,20 +908,27 @@ export async function createProjectHandler(
         };
       }
 
+      failureStage = "directory_preparation";
       const createResult = await createProject(config, {
         manualDb: cliInput.manualDb ?? input.manualDb,
         yolo: cliInput.yolo,
       });
       const setupFailures = createResult?.setupFailures ?? [];
 
+      failureStage = "verification";
       if (cliInput.verify ?? input.verify) {
         try {
           assertGeneratedVerificationComplete(await generatedCheckRunner(config));
         } catch (error) {
-          throw new CLIError(error instanceof Error ? error.message : String(error));
+          throw new ProjectCreationError(
+            error instanceof Error ? error.message : String(error),
+            "verification",
+            error,
+          );
         }
       }
 
+      failureStage = "post_installation";
       const reproducibleCommand = generateReproducibleCommand(config);
       if (!isSilent()) {
         log.success(
@@ -989,11 +1013,11 @@ export async function createProjectHandler(
       }
       await trackEvent(
         "project_created",
-        {},
+        failureConfig,
         {
           source: telemetrySource,
           success: false,
-          errorName: error instanceof Error ? error.name : "UnknownError",
+          ...projectCreationFailure(error, failureStage),
           durationMs: Date.now() - startTime,
         },
         input.disableAnalytics,

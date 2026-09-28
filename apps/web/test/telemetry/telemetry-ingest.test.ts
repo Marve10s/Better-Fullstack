@@ -35,6 +35,48 @@ function collectEvents() {
 }
 
 describe("PostHog ingestion boundary", () => {
+  it("forwards safe creation failure diagnostics without private error content", async () => {
+    const batches = collectEvents();
+    const response = await handleTelemetryIngest(
+      request({
+        eventId: crypto.randomUUID(),
+        machineId: crypto.randomUUID(),
+        eventType: "project_created",
+        source: "mcp",
+        client: "cli",
+        success: false,
+        failureStage: "directory_preparation",
+        failureReason: "target-not-empty",
+        errorName: "CLIError",
+        ecosystem: "typescript",
+        backend: "hono",
+        projectName: "private-client",
+        error: "private-token",
+        cause: { message: "private-token" },
+      }),
+      options,
+    );
+    expect(response.status).toBe(204);
+    expect(batches).toMatchObject([
+      {
+        batch: [
+          {
+            event: "project_created",
+            properties: {
+              success: false,
+              failureStage: "directory_preparation",
+              failureReason: "target-not-empty",
+              errorName: "CLIError",
+              backend: "hono",
+              ecosystems: ["typescript"],
+            },
+          },
+        ],
+      },
+    ]);
+    expect(JSON.stringify(batches)).not.toContain("private");
+  });
+
   it("preserves canonical project choices and identity while dropping private data on the wire", async () => {
     const batches = collectEvents();
     const machineId = crypto.randomUUID();

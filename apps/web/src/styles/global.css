@@ -681,6 +681,59 @@
   background: var(--background);
 }
 
+/* Docs frame: docs and guides float as a padded panel over brand grain. */
+:root {
+  --docs-panel: #efe7d3;
+  --docs-panel-border: rgb(27 26 23 / 0.1);
+  --docs-card: #fdfaf2;
+  --docs-nav-active: color-mix(in srgb, #c6e853 42%, #fdfaf2);
+  --docs-nav-active-fg: #1b1a17;
+}
+
+.dark {
+  --docs-panel: #121110;
+  --docs-panel-border: rgb(255 255 255 / 0.08);
+  --docs-card: #1a1917;
+  --docs-nav-active: rgb(198 232 83 / 0.12);
+  --docs-nav-active-fg: #d9f27f;
+}
+
+/* Grainy brand-lime backdrop behind the docs panel and the docs navbar. Both use
+   a fixed attachment so the navbar and the frame read as one surface. */
+.docs-grain {
+  background-color: #c6e853;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(80% 70% at 0% 0%, #f1f9cf 0%, transparent 60%),
+    radial-gradient(70% 60% at 100% 0%, #d7f07a 0%, transparent 65%),
+    radial-gradient(80% 70% at 100% 100%, #8fb536 0%, transparent 70%),
+    linear-gradient(155deg, #e3f3a2 0%, #c6e853 40%, #b0d442 72%, #93ba33 100%);
+  background-attachment: fixed;
+}
+
+.dark .docs-grain {
+  background-color: #141b0b;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.14 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(80% 70% at 0% 0%, rgb(198 232 83 / 0.34) 0%, transparent 60%),
+    radial-gradient(70% 60% at 100% 0%, rgb(143 181 54 / 0.22) 0%, transparent 65%),
+    radial-gradient(80% 70% at 100% 100%, #080a05 0%, transparent 70%),
+    linear-gradient(155deg, #2c3d12 0%, #1c270d 42%, #121809 75%, #0b0e06 100%);
+}
+
+.docs-panel {
+  background: var(--docs-panel);
+  border: 1px solid var(--docs-panel-border);
+  box-shadow:
+    0 30px 80px -30px rgb(10 4 40 / 0.55),
+    0 2px 6px rgb(10 4 40 / 0.15);
+}
+
+.docs-card {
+  background: var(--docs-card);
+  border: 1px solid var(--docs-panel-border);
+}
+
 .shiki,
 .shiki span {
   color: var(--shiki-light, inherit);
@@ -709,15 +762,15 @@
   margin-top: 1.2rem;
 }
 
-.docs-prose h2,
-.docs-prose h3,
-.docs-prose h4 {
+.docs-prose h2:not(:where(.not-prose *)),
+.docs-prose h3:not(:where(.not-prose *)),
+.docs-prose h4:not(:where(.not-prose *)) {
   color: var(--prose-text);
   font-weight: 600;
   scroll-margin-top: 5rem;
 }
 
-.docs-prose h2 {
+.docs-prose h2:not(:where(.not-prose *)) {
   margin-top: 3rem;
   font-size: 1.5rem;
   line-height: 1.3;
@@ -734,14 +787,14 @@
   margin-top: 0.85rem;
 }
 
-.docs-prose h3 {
+.docs-prose h3:not(:where(.not-prose *)) {
   margin-top: 2.2rem;
   font-size: 1.125rem;
   line-height: 1.4;
   letter-spacing: -0.01em;
 }
 
-.docs-prose h4 {
+.docs-prose h4:not(:where(.not-prose *)) {
   margin-top: 1.8rem;
   font-size: 1rem;
   line-height: 1.4;
@@ -786,20 +839,20 @@
   background-color: transparent !important;
 }
 
-.docs-prose ul,
-.docs-prose ol {
+.docs-prose ul:not(:where(.not-prose *)),
+.docs-prose ol:not(:where(.not-prose *)) {
   padding-left: 1.4rem;
 }
 
-.docs-prose li + li {
+.docs-prose li:not(:where(.not-prose *)) + li {
   margin-top: 0.35rem;
 }
 
-.docs-prose ul > li {
+.docs-prose ul:not(:where(.not-prose *)) > li {
   list-style: disc;
 }
 
-.docs-prose ol > li {
+.docs-prose ol:not(:where(.not-prose *)) > li {
   list-style: decimal;
 }
 

@@ -5,7 +5,20 @@ import { BrowserTelemetryControls } from "@/components/docs/mdx/browser-telemetr
 import { Callout } from "@/components/docs/mdx/callout";
 import { CliFlagTable } from "@/components/docs/mdx/cli-flags-table";
 import { CodeBlock } from "@/components/docs/mdx/code-block";
-import { DocsCard, DocsCardGrid, DocsHero } from "@/components/docs/mdx/docs-landing";
+import {
+  DocsCard,
+  DocsCardGrid,
+  DocsLinkItem,
+  DocsLinkList,
+  DocsRecentReleases,
+  DocsWelcome,
+} from "@/components/docs/mdx/docs-landing";
+import {
+  DocsBanner,
+  DocsQuickLink,
+  DocsQuickLinks,
+  DocsQuickstart,
+} from "@/components/docs/mdx/docs-quickstart";
 import { GuideCompatibilityNote } from "@/components/docs/mdx/guide-compatibility-note";
 import { GuideStackSnapshot } from "@/components/docs/mdx/guide-stack-snapshot";
 import { McpClientTabs } from "@/components/docs/mdx/mcp-client-tabs";
@@ -25,9 +38,16 @@ export const mdxComponents: Record<string, ComponentType<any>> = {
   Callout,
   CategoryCount,
   CliFlagTable,
+  DocsBanner,
   DocsCard,
   DocsCardGrid,
-  DocsHero,
+  DocsLinkItem,
+  DocsLinkList,
+  DocsQuickLink,
+  DocsQuickLinks,
+  DocsQuickstart,
+  DocsRecentReleases,
+  DocsWelcome,
   GuideCompatibilityNote,
   GuideStackSnapshot,
   McpClientTabs,
