@@ -79,8 +79,8 @@ See [generated-output guidance](../generator-change-playbook.md) and
 ## Verification
 
 Choose tests that prove behavior, including rejected combinations when compatibility changes.
-Current examples live in `apps/cli/test/features/`, `test/ecosystems/`, and
-`packages/types/test/stack/`. Inspect `runTRPCTest` and `createVirtual` at their definitions and
+Current examples live in `apps/cli/test/features/`, `apps/cli/test/ecosystems/`,
+`apps/web/test/ecosystems/`, and `packages/types/test/stack/`. Inspect `runTRPCTest` and `createVirtual` at their definitions and
 nearby tests instead of copying a second API reference from documentation.
 
 Rebuild changed workspace producers before testing consumers of their built output. Run relevant
