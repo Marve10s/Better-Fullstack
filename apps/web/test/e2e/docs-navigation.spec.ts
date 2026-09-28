@@ -113,7 +113,24 @@ test("quickstart tabs display and copy the selected package manager command", as
     has: page.getByRole("heading", { name: "Connect in one command", exact: true }),
   });
   const pnpm = quickstart.getByRole("tab", { name: "pnpm", exact: true });
-  await pnpm.click();
+  const npm = quickstart.getByRole("tab", { name: "npm", exact: true });
+  const yarn = quickstart.getByRole("tab", { name: "yarn", exact: true });
+  await npm.focus();
+  await npm.press("ArrowLeft");
+  await expect(yarn).toBeFocused();
+  await yarn.press("ArrowRight");
+  await expect(npm).toBeFocused();
+  await npm.press("End");
+  await expect(yarn).toBeFocused();
+  await yarn.press("Home");
+  await expect(npm).toBeFocused();
+  await npm.press("ArrowRight");
+  await expect(pnpm).toBeFocused();
+  await pnpm.press("ArrowRight");
+  const bun = quickstart.getByRole("tab", { name: "bun", exact: true });
+  await expect(bun).toBeFocused();
+  await bun.press("ArrowLeft");
+  await expect(pnpm).toBeFocused();
   await expect(pnpm).toHaveAttribute("aria-selected", "true");
   await expect(quickstart.locator("pre")).toContainText(
     "pnpm dlx create-better-fullstack@latest install",
