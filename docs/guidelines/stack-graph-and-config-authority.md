@@ -6,7 +6,8 @@ state, reproducible commands, and any code that projects a stack into a flatter 
 ## Authority
 
 - When `stackParts` exists, it is the authoritative stack graph.
-- Top-level config fields are the Legacy Flat Config projection/cache.
+- Top-level stack selections are the Legacy Flat Config projection/cache. Explicit project
+  metadata remains outside the graph as described below.
 - `graphSummary` and `effectiveStack` are derived display data.
 - A flat-only config remains supported input and is lifted through
   `legacyProjectConfigToStackParts()`.
@@ -14,6 +15,18 @@ state, reproducible commands, and any code that projects a stack into a flatter 
   flat values.
 
 Changing a flat field without updating the graph is a bug even if one interface appears correct.
+
+## Settings authority
+
+`STACK_PART_PROJECT_SETTING_KEYS` and `PROJECT_METADATA_SETTING_KEYS` in
+`packages/types/src/stack/stack-graph.ts` define the boundary:
+
+- The seven `shadcn*` settings belong to the selected TypeScript `shadcn-ui` UI Stack Part.
+- `astroIntegration` belongs to the selected Astro frontend Stack Part.
+- `elixirJson` remains project metadata because plain Elixir projects need not have a backend owner.
+
+Explicit graph settings win over stale flat caches. Legacy configs may migrate missing settings
+once. Do not reopen the old inventory's deferred-settings plan or create a second mutation authority.
 
 ## Stack Part Identity
 

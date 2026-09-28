@@ -1,7 +1,7 @@
 # Recipe generation contract
 
-This reference records the Phase 5 design for dependable post-scaffold generation. Product
-priority remains in `docs/next-updates-roadmap.md`.
+This reference describes the implemented post-scaffold recipe workflow in `apps/cli/src/recipes/`.
+Product priority remains in `docs/next-updates-roadmap.md`.
 
 ## Authority
 
@@ -59,5 +59,7 @@ use one managed region in existing documents.
 
 CLI `context --json` and MCP `bfs_get_project_context` call the same service. Its schema-versioned
 document contains roles, capabilities, evidence, version references, compatibility results,
-recipes, commands, update support, and safe next actions. It excludes source code and absolute
-project paths.
+recipes, commands, update support, and safe next actions. It excludes source code. Suggested
+commands can include an absolute project path when the project is outside the current directory;
+this local context response is not a telemetry payload. The implementation is
+`apps/cli/src/project/project-context.ts`.

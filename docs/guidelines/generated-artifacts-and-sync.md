@@ -55,19 +55,18 @@ The web prebuild runs `apps/web/scripts/generate-stack-pages.ts`. Change its sou
 stack metadata rather than editing generated stack-page artifacts. Review route count and canonical
 URLs when selection identifiers change.
 
-## Generated Routes and Backend Types
+## Generated Routes
 
 - TanStack route trees are framework output; edit route modules and regenerate through the normal
-  web build/typecheck path.
-- Convex `_generated` files are projections; edit schema/functions and use the project’s Convex
-  generation workflow when that task is authorized.
+  web build path. Typecheck alone does not regenerate the route tree.
 - Do not invent declarations in generated files to hide a source type error.
 
 ## Version Synchronization
 
-`sync-versions` updates dependencies in source templates and reminds maintainers to rebuild the
-embedded template map. Review dependency policy and source-template diffs before accepting the
-generated file.
+`bun run sync-versions` checks hardcoded `package.json.hbs` versions against the dependency map;
+it does not update them. `bun run --cwd packages/template-generator sync-versions:fix` applies
+mismatches to source templates. The producer is `scripts/sync-template-versions.ts` in that package.
+Review those diffs, then regenerate embedded templates when source versions change.
 
 ## Dirty Worktrees
 

@@ -8,7 +8,7 @@ tables, Markdown/LLM endpoints, structured metadata, and stack landing pages.
 - Product documentation lives in `apps/web/content/docs`.
 - Guides live in `apps/web/content/guides`.
 - Blog/changelog content follows its local content source.
-- Repository project documents describe intent/history and must not duplicate public instructions.
+- Repository project documents track unfinished work and must not duplicate public instructions.
 - Shared schemas and CLI registries remain authoritative for accepted options, defaults, and flags.
 
 ## Frontmatter
@@ -57,6 +57,8 @@ Do not fabricate freshness dates. Update them when the page was substantively re
 - Keep navigation labels task-oriented and avoid duplicate pages competing for the same intent.
 - Search indexes use canonical/fallback content rules; pending translations must not index stale
   bodies as authoritative.
+- `apps/web/vite-plugins/content-meta.ts` provides virtual content metadata and localized loaders.
+  Collection source modules apply fallback rules; browser and SSR MDX loaders remain separate.
 - Lazy MDX loading is intentional. Do not import the entire docs corpus into the app entry bundle.
 
 ## Markdown and Agent Surfaces

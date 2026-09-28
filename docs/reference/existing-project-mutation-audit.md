@@ -1,6 +1,6 @@
 # Existing-project mutation audit
 
-This audit covers the Phase 2 command set: `add`, `remove`, `update`, `gen`, and local
+This audit covers the existing-project command set: `add`, `remove`, `update`, `gen`, and local
 `registry add`. The source registry is `scripts/validation/mutation-contract-audit.ts`. Its validator checks
 the implementation markers and this document during the release guard.
 
@@ -13,28 +13,23 @@ decisions, manual-review reasons, checks, side effects, history, recovery identi
 | `add`          | The stack-update planner supports `--dry-run`. The explicit command approves ordinary changes. Architecture swaps require acknowledgement. | The shared project transaction binds preimages and rolls back generated files.          | Scaffold history and recovery metadata record the operation.                               | Optional dependency installation runs after the filesystem commit. Contract v2 reports its status and recovery action. |
 | `remove`       | A part-removal adapter issues an exact review token over the stack-update plan.                                                            | It uses the stack-update engine and shared transaction.                                 | Scaffold history and recovery metadata record the operation.                               | Dependency installation remains a manual action.                                                                       |
 | `update`       | Scaffold update and stack update issue exact review tokens. Their domain planners remain separate.                                         | Both use the shared project transaction and exact preimages.                            | Scaffold history and recovery metadata record the operation.                               | Template update does not run a package manager.                                                                        |
-| `gen`          | The plan returns the resource and router-index bodies. Apply requires the unchanged token.                                                 | Both files use one transaction. A stale router anchor blocks the plan before any write. | Recovery metadata records output hashes and supports automatic rollback or later recovery. | No external side effect.                                                                                               |
+| `gen`          | The adapter plans every recipe artifact and managed-region edit. Apply requires the unchanged token.                                                 | All recipe files, records, and agent-context edits use one transaction. Stale anchors or ownership hashes block mutation. | Recovery metadata records output hashes and supports automatic rollback or later recovery. | No external side effect.                                                                                               |
 | `registry add` | The local-pack plan returns pack files, dependency manifests, environment edits, and metadata merges. Apply requires the unchanged token.  | Every output uses one transaction and exact preimages. Remote sources remain rejected.  | Recovery metadata records output hashes and supports automatic rollback or later recovery. | The command edits dependency manifests but never runs a package manager. It reports the required install action.       |
 
-## Findings and narrow fixes
+## Shared constraints
 
-The audit did not find a reason to replace the existing transaction primitive or merge the stack and
-scaffold planners. `add` and `remove` already use stack update. Both update engines already share
-recovery.
+Stack and scaffold planners keep separate domain rules while sharing transaction, review-token,
+and recovery primitives in `packages/project-lifecycle`. `add`, `remove`, and `replace` use the
+stack-update engine.
 
-The original `gen` path wrote a resource before router wiring was known to be safe. It now plans the
-two exact files, rejects stale anchors, requires a token, and applies through the shared transaction.
+`gen` now includes persistent and in-memory recipe adapters. Its write set is not limited to the
+original two-file resource/router operation; see [the recipe contract](recipe-generation-contract.md).
+Local registry installation includes pack files, manifests, environment edits, lock metadata, and
+config in one transaction. Remote registry sources remain disabled.
 
-The original local registry path wrote pack files, package manifests, environment files, its lock,
-and `bts.jsonc` directly. It now plans every final byte and applies them through one transaction.
-Remote registry sources stay disabled.
-
-Stack update, scaffold update, and removal duplicated plan hashing. They now use one canonical
-review-token helper while keeping their different domain rules.
-
-Package-manager and toolchain processes cannot be part of the byte-for-byte filesystem transaction.
-Version 2 reports those side effects, their status, and a compensating action. A restored filesystem
-does not imply that an external process was undone.
+Package-manager and toolchain processes are outside the byte-for-byte filesystem transaction.
+Contract v2 reports their status and compensating actions. Restoring files does not undo an
+external process.
 
 ## Other write boundaries
 

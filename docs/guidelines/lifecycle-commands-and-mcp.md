@@ -96,7 +96,7 @@ MCP is a transport for the product model, not a separate product.
 - `--no-install --no-git` avoids unrelated side effects in validation/scaffolding workflows.
 - Dry-run must be safe to repeat.
 - JSON mode must not depend on terminal formatting or interactive cancellation behavior.
-- Respect the scripted CLI guidance before matrix runs.
+- Follow [testing/README.md](../../testing/README.md) for prompt-free scaffold and matrix runs.
 
 ## Telemetry
 

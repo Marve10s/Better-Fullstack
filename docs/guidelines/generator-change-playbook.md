@@ -1,40 +1,52 @@
-# Generator Change Playbook
+# Generated output
 
-Use this guide when the task changes generated project files or the way stack selections affect emitted output.
+Use this guide when changing emitted files, template routing, or generated-project checks.
+For a new option, first read [the addition checklist](adding-new-tool-options/README.md).
 
-## Mental model
+## Owners and change flow
 
-- `packages/types` defines what selections are valid.
-- `packages/template-generator` turns those selections into a virtual file tree.
-- `apps/cli` writes that tree to disk for real project generation.
-- `apps/web` uses the same stack data to render previews and shareable configurations.
+`packages/types` owns valid selections and graph projections. `packages/template-generator`
+produces the virtual file tree. CLI generation and web previews consume that generator.
 
-If generated output changes but the web preview or CLI does not, the change is usually incomplete.
+Trace the selected value through compatibility, handler routing, dependencies, templates, and
+post-processing. Rebuild affected producers before testing built consumers. Follow
+[artifact regeneration](generated-artifacts-and-sync.md) rather than hand-editing embedded output.
 
-## Common change flow
+## Output constraints
 
-1. Confirm the stack value exists in the shared types layer.
-2. Update template-generator branches so the correct files are emitted.
-3. Update preview handling if the web builder should reflect the change.
-4. Re-run snapshot tests and any targeted package checks.
+- Compare generated files with the selected graph, including stored settings. Shadcn detail
+  settings are persisted and graph-owned; verify both round-trip config and emitted CSS,
+  `components.json`, and dependencies.
+- Emit helpers, imports, and variables only when the selected branch uses them. Fets request
+  adapters and Go server addresses have previously caused unused-variable build failures.
+- Backend-specific request context must agree with generated auth and API code. Type-check
+  protected procedures, including Fets, instead of relying on a nullable placeholder session.
+- Keep compatibility, feature handlers, and dependencies together. React Vite auth and non-React
+  API support need matching files, not only allowed selections or installed packages.
+- Use backend-aware path helpers. Redwood's self-contained layout differs from its separate-backend
+  layout. Inspect compatibility for the supported API/UI choices rather than copying a matrix here.
+- SvelteKit/SolidStart DaisyUI activation belongs in generated CSS with `@plugin "daisyui"`.
+- Fresh uses its bare `fresh` JSR mapping; do not add an overlapping `fresh/` prefix. Use shared
+  local-port helpers in generated guidance.
+- Shared packages consumed by AdonisJS must follow NodeNext relative-import rules, including `.js`
+  extensions, and declare their dependencies.
+- Root generated `check-types` commands need `--if-present` where some apps lack that script.
+- Better Auth's generated Kysely overrides live in `src/post-process/package-configs.ts` under the
+  generator. Verify affected auth recipes before changing them.
+- Existing-project updates compare against the formatted create-time scaffold baseline. Keep
+  raw-template fixtures explicit so formatter changes do not masquerade as user edits.
 
-## Snapshot expectations
+## Verification
 
-- `apps/cli/test/support/template-snapshots.test.ts` protects high-value generated output.
-- `apps/cli/test/support/snapshot-utils.ts` normalizes CRLF and trailing whitespace before snapshotting.
-- Snapshot updates should reflect meaningful template changes, not line-ending noise.
+- Use the closest feature/ecosystem test and inspect meaningful generated behavior. Native compile
+  checks and live framework assertions prove different things; report their limits.
+- `apps/cli/test/support/template-snapshots.test.ts` covers representative output. Its normalizer
+  handles CRLF and trailing whitespace; review intentional diffs rather than accepting bulk churn.
+- `apps/cli/test/recommendations/cli-builder-sync.test.ts` must fail on parsing gaps and missing
+  schema/prompt/builder values. Do not hide options such as explicit `none` behind unexplained skips.
+- Run `bun run test:release` for release-sensitive generator changes. That lane must build its own
+  prerequisites from a clean checkout.
+- Root scratch ignore rules must not hide nested tracked tests: `/test/` and `test/` differ.
 
-## Validation advice
-
-- Validate shadcn-specific behavior through generated files like `components.json`, CSS, and dependencies. `bts.jsonc` does not currently persist shadcn sub-options.
-- When a helper or variable is conditional, emit it only when downstream code uses it. Recent failures came from unconditional helpers (`toNativeRequest`, `addr`) becoming unused in certain stack branches.
-- For stack-specific type issues, inspect generated context types instead of assuming the template branch covers every backend. The `fets` + `trpc` + `better-auth` path was a real example of a missing branch.
-- Root workspace `check-types` commands for generated projects must use `--if-present` semantics because some templates do not define that script.
-- Redwood path helpers must stay backend-aware. When `frontend=redwood` and `backend != none`, generated paths should target `apps/web` and `apps/server`, not `web/api`.
-
-## Good verification targets
-
-- `bun test apps/cli/test/support/template-snapshots.test.ts`
-- `bun test apps/cli/test/recommendations/cli-builder-sync.test.ts`
-- package-local lint or type checks for the package you changed
-- focused generator scripts or matrix tests when the change touches a broad compatibility surface
+Use [testing/README.md](../../testing/README.md) for prompt-free scaffold runs, real runtime lanes,
+published-package validation, and diagnostics.

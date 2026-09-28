@@ -1,8 +1,13 @@
 # Update support policy
 
 Better Fullstack does not yet advertise a historical update window. The policy remains in
-`qualification` until two consecutive manifest-v2 releases pass the executable cross-version
-matrix. The current source list is empty, so `supportedFrom` and `supportedTo` are both `null`.
+`qualification` until published cross-version evidence is reviewed and the policy is activated.
+The current source list is empty, so `supportedFrom` and `supportedTo` are both `null`.
+
+As checked on 2026-09-25, published qualification reports pass all eight cases for v2.6.5 -> v2.6.7
+and v2.6.7 -> v2.6.8, including verified builds and exact recovery. Receipt availability has not
+activated the policy. The [active project](projects/active/platform-features.md) links those reports
+and tracks the remaining policy and client verification work.
 
 The executable policy lives in `packages/types/src/stack/update-support.ts`. Project status returns its
 decision through the same service for CLI human output, CLI JSON, and MCP.
