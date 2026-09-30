@@ -39,7 +39,7 @@
     "lint": "oxlint . && tsc --noEmit"
   },
   "dependencies": {
-    "fs-extra": "^11.4.0"
+    "fs-extra": "^11.4.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
