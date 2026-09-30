@@ -132,6 +132,16 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     reason:
       "Expo SDK 56 and React Native 0.86 ship a React 19.2 renderer, so the React release train stays exact on 19.2.8 until the mobile stack moves to 19.3.",
   },
+  "@types/react": {
+    pinnedVersion: "~19.2.18",
+    reason:
+      "Keep React types on the 19.2 line so templates do not type-check APIs missing from the pinned React 19.2.8 runtime.",
+  },
+  "@types/react-dom": {
+    pinnedVersion: "~19.2.7",
+    reason:
+      "Keep React types on the 19.2 line so templates do not type-check APIs missing from the pinned React 19.2.8 runtime.",
+  },
   "@auth0/nextjs-auth0": {
     pinnedVersion: "^4.23.0",
     reason: "Keep generated Next.js Auth0 integration on the explicitly tested SDK line.",

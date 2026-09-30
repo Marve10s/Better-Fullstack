@@ -1,13 +1,13 @@
 # Dependency Version Check Report
 
-Generated: 2026-09-30T08:23:00.198Z
+Generated: 2026-09-30T09:53:53.360Z
 
 ## Summary
 
-- **Outdated**: 169
+- **Outdated**: 170
 - **Template-only** (not in version map): 48
 - **Downgrades detected**: 0
-- **Up to date**: 574
+- **Up to date**: 573
 - **Errors**: 0
 
 ## Outdated Packages
@@ -31,9 +31,9 @@ Generated: 2026-09-30T08:23:00.198Z
 | @netlify/functions | ^5.3.0 | ^6.0.0 | - | map |
 | @vercel/sandbox | ^2.9.2 | ^3.5.1 | - | map |
 | vercel | ^54.18.2 | ^60.1.3 | - | map |
-| @nestjs/core | ^11.2.1 | ^12.1.0 | nestjs | map |
-| @nestjs/common | ^11.2.1 | ^12.1.0 | nestjs | map |
-| @nestjs/platform-express | ^11.2.1 | ^12.1.0 | nestjs | map |
+| @nestjs/core | ^11.2.1 | ^12.1.1 | nestjs | map |
+| @nestjs/common | ^11.2.1 | ^12.1.1 | nestjs | map |
+| @nestjs/platform-express | ^11.2.1 | ^12.1.1 | nestjs | map |
 | vite-plus | ^0.2.9 | ^1.0.0 | - | map |
 | @voidzero-dev/vite-plus-core | ^0.2.9 | ^1.0.0 | - | map |
 | @openai/agents | ^0.12.0 | ^0.18.0 | - | map |
@@ -68,7 +68,7 @@ Generated: 2026-09-30T08:23:00.198Z
 | @polar-sh/sdk | ^0.48.1 | ^0.49.0 | - | map |
 | wxt | ^0.20.27 | ^0.21.4 | - | map |
 | @opentui/core | ^0.4.5 | ^0.5.12 | - | map |
-| nodemailer | ^9.0.5 | ^10.0.11 | - | map |
+| nodemailer | ^9.0.5 | ^10.0.12 | - | map |
 | postmark | ^4.0.7 | ^5.1.0 | - | map |
 | mailgun.js | ^13.3.0 | ^14.0.1 | - | map |
 | @effect/platform | ^0.96.2 | ^0.97.2 | effect | map |
@@ -185,4 +185,10 @@ Generated: 2026-09-30T08:23:00.198Z
 | web-vitals | ^5.3.0 | ^6.2.2 | - | template |
 | fumadocs-core | ^16.15.4 | ^17.0.0 | - | template |
 | fumadocs-ui | ^16.15.4 | ^17.0.0 | - | template |
+
+### Patch Updates
+
+| Package | Current | Latest | Ecosystem | Source |
+|---------|---------|--------|-----------|--------|
+| @medusajs/js-sdk | ^2.21.1 | ^2.21.2 | - | map |
 
