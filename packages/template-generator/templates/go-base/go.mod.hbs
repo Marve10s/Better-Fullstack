@@ -59,6 +59,10 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.24
 {{/if}}
+{{#if (and (ne goApi "grpc-go") (ne goApi "grpc-gateway"))}}
+	// Frameworks such as go-zero pull grpc v1.80, which no longer builds against current golang.org/x/net.
+	google.golang.org/grpc v1.83.1 // indirect
+{{/if}}
 {{#if (eq goApi "grpc-go")}}
 	google.golang.org/grpc v1.83.1
 	google.golang.org/protobuf v1.36.11
