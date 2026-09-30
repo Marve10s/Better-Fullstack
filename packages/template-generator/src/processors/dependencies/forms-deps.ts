@@ -19,7 +19,7 @@ const REACT_WEB_FRAMEWORKS: Frontend[] = [
 const NATIVE_FRAMEWORKS: Frontend[] = ["native-bare", "native-uniwind", "native-unistyles"];
 
 // SolidJS frameworks
-const SOLID_FRAMEWORKS: Frontend[] = ["solid"];
+const SOLID_FRAMEWORKS: Frontend[] = ["solid", "solid-start", "tanstack-start-solid"];
 
 // Qwik frameworks
 const QWIK_FRAMEWORKS: Frontend[] = ["qwik"];

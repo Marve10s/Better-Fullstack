@@ -52,6 +52,7 @@ const SELF_BACKENDS = new Set([
   "self-nuxt",
   "self-svelte",
   "self-solid-start",
+  "self-tanstack-start-solid",
 ]);
 
 function isExecutableDatabasePart(config: ProjectConfig, part: StackPart): boolean {

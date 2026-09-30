@@ -46,7 +46,7 @@ export async function createContext(_opts: CreateContextOptions) {
 }
 {{/if}}
 
-{{else if (and (eq backend 'self') (includes frontend "tanstack-start"))}}
+{{else if (and (eq backend 'self') (or (includes frontend "tanstack-start") (includes frontend "tanstack-start-solid")))}}
 {{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}

@@ -1,4 +1,6 @@
-import type { StackState } from "@/lib/stack/constant";
+import { applyPresetOptions, getPreset, type PresetOptionSelection } from "@better-fullstack/types";
+
+import { DEFAULT_STACK, type StackState } from "@/lib/stack/stack-defaults";
 
 /** True for a multi-mode stack whose parts ("role:ecosystem:tool") all share one language. */
 function isSingleLanguageGraph(stack: Pick<StackState, "stackMode" | "stackPartSpecs">): boolean {
@@ -20,4 +22,13 @@ export function resolvePresetStack(presetStack: StackState): StackState {
   return isSingleLanguageGraph(presetStack)
     ? { ...presetStack, stackMode: "solo", stackPartSpecs: [] }
     : presetStack;
+}
+
+export function buildPresetStack(
+  presetId: string,
+  options: PresetOptionSelection = {},
+): StackState | undefined {
+  const preset = getPreset(presetId);
+  if (!preset) return undefined;
+  return resolvePresetStack({ ...DEFAULT_STACK, ...applyPresetOptions(preset, options) });
 }

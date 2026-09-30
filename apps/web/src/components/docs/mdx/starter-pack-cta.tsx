@@ -1,3 +1,4 @@
+import { getPreset } from "@better-fullstack/types";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
@@ -15,8 +16,7 @@ import {
   type StarterTrack,
 } from "@/lib/builder/starter-tracks";
 import { cn } from "@/lib/platform/utils";
-import { PRESET_TEMPLATES } from "@/lib/stack/constant";
-import { DEFAULT_STACK, type StackState } from "@/lib/stack/stack-defaults";
+import { DEFAULT_STACK } from "@/lib/stack/stack-defaults";
 import { generateStackCommand } from "@/lib/stack/stack-utils";
 
 type StarterPackCtaProps = {
@@ -24,14 +24,10 @@ type StarterPackCtaProps = {
 };
 
 function getTrackCommand(track: StarterTrack) {
-  const preset = PRESET_TEMPLATES.find((item) => item.id === track.presetId);
+  const preset = getPreset(track.presetId);
   if (!preset) return null;
 
-  return generateStackCommand({
-    ...DEFAULT_STACK,
-    ...preset.stack,
-    projectName: `my-${track.id}`,
-  } as StackState);
+  return generateStackCommand({ ...DEFAULT_STACK, ...preset.stack, projectName: `my-${track.id}` });
 }
 
 export function StarterPackCta({ id }: StarterPackCtaProps) {

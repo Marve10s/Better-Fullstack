@@ -697,6 +697,7 @@ function updateEnvPackageJson(vfs: VirtualFileSystem, config: ProjectConfig): vo
       "svelte",
       "solid",
       "solid-start",
+      "tanstack-start-solid",
     ].includes(f),
   );
   const hasNative = config.frontend.some((f) =>

@@ -303,6 +303,7 @@ export const dependencyVersionMap = {
   "@tanstack/solid-query-devtools": "^5.104.0",
   "@tanstack/solid-router": "1.170.18",
   "@tanstack/solid-router-devtools": "1.167.0",
+  "@tanstack/solid-start": "1.168.34",
 
   "@tanstack/angular-query-experimental": "^5.104.0",
 
@@ -325,6 +326,7 @@ export const dependencyVersionMap = {
   "@tanstack/react-db": "^0.1.95",
   "@tanstack/vue-db": "^0.0.123",
   "@tanstack/solid-db": "^0.2.45",
+  "@tanstack/query-db-collection": "^1.2.15",
   "@tanstack/svelte-db": "^0.1.94",
 
   // TanStack Pacer
@@ -564,6 +566,7 @@ export const dependencyVersionMap = {
   valtio: "^2.3.2",
   "@tanstack/store": "^0.11.1",
   "@tanstack/react-store": "^0.11.1",
+  "@tanstack/solid-store": "^0.11.2",
   "@legendapp/state": "^2.1.15",
 
   // Validation libraries

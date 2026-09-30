@@ -141,6 +141,7 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
       "svelte",
       "solid",
       "solid-start",
+      "tanstack-start-solid",
     ].includes(f),
   );
 

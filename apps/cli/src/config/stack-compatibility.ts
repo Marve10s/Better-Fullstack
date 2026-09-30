@@ -27,6 +27,7 @@ export function getCompatibilityBackend(
   if (webFrontend.includes("nuxt")) return "self-nuxt";
   if (webFrontend.includes("svelte")) return "self-svelte";
   if (webFrontend.includes("solid-start")) return "self-solid-start";
+  if (webFrontend.includes("tanstack-start-solid")) return "self-tanstack-start-solid";
   return "self";
 }
 

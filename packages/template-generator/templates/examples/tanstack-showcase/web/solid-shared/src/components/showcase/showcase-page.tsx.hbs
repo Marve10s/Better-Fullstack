@@ -1,0 +1,81 @@
+{{#if (isBetterAuth auth)}}
+import { authClient } from "@/lib/auth-client";
+{{/if}}
+import { createSignal, onMount, Show, type JSX } from "solid-js";
+
+import StorePanel from "./store-panel";
+import { recordVisit } from "./store";
+{{#if (and (eq api "orpc") (eq orm "drizzle") (or (isBetterAuth auth) (eq auth "none")))}}
+import TasksPanel from "./tasks-panel";
+{{/if}}
+import VirtualSearch from "./virtual-search";
+
+function Section(props: { title: string; libraries: string; children: JSX.Element }) {
+  return (
+    <section class="rounded-lg border border-neutral-800 p-5">
+      <div class="mb-4">
+        <h2 class="text-lg font-semibold">{props.title}</h2>
+        <p class="text-xs text-neutral-400">{props.libraries}</p>
+      </div>
+      {props.children}
+    </section>
+  );
+}
+
+export default function ShowcasePage() {
+  {{#if (isBetterAuth auth)}}
+  const session = authClient.useSession();
+  {{/if}}
+  const [mounted, setMounted] = createSignal(false);
+  onMount(() => {
+    setMounted(true);
+    recordVisit();
+  });
+
+  return (
+    <div class="container mx-auto max-w-4xl space-y-6 px-4 py-8">
+      <header class="space-y-1">
+        <h1 class="text-2xl font-bold">Showcase</h1>
+        <p class="text-sm text-neutral-400">
+          Each panel uses a different TanStack library. Edit the files in
+          src/components/showcase to make them yours.
+        </p>
+      </header>
+
+      <Show when={mounted()}>
+        {{#if (and (eq api "orpc") (eq orm "drizzle") (or (isBetterAuth auth) (eq auth "none")))}}
+        <Section
+          title="Tasks"
+          libraries="TanStack DB · Query · Form · Table{{#if (ne effect "none")}} · Effect on the server{{/if}}"
+        >
+          {{#if (isBetterAuth auth)}}
+          <Show
+            when={session().data}
+            fallback={
+              <p class="text-sm text-neutral-400">
+                <a href="/login" class="underline">
+                  Sign in
+                </a>{" "}
+                to keep tasks on your account.
+              </p>
+            }
+          >
+            <TasksPanel />
+          </Show>
+          {{else}}
+          <TasksPanel />
+          {{/if}}
+        </Section>
+        {{/if}}
+
+        <Section title="Search 10,000 rows" libraries="TanStack Virtual · Pacer">
+          <VirtualSearch />
+        </Section>
+
+        <Section title="Shared state" libraries="TanStack Store">
+          <StorePanel />
+        </Section>
+      </Show>
+    </div>
+  );
+}

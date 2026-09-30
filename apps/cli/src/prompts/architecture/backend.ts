@@ -14,6 +14,7 @@ const FULLSTACK_FRONTENDS: readonly Frontend[] = [
   "nuxt",
   "svelte",
   "solid-start",
+  "tanstack-start-solid",
 ] as const;
 
 const BACKEND_PROMPT_OPTIONS: PromptOption<Backend>[] = [

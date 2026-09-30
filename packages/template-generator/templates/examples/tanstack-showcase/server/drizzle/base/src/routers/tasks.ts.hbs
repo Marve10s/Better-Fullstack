@@ -1,0 +1,123 @@
+{{#if (and (eq api "orpc") (or (includes frontend "solid-start") (includes frontend "tanstack-start-solid")) (or (isBetterAuth auth) (eq auth "none")))}}
+{{#if (ne effect "none")}}
+import { ORPCError } from "@orpc/server";
+{{/if}}
+{{#if (or (ne effect "none") (eq validation "effect-schema"))}}
+import { {{#if (ne effect "none")}}Context, Data, Effect, Either, Layer{{/if}}{{#if (and (ne effect "none") (eq validation "effect-schema"))}}, {{/if}}{{#if (eq validation "effect-schema")}}Schema{{/if}} } from "effect";
+{{/if}}
+{{#if (eq validation "effect-schema")}}
+{{else if (eq validation "valibot")}}
+import * as v from "valibot";
+{{else}}
+import { z } from "zod";
+{{/if}}
+
+import {
+  createTask,
+  deleteTask,
+  listTasks,
+  setTaskCompleted,
+  type Task,
+} from "@{{projectName}}/db/tasks";
+
+import { {{#if (isBetterAuth auth)}}protectedProcedure as procedure{{else}}publicProcedure as procedure{{/if}} } from "../index";
+
+{{#if (eq validation "effect-schema")}}
+const TaskId = Schema.Number.pipe(Schema.int());
+const createInput = Schema.standardSchemaV1(
+  Schema.Struct({ title: Schema.Trim.pipe(Schema.minLength(1), Schema.maxLength(255)) }),
+);
+const setCompletedInput = Schema.standardSchemaV1(
+  Schema.Struct({ id: TaskId, completed: Schema.Boolean }),
+);
+const removeInput = Schema.standardSchemaV1(Schema.Struct({ id: TaskId }));
+{{else if (eq validation "valibot")}}
+const createInput = v.object({ title: v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(255)) });
+const setCompletedInput = v.object({ id: v.pipe(v.number(), v.integer()), completed: v.boolean() });
+const removeInput = v.object({ id: v.pipe(v.number(), v.integer()) });
+{{else}}
+const createInput = z.object({ title: z.string().trim().min(1).max(255) });
+const setCompletedInput = z.object({ id: z.number().int(), completed: z.boolean() });
+const removeInput = z.object({ id: z.number().int() });
+{{/if}}
+
+{{#if (ne effect "none")}}
+class TaskStoreError extends Data.TaggedError("TaskStoreError")<{ cause: unknown }> {}
+
+class TaskRepository extends Context.Tag("TaskRepository")<
+  TaskRepository,
+  {
+    readonly list: ({{#if (isBetterAuth auth)}}userId: string{{/if}}) => Effect.Effect<Task[], TaskStoreError>;
+    readonly create: ({{#if (isBetterAuth auth)}}userId: string, {{/if}}title: string) => Effect.Effect<Task, TaskStoreError>;
+    readonly setCompleted: (
+      {{#if (isBetterAuth auth)}}userId: string,
+      {{/if}}id: number,
+      completed: boolean,
+    ) => Effect.Effect<void, TaskStoreError>;
+    readonly remove: ({{#if (isBetterAuth auth)}}userId: string, {{/if}}id: number) => Effect.Effect<void, TaskStoreError>;
+  }
+>() {}
+
+const fromDatabase = <A>(query: () => Promise<A>) =>
+  Effect.tryPromise({ try: query, catch: (cause) => new TaskStoreError({ cause }) });
+
+const TaskRepositoryLive = Layer.succeed(TaskRepository, {
+  list: ({{#if (isBetterAuth auth)}}userId{{/if}}) => fromDatabase(() => listTasks({{#if (isBetterAuth auth)}}userId{{/if}})),
+  create: ({{#if (isBetterAuth auth)}}userId, {{/if}}title) => fromDatabase(() => createTask({{#if (isBetterAuth auth)}}userId, {{/if}}title)),
+  setCompleted: ({{#if (isBetterAuth auth)}}userId, {{/if}}id, completed) =>
+    fromDatabase(() => setTaskCompleted({{#if (isBetterAuth auth)}}userId, {{/if}}id, completed)),
+  remove: ({{#if (isBetterAuth auth)}}userId, {{/if}}id) => fromDatabase(() => deleteTask({{#if (isBetterAuth auth)}}userId, {{/if}}id)),
+});
+
+async function run<A>(program: Effect.Effect<A, TaskStoreError, TaskRepository>): Promise<A> {
+  const result = await Effect.runPromise(
+    program.pipe(Effect.provide(TaskRepositoryLive), Effect.either),
+  );
+  if (Either.isLeft(result)) {
+    console.error(result.left.cause);
+    throw new ORPCError("INTERNAL_SERVER_ERROR", { message: "Task storage failed" });
+  }
+  return result.right;
+}
+
+export const tasksRouter = {
+  list: procedure.handler(({{#if (isBetterAuth auth)}}{ context }{{/if}}) =>
+    run(Effect.flatMap(TaskRepository, (tasks) => tasks.list({{#if (isBetterAuth auth)}}context.session.user.id{{/if}}))),
+  ),
+  create: procedure
+    .input(createInput)
+    .handler(({ {{#if (isBetterAuth auth)}}context, {{/if}}input }) =>
+      run(Effect.flatMap(TaskRepository, (tasks) => tasks.create({{#if (isBetterAuth auth)}}context.session.user.id, {{/if}}input.title))),
+    ),
+  setCompleted: procedure
+    .input(setCompletedInput)
+    .handler(({ {{#if (isBetterAuth auth)}}context, {{/if}}input }) =>
+      run(
+        Effect.flatMap(TaskRepository, (tasks) =>
+          tasks.setCompleted({{#if (isBetterAuth auth)}}context.session.user.id, {{/if}}input.id, input.completed),
+        ),
+      ),
+    ),
+  remove: procedure
+    .input(removeInput)
+    .handler(({ {{#if (isBetterAuth auth)}}context, {{/if}}input }) =>
+      run(Effect.flatMap(TaskRepository, (tasks) => tasks.remove({{#if (isBetterAuth auth)}}context.session.user.id, {{/if}}input.id))),
+    ),
+};
+{{else}}
+export const tasksRouter = {
+  list: procedure.handler(({{#if (isBetterAuth auth)}}{ context }{{/if}}) => listTasks({{#if (isBetterAuth auth)}}context.session.user.id{{/if}})),
+  create: procedure
+    .input(createInput)
+    .handler(({ {{#if (isBetterAuth auth)}}context, {{/if}}input }) => createTask({{#if (isBetterAuth auth)}}context.session.user.id, {{/if}}input.title)),
+  setCompleted: procedure
+    .input(setCompletedInput)
+    .handler(({ {{#if (isBetterAuth auth)}}context, {{/if}}input }) =>
+      setTaskCompleted({{#if (isBetterAuth auth)}}context.session.user.id, {{/if}}input.id, input.completed),
+    ),
+  remove: procedure
+    .input(removeInput)
+    .handler(({ {{#if (isBetterAuth auth)}}context, {{/if}}input }) => deleteTask({{#if (isBetterAuth auth)}}context.session.user.id, {{/if}}input.id)),
+};
+{{/if}}
+{{/if}}

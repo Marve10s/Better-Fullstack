@@ -24,6 +24,12 @@ const REACT_FRONTENDS: Frontend[] = [
   "redwood",
 ];
 
+const SOLID_FRONTENDS: Frontend[] = ["solid", "solid-start", "tanstack-start-solid"];
+
+function isSolidFrontend(frontend: readonly Frontend[]): boolean {
+  return frontend.some((f) => SOLID_FRONTENDS.includes(f));
+}
+
 // Redwood 8.9 pins GraphQL exactly; a second version breaks its schema type generator.
 const REDWOOD_GRAPHQL_VERSION = "16.9.0";
 
@@ -36,7 +42,7 @@ function getTanStackFrameworkAdapter(
   if (frontend.some((f) => REACT_FRONTENDS.includes(f))) return `@tanstack/react-${lib}`;
   if (frontend.includes("nuxt") || frontend.includes("vue")) return `@tanstack/vue-${lib}`;
   if (frontend.includes("svelte")) return `@tanstack/svelte-${lib}`;
-  if (frontend.includes("solid") || frontend.includes("solid-start"))
+  if (isSolidFrontend(frontend))
     return `@tanstack/solid-${lib}`;
   if (frontend.includes("angular")) return `@tanstack/angular-${lib}`;
   if (frontend.includes("astro")) {
@@ -54,7 +60,7 @@ function getTanStackDBAdapter(config: ProjectConfig): AvailableDependencies | nu
   if (frontend.some((f) => REACT_FRONTENDS.includes(f))) return "@tanstack/react-db";
   if (frontend.includes("nuxt") || frontend.includes("vue")) return "@tanstack/vue-db";
   if (frontend.includes("svelte")) return "@tanstack/svelte-db";
-  if (frontend.includes("solid") || frontend.includes("solid-start")) return "@tanstack/solid-db";
+  if (isSolidFrontend(frontend)) return "@tanstack/solid-db";
   if (frontend.includes("astro")) {
     if (astroIntegration === "react") return "@tanstack/react-db";
     if (astroIntegration === "vue") return "@tanstack/vue-db";
@@ -76,7 +82,7 @@ function getTanStackQueryDeps(config: ProjectConfig): AvailableDependencies[] {
   if (frontend.includes("svelte")) {
     return ["@tanstack/svelte-query", "@tanstack/svelte-query-devtools"];
   }
-  if (frontend.includes("solid") || frontend.includes("solid-start")) {
+  if (isSolidFrontend(frontend)) {
     return ["@tanstack/solid-query", "@tanstack/solid-query-devtools"];
   }
   if (frontend.includes("angular")) {
@@ -105,8 +111,7 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
   const hasReactFrontend = config.frontend.some((f) => REACT_FRONTENDS.includes(f));
   const hasAstroReact = config.frontend.includes("astro") && config.astroIntegration === "react";
   const hasAstroSolid = config.frontend.includes("astro") && config.astroIntegration === "solid";
-  const hasSolidFrontend =
-    config.frontend.includes("solid") || config.frontend.includes("solid-start");
+  const hasSolidFrontend = isSolidFrontend(config.frontend);
   const hasPwaCompatibleFrontend =
     hasViteReactFrontend ||
     hasSolidFrontend ||

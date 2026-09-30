@@ -67,21 +67,35 @@ With `--yes`, nothing is left to prompt, so a shape falls back to its default ec
 
 A shape decides the stack, so the CLI rejects rather than silently overrules a command that already decides it too: `--config`, `--from-history`, `--part`, and `--template` each carry a complete stack; a flag the shape switches off contradicts it; and `--shape mobile` accepts selectors for exactly one platform. Kotlin, Swift, and Flutter apps build through Gradle, XcodeGen, and Flutter, which the CLI does not run, so `--install` is skipped with a notice on those platforms instead of reporting an install that never happened.
 
-## Templates
+## Presets
 
-`--template` starts from a filled-in stack. Flags you pass alongside override individual fields, and `--yes` accepts the rest as-is:
+The `preset` command lists the curated stacks and creates a project from one:
 
-| Template  | Stack                                                                        |
-| --------- | ---------------------------------------------------------------------------- |
-| `t3`      | Next.js, tRPC, Prisma, PostgreSQL, Better Auth, Biome, Turborepo             |
-| `saas`    | Next.js, tRPC, Drizzle, PostgreSQL, Better Auth organizations, Creem billing |
-| `mern`    | React Router, Express, Mongoose, MongoDB Atlas, oRPC, Better Auth            |
-| `pern`    | TanStack Router, Express, Drizzle, PostgreSQL, tRPC, Better Auth             |
-| `uniwind` | Expo with Uniwind, mobile only, no backend                                   |
+```bash
+# List every preset with its options
+bun create better-fullstack@latest preset
+
+# Create from a preset
+bun create better-fullstack@latest preset future-stack my-app
+bun create better-fullstack@latest preset future-stack my-app --framework tanstack-start --effect server
+```
+
+`create --template <id>` accepts the same preset ids, for example `t3`, `nextjs-saas`, `mern`, `pern`, or `uniwind`. Flags you pass alongside override individual fields, and `--yes` accepts the rest as-is. Retired ids keep working: `saas` resolves to `nextjs-saas`, and `solidstart-fullstack` resolves to `future-stack`.
 
 ```npm
 npm create better-fullstack@latest my-app -- --template t3
 ```
+
+### Future Stack
+
+Future Stack is Solid, Effect, and the TanStack libraries in one project: Query, DB, Form, Table, Virtual, Pacer, and Store, with oRPC, Drizzle, SQLite, and Better Auth. The generated app has a `/showcase` route that uses each library. Its task list writes through TanStack DB, validates with Effect Schema, and persists through an Effect service on the server.
+
+| Option        | Choices                                                                                | Default       |
+| ------------- | -------------------------------------------------------------------------------------- | ------------- |
+| `--framework` | `solid-start` (SolidStart 2) or `tanstack-start` (TanStack Start on Solid)             | `solid-start` |
+| `--effect`    | `app` (Effect runs inside the framework server) or `server` (a separate Effect server) | `app`         |
+
+TanStack Start on Solid is also available as `--frontend tanstack-start-solid`. For now it supports oRPC, Better Auth, Tailwind CSS, and the TanStack showcase; the CLI and the builder reject other integrations for it.
 
 ## Prompt behavior
 

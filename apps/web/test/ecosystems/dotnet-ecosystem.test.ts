@@ -1,13 +1,8 @@
+import { PRESET_DEFINITIONS, PRESET_CATEGORIES } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
 import { getDisabledReason } from "@/components/stack-builder/utils";
-import {
-  DEFAULT_STACK,
-  ECOSYSTEMS,
-  PRESET_CATEGORIES,
-  PRESET_TEMPLATES,
-  type StackState,
-} from "@/lib/stack/constant";
+import { DEFAULT_STACK, ECOSYSTEMS, type StackState } from "@/lib/stack/constant";
 import { generateStackCommand } from "@/lib/stack/stack-utils";
 
 const DOTNET_PRESET_CHECK_CATEGORIES = [
@@ -35,7 +30,7 @@ describe(".NET Ecosystem Tab", () => {
   });
 
   it("defines .NET presets for minimal API, GraphQL, and worker apps", () => {
-    const dotnetPresets = PRESET_TEMPLATES.filter((preset) => preset.category === "dotnet");
+    const dotnetPresets = PRESET_DEFINITIONS.filter((preset) => preset.category === "dotnet");
 
     expect(dotnetPresets.map((preset) => preset.id)).toEqual([
       "dotnet-minimal-api",
@@ -45,7 +40,7 @@ describe(".NET Ecosystem Tab", () => {
   });
 
   it("keeps .NET presets compatible with their selected stack options", () => {
-    const dotnetPresets = PRESET_TEMPLATES.filter((preset) => preset.category === "dotnet");
+    const dotnetPresets = PRESET_DEFINITIONS.filter((preset) => preset.category === "dotnet");
 
     for (const preset of dotnetPresets) {
       const stack = { ...DEFAULT_STACK, ...preset.stack } as StackState;
@@ -62,7 +57,7 @@ describe(".NET Ecosystem Tab", () => {
   });
 
   it("serializes .NET presets into ecosystem-specific commands", () => {
-    const minimalApi = PRESET_TEMPLATES.find((preset) => preset.id === "dotnet-minimal-api");
+    const minimalApi = PRESET_DEFINITIONS.find((preset) => preset.id === "dotnet-minimal-api");
     const stack = { ...DEFAULT_STACK, ...minimalApi?.stack } as StackState;
     const command = generateStackCommand(stack);
 

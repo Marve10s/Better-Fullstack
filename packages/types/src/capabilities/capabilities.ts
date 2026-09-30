@@ -221,6 +221,13 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
   const hasTanStackStart = webFrontend.includes("tanstack-start");
   const hasNativeFrontend = nativeFrontend.some((frontend) => frontend !== "none");
 
+  if (
+    (webFrontend.includes("tanstack-start-solid") || backend === "self-tanstack-start-solid") &&
+    optionId !== "better-auth"
+  ) {
+    return "TanStack Start (Solid) supports Better Auth only for now";
+  }
+
   if (optionId === "go-better-auth") {
     return ecosystem === "go" ? null : "GoBetterAuth is available only for Go stacks";
   }
@@ -293,6 +300,9 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
       if (backend === "self-solid-start" || webFrontend.includes("solid-start")) {
         return "Clerk isn't available for fullstack SolidStart yet";
       }
+      if (backend === "self-tanstack-start-solid" || webFrontend.includes("tanstack-start-solid")) {
+        return "Clerk isn't available for fullstack TanStack Start (Solid) yet";
+      }
 
       return "Clerk needs Convex, fullstack Next.js, or fullstack TanStack Start";
     }
@@ -321,6 +331,9 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
       }
       if (backend === "self-solid-start" || webFrontend.includes("solid-start")) {
         return "Supabase Auth isn't available for fullstack SolidStart yet";
+      }
+      if (backend === "self-tanstack-start-solid" || webFrontend.includes("tanstack-start-solid")) {
+        return "Supabase Auth isn't available for fullstack TanStack Start (Solid) yet";
       }
 
       return "Supabase Auth needs fullstack Next.js or fullstack TanStack Start";

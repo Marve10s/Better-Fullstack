@@ -1,0 +1,66 @@
+/// <reference types="vite/client" />
+import Header from "@/components/header";
+import appCss from "@/styles.css?url";
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRouteWithContext,
+} from "@tanstack/solid-router";
+import { TanStackRouterDevtools } from "@tanstack/solid-router-devtools";
+import type { JSX } from "solid-js";
+import { HydrationScript } from "solid-js/web";
+{{#if (eq api "orpc")}}
+import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
+import type { QueryClient } from "@tanstack/solid-query";
+import type { orpc } from "@/utils/orpc";
+
+export interface RouterAppContext {
+  orpc: typeof orpc;
+  queryClient: QueryClient;
+}
+{{else}}
+export type RouterAppContext = Record<string, never>;
+{{/if}}
+
+export const Route = createRootRouteWithContext<RouterAppContext>()({
+  head: () => ({
+    meta: [
+      { charset: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { title: "{{projectName}}" },
+    ],
+    links: [{ rel: "stylesheet", href: appCss }],
+  }),
+  component: RootComponent,
+});
+
+function RootComponent() {
+  return (
+    <RootDocument>
+      <div class="grid h-svh grid-rows-[auto_1fr]">
+        <Header />
+        <Outlet />
+      </div>
+    </RootDocument>
+  );
+}
+
+function RootDocument(props: { children: JSX.Element }) {
+  return (
+    <html lang="en">
+      <head>
+        <HydrationScript />
+      </head>
+      <body>
+        <HeadContent />
+        {props.children}
+        <TanStackRouterDevtools position="bottom-left" />
+        {{#if (eq api "orpc")}}
+        <SolidQueryDevtools buttonPosition="bottom-right" />
+        {{/if}}
+        <Scripts />
+      </body>
+    </html>
+  );
+}

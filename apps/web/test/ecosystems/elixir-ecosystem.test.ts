@@ -1,13 +1,8 @@
+import { PRESET_DEFINITIONS, PRESET_CATEGORIES } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
 import { getDisabledReason } from "@/components/stack-builder/utils";
-import {
-  DEFAULT_STACK,
-  ECOSYSTEMS,
-  PRESET_CATEGORIES,
-  PRESET_TEMPLATES,
-  type StackState,
-} from "@/lib/stack/constant";
+import { DEFAULT_STACK, ECOSYSTEMS, type StackState } from "@/lib/stack/constant";
 import { generateStackCommand } from "@/lib/stack/stack-utils";
 
 const ELIXIR_PRESET_CHECK_CATEGORIES = [
@@ -45,7 +40,7 @@ describe("Elixir Ecosystem Tab", () => {
   });
 
   it("defines Elixir presets for Phoenix, LiveView, and plain Mix apps", () => {
-    const elixirPresets = PRESET_TEMPLATES.filter((preset) => preset.category === "elixir");
+    const elixirPresets = PRESET_DEFINITIONS.filter((preset) => preset.category === "elixir");
 
     expect(elixirPresets.map((preset) => preset.id)).toEqual([
       "elixir-phoenix-api",
@@ -55,7 +50,7 @@ describe("Elixir Ecosystem Tab", () => {
   });
 
   it("keeps Elixir presets compatible with their selected stack options", () => {
-    const elixirPresets = PRESET_TEMPLATES.filter((preset) => preset.category === "elixir");
+    const elixirPresets = PRESET_DEFINITIONS.filter((preset) => preset.category === "elixir");
 
     for (const preset of elixirPresets) {
       const stack = { ...DEFAULT_STACK, ...preset.stack } as StackState;
@@ -68,7 +63,7 @@ describe("Elixir Ecosystem Tab", () => {
   });
 
   it("serializes Elixir presets into ecosystem-specific commands", () => {
-    const plainWorker = PRESET_TEMPLATES.find((preset) => preset.id === "elixir-plain-worker");
+    const plainWorker = PRESET_DEFINITIONS.find((preset) => preset.id === "elixir-plain-worker");
     const stack = { ...DEFAULT_STACK, ...plainWorker?.stack } as StackState;
     const command = generateStackCommand(stack);
 

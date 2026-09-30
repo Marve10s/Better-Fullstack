@@ -1,12 +1,10 @@
 import {
+  PRESET_DEFINITIONS,
   recommendStarterTrack,
   STARTER_TRACK_DEFINITIONS,
+  type PresetDefinition,
   type StarterTrackId,
 } from "@better-fullstack/types";
-
-import { PRESET_TEMPLATES } from "@/lib/stack/constant";
-
-type PresetTemplate = (typeof PRESET_TEMPLATES)[number];
 
 export interface PresetRecommendation {
   presetId: string;
@@ -21,9 +19,9 @@ const TRACK_ID_BY_PRESET = new Map<string, StarterTrackId>(
 
 export function recommendPresetFromBrief(
   brief: string,
-  pool: readonly PresetTemplate[] = PRESET_TEMPLATES,
+  pool: readonly PresetDefinition[] = PRESET_DEFINITIONS,
 ): PresetRecommendation {
-  const presets = pool.length > 0 ? pool : PRESET_TEMPLATES;
+  const presets = pool.length > 0 ? pool : PRESET_DEFINITIONS;
   const trackIds = presets.flatMap((preset) => {
     const trackId = TRACK_ID_BY_PRESET.get(preset.id);
     return trackId ? [trackId] : [];

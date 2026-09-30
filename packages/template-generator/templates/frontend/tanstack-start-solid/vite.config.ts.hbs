@@ -1,0 +1,27 @@
+import { tanstackStart } from "@tanstack/solid-start/plugin/vite";
+import { defineConfig } from "vite";
+import solidPlugin from "vite-plugin-solid";
+{{#if (eq cssFramework "tailwind")}}
+import tailwindcss from "@tailwindcss/vite";
+{{/if}}
+
+export default defineConfig({
+  resolve: {
+    tsconfigPaths: true,
+  },
+  plugins: [
+    {{#if (eq cssFramework "tailwind")}}
+    tailwindcss(),
+    {{/if}}
+    tanstackStart(),
+    solidPlugin({ ssr: true }),
+  ],
+  server: {
+    port: 3001,
+  },
+{{#if (isBetterAuth auth)}}
+  ssr: {
+    noExternal: ["better-auth"],
+  },
+{{/if}}
+});

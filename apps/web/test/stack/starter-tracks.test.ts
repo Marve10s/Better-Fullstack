@@ -1,7 +1,8 @@
 import {
+  parseStackPartSpecs,
   getCapabilityInventory,
   getStarterTrackCatalog,
-  parseStackPartSpecs,
+  PRESET_DEFINITIONS,
   validateStackParts,
 } from "@better-fullstack/types";
 import { describe, expect, test } from "bun:test";
@@ -9,7 +10,6 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 
 import { selectionAnalyticsProperties } from "@/lib/analytics/campaign-analytics";
-import { PRESET_TEMPLATES } from "@/lib/stack/constant";
 import { STARTER_TRACKS } from "@/lib/builder/starter-tracks";
 
 const repoRoot = path.resolve(import.meta.dir, "../../../..");
@@ -26,7 +26,7 @@ function contentFileForHref(href: string) {
 
 describe("starter tracks", () => {
   test("point at existing builder presets", () => {
-    const presetIds = new Set(PRESET_TEMPLATES.map((preset) => preset.id));
+    const presetIds = new Set(PRESET_DEFINITIONS.map((preset) => preset.id));
 
     for (const track of STARTER_TRACKS) {
       expect(presetIds.has(track.presetId), track.id).toBe(true);
@@ -35,7 +35,7 @@ describe("starter tracks", () => {
 
   test("use the same schema-valid graph as the shared catalog", () => {
     for (const track of getStarterTrackCatalog().tracks) {
-      const preset = PRESET_TEMPLATES.find((candidate) => candidate.id === track.presetId);
+      const preset = PRESET_DEFINITIONS.find((candidate) => candidate.id === track.presetId);
 
       expect(preset, track.id).toBeDefined();
       expect(preset?.stack.stackMode, track.id).toBe("multi");

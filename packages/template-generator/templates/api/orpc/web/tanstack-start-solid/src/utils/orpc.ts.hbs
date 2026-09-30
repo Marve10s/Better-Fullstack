@@ -1,0 +1,58 @@
+import { createORPCClient } from "@orpc/client";
+import { RPCLink } from "@orpc/client/fetch";
+import type { RouterClient } from "@orpc/server";
+import { createTanstackQueryUtils } from "@orpc/tanstack-query";
+import { QueryCache, QueryClient } from "@tanstack/solid-query";
+import type { AppRouter } from "@{{projectName}}/api/routers/index";
+{{#if (eq backend "self")}}
+import { createRouterClient } from "@orpc/server";
+import { createIsomorphicFn } from "@tanstack/solid-start";
+import { getRequest } from "@tanstack/solid-start/server";
+import { createContext } from "@{{projectName}}/api/context";
+import { appRouter } from "@{{projectName}}/api/routers/index";
+{{else}}
+import { env } from "@{{projectName}}/env/web";
+{{/if}}
+
+export const queryClient = new QueryClient({
+	queryCache: new QueryCache({
+		onError: (error) => {
+			console.error(`Error: ${error.message}`);
+		},
+	}),
+});
+
+{{#if (eq backend "self")}}
+const getORPCClient = createIsomorphicFn()
+	.server(() =>
+		createRouterClient(appRouter, {
+			context: async () => createContext({ req: getRequest() }),
+		}),
+	)
+	.client((): RouterClient<AppRouter> => {
+		const link = new RPCLink({
+			url: `${window.location.origin}/api/rpc`,
+{{#if (isBetterAuth auth)}}
+			fetch(url, options) {
+				return fetch(url, { ...options, credentials: "include" });
+			},
+{{/if}}
+		});
+		return createORPCClient(link);
+	});
+
+export const client: RouterClient<AppRouter> = getORPCClient();
+{{else}}
+const link = new RPCLink({
+	url: `${env.VITE_SERVER_URL}/rpc`,
+{{#if (isBetterAuth auth)}}
+	fetch(url, options) {
+		return fetch(url, { ...options, credentials: "include" });
+	},
+{{/if}}
+});
+
+export const client: RouterClient<AppRouter> = createORPCClient(link);
+{{/if}}
+
+export const orpc = createTanstackQueryUtils(client);

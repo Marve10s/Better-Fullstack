@@ -9,6 +9,7 @@ import type {
   Addons,
   CreateInput,
   DirectoryConflict,
+  PresetOptionSelection,
   ProjectConfig,
   ToolingCategoryId,
 } from "@/types";
@@ -381,7 +382,12 @@ export function normalizeKotlinJavaSelection(config: ProjectConfig) {
 }
 
 export async function createProjectHandler(
-  input: CreateInput & { projectName?: string; fromHistory?: number; config?: string },
+  input: CreateInput & {
+    projectName?: string;
+    fromHistory?: number;
+    config?: string;
+    presetOptions?: PresetOptionSelection;
+  },
   options: CreateHandlerOptions = {},
 ) {
   const { silent = false, generatedCheckRunner = runGeneratedChecks } = options;
@@ -682,13 +688,11 @@ export async function createProjectHandler(
       let cliInput = originalInput;
 
       if (input.template && input.template !== "none") {
-        const templateConfig = getTemplateConfig(input.template);
+        const templateConfig = getTemplateConfig(input.template, input.presetOptions);
         if (templateConfig) {
-          const templateName = input.template.toUpperCase();
-          const templateDescription = getTemplateDescription(input.template);
           if (!isSilent()) {
-            log.message(pc.bold(pc.cyan(`Using template: ${pc.white(templateName)}`)));
-            log.message(pc.dim(`   ${templateDescription}`));
+            log.message(pc.bold(pc.cyan(`Using preset: ${pc.white(input.template)}`)));
+            log.message(pc.dim(`   ${getTemplateDescription(input.template)}`));
           }
           const userOverrides: Record<string, unknown> = {};
           for (const [key, value] of Object.entries(originalInput)) {

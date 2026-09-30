@@ -841,6 +841,7 @@ const WEB_FRONTEND_VALUES = [
   "svelte",
   "solid",
   "solid-start",
+  "tanstack-start-solid",
   "astro",
   "qwik",
   "angular",
@@ -875,6 +876,7 @@ const BACKEND_BUILDER_VALUES = [
   "self-nuxt",
   "self-svelte",
   "self-solid-start",
+  "self-tanstack-start-solid",
   "none",
 ] as const satisfies readonly string[];
 
@@ -1162,6 +1164,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "vanilla-vite": "Vite (Vanilla TypeScript)",
     vue: "Vue 3 + Vite",
     svelte: "SvelteKit",
+    "tanstack-start-solid": "TanStack Start (Solid)",
     redwood: "RedwoodJS",
   },
   nativeFrontend: {
@@ -1182,6 +1185,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     "self-nuxt": "Fullstack Nuxt",
     "self-svelte": "Fullstack SvelteKit",
     "self-solid-start": "Fullstack SolidStart",
+    "self-tanstack-start-solid": "Fullstack TanStack Start (Solid)",
   },
   database: { sqlite: "SQLite", postgres: "PostgreSQL", mongodb: "MongoDB", edgedb: "EdgeDB" },
   orm: {
@@ -2131,6 +2135,7 @@ const CLI_VALUE_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<string,
     "self-nuxt": "self",
     "self-svelte": "self",
     "self-solid-start": "self",
+    "self-tanstack-start-solid": "self",
   },
 };
 

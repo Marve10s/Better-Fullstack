@@ -12,9 +12,13 @@ import {
   KOTLIN_HIDDEN_SHARED_CATEGORIES,
   parseStackPartSpecs,
   stackPartsToLegacyProjectConfigPartial,
+  getPreset,
+  PRESET_CATEGORIES,
+  PRESET_DEFINITIONS,
   STARTER_TRACK_DEFINITIONS,
   type OptionCategory,
   type OptionCategoryEcosystem,
+  type PresetOptionSelection,
   type StackPartEcosystem,
   type StackPartOptionContext,
   type StackPartRole,
@@ -193,12 +197,10 @@ import { getStackRunSupport } from "@/lib/project/run-support";
 import {
   DEFAULT_STACK,
   ECOSYSTEMS,
-  PRESET_CATEGORIES,
-  PRESET_TEMPLATES,
   type StackState,
   TECH_OPTIONS,
 } from "@/lib/stack/constant";
-import { resolvePresetStack } from "@/lib/stack/preset-stack";
+import { buildPresetStack } from "@/lib/stack/preset-stack";
 import { useStackState } from "@/lib/stack/stack-url-state";
 import {
   generateStackCommand,
@@ -4290,22 +4292,22 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     });
   };
 
-  const applyPreset = (presetId: string) => {
-    const preset = PRESET_TEMPLATES.find((template) => template.id === presetId);
-    if (preset) {
-      const fullStack = resolvePresetStack({ ...DEFAULT_STACK, ...preset.stack } as StackState);
+  const applyPreset = (presetId: string, options?: PresetOptionSelection) => {
+    const preset = getPreset(presetId);
+    const fullStack = buildPresetStack(presetId, options);
+    if (preset && fullStack) {
       selectionEngagedRef.current = true;
       selectionCompletedRef.current = false;
       startTransition(() => {
         setStack(fullStack);
       });
-      const starterTrack = STARTER_TRACK_DEFINITIONS.find((track) => track.presetId === presetId);
+      const starterTrack = STARTER_TRACK_DEFINITIONS.find((track) => track.presetId === preset.id);
       if (starterTrack) {
         trackCampaignEvent(
           "builder_starter_track_applied",
           selectionAnalyticsProperties(fullStack, evidenceInventory, {
             campaign,
-            preset: presetId,
+            preset: preset.id,
             starter_track: starterTrack.id,
             decision_stage: "discover",
             selection_outcome: "track-applied",
@@ -4537,7 +4539,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     };
   };
 
-  const libraryPresetCount = PRESET_TEMPLATES.filter((preset) =>
+  const libraryPresetCount = PRESET_DEFINITIONS.filter((preset) =>
     PRESET_CATEGORIES.some(
       (category) => category.ecosystem === stack.ecosystem && category.id === preset.category,
     ),
@@ -6206,8 +6208,8 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                       stack={adjustedStack || stack}
                       ecosystem={stack.ecosystem}
                       onApplyPreset={applyPreset}
-                      onCustomizePreset={(presetId) => {
-                        applyPreset(presetId);
+                      onCustomizePreset={(presetId, options) => {
+                        applyPreset(presetId, options);
                         setViewMode("command");
                       }}
                       starterTrackFilters={starterTrackFilters}

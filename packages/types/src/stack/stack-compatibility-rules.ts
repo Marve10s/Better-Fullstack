@@ -13,6 +13,7 @@ const WEB_FRAMEWORKS: readonly Frontend[] = [
   "svelte",
   "solid",
   "solid-start",
+  "tanstack-start-solid",
   "astro",
   "qwik",
   "angular",
@@ -308,7 +309,8 @@ export function isBackendUtilsCompatibleBackend(backend: string | undefined): bo
 
 export function isExampleAIAllowed(backend?: Backend, frontends: Frontend[] = []) {
   const includesSolid = frontends.includes("solid");
-  const includesSolidStart = frontends.includes("solid-start");
+  const includesSolidStart =
+    frontends.includes("solid-start") || frontends.includes("tanstack-start-solid");
   if (includesSolid || includesSolidStart) return false;
 
   if (backend === "convex") {
@@ -340,7 +342,12 @@ export function isExampleChatSdkAllowed(
     return true;
   }
 
-  if (backend === "self-astro" || backend === "self-svelte" || backend === "self-solid-start") {
+  if (
+    backend === "self-astro" ||
+    backend === "self-svelte" ||
+    backend === "self-solid-start" ||
+    backend === "self-tanstack-start-solid"
+  ) {
     return false;
   }
 

@@ -1,5 +1,7 @@
 import {
   CAPABILITY_EVIDENCE_LEVEL_IDS,
+  PRESET_DEFINITIONS,
+  type PresetOptionId,
   STARTER_TRACK_AUTH_IDS,
   STARTER_TRACK_DATABASE_IDS,
   STARTER_TRACK_DEPLOYMENT_TARGET_IDS,
@@ -275,6 +277,17 @@ const ProjectCheckInputSchema = z.tuple([
       .describe("With --fix --apply: exact token emitted by the current repair plan"),
   }),
 ]);
+
+function describePresetOptionFlag(optionId: PresetOptionId) {
+  return PRESET_DEFINITIONS.flatMap((preset) =>
+    (preset.options ?? [])
+      .filter((option) => option.id === optionId)
+      .map((option) => {
+        const choices = option.choices.map((choice) => choice.id).join(" | ");
+        return `${preset.name} ${option.name.toLowerCase()}: ${choices} (default ${option.choices[0].id})`;
+      }),
+  ).join("; ");
+}
 
 export const router = os.router({
   create: os
@@ -1083,6 +1096,85 @@ export const router = os.router({
         log.message(`  Evidence: ${track.evidence.level} (${track.evidence.freshness})`);
         log.message(`  Stack Parts: ${track.stackPartSpecs.join(", ")}`);
       }
+    }),
+  preset: os
+    .meta({
+      description:
+        "List curated stack presets, or create a project from one (e.g. `preset future-stack my-app --framework tanstack-start --effect server`)",
+      negateBooleans: true,
+    })
+    .input(
+      z.tuple([
+        z.string().optional().describe("Preset id; omit to list every preset"),
+        z.string().optional().describe("Project name or path"),
+        z.object({
+          framework: z.string().optional().describe(describePresetOptionFlag("framework")),
+          effect: z.string().optional().describe(describePresetOptionFlag("effect")),
+          packageManager: PackageManagerSchema.optional().describe("Package manager"),
+          install: z.boolean().optional().describe("Install dependencies"),
+          git: z.boolean().optional().describe("Initialize git"),
+          dryRun: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe("Preview the generated file tree without writing it"),
+          json: z.boolean().optional().default(false).describe("Print the preset list as JSON"),
+          disableAnalytics: z.boolean().optional().describe("Disable analytics"),
+        }),
+      ]),
+    )
+    .handler(async ({ input }) => {
+      const [presetId, projectName, options] = input;
+      const { listPresets, resolvePresetRequest } = await import("@/commands/stack/presets.js");
+
+      if (!presetId) {
+        const presets = listPresets();
+        if (options.json) {
+          process.stdout.write(`${JSON.stringify(presets, null, 2)}\n`);
+          return;
+        }
+        for (const preset of presets) {
+          const optionLines = preset.options.map((option) => {
+            const choices = option.choices.map((choice) => choice.id).join(" | ");
+            return pc.dim(`  --${option.id} ${choices} (default: ${option.default})`);
+          });
+          log.message(
+            [
+              `${pc.bold(preset.id)}  ${preset.name} (${preset.ecosystem})`,
+              pc.dim(`  ${preset.description}`),
+              ...optionLines,
+            ].join("\n"),
+          );
+        }
+        return;
+      }
+
+      const request = resolvePresetRequest(presetId, {
+        framework: options.framework,
+        effect: options.effect,
+      });
+      if (!request.ok) throw new CLIError(request.message);
+
+      await withCommandTelemetry(
+        "preset",
+        () =>
+          createProjectHandler({
+            projectName,
+            template: request.preset.id,
+            presetOptions: request.options,
+            packageManager: options.packageManager,
+            install: options.install,
+            git: options.git,
+            dryRun: options.dryRun,
+            disableAnalytics: options.disableAnalytics,
+          }),
+        {
+          source: "cli-flags",
+          mode: options.dryRun ? "dry-run" : "create",
+          disableAnalytics: options.disableAnalytics,
+          resultStatus: statusFromCommandResult,
+        },
+      );
     }),
   compatibility: os
     .meta({

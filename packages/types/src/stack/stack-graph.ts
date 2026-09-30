@@ -283,6 +283,7 @@ const TYPESCRIPT_TRPC_INCOMPATIBLE_FRONTENDS = new Set([
   "svelte",
   "solid",
   "solid-start",
+  "tanstack-start-solid",
   "vanilla-vite",
   "vue",
 ]);
@@ -615,6 +616,7 @@ const RUNTIMELESS_TYPESCRIPT_BACKENDS = new Set([
   "self-nuxt",
   "self-svelte",
   "self-solid-start",
+  "self-tanstack-start-solid",
 ]);
 const NO_SERVER_DEPLOY_TYPESCRIPT_BACKENDS = new Set([
   "none",
@@ -627,6 +629,7 @@ const NO_SERVER_DEPLOY_TYPESCRIPT_BACKENDS = new Set([
   "self-nuxt",
   "self-svelte",
   "self-solid-start",
+  "self-tanstack-start-solid",
 ]);
 
 type SharedNonTypeScriptBackendServiceRule = {

@@ -1,10 +1,10 @@
-import type { BetterTStackConfig, CreateInput, ProjectConfig } from "@/types";
 import type { ProjectHistoryEntry } from "@/project/project-history";
+import type { BetterTStackConfig, CreateInput, ProjectConfig } from "@/types";
 
-import { CreateInputSchema } from "@/types";
 import { buildBtsConfigForPersistence, readBtsConfigFromFile } from "@/config/bts-config";
 import { exitWithError } from "@/presentation/errors";
 import { getHistoryCount, getHistoryEntry } from "@/project/project-history";
+import { CreateInputSchema } from "@/types";
 
 /**
  * CreateInput flag keys that can be sourced from a stored config. `projectName`
@@ -19,14 +19,20 @@ const COPYABLE_CREATE_INPUT_KEYS = (
  * subset of `create` flags it can drive. Only defined values are copied so the
  * result can be safely overlaid by explicitly-passed CLI flags.
  */
-export function betterTStackConfigToCreateInput(
-  config: BetterTStackConfig,
-): Partial<CreateInput> {
+export function betterTStackConfigToCreateInput(config: BetterTStackConfig): Partial<CreateInput> {
   const normalizedConfig = buildBtsConfigForPersistence(config as unknown as ProjectConfig, {
     version: config.version,
     createdAt: config.createdAt,
   });
-  const source = normalizedConfig as unknown as Record<string, unknown>;
+  return copyCreateInputKeys(normalizedConfig);
+}
+
+export function projectConfigToCreateInput(config: ProjectConfig): Partial<CreateInput> {
+  return copyCreateInputKeys(config);
+}
+
+function copyCreateInputKeys(config: BetterTStackConfig | ProjectConfig): Partial<CreateInput> {
+  const source = config as unknown as Record<string, unknown>;
   const result: Record<string, unknown> = {};
 
   for (const key of COPYABLE_CREATE_INPUT_KEYS) {
@@ -43,9 +49,7 @@ export function betterTStackConfigToCreateInput(
  * Maps a legacy history entry (written before the full config snapshot existed)
  * onto `create` flags using the limited stack summary it stored.
  */
-function historyStackToCreateInput(
-  stack: ProjectHistoryEntry["stack"],
-): Partial<CreateInput> {
+function historyStackToCreateInput(stack: ProjectHistoryEntry["stack"]): Partial<CreateInput> {
   const result: Record<string, unknown> = {
     frontend: stack.frontend,
     backend: stack.backend,
@@ -91,9 +95,7 @@ export async function resolveCreateConfigBase(
   }
 
   if (hasHistory && hasConfig) {
-    exitWithError(
-      "Cannot combine --from-history with --config. Pass only one config source.",
-    );
+    exitWithError("Cannot combine --from-history with --config. Pass only one config source.");
   }
 
   const sourceFlag = hasHistory ? "--from-history" : "--config";

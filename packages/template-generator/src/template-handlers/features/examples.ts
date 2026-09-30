@@ -17,6 +17,9 @@ export async function processExampleTemplates(
   const hasNuxtWeb = config.frontend.includes("nuxt");
   const hasSvelteWeb = config.frontend.includes("svelte");
   const hasSolidWeb = config.frontend.includes("solid");
+  const solidStartFramework = config.frontend.find((f) =>
+    ["solid-start", "tanstack-start-solid"].includes(f),
+  );
   const hasNativeBare = config.frontend.includes("native-bare");
   const hasUniwind = config.frontend.includes("native-uniwind");
   const hasUnistyles = config.frontend.includes("native-unistyles");
@@ -112,6 +115,21 @@ export async function processExampleTemplates(
         vfs,
         templates,
         `examples/${example}/web/solid`,
+        "apps/web",
+        config,
+      );
+    } else if (solidStartFramework) {
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        `examples/${example}/web/solid-shared`,
+        "apps/web",
+        config,
+      );
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        `examples/${example}/web/${solidStartFramework}`,
         "apps/web",
         config,
       );

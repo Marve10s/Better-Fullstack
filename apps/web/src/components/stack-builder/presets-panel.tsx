@@ -1,19 +1,38 @@
 import {
+  applyPresetOptions,
+  getPreset,
   getStarterTrackCatalog,
+  PACKAGE_MANAGER_COMMANDS,
+  PRESET_CATEGORIES,
+  PRESET_DEFINITIONS,
+  type PresetDefinition,
+  type PresetOptionChoice,
+  type PresetOptionSelection,
   type StarterTrackCatalogEntry,
   type StarterTrackFilters,
 } from "@better-fullstack/types";
-import { type ReactNode, useMemo } from "react";
-import { TbCheck as Check, TbPencil as Pencil, TbBolt as Zap } from "react-icons/tb";
+import { type ReactNode, useMemo, useState } from "react";
+import {
+  TbCheck as Check,
+  TbCopy as Copy,
+  TbChevronDown as ChevronDown,
+  TbPencil as Pencil,
+  TbBolt as Zap,
+} from "react-icons/tb";
 
 import type { StackState } from "@/lib/stack/constant";
 
 import { useCapabilityEvidenceInventory } from "@/components/stack-builder/capability-evidence-badge";
 import { TechIcon } from "@/components/stack-builder/tech-icon";
 import { getRelevantStackKeys } from "@/components/stack-builder/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { getLocalizedPresetTemplate } from "@/lib/i18n/builder-copy";
 import { cn } from "@/lib/platform/utils";
-import { PRESET_CATEGORIES, PRESET_TEMPLATES } from "@/lib/stack/constant";
 import { resolvePresetStack } from "@/lib/stack/preset-stack";
 import { DEFAULT_STACK } from "@/lib/stack/stack-defaults";
 import { ICON_REGISTRY } from "@/lib/stack/tech-icons";
@@ -22,8 +41,8 @@ import { m } from "@/paraglide/messages.js";
 interface PresetsPanelProps {
   stack: StackState;
   ecosystem: string;
-  onApplyPreset: (presetId: string) => void;
-  onCustomizePreset: (presetId: string) => void;
+  onApplyPreset: (presetId: string, options?: PresetOptionSelection) => void;
+  onCustomizePreset: (presetId: string, options?: PresetOptionSelection) => void;
   /** Read from the URL. The page has no control for them, but shared filtered links still narrow. */
   starterTrackFilters: StarterTrackFilters;
 }
@@ -112,10 +131,10 @@ function getStarterTrackName(track: Pick<StarterTrackCatalogEntry, "id">) {
   }
 }
 
-type PresetTemplate = (typeof PRESET_TEMPLATES)[number];
+const FEATURED_CATEGORY = "future";
 
 interface PresetCardProps {
-  preset: PresetTemplate;
+  preset: PresetDefinition;
   stack: StackState;
   ecosystem: string;
   title?: string;
@@ -205,6 +224,186 @@ function PresetCard({
   );
 }
 
+const FUTURE_STACK_LIBRARIES = ["tanstack-query", "orpc", "drizzle", "better-auth"];
+
+function getFutureStackFrameworkCopy(choice: PresetOptionChoice) {
+  return choice.id === "tanstack-start"
+    ? { icon: "tanstack-start-solid", description: m.presetFutureStackTanStackStart() }
+    : { icon: "solid-start", description: m.presetFutureStackSolidStart() };
+}
+
+function getFutureStackEffectLabel(choice: PresetOptionChoice) {
+  return choice.id === "server"
+    ? m.presetFutureStackEffectServer()
+    : m.presetFutureStackEffectApp();
+}
+
+function getFutureStackCommand(
+  preset: PresetDefinition,
+  options: PresetOptionSelection,
+  packageManager: string,
+) {
+  const prefix =
+    PACKAGE_MANAGER_COMMANDS[packageManager as keyof typeof PACKAGE_MANAGER_COMMANDS] ??
+    PACKAGE_MANAGER_COMMANDS.bun;
+  const flags = (preset.options ?? []).flatMap((option) => {
+    const choice = options[option.id];
+    return choice && choice !== option.choices[0].id ? [`--${option.id} ${choice}`] : [];
+  });
+  return [prefix, "preset", preset.id, "my-app", ...flags].join(" ");
+}
+
+interface FutureStackCardProps {
+  preset: PresetDefinition;
+  framework: PresetOptionChoice;
+  stack: StackState;
+  onApplyPreset: PresetsPanelProps["onApplyPreset"];
+  onCustomizePreset: PresetsPanelProps["onCustomizePreset"];
+}
+
+function FutureStackCard({
+  preset,
+  framework,
+  stack,
+  onApplyPreset,
+  onCustomizePreset,
+}: FutureStackCardProps) {
+  const effectOption = preset.options?.find((option) => option.id === "effect");
+  const [effect, setEffect] = useState(effectOption?.choices[0].id);
+  const [copied, setCopied] = useState(false);
+  const options: PresetOptionSelection = { framework: framework.id, effect };
+  const active = isPresetActive(applyPresetOptions(preset, options), stack);
+  const copy = getFutureStackFrameworkCopy(framework);
+  const command = getFutureStackCommand(preset, options, stack.packageManager);
+  const selectedEffect = effectOption?.choices.find((choice) => choice.id === effect);
+
+  const copyCommand = async () => {
+    await navigator.clipboard.writeText(command);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div
+      className={cn(
+        "flex min-w-0 flex-col gap-4 rounded-xl border p-4 transition-colors sm:p-5",
+        active
+          ? "border-ink bg-ink/[0.05] dark:border-brand/80 dark:bg-brand/[0.08]"
+          : "border-ink/25 bg-foreground/[0.03] hover:border-ink/50 dark:border-brand/30 dark:hover:border-brand/60",
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-foreground/10 bg-background/70">
+          <TechIcon techId={copy.icon} name={framework.name} className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            {preset.name}
+          </p>
+          <h3 className="flex items-center gap-2 font-mono text-base font-bold tracking-[-0.02em]">
+            {framework.name}
+            {active && <Check className="size-4 text-ink dark:text-brand" aria-hidden />}
+          </h3>
+          <p className="mt-1 text-sm leading-snug text-muted-foreground">{copy.description}</p>
+        </div>
+        <button
+          type="button"
+          aria-label={m.presetCustomize()}
+          title={m.presetCustomize()}
+          onClick={() => onCustomizePreset(preset.id, options)}
+          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
+        >
+          <Pencil className="size-4" />
+        </button>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          {FUTURE_STACK_LIBRARIES.map((tech) => (
+            <span key={tech} title={tech} className="flex items-center">
+              <TechIcon techId={tech} name={tech} className="size-4" />
+            </span>
+          ))}
+        </div>
+        {effectOption && selectedEffect && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  type="button"
+                  aria-label={m.presetFutureStackEffectLabel()}
+                  className="flex h-7 cursor-pointer items-center gap-1.5 rounded-full border border-foreground/15 px-2.5 text-xs transition-colors hover:bg-foreground/10"
+                />
+              }
+            >
+              <TechIcon techId="effect" name="Effect" className="size-3.5" />
+              <span className="text-muted-foreground">Effect</span>
+              {getFutureStackEffectLabel(selectedEffect)}
+              <ChevronDown className="size-3 opacity-70" aria-hidden />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44 bg-fd-background">
+              {effectOption.choices.map((choice) => (
+                <DropdownMenuItem key={choice.id} onClick={() => setEffect(choice.id)}>
+                  <span className="flex-1 text-xs">{getFutureStackEffectLabel(choice)}</span>
+                  {effect === choice.id && <Check className="size-3.5" />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <button
+          type="button"
+          onClick={() => onApplyPreset(preset.id, options)}
+          className="cursor-pointer rounded-full bg-ink px-4 py-1.5 text-sm font-medium text-background transition-opacity hover:opacity-90 dark:bg-brand dark:text-black"
+        >
+          {m.presetFutureStackUse()}
+        </button>
+        <button
+          type="button"
+          onClick={copyCommand}
+          title={command}
+          aria-label={m.presetFutureStackCopyCommand()}
+          className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-full border border-foreground/10 bg-background/60 px-3 py-1.5 text-left font-mono text-[11px] text-muted-foreground hover:text-foreground sm:flex-1"
+        >
+          <span className="truncate">{command}</span>
+          {copied ? (
+            <Check className="size-3.5 shrink-0 text-ink dark:text-brand" />
+          ) : (
+            <Copy className="size-3.5 shrink-0" />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FutureStackSection({
+  preset,
+  stack,
+  onApplyPreset,
+  onCustomizePreset,
+}: Omit<FutureStackCardProps, "framework">) {
+  const frameworks = preset.options?.find((option) => option.id === "framework")?.choices ?? [];
+
+  return (
+    <section className="grid gap-3 lg:grid-cols-2">
+      {frameworks.map((framework) => (
+        <FutureStackCard
+          key={framework.id}
+          preset={preset}
+          framework={framework}
+          stack={stack}
+          onApplyPreset={onApplyPreset}
+          onCustomizePreset={onCustomizePreset}
+        />
+      ))}
+    </section>
+  );
+}
+
 function GroupHeading({ icon, name, count }: { icon: ReactNode; name: string; count: number }) {
   return (
     <div className="mb-3 flex items-center gap-2">
@@ -225,10 +424,13 @@ export function PresetsPanel({
   starterTrackFilters,
 }: PresetsPanelProps) {
   const evidenceInventory = useCapabilityEvidenceInventory();
-  const filteredCategories = PRESET_CATEGORIES.filter((c) => c.ecosystem === ecosystem);
-  const filteredPresets = PRESET_TEMPLATES.filter((p) =>
+  const filteredCategories = PRESET_CATEGORIES.filter(
+    (c) => c.ecosystem === ecosystem && c.id !== FEATURED_CATEGORY,
+  );
+  const filteredPresets = PRESET_DEFINITIONS.filter((p) =>
     filteredCategories.some((c) => c.id === p.category),
   );
+  const futureStack = ecosystem === "typescript" ? getPreset("future-stack") : undefined;
   const starterTracks = useMemo(
     () =>
       getStarterTrackCatalog({
@@ -242,6 +444,15 @@ export function PresetsPanel({
   return (
     <div className="h-full overflow-y-auto px-3 pt-2 pb-24 sm:px-4">
       <div className="space-y-8">
+        {futureStack && (
+          <FutureStackSection
+            preset={futureStack}
+            stack={stack}
+            onApplyPreset={onApplyPreset}
+            onCustomizePreset={onCustomizePreset}
+          />
+        )}
+
         {starterTracks.length > 0 && (
           <section>
             <GroupHeading
@@ -251,7 +462,7 @@ export function PresetsPanel({
             />
             <div className={grid}>
               {starterTracks.map((track) => {
-                const preset = PRESET_TEMPLATES.find((p) => p.id === track.presetId);
+                const preset = PRESET_DEFINITIONS.find((p) => p.id === track.presetId);
                 if (!preset) return null;
 
                 return (

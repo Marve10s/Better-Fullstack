@@ -493,7 +493,7 @@ export const STACK_SELECTION_URL_KEYS = {
   dotnetFrontend: "dnfe",
   kotlinMobile: "km",
   kotlinMobileLibraries: "kmlib",
-  swiftMobile: "sm",
+  swiftMobile: "swm",
   dartMobile: "dm",
   rustOrm: "rorm",
   rustApi: "rapi",
@@ -711,6 +711,11 @@ export function parseStackSelectionFromUrlRecord(
     }
 
     parsed[stackKey] = parseScalarSelectionValue(rawValue, String(defaultValue ?? ""));
+  }
+
+  if (params.swm === undefined && params.sm === "swiftui") {
+    parsed.swiftMobile = "swiftui";
+    parsed.stateManagement = DEFAULT_STACK_SELECTION.stateManagement;
   }
 
   return normalizeStackSelection(parsed as StackSelectionState);
@@ -968,6 +973,7 @@ const SELF_BACKENDS = new Set([
   "self-nuxt",
   "self-svelte",
   "self-solid-start",
+  "self-tanstack-start-solid",
   "self-vinext",
 ]);
 

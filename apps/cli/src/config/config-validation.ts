@@ -1113,7 +1113,9 @@ function validateObservabilityConstraints(config: Partial<ProjectConfig>) {
   if (
     effective.observability === "signoz" &&
     effective.backend === "self" &&
-    effective.frontend?.some((frontend) => frontend === "tanstack-start" || frontend === "astro")
+    effective.frontend?.some((frontend) =>
+      ["tanstack-start", "tanstack-start-solid", "astro"].includes(frontend),
+    )
   ) {
     incompatibilityError({
       message: "SigNoz tracing is not yet bootstrapped for TanStack Start or Astro fullstack apps.",

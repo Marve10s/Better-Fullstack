@@ -1,0 +1,39 @@
+{{#if (and (eq api "orpc") (eq orm "drizzle") (or (isBetterAuth auth) (eq auth "none")))}}
+import { createCollection } from "@tanstack/solid-db";
+import { queryCollectionOptions } from "@tanstack/query-db-collection";
+
+import { client, queryClient } from "{{#if (includes frontend "solid-start")}}@/lib/orpc{{else}}@/utils/orpc{{/if}}";
+
+export type Task = Awaited<ReturnType<typeof client.tasks.list>>[number];
+
+export const tasksCollection = createCollection(
+  queryCollectionOptions({
+    queryKey: ["tasks"],
+    queryFn: () => client.tasks.list(),
+    queryClient,
+    getKey: (task: Task) => task.id,
+    onInsert: async ({ transaction }) => {
+      await Promise.all(
+        transaction.mutations.map((mutation) =>
+          client.tasks.create({ title: mutation.modified.title }),
+        ),
+      );
+    },
+    onUpdate: async ({ transaction }) => {
+      await Promise.all(
+        transaction.mutations.map((mutation) =>
+          client.tasks.setCompleted({
+            id: mutation.original.id,
+            completed: mutation.modified.completed,
+          }),
+        ),
+      );
+    },
+    onDelete: async ({ transaction }) => {
+      await Promise.all(
+        transaction.mutations.map((mutation) => client.tasks.remove({ id: mutation.original.id })),
+      );
+    },
+  }),
+);
+{{/if}}

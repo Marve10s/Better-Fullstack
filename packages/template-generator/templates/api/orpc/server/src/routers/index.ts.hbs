@@ -1,11 +1,17 @@
 {{#if (eq api "orpc")}}
 import { {{#if (isBetterAuth auth)}}protectedProcedure, {{/if}}publicProcedure } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
 import type { RouterClient } from "@orpc/server";
+{{#if (and (includes examples "tanstack-showcase") (eq orm "drizzle") (or (includes frontend "solid-start") (includes frontend "tanstack-start-solid")) (or (isBetterAuth auth) (eq auth "none")))}}
+import { tasksRouter } from "./tasks";
+{{/if}}
 
 export const appRouter = {
   healthCheck: publicProcedure.handler(() => {
     return "OK";
   }),
+  {{#if (and (includes examples "tanstack-showcase") (eq orm "drizzle") (or (includes frontend "solid-start") (includes frontend "tanstack-start-solid")) (or (isBetterAuth auth) (eq auth "none")))}}
+  tasks: tasksRouter,
+  {{/if}}
   {{#if (isBetterAuth auth)}}
   privateData: protectedProcedure.handler(({ context }) => {
     return {

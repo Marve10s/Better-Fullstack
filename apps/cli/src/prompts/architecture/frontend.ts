@@ -71,6 +71,11 @@ export const WEB_FRONTEND_PROMPT_OPTIONS: PromptOption<Frontend>[] = [
     hint: "Full-stack Solid framework with SSR and API routes",
   },
   {
+    value: "tanstack-start-solid",
+    label: "TanStack Start (Solid)",
+    hint: "TanStack Start on Solid with TanStack Router and server routes",
+  },
+  {
     value: "astro",
     label: "Astro",
     hint: "Content-focused with Island Architecture",

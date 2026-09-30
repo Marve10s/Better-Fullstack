@@ -17,4 +17,6 @@ export * from "@/capabilities/capability-inventory";
 export * from "@/stack/update-support";
 export * from "@/stack/stack-comparison";
 export * from "@/stack/starter-tracks";
+export * from "@/catalog/preset-ids";
+export * from "@/stack/presets";
 export * from "@/telemetry/telemetry";

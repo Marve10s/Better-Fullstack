@@ -1,16 +1,16 @@
 import { describe, expect, it } from "bun:test";
+import { PRESET_DEFINITIONS } from "@better-fullstack/types";
 
-import { PRESET_TEMPLATES } from "@/lib/stack/constant";
 import { recommendPresetFromBrief } from "@/lib/builder/recommend-preset";
 
 function stackOf(presetId: string) {
-  return PRESET_TEMPLATES.find((preset) => preset.id === presetId)?.stack;
+  return PRESET_DEFINITIONS.find((preset) => preset.id === presetId)?.stack;
 }
 
 describe("recommendPresetFromBrief (web prompt-to-stack)", () => {
   it("returns a valid, applyable preset id and a rationale", () => {
     const result = recommendPresetFromBrief("a simple web app");
-    expect(PRESET_TEMPLATES.some((preset) => preset.id === result.presetId)).toBe(true);
+    expect(PRESET_DEFINITIONS.some((preset) => preset.id === result.presetId)).toBe(true);
     expect(result.presetName.length).toBeGreaterThan(0);
     expect(result.rationale.length).toBeGreaterThan(0);
   });
@@ -42,6 +42,6 @@ describe("recommendPresetFromBrief (web prompt-to-stack)", () => {
 
   it("falls back to a preset for an empty brief without throwing", () => {
     const result = recommendPresetFromBrief("");
-    expect(PRESET_TEMPLATES.some((preset) => preset.id === result.presetId)).toBe(true);
+    expect(PRESET_DEFINITIONS.some((preset) => preset.id === result.presetId)).toBe(true);
   });
 });

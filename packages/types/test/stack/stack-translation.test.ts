@@ -1242,3 +1242,24 @@ it("removes array capabilities from every owning service without copying retaine
       .map((part) => [part.ownerPartId, part.toolId]),
   ).toEqual([["worker", "mapstruct"]]);
 });
+
+describe("stack selection URL keys", () => {
+  it("gives every selection key its own URL key", () => {
+    const urlKeys = Object.values(STACK_SELECTION_URL_KEYS);
+    expect(new Set(urlKeys).size).toBe(urlKeys.length);
+  });
+
+  it("round-trips state management without touching the Swift app", () => {
+    const selection = { ...DEFAULT_STACK_SELECTION, stateManagement: "tanstack-store" };
+    const params = Object.fromEntries(createStackSelectionSearchParams(selection));
+    const parsed = parseStackSelectionFromUrlRecord(params);
+    expect(parsed.stateManagement).toBe("tanstack-store");
+    expect(parsed.swiftMobile).toBe(DEFAULT_STACK_SELECTION.swiftMobile);
+  });
+
+  it("reads an older sm=swiftui link as the Swift app", () => {
+    const parsed = parseStackSelectionFromUrlRecord({ sm: "swiftui" });
+    expect(parsed.swiftMobile).toBe("swiftui");
+    expect(parsed.stateManagement).toBe(DEFAULT_STACK_SELECTION.stateManagement);
+  });
+});

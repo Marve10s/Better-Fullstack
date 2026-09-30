@@ -2,6 +2,8 @@ import { authClient } from "@/lib/auth-client";
 import { useNavigate } from "@solidjs/router";
 {{#if (eq validation "valibot")}}
 import * as v from "valibot";
+{{else if (eq validation "effect-schema")}}
+import { Either, ParseResult, Schema } from "effect";
 {{else}}
 import z from "zod";
 {{/if}}
@@ -28,6 +30,21 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
     const result = v.safeParse(schema, { email: email(), password: password() });
     if (!result.success) {
       setErrors(result.issues.map((i) => i.message));
+      setIsSubmitting(false);
+      return;
+    }
+{{else if (eq validation "effect-schema")}}
+    const schema = Schema.Struct({
+      email: Schema.String.pipe(
+        Schema.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, { message: () => "Invalid email address" }),
+      ),
+      password: Schema.String.pipe(
+        Schema.minLength(8, { message: () => "Password must be at least 8 characters" }),
+      ),
+    });
+    const result = Schema.decodeUnknownEither(schema, { errors: "all" })({ email: email(), password: password() });
+    if (Either.isLeft(result)) {
+      setErrors(ParseResult.ArrayFormatter.formatErrorSync(result.left).map((issue) => issue.message));
       setIsSubmitting(false);
       return;
     }

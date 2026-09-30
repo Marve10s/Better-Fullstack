@@ -284,6 +284,10 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.solidjs.com/solid-start",
     githubUrl: "https://github.com/solidjs/solid-start",
   },
+  "tanstack-start-solid": {
+    docsUrl: "https://tanstack.com/start/latest/docs/framework/solid/overview",
+    githubUrl: "https://github.com/TanStack/router",
+  },
   astro: { docsUrl: "https://docs.astro.build/", githubUrl: "https://github.com/withastro/astro" },
   qwik: { docsUrl: "https://qwik.dev/docs/", githubUrl: "https://github.com/QwikDev/qwik" },
   angular: { docsUrl: "https://angular.dev/", githubUrl: "https://github.com/angular/angular" },
@@ -455,6 +459,10 @@ const BASE_LINKS: LinkMap = {
   "self-solid-start": {
     docsUrl: "https://docs.solidjs.com/solid-start",
     githubUrl: "https://github.com/solidjs/solid-start",
+  },
+  "self-tanstack-start-solid": {
+    docsUrl: "https://tanstack.com/start/latest/docs/framework/solid/overview",
+    githubUrl: "https://github.com/TanStack/router",
   },
   "native-bare": { docsUrl: "https://docs.expo.dev/", githubUrl: "https://github.com/expo/expo" },
   "native-uniwind": {

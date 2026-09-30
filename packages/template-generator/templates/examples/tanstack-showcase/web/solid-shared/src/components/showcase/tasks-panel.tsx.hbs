@@ -1,0 +1,214 @@
+{{#if (and (eq api "orpc") (eq orm "drizzle") (or (isBetterAuth auth) (eq auth "none")))}}
+import { createForm } from "@tanstack/solid-form";
+import { useLiveQuery } from "@tanstack/solid-db";
+import {
+  createSolidTable,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  type ColumnDef,
+  type SortingState,
+} from "@tanstack/solid-table";
+{{#if (eq validation "effect-schema")}}
+import { Schema } from "effect";
+{{else if (eq validation "valibot")}}
+import * as v from "valibot";
+{{else}}
+import z from "zod";
+{{/if}}
+import { createSignal, For, Show } from "solid-js";
+
+import { tasksCollection, type Task } from "./tasks-collection";
+
+{{#if (eq validation "effect-schema")}}
+const newTaskSchema = Schema.standardSchemaV1(
+  Schema.Struct({
+    title: Schema.Trim.pipe(
+      Schema.minLength(1, { message: () => "Give the task a title" }),
+      Schema.maxLength(255, { message: () => "Keep titles under 255 characters" }),
+    ),
+  }),
+);
+{{else if (eq validation "valibot")}}
+const newTaskSchema = v.object({
+  title: v.pipe(
+    v.string(),
+    v.trim(),
+    v.minLength(1, "Give the task a title"),
+    v.maxLength(255, "Keep titles under 255 characters"),
+  ),
+});
+{{else}}
+const newTaskSchema = z.object({
+  title: z.string().trim().min(1, "Give the task a title").max(255, "Keep titles under 255 characters"),
+});
+{{/if}}
+
+const columns: ColumnDef<Task>[] = [
+  {
+    accessorKey: "completed",
+    header: "Done",
+    cell: (info) => (
+      <input
+        type="checkbox"
+        checked={info.row.original.completed}
+        onChange={(event) =>
+          tasksCollection.update(info.row.original.id, (draft) => {
+            draft.completed = event.currentTarget.checked;
+          })
+        }
+      />
+    ),
+  },
+  { accessorKey: "title", header: "Title" },
+  {
+    accessorKey: "createdAt",
+    header: "Created",
+    cell: (info) => new Date(info.row.original.createdAt).toLocaleTimeString(),
+  },
+  {
+    id: "actions",
+    header: "",
+    enableSorting: false,
+    cell: (info) => (
+      <button
+        type="button"
+        class="text-xs text-red-400 hover:text-red-300"
+        onClick={() => tasksCollection.delete(info.row.original.id)}
+      >
+        Delete
+      </button>
+    ),
+  },
+];
+
+function sortIndicator(direction: false | "asc" | "desc") {
+  if (direction === "asc") return " ↑";
+  if (direction === "desc") return " ↓";
+  return "";
+}
+
+export default function TasksPanel() {
+  const tasks = useLiveQuery((q) =>
+    q.from({ task: tasksCollection }).orderBy(({ task }) => task.createdAt, "desc"),
+  );
+  const [sorting, setSorting] = createSignal<SortingState>([]);
+
+  const table = createSolidTable({
+    get data() {
+      return [...tasks()];
+    },
+    columns,
+    state: {
+      get sorting() {
+        return sorting();
+      },
+    },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  const form = createForm(() => ({
+    defaultValues: { title: "" },
+    validators: { onSubmit: newTaskSchema },
+    onSubmit: ({ value, formApi }) => {
+      tasksCollection.insert({
+        id: -Date.now(),
+        title: value.title.trim(),
+        completed: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as Task);
+      formApi.reset();
+    },
+  }));
+
+  return (
+    <div class="space-y-4">
+      <form
+        class="flex gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          form.handleSubmit();
+        }}
+      >
+        <form.Field name="title">
+          {(field) => (
+            <div class="flex-1">
+              <input
+                name={field().name}
+                value={field().state.value}
+                onBlur={field().handleBlur}
+                onInput={(event) => field().handleChange(event.currentTarget.value)}
+                placeholder="What needs doing?"
+                class="w-full rounded border border-neutral-700 bg-transparent p-2 text-sm"
+              />
+              <For each={field().state.meta.errors}>
+                {(error) => <p class="mt-1 text-xs text-red-400">{error?.message}</p>}
+              </For>
+            </div>
+          )}
+        </form.Field>
+        <button
+          type="submit"
+          class="h-fit rounded bg-indigo-600 px-3 py-2 text-sm text-white hover:bg-indigo-500"
+        >
+          Add
+        </button>
+      </form>
+
+      <Show
+        when={!tasks.isLoading}
+        fallback={<p class="text-sm text-neutral-400">Loading tasks…</p>}
+      >
+        <table class="w-full text-left text-sm">
+          <thead>
+            <For each={table.getHeaderGroups()}>
+              {(headerGroup) => (
+                <tr class="border-b border-neutral-800">
+                  <For each={headerGroup.headers}>
+                    {(header) => (
+                      <th
+                        class="cursor-pointer select-none py-2 pr-4 font-medium"
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {sortIndicator(header.column.getIsSorted())}
+                      </th>
+                    )}
+                  </For>
+                </tr>
+              )}
+            </For>
+          </thead>
+          <tbody>
+            <For
+              each={table.getRowModel().rows}
+              fallback={
+                <tr>
+                  <td colSpan={columns.length} class="py-4 text-neutral-400">
+                    No tasks yet. Add one above.
+                  </td>
+                </tr>
+              }
+            >
+              {(row) => (
+                <tr class="border-b border-neutral-900">
+                  <For each={row.getVisibleCells()}>
+                    {(cell) => (
+                      <td class="py-2 pr-4">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    )}
+                  </For>
+                </tr>
+              )}
+            </For>
+          </tbody>
+        </table>
+      </Show>
+    </div>
+  );
+}
+{{/if}}

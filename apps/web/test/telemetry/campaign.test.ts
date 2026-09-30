@@ -1,3 +1,4 @@
+import { PRESET_DEFINITIONS } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
 import {
@@ -15,13 +16,12 @@ import {
   getCampaignShareUrl,
 } from "@/lib/campaign/campaign-share";
 import { getStackRunSupport } from "@/lib/project/run-support";
-import { PRESET_TEMPLATES } from "@/lib/stack/constant";
 import { DEFAULT_STACK, type StackState } from "@/lib/stack/stack-defaults";
 
 describe("Run Before You Clone campaign", () => {
   it("keeps every featured preset browser-runnable", () => {
     for (const campaignPreset of CAMPAIGN_PRESETS) {
-      const preset = PRESET_TEMPLATES.find((candidate) => candidate.id === campaignPreset.id);
+      const preset = PRESET_DEFINITIONS.find((candidate) => candidate.id === campaignPreset.id);
       expect(preset, `Missing preset: ${campaignPreset.id}`).toBeDefined();
       const stack = { ...DEFAULT_STACK, ...preset?.stack } as StackState;
       expect(getStackRunSupport(stack)).toEqual({ supported: true });

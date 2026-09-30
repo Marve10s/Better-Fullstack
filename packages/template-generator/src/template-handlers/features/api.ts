@@ -116,5 +116,22 @@ export async function processApiTemplates(
         config,
       );
     }
+  } else if (config.frontend.includes("tanstack-start-solid") && config.api === "orpc") {
+    processTemplatesFromPrefix(
+      vfs,
+      templates,
+      `api/${config.api}/web/tanstack-start-solid`,
+      "apps/web",
+      config,
+    );
+    if (config.backend === "self") {
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        `api/${config.api}/fullstack/tanstack-start-solid`,
+        "apps/web",
+        config,
+      );
+    }
   }
 }

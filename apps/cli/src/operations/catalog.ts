@@ -153,7 +153,7 @@ function getGuidance() {
       "Qwik: use backend='none', api='none' (built-in server).",
       "NestJS and AdonisJS backends require runtime='node'.",
       "Elysia backend requires runtime='bun'.",
-      "backend='self' only works with: next, vinext, tanstack-start, astro, nuxt, svelte, solid-start.",
+      "backend='self' only works with: next, vinext, tanstack-start, astro, nuxt, svelte, solid-start, tanstack-start-solid.",
       "backend='convex' overrides: runtime=none, database=none, orm=none, api=none.",
       "TypeORM + better-auth: unsupported (no adapter). Use auth='none' or orm='drizzle'.",
       "Sequelize + better-auth: unsupported (no adapter). Use auth='none' or orm='drizzle'.",
@@ -212,7 +212,7 @@ export const listPresetsOperation = defineOperation({
   name: "list_presets",
   title: "List presets",
   description:
-    "Lists the ready-made stack presets available to the CLI (mern, pern, t3, uniwind) with id, name, description, ecosystem, and a stack summary. Use to discover a starting point before bfs_recommend_stack, bfs_plan_project, or bfs_create_project.",
+    "Lists the curated stack presets (the same catalog as the builder and the `preset` command) with id, name, description, ecosystem, option choices such as Future Stack's framework and Effect placement, and one resolved stack per variant. Use a variant's stack as a starting point for bfs_plan_project or bfs_create_project.",
   input: z.object({}),
   safety: "read",
   idempotent: true,
