@@ -70,7 +70,7 @@ Examples:
 }
 
 async function updateAddDepsFile(updates: VersionInfo[]): Promise<boolean> {
-  const filePath = path.join(__dirname, "../src/utils/add-deps.ts");
+  const filePath = path.join(__dirname, "../src/dependencies/add-deps.ts");
 
   if (!fs.existsSync(filePath)) {
     console.error(`Could not find add-deps.ts at ${filePath}`);

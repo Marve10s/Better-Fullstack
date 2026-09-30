@@ -26,6 +26,8 @@ async function expectNoSeriousViolations(page: Page, scope = "body") {
 
 test.describe("Accessibility", () => {
   test("landing page has no serious accessibility violations", async ({ page }) => {
+    // The hero fades in for ~1.65s; axe must see the settled colors, not mid-fade ones.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1, name: /next project/i })).toBeVisible({
       timeout: 15000,
