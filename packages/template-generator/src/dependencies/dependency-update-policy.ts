@@ -217,6 +217,12 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     reason:
       "Keep Worklets on the Expo 56 static-export-compatible release paired with Reanimated 4.5.3.",
   },
+  uniwind: {
+    pinnedVersion: "1.12.0",
+    holdLatestChannel: true,
+    reason:
+      "Uniwind 1.12.1 breaks Expo 56 static rendering (\"Cannot read properties of undefined (reading 'default')\"); 1.12.0 exports successfully.",
+  },
   vitest: {
     pinnedVersion: "4.1.8",
     reason: "The Vitest family is exact-pinned to the latest reviewed Yarn-compatible patch.",

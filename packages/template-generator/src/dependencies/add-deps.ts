@@ -668,6 +668,9 @@ export const dependencyVersionMap = {
   "react-native-reanimated": "^4.5.3",
   "react-native-worklets": "^0.11.4",
 
+  // React Native styling
+  uniwind: "1.12.0",
+
   // Animation
   motion: "^12.43.0",
   gsap: "^3.15.0",
