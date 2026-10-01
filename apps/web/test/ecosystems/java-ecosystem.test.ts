@@ -1,5 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import { CATEGORY_ORDER, JAVA_CATEGORY_ORDER } from "@better-fullstack/types";
+import {
+  CATEGORY_ORDER,
+  JAVA_CATEGORY_ORDER,
+  PRESET_CATEGORIES,
+} from "@better-fullstack/types";
 import {
   createStackSelectionSearchParams as createStackSearchParams,
   parseStackSelectionFromUrlRecord as parseStackFromUrlRecord,
@@ -16,7 +20,6 @@ import {
   DEFAULT_STACK,
   ECOSYSTEMS,
   ECOSYSTEM_CATEGORIES,
-  PRESET_CATEGORIES,
   TECH_OPTIONS,
   type StackState,
 } from "@/lib/stack/constant";

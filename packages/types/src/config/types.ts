@@ -372,6 +372,7 @@ export type WebFrontend = Extract<
   | "svelte"
   | "solid"
   | "solid-start"
+  | "tanstack-start-solid"
   | "astro"
   | "none"
 >;

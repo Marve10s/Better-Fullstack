@@ -200,7 +200,7 @@ export function processAIDeps(vfs: VirtualFileSystem, config: ProjectConfig): vo
             packagePath: frontendPath,
             dependencies: ["@tanstack/ai-react"],
           });
-        } else if (webFrontend === "solid" || webFrontend === "solid-start") {
+        } else if (["solid", "solid-start", "tanstack-start-solid"].includes(webFrontend)) {
           addPackageDependency({
             vfs,
             packagePath: frontendPath,

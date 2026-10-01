@@ -59,6 +59,17 @@ The Stack Builder runs in your browser and hands you the command to copy, or a Z
 
 <br>
 
+## Future Stack
+
+Solid, Effect, and the TanStack libraries in one project, with oRPC, Drizzle, SQLite, Better Auth, and a showcase app that uses each library. Choose SolidStart or TanStack Start, and whether Effect runs in the app or on its own server:
+
+```bash
+bun create better-fullstack@latest preset future-stack my-app
+bun create better-fullstack@latest preset future-stack my-app --framework tanstack-start --effect server
+```
+
+<br>
+
 ## Why Better Fullstack
 
 - **Mix languages in one project.** Multi-Ecosystem mode composes frontend, backend, database, and mobile parts from different languages, like a TypeScript frontend with a Go backend.

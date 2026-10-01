@@ -296,9 +296,28 @@ function addAITransportClientDeps(
   else if (options.hasReactWeb) deps.push("@ai-sdk/react", "streamdown");
 }
 
-function setupTanStackShowcaseDependencies(vfs: VirtualFileSystem, _config: ProjectConfig): void {
+function setupTanStackShowcaseDependencies(vfs: VirtualFileSystem, config: ProjectConfig): void {
   const webPkgPath = "apps/web/package.json";
   if (!vfs.exists(webPkgPath)) return;
+
+  if (config.frontend.some((f) => f === "solid-start" || f === "tanstack-start-solid")) {
+    addPackageDependency({
+      vfs,
+      packagePath: webPkgPath,
+      dependencies: [
+        "@tanstack/solid-query",
+        "@tanstack/solid-table",
+        "@tanstack/solid-virtual",
+        "@tanstack/solid-form",
+        "@tanstack/store",
+        "@tanstack/solid-store",
+        "@tanstack/solid-pacer",
+        "@tanstack/solid-db",
+        "@tanstack/query-db-collection",
+      ],
+    });
+    return;
+  }
 
   // Showcase pages import these directly. Some may already be installed via
   // addon selections - addPackageDependency is idempotent.

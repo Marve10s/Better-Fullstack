@@ -87,6 +87,7 @@ const FULLSTACK_FRONTENDS: readonly Frontend[] = [
   "nuxt",
   "svelte",
   "solid-start",
+  "tanstack-start-solid",
 ] as const;
 
 export function validateSelfBackendCompatibility(
@@ -103,7 +104,7 @@ export function validateSelfBackendCompatibility(
 
     if (!hasSupportedWeb) {
       exitWithError(
-        "Backend 'self' (fullstack) only supports Next.js, Vinext, TanStack Start, Astro, Nuxt, SvelteKit, or SolidStart frontends. Please use --frontend next, --frontend vinext, --frontend tanstack-start, --frontend astro, --frontend nuxt, --frontend svelte, or --frontend solid-start.",
+        "Backend 'self' (fullstack) only supports Next.js, Vinext, TanStack Start, Astro, Nuxt, SvelteKit, SolidStart, or TanStack Start (Solid) frontends. Please use --frontend next, --frontend vinext, --frontend tanstack-start, --frontend astro, --frontend nuxt, --frontend svelte, --frontend solid-start, or --frontend tanstack-start-solid.",
       );
     }
 
@@ -117,7 +118,7 @@ export function validateSelfBackendCompatibility(
   const hasFullstackFrontend = frontends.some((f) => FULLSTACK_FRONTENDS.includes(f));
   if (providedFlags.has("backend") && !hasFullstackFrontend && backend === "self") {
     exitWithError(
-      "Backend 'self' (fullstack) only supports Next.js, Vinext, TanStack Start, Astro, Nuxt, SvelteKit, or SolidStart frontends. Please use --frontend next, --frontend vinext, --frontend tanstack-start, --frontend astro, --frontend nuxt, --frontend svelte, --frontend solid-start, or choose a different backend.",
+      "Backend 'self' (fullstack) only supports Next.js, Vinext, TanStack Start, Astro, Nuxt, SvelteKit, SolidStart, or TanStack Start (Solid) frontends. Please use --frontend next, --frontend vinext, --frontend tanstack-start, --frontend astro, --frontend nuxt, --frontend svelte, --frontend solid-start, --frontend tanstack-start-solid, or choose a different backend.",
     );
   }
 }
@@ -882,11 +883,16 @@ export function validateExamplesCompatibility(
   if (examplesArr.length === 0 || examplesArr.includes("none")) return;
 
   if (examplesArr.includes("tanstack-showcase")) {
-    const showcaseFrontends: Frontend[] = ["tanstack-router", "tanstack-start"];
+    const showcaseFrontends: Frontend[] = [
+      "tanstack-router",
+      "tanstack-start",
+      "solid-start",
+      "tanstack-start-solid",
+    ];
     const hasShowcaseFrontend = (frontend ?? []).some((f) => showcaseFrontends.includes(f));
     if (!hasShowcaseFrontend) {
       exitWithError(
-        "The 'tanstack-showcase' example requires TanStack Router or TanStack Start frontend.",
+        "The 'tanstack-showcase' example requires TanStack Router, TanStack Start, SolidStart, or TanStack Start (Solid).",
       );
     }
   }

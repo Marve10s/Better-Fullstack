@@ -25,6 +25,7 @@ function processCSSFrameworkDeps(vfs: VirtualFileSystem, config: ProjectConfig):
       "svelte",
       "solid",
       "solid-start",
+      "tanstack-start-solid",
       "astro",
       "qwik",
       "angular",
@@ -85,7 +86,9 @@ function processUILibraryDeps(vfs: VirtualFileSystem, config: ProjectConfig): vo
     ].includes(f),
   );
   const hasNuxt = frontend.includes("nuxt");
-  const hasSolid = frontend.includes("solid") || frontend.includes("solid-start");
+  const hasSolid = frontend.some((f) =>
+    ["solid", "solid-start", "tanstack-start-solid"].includes(f),
+  );
   const hasSvelte = frontend.includes("svelte");
 
   // Astro integration detection

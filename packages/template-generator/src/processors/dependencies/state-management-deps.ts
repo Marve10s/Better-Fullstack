@@ -20,6 +20,8 @@ const OTHER_WEB_FRAMEWORKS: Frontend[] = [
   "vanilla-vite",
   "vue",
   "solid",
+  "solid-start",
+  "tanstack-start-solid",
   "svelte",
   "nuxt",
   "qwik",
@@ -76,7 +78,10 @@ export function processStateManagementDeps(vfs: VirtualFileSystem, config: Proje
   // Add framework-agnostic state management to non-React frontends (excluding Astro+React)
   if (hasOtherWeb && !hasReactWeb && !hasAstroReact && vfs.exists(webPath)) {
     if (FRAMEWORK_AGNOSTIC_STATE.includes(stateManagement)) {
-      const deps = getStateManagementDeps(stateManagement, "web", false);
+      const isSolid = frontend.some((f) =>
+        ["solid", "solid-start", "tanstack-start-solid"].includes(f),
+      );
+      const deps = getStateManagementDeps(stateManagement, "web", false, isSolid);
       if (deps.length > 0) {
         addPackageDependency({
           vfs,
@@ -105,6 +110,7 @@ function getStateManagementDeps(
   stateManagement: ProjectConfig["stateManagement"],
   _target: "web" | "native",
   isReact: boolean,
+  isSolid = false,
 ): AvailableDependencies[] {
   const deps: AvailableDependencies[] = [];
 
@@ -140,6 +146,7 @@ function getStateManagementDeps(
     case "tanstack-store":
       deps.push("@tanstack/store");
       if (isReact) deps.push("@tanstack/react-store");
+      if (isSolid) deps.push("@tanstack/solid-store");
       break;
     case "legend-state":
       deps.push("@legendapp/state");

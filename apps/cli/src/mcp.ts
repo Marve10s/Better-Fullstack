@@ -92,7 +92,7 @@ const COMPATIBILITY_RULES_MD = `# Better-Fullstack Compatibility Rules
 - **Convex**: Forces runtime=none, database=none, orm=none, api=none, dbSetup=none, serverDeploy=none. Removes incompatible frontends (Solid, SolidStart, Astro).
 - **Effect backend**: Requires effect=effect-full and validation=effect-schema. Other compatible frontend/backend-adjacent tools can still be selected.
 - **No backend (none)**: Clears auth, payments, database, orm, api, serverDeploy, search, fileStorage.
-- **Fullstack (backend='self')**: Sets runtime=none, serverDeploy=none. Only works with: next, vinext, tanstack-start, astro, nuxt, svelte, solid-start.
+- **Fullstack (backend='self')**: Sets runtime=none, serverDeploy=none. Only works with: next, vinext, tanstack-start, astro, nuxt, svelte, solid-start, tanstack-start-solid.
 
 ## Runtime Constraints
 - NestJS and AdonisJS require runtime=node.

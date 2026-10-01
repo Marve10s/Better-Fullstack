@@ -1,0 +1,41 @@
+import { Link } from "@tanstack/solid-router";
+{{#if (isBetterAuth auth)}}
+import UserMenu from "./user-menu";
+{{/if}}
+import { For } from "solid-js";
+
+const activeLinkProps = { class: "font-semibold" };
+
+export default function Header() {
+  const links = [
+    { to: "/", label: "Home" },
+    {{#if (isBetterAuth auth)}}
+    { to: "/dashboard", label: "Dashboard" },
+    {{/if}}
+    {{#if (includes examples "tanstack-showcase")}}
+    { to: "/showcase", label: "Showcase" },
+    {{/if}}
+  ] as const;
+
+  return (
+    <div>
+      <div class="flex flex-row items-center justify-between px-2 py-1">
+        <nav class="flex gap-4 text-lg">
+          <For each={links}>
+            {(link) => (
+              <Link to={link.to} activeProps={activeLinkProps}>
+                {link.label}
+              </Link>
+            )}
+          </For>
+        </nav>
+        <div class="flex items-center gap-2">
+          {{#if (isBetterAuth auth)}}
+          <UserMenu />
+          {{/if}}
+        </div>
+      </div>
+      <hr class="border-neutral-800" />
+    </div>
+  );
+}

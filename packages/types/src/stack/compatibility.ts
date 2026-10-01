@@ -661,6 +661,34 @@ export type CompatibilityAnalysisResult = {
  * Nuxt is intentionally excluded from the MVP (different alias convention).
  */
 const SINGLE_APP_SELF_BACKENDS = new Set(["self-next", "self-tanstack-start"]);
+
+const TANSTACK_START_SOLID_SUPPORTED = {
+  payments: ["none"],
+  webDeploy: ["none"],
+  analytics: ["none"],
+  webMcp: ["none"],
+  fileUpload: ["none"],
+  featureFlags: ["none"],
+  i18n: ["none"],
+  cms: ["none"],
+  realtime: ["none"],
+  animation: ["none"],
+  ecommerce: ["none"],
+  integrations: ["none"],
+  uiLibrary: ["none"],
+  cssFramework: ["tailwind", "none"],
+  api: ["orpc", "none"],
+} as const satisfies Partial<
+  Record<CompatibilityCategory & keyof CompatibilityInput, readonly string[]>
+>;
+const TANSTACK_START_SOLID_EXAMPLES = new Set(["tanstack-showcase", "none"]);
+
+function usesTanStackStartSolid(stack: Pick<CompatibilityInput, "webFrontend" | "backend">) {
+  return (
+    stack.webFrontend.includes("tanstack-start-solid") ||
+    stack.backend === "self-tanstack-start-solid"
+  );
+}
 const SINGLE_APP_CONTAINER_ADDONS = new Set(["docker-compose", "devcontainer", "kong"]);
 const FULLSTACK_SELF_BACKENDS = new Set([
   "self-next",
@@ -670,6 +698,7 @@ const FULLSTACK_SELF_BACKENDS = new Set([
   "self-nuxt",
   "self-svelte",
   "self-solid-start",
+  "self-tanstack-start-solid",
 ]);
 const SINGLE_APP_WEB_FRONTEND_BY_BACKEND: Record<string, string> = {
   "self-next": "next",
@@ -887,6 +916,15 @@ export const analyzeStackCompatibility = (
         message: "Removed SolidStart (incompatible with Convex)",
       });
     }
+    if (nextStack.webFrontend.includes("tanstack-start-solid")) {
+      nextStack.webFrontend = nextStack.webFrontend.filter((f) => f !== "tanstack-start-solid");
+      if (nextStack.webFrontend.length === 0) nextStack.webFrontend = ["none"];
+      changed = true;
+      changes.push({
+        category: "backend",
+        message: "Removed TanStack Start (Solid) (incompatible with Convex)",
+      });
+    }
     if (nextStack.webFrontend.includes("astro")) {
       nextStack.webFrontend = nextStack.webFrontend.filter((f) => f !== "astro");
       if (nextStack.webFrontend.length === 0) nextStack.webFrontend = ["none"];
@@ -984,7 +1022,8 @@ export const analyzeStackCompatibility = (
     nextStack.backend === "self-astro" ||
     nextStack.backend === "self-nuxt" ||
     nextStack.backend === "self-svelte" ||
-    nextStack.backend === "self-solid-start"
+    nextStack.backend === "self-solid-start" ||
+    nextStack.backend === "self-tanstack-start-solid"
   ) {
     // Fullstack uses frontend's API routes, no separate runtime needed
     if (nextStack.runtime !== "none") {
@@ -1068,6 +1107,53 @@ export const analyzeStackCompatibility = (
       changes.push({
         category: "backend",
         message: "Frontend set to 'SolidStart' (required for SolidStart fullstack)",
+      });
+    }
+    if (
+      nextStack.backend === "self-tanstack-start-solid" &&
+      !nextStack.webFrontend.includes("tanstack-start-solid")
+    ) {
+      nextStack.webFrontend = ["tanstack-start-solid"];
+      changed = true;
+      changes.push({
+        category: "backend",
+        message:
+          "Frontend set to 'TanStack Start (Solid)' (required for TanStack Start (Solid) fullstack)",
+      });
+    }
+  }
+
+  if (usesTanStackStartSolid(nextStack)) {
+    for (const [category, allowed] of Object.entries(TANSTACK_START_SOLID_SUPPORTED) as [
+      keyof typeof TANSTACK_START_SOLID_SUPPORTED,
+      readonly string[],
+    ][]) {
+      if (!allowed.includes(nextStack[category])) {
+        nextStack[category] = allowed[0]!;
+        changed = true;
+        changes.push({
+          category,
+          message: `${getCategoryDisplayName(category)} set to '${allowed[0]}' (not available for TanStack Start (Solid) yet)`,
+        });
+      }
+    }
+    if (!["better-auth", "none"].includes(nextStack.auth)) {
+      nextStack.auth = "better-auth";
+      changed = true;
+      changes.push({
+        category: "auth",
+        message: "Auth set to 'Better Auth' (the only provider for TanStack Start (Solid) yet)",
+      });
+    }
+    const examples = nextStack.examples.filter((example) =>
+      TANSTACK_START_SOLID_EXAMPLES.has(example),
+    );
+    if (examples.length !== nextStack.examples.length) {
+      nextStack.examples = examples.length > 0 ? examples : ["none"];
+      changed = true;
+      changes.push({
+        category: "examples",
+        message: "Examples limited to the TanStack showcase for TanStack Start (Solid)",
       });
     }
   }
@@ -1164,7 +1250,8 @@ export const analyzeStackCompatibility = (
     nextStack.backend !== "self-astro" &&
     nextStack.backend !== "self-nuxt" &&
     nextStack.backend !== "self-svelte" &&
-    nextStack.backend !== "self-solid-start"
+    nextStack.backend !== "self-solid-start" &&
+    nextStack.backend !== "self-tanstack-start-solid"
   ) {
     nextStack.runtime = DEFAULT_RUNTIME;
     changed = true;
@@ -1379,7 +1466,7 @@ export const analyzeStackCompatibility = (
 
     // Nuxt, Svelte, Solid, SolidStart require oRPC for React-only API clients.
     const needsOrpc = nextStack.webFrontend.some((f) =>
-      ["nuxt", "svelte", "solid", "solid-start"].includes(f),
+      ["nuxt", "svelte", "solid", "solid-start", "tanstack-start-solid"].includes(f),
     );
     if (needsOrpc && (nextStack.api === "trpc" || nextStack.api === "apollo-server")) {
       nextStack.api = "orpc";
@@ -2011,7 +2098,11 @@ export const analyzeStackCompatibility = (
   // AI example constraints
   if (nextStack.examples.includes("ai")) {
     // Solid/SolidStart frontend is incompatible with AI example
-    if (nextStack.webFrontend.includes("solid") || nextStack.webFrontend.includes("solid-start")) {
+    if (
+      nextStack.webFrontend.includes("solid") ||
+      nextStack.webFrontend.includes("solid-start") ||
+      nextStack.webFrontend.includes("tanstack-start-solid")
+    ) {
       nextStack.examples = nextStack.examples.filter((e) => e !== "ai");
       if (nextStack.examples.length === 0) nextStack.examples = ["none"];
       changed = true;
@@ -2595,6 +2686,7 @@ export const analyzeStackCompatibility = (
       "self-nuxt",
       "self-svelte",
       "self-solid-start",
+      "self-tanstack-start-solid",
     ].includes(nextStack.backend)
   ) {
     nextStack.serverDeploy = "none";
@@ -3141,6 +3233,18 @@ export const getDisabledReason = (
     return "The selected frontend does not yet mount Vercel Analytics";
   }
 
+  if (usesTanStackStartSolid(currentStack)) {
+    const allowed = (TANSTACK_START_SOLID_SUPPORTED as Partial<Record<string, readonly string[]>>)[
+      category
+    ];
+    if (allowed && !allowed.includes(optionId)) {
+      return "Not available for TanStack Start (Solid) yet";
+    }
+    if (category === "examples" && !TANSTACK_START_SOLID_EXAMPLES.has(optionId)) {
+      return "TanStack Start (Solid) supports the TanStack showcase example only";
+    }
+  }
+
   const graphDisabledReason =
     (category === "payments" && optionId === "revenuecat") ||
     (category === "i18n" && optionId === "intlayer")
@@ -3228,6 +3332,18 @@ export const getDisabledReason = (
     }
   }
 
+  if (currentStack.backend === "self-tanstack-start-solid") {
+    if (category === "runtime" && optionId !== "none") {
+      return "TanStack Start (Solid) fullstack uses built-in server routes";
+    }
+    if (category === "webFrontend" && optionId !== "tanstack-start-solid" && optionId !== "none") {
+      return "TanStack Start (Solid) fullstack requires TanStack Start (Solid) frontend";
+    }
+    if (category === "serverDeploy" && optionId !== "none") {
+      return "Fullstack uses frontend deployment";
+    }
+  }
+
   if (currentStack.backend === "self-solid-start") {
     if (category === "runtime" && optionId !== "none") {
       return "SolidStart fullstack uses built-in API routes";
@@ -3267,6 +3383,15 @@ export const getDisabledReason = (
     }
     if (optionId === "self-solid-start" && !currentStack.webFrontend.includes("solid-start")) {
       return "Requires SolidStart frontend";
+    }
+    if (
+      optionId === "self-tanstack-start-solid" &&
+      !currentStack.webFrontend.includes("tanstack-start-solid")
+    ) {
+      return "Requires TanStack Start (Solid) frontend";
+    }
+    if (optionId === "convex" && currentStack.webFrontend.includes("tanstack-start-solid")) {
+      return "Convex isn't available with TanStack Start (Solid) yet";
     }
     if (optionId === "convex" && currentStack.webFrontend.includes("solid")) {
       return "Convex isn't available with Solid yet";
@@ -3315,6 +3440,7 @@ export const getDisabledReason = (
         "self-nuxt",
         "self-svelte",
         "self-solid-start",
+        "self-tanstack-start-solid",
       ];
       if (!allowedBackends.includes(currentStack.backend)) {
         return "Runtime 'None' only for Convex or fullstack backends";
@@ -3400,11 +3526,11 @@ export const getDisabledReason = (
   // ============================================
   if (category === "api" && optionId === "trpc") {
     const needsOrpc = currentStack.webFrontend.some((f) =>
-      ["nuxt", "svelte", "solid", "solid-start"].includes(f),
+      ["nuxt", "svelte", "solid", "solid-start", "tanstack-start-solid"].includes(f),
     );
     if (needsOrpc) {
       const frontendName = currentStack.webFrontend.find((f) =>
-        ["nuxt", "svelte", "solid", "solid-start"].includes(f),
+        ["nuxt", "svelte", "solid", "solid-start", "tanstack-start-solid"].includes(f),
       );
       return `${frontendName} requires oRPC, not tRPC`;
     }
@@ -3432,11 +3558,11 @@ export const getDisabledReason = (
 
   if (category === "api" && optionId === "apollo-server") {
     const needsReactFrontend = currentStack.webFrontend.some((f) =>
-      ["nuxt", "svelte", "solid", "solid-start"].includes(f),
+      ["nuxt", "svelte", "solid", "solid-start", "tanstack-start-solid"].includes(f),
     );
     if (needsReactFrontend) {
       const frontendName = currentStack.webFrontend.find((f) =>
-        ["nuxt", "svelte", "solid", "solid-start"].includes(f),
+        ["nuxt", "svelte", "solid", "solid-start", "tanstack-start-solid"].includes(f),
       );
       return `${frontendName} requires oRPC, not Apollo Server`;
     }
@@ -4031,6 +4157,7 @@ export const getDisabledReason = (
         "self-nuxt",
         "self-svelte",
         "self-solid-start",
+        "self-tanstack-start-solid",
       ];
       if (noServerDeploy.includes(currentStack.backend)) {
         return "Server deployment not needed for this backend";
@@ -5207,6 +5334,7 @@ const WEB_FRAMEWORKS: readonly Frontend[] = [
   "svelte",
   "solid",
   "solid-start",
+  "tanstack-start-solid",
   "astro",
   "qwik",
   "angular",
@@ -5360,6 +5488,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
     "svelte",
     "solid",
     "solid-start",
+    "tanstack-start-solid",
     "angular",
     "astro",
     "redwood",
@@ -5374,6 +5503,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
     "svelte",
     "solid",
     "solid-start",
+    "tanstack-start-solid",
     "angular",
     "astro",
     "redwood",
@@ -5388,6 +5518,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
     "svelte",
     "solid",
     "solid-start",
+    "tanstack-start-solid",
     "angular",
     "astro",
     "redwood",
@@ -5402,6 +5533,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
     "svelte",
     "solid",
     "solid-start",
+    "tanstack-start-solid",
     "astro",
     "redwood",
   ],
@@ -5415,6 +5547,7 @@ const ADDON_COMPATIBILITY: Record<Addons, readonly Frontend[]> = {
     "svelte",
     "solid",
     "solid-start",
+    "tanstack-start-solid",
     "angular",
     "astro",
     "redwood",
@@ -5481,6 +5614,10 @@ export function allowedApisForFrontends(
     return ["graphql-yoga", "none"] as API[];
   }
 
+  if (frontends.includes("tanstack-start-solid")) {
+    return ["orpc", "none"] as API[];
+  }
+
   const includesSolidStartApi = frontends.includes("solid-start");
   if (includesNuxt || includesSvelte || includesSolid || includesSolidStartApi) {
     return ["orpc", "graphql-yoga", "openapi", "none"] as API[];
@@ -5516,7 +5653,8 @@ export function getApiFrontendCompatibilityIssue(
   const includesAngular = frontends.includes("angular");
   const includesRedwood = frontends.includes("redwood");
   const includesFresh = frontends.includes("fresh");
-  const includesSolidStart = frontends.includes("solid-start");
+  const includesSolidStart =
+    frontends.includes("solid-start") || frontends.includes("tanstack-start-solid");
   const includesStandaloneVite = frontends.includes("vanilla-vite") || frontends.includes("vue");
   const isReactOnlyApi =
     api === "trpc" || api === "ts-rest" || api === "garph" || api === "apollo-server";
@@ -5547,7 +5685,9 @@ export function getApiFrontendCompatibilityIssue(
         ? "svelte"
         : includesSolid
           ? "solid"
-          : "solid-start";
+          : frontends.includes("tanstack-start-solid")
+            ? "tanstack-start-solid"
+            : "solid-start";
 
     return {
       code: "API_REQUIRES_REACT_FRONTEND",
@@ -5652,6 +5792,7 @@ export function getAIFrontendCompatibilityIssue(
 export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backend, auth?: string) {
   if (backend === "convex" && frontend === "solid") return false;
   if (backend === "convex" && frontend === "solid-start") return false;
+  if (backend === "convex" && frontend === "tanstack-start-solid") return false;
   if (backend === "convex" && frontend === "astro") return false;
   if (backend === "convex" && frontend === "qwik") return false;
   if (backend === "convex" && frontend === "angular") return false;
@@ -5810,7 +5951,8 @@ export function getCompatibleFormLibraries(frontends: Frontend[] = []): Forms[] 
   }
 
   const hasSolid = frontends.includes("solid");
-  const hasSolidStart = frontends.includes("solid-start");
+  const hasSolidStart =
+    frontends.includes("solid-start") || frontends.includes("tanstack-start-solid");
   const hasQwik = frontends.includes("qwik");
   const hasFresh = frontends.includes("fresh");
 

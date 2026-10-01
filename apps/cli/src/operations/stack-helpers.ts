@@ -12,8 +12,6 @@ import {
   type OptionCategory,
   type OptionCategoryEcosystem,
   type ProjectConfig,
-  TEMPLATE_VALUES,
-  type Template,
   analyzeStackCompatibility,
   formatStackPartSpec,
   getCategoryOrderForEcosystem,
@@ -32,11 +30,11 @@ import {
 
 import type { planMcpPartRemoval } from "@/mcp/mcp-project-lifecycle";
 
+import { listPresets } from "@/commands/stack/presets";
 import { getStarterTrackRecommendation } from "@/commands/stack/starter-tracks";
 import { applyEffectBackendDefaults } from "@/config/config-processing";
 import { getEffectiveStack, getGraphSummary } from "@/config/graph-summary";
 import { getCompatibilityBackend } from "@/config/stack-compatibility";
-import { getTemplateConfig, getTemplateDescription } from "@/config/templates";
 
 const MCP_ECOSYSTEMS = new Set<OptionCategoryEcosystem>(
   EcosystemSchema.options as OptionCategoryEcosystem[],
@@ -742,7 +740,7 @@ export function projectPartRemovalPayload(payload: Awaited<ReturnType<typeof pla
   return projected;
 }
 
-function buildPresetStackSummary(config: CreateInput): string {
+function buildPresetStackSummary(config: Partial<CreateInput>): string {
   const parts: string[] = [];
   const frontend = (config.frontend ?? []).filter((item) => item !== "none");
   if (frontend.length > 0) parts.push(`frontend: ${frontend.join("+")}`);
@@ -759,32 +757,13 @@ function buildPresetStackSummary(config: CreateInput): string {
 }
 
 export function listMcpPresets() {
-  const presets: {
-    id: Template;
-    name: string;
-    description: string;
-    ecosystem: "typescript" | "react-native";
-    stackSummary: string;
-    stack: CreateInput;
-  }[] = [];
-  for (const id of TEMPLATE_VALUES) {
-    if (id === "none") continue;
-    const config = getTemplateConfig(id);
-    if (!config) continue;
-    const frontend = (config.frontend ?? []) as string[];
-    const ecosystem = frontend.some((item) => item.startsWith("native-"))
-      ? "react-native"
-      : "typescript";
-    presets.push({
-      id,
-      name: id.toUpperCase(),
-      description: getTemplateDescription(id),
-      ecosystem,
-      stackSummary: buildPresetStackSummary(config),
-      stack: config,
-    });
-  }
-  return presets;
+  return listPresets().map((preset) => ({
+    ...preset,
+    variants: preset.variants.map((variant) => ({
+      ...variant,
+      stackSummary: variant.stack ? buildPresetStackSummary(variant.stack) : "",
+    })),
+  }));
 }
 
 export function recommendStackFromBrief(brief: string, ecosystemHint?: ProjectConfig["ecosystem"]) {

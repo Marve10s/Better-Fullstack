@@ -340,6 +340,23 @@ export async function processAuthTemplates(
         config,
       );
     }
+  } else if (config.frontend.includes("tanstack-start-solid")) {
+    processTemplatesFromPrefix(
+      vfs,
+      templates,
+      `auth/${authTemplateProvider}/web/tanstack-start-solid`,
+      "apps/web",
+      config,
+    );
+    if (config.backend === "self") {
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        `auth/${authTemplateProvider}/fullstack/tanstack-start-solid`,
+        "apps/web",
+        config,
+      );
+    }
   }
 
   if (hasNative) {

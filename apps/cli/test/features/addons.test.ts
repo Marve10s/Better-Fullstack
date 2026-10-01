@@ -4191,7 +4191,7 @@ describe("Addon Configurations", () => {
         expectError: true,
       });
 
-      expectError(result, "tanstack-showcase' example requires TanStack Router or TanStack Start");
+      expectError(result, "tanstack-showcase' example requires TanStack Router, TanStack Start");
     });
 
     it("should fail with incompatible frontend (next)", async () => {
@@ -4212,7 +4212,7 @@ describe("Addon Configurations", () => {
         expectError: true,
       });
 
-      expectError(result, "tanstack-showcase' example requires TanStack Router or TanStack Start");
+      expectError(result, "tanstack-showcase' example requires TanStack Router, TanStack Start");
     });
   });
 });

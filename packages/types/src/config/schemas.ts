@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { PRESET_ALIAS_IDS, PRESET_IDS } from "@/catalog/preset-ids";
+
 export const EcosystemSchema = z
   .enum(["typescript", "react-native", "rust", "python", "go", "java", "elixir", "dotnet"])
   .describe(
@@ -201,6 +203,7 @@ export const FrontendSchema = z
     "svelte",
     "solid",
     "solid-start",
+    "tanstack-start-solid",
     "astro",
     "qwik",
     "angular",
@@ -1171,8 +1174,8 @@ export const DirectoryConflictSchema = z
   .describe("How to handle existing directory conflicts");
 
 export const TemplateSchema = z
-  .enum(["mern", "pern", "t3", "saas", "uniwind", "none"])
-  .describe("Predefined project template");
+  .enum([...PRESET_IDS, ...PRESET_ALIAS_IDS, "none"])
+  .describe("Stack preset id (see the `preset` command); retired ids map to their replacement");
 
 export const ProjectShapeSchema = z
   .enum(["fullstack", "frontend", "backend", "mobile"])

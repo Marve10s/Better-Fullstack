@@ -5,16 +5,15 @@ import { useQuery } from "@tanstack/solid-query";
 {{/if}}
 import Header from "@/components/header";
 import { useNavigate } from "@solidjs/router";
-import { createEffect, Show } from "solid-js";
+import { onMount, Show } from "solid-js";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const session = authClient.useSession();
 
-  createEffect(() => {
-    if (!session().isPending && !session().data) {
-      navigate("/login");
-    }
+  onMount(async () => {
+    const { data } = await authClient.getSession();
+    if (!data) navigate("/login");
   });
 
   {{#if (eq api "orpc")}}

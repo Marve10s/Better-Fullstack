@@ -10,6 +10,9 @@ export default function Header() {
     {{#if (isBetterAuth auth)}}
     { href: "/dashboard", label: "Dashboard" },
     {{/if}}
+    {{#if (includes examples "tanstack-showcase")}}
+    { href: "/showcase", label: "Showcase" },
+    {{/if}}
   ];
 
   return (

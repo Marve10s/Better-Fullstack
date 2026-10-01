@@ -407,11 +407,11 @@ describe("applyDependencyVersionChannel", () => {
       const versionsByPackage: Record<string, { latest: string; versions: string[] }> = {
         "@tanstack/react-router": {
           latest: "1.171.19",
-          versions: ["1.170.18", "1.171.19"],
+          versions: ["1.170.41", "1.171.19"],
         },
         "@tanstack/router-plugin": {
           latest: "1.167.25",
-          versions: ["1.167.25", "1.168.23"],
+          versions: ["1.167.25", "1.168.42"],
         },
         react: { latest: "19.3.0", versions: ["19.2.8", "19.3.0"] },
       };
@@ -435,8 +435,8 @@ describe("applyDependencyVersionChannel", () => {
 
     const packageJson = await fs.readJson(path.join(projectDir, "package.json"));
 
-    expect(packageJson.dependencies["@tanstack/react-router"]).toBe("1.170.18");
-    expect(packageJson.devDependencies["@tanstack/router-plugin"]).toBe("1.168.23");
+    expect(packageJson.dependencies["@tanstack/react-router"]).toBe("1.170.41");
+    expect(packageJson.devDependencies["@tanstack/router-plugin"]).toBe("1.168.42");
     expect(packageJson.dependencies.react).toBe("^19.3.0");
   });
 

@@ -10,6 +10,7 @@ type FrontendType = {
   hasSvelteWeb: boolean;
   hasSolidWeb: boolean;
   hasSolidStartWeb: boolean;
+  hasTanStackStartSolidWeb: boolean;
   hasNative: boolean;
 };
 
@@ -26,6 +27,7 @@ function getFrontendType(frontend: Frontend[]): FrontendType {
     hasSvelteWeb: frontend.includes("svelte"),
     hasSolidWeb: frontend.includes("solid"),
     hasSolidStartWeb: frontend.includes("solid-start"),
+    hasTanStackStartSolidWeb: frontend.includes("tanstack-start-solid"),
     hasNative: frontend.some((f) =>
       ["native-bare", "native-uniwind", "native-unistyles"].includes(f),
     ),
@@ -35,7 +37,9 @@ function getFrontendType(frontend: Frontend[]): FrontendType {
 function addSolidRouterDevtools(vfs: VirtualFileSystem, frontend: Frontend[]): void {
   const webPath = "apps/web/package.json";
   if (!vfs.exists(webPath)) return;
-  const hasSolid = frontend.includes("solid") || frontend.includes("solid-start");
+  const hasSolid = frontend.some((f) =>
+    ["solid", "solid-start", "tanstack-start-solid"].includes(f),
+  );
   if (!hasSolid) return;
   addPackageDependency({
     vfs,
@@ -225,7 +229,8 @@ function addSelfBackendWebDeps(
     frontendType.hasReactWeb ||
     frontendType.hasSvelteWeb ||
     frontendType.hasNuxtWeb ||
-    frontendType.hasSolidStartWeb;
+    frontendType.hasSolidStartWeb ||
+    frontendType.hasTanStackStartSolidWeb;
   if (!hasSelfFrontend) return;
 
   // When backend is "self", add server deps to web too
@@ -308,7 +313,10 @@ function addWebClientDeps(
       ],
       devDependencies: ["@tanstack/svelte-query-devtools"],
     });
-  } else if (api === "orpc" && frontendType.hasSolidWeb) {
+  } else if (
+    api === "orpc" &&
+    (frontendType.hasSolidWeb || frontendType.hasTanStackStartSolidWeb)
+  ) {
     addPackageDependency({
       vfs,
       packagePath: webPath,
@@ -387,7 +395,11 @@ function addQueryDeps(vfs: VirtualFileSystem, frontend: Frontend[], backend: Bac
     });
   }
 
-  if (frontendType.hasSolidWeb && vfs.exists(webPath) && backend !== "convex") {
+  if (
+    (frontendType.hasSolidWeb || frontendType.hasTanStackStartSolidWeb) &&
+    vfs.exists(webPath) &&
+    backend !== "convex"
+  ) {
     addPackageDependency({
       vfs,
       packagePath: webPath,

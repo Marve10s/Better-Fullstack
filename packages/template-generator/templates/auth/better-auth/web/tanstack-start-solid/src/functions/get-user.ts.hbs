@@ -1,0 +1,6 @@
+import { authMiddleware } from "@/middleware/auth";
+import { createServerFn } from "@tanstack/solid-start";
+
+export const getUser = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => context.session);

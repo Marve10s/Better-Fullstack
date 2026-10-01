@@ -291,18 +291,19 @@ export const dependencyVersionMap = {
 
   "@tanstack/react-query-devtools": "^5.104.0",
   "@tanstack/react-query": "^5.104.0",
-  "@tanstack/react-router": "1.170.18",
+  "@tanstack/react-router": "1.170.41",
   "@tanstack/react-router-devtools": "1.167.0",
   "@tanstack/react-router-ssr-query": "^1.167.3",
   "@tanstack/react-router-with-query": "1.130.17",
-  "@tanstack/react-start": "1.168.34",
-  "@tanstack/router-cli": "1.167.21",
-  "@tanstack/router-plugin": "1.168.23",
+  "@tanstack/react-start": "1.168.60",
+  "@tanstack/router-cli": "1.167.40",
+  "@tanstack/router-plugin": "1.168.42",
 
   "@tanstack/solid-query": "^5.104.0",
   "@tanstack/solid-query-devtools": "^5.104.0",
-  "@tanstack/solid-router": "1.170.18",
+  "@tanstack/solid-router": "1.170.38",
   "@tanstack/solid-router-devtools": "1.167.0",
+  "@tanstack/solid-start": "1.168.57",
 
   "@tanstack/angular-query-experimental": "^5.104.0",
 
@@ -324,7 +325,8 @@ export const dependencyVersionMap = {
   "@tanstack/db": "^0.6.17",
   "@tanstack/react-db": "^0.1.95",
   "@tanstack/vue-db": "^0.0.123",
-  "@tanstack/solid-db": "^0.2.45",
+  "@tanstack/solid-db": "^0.3.0",
+  "@tanstack/query-db-collection": "^1.2.15",
   "@tanstack/svelte-db": "^0.1.94",
 
   // TanStack Pacer
@@ -564,6 +566,7 @@ export const dependencyVersionMap = {
   valtio: "^2.3.2",
   "@tanstack/store": "^0.11.1",
   "@tanstack/react-store": "^0.11.1",
+  "@tanstack/solid-store": "^0.11.2",
   "@legendapp/state": "^2.1.15",
 
   // Validation libraries
@@ -664,6 +667,9 @@ export const dependencyVersionMap = {
   // React Native animation runtime
   "react-native-reanimated": "^4.5.3",
   "react-native-worklets": "^0.11.4",
+
+  // React Native styling
+  uniwind: "1.12.0",
 
   // Animation
   motion: "^12.43.0",

@@ -35,7 +35,7 @@ export function resolveFormsPrompt(
   const isReact = web.some((f) =>
     ["tanstack-router", "react-router", "react-vite", "tanstack-start", "next", "vinext", "redwood"].includes(f),
   );
-  const isSolid = web.includes("solid");
+  const isSolid = web.some((f) => ["solid", "solid-start", "tanstack-start-solid"].includes(f));
   const isQwik = web.includes("qwik");
   const isFresh = web.includes("fresh");
   const options: Array<{ value: Forms; label: string; hint: string }> = [];

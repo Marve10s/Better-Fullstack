@@ -1,0 +1,34 @@
+import { createRouter } from "@tanstack/solid-router";
+import Loader from "./components/loader";
+import { routeTree } from "./routeTree.gen";
+{{#if (eq api "orpc")}}
+import { QueryClientProvider } from "@tanstack/solid-query";
+import { orpc, queryClient } from "./utils/orpc";
+{{/if}}
+
+export function getRouter() {
+  return createRouter({
+    routeTree,
+    defaultPreload: "intent",
+    scrollRestoration: true,
+    defaultPreloadStaleTime: 0,
+    {{#if (eq api "orpc")}}
+    context: { orpc, queryClient },
+    {{else}}
+    context: {},
+    {{/if}}
+    defaultPendingComponent: () => <Loader />,
+    defaultNotFoundComponent: () => <div class="p-4">Not Found</div>,
+    {{#if (eq api "orpc")}}
+    Wrap: (props) => (
+      <QueryClientProvider client={queryClient}>{props.children}</QueryClientProvider>
+    ),
+    {{/if}}
+  });
+}
+
+declare module "@tanstack/solid-router" {
+  interface Register {
+    router: ReturnType<typeof getRouter>;
+  }
+}

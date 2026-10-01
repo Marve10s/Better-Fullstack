@@ -1,7 +1,8 @@
+import { PRESET_DEFINITIONS } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
 import { analyzeStackCompatibility } from "@/components/stack-builder/utils";
-import { DEFAULT_STACK, PRESET_TEMPLATES, type StackState } from "@/lib/stack/constant";
+import { DEFAULT_STACK, type StackState } from "@/lib/stack/constant";
 import { resolvePresetStack } from "@/lib/stack/preset-stack";
 
 // The stack the builder ends up with after applying a preset and its compatibility pass.
@@ -10,7 +11,7 @@ function applyPreset(presetStack: Partial<StackState>): StackState {
   return { ...stack, ...analyzeStackCompatibility(stack).adjustedStack };
 }
 
-const examplePresets = PRESET_TEMPLATES.filter((preset) => preset.category === "examples");
+const examplePresets = PRESET_DEFINITIONS.filter((preset) => preset.category === "examples");
 
 describe("example presets", () => {
   it("covers every example the builder no longer lists", () => {

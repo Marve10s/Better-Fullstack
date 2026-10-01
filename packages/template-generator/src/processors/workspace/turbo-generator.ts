@@ -68,6 +68,10 @@ function getBaseTasks(frontend: string[]): Record<string, TurboTask> {
     buildOutputs.push(".nuxt/**", ".output/**");
   }
 
+  if (frontend.includes("solid-start") || frontend.includes("tanstack-start-solid")) {
+    buildOutputs.push(".output/**");
+  }
+
   // SvelteKit outputs to .svelte-kit/** in addition to build/
   if (frontend.includes("svelte")) {
     buildOutputs.push(".svelte-kit/**", "build/**");

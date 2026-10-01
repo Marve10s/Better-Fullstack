@@ -770,6 +770,8 @@ function generateStackDescription(
     svelte: "SvelteKit",
     nuxt: "Nuxt",
     solid: "SolidJS",
+    "solid-start": "SolidStart",
+    "tanstack-start-solid": "SolidJS, TanStack Start",
   };
 
   for (const fe of frontend) {
@@ -849,6 +851,8 @@ function generateProjectStructure(
       svelte: "SvelteKit",
       nuxt: "Nuxt",
       solid: "SolidJS",
+      "solid-start": "SolidStart",
+      "tanstack-start-solid": "Solid + TanStack Start",
     };
     const frontendType = frontend.find((f) => frontendTypes[f])
       ? frontendTypes[frontend.find((f) => frontendTypes[f]) || ""]
@@ -933,6 +937,9 @@ function generateFeaturesList(
     svelte: "- **SvelteKit** - Web framework for building Svelte apps",
     nuxt: "- **Nuxt** - The Intuitive Vue Framework",
     solid: "- **SolidJS** - Simple and performant reactivity",
+    "solid-start": "- **SolidStart** - Full-stack Solid framework with server functions",
+    "tanstack-start-solid":
+      "- **TanStack Start (Solid)** - SSR framework with TanStack Router on Solid",
   };
 
   for (const fe of frontend) {

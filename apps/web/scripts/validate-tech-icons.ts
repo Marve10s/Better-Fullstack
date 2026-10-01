@@ -1,4 +1,6 @@
-import { ECOSYSTEMS, PRESET_CATEGORIES, TECH_OPTIONS } from "@/lib/stack/constant";
+import { PRESET_CATEGORIES } from "@better-fullstack/types";
+
+import { ECOSYSTEMS, TECH_OPTIONS } from "@/lib/stack/constant";
 import { getSiUrl, ICON_REGISTRY, type IconConfig } from "@/lib/stack/tech-icons";
 
 type IconTarget = {

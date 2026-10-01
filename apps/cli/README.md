@@ -29,6 +29,16 @@ Configure your stack visually - pick every option from a UI, preview your choice
 
 **[Open the App Builder →](https://better-fullstack.dev/new)**
 
+## Presets
+
+Start from a curated stack. Future Stack combines Solid, Effect, and the TanStack libraries with oRPC, Drizzle, SQLite, and Better Auth, plus a showcase app that uses each library:
+
+```bash
+bun create better-fullstack@latest preset                      # list presets and their options
+bun create better-fullstack@latest preset future-stack my-app  # SolidStart, Effect in the app
+bun create better-fullstack@latest preset future-stack my-app --framework tanstack-start --effect server
+```
+
 ## Features
 
 - **Broad stack catalog** - frontend, backend, database, auth, payments, AI, DevOps, and more
@@ -42,7 +52,7 @@ Configure your stack visually - pick every option from a UI, preview your choice
 ```bash
 --yes              # Accept all defaults
 --yolo             # Scaffold a random stack - good for exploring
---template <name>  # Use a preset (t3, mern, pern, uniwind)
+--template <name>  # Start from a preset id (run `preset` to list them)
 --ecosystem <lang> # Choose the primary project ecosystem
 --part <binding>   # Add a multi-ecosystem stack part, e.g. frontend:typescript:next
 --workspace-shape # Workspace layout (monorepo, qualifying single-app)

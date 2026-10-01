@@ -1,0 +1,36 @@
+import { getUser } from "@/functions/get-user";
+{{#if (eq api "orpc")}}
+import { orpc } from "@/utils/orpc";
+import { useQuery } from "@tanstack/solid-query";
+{{/if}}
+import { createFileRoute, redirect } from "@tanstack/solid-router";
+
+export const Route = createFileRoute("/dashboard")({
+  component: RouteComponent,
+  beforeLoad: async () => {
+    const session = await getUser();
+    return { session };
+  },
+  loader: ({ context }) => {
+    if (!context.session) {
+      throw redirect({ to: "/login" });
+    }
+  },
+});
+
+function RouteComponent() {
+  const context = Route.useRouteContext();
+  {{#if (eq api "orpc")}}
+  const privateData = useQuery(() => orpc.privateData.queryOptions());
+  {{/if}}
+
+  return (
+    <div class="container mx-auto max-w-3xl px-4 py-6">
+      <h1 class="text-2xl font-bold">Dashboard</h1>
+      <p>Welcome {context().session?.user.name}</p>
+      {{#if (eq api "orpc")}}
+      <p>API: {privateData.data?.message}</p>
+      {{/if}}
+    </div>
+  );
+}

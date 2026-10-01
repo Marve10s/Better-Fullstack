@@ -15,6 +15,7 @@ const FRONTEND_LABELS: Record<string, string> = {
   svelte: "SvelteKit app",
   solid: "Solid app",
   "solid-start": "SolidStart app",
+  "tanstack-start-solid": "TanStack Start (Solid) app",
   qwik: "Qwik app",
   angular: "Angular app",
   redwood: "RedwoodJS app",
