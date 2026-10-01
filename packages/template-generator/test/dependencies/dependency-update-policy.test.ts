@@ -68,8 +68,8 @@ describe("dependency update policy", () => {
   });
 
   it("keeps incomplete TanStack Router release trains out of the latest channel", () => {
-    expect(getLatestChannelPinnedVersion("@tanstack/react-router")).toBe("1.170.18");
-    expect(getLatestChannelPinnedVersion("@tanstack/router-plugin")).toBe("1.168.23");
+    expect(getLatestChannelPinnedVersion("@tanstack/react-router")).toBe("1.170.41");
+    expect(getLatestChannelPinnedVersion("@tanstack/router-plugin")).toBe("1.168.42");
     expect(getLatestChannelPinnedVersion("@tanstack/solid-router-devtools")).toBe("1.167.0");
     expect(getLatestChannelPinnedVersion("react")).toBeUndefined();
   });

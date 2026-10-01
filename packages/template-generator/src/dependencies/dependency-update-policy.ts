@@ -69,7 +69,7 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     reason: "Keep the TanStack Form family aligned on the reviewed Yarn-compatible release.",
   },
   "@tanstack/react-router": {
-    pinnedVersion: "1.170.18",
+    pinnedVersion: "1.170.41",
     holdLatestChannel: true,
     reason: "The upstream latest tag depends on an unpublished @tanstack/router-core release.",
   },
@@ -86,23 +86,23 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
       "Keep the query integration on the reviewed release while the router latest train is incomplete.",
   },
   "@tanstack/react-start": {
-    pinnedVersion: "1.168.34",
+    pinnedVersion: "1.168.60",
     holdLatestChannel: true,
     reason:
-      "Keep TanStack Start on the reviewed release while the router latest train is incomplete.",
+      "Keep TanStack Start on the reviewed release; 1.168.60 is the floor that fixes CVE-2026-102989 (server-function XSS).",
   },
   "@tanstack/router-cli": {
-    pinnedVersion: "1.167.21",
+    pinnedVersion: "1.167.40",
     holdLatestChannel: true,
     reason: "The upstream latest tag depends on an unpublished @tanstack/router-generator release.",
   },
   "@tanstack/router-plugin": {
-    pinnedVersion: "1.168.23",
+    pinnedVersion: "1.168.42",
     holdLatestChannel: true,
     reason: "Keep the router plugin on the latest reviewed installable release.",
   },
   "@tanstack/solid-router": {
-    pinnedVersion: "1.170.18",
+    pinnedVersion: "1.170.38",
     holdLatestChannel: true,
     reason: "The upstream latest tag depends on an unpublished @tanstack/router-core release.",
   },
