@@ -278,7 +278,11 @@ function FutureStackCard({
   const selectedEffect = effectOption?.choices.find((choice) => choice.id === effect);
 
   const copyCommand = async () => {
-    await navigator.clipboard.writeText(command);
+    try {
+      await navigator.clipboard.writeText(command);
+    } catch {
+      return;
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

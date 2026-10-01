@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { PRESET_ALIASES, PRESET_IDS } from "@/catalog/preset-ids";
-import { analyzeStackCompatibility } from "@/stack/compatibility";
+import { analyzeStackCompatibility, getDisabledReason } from "@/stack/compatibility";
 import {
   applyPresetOptions,
   getPreset,
@@ -38,5 +38,26 @@ describe("preset registry", () => {
       const { changes } = analyzeStackCompatibility(stack);
       expect({ options, changes }).toEqual({ options, changes: [] });
     }
+  });
+
+  it("rejects option choices the preset does not define", () => {
+    const preset = getPreset("future-stack")!;
+    expect(() => applyPresetOptions(preset, { framework: "tanstak-start" })).toThrow(
+      "Unknown framework 'tanstak-start'",
+    );
+    expect(() => applyPresetOptions(getPreset("t3")!, { effect: "app" })).toThrow(
+      "has no 'effect' option",
+    );
+  });
+
+  it("disables integrations that TanStack Start (Solid) has no templates for", () => {
+    const preset = getPreset("future-stack")!;
+    const stack = {
+      ...DEFAULT_STACK_SELECTION,
+      ...applyPresetOptions(preset, { framework: "tanstack-start", effect: "app" }),
+    };
+    expect(getDisabledReason(stack, "payments", "stripe")).not.toBeNull();
+    expect(getDisabledReason(stack, "webDeploy", "vercel")).not.toBeNull();
+    expect(getDisabledReason(stack, "examples", "ai")).not.toBeNull();
   });
 });

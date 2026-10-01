@@ -18,7 +18,7 @@ import z from "zod";
 {{/if}}
 import { createSignal, For, Show } from "solid-js";
 
-import { tasksCollection, type Task } from "./tasks-collection";
+import { getTasksCollection, type Task, type TasksCollection } from "./tasks-collection";
 
 {{#if (eq validation "effect-schema")}}
 const newTaskSchema = Schema.standardSchemaV1(
@@ -44,43 +44,50 @@ const newTaskSchema = z.object({
 });
 {{/if}}
 
-const columns: ColumnDef<Task>[] = [
-  {
-    accessorKey: "completed",
-    header: "Done",
-    cell: (info) => (
-      <input
-        type="checkbox"
-        checked={info.row.original.completed}
-        onChange={(event) =>
-          tasksCollection.update(info.row.original.id, (draft) => {
-            draft.completed = event.currentTarget.checked;
-          })
-        }
-      />
-    ),
-  },
-  { accessorKey: "title", header: "Title" },
-  {
-    accessorKey: "createdAt",
-    header: "Created",
-    cell: (info) => new Date(info.row.original.createdAt).toLocaleTimeString(),
-  },
-  {
-    id: "actions",
-    header: "",
-    enableSorting: false,
-    cell: (info) => (
-      <button
-        type="button"
-        class="text-xs text-red-400 hover:text-red-300"
-        onClick={() => tasksCollection.delete(info.row.original.id)}
-      >
-        Delete
-      </button>
-    ),
-  },
-];
+// Rows added optimistically carry a temporary negative id until the server returns the real one.
+const isPending = (task: Task) => task.id < 0;
+
+function createColumns(tasksCollection: TasksCollection): ColumnDef<Task>[] {
+  return [
+    {
+      accessorKey: "completed",
+      header: "Done",
+      cell: (info) => (
+        <input
+          type="checkbox"
+          checked={info.row.original.completed}
+          disabled={isPending(info.row.original)}
+          onChange={(event) =>
+            tasksCollection.update(info.row.original.id, (draft) => {
+              draft.completed = event.currentTarget.checked;
+            })
+          }
+        />
+      ),
+    },
+    { accessorKey: "title", header: "Title" },
+    {
+      accessorKey: "createdAt",
+      header: "Created",
+      cell: (info) => new Date(info.row.original.createdAt).toLocaleTimeString(),
+    },
+    {
+      id: "actions",
+      header: "",
+      enableSorting: false,
+      cell: (info) => (
+        <button
+          type="button"
+          class="text-xs text-red-400 hover:text-red-300 disabled:opacity-50"
+          disabled={isPending(info.row.original)}
+          onClick={() => tasksCollection.delete(info.row.original.id)}
+        >
+          Delete
+        </button>
+      ),
+    },
+  ];
+}
 
 function sortIndicator(direction: false | "asc" | "desc") {
   if (direction === "asc") return " ↑";
@@ -88,7 +95,9 @@ function sortIndicator(direction: false | "asc" | "desc") {
   return "";
 }
 
-export default function TasksPanel() {
+export default function TasksPanel({{#if (isBetterAuth auth)}}props: { userId: string }{{/if}}) {
+  const tasksCollection = getTasksCollection({{#if (isBetterAuth auth)}}props.userId{{/if}});
+  const columns = createColumns(tasksCollection);
   const tasks = useLiveQuery((q) =>
     q.from({ task: tasksCollection }).orderBy(({ task }) => task.createdAt, "desc"),
   );

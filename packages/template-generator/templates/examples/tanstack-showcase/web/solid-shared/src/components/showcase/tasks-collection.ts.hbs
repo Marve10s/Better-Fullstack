@@ -6,34 +6,52 @@ import { client, queryClient } from "{{#if (includes frontend "solid-start")}}@/
 
 export type Task = Awaited<ReturnType<typeof client.tasks.list>>[number];
 
-export const tasksCollection = createCollection(
-  queryCollectionOptions({
-    queryKey: ["tasks"],
-    queryFn: () => client.tasks.list(),
-    queryClient,
-    getKey: (task: Task) => task.id,
-    onInsert: async ({ transaction }) => {
-      await Promise.all(
-        transaction.mutations.map((mutation) =>
-          client.tasks.create({ title: mutation.modified.title }),
-        ),
-      );
-    },
-    onUpdate: async ({ transaction }) => {
-      await Promise.all(
-        transaction.mutations.map((mutation) =>
-          client.tasks.setCompleted({
-            id: mutation.original.id,
-            completed: mutation.modified.completed,
-          }),
-        ),
-      );
-    },
-    onDelete: async ({ transaction }) => {
-      await Promise.all(
-        transaction.mutations.map((mutation) => client.tasks.remove({ id: mutation.original.id })),
-      );
-    },
-  }),
-);
+function createTasksCollection(owner: string) {
+  return createCollection(
+    queryCollectionOptions({
+      queryKey: ["tasks", owner],
+      queryFn: () => client.tasks.list(),
+      queryClient,
+      getKey: (task: Task) => task.id,
+      onInsert: async ({ transaction }) => {
+        await Promise.all(
+          transaction.mutations.map((mutation) =>
+            client.tasks.create({ title: mutation.modified.title }),
+          ),
+        );
+      },
+      onUpdate: async ({ transaction }) => {
+        await Promise.all(
+          transaction.mutations.map((mutation) =>
+            client.tasks.setCompleted({
+              id: mutation.original.id,
+              completed: mutation.modified.completed,
+            }),
+          ),
+        );
+      },
+      onDelete: async ({ transaction }) => {
+        await Promise.all(
+          transaction.mutations.map((mutation) =>
+            client.tasks.remove({ id: mutation.original.id }),
+          ),
+        );
+      },
+    }),
+  );
+}
+
+export type TasksCollection = ReturnType<typeof createTasksCollection>;
+
+const collections = new Map<string, TasksCollection>();
+
+// Each account gets its own collection so a later sign-in never shows the previous user's cache.
+export function getTasksCollection(owner = "local") {
+  let collection = collections.get(owner);
+  if (!collection) {
+    collection = createTasksCollection(owner);
+    collections.set(owner, collection);
+  }
+  return collection;
+}
 {{/if}}

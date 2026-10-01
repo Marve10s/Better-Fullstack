@@ -4,12 +4,14 @@ import {
   getPreset,
   normalizeStackSelection,
   stackSelectionToProjectConfig,
+  validatePresetOptions,
   type PresetOptionSelection,
 } from "@better-fullstack/types";
 
 import type { CreateInput, Template } from "@/types";
 
 import { projectConfigToCreateInput } from "@/config/config-source";
+import { CLIError } from "@/presentation/errors";
 
 export function getTemplateConfig(
   template: Template,
@@ -21,6 +23,8 @@ export function getTemplateConfig(
   if (!preset) {
     throw new Error(`Unknown template: ${template}`);
   }
+  const optionsError = validatePresetOptions(preset, options);
+  if (optionsError) throw new CLIError(optionsError);
 
   const selection = normalizeStackSelection({
     ...DEFAULT_STACK_SELECTION,

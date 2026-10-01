@@ -1132,6 +1132,8 @@ export function applyPresetOptions(
   preset: PresetDefinition,
   selection: PresetOptionSelection = {},
 ): PresetStack {
+  const error = validatePresetOptions(preset, selection);
+  if (error) throw new Error(error);
   const stack: PresetStack = { ecosystem: getPresetEcosystem(preset), ...preset.stack };
   for (const option of preset.options ?? []) {
     const choice =

@@ -73,4 +73,21 @@ describe("Future Stack preset", () => {
       );
     }
   });
+
+  it("rejects an unknown option instead of creating the default variant", async () => {
+    const result = await createProjectHandler(
+      {
+        projectName: join(SMOKE_DIR, "future-stack-invalid-option"),
+        template: "future-stack",
+        presetOptions: { framework: "tanstak-start" },
+        install: false,
+        git: false,
+        directoryConflict: "overwrite",
+        disableAnalytics: true,
+      },
+      { silent: true },
+    );
+    expect(result?.success).toBe(false);
+    expect(result?.error).toContain("Unknown framework 'tanstak-start'");
+  });
 });

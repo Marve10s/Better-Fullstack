@@ -325,7 +325,7 @@ export const dependencyVersionMap = {
   "@tanstack/db": "^0.6.17",
   "@tanstack/react-db": "^0.1.95",
   "@tanstack/vue-db": "^0.0.123",
-  "@tanstack/solid-db": "^0.2.45",
+  "@tanstack/solid-db": "^0.3.0",
   "@tanstack/query-db-collection": "^1.2.15",
   "@tanstack/svelte-db": "^0.1.94",
 

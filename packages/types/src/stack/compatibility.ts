@@ -3233,6 +3233,18 @@ export const getDisabledReason = (
     return "The selected frontend does not yet mount Vercel Analytics";
   }
 
+  if (usesTanStackStartSolid(currentStack)) {
+    const allowed = (TANSTACK_START_SOLID_SUPPORTED as Partial<Record<string, readonly string[]>>)[
+      category
+    ];
+    if (allowed && !allowed.includes(optionId)) {
+      return "Not available for TanStack Start (Solid) yet";
+    }
+    if (category === "examples" && !TANSTACK_START_SOLID_EXAMPLES.has(optionId)) {
+      return "TanStack Start (Solid) supports the TanStack showcase example only";
+    }
+  }
+
   const graphDisabledReason =
     (category === "payments" && optionId === "revenuecat") ||
     (category === "i18n" && optionId === "intlayer")
@@ -3317,18 +3329,6 @@ export const getDisabledReason = (
     }
     if (category === "serverDeploy" && optionId !== "none") {
       return "Fullstack uses frontend deployment";
-    }
-  }
-
-  if (usesTanStackStartSolid(currentStack)) {
-    const allowed = (TANSTACK_START_SOLID_SUPPORTED as Partial<Record<string, readonly string[]>>)[
-      category
-    ];
-    if (allowed && !allowed.includes(optionId)) {
-      return "Not available for TanStack Start (Solid) yet";
-    }
-    if (category === "examples" && !TANSTACK_START_SOLID_EXAMPLES.has(optionId)) {
-      return "TanStack Start (Solid) supports the TanStack showcase example only";
     }
   }
 

@@ -50,7 +50,8 @@ export default function ShowcasePage() {
         >
           {{#if (isBetterAuth auth)}}
           <Show
-            when={session().data}
+            when={session().data?.user.id}
+            keyed
             fallback={
               <p class="text-sm text-neutral-400">
                 <a href="/login" class="underline">
@@ -60,7 +61,7 @@ export default function ShowcasePage() {
               </p>
             }
           >
-            <TasksPanel />
+            {(userId) => <TasksPanel userId={userId} />}
           </Show>
           {{else}}
           <TasksPanel />
