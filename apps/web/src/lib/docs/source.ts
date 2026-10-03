@@ -177,6 +177,36 @@ const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title
     fr: { title: "Sections" },
     uk: { title: "Розділи" },
   },
+  Start: {
+    es: { title: "Empezar" },
+    zh: { title: "开始" },
+    ja: { title: "はじめる" },
+    ko: { title: "시작" },
+    "zh-Hant": { title: "開始" },
+    de: { title: "Start" },
+    fr: { title: "Démarrer" },
+    uk: { title: "Початок" },
+  },
+  Build: {
+    es: { title: "Construir" },
+    zh: { title: "构建" },
+    ja: { title: "構築" },
+    ko: { title: "빌드" },
+    "zh-Hant": { title: "建構" },
+    de: { title: "Erstellen" },
+    fr: { title: "Construire" },
+    uk: { title: "Створення" },
+  },
+  Automate: {
+    es: { title: "Automatizar" },
+    zh: { title: "自动化" },
+    ja: { title: "自動化" },
+    ko: { title: "자동화" },
+    "zh-Hant": { title: "自動化" },
+    de: { title: "Automatisieren" },
+    fr: { title: "Automatiser" },
+    uk: { title: "Автоматизація" },
+  },
 };
 
 const metaModules = import.meta.glob<{ default: MetaFile }>("@web-root/content/docs/**/meta.json", {
@@ -423,7 +453,7 @@ function localizePageNode(node: PageNode): PageNode {
 }
 
 function localizePageTreeNode(node: PageTreeNode): PageTreeNode {
-  if (node.type === "separator") return node;
+  if (node.type === "separator") return { ...node, name: localizedFolderName(node.name) };
   if (node.type === "page") return localizePageNode(node);
   return {
     ...node,
