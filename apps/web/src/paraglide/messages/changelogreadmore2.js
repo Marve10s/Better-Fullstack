@@ -10,35 +10,35 @@ const en_changelogreadmore2 = /** @type {(inputs: Changelogreadmore2Inputs) => L
 };
 
 const es_changelogreadmore2 = /** @type {(inputs: Changelogreadmore2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Read more`)
+	return /** @type {LocalizedString} */ (`Leer más`)
 };
 
 const zh_changelogreadmore2 = /** @type {(inputs: Changelogreadmore2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Read more`)
+	return /** @type {LocalizedString} */ (`阅读更多`)
 };
 
 const ja_changelogreadmore2 = /** @type {(inputs: Changelogreadmore2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Read more`)
+	return /** @type {LocalizedString} */ (`続きを読む`)
 };
 
 const ko_changelogreadmore2 = /** @type {(inputs: Changelogreadmore2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Read more`)
+	return /** @type {LocalizedString} */ (`더 보기`)
 };
 
 const zh_hant1_changelogreadmore2 = /** @type {(inputs: Changelogreadmore2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Read more`)
+	return /** @type {LocalizedString} */ (`閱讀更多`)
 };
 
 const de_changelogreadmore2 = /** @type {(inputs: Changelogreadmore2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Read more`)
+	return /** @type {LocalizedString} */ (`Mehr lesen`)
 };
 
 const fr_changelogreadmore2 = /** @type {(inputs: Changelogreadmore2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Read more`)
+	return /** @type {LocalizedString} */ (`En savoir plus`)
 };
 
 const uk_changelogreadmore2 = /** @type {(inputs: Changelogreadmore2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Read more`)
+	return /** @type {LocalizedString} */ (`Докладніше`)
 };
 
 /**

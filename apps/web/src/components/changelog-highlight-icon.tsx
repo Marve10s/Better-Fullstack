@@ -1,6 +1,9 @@
 import type { IconType } from "react-icons";
+
 import {
   TbApps,
+  TbArrowsExchange,
+  TbBook,
   TbCheck,
   TbFileZip,
   TbLayoutBottombar,
@@ -11,9 +14,12 @@ import {
   TbPlugConnected,
   TbPuzzle,
   TbServer,
+  TbShieldCheck,
+  TbStack2,
 } from "react-icons/tb";
 
 const releaseIcons: Record<string, IconType[]> = {
+  "v2.7.0": [TbStack2, TbArrowsExchange, TbServer, TbShieldCheck, TbBook],
   "v2.6.8": [TbPalette, TbLayoutBottombar, TbPackage, TbPuzzle, TbPlugConnected],
   "v2.6.5": [TbApps, TbServer, TbFileZip, TbLink, TbPlayerPlay],
 };

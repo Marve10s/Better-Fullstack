@@ -10,35 +10,35 @@ const en_changelogdismiss1 = /** @type {(inputs: Changelogdismiss1Inputs) => Loc
 };
 
 const es_changelogdismiss1 = /** @type {(inputs: Changelogdismiss1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dismiss`)
+	return /** @type {LocalizedString} */ (`Descartar`)
 };
 
 const zh_changelogdismiss1 = /** @type {(inputs: Changelogdismiss1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dismiss`)
+	return /** @type {LocalizedString} */ (`关闭`)
 };
 
 const ja_changelogdismiss1 = /** @type {(inputs: Changelogdismiss1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dismiss`)
+	return /** @type {LocalizedString} */ (`閉じる`)
 };
 
 const ko_changelogdismiss1 = /** @type {(inputs: Changelogdismiss1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dismiss`)
+	return /** @type {LocalizedString} */ (`닫기`)
 };
 
 const zh_hant1_changelogdismiss1 = /** @type {(inputs: Changelogdismiss1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dismiss`)
+	return /** @type {LocalizedString} */ (`關閉`)
 };
 
 const de_changelogdismiss1 = /** @type {(inputs: Changelogdismiss1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dismiss`)
+	return /** @type {LocalizedString} */ (`Schließen`)
 };
 
 const fr_changelogdismiss1 = /** @type {(inputs: Changelogdismiss1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dismiss`)
+	return /** @type {LocalizedString} */ (`Ignorer`)
 };
 
 const uk_changelogdismiss1 = /** @type {(inputs: Changelogdismiss1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dismiss`)
+	return /** @type {LocalizedString} */ (`Закрити`)
 };
 
 /**

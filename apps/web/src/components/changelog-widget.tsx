@@ -1,5 +1,7 @@
+import { useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 
+import { ChangelogHighlightIcon } from "@/components/changelog-highlight-icon";
 import { registerVisit } from "@/lib/analytics/visitor";
 import { latestChangelogRelease } from "@/lib/content/changelog";
 import {
@@ -7,7 +9,6 @@ import {
   markChangelogReleaseInteracted,
   shouldShowChangelogRelease,
 } from "@/lib/content/changelog-visibility";
-import { ChangelogHighlightIcon } from "@/components/changelog-highlight-icon";
 import { getLocalizedChangelogRelease } from "@/lib/i18n/changelog-copy";
 import { getLocaleDateTag } from "@/lib/i18n/locales";
 import { m } from "@/paraglide/messages.js";
@@ -33,6 +34,7 @@ export function ChangelogWidget() {
   const [isVisible, setIsVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasOpenedModal, setHasOpenedModal] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!latestChangelogRelease) return;
@@ -75,12 +77,22 @@ export function ChangelogWidget() {
     setIsModalOpen(true);
   }, [markInteracted]);
 
+  const followCta = useCallback(() => {
+    const href = latestChangelogRelease?.cta?.href;
+    if (!href) return;
+
+    markInteracted("opened");
+    setIsVisible(false);
+    void navigate({ href });
+  }, [markInteracted, navigate]);
+
   if (!latestChangelogRelease) return null;
 
   const latestRelease = getLocalizedChangelogRelease(latestChangelogRelease);
   const latestDate = formatReleaseDate(latestRelease.publishedAt, latestRelease.displayDate);
   const latestTitle = latestRelease.title ?? m.changelogLatestRelease();
   const latestSummary = latestRelease.summary ?? m.changelogLatestPublished({ date: latestDate });
+  const cta = latestRelease.cta;
 
   return (
     <>
@@ -142,6 +154,18 @@ export function ChangelogWidget() {
                   </li>
                 ))}
               </ul>
+            ) : null}
+
+            {cta ? (
+              <div className="px-5 pb-4">
+                <button
+                  type="button"
+                  onClick={followCta}
+                  className="w-full cursor-pointer rounded-full bg-ink px-4 py-2 font-medium text-background text-sm transition-opacity hover:opacity-90 dark:bg-brand dark:text-black"
+                >
+                  {cta.label}
+                </button>
+              </div>
             ) : null}
 
             {/* Collapsed to zero height until hover or keyboard focus, so the

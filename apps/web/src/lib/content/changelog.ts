@@ -7,6 +7,7 @@ export type ChangelogRelease = {
   title?: string;
   summary?: string;
   highlights?: string[];
+  cta?: { label: string; href: string };
   image?: {
     src: string;
     alt: string;
@@ -31,10 +32,33 @@ function gradientArtwork(): ChangelogRelease["image"] {
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v2.7.0",
+    publishedAt: "2026-10-01T22:29:31Z",
+    displayDate: "October 1, 2026",
+    isLatest: true,
+    href: `${RELEASE_BASE_URL}/v2.7.0`,
+    title: "Future Stack preset",
+    summary:
+      "Solid, Effect, and the TanStack libraries in one project, with a showcase app that uses each library.",
+    highlights: [
+      "Solid, Effect, and TanStack in one preset",
+      "Pick SolidStart or TanStack Start",
+      "Run Effect in the app or on its own server",
+      "TanStack Start templates get the XSS fix",
+      "Docs and guides match the new site",
+    ],
+    cta: { label: "Open Future Stack", href: "/new?view=presets" },
+    image: {
+      src: "/changelog/v2.7.0.webp",
+      alt: "Solid, Effect, and TanStack logos on a soft neutral background",
+      credit: "Better Fullstack",
+      creditHref: `${RELEASE_BASE_URL}/v2.7.0`,
+    },
+  },
+  {
     version: "v2.6.8",
     publishedAt: "2026-09-23T00:00:00Z",
     displayDate: "September 23, 2026",
-    isLatest: true,
     href: `${RELEASE_BASE_URL}/v2.6.8`,
     title: "A new look and fresher dependencies",
     summary:
