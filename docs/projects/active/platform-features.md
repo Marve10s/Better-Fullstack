@@ -32,7 +32,7 @@ and [v2.6.8 qualification report](https://github.com/Marve10s/Better-Fullstack/r
 each report eight passing cases, verified builds, and exact recovery. They cover adjacent published
 fixture-bearing releases, not every earlier version or every possible stack.
 
-The [20-repository adopted-baseline cohort](../../evidence/external-upgrade-validation-2026-08-12.md)
+The 20-repository adopted-baseline cohort
 remains separate evidence for protecting user edits. It does not establish release lineage.
 
 `packages/types/src/stack/update-support.ts` still declares `status: "qualification"`, no supported
