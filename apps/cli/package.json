@@ -155,7 +155,7 @@
     "@better-fullstack/types": "^2.7.0",
     "@clack/core": "^0.5.0",
     "@clack/prompts": "^1.8.1",
-    "@modelcontextprotocol/server": "^2.1.0",
+    "@modelcontextprotocol/server": "^2.3.0",
     "@orpc/server": "^1.15.4",
     "consola": "^3.4.2",
     "env-paths": "^4.0.0",
@@ -172,11 +172,11 @@
   },
   "devDependencies": {
     "@better-fullstack/project-lifecycle": "workspace:*",
-    "@modelcontextprotocol/client": "^2.1.0",
+    "@modelcontextprotocol/client": "^2.3.0",
     "@types/bun": "^1.4.2",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.9.3",
-    "publint": "^0.3.24",
+    "publint": "^0.3.25",
     "tsdown": "^0.18.2",
     "typescript": "^5.9.3"
   },

@@ -88,12 +88,12 @@
     "changelogithub": "^14.0.0",
     "create-better-fullstack": "workspace:*",
     "effect": "^3.22.2",
-    "lefthook": "^2.1.14",
+    "lefthook": "^2.1.16",
     "lint-staged": "^16.4.0",
     "oxfmt": "^0.19.0",
-    "oxlint": "^1.85.0",
+    "oxlint": "^1.86.0",
     "playwright": "1.63.0",
-    "turbo": "^2.11.4",
+    "turbo": "^2.11.7",
     "typescript": "5.9.3"
   },
   "overrides": {
