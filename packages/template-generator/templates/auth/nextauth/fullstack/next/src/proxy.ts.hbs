@@ -1,8 +1,46 @@
-// Pages require a session; API routes enforce auth in their own handlers and procedures.
-export { auth as proxy } from "@{{projectName}}/auth";
+import { auth } from "@{{projectName}}/auth";
+import { NextResponse } from "next/server";
+
+// API routes that accept signed-out requests because they authenticate callers themselves.
+// Every other API route answers 401 without a session, and every other page redirects to /login.
+const publicApiRoutes = [
+  // Auth.js sign-in, callbacks, and registration
+  "/api/auth",
+{{#if (eq api "trpc")}}
+  // tRPC procedures enforce auth individually and return their own UNAUTHORIZED error
+  "/api/trpc",
+{{/if}}
+{{#if (eq api "orpc")}}
+  // oRPC procedures enforce auth individually and return their own UNAUTHORIZED error
+  "/api/rpc",
+{{/if}}
+{{#if (includes examples "chat-sdk")}}
+  // Chat platform webhooks verify each platform's request signature
+  "/api/webhooks",
+{{/if}}
+];
+
+function isPublicApiRoute(pathname: string) {
+  return publicApiRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+}
+
+export const proxy = auth((request) => {
+  const { pathname } = request.nextUrl;
+  if (request.auth?.user || pathname === "/login" || isPublicApiRoute(pathname)) {
+    return;
+  }
+
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const signInUrl = new URL("/login", request.nextUrl);
+  signInUrl.searchParams.set("callbackUrl", request.nextUrl.href);
+  return NextResponse.redirect(signInUrl);
+});
 
 export const config = {
   matcher: [
-    "/((?!api|_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
   ],
 };

@@ -74,6 +74,11 @@ describe("dependency update policy", () => {
     expect(getLatestChannelPinnedVersion("react")).toBeUndefined();
   });
 
+  it("holds Auth.js on the v5 prerelease the generated code targets", () => {
+    expect(dependencyVersionMap["next-auth"]).toBe("5.0.0-beta.32");
+    expect(getLatestChannelPinnedVersion("next-auth")).toBe("5.0.0-beta.32");
+  });
+
   it("keeps the coupled OpenTelemetry packages on one exact release train", () => {
     expect(dependencyVersionMap).toMatchObject({
       "@opentelemetry/sdk-node": "0.220.0",

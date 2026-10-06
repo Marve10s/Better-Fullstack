@@ -1,5 +1,5 @@
 {{#if (hasAuthJsCredentials orm database)}}
-import { hash } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 {{#if (eq orm "drizzle")}}
 import { db } from "@{{projectName}}/db";
 import { users } from "@{{projectName}}/db/schema/auth";
@@ -7,6 +7,16 @@ import { users } from "@{{projectName}}/db/schema/auth";
 {{#if (eq orm "prisma")}}
 import prisma from "@{{projectName}}/db";
 {{/if}}
+
+// bcrypt ignores input past 72 bytes, so longer passwords would match on their prefix.
+export const MAX_PASSWORD_BYTES = 72;
+const PASSWORD_HASH_COST = 12;
+// Compared when there is no stored hash so every sign-in costs one bcrypt comparison.
+const DUMMY_PASSWORD_HASH = "$2b$12$ZEAq6361DfTqW3cHdCuTBOY14FgoYN6i4vH/CPpXgaeTM28JuOS2K";
+
+export function isPasswordWithinLimit(password: string) {
+  return new TextEncoder().encode(password).length <= MAX_PASSWORD_BYTES;
+}
 
 export async function findUserByEmail(email: string) {
 {{#if (eq orm "drizzle")}}
@@ -19,19 +29,63 @@ export async function findUserByEmail(email: string) {
 {{/if}}
 }
 
-export async function registerUser(input: { name: string; email: string; password: string }) {
-  const email = input.email.toLowerCase();
-  if (await findUserByEmail(email)) {
-    return false;
+export async function verifyCredentials(email: string, password: string) {
+  if (!isPasswordWithinLimit(password)) {
+    return null;
   }
 
-  const password = await hash(input.password, 12);
+  const user = await findUserByEmail(email);
+  const matches = await compare(password, user?.password ?? DUMMY_PASSWORD_HASH);
+  return user?.password && matches ? user : null;
+}
+
+function isUniqueViolation(error: unknown) {
 {{#if (eq orm "drizzle")}}
-  await db.insert(users).values({ name: input.name, email, password });
+  // Drizzle wraps the driver error in `cause`.
+{{/if}}
+  for (let current = error; current instanceof Error; current = current.cause) {
+{{#if (eq orm "prisma")}}
+    if ("code" in current && current.code === "P2002") {
+      return true;
+    }
+{{else if (eq database "postgres")}}
+    if ("code" in current && current.code === "23505") {
+      return true;
+    }
+{{else if (eq database "mysql")}}
+    if (
+      ("code" in current && current.code === "ER_DUP_ENTRY") ||
+      current.message.includes("Duplicate entry")
+    ) {
+      return true;
+    }
+{{else}}
+    if (current.message.includes("UNIQUE constraint failed")) {
+      return true;
+    }
+{{/if}}
+  }
+  return false;
+}
+
+export async function registerUser(input: { name: string; email: string; password: string }) {
+  const email = input.email.toLowerCase();
+  const password = await hash(input.password, PASSWORD_HASH_COST);
+
+  // The unique email column rejects existing and concurrently registered accounts alike.
+  try {
+{{#if (eq orm "drizzle")}}
+    await db.insert(users).values({ name: input.name, email, password });
 {{/if}}
 {{#if (eq orm "prisma")}}
-  await prisma.user.create({ data: { name: input.name, email, password } });
+    await prisma.user.create({ data: { name: input.name, email, password } });
 {{/if}}
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      return false;
+    }
+    throw error;
+  }
   return true;
 }
 {{/if}}

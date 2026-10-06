@@ -14,6 +14,12 @@ import {
   type TestConfig,
 } from "@test/support/test-utils";
 
+// API route prefixes the generated Auth.js proxy lets through without a session.
+function readPublicApiRoutes(proxy: string) {
+  const list = proxy.match(/const publicApiRoutes = \[([\s\S]*?)\];/)?.[1] ?? "";
+  return [...list.matchAll(/"(\/api\/[^"]+)"/g)].map((match) => match[1]);
+}
+
 describe("Authentication Configurations", () => {
   describe("Better-Auth Provider", () => {
     it("should work with better-auth + database", async () => {
@@ -360,25 +366,55 @@ describe("Authentication Configurations", () => {
       const apiProcedures = await read("packages/api/src/index.ts");
       const signUpForm = await read("apps/web/src/components/sign-up-form.tsx");
       const registerRoute = await read("apps/web/src/app/api/auth/register/route.ts");
+      const users = await read("packages/auth/src/users.ts");
       const userSchema = await read("packages/db/src/schema/auth.ts");
       const rootPackageJson = await read("package.json");
 
       expect(authConfig).toContain('strategy: "jwt"');
-      expect(authConfig).toContain("await compare(password, user.password)");
-      expect(proxy).toContain('export { auth as proxy } from "@nextauth-self-next-drizzle/auth"');
-      expect(proxy).toContain("(?!api|_next");
-      expect(proxy).not.toContain('"/(api|trpc)(.*)"');
+      expect(authConfig).toContain("await verifyCredentials(email, password)");
+      expect(authConfig).not.toContain("authorized(");
+
+      // Only Auth.js and the per-procedure tRPC endpoint skip the proxy session check.
+      expect(readPublicApiRoutes(proxy)).toEqual(["/api/auth", "/api/trpc"]);
+      expect(proxy).toContain('NextResponse.json({ message: "Unauthorized" }, { status: 401 })');
+      expect(proxy).not.toContain("(?!api");
+
+      // bcrypt reads at most 72 bytes, so both registration and sign-in reject longer passwords.
+      expect(users).toContain("export const MAX_PASSWORD_BYTES = 72;");
+      expect(users).toContain("new TextEncoder().encode(password).length <= MAX_PASSWORD_BYTES");
+      expect(registerRoute).toContain(".refine(isPasswordWithinLimit,");
+      expect(users).toMatch(
+        /verifyCredentials[\s\S]*if \(!isPasswordWithinLimit\(password\)\)[\s\S]*findUserByEmail/,
+      );
+      expect(signUpForm).toContain(".refine(fitsBcryptLimit,");
+      expect(signUpForm).toContain("new TextEncoder().encode(password).length <= 72");
+
+      // Unknown emails and OAuth-only accounts still pay for one bcrypt comparison.
+      expect(users).toMatch(/const DUMMY_PASSWORD_HASH = "\$2b\$12\$[./A-Za-z0-9]{53}";/);
+      expect(users).toContain("const PASSWORD_HASH_COST = 12;");
+      expect(users).toContain("await compare(password, user?.password ?? DUMMY_PASSWORD_HASH)");
+
+      // A concurrent duplicate fails on the unique email column and maps to the same 409.
+      expect(users).toContain('current.code === "23505"');
+      expect(users).toMatch(/try \{\s*await db\.insert\(users\)/);
+      expect(users).not.toContain("if (await findUserByEmail(email))");
+      expect(userSchema).toContain('email: text("email").unique()');
 
       expect(apiContext).toContain('import { auth } from "@nextauth-self-next-drizzle/auth"');
       expect(apiContext).toContain("const session = await auth();");
       expect(apiContext).not.toContain("session: null,");
       expect(apiProcedures).toContain("export const protectedProcedure");
 
-      expect(signUpForm).toContain('fetch("/api/auth/register"');
+      const registerPath = signUpForm.match(/fetch\("([^"]+)"/)?.[1];
+      expect(registerPath).toBe("/api/auth/register");
+      expect(existsSync(join(projectDir, `apps/web/src/app${registerPath}/route.ts`))).toBe(true);
       expect(registerRoute).toContain("export async function POST");
-      expect(registerRoute).toContain("registerUser(parsed.data)");
+      expect(registerRoute).toContain("const created = await registerUser(parsed.data);");
+      expect(registerRoute).toContain("{ status: 409 }");
+      expect(users).toContain("const password = await hash(input.password, PASSWORD_HASH_COST);");
+      expect(users).toContain("db.insert(users).values({ name: input.name, email, password })");
       expect(userSchema).toContain('password: text("password")');
-      expect(rootPackageJson).toMatch(/"next-auth": "5\./);
+      expect(rootPackageJson).toContain('"next-auth": "5.0.0-beta.32"');
     });
 
     it("should work with nextauth + self backend + next + prisma", async () => {
@@ -406,7 +442,8 @@ describe("Authentication Configurations", () => {
         join(projectDir, "packages/db/prisma/schema/auth.prisma"),
         "utf-8",
       );
-      expect(users).toContain("prisma.user.create");
+      expect(users).toMatch(/try \{\s*await prisma\.user\.create/);
+      expect(users).toContain('current.code === "P2002"');
       expect(userModel).toMatch(/password\s+String\?/);
       expect(
         await readFile(join(projectDir, "apps/web/src/app/api/auth/register/route.ts"), "utf-8"),
@@ -439,6 +476,38 @@ describe("Authentication Configurations", () => {
       expect(apiContext).toContain("const session = await auth();");
       expect(apiContext).not.toMatch(/return \{\s*\}/);
       expect(apiProcedures).toContain("context.session?.user");
+
+      const proxy = await readFile(join(projectDir, "apps/web/src/proxy.ts"), "utf-8");
+      const users = await readFile(join(projectDir, "packages/auth/src/users.ts"), "utf-8");
+      expect(readPublicApiRoutes(proxy)).toEqual(["/api/auth", "/api/rpc"]);
+      expect(users).toContain('current.message.includes("UNIQUE constraint failed")');
+    });
+
+    it("should guard the nextauth AI route and leave chat webhooks public", async () => {
+      const result = await runTRPCTest({
+        projectName: "nextauth-self-next-ai",
+        auth: "nextauth",
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        frontend: ["next"],
+        addons: ["turborepo"],
+        examples: ["ai", "chat-sdk"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const projectDir = result.projectDir!;
+      const proxy = await readFile(join(projectDir, "apps/web/src/proxy.ts"), "utf-8");
+      expect(existsSync(join(projectDir, "apps/web/src/app/api/ai/route.ts"))).toBe(true);
+      const webhookRoute = "apps/web/src/app/api/webhooks/[platform]/route.ts";
+      expect(existsSync(join(projectDir, webhookRoute))).toBe(true);
+      expect(readPublicApiRoutes(proxy)).toEqual(["/api/auth", "/api/trpc", "/api/webhooks"]);
     });
 
     it("should generate an OAuth-only nextauth setup without a database adapter", async () => {
@@ -1756,6 +1825,8 @@ describe("Authentication Configurations", () => {
         }),
       );
       expectSuccess(result);
+      const users = await readFile(join(result.projectDir!, "packages/auth/src/users.ts"), "utf-8");
+      expect(users).toContain('current.code === "P2002"');
     });
 
     it("should scaffold NextAuth with Drizzle and MySQL", async () => {
@@ -1771,6 +1842,8 @@ describe("Authentication Configurations", () => {
         }),
       );
       expectSuccess(result);
+      const users = await readFile(join(result.projectDir!, "packages/auth/src/users.ts"), "utf-8");
+      expect(users).toContain('current.code === "ER_DUP_ENTRY"');
     });
 
     it("TypeORM + better-auth should be auto-adjusted to none", async () => {

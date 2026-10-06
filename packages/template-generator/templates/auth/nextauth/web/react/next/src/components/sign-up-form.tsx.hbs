@@ -14,6 +14,9 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useAuthClient } from "@/lib/auth-client";
 
+// Matches the register route: bcrypt ignores password bytes past 72.
+const fitsBcryptLimit = (password: string) => new TextEncoder().encode(password).length <= 72;
+
 export default function SignUpForm({
   onSwitchToSignIn,
 }: {
@@ -58,7 +61,11 @@ export default function SignUpForm({
         v.object({
           name: v.pipe(v.string(), v.minLength(2, "Name must be at least 2 characters")),
           email: v.pipe(v.string(), v.email("Invalid email address")),
-          password: v.pipe(v.string(), v.minLength(8, "Password must be at least 8 characters")),
+          password: v.pipe(
+            v.string(),
+            v.minLength(8, "Password must be at least 8 characters"),
+            v.check(fitsBcryptLimit, "Password must be at most 72 bytes")
+          ),
           confirmPassword: v.string(),
         }),
         v.forward(
@@ -74,7 +81,10 @@ export default function SignUpForm({
         .object({
           name: z.string().min(2, "Name must be at least 2 characters"),
           email: z.email("Invalid email address"),
-          password: z.string().min(8, "Password must be at least 8 characters"),
+          password: z
+            .string()
+            .min(8, "Password must be at least 8 characters")
+            .refine(fitsBcryptLimit, "Password must be at most 72 bytes"),
           confirmPassword: z.string(),
         })
         .refine((data) => data.password === data.confirmPassword, {

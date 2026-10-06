@@ -146,6 +146,12 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     pinnedVersion: "^4.23.0",
     reason: "Keep generated Next.js Auth0 integration on the explicitly tested SDK line.",
   },
+  "next-auth": {
+    pinnedVersion: "5.0.0-beta.32",
+    holdLatestChannel: true,
+    reason:
+      "Generated Auth.js code uses the v5 API, which ships only as a beta while npm latest is still v4.",
+  },
   "better-auth": {
     pinnedVersion: "1.6.22",
     reason:
