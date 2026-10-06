@@ -6,8 +6,10 @@
     <meta name="csrf-token" content={get_csrf_token()} />
     <title>{{projectName}}</title>
 {{#if (eq elixirWebFramework "phoenix-live-view")}}
-    <script defer src={~p"/assets/phoenix/phoenix.min.js"}></script>
-    <script defer src={~p"/assets/phoenix_live_view/phoenix_live_view.min.js"}></script>
+    <script defer src={~p"/assets/phoenix/phoenix.min.js"}>
+    </script>
+    <script defer src={~p"/assets/phoenix_live_view/phoenix_live_view.min.js"}>
+    </script>
     <script>
       window.addEventListener("DOMContentLoaded", () => {
         const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");

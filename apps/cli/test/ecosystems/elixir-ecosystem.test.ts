@@ -99,7 +99,7 @@ describe("Elixir library expansion", () => {
     const router = getVirtualTreeFileContent(tree, "lib/elixir_roadmap_full_web/router.ex");
     expect(router).toContain("pow_routes()");
     expect(router).toContain(
-      "plug OpenApiSpex.Plug.PutApiSpec, module: ElixirRoadmapFullWeb.ApiSpec",
+      "plug OpenApiSpex.Plug.PutApiSpec,\n      module: ElixirRoadmapFullWeb.ApiSpec",
     );
     expect(router).toContain('forward "/openapi", OpenApiSpex.Plug.RenderSpec, []');
     expect(hasVirtualFile(tree.root, "lib/elixir_roadmap_full_web/api_spec.ex")).toBe(true);
@@ -325,7 +325,7 @@ describe("Elixir library expansion", () => {
     const tree = result.tree!;
     const mix = getVirtualTreeFileContent(tree, "mix.exs");
     expect(mix).toContain('{:ecto_sqlite3, "~> 0.24"}');
-    expect(mix).toContain('{:stream_data, "~> 1.3", only: :test}');
+    expect(mix).toContain('{:stream_data, "~> 1.3", only: [:dev, :test]}');
     expect(mix).toContain("test_coverage: [tool: ExCoveralls]");
     expect(mix).not.toContain(":postgrex");
     expect(getVirtualTreeFileContent(tree, "lib/elixir_sqlite_quality/repo.ex")).toContain(
@@ -363,7 +363,7 @@ describe("Elixir library expansion", () => {
     expect(apiPipeline).toContain("plug :fetch_session");
   });
 
-  it("only lets JSON requests reach the phx-gen-auth session actions", async () => {
+  it("keeps phx-gen-auth register and login JSON-only and accepts bodyless logout", async () => {
     const withAuth = await createVirtual({
       ...base,
       projectName: "elixir-session-json",
@@ -382,11 +382,15 @@ describe("Elixir library expansion", () => {
       withAuth.tree!,
       "lib/elixir_session_json_web/controllers/user_session_controller.ex",
     );
-    const guardedActions = controller
+    const jsonOnlyActions = controller
       ?.match(/plug :require_json_body when action in \[([^\]]*)\]/)?.[1]
       ?.split(",")
       .map((action) => action.trim().replace(/^:/, ""));
-    expect(guardedActions).toEqual(expect.arrayContaining(sessionActions));
+    expect(jsonOnlyActions).toEqual(["register", "login"]);
+    expect(controller).toContain(
+      "plug :require_json_body, :allow_missing when action in [:logout]",
+    );
+    expect(controller).toContain("[] when opts == :allow_missing -> conn");
     expect(controller).toContain("put_status(:unsupported_media_type)");
 
     const withoutAuth = await createVirtual({
@@ -447,9 +451,11 @@ describe("Elixir library expansion", () => {
       liveView.tree!,
       "lib/elixir_liveview_client_web/components/layouts/root.html.heex",
     );
-    expect(layout).toContain('<script defer src={~p"/assets/phoenix/phoenix.min.js"}></script>');
     expect(layout).toContain(
-      '<script defer src={~p"/assets/phoenix_live_view/phoenix_live_view.min.js"}></script>',
+      '<script defer src={~p"/assets/phoenix/phoenix.min.js"}>\n    </script>',
+    );
+    expect(layout).toContain(
+      '<script defer src={~p"/assets/phoenix_live_view/phoenix_live_view.min.js"}>\n    </script>',
     );
     expect(layout).toContain('new LiveView.LiveSocket("/live", Phoenix.Socket');
     expect(layout).toContain("_csrf_token: csrfToken");
@@ -489,7 +495,196 @@ describe("Elixir library expansion", () => {
     expect(result.success).toBe(true);
     const mix = getVirtualTreeFileContent(result.tree!, "mix.exs");
     expect(mix).toContain('{:stream_data, "~> 1.3"}');
-    expect(mix).not.toContain('{:stream_data, "~> 1.3", only: :test}');
+    expect(mix).not.toContain('{:stream_data, "~> 1.3", only: [:dev, :test]}');
     expect(mix).toContain('{:ash, "~> 3.29"}');
   });
+
+  it("reads the Guardian secret from the runtime environment in production", async () => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "elixir-guardian-secret",
+      elixirOrm: "none",
+      elixirAuth: "guardian",
+      elixirApi: "rest",
+      elixirDeploy: "mix-release",
+    });
+
+    expect(result.success).toBe(true);
+    const tree = result.tree!;
+    expect(getVirtualTreeFileContent(tree, "config/config.exs")).not.toContain("secret_key");
+    const runtime = getVirtualTreeFileContent(tree, "config/runtime.exs") ?? "";
+    const prodBlock = runtime.slice(runtime.indexOf("if config_env() == :prod do"));
+    expect(prodBlock).toContain(
+      'System.get_env("GUARDIAN_SECRET_KEY") ||\n      raise "GUARDIAN_SECRET_KEY is missing.',
+    );
+    for (const env of ["dev", "test"]) {
+      expect(getVirtualTreeFileContent(tree, `config/${env}.exs`)).toContain(
+        `secret_key: "${env}-only-guardian-secret-placeholder`,
+      );
+    }
+  });
+
+  it("upgrades Oban in a separate migration that runs after the original one", async () => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "elixir-oban-jobs",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "none",
+      elixirApi: "rest",
+      elixirJobs: "oban",
+      elixirDeploy: "fly",
+    });
+    const withoutOban = await createVirtual({
+      ...base,
+      projectName: "elixir-no-oban",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "none",
+      elixirApi: "rest",
+    });
+
+    expect(result.success).toBe(true);
+    const tree = result.tree!;
+    const migrations = listVirtualTreeFilePaths(tree)
+      .map((path) => path.replace(/^\/+/, ""))
+      .filter((path) => path.startsWith("priv/repo/migrations/"))
+      .sort();
+    const original = "priv/repo/migrations/20260101000002_add_oban_jobs.exs";
+    const upgrade = "priv/repo/migrations/20261007000000_upgrade_oban_jobs_to_v14.exs";
+    expect(migrations.slice(-2)).toEqual([original, upgrade]);
+    const originalContent = getVirtualTreeFileContent(tree, original);
+    expect(originalContent).toContain("Oban.Migration.up(version: 12)");
+    expect(originalContent).toContain("Oban.Migration.down(version: 1)");
+    const upgradeContent = getVirtualTreeFileContent(tree, upgrade);
+    expect(upgradeContent).toContain("Oban.Migration.up(version: 14)");
+    expect(upgradeContent).toContain("Oban.Migration.down(version: 13)");
+    expect(getVirtualTreeFileContent(tree, "mix.exs")).toContain('{:oban, "~> 2.24.0"}');
+    expect(getVirtualTreeFileContent(tree, "config/test.exs")).toContain(
+      "config :elixir_oban_jobs, Oban, testing: :manual",
+    );
+
+    expect(withoutOban.success).toBe(true);
+    expect(
+      listVirtualTreeFilePaths(withoutOban.tree!).filter((path) => path.includes("oban_jobs")),
+    ).toEqual([]);
+  });
+
+  it("keeps one Fly machine running only when Oban runs inside the app", async () => {
+    const withOban = await createVirtual({
+      ...base,
+      projectName: "elixir-fly-oban",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "none",
+      elixirApi: "rest",
+      elixirJobs: "oban",
+      elixirDeploy: "fly",
+    });
+    const withoutOban = await createVirtual({
+      ...base,
+      projectName: "elixir-fly-plain",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "none",
+      elixirApi: "rest",
+      elixirDeploy: "fly",
+    });
+
+    expect(withOban.success).toBe(true);
+    expect(withoutOban.success).toBe(true);
+    expect(getVirtualTreeFileContent(withOban.tree!, "fly.toml")).toContain(
+      "min_machines_running = 1",
+    );
+    expect(getVirtualTreeFileContent(withoutOban.tree!, "fly.toml")).toContain(
+      "min_machines_running = 0",
+    );
+  });
+
+  it("converts Ecto changesets into LiveView forms that render their errors", async () => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "elixir-liveview-errors",
+      elixirWebFramework: "phoenix-live-view",
+      elixirRealtime: "live-view-streams",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "none",
+      elixirApi: "none",
+    });
+
+    expect(result.success).toBe(true);
+    const tree = result.tree!;
+    expect(getVirtualTreeFileContent(tree, "mix.exs")).toContain('{:phoenix_ecto, "~> 4.6"}');
+    const live = getVirtualTreeFileContent(
+      tree,
+      "lib/elixir_liveview_errors_web/live/item_live/index.ex",
+    );
+    expect(live).toContain('to_form(changeset, as: "item")');
+    expect(live).toContain("<p :for={message <- error_messages(@form[:name])}");
+  });
+
+  it("emits a formatter config that imports the selected libraries", async () => {
+    const liveView = await createVirtual({
+      ...base,
+      projectName: "elixir-format-live",
+      elixirWebFramework: "phoenix-live-view",
+      elixirRealtime: "live-view-streams",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "none",
+      elixirApi: "none",
+      elixirJobs: "oban",
+    });
+    const plain = await createVirtual({
+      ...base,
+      projectName: "elixir-format-plain",
+      elixirWebFramework: "none",
+      elixirRealtime: "none",
+      elixirOrm: "none",
+      elixirAuth: "none",
+      elixirApi: "none",
+      elixirHttpServer: "none",
+      elixirI18n: "none",
+    });
+
+    expect(liveView.success).toBe(true);
+    expect(getVirtualTreeFileContent(liveView.tree!, ".formatter.exs")).toBe(`[
+  import_deps: [
+    :ecto,
+    :ecto_sql,
+    :oban,
+    :phoenix
+  ],
+  plugins: [Phoenix.LiveView.HTMLFormatter],
+  inputs: ["*.{heex,ex,exs}", "{config,lib,test}/**/*.{heex,ex,exs}", "priv/*/**/*.exs"]
+]
+`);
+    expect(plain.success).toBe(true);
+    expect(getVirtualTreeFileContent(plain.tree!, ".formatter.exs")).toBe(`[
+  inputs: ["*.{ex,exs}", "{config,lib,test}/**/*.{ex,exs}", "priv/*/**/*.exs"]
+]
+`);
+  });
+
+  it.each(["phoenix", "phoenix-live-view", "none"] as const)(
+    "formats HEEx files whenever %s generates them",
+    async (elixirWebFramework) => {
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-format-heex",
+        elixirWebFramework,
+        elixirRealtime: "none",
+        elixirOrm: "none",
+        elixirAuth: "none",
+        elixirApi: elixirWebFramework === "none" ? "none" : "rest",
+        elixirHttpServer: elixirWebFramework === "none" ? "none" : "bandit",
+        elixirI18n: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      const hasHeex = listVirtualTreeFilePaths(tree).some((path) => path.endsWith(".heex"));
+      expect(hasHeex).toBe(elixirWebFramework !== "none");
+      const formatter = getVirtualTreeFileContent(tree, ".formatter.exs") ?? "";
+      const mix = getVirtualTreeFileContent(tree, "mix.exs") ?? "";
+      expect(formatter.includes("plugins: [Phoenix.LiveView.HTMLFormatter]")).toBe(hasHeex);
+      expect(formatter.includes('"{config,lib,test}/**/*.{heex,ex,exs}"')).toBe(hasHeex);
+      expect(mix.includes('{:phoenix_live_view, "~> 1.0"}')).toBe(hasHeex);
+    },
+  );
 });

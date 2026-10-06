@@ -102,7 +102,7 @@ The `test` alias creates and migrates the test database before running ExUnit, s
 
 ## Use the form on /items
 
-Open `http://localhost:4000/items`. The page lists the seed item, and the browser connects to the LiveView socket at `/live`. Submitting the form with a name sends the `create` event to `handle_event/3`, which inserts the item and appends it to the list without a page reload.
+Open `http://localhost:4000/items`. The page lists the seed item, and the browser connects to the LiveView socket at `/live`. Submitting the form with a name sends the `create` event to `handle_event/3`, which inserts the item and appends it to the list without a page reload. A name shorter than two characters keeps the view connected and shows `Name should be at least 2 character(s)` under the field, with the typed values still in the inputs.
 
 The scaffold has no `assets/` directory or JavaScript build step. The endpoint serves `phoenix.min.js` and `phoenix_live_view.min.js` straight from the `phoenix` and `phoenix_live_view` packages, and an inline script in `components/layouts/root.html.heex` starts the `LiveSocket`. Add an asset pipeline, such as the `esbuild` Hex package, when you need your own hooks or bundled JavaScript.
 
@@ -114,22 +114,24 @@ The LiveView mounts with a stream and inserts new rows without re-rendering the 
 def mount(_params, _session, socket) do
   socket =
     socket
-    |> assign(:form, to_form(%{"name" => "", "description" => ""}))
+    |> assign(:form, empty_form())
     |> stream(:items, Catalog.list_items())
 
   {:ok, socket}
 end
 
-def handle_event("create", %{"name" => name, "description" => description}, socket) do
-  case Catalog.create_item(%{"name" => name, "description" => description}) do
+def handle_event("create", %{"item" => item_params}, socket) do
+  case Catalog.create_item(item_params) do
     {:ok, item} ->
-      {:noreply, stream_insert(socket, :items, item)}
+      {:noreply, socket |> stream_insert(:items, item) |> assign(:form, empty_form())}
 
     {:error, changeset} ->
-      {:noreply, assign(socket, :form, to_form(changeset))}
+      {:noreply, assign(socket, :form, to_form(changeset, as: "item"))}
   end
 end
 ```
+
+`to_form/2` accepts the changeset because the scaffold depends on `phoenix_ecto`. The template renders each message from `@form[:name].errors` below the name input.
 
 Validation lives in the Ecto changeset, so the same rules apply to every caller of `Catalog.create_item/1`:
 
@@ -178,13 +180,13 @@ The scaffold does not generate a release migration module, so `mix ecto.migrate`
 
 ## Troubleshooting
 
-| Symptom                                               | Check                                                                                                                                                                                                            |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A rejected item reloads the `/items` view             | The error branch passes an `Ecto.Changeset` to `to_form/1`, which the scaffold's dependencies cannot convert, so the LiveView process crashes and remounts without a message. Names must be 2 to 120 characters. |
-| `mix ecto.setup` cannot connect                       | Confirm PostgreSQL is running and the `POSTGRES_*` variables match your server.                                                                                                                                  |
-| Release exits with `SECRET_KEY_BASE is missing`       | Generate one with `mix phx.gen.secret` and set it in the runtime environment.                                                                                                                                    |
-| Release queries fail with `missing the :database key` | Set `DATABASE_URL`; production has no other database configuration.                                                                                                                                              |
-| `relation "items" does not exist` in production       | Migrations do not run at release start; apply them before deploying.                                                                                                                                             |
+| Symptom                                                 | Check                                                                                                                                              |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Name should be at least 2 character(s)` under the form | The item changeset requires a name of 2 to 120 characters. The view stays connected and keeps the typed values; correct the name and submit again. |
+| `mix ecto.setup` cannot connect                         | Confirm PostgreSQL is running and the `POSTGRES_*` variables match your server.                                                                    |
+| Release exits with `SECRET_KEY_BASE is missing`         | Generate one with `mix phx.gen.secret` and set it in the runtime environment.                                                                      |
+| Release queries fail with `missing the :database key`   | Set `DATABASE_URL`; production has no other database configuration.                                                                                |
+| `relation "items" does not exist` in production         | Migrations do not run at release start; apply them before deploying.                                                                               |
 
 ## Next steps
 

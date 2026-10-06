@@ -66,7 +66,7 @@ export async function processElixirBaseTemplate(
     if (!hasChannels && templatePath.includes("/channels/room_channel")) continue;
     if (!hasPresence && templatePath.includes("/channels/presence")) continue;
     if (!hasOban && templatePath.includes("/workers/")) continue;
-    if (!hasOban && templatePath.includes("add_oban_jobs")) continue;
+    if (!hasOban && templatePath.includes("_oban_jobs")) continue;
     if (!hasQuantum && templatePath.includes("/scheduler.ex")) continue;
     if (!hasAbsinthe && templatePath.includes("/graphql/")) continue;
     if (!hasCacheModule && templatePath.includes("/cache.ex")) continue;

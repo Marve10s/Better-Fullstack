@@ -3,12 +3,15 @@ defmodule {{elixirModuleName}}.ExternalServiceMoxTest do
 
   import Mox
 
+  alias {{elixirModuleName}}.ExternalService
+  alias {{elixirModuleName}}.MockExternalService
+
   setup :verify_on_exit!
 
   test "uses explicit behaviour expectations" do
-    {{elixirModuleName}}.MockExternalService
+    MockExternalService
     |> expect(:fetch_status, fn -> {:ok, "mocked"} end)
 
-    assert {{elixirModuleName}}.ExternalService.fetch_status() == {:ok, "mocked"}
+    assert ExternalService.fetch_status() == {:ok, "mocked"}
   end
 end

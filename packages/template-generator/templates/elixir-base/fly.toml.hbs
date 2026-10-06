@@ -20,7 +20,12 @@ primary_region = "iad"
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
+{{#if (eq elixirJobs "oban")}}
+  # Oban runs inside the app, so a stopped machine also stops queued and scheduled jobs.
+  min_machines_running = 1
+{{else}}
   min_machines_running = 0
+{{/if}}
   processes = ["app"]
 
 [[vm]]

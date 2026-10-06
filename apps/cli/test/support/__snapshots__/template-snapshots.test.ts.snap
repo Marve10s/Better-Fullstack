@@ -26511,6 +26511,7 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/0"
 exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots file structure: phoenix-ecto-rest 1`] = `
 [
   ".env.example",
+  ".formatter.exs",
   "AGENTS.md",
   "CLAUDE.md",
   "README.md",
@@ -26550,6 +26551,7 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
 exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots file structure: phoenix-liveview-full 1`] = `
 [
   ".env.example",
+  ".formatter.exs",
   "AGENTS.md",
   "CLAUDE.md",
   "Dockerfile",
@@ -26590,6 +26592,7 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
   "priv/repo/migrations/20260101000000_create_items.exs",
   "priv/repo/migrations/20260101000001_create_users.exs",
   "priv/repo/migrations/20260101000002_add_oban_jobs.exs",
+  "priv/repo/migrations/20261007000000_upgrade_oban_jobs_to_v14.exs",
   "priv/repo/seeds.exs",
   "test/snapshot_elixir_phoenix_liveview_full_web/controllers/health_controller_test.exs",
   "test/support/conn_case.ex",
@@ -26599,7 +26602,7 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
 
 exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-ecto-rest 1`] = `
 {
-  "fileCount": 35,
+  "fileCount": 36,
   "files": [
     {
       "content": 
@@ -26617,6 +26620,10 @@ POSTGRES_DB=snapshot_elixir_phoenix_ecto_rest_dev
 POSTGRES_TEST_DB=snapshot_elixir_phoenix_ecto_rest_test"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": ".formatter.exs",
     },
     {
       "content": "[exists]",
@@ -26756,7 +26763,7 @@ POSTGRES_TEST_DB=snapshot_elixir_phoenix_ecto_rest_test"
 
 exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-liveview-full 1`] = `
 {
-  "fileCount": 46,
+  "fileCount": 48,
   "files": [
     {
       "content": 
@@ -26774,6 +26781,10 @@ POSTGRES_DB=snapshot_elixir_phoenix_liveview_full_dev
 POSTGRES_TEST_DB=snapshot_elixir_phoenix_liveview_full_test"
 ,
       "path": ".env.example",
+    },
+    {
+      "content": "[exists]",
+      "path": ".formatter.exs",
     },
     {
       "content": "[exists]",
@@ -26930,6 +26941,10 @@ POSTGRES_TEST_DB=snapshot_elixir_phoenix_liveview_full_test"
     {
       "content": "[exists]",
       "path": "priv/repo/migrations/20260101000002_add_oban_jobs.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/migrations/20261007000000_upgrade_oban_jobs_to_v14.exs",
     },
     {
       "content": "[exists]",
