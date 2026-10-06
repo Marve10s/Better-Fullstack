@@ -21,6 +21,7 @@ import { createVirtual } from "@/index";
 import {
   getVirtualTreeFileContent,
   hasVirtualFile,
+  listVirtualTreeFilePaths,
   listVirtualTreeFiles,
 } from "@test/support/virtual-tree-utils";
 
@@ -402,6 +403,33 @@ describe("Elixir library expansion", () => {
     );
     expect(filesWithPlug).toEqual([]);
   });
+
+  it.each(["phoenix", "phoenix-live-view"] as const)(
+    "copies only generated paths into the %s release image without an ORM",
+    async (elixirWebFramework) => {
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-docker-no-orm",
+        elixirWebFramework,
+        elixirOrm: "none",
+        elixirAuth: "none",
+        elixirApi: "rest",
+        elixirDeploy: "docker",
+      });
+
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      const paths = listVirtualTreeFilePaths(tree).map((path) => path.replace(/^\/+/, ""));
+      const sources = [
+        ...(getVirtualTreeFileContent(tree, "Dockerfile") ?? "").matchAll(/^COPY (?!--)(.+) \S+$/gm),
+      ].flatMap((match) => match[1].split(" "));
+      expect(sources).toContain("lib");
+      const missing = sources.filter(
+        (source) => !paths.some((path) => path === source || path.startsWith(`${source}/`)),
+      );
+      expect(missing).toEqual([]);
+    },
+  );
 
   it("keeps StreamData available to Ash outside the test environment", async () => {
     const result = await createVirtual({
