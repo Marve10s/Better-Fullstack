@@ -18,7 +18,11 @@ import {
 import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "@/index";
-import { getVirtualTreeFileContent, hasVirtualFile } from "@test/support/virtual-tree-utils";
+import {
+  getVirtualTreeFileContent,
+  hasVirtualFile,
+  listVirtualTreeFiles,
+} from "@test/support/virtual-tree-utils";
 
 const base = {
   ecosystem: "elixir" as const,
@@ -329,7 +333,7 @@ describe("Elixir library expansion", () => {
     expect(hasVirtualFile(tree.root, "test/elixir_sqlite_quality/property_test.exs")).toBe(true);
   });
 
-  it("generates Phoenix config that boots in dev, test, and prod releases", async () => {
+  it("emits Phoenix dev, test, and prod config and a session-aware API pipeline", async () => {
     const result = await createVirtual({
       ...base,
       projectName: "elixir-phoenix-runtime",
@@ -356,6 +360,47 @@ describe("Elixir library expansion", () => {
     const router = getVirtualTreeFileContent(tree, "lib/elixir_phoenix_runtime_web/router.ex");
     const apiPipeline = router?.match(/pipeline :api do[\s\S]*?\n  end/)?.[0];
     expect(apiPipeline).toContain("plug :fetch_session");
+  });
+
+  it("only lets JSON requests reach the phx-gen-auth session actions", async () => {
+    const withAuth = await createVirtual({
+      ...base,
+      projectName: "elixir-session-json",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "phx-gen-auth",
+      elixirApi: "rest",
+    });
+
+    expect(withAuth.success).toBe(true);
+    const router = getVirtualTreeFileContent(withAuth.tree!, "lib/elixir_session_json_web/router.ex");
+    const sessionActions = [...(router ?? "").matchAll(/UserSessionController, :(\w+)/g)].map(
+      (match) => match[1],
+    );
+    expect(sessionActions).toEqual(["register", "login", "logout"]);
+    const controller = getVirtualTreeFileContent(
+      withAuth.tree!,
+      "lib/elixir_session_json_web/controllers/user_session_controller.ex",
+    );
+    const guardedActions = controller
+      ?.match(/plug :require_json_body when action in \[([^\]]*)\]/)?.[1]
+      ?.split(",")
+      .map((action) => action.trim().replace(/^:/, ""));
+    expect(guardedActions).toEqual(expect.arrayContaining(sessionActions));
+    expect(controller).toContain("put_status(:unsupported_media_type)");
+
+    const withoutAuth = await createVirtual({
+      ...base,
+      projectName: "elixir-session-none",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "none",
+      elixirApi: "rest",
+    });
+
+    expect(withoutAuth.success).toBe(true);
+    const filesWithPlug = listVirtualTreeFiles(withoutAuth.tree!).filter((file) =>
+      file.content.includes("require_json_body"),
+    );
+    expect(filesWithPlug).toEqual([]);
   });
 
   it("keeps StreamData available to Ash outside the test environment", async () => {
