@@ -1,0 +1,153 @@
+---
+title: "Zod vs Valibot vs ArkType: choose a schema style you will maintain"
+description: "Compare Zod, Valibot, and ArkType by API style, TypeScript requirements, ecosystem fit, and what Better Fullstack generates when you select each one."
+date: 2026-10-06
+authors:
+  - Ibrahim Elkamali
+image: /search-media/stack-decisions-1200x630.png
+video: /search-media/stack-decisions-1200x630.mp4
+translationStatus: pending
+tags:
+  - zod
+  - valibot
+  - arktype
+  - validation
+keywords:
+  - zod vs valibot
+  - zod vs arktype
+  - valibot vs arktype
+  - typescript schema validation comparison
+  - standard schema validation
+---
+
+![Stack decision map: choose an ecosystem, generate, inspect, and keep the code](/search-media/stack-decisions-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/stack-decisions-1200x630.png" src="/search-media/stack-decisions-1200x630.mp4"></video>
+
+Zod, Valibot, and ArkType all validate unknown data at runtime and infer a TypeScript type from the same definition. They also share an interface: [Standard Schema](https://standardschema.dev/) was designed by the creators of all three so that tools can accept any compliant schema without a library-specific adapter.
+
+That shared interface narrows the decision. Many tools accept all three, so the choice comes down to how schemas read in your codebase, what your TypeScript configuration allows, and which integrations you depend on.
+
+## The same schema three ways
+
+A sign-in payload in each library:
+
+```ts
+import { z } from "zod";
+
+const SignIn = z.object({
+  email: z.email(),
+  password: z.string().min(8),
+});
+```
+
+```ts
+import * as v from "valibot";
+
+const SignIn = v.object({
+  email: v.pipe(v.string(), v.email()),
+  password: v.pipe(v.string(), v.minLength(8)),
+});
+```
+
+```ts
+import { type } from "arktype";
+
+const SignIn = type({
+  email: "string.email",
+  password: "string >= 8",
+});
+```
+
+## API style and typing model
+
+[Zod](https://zod.dev/) is TypeScript-first schema validation with static type inference. Schemas are built with chained methods, and methods return new instances instead of modifying the original. It has no external dependencies and can convert schemas to JSON Schema with `z.toJSONSchema()`.
+
+[Valibot](https://valibot.dev/guides/introduction/) is built from many small, independent functions, each with one task, composed with `pipe`. Its docs present that modular design as a way for bundlers to remove unused code. If client bundle size is a hard constraint, measure your own schemas in your own build rather than relying on a general figure.
+
+[ArkType](https://arktype.io/docs/intro/your-first-type) defines types with TypeScript-like syntax inside strings and objects, so a definition reads close to the type it produces. Invalid data returns errors with a readable summary instead of throwing by default.
+
+The practical test: write five real schemas from your domain in each style, including one with a refinement and one with a transform, and ask which version reviewers read fastest.
+
+## TypeScript and project requirements
+
+The libraries set different requirements:
+
+- Zod supports TypeScript 5.5 and later and recommends `strict` mode.
+- ArkType requires [TypeScript 5.1 or later, an ESM package, and `strict` or `strictNullChecks`](https://arktype.io/docs/intro/setup), strongly recommends `skipLibCheck`, and recommends `exactOptionalPropertyTypes`.
+
+Check these against the `tsconfig.json` files you already have, especially in a monorepo where packages share a base config.
+
+## Ecosystem fit
+
+All three work as input validators in the API layers Better Fullstack generates. tRPC lists Zod, Valibot, and ArkType among its [supported validators](https://trpc.io/docs/server/validators), and oRPC lists all three for runtime input validation. For OpenAPI output, oRPC ships [a JSON Schema converter for each library](https://orpc.dev/docs/openapi/openapi-specification): `@orpc/zod`, `@orpc/valibot`, and `@orpc/arktype`.
+
+Integrations outside the API layer vary. Before switching away from Zod, list the libraries in your stack that take a schema, such as environment loaders, form libraries, and AI SDKs, and confirm each one accepts Standard Schema or your chosen library.
+
+## What Better Fullstack generates
+
+The three commands below differ only in `--validation`:
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth \
+  --validation zod
+```
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth \
+  --validation valibot
+```
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth \
+  --validation arktype
+```
+
+The selection changes less than the flag suggests, and the differences are worth knowing:
+
+| Generated code                               | `zod` | `valibot`              | `arktype`             |
+| -------------------------------------------- | ----- | ---------------------- | --------------------- |
+| Library added to `api`, `server`, and `web`  | Zod   | Valibot, Zod stays     | ArkType, Zod stays    |
+| Sign-in and sign-up form schemas             | Zod   | Valibot                | Zod                   |
+| Environment schemas in `packages/env`        | Zod   | Zod                    | Zod                   |
+| oRPC OpenAPI reference converter             | Zod   | Zod                    | Zod                   |
+
+Zod remains a dependency in every case because generated infrastructure, including the environment schemas, uses it. Selecting Valibot rewrites the Better Auth forms, which pass a Valibot object directly to TanStack Form's `onSubmit` validator. Selecting ArkType installs the package for your own schemas but does not rewrite any generated file.
+
+If you write oRPC procedures with Valibot or ArkType and publish the API reference, add the matching converter next to the generated `ZodToJsonSchemaConverter` and check the output. oRPC's docs describe a Standard JSON Schema fallback when no converter matches, so confirm which path your schemas take.
+
+## Decision table
+
+| If this is the stronger constraint                     | Start with                                  |
+| ------------------------------------------------------ | ------------------------------------------- |
+| An integration you depend on accepts only Zod          | Zod                                         |
+| Function-per-check style and tree-shakable imports     | Valibot                                     |
+| Definitions that read like TypeScript types            | ArkType                                     |
+| Shared schemas across many generated packages          | Zod, or plan the migration of the Zod parts |
+| Existing schemas in one library                        | Keep it unless a requirement rules it out   |
+
+For the API layer that consumes these schemas, read [tRPC vs oRPC](/blog/trpc-vs-orpc/). The [Hono Better Auth guide](/guides/typescript/hono-better-auth) shows a generated oRPC project end to end.
