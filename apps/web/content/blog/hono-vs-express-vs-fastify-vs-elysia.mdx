@@ -1,0 +1,162 @@
+---
+title: "Hono vs Express vs Fastify vs Elysia for a TypeScript API"
+description: "Choose Hono, Express, Fastify, or Elysia by runtime, request model, validation style, and middleware ecosystem, with a Better Fullstack command for each."
+date: 2026-10-06
+authors:
+  - Ibrahim Elkamali
+image: /search-media/stack-decisions-1200x630.png
+video: /search-media/stack-decisions-1200x630.mp4
+translationStatus: pending
+tags:
+  - hono
+  - express
+  - fastify
+  - elysia
+  - backend
+keywords:
+  - hono vs express
+  - fastify vs express
+  - elysia vs hono
+  - typescript backend framework comparison
+  - hono express fastify elysia
+---
+
+![Stack decision map: choose an ecosystem, generate, inspect, and keep the code](/search-media/stack-decisions-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/stack-decisions-1200x630.png" src="/search-media/stack-decisions-1200x630.mp4"></video>
+
+Hono, Express, Fastify, and Elysia all route HTTP requests to TypeScript handlers. The useful comparison is not a feature count. It is where the server runs, which request model your code and middleware expect, and how much the framework should own validation and typing.
+
+Settle one question first: does the project need a separate API server? If the web app is the only client, a framework-owned backend may be simpler. [Self backend vs separate API](/blog/self-backend-vs-separate-api/) covers that decision. The rest of this post assumes a separate server.
+
+## Runtime and deployment come first
+
+Each framework describes a different home:
+
+- **Hono** is [built on Web Standards](https://hono.dev/docs/) and lists Cloudflare Workers, Fastly Compute, Deno, Bun, Vercel, Netlify, AWS Lambda, and Node.js (through an adapter) as targets.
+- **Express** is a [minimal and flexible Node.js web application framework](https://expressjs.com/).
+- **Fastify** is a [low overhead web framework for Node.js](https://fastify.dev/docs/latest/).
+- **Elysia** is an [ergonomic web framework for building backend servers with Bun](https://elysiajs.com/at-glance.html). Its docs also describe support for Node.js, Deno, Cloudflare Workers, and other runtimes through WinterTC compliance.
+
+If the target is an edge or serverless platform that speaks the Fetch API, Hono and Elysia start closer to it. If the target is a long-running Node.js process, all four fit, and Express and Fastify are built for exactly that.
+
+## Request model
+
+Hono and Elysia handlers work with Web Standard `Request` and `Response` objects. Express uses Node's request and response objects with the `(req, res, next)` [middleware signature](https://expressjs.com/en/guide/writing-middleware.html). Fastify has its own request and reply objects.
+
+This affects every library that touches the request: auth handlers, RPC adapters, file uploads, and logging. A library written for the Fetch API plugs into Hono or Elysia directly and needs a bridge on Express or Fastify, and the reverse holds for Node-style middleware.
+
+## Validation and typing model
+
+- **Hono** pairs its validator with the `hc` client for [RPC-style typed calls](https://hono.dev/docs/) between server and client.
+- **Express** leaves validation to whatever middleware you add. Since Express 5, a rejected promise in middleware is passed to `next`, so async errors reach your error handler without manual wrapping.
+- **Fastify** uses a schema-based approach: [JSON Schema with Ajv for request validation and fast-json-stringify for response serialization](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/).
+- **Elysia** infers types from its own `Elysia.t` schema builder, accepts Standard Schema libraries such as Zod and Valibot, provides the Eden client for end-to-end types, and generates OpenAPI documentation from route types.
+
+If an RPC layer such as oRPC or tRPC will own the typed contract, the framework's own typing features matter less. Better Fullstack generates that arrangement, described below.
+
+## Middleware and plugin model
+
+Express's ecosystem is built on the middleware chain. Fastify organizes features as plugins inside [encapsulation contexts](https://fastify.dev/docs/latest/Reference/Encapsulation/): each context inherits from its parents, and parents cannot reach into their children unless encapsulation is deliberately broken. Hono registers middleware with `app.use`, and Elysia composes plugins with `.use` on the app instance.
+
+Check the specific packages you depend on. A team with years of Express middleware has a concrete reason to stay on Express.
+
+## What Better Fullstack generates
+
+The four commands below share every flag except backend and runtime:
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth
+```
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend express \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth
+```
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend fastify \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth
+```
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend elysia \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth
+```
+
+The oRPC procedures and router in `packages/api` are identical across all four. Only `packages/api/src/context.ts` adapts to the framework's request object, and the Express version converts Node headers to Web `Headers` before reading the Better Auth session. The server entry in `apps/server/src/index.ts` is where the frameworks differ:
+
+| Concern            | Hono                         | Express                         | Fastify                                     | Elysia                       |
+| ------------------ | ---------------------------- | ------------------------------- | ------------------------------------------- | ---------------------------- |
+| oRPC adapter       | `@orpc/server/fetch`         | `@orpc/server/node`             | `@orpc/server/fastify`                      | `@orpc/server/fetch`         |
+| Better Auth mount  | `auth.handler(c.req.raw)`    | `toNodeHandler(auth)`           | handler that builds a Web `Request`         | `auth.handler(request)`      |
+| CORS               | `hono/cors`                  | `cors`                          | `@fastify/cors`                             | `@elysiajs/cors`             |
+| Dev script         | `bun run --hot`              | `tsx watch`                     | `tsx watch`                                 | `bun run --hot`              |
+
+The Fastify server registers the oRPC routes inside their own plugin with a content type parser that leaves body parsing to oRPC, and it enables Fastify's logger.
+
+Hono is the only backend Better Fullstack accepts for the Cloudflare Workers runtime. This command keeps the same Hono server code and adds `packages/infra/alchemy.run.ts`, which declares a Worker and a D1 database with Alchemy:
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime workers \
+  --database sqlite \
+  --orm drizzle \
+  --db-setup d1 \
+  --server-deploy cloudflare \
+  --api orpc \
+  --auth better-auth
+```
+
+These commands produce generated projects. They do not prove that a given deployment target runs them; install, build, and deploy a small slice to the host you plan to use.
+
+## Decision table
+
+| If this is the stronger constraint                        | Start with                            |
+| --------------------------------------------------------- | ------------------------------------- |
+| Cloudflare Workers or several Fetch-based runtimes        | Hono                                  |
+| Existing Express middleware and team experience           | Express                               |
+| Node.js service with schema validation and plugin scopes  | Fastify                               |
+| Bun-first service using Elysia's types and Eden           | Elysia                                |
+| An RPC layer owns the typed contract                      | Any of the four; choose by runtime    |
+| The web app is the only client                            | Consider a framework-owned backend    |
+
+## Compare real generated stacks
+
+- [TanStack Router + Hono + oRPC + Drizzle](/stack/tanstack-router-hono-orpc-drizzle)
+- [SvelteKit + Elysia + Drizzle](/stack/sveltekit-elysia-drizzle)
+- [Angular + Express + Prisma](/stack/angular-express-prisma)
+
+For the API layer on top of any of these servers, read [tRPC vs oRPC](/blog/trpc-vs-orpc/).

@@ -1,0 +1,123 @@
+---
+title: "Better Auth vs Clerk vs Auth.js: decide who owns your users"
+description: "Compare Better Auth, Clerk, and Auth.js by user data ownership, hosted dependencies, framework fit, and what a generated Next.js project actually wires."
+date: 2026-10-06
+authors:
+  - Ibrahim Elkamali
+image: /search-media/stack-decisions-1200x630.png
+video: /search-media/stack-decisions-1200x630.mp4
+translationStatus: pending
+tags:
+  - better-auth
+  - clerk
+  - authjs
+  - authentication
+keywords:
+  - better auth vs clerk
+  - clerk vs authjs
+  - better auth vs authjs
+  - nextauth alternative
+  - nextjs authentication comparison
+---
+
+![Stack decision map: choose an ecosystem, generate, inspect, and keep the code](/search-media/stack-decisions-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/stack-decisions-1200x630.png" src="/search-media/stack-decisions-1200x630.mp4"></video>
+
+Better Auth, Clerk, and Auth.js can all sign users into a Next.js application. They differ on a question that is expensive to reverse: who stores the user records, and who runs the code that issues sessions.
+
+Better Auth and Auth.js are libraries that run inside your application. In the database-backed setup the generated projects use, they write to your database; both also support stateless sessions that need no database. Clerk is a hosted user management service that your application calls. Start from that difference, then check framework support and maintenance status.
+
+## What you own
+
+[Better Auth](https://www.better-auth.com/docs/introduction) describes itself as a framework-agnostic authentication and authorization framework for TypeScript. It stores data in your database through adapters such as Drizzle, Prisma, and Kysely, and offers features such as two-factor authentication, passkeys, and multi-tenancy, with a plugin system for more.
+
+[Clerk](https://clerk.com/docs) provides authentication and user management as a service, with prebuilt UI components such as `<SignIn />` and `<UserButton />`. User records live in Clerk. Clerk's docs describe [syncing Clerk user data to your own database](https://clerk.com/docs/guides/development/webhooks/syncing) for cases such as showing other users' profiles, and recommend reading data from the session token instead when that is enough.
+
+[Auth.js](https://authjs.dev/getting-started) is an open source library that runs in your application and supports OAuth, magic links, credentials, and WebAuthn, with optional database adapters for Drizzle, Prisma, and others.
+
+The trade is concrete. With a library, you run the auth endpoints yourself. When users and sessions live in a database, as in the generated projects, you store and operate those tables too. With Clerk, those parts move to a vendor, and your app depends on Clerk's API keys and service for every sign-in.
+
+## Maintenance status
+
+Auth.js documentation now states that the Auth.js project is part of Better Auth. The [announcement from September 22, 2025](https://www.better-auth.com/blog/authjs-joins-better-auth) says existing Auth.js and NextAuth.js users can continue without disruption, with security patches and urgent issues still addressed, and strongly recommends that new projects start with Better Auth unless they hit specific feature gaps. Weigh that when starting a new project on Auth.js.
+
+## Framework and deployment fit
+
+Better Auth is framework-agnostic and runs inside your own server code. Clerk publishes SDKs for many frontend and backend frameworks. Auth.js lists Next.js, SvelteKit, Express, and Qwik integrations.
+
+Better Fullstack's options are narrower than the libraries themselves:
+
+| Option       | `--auth` value | Where Better Fullstack generates it                                         |
+| ------------ | -------------- | --------------------------------------------------------------------------- |
+| Better Auth  | `better-auth`  | Fullstack frameworks and separate backends such as Hono, Express, Fastify  |
+| Clerk        | `clerk`        | Fullstack Next.js, fullstack TanStack Start, or Convex                      |
+| Auth.js      | `nextauth`     | Fullstack Next.js only                                                      |
+
+Fullstack Next.js is the one setup all three share, so the commands below use it.
+
+## What Better Fullstack generates
+
+All three commands use Next.js with its own backend, PostgreSQL, Drizzle, and tRPC. Only `--auth` changes.
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --api trpc \
+  --auth better-auth
+```
+
+Better Auth generates a `packages/auth` package that configures `betterAuth` with the Drizzle adapter, email and password sign-in, and the `nextCookies` plugin. The `user`, `session`, `account`, and `verification` tables live in `packages/db/src/schema/auth.ts`, and `app/api/auth/[...all]/route.ts` mounts the handler. The tRPC context reads the session with `auth.api.getSession`, so `protectedProcedure` rejects unauthenticated calls.
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --api trpc \
+  --auth clerk
+```
+
+Clerk generates `ClerkProvider` in the root layout, `clerkMiddleware` in `src/middleware.ts`, `SignInButton` and `UserButton` in the user menu, and a dashboard page that checks `userId` from `auth()`. The environment file expects `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`. No auth tables are added to the database schema. The generated tRPC context returns `session: null`, so connect Clerk's server helpers to the API context before relying on it for authorization.
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --api trpc \
+  --auth nextauth
+```
+
+The Auth.js option generates a project on `next-auth` 4 with `NextAuthOptions`, the `withAuth` middleware, and a `/login` page. It uses the Drizzle adapter for users, accounts, sessions, and verification tokens, with the JWT session strategy. GitHub and Google providers read their credentials from the environment. The credentials provider is a placeholder that returns `null`, and the sign-up form posts to `/api/auth/register`, which the project does not include, so email and password sign-in is yours to implement. As with Clerk, the generated tRPC context returns `session: null`.
+
+These are generated projects. Configure real keys and callback URLs, then sign in end to end before depending on any of them.
+
+## Decision table
+
+| If this is the stronger constraint                              | Start with                                     |
+| --------------------------------------------------------------- | ---------------------------------------------- |
+| User tables in your own database, auth code in your repo        | Better Auth                                    |
+| Hosted user management and prebuilt UI, vendor dependency is OK | Clerk                                          |
+| Existing Auth.js or NextAuth.js app that works                  | Keep Auth.js; track its security support       |
+| Separate API server such as Hono or Express                     | Better Auth, among these three                 |
+| Authorization enforced in the generated tRPC context            | Better Auth, or wire the session yourself      |
+
+## Compare real generated stacks
+
+- [Next.js + Drizzle + Better Auth](/stack/nextjs-drizzle-better-auth)
+- [Next.js + Drizzle + Clerk](/stack/nextjs-drizzle-clerk)
+- [Next.js + Prisma + NextAuth](/stack/nextjs-postgres-prisma-nextauth)
+
+For where sessions should live once you pick a library, read [Better Auth architecture](/blog/better-auth-architecture/). The [Next.js Drizzle Better Auth guide](/guides/typescript/nextjs-drizzle-better-auth) walks through one complete project.
