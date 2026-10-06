@@ -9,6 +9,7 @@ import {
   generateLlmsTxt,
   generateMarkdownSitemap,
 } from "@/lib/content/llms";
+import { markdownResponse } from "@/lib/content/markdown-response";
 import { docsPageHead } from "@/lib/docs/seo";
 import { guidePageHead } from "@/lib/guides/seo";
 import { OPTION_COUNT_LABEL } from "@/lib/project/project-stats";
@@ -416,6 +417,15 @@ describe("SEO contracts", () => {
     expect(faviconSvg).toContain("#0E0E10");
     expect(faviconSvg).toContain("#F2EEEE");
     expect(faviconSvg).toContain("#C6E853");
+  });
+
+  it("points Markdown source copies at their canonical HTML page", () => {
+    const response = markdownResponse("# Create", "/docs/cli/create");
+
+    expect(response.headers.get("link")).toBe(
+      `<${canonicalUrl("/docs/cli/create")}>; rel="canonical"`,
+    );
+    expect(markdownResponse(undefined, "/docs/missing").status).toBe(404);
   });
 
   it("keeps the shared builder view out of search indexes", async () => {
