@@ -358,6 +358,51 @@ describe("Elixir library expansion", () => {
     expect(apiPipeline).toContain("plug :fetch_session");
   });
 
+  it("serves and boots the LiveView client only for LiveView projects", async () => {
+    const liveView = await createVirtual({
+      ...base,
+      projectName: "elixir-liveview-client",
+      elixirWebFramework: "phoenix-live-view",
+      elixirRealtime: "live-view-streams",
+      elixirOrm: "ecto_sqlite3",
+    });
+    const phoenix = await createVirtual({ ...base, projectName: "elixir-phoenix-client" });
+
+    expect(liveView.success).toBe(true);
+    const layout = getVirtualTreeFileContent(
+      liveView.tree!,
+      "lib/elixir_liveview_client_web/components/layouts/root.html.heex",
+    );
+    expect(layout).toContain('<script defer src={~p"/assets/phoenix/phoenix.min.js"}></script>');
+    expect(layout).toContain(
+      '<script defer src={~p"/assets/phoenix_live_view/phoenix_live_view.min.js"}></script>',
+    );
+    expect(layout).toContain('new LiveView.LiveSocket("/live", Phoenix.Socket');
+    expect(layout).toContain("_csrf_token: csrfToken");
+    const endpoint = getVirtualTreeFileContent(
+      liveView.tree!,
+      "lib/elixir_liveview_client_web/endpoint.ex",
+    );
+    expect(endpoint).toContain('socket "/live", Phoenix.LiveView.Socket');
+    expect(endpoint).toContain(
+      'at: "/assets/phoenix",\n    from: {:phoenix, "priv/static"},\n    only: ~w(phoenix.min.js)',
+    );
+    expect(endpoint).toContain(
+      'at: "/assets/phoenix_live_view",\n    from: {:phoenix_live_view, "priv/static"},\n    only: ~w(phoenix_live_view.min.js)',
+    );
+
+    expect(phoenix.success).toBe(true);
+    expect(
+      getVirtualTreeFileContent(
+        phoenix.tree!,
+        "lib/elixir_phoenix_client_web/components/layouts/root.html.heex",
+      ),
+    ).not.toContain("<script");
+    expect(
+      getVirtualTreeFileContent(phoenix.tree!, "lib/elixir_phoenix_client_web/endpoint.ex"),
+    ).not.toContain('"priv/static"');
+  });
+
   it("keeps StreamData available to Ash outside the test environment", async () => {
     const result = await createVirtual({
       ...base,

@@ -22,6 +22,18 @@ defmodule {{elixirModuleName}}Web.Endpoint do
     gzip: false,
     only: {{elixirModuleName}}Web.static_paths()
 
+{{#if (eq elixirWebFramework "phoenix-live-view")}}
+  plug Plug.Static,
+    at: "/assets/phoenix",
+    from: {:phoenix, "priv/static"},
+    only: ~w(phoenix.min.js)
+
+  plug Plug.Static,
+    at: "/assets/phoenix_live_view",
+    from: {:phoenix_live_view, "priv/static"},
+    only: ~w(phoenix_live_view.min.js)
+
+{{/if}}
   if code_reloading? do
     plug Phoenix.LiveReloader
     plug Phoenix.CodeReloader
