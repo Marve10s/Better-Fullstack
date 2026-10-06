@@ -95,6 +95,11 @@ _better_fullstack_completion() {
     ${commandPattern}) ;;
     *) command=${shQuote(model.defaultCommand)}; extra=${shQuote(model.rootFlags.join(" "))} ;;
   esac
+  if [[ $cur == = ]]; then
+    cur=""
+  elif [[ $prev == = ]]; then
+    prev="\${COMP_WORDS[COMP_CWORD-2]}"
+  fi
   if [[ $COMP_CWORD -eq 1 && $cur != -* ]]; then
     COMPREPLY=($(compgen -W ${shQuote(model.commands.join(" "))} -- "$cur"))
     return
@@ -141,12 +146,17 @@ _${primary}() {
     compadd -- ${model.commands.map(shQuote).join(" ")}
     return
   fi
-  for ((i = CURRENT - 1; i > 1; i--)); do
-    if [[ \${words[i]} == -* ]]; then
-      flag="\${words[i]}"
-      break
-    fi
-  done
+  if [[ $cur == --*=* ]]; then
+    flag="\${cur%%=*}" prev="\${cur%%=*}" cur="\${cur#*=}"
+    compset -P '*='
+  else
+    for ((i = CURRENT - 1; i > 1; i--)); do
+      if [[ \${words[i]} == -* ]]; then
+        flag="\${words[i]%%=*}"
+        break
+      fi
+    done
+  fi
   case "$command $flag" in
 ${values}
   esac
@@ -160,6 +170,7 @@ ${values}
       return
     fi
   fi
+  [[ \${words[CURRENT]} == --*=* ]] && return
   case "$command" in
 ${flags}
   esac
@@ -177,7 +188,7 @@ fi
 function renderFish(model: CompletionModel) {
   const commands = model.commands.map(fishQuote).join(" ");
   const flagLines = [...model.flags].flatMap(([command, commandFlags]) =>
-    commandFlags.map((flag) => {
+    commandFlags.flatMap((flag) => {
       const condition = fishQuote(`test (__better_fullstack_command) = ${command}`);
       const argument =
         flag.kind === "value"
@@ -185,7 +196,16 @@ function renderFish(model: CompletionModel) {
           : flag.kind === "switch"
             ? ""
             : ` -x -a ${fishQuote(flag.values.join(" "))}`;
-      return `    complete -c $bin -n ${condition} -l ${flag.name.slice(2)}${argument}`;
+      const rule = `    complete -c $bin -n ${condition} -l ${flag.name.slice(2)}${argument}`;
+      if (flag.kind !== "many") return [rule];
+      // -l rules only complete the word right after the flag; keep offering list values after it.
+      const listCondition = fishQuote(
+        `test (__better_fullstack_command) = ${command}; and __better_fullstack_last_flag ${flag.name}`,
+      );
+      return [
+        rule,
+        `    complete -c $bin -f -n ${listCondition} -a ${fishQuote(flag.values.join(" "))}`,
+      ];
     }),
   );
   const rootLines = model.rootFlags.map(
@@ -200,6 +220,16 @@ end
 
 function __better_fullstack_command
     __better_fullstack_explicit_command; or echo ${fishQuote(model.defaultCommand)}
+end
+
+function __better_fullstack_last_flag
+    for token in (commandline -opc)[-1..1]
+        if string match -q -- '-*' $token
+            test (string split -m1 = -- $token)[1] = $argv[1]
+            return $status
+        end
+    end
+    return 1
 end
 
 for bin in ${COMPLETION_BINARIES.join(" ")}
@@ -232,15 +262,22 @@ ${values}
     }
     $words = @($commandAst.CommandElements | Where-Object { $_.Extent.EndOffset -lt $cursorPosition } | ForEach-Object { $_.ToString() })
     $command = ${psQuote(model.defaultCommand)}
+    $prefix = ''
     $extra = ${list(model.rootFlags)}
     if ($words.Count -gt 1 -and $commands -contains $words[1]) {
         $command = $words[1]
         $extra = @()
     }
-    if ($words.Count -eq 1 -and -not $wordToComplete.StartsWith('-')) {
+    if ($wordToComplete -match '^(--[^=]+)=(.*)$') {
+        $entry = $values["$command $($Matches[1])"]
+        $prefix = "$($Matches[1])="
+        $wordToComplete = $Matches[2]
+        $candidates = if ($entry -and $entry[0] -ne 'value') { $entry | Select-Object -Skip 1 } else { @() }
+    } elseif ($words.Count -eq 1 -and -not $wordToComplete.StartsWith('-')) {
         $candidates = $commands
     } else {
         $flag = $words | Select-Object -Skip 1 | Where-Object { $_.StartsWith('-') } | Select-Object -Last 1
+        $flag = $flag -replace '=.*$', ''
         $entry = $values["$command $flag"]
         $kind = if ($entry) { $entry[0] } else { '' }
         $isPrev = $flag -and $flag -eq $words[-1]
@@ -254,7 +291,7 @@ ${values}
         }
     }
     $candidates | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+        [System.Management.Automation.CompletionResult]::new("$prefix$_", $_, 'ParameterValue', $_)
     }
 }
 `;

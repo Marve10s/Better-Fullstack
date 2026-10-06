@@ -128,6 +128,18 @@ describe("completion command", () => {
     expect(result.exitCode).toBe(0);
   });
 
+  it.skipIf(!Bun.which("pwsh"))("powershell script passes the parser", () => {
+    const parse =
+      "$tokens = $null; $errors = $null; " +
+      "[void][System.Management.Automation.Language.Parser]::ParseInput($env:BFS_COMPLETION_SCRIPT, [ref]$tokens, [ref]$errors); " +
+      "$errors | ForEach-Object { [Console]::Error.WriteLine($_.Message) }; exit $errors.Count";
+    const result = Bun.spawnSync(["pwsh", "-NoProfile", "-NonInteractive", "-Command", parse], {
+      env: { ...process.env, BFS_COMPLETION_SCRIPT: scripts.get("powershell") ?? "" },
+    });
+    expect(result.stderr.toString()).toBe("");
+    expect(result.exitCode).toBe(0);
+  });
+
   it("bash completes flag values after the flag and flags after a dash", () => {
     const probe = `${scripts.get("bash")}
 complete_words() {
@@ -137,11 +149,21 @@ complete_words() {
 }
 complete_words create-bfs --database ''
 complete_words create-better-fullstack create my-app --dat
+complete_words create-bfs create my-app --database =
+complete_words create-bfs create my-app --database = post
 `;
     const result = Bun.spawnSync(["bash", "-c", probe]);
-    const [databaseValues, flags] = result.stdout.toString().trim().split("\n");
+    const [databaseValues, flags, attachedValues, attachedPrefix] = result.stdout
+      .toString()
+      .trim()
+      .split("\n");
     expect(databaseValues?.split(" ")).toEqual(getCategoryCliValues("database"));
     expect(flags?.split(" ")).toContain("--database");
     expect(flags?.split(" ").every((flag) => flag.startsWith("--dat"))).toBe(true);
+    // Bash splits --database=post into "--database" "=" "post" through COMP_WORDBREAKS.
+    expect(attachedValues?.split(" ")).toEqual(getCategoryCliValues("database"));
+    expect(attachedPrefix?.split(" ")).toEqual(
+      getCategoryCliValues("database").filter((value) => value.startsWith("post")),
+    );
   });
 });
