@@ -24,13 +24,16 @@ import {
   generateTree,
   mergeEnvExample,
   mergePackageJson,
+  mergePnpmWorkspace,
   PACKAGE_JSON_SECTIONS,
   treeToFileMap,
 } from "@/helpers/core/stack-update";
+import { collectDivergedFamilyVersions } from "@/lifecycle/dependency-version-channel";
 import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
 import {
   getCurrentLifecycleVersions,
   hashContent,
+  isPnpmWorkspacePath,
   isStructuredBaselinePath,
   readScaffoldManifest,
   readScaffoldManifestResult,
@@ -446,6 +449,7 @@ function classifyStructuredMerge(
   existingContent: string,
   proposedContent: string | undefined,
   baselineContent: string | undefined,
+  familyVersions: ReadonlyMap<string, string>,
 ): UpgradeFileEntry {
   if (proposedContent === undefined || proposedContent === BINARY_FILE_MARKER) {
     return { path: filePath, category: "manual", reason: "no comparable template render" };
@@ -460,8 +464,45 @@ function classifyStructuredMerge(
     };
   }
 
+  if (isPnpmWorkspacePath(filePath)) {
+    const merged = mergePnpmWorkspace(
+      existingContent,
+      baselineContent,
+      proposedContent,
+      false,
+      familyVersions,
+    );
+    if (merged.blockers.length > 0) {
+      return {
+        path: filePath,
+        category: "conflict",
+        reason: `template and local copy both changed: ${merged.blockers.join(", ")}`,
+      };
+    }
+    if (merged.content) {
+      return {
+        path: filePath,
+        category: "merged",
+        reason: merged.summary.join("; "),
+        mergedContent: merged.content,
+        dependencyChanges: lifecycleDependencyChanges(filePath, merged.dependencyChanges),
+      };
+    }
+    return {
+      path: filePath,
+      category: "user-edited",
+      reason: "template workspace catalog unchanged - local changes kept",
+    };
+  }
+
   if (path.basename(filePath) === "package.json") {
-    const merged = mergePackageJson(existingContent, baselineContent, proposedContent);
+    const merged = mergePackageJson(
+      existingContent,
+      baselineContent,
+      proposedContent,
+      false,
+      familyVersions,
+    );
     if (merged.blockers.length > 0) {
       return {
         path: filePath,
@@ -623,6 +664,7 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
   const baseline = manifest?.hashes ?? {};
   const hasBaseline = manifest !== null;
 
+  const familyVersions = await collectDivergedFamilyVersions(projectDir, manifest?.baselines ?? {});
   const files: UpgradeFileEntry[] = [];
   const renderPaths = [...renderHashes.keys()].sort();
   const legacyDotnetLayoutMigration = isLegacyDotnetRootLayoutMigration(
@@ -696,13 +738,20 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
       continue;
     }
 
-    if (isStructuredBaselinePath(filePath)) {
+    const structuredBaseline = manifest?.baselines?.[filePath];
+    // Manifests from before workspace catalogs were recorded keep hash classification: the
+    // version channel never rewrote the catalog of those projects.
+    if (
+      isStructuredBaselinePath(filePath) &&
+      (structuredBaseline !== undefined || !isPnpmWorkspacePath(filePath))
+    ) {
       files.push(
         classifyStructuredMerge(
           filePath,
           diskBytes.toString("utf-8"),
           renderFiles.get(filePath)?.content,
-          manifest?.baselines?.[filePath],
+          structuredBaseline,
+          familyVersions,
         ),
       );
       continue;

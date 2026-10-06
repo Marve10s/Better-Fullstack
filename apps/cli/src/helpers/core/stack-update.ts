@@ -22,6 +22,7 @@ import { writeSelectedFiles } from "@better-fullstack/template-generator/fs-writ
 import fs from "fs-extra";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { parseDocument } from "yaml";
 
 import {
   buildBtsConfigForPersistence,
@@ -43,6 +44,8 @@ import { getDefaultConfig } from "@/constants";
 import { CreateCommandOptionsSchema } from "@/create-command-input";
 import {
   applyDependencyVersionChannel,
+  collectDivergedFamilyVersions,
+  isRegistrySemverSpec,
   planDependencyVersionChannel,
   type DependencyVersionChannelRewrite,
 } from "@/lifecycle/dependency-version-channel";
@@ -51,6 +54,8 @@ import {
   collectStructuredBaselines,
   getCurrentLifecycleVersions,
   hashContent,
+  isPnpmWorkspacePath,
+  isStructuredBaselinePath,
   readScaffoldManifestResult,
   refreshScaffoldManifestFiles,
   SCAFFOLD_MANIFEST_FILE,
@@ -1378,10 +1383,31 @@ function isPlainObject(value: unknown): value is JsonObject {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
+function parseYaml(content: string | undefined) {
+  if (content === undefined) return null;
+  const document = parseDocument(content);
+  const value: unknown = document.toJS();
+  return document.errors.length === 0 && isPlainObject(value) ? { document, value } : null;
+}
+
 function applyResolvedVersionsToBaseline(
+  filePath: string,
   generatedContent: string,
   rewrittenContent: string,
 ): string {
+  if (isPnpmWorkspacePath(filePath)) {
+    const generated = parseYaml(generatedContent);
+    const rewritten = parseYaml(rewrittenContent);
+    if (!generated || !rewritten) return generatedContent;
+    const generatedCatalog = isPlainObject(generated.value.catalog) ? generated.value.catalog : {};
+    const rewrittenCatalog = isPlainObject(rewritten.value.catalog) ? rewritten.value.catalog : {};
+    for (const name of Object.keys(generatedCatalog)) {
+      const resolved = rewrittenCatalog[name];
+      if (typeof resolved === "string") generated.document.setIn(["catalog", name], resolved);
+    }
+    return generated.document.toString();
+  }
+
   const generated = parseJson(generatedContent);
   const rewritten = parseJson(rewrittenContent);
   if (!generated || !rewritten) return generatedContent;
@@ -1411,6 +1437,7 @@ function diffJsonSection(
   proposed: JsonObject,
   section: string,
   allowRemovals: boolean,
+  familyVersions: ReadonlyMap<string, string>,
 ): { values: Record<string, string>; removals: string[]; blockers: string[] } {
   const previousSection = isPlainObject(previous[section]) ? previous[section] : {};
   const proposedSection = isPlainObject(proposed[section]) ? proposed[section] : {};
@@ -1430,7 +1457,15 @@ function diffJsonSection(
       blockers.push(`${section}.${name}`);
       continue;
     }
-    values[name] = String(proposedValue);
+    // A new member of a family the project moved off the generated release joins that release.
+    const familyVersion = familyVersions.get(name);
+    values[name] =
+      previousSection[name] === undefined &&
+      section !== "scripts" &&
+      familyVersion !== undefined &&
+      isRegistrySemverSpec(String(proposedValue))
+        ? familyVersion
+        : String(proposedValue);
   }
 
   if (allowRemovals) {
@@ -1452,6 +1487,7 @@ export function mergePackageJson(
   previousContent: string | undefined,
   proposedContent: string,
   allowRemovals = false,
+  familyVersions: ReadonlyMap<string, string> = new Map(),
 ): {
   content?: string;
   summary: string[];
@@ -1478,7 +1514,14 @@ export function mergePackageJson(
   const scriptChanges: string[] = [];
 
   for (const section of PACKAGE_JSON_SECTIONS) {
-    const diff = diffJsonSection(existing, previous, proposed, section, allowRemovals);
+    const diff = diffJsonSection(
+      existing,
+      previous,
+      proposed,
+      section,
+      allowRemovals,
+      familyVersions,
+    );
     blockers.push(...diff.blockers);
     if (Object.keys(diff.values).length === 0 && diff.removals.length === 0) continue;
 
@@ -1508,6 +1551,81 @@ export function mergePackageJson(
     blockers,
     dependencyChanges,
     scriptChanges,
+  };
+}
+
+/**
+ * Three-way merge of pnpm-workspace.yaml. Catalog entries merge like package.json
+ * dependencies; other top-level settings take the template value only when untouched locally.
+ */
+export function mergePnpmWorkspace(
+  existingContent: string,
+  previousContent: string | undefined,
+  proposedContent: string,
+  allowRemovals = false,
+  familyVersions: ReadonlyMap<string, string> = new Map(),
+): {
+  content?: string;
+  summary: string[];
+  blockers: string[];
+  dependencyChanges: Record<string, Record<string, string>>;
+} {
+  const existing = parseYaml(existingContent);
+  const previous = parseYaml(previousContent);
+  const proposed = parseYaml(proposedContent);
+  if (!existing || !previous || !proposed) {
+    return {
+      summary: [],
+      blockers: ["pnpm-workspace.yaml is not valid YAML or has no generated baseline"],
+      dependencyChanges: {},
+    };
+  }
+
+  const { document } = existing;
+  const summary: string[] = [];
+  const blockers: string[] = [];
+  const settings: string[] = [];
+  for (const key of new Set([...Object.keys(previous.value), ...Object.keys(proposed.value)])) {
+    if (key === "catalog") continue;
+    if (stableJson(previous.value[key]) === stableJson(proposed.value[key])) continue;
+    if (stableJson(existing.value[key]) !== stableJson(previous.value[key])) {
+      blockers.push(key);
+      continue;
+    }
+    if (key in proposed.value) document.set(key, proposed.value[key]);
+    else document.delete(key);
+    settings.push(key);
+  }
+  if (settings.length > 0) summary.push(`settings: ${settings.sort().join(", ")}`);
+
+  const catalog = diffJsonSection(
+    existing.value,
+    previous.value,
+    proposed.value,
+    "catalog",
+    allowRemovals,
+    familyVersions,
+  );
+  blockers.push(...catalog.blockers);
+  for (const name of catalog.removals) document.deleteIn(["catalog", name]);
+  for (const [name, version] of Object.entries(catalog.values)) {
+    document.setIn(["catalog", name], version);
+  }
+  const changedNames = [...Object.keys(catalog.values), ...catalog.removals].sort();
+  const dependencyChanges: Record<string, Record<string, string>> = {};
+  if (changedNames.length > 0) {
+    summary.push(`catalog: ${changedNames.join(", ")}`);
+    dependencyChanges.catalog = {
+      ...catalog.values,
+      ...Object.fromEntries(catalog.removals.map((name) => [name, "removed"])),
+    };
+  }
+
+  return {
+    content: blockers.length === 0 && summary.length > 0 ? document.toString() : undefined,
+    summary,
+    blockers,
+    dependencyChanges,
   };
 }
 
@@ -1905,6 +2023,14 @@ export async function planStackUpdate(
   const currentGeneratedFiles = treeToFileMap(currentTree);
   const proposedGeneratedFiles = treeToFileMap(proposedTree);
 
+  const familyVersions = await collectDivergedFamilyVersions(projectDir, {
+    ...Object.fromEntries(
+      [...currentGeneratedFiles]
+        .filter(([filePath]) => isStructuredBaselinePath(filePath))
+        .map(([filePath, file]) => [filePath, file.content]),
+    ),
+    ...manifest.baselines,
+  });
   const operations: StackUpdateOperation[] = [];
   const filesToAdd: string[] = [];
   const filesToPatch: string[] = [];
@@ -2018,6 +2144,7 @@ export async function planStackUpdate(
         initializedOxlintBaseline ?? recordedBaseline ?? previousContent,
         proposedContent,
         removeObsoleteGeneratedArtifacts,
+        familyVersions,
       );
       for (const blocker of merged.blockers) {
         manualReviewBlockers.push(`${filePath}: ${blocker}`);
@@ -2036,6 +2163,33 @@ export async function planStackUpdate(
         }
         if (merged.scriptChanges.length > 0) {
           scriptChanges[filePath] = merged.scriptChanges;
+        }
+      }
+      continue;
+    }
+
+    if (isPnpmWorkspacePath(filePath)) {
+      const merged = mergePnpmWorkspace(
+        existingContent,
+        recordedBaseline ?? previousContent,
+        proposedContent,
+        removeObsoleteGeneratedArtifacts,
+        familyVersions,
+      );
+      for (const blocker of merged.blockers) {
+        manualReviewBlockers.push(`${filePath}: ${blocker}`);
+      }
+      if (merged.content) {
+        filesToPatch.push(filePath);
+        operations.push({
+          kind: "merge",
+          path: filePath,
+          writeMode: "content",
+          content: merged.content,
+          summary: merged.summary,
+        });
+        for (const [section, values] of Object.entries(merged.dependencyChanges)) {
+          dependencyChanges[`${filePath}:${section}`] = values;
         }
       }
       continue;
@@ -2516,6 +2670,7 @@ export async function applyStackUpdate(
       // oxlint-disable-next-line no-await-in-loop -- baseline must match each persisted rewrite
       const rewritten = await fs.readFile(path.join(plan.projectDir, relativePath), "utf-8");
       structuredBaselines[relativePath] = applyResolvedVersionsToBaseline(
+        relativePath,
         generatedBaseline,
         rewritten,
       );
