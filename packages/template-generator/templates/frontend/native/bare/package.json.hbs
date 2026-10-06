@@ -25,7 +25,10 @@
     "tamagui": "^2.7.7",
     {{/if}}
     {{#if (eq mobileUI "gluestack-ui")}}
-    "@gluestack-ui/themed": "^1.1.73",
+    "@gluestack-style/react": "^1.0.57",
+    "@gluestack-ui/themed": "~1.1.73",
+    "@types/react-native": "0.73.0",
+    "react-native-svg": "15.15.4",
     {{/if}}
     "@tanstack/react-query": "^5.104.0",
     {{#if (includes examples "ai")}}
@@ -98,7 +101,7 @@
     "expo-device": "~56.0.4",
     {{/if}}
     "expo-crypto": "~56.0.5",
-    {{#if (eq mobileDeepLinking "expo-linking")}}
+    {{#if (or (eq mobileDeepLinking "expo-linking") (eq mobileNavigation "expo-router"))}}
     "expo-linking": "~56.0.18",
     {{/if}}
     "expo-navigation-bar": "~56.0.3",
@@ -122,7 +125,8 @@
     "@babel/runtime": "^7.26.0",
     "react-native": "0.85.3",
     {{#if (eq mobileStorage "mmkv")}}
-    "react-native-mmkv": "^4.3.2",
+    "react-native-mmkv": "~4.3.2",
+    "react-native-nitro-modules": "~0.36.5",
     {{/if}}
     "react-native-gesture-handler": "~2.31.1",
     "react-native-reanimated": "4.3.1",
@@ -132,9 +136,9 @@
     "react-native-worklets": "0.8.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
+    "@babel/core": "^7.29.0",
     "@react-native/metro-config": "0.85.3",
-    "babel-preset-expo": "^56.0.15",
+    "babel-preset-expo": "~56.0.20",
     "@types/react": "~19.2.18"{{#if (or (eq mobileTesting "react-native-testing-library") (eq mobileTesting "maestro-react-native-testing-library"))}},
     "@types/jest": "29.5.14",
     "@testing-library/react-native": "~14.0.1",

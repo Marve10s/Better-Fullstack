@@ -1,11 +1,14 @@
 /**
- * Expo SDK 56's bundled module versions (bundledNativeModules.json in expo@56.0.23) and the
- * SDK's related test packages from api.expo.dev, the set `expo install --check` validates. React Native 0.85.3's renderer throws unless react is exactly
- * the 19.2.3 release it was built with, so native apps stay on it while web templates use the
- * newer 19.2 patch.
+ * Expo SDK 56's bundled module versions (bundledNativeModules.json in expo@56.0.23), the
+ * Babel preset expo@56.0.23 depends on, and the SDK's related Babel and test packages from
+ * api.expo.dev, the set `expo install --check` validates. React Native 0.85.3's renderer throws
+ * unless react is exactly the 19.2.3 release it was built with, so native apps stay on it while
+ * web templates use the newer 19.2 patch.
  */
 const EXPO_SDK_VERSIONS = {
   expo: "~56.0.23",
+  "@babel/core": "^7.29.0",
+  "babel-preset-expo": "~56.0.20",
   "@expo/metro-runtime": "~56.0.21",
   "@expo/vector-icons": "^15.0.2",
   "expo-audio": "~56.0.13",
@@ -66,17 +69,40 @@ const EXPO_SDK_REASON =
   "Expo SDK 56 validates native apps against its bundled module versions; newer React Native, Reanimated, and Worklets releases need peers outside that set and fail npm installs with ERESOLVE.";
 
 /**
- * Native app versions: the Expo SDK set plus the libraries whose peers tie them to it.
- * Members listed in NATIVE_PEER_DEPENDENCIES stay exact or patch-only so an install
- * cannot float to a release with different peers.
+ * Native app versions: the Expo SDK set plus the libraries whose peers, native code, or Babel
+ * setup tie them to it. Members listed in NATIVE_PEER_DEPENDENCIES stay exact or patch-only so
+ * an install cannot float to a release with different peers.
  */
 export const NATIVE_DEPENDENCY_VERSIONS: Readonly<Record<string, string>> = {
   ...EXPO_SDK_VERSIONS,
+  "@babel/runtime": "^7.26.0",
+  "@gluestack-style/react": "^1.0.57",
+  "@gluestack-ui/themed": "~1.1.73",
+  "@gorhom/bottom-sheet": "^5.2.14",
   "@react-native/jest-preset": "0.85.3",
   "@react-native/metro-config": "0.85.3",
+  "@react-navigation/bottom-tabs": "^7.19.2",
+  "@react-navigation/drawer": "^7.14.2",
+  "@react-navigation/elements": "^2.9.43",
+  "@react-navigation/native": "^7.4.1",
+  "@react-navigation/native-stack": "^7.19.2",
+  "@tamagui/config": "^2.7.7",
   "@testing-library/react-native": "~14.0.1",
+  "@types/react": "~19.2.18",
+  "@types/react-native": "0.73.0",
   "heroui-native": "~1.0.10",
+  "react-native-edge-to-edge": "^1.8.2",
+  "react-native-mmkv": "~4.3.2",
+  "react-native-nitro-modules": "~0.36.5",
+  "react-native-unistyles": "~3.3.0",
+  "tailwind-merge": "^3.7.0",
+  "tailwind-variants": "^3.3.1",
+  tailwindcss: "^4.3.3",
+  tamagui: "^2.7.7",
   "test-renderer": "~1.2.0",
+  // The workspace adds TypeScript to every app; Expo SDK 56 expects the 6.0 line.
+  typescript: "^6.0.3",
+  uniwind: "1.12.0",
 };
 
 /**
@@ -99,6 +125,13 @@ export const NATIVE_PEER_DEPENDENCIES: Readonly<Record<string, Readonly<Record<s
     "react-native-worklets": { "react-native": "0.81 - 0.85" },
     "react-native-screens": { "react-native": ">=0.84.0" },
     "react-native-keyboard-controller": { "react-native-reanimated": ">=3.0.0" },
+    // expo-router also depends on its @expo/log-box and @expo/metro-runtime peers.
+    "expo-router": {
+      "expo-constants": "^56.0.26",
+      "expo-linking": "^56.0.18",
+      "react-native-safe-area-context": ">= 5.4.0",
+      "react-native-screens": "^4.26.0",
+    },
     "jest-expo": { "@react-native/jest-preset": "^0.85.0" },
     "@react-native/jest-preset": { react: "^19.2.3" },
     "@testing-library/react-native": {
@@ -121,7 +154,33 @@ export const NATIVE_PEER_DEPENDENCIES: Readonly<Record<string, Readonly<Record<s
       "tailwind-merge": "^3.4.0",
       "tailwind-variants": "^3.2.2",
     },
+    // MMKV and Unistyles publish "*" Nitro peers; the minimums are the nitrogen releases that
+    // generated their bindings (0.35.9 and 0.36.1). Nitro 0.36 added no breaking changes.
+    "react-native-mmkv": { "react-native-nitro-modules": ">=0.35.9" },
+    "react-native-unistyles": {
+      "react-native": ">=0.76.0",
+      "react-native-nitro-modules": ">=0.36.1",
+    },
+    "@gluestack-ui/themed": {
+      react: ">=16",
+      "react-dom": ">=16",
+      "react-native": ">=0.72",
+      "react-native-svg": ">=13.4.0",
+      "react-native-web": ">=0.19",
+      "@types/react-native": ">=0.72",
+      "@gluestack-style/react": ">=1.0.57",
+    },
   };
+
+/**
+ * Peers in NATIVE_PEER_DEPENDENCIES that their releases mark optional. The generated app must
+ * declare every other recorded peer itself, because Yarn and pnpm with autoInstallPeers off do
+ * not install missing peers.
+ */
+export const NATIVE_OPTIONAL_PEERS: Readonly<Record<string, readonly string[]>> = {
+  "react-native": ["@react-native/jest-preset"],
+  "heroui-native": ["@gorhom/bottom-sheet", "react-native-screens"],
+};
 
 /** Version-map entries that only native apps use; the Expo SDK set owns their versions. */
 const EXPO_SDK_MAP_PACKAGES = [
@@ -292,6 +351,11 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
       "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
   },
   "@better-auth/expo": {
+    pinnedVersion: "1.6.22",
+    reason:
+      "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
+  },
+  "@better-auth/core": {
     pinnedVersion: "1.6.22",
     reason:
       "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",

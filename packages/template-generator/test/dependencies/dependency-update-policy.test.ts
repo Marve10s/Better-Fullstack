@@ -2,6 +2,7 @@ import type { ProjectConfig } from "@better-fullstack/types";
 
 import { makeConfig } from "@test/_fixtures/config-factory";
 import { describe, expect, it } from "bun:test";
+import fs from "node:fs";
 import path from "node:path";
 
 import type { VirtualFile, VirtualNode } from "@/types";
@@ -20,6 +21,7 @@ import {
   getPinnedDependencyVersion,
   getTemplatePinnedVersion,
   NATIVE_DEPENDENCY_VERSIONS,
+  NATIVE_OPTIONAL_PEERS,
   NATIVE_PEER_DEPENDENCIES,
   TEMPLATE_DEPENDENCY_PINS,
 } from "@/dependencies/dependency-update-policy";
@@ -41,7 +43,7 @@ function rangeBounds(range: string): [string, string] {
   return [lowest, `${major}.${UNBOUNDED}.${UNBOUNDED}`];
 }
 
-/** Peer ranges from the policy that the declared dependency ranges can violate. */
+/** Peer ranges from the policy that the declared dependency ranges can violate or leave missing. */
 function findPeerViolations(dependencies: Readonly<Record<string, string>>): string[] {
   const violations: string[] = [];
   for (const [name, peers] of Object.entries(NATIVE_PEER_DEPENDENCIES)) {
@@ -50,7 +52,12 @@ function findPeerViolations(dependencies: Readonly<Record<string, string>>): str
     if (!/^~?\d/.test(range)) violations.push(`${name}@${range} can float to different peers`);
     for (const [peer, peerRange] of Object.entries(peers)) {
       const declared = dependencies[peer];
-      if (declared === undefined) continue;
+      if (declared === undefined) {
+        if (!NATIVE_OPTIONAL_PEERS[name]?.includes(peer)) {
+          violations.push(`${name} needs ${peer}@${peerRange}, which is not declared`);
+        }
+        continue;
+      }
       if (!rangeBounds(declared).every((version) => Bun.semver.satisfies(version, peerRange))) {
         violations.push(`${name} needs ${peer}@${peerRange}, got ${declared}`);
       }
@@ -144,6 +151,26 @@ const NATIVE_STACKS = {
   },
 } satisfies Record<string, Partial<ProjectConfig>>;
 
+/** Template dependencies that no Expo or React Native release constrains. */
+const UNCOUPLED_NATIVE_PACKAGES = new Set([
+  "@stardazed/streams-text-encoding",
+  "@tanstack/react-form",
+  "@tanstack/react-query",
+  "@types/node",
+  "@ungap/structured-clone",
+  "ajv",
+]);
+
+/** Every dependency a native package.json template declares, across all Handlebars branches. */
+function readNativeTemplateDependencies(variant: string): string[] {
+  const content = fs.readFileSync(
+    path.join(TEMPLATES_DIR, `frontend/native/${variant}/package.json.hbs`),
+    "utf-8",
+  );
+  const sections = content.slice(content.indexOf('"dependencies"'));
+  return [...sections.matchAll(/^\s*"([^"]+)": "[~^]?\d[^"]*"/gm)].map(([, name]) => name!);
+}
+
 const candidate = (name: string, updateType: VersionInfo["updateType"]): VersionInfo => ({
   name,
   current: "^1.0.0",
@@ -230,13 +257,23 @@ describe("dependency update policy", () => {
     expect(dependencyVersionMap).toMatchObject({
       "better-auth": "1.6.22",
       "@better-auth/expo": "1.6.22",
+      "@better-auth/core": "1.6.22",
       "@better-auth/drizzle-adapter": "1.6.22",
       "@better-auth/prisma-adapter": "1.6.22",
       "@better-auth/mongo-adapter": "1.6.22",
     });
   });
 
-  it("keeps native apps on the Expo SDK set in every channel and template sync", () => {
+  it("holds every Expo- or React Native-coupled native template dependency", () => {
+    for (const variant of ["bare", "unistyles", "uniwind"]) {
+      const unheld = readNativeTemplateDependencies(variant).filter(
+        (name) => !(name in NATIVE_DEPENDENCY_VERSIONS) && !UNCOUPLED_NATIVE_PACKAGES.has(name),
+      );
+      expect({ variant, unheld }).toEqual({ variant, unheld: [] });
+    }
+  });
+
+  it("keeps native apps on the Expo SDK set in template sync", () => {
     expect(NATIVE_DEPENDENCY_VERSIONS).toMatchObject({
       react: "19.2.3",
       "react-native": "0.85.3",

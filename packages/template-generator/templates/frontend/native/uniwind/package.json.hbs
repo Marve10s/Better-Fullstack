@@ -95,7 +95,7 @@
     {{/if}}
     "expo-font": "~56.0.7",
     "expo-haptics": "~56.0.3",
-    {{#if (eq mobileDeepLinking "expo-linking")}}
+    {{#if (or (eq mobileDeepLinking "expo-linking") (eq mobileNavigation "expo-router"))}}
     "expo-linking": "~56.0.18",
     {{/if}}
     "expo-network": "~56.0.5",
@@ -118,7 +118,8 @@
     "@babel/runtime": "^7.26.0",
     "react-native": "0.85.3",
     {{#if (eq mobileStorage "mmkv")}}
-    "react-native-mmkv": "^4.3.2",
+    "react-native-mmkv": "~4.3.2",
+    "react-native-nitro-modules": "~0.36.5",
     {{/if}}
     "react-native-gesture-handler": "~2.31.1",
     "react-native-keyboard-controller": "1.21.6",
@@ -136,7 +137,7 @@
   "devDependencies": {
     "@types/node": "^26.6.3",
     "@react-native/metro-config": "0.85.3",
-    "babel-preset-expo": "^56.0.15",
+    "babel-preset-expo": "~56.0.20",
     "@types/react": "~19.2.18"{{#if (or (eq mobileTesting "react-native-testing-library") (eq mobileTesting "maestro-react-native-testing-library"))}},
     "@types/jest": "29.5.14",
     "@testing-library/react-native": "~14.0.1",

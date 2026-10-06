@@ -5,6 +5,12 @@ import type { VirtualFileSystem } from "@/core/virtual-fs";
 import { addPackageDependency, type AvailableDependencies } from "@/dependencies/add-deps";
 import { hasAuthJsCredentials } from "@/platform/auth-js";
 
+/**
+ * @convex-dev/better-auth 0.12.5 needs Better Auth ">=1.6.11 <1.7.0", and its provider's
+ * authClient type rejects 1.6.22 clients (useSession data becomes never), so Convex stays on 1.6.17.
+ */
+const CONVEX_BETTER_AUTH_VERSION = "1.6.17";
+
 function isBetterAuth(auth: ProjectConfig["auth"]): boolean {
   return auth === "better-auth" || auth === "better-auth-organizations";
 }
@@ -74,15 +80,17 @@ function processConvexAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
       addPackageDependency({
         vfs,
         packagePath: backendPath,
-        dependencies: ["better-auth", "@convex-dev/better-auth"],
-        customDependencies: { "better-auth": "1.4.9" },
+        dependencies: ["@convex-dev/better-auth"],
+        customDependencies: { "better-auth": CONVEX_BETTER_AUTH_VERSION },
       });
       if (hasNative) {
         addPackageDependency({
           vfs,
           packagePath: backendPath,
-          dependencies: ["@better-auth/expo"],
-          customDependencies: { "@better-auth/expo": "1.4.9" },
+          customDependencies: {
+            "@better-auth/expo": CONVEX_BETTER_AUTH_VERSION,
+            "@better-auth/core": CONVEX_BETTER_AUTH_VERSION,
+          },
         });
       }
     }
@@ -92,9 +100,9 @@ function processConvexAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
         vfs,
         packagePath: webPath,
         dependencies: hasReactWebAuthForms
-          ? ["better-auth", "@convex-dev/better-auth", "@tanstack/react-form"]
-          : ["better-auth", "@convex-dev/better-auth"],
-        customDependencies: { "better-auth": "1.4.9" },
+          ? ["@convex-dev/better-auth", "@tanstack/react-form"]
+          : ["@convex-dev/better-auth"],
+        customDependencies: { "better-auth": CONVEX_BETTER_AUTH_VERSION },
       });
     }
 
@@ -103,14 +111,13 @@ function processConvexAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig): v
         vfs,
         packagePath: nativePath,
         dependencies: [
-          "better-auth",
-          "@better-auth/expo",
           "@convex-dev/better-auth",
           "expo-linking", "expo-constants", "expo-web-browser", "expo-network",
         ],
         customDependencies: {
-          "better-auth": "1.4.9",
-          "@better-auth/expo": "1.4.9",
+          "better-auth": CONVEX_BETTER_AUTH_VERSION,
+          "@better-auth/expo": CONVEX_BETTER_AUTH_VERSION,
+          "@better-auth/core": CONVEX_BETTER_AUTH_VERSION,
         },
       });
     }
@@ -162,7 +169,7 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
         addPackageDependency({
           vfs,
           packagePath: authPath,
-          dependencies: ["@better-auth/expo"],
+          dependencies: ["@better-auth/expo", "@better-auth/core"],
         });
       }
     }
@@ -184,7 +191,7 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
       addPackageDependency({
         vfs,
         packagePath: nativePath,
-        dependencies: ["better-auth", "@better-auth/expo", "expo-linking", "expo-constants", "expo-web-browser", "expo-network"],
+        dependencies: ["better-auth", "@better-auth/expo", "@better-auth/core", "expo-linking", "expo-constants", "expo-web-browser", "expo-network"],
       });
     }
   } else if (auth === "clerk") {
