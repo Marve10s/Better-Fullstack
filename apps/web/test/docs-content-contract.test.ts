@@ -83,8 +83,6 @@ const PENDING_TRANSLATION_PATHS = [
   "content/guides/elixir/phoenix-oban-jobs.mdx",
   "content/guides/java/ktor-kotlin-api.mdx",
   "content/guides/java/quarkus-rest-api.mdx",
-  "content/guides/react-native/expo-hono-trpc-better-auth.mdx",
-  "content/guides/react-native/expo-react-navigation-tamagui.mdx",
   "content/guides/python/fastapi-postgres-sqlmodel.mdx",
   "content/guides/typescript/hono-better-auth.mdx",
   "content/guides/typescript/hono-openapi-drizzle.mdx",
