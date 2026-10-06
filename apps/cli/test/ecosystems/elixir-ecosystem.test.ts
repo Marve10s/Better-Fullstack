@@ -329,6 +329,35 @@ describe("Elixir library expansion", () => {
     expect(hasVirtualFile(tree.root, "test/elixir_sqlite_quality/property_test.exs")).toBe(true);
   });
 
+  it("generates Phoenix config that boots in dev, test, and prod releases", async () => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "elixir-phoenix-runtime",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "phx-gen-auth",
+      elixirApi: "rest",
+      elixirDeploy: "docker",
+    });
+
+    expect(result.success).toBe(true);
+    const tree = result.tree!;
+    for (const env of ["dev", "test"]) {
+      const config = getVirtualTreeFileContent(tree, `config/${env}.exs`);
+      const secret = config?.match(/secret_key_base: "([^"]+)"/)?.[1] ?? "";
+      expect(secret.length).toBeGreaterThanOrEqual(64);
+    }
+    expect(getVirtualTreeFileContent(tree, "config/config.exs")).toContain(
+      'import_config "#{config_env()}.exs"',
+    );
+    expect(hasVirtualFile(tree.root, "config/prod.exs")).toBe(true);
+    expect(getVirtualTreeFileContent(tree, "config/dev.exs")).toContain(
+      "config :elixir_phoenix_runtime, dev_routes: true",
+    );
+    const router = getVirtualTreeFileContent(tree, "lib/elixir_phoenix_runtime_web/router.ex");
+    const apiPipeline = router?.match(/pipeline :api do[\s\S]*?\n  end/)?.[0];
+    expect(apiPipeline).toContain("plug :fetch_session");
+  });
+
   it("keeps StreamData available to Ash outside the test environment", async () => {
     const result = await createVirtual({
       ...base,
