@@ -188,8 +188,9 @@ async function generateBasePage(
   const params = createStackSelectionSearchParams(effectiveSelection);
   const files = collectFiles(generated.tree.root).sort();
   const topLevelEntries = generated.tree.root.children.map((node) => node.name).sort();
+  // A self backend repeats the frontend name, and the architecture label already states it.
   const labels = canonicalParts
-    .filter((part) => part.id !== "none")
+    .filter((part) => part.id !== "none" && !part.id.startsWith("self-"))
     .map((part) => part.label)
     .slice(0, 6);
   const description = `Better Fullstack scaffolds this compatibility-checked ${architectureLabel(architecture.shape)} with ${new Intl.ListFormat("en", { style: "long", type: "conjunction" }).format(labels)}.`;

@@ -11,7 +11,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Next.js + Drizzle + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, Fullstack Next.js, PostgreSQL, Drizzle, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, PostgreSQL, Drizzle, tRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -311,7 +311,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -324,7 +324,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-clerk",
     ],
     guideUrl: "/guides/typescript/nextjs-drizzle-better-auth",
-    contentHash: "88fdf593a8bec71e5165e9666ad8b0634f7b03748bc50734e20e584df9d90f2a",
+    contentHash: "1907fc80150f609c85befac0f63ef0a6a4f0bd80ed4a3ccc0b824f4ec705bfd1",
     updated: "2026-07-17",
   },
   {
@@ -336,7 +336,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Next.js + Prisma + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, Fullstack Next.js, PostgreSQL, Prisma, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, PostgreSQL, Prisma, tRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -647,7 +647,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -659,7 +659,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
       "nextjs-postgres-prisma-nextauth",
     ],
-    contentHash: "babc2adc1357f44124ae5f2fafb21f1427f961ba2bf8119c02f2074ad61a6d22",
+    contentHash: "f34aa4ba65ac15f0407ab46deaf4f9ac8d41fc99bf8f77cfd63f843a1b1acea0",
     updated: "2026-07-17",
   },
   {
@@ -969,7 +969,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -978,7 +978,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
       "nextjs-hono-openapi-drizzle",
     ],
-    contentHash: "8657e55ac722e617076632ec3df87ac028396415ed0d9d1ac4901d4da205fa44",
+    contentHash: "b7ca15b7ada68e807e14e30c08ff991e2ed94c81f21a63fcdb37244553a4abfa",
     updated: "2026-07-17",
   },
   {
@@ -990,7 +990,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "TanStack Start + Drizzle + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, Fullstack TanStack Start, SQLite, Drizzle, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, SQLite, Drizzle, tRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -1170,7 +1170,7 @@ export const GENERATED_STACK_PAGES = [
         category: "webFrontend",
         id: "tanstack-start",
         label: "Tanstack Start",
-        description: "Full-stack React and Solid framework powered by TanStack Router",
+        description: "Full-stack React framework powered by TanStack Router",
         ownership: "Primary frontend",
       },
       {
@@ -1289,7 +1289,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -1302,7 +1302,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-resend",
     ],
     guideUrl: "/guides/typescript/create-tanstack-start-project",
-    contentHash: "c1939978c2b2d4ee875503e7c0faac25680bb233e959761e032a83df6e4ada0a",
+    contentHash: "93e5b7a9bdab9fac6d39d660702b68b1eb0da5ca6a00ad2756d734973caa64c1",
     updated: "2026-07-17",
   },
   {
@@ -1609,7 +1609,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -1619,7 +1619,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-prisma-better-auth",
     ],
     guideUrl: "/guides/typescript/hono-trpc-drizzle",
-    contentHash: "67ccdb5870ccc7142a9152b7a6adca8f6c5b7b94f042b0227f9ce51d4fbac455",
+    contentHash: "5f5f9de6e713977e4159943cefac610719cb3882e3471e7498776a70b352d0af",
     updated: "2026-07-17",
   },
   {
@@ -1929,7 +1929,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -1938,7 +1938,7 @@ export const GENERATED_STACK_PAGES = [
       "sveltekit-hono-drizzle",
       "nextjs-hono-drizzle-better-auth",
     ],
-    contentHash: "df2aec26e2d44b27570cad808c24f5358f8b5bb0185425c2764c972deb69f923",
+    contentHash: "ab9df10a6389383afdc901f37e4980dcf2a31b83df2029a20f91551c58bade85",
     updated: "2026-07-17",
   },
   {
@@ -2248,8 +2248,8 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
-      constraints: ["Ui Library is intentionally set to none."],
+      typesPackageVersion: "2.7.0",
+      constraints: ["UI Library is intentionally set to none."],
       runtimeVerified: false,
     },
     relatedSlugs: [
@@ -2258,7 +2258,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-hono-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/sveltekit-hono-drizzle",
-    contentHash: "d5ba4b96fe1ae9d44bd1496c4e60b11d38e9541e8baf87da5267a62a829effc6",
+    contentHash: "aa9cb81e34040a171688f8da851701f44d2cc4841b2be983f2d7d939b76f6b99",
     updated: "2026-07-17",
   },
   {
@@ -2569,8 +2569,8 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
-      constraints: ["Ui Library is intentionally set to none."],
+      typesPackageVersion: "2.7.0",
+      constraints: ["UI Library is intentionally set to none."],
       runtimeVerified: false,
     },
     relatedSlugs: [
@@ -2578,7 +2578,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-orpc-drizzle",
       "nextjs-hono-drizzle-better-auth",
     ],
-    contentHash: "842c110070ba139455c885230283c63d0de54f3058f953150a021cd6257b9be9",
+    contentHash: "e8642447cc6a09695b219c08e9372c8acb4c1c7cca5230f165a103ba91f3698e",
     updated: "2026-07-17",
   },
   {
@@ -2590,7 +2590,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Nuxt + Prisma + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Nuxt, Fullstack Nuxt, PostgreSQL, Prisma, oRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Nuxt, PostgreSQL, Prisma, oRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -2891,10 +2891,10 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
-        "Ui Library is intentionally set to none.",
+        "UI Library is intentionally set to none.",
       ],
       runtimeVerified: false,
     },
@@ -2904,7 +2904,7 @@ export const GENERATED_STACK_PAGES = [
       "solidstart-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/nuxt-prisma-better-auth",
-    contentHash: "468ef6491f303a748be2655fa1ff359b07f7853580dc2e7e4cf211c6d329b41b",
+    contentHash: "b2d60b875833e6e99397a93936c3e940ff0d43fbf9c5d074d30b5d386db3f1c4",
     updated: "2026-07-17",
   },
   {
@@ -3223,7 +3223,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["The selection includes Astro's React integration alongside tRPC."],
       runtimeVerified: false,
     },
@@ -3233,7 +3233,7 @@ export const GENERATED_STACK_PAGES = [
       "react-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/astro-react-hono",
-    contentHash: "80231ad31130be67fa5b2d3c1d73f3db439b6d0135eb36bce5e457d15e93eb61",
+    contentHash: "bba1a0f907cf0d8e716225d7ae27d169174991d3fa77da3037873b93eb2252bd",
     updated: "2026-07-17",
   },
   {
@@ -3245,7 +3245,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "SolidStart + oRPC + Drizzle Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Solid Start, Fullstack SolidStart, SQLite, Drizzle, oRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Solid Start, SQLite, Drizzle, oRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -3544,10 +3544,10 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
-        "Ui Library is intentionally set to none.",
+        "UI Library is intentionally set to none.",
       ],
       runtimeVerified: false,
     },
@@ -3557,7 +3557,7 @@ export const GENERATED_STACK_PAGES = [
       "react-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/solidstart-orpc-drizzle",
-    contentHash: "b7a339f3b3f93edb549dd5c2906d89c0f7a754cc60ae55c24e8c9c4b11d858db",
+    contentHash: "fc8bdb9c5f6bec8a87ca3b7d446fd9912a7439ab8d51d8d9713873d80507ec54",
     updated: "2026-07-17",
   },
   {
@@ -3870,11 +3870,11 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Auth is intentionally set to none.",
-        "Ui Library is intentionally set to none.",
-        "Api is intentionally set to none.",
+        "UI Library is intentionally set to none.",
+        "API is intentionally set to none.",
         "The Angular selection keeps the external API integration set to none.",
       ],
       runtimeVerified: false,
@@ -3884,7 +3884,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-postgres-prisma-nextauth",
       "nextjs-prisma-better-auth",
     ],
-    contentHash: "e9621b86155d251061723ee94ea01cb875a924f35c5c7b2762ea0cdb28008d6c",
+    contentHash: "e0fb253a2d3b1b36d1edcd6abf1e509b80bee9960599de8804cee78e12e1049a",
     updated: "2026-07-17",
   },
   {
@@ -4166,7 +4166,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [],
       runtimeVerified: false,
     },
@@ -4176,7 +4176,7 @@ export const GENERATED_STACK_PAGES = [
       "python-fastapi-postgres-sqlalchemy",
     ],
     guideUrl: "/guides/rust/axum-leptos-fullstack",
-    contentHash: "eed9ab3ee7f7ad81876017fd5d184cc846d00125a7d31abbcd01174a560cd2af",
+    contentHash: "697a35133e5b14820c912a1097df6232664f08a65f5b2745e35eebda400d4290",
     updated: "2026-07-17",
   },
   {
@@ -4451,7 +4451,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [],
       runtimeVerified: false,
     },
@@ -4461,7 +4461,7 @@ export const GENERATED_STACK_PAGES = [
       "go-gin-postgres-gorm",
     ],
     guideUrl: "/guides/python/fastapi-postgres-sqlalchemy",
-    contentHash: "43feca3ea429ff99d64409fda19fb379378b2f2579e00b1e1f815c6f9134cd1d",
+    contentHash: "6a1434ef9a27873bae4abf5d0c5fe68942b2b33eeb2c1254457c69b843875d85",
     updated: "2026-07-17",
   },
   {
@@ -4725,7 +4725,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [],
       runtimeVerified: false,
     },
@@ -4735,7 +4735,7 @@ export const GENERATED_STACK_PAGES = [
       "python-fastapi-postgres-sqlmodel",
     ],
     guideUrl: "/guides/go/gin-postgres-gorm",
-    contentHash: "490555d96cc8147b52569b98175e06cd63a85a994bfe9b67f185c83632dd925b",
+    contentHash: "760b84ad18d874f4e810f5d377e6a039ff7c02bd2b953cbe1e21222a570168da",
     updated: "2026-07-17",
   },
   {
@@ -4747,7 +4747,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "TanStack Start + PostgreSQL + Drizzle + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, Fullstack TanStack Start, PostgreSQL, Drizzle, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, PostgreSQL, Drizzle, tRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -4927,7 +4927,7 @@ export const GENERATED_STACK_PAGES = [
         category: "webFrontend",
         id: "tanstack-start",
         label: "Tanstack Start",
-        description: "Full-stack React and Solid framework powered by TanStack Router",
+        description: "Full-stack React framework powered by TanStack Router",
         ownership: "Primary frontend",
       },
       {
@@ -5047,7 +5047,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -5060,7 +5060,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/tanstack-start-postgres-drizzle",
-    contentHash: "a544e49345761dd13d6df3e4db496798366f69e8f11acc0a6b29a32da04219b4",
+    contentHash: "42ab74a8b45a8648dd4d5325e124223fc876234c1ad2c57d01cb90aa60fa6417",
     updated: "2026-07-30",
   },
   {
@@ -5072,7 +5072,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "TanStack Start + SQLite + Prisma + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, Fullstack TanStack Start, SQLite, Prisma, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, SQLite, Prisma, tRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -5252,7 +5252,7 @@ export const GENERATED_STACK_PAGES = [
         category: "webFrontend",
         id: "tanstack-start",
         label: "Tanstack Start",
-        description: "Full-stack React and Solid framework powered by TanStack Router",
+        description: "Full-stack React framework powered by TanStack Router",
         ownership: "Primary frontend",
       },
       {
@@ -5372,7 +5372,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -5384,7 +5384,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-better-auth",
       "nextjs-prisma-better-auth",
     ],
-    contentHash: "13659e735454adbdd353accff90be554a73c6b7c4da62846a7c01a82e12e7b04",
+    contentHash: "c0c2434c26ee0d1277e6880f19641860b60b5b0afc2b64902192399c731f1b57",
     updated: "2026-07-30",
   },
   {
@@ -5396,7 +5396,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "TanStack Start + PostgreSQL + Drizzle + Resend Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, Fullstack TanStack Start, PostgreSQL, Drizzle, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, PostgreSQL, Drizzle, tRPC, Better-Auth, and Resend.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -5576,7 +5576,7 @@ export const GENERATED_STACK_PAGES = [
         category: "webFrontend",
         id: "tanstack-start",
         label: "Tanstack Start",
-        description: "Full-stack React and Solid framework powered by TanStack Router",
+        description: "Full-stack React framework powered by TanStack Router",
         ownership: "Primary frontend",
       },
       {
@@ -5628,6 +5628,14 @@ export const GENERATED_STACK_PAGES = [
         ownership: "Scoped to the backend",
       },
       {
+        role: "Email",
+        category: "email",
+        id: "resend",
+        label: "Resend",
+        description: "Modern email API for developers",
+        ownership: "Scoped to the backend",
+      },
+      {
         role: "CSS",
         category: "cssFramework",
         id: "tailwind",
@@ -5652,6 +5660,7 @@ export const GENERATED_STACK_PAGES = [
         "Drizzle is scoped to the backend.",
         "tRPC is scoped to the backend.",
         "Better-Auth is scoped to the backend.",
+        "Resend is scoped to the backend.",
         "Tailwind CSS is scoped to Tanstack Start.",
         "shadcn/ui is scoped to Tanstack Start.",
         "Tailwind CSS and shadcn/ui are selected together.",
@@ -5697,7 +5706,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -5710,7 +5719,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/tanstack-start-resend",
-    contentHash: "2de2fd353d96242f897b8796eea60c915fc46f15024aad4f605662615de4657c",
+    contentHash: "c87ce63ededc453e3ce5745effc77cc818894226494e21d2aeb9c594d1fb79bb",
     updated: "2026-07-30",
   },
   {
@@ -5722,7 +5731,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "TanStack Start + PostgreSQL + Drizzle + Clerk Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, Fullstack TanStack Start, PostgreSQL, Drizzle, tRPC, and Clerk.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, PostgreSQL, Drizzle, tRPC, Clerk, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -5902,7 +5911,7 @@ export const GENERATED_STACK_PAGES = [
         category: "webFrontend",
         id: "tanstack-start",
         label: "Tanstack Start",
-        description: "Full-stack React and Solid framework powered by TanStack Router",
+        description: "Full-stack React framework powered by TanStack Router",
         ownership: "Primary frontend",
       },
       {
@@ -6023,7 +6032,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -6035,7 +6044,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-clerk",
       "tanstack-start-postgres-drizzle-resend",
     ],
-    contentHash: "9cc8650fb6f61820b1a42425e8928c6e0001b6b6d0c84693075eb693cb63e729",
+    contentHash: "1ad59cad35a494e778398479c7d8259a939e539ec5961d7a31c2e69896077f03",
     updated: "2026-07-30",
   },
   {
@@ -6345,7 +6354,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -6355,7 +6364,7 @@ export const GENERATED_STACK_PAGES = [
       "sveltekit-hono-drizzle",
     ],
     guideUrl: "/guides/typescript/hono-better-auth",
-    contentHash: "74eb6829f9a7c3821c9bb4eacd871bb85b6716d719cc28a58543ae70c638695c",
+    contentHash: "4202d33ad0488d456e2cd3f570903780ee965de352b9abf2d07ce67cbd540f63",
     updated: "2026-07-30",
   },
   {
@@ -6666,7 +6675,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Auth is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -6679,7 +6688,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/hono-openapi-drizzle",
-    contentHash: "2fa89eae372b2838eb8bf09050f01a319aa7f169a2ceda702e7f13c7ffc2913e",
+    contentHash: "507b49226c77317c5aff101bf55be54862847dca06edb23468cb0f6dbb1c8b1b",
     updated: "2026-07-30",
   },
   {
@@ -6989,7 +6998,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -6999,7 +7008,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/hono-better-auth",
-    contentHash: "f3fa97932685896ad5af9def41899ac0c4a3896b76889c88f41aa87e87ff7986",
+    contentHash: "d2982de2e06bead92f587b10e47fa8d2a4bcb2776d832bb480d69a712961dea9",
     updated: "2026-07-30",
   },
   {
@@ -7311,7 +7320,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Auth is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -7324,7 +7333,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-trpc-drizzle",
     ],
     guideUrl: "/guides/typescript/nextjs-hono-api",
-    contentHash: "48d5abf614acb85efce541da5644d422f38261fec200b6c40d5126ca33ac8983",
+    contentHash: "d079242e8f7a98e4e8ffb9e664e69c9bb0f10c6209759175bd913248c7d3b201",
     updated: "2026-07-30",
   },
   {
@@ -7336,7 +7345,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Next.js + PostgreSQL + Drizzle + Clerk Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, Fullstack Next.js, PostgreSQL, Drizzle, tRPC, and Clerk.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, PostgreSQL, Drizzle, tRPC, Clerk, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -7637,7 +7646,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -7649,7 +7658,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-clerk",
       "nextjs-drizzle-resend-better-auth",
     ],
-    contentHash: "f7d734fb6ea9ac975f8bab2db3ef84732450d8e4946a5f20d873e9c66f347dbe",
+    contentHash: "6a3538196b3e4e2c37a563d3acf40996aca20851fb57065721c84799986f2689",
     updated: "2026-07-30",
   },
   {
@@ -7661,7 +7670,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Next.js + Prisma + Stripe + Better Auth SaaS Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, Fullstack Next.js, PostgreSQL, Prisma, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, PostgreSQL, Prisma, tRPC, Better-Auth, and Stripe.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -7893,6 +7902,14 @@ export const GENERATED_STACK_PAGES = [
         ownership: "Scoped to the backend",
       },
       {
+        role: "Payments",
+        category: "payments",
+        id: "stripe",
+        label: "Stripe",
+        description: "Industry standard payment processing",
+        ownership: "Scoped to the backend",
+      },
+      {
         role: "CSS",
         category: "cssFramework",
         id: "tailwind",
@@ -7917,6 +7934,7 @@ export const GENERATED_STACK_PAGES = [
         "Prisma is scoped to the backend.",
         "tRPC is scoped to the backend.",
         "Better-Auth is scoped to the backend.",
+        "Stripe is scoped to the backend.",
         "Tailwind CSS is scoped to Next.js.",
         "shadcn/ui is scoped to Next.js.",
         "Tailwind CSS and shadcn/ui are selected together.",
@@ -7963,7 +7981,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -7976,7 +7994,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-postgres-prisma-nextauth",
     ],
     guideUrl: "/guides/typescript/nextjs-prisma-better-auth",
-    contentHash: "9ba1de1212a41147500674e74c64273aa6c6ce194992c3e78aaef6954de1e426",
+    contentHash: "45d894460db3a5884315d6350de20252215d1a886c9d4a6644562bfba5e92d37",
     updated: "2026-07-30",
   },
   {
@@ -7988,7 +8006,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Next.js + Drizzle + Resend + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, Fullstack Next.js, PostgreSQL, Drizzle, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, PostgreSQL, Drizzle, tRPC, Better-Auth, and Resend.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -8220,6 +8238,14 @@ export const GENERATED_STACK_PAGES = [
         ownership: "Scoped to the backend",
       },
       {
+        role: "Email",
+        category: "email",
+        id: "resend",
+        label: "Resend",
+        description: "Modern email API for developers",
+        ownership: "Scoped to the backend",
+      },
+      {
         role: "CSS",
         category: "cssFramework",
         id: "tailwind",
@@ -8244,6 +8270,7 @@ export const GENERATED_STACK_PAGES = [
         "Drizzle is scoped to the backend.",
         "tRPC is scoped to the backend.",
         "Better-Auth is scoped to the backend.",
+        "Resend is scoped to the backend.",
         "Tailwind CSS is scoped to Next.js.",
         "shadcn/ui is scoped to Next.js.",
         "Tailwind CSS and shadcn/ui are selected together.",
@@ -8289,7 +8316,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -8302,7 +8329,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/nextjs-drizzle-better-auth",
-    contentHash: "523ddfc4c1d285ecc6dd024166635babb409ef6e6106e0afa25632b17e866ca9",
+    contentHash: "5c295c0b2f212e8eb9b0c3755c25e0d15892e3cde2f75ac588e7ea4f8aabee14",
     updated: "2026-07-30",
   },
   {
@@ -8314,7 +8341,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Next.js + PostgreSQL + Prisma + NextAuth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, Fullstack Next.js, PostgreSQL, Prisma, tRPC, and Auth.js (NextAuth).",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, PostgreSQL, Prisma, tRPC, Auth.js (NextAuth), and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -8616,7 +8643,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -8628,7 +8655,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-prisma-stripe-better-auth",
       "nextjs-drizzle-better-auth",
     ],
-    contentHash: "a58569980642c8e1f5d05194a1f1b013830dfda428bb80f0c12b4cc2a71def48",
+    contentHash: "f729348d975ad22246ae88791dbde6053d1c95df72ca1d52534a883f4081381e",
     updated: "2026-07-30",
   },
   {
@@ -8906,7 +8933,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [],
       runtimeVerified: false,
     },
@@ -8916,7 +8943,7 @@ export const GENERATED_STACK_PAGES = [
       "go-gin-postgres-gorm",
     ],
     guideUrl: "/guides/python/fastapi-postgres-sqlmodel",
-    contentHash: "b2f6e845d47eb52114bcba5a6823aa1f2d16acb2cb86133ff027c624e896fec5",
+    contentHash: "bc26071d3e9921c3f103ba2a1a61c4d2f918c194d79de7719b70026b324db199",
     updated: "2026-07-30",
   },
   {
@@ -9193,7 +9220,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["Python ORM / Database is intentionally set to none."],
       runtimeVerified: false,
     },
@@ -9203,7 +9230,7 @@ export const GENERATED_STACK_PAGES = [
       "go-gin-postgres-gorm",
     ],
     guideUrl: "/guides/python/django-rest-api",
-    contentHash: "ff7a52c5dcc9eaebe401fd41590ce6385caf221535db08324842f59c381d675a",
+    contentHash: "aca114ffef08166eeb595c640d26d9877c31a01459fb84f21a8211583d5fdd79",
     updated: "2026-07-30",
   },
   {
@@ -9472,7 +9499,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [],
       runtimeVerified: false,
     },
@@ -9482,7 +9509,7 @@ export const GENERATED_STACK_PAGES = [
       "python-fastapi-postgres-sqlmodel",
     ],
     guideUrl: "/guides/go/echo-sqlc-api",
-    contentHash: "8d73a32b560887e18ee73535607e4beb97da59ef0593e9cb49d67a32776a512b",
+    contentHash: "654aa55442e4d9aa81bfb21286b84fcc728ee67fe159761e0a44f735e91d92e1",
     updated: "2026-07-30",
   },
 ] as const satisfies readonly GeneratedStackPage[];

@@ -1,4 +1,3 @@
-import { describe, expect, it } from "bun:test";
 import {
   createStackSelectionSearchParams,
   generateStackSelectionCommand,
@@ -7,15 +6,13 @@ import {
   stackSelectionToProjectConfig,
   validateStackParts,
 } from "@better-fullstack/types";
+import { filterStackPartsForSelectedEcosystem } from "@scripts/generate-stack-pages";
+import { describe, expect, it } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { filterStackPartsForSelectedEcosystem } from "@scripts/generate-stack-pages";
 import { StackCombinationPage } from "@/components/stack-pages/stack-combination-page";
-import {
-  getPublishedStackPages,
-  getStackPage,
-} from "@/lib/stack-pages/source";
+import { getPublishedStackPages, getStackPage } from "@/lib/stack-pages/source";
 
 describe("programmatic stack pages", () => {
   const pages = getPublishedStackPages();
@@ -48,6 +45,17 @@ describe("programmatic stack pages", () => {
     expect(new Set(requiredSlugs.map((slug) => getStackPage(slug)?.contentHash)).size).toBe(
       requiredSlugs.length,
     );
+  });
+
+  it("gives every page a unique description that names its selected services", () => {
+    expect(new Set(pages.map((page) => page.description)).size).toBe(pages.length);
+
+    for (const page of pages) {
+      const partIds = page.canonicalParts.map((part) => part.id);
+      for (const service of [page.selection.payments, page.selection.email]) {
+        if (service !== "none") expect(partIds).toContain(service);
+      }
+    }
   });
 
   it("uses the shared URL serializer and command generator", () => {
@@ -101,10 +109,7 @@ describe("programmatic stack pages", () => {
   });
 
   it("renders substantive TypeScript and Rust HTML without client execution", () => {
-    for (const slug of [
-      "nextjs-hono-drizzle-better-auth",
-      "rust-axum-leptos-seaorm",
-    ]) {
+    for (const slug of ["nextjs-hono-drizzle-better-auth", "rust-axum-leptos-seaorm"]) {
       const page = getStackPage(slug);
       expect(page).toBeDefined();
       if (!page) continue;
