@@ -1,5 +1,11 @@
+import type { ProjectConfig } from "@better-fullstack/types";
+
+import { makeConfig } from "@test/_fixtures/config-factory";
 import { describe, expect, it } from "bun:test";
+import fs from "node:fs";
 import path from "node:path";
+
+import type { VirtualFile, VirtualNode } from "@/types";
 
 import { dependencyVersionMap } from "@/dependencies/add-deps";
 import {
@@ -14,10 +20,156 @@ import {
   getGeneratedPackageJsonPins,
   getPinnedDependencyVersion,
   getTemplatePinnedVersion,
+  NATIVE_DEPENDENCY_VERSIONS,
+  NATIVE_OPTIONAL_PEERS,
+  NATIVE_PEER_DEPENDENCIES,
   TEMPLATE_DEPENDENCY_PINS,
 } from "@/dependencies/dependency-update-policy";
+import { generateVirtualProject } from "@/generator";
+import { EMBEDDED_TEMPLATES } from "@/templates.generated";
 
 const TEMPLATES_DIR = path.resolve(import.meta.dir, "../../templates");
+
+const UNBOUNDED = "999999";
+
+/** Lowest and highest versions an exact, tilde, or caret range lets an installer pick. */
+function rangeBounds(range: string): [string, string] {
+  const match = /^([~^]?)(\d+)\.(\d+)\.(\d+)$/.exec(range);
+  if (!match) throw new Error(`Unsupported dependency range: ${range}`);
+  const [, operator, major, minor, patch] = match;
+  const lowest = `${major}.${minor}.${patch}`;
+  if (operator === "") return [lowest, lowest];
+  if (operator === "~" || major === "0") return [lowest, `${major}.${minor}.${UNBOUNDED}`];
+  return [lowest, `${major}.${UNBOUNDED}.${UNBOUNDED}`];
+}
+
+/** Peer ranges from the policy that the declared dependency ranges can violate or leave missing. */
+function findPeerViolations(dependencies: Readonly<Record<string, string>>): string[] {
+  const violations: string[] = [];
+  for (const [name, peers] of Object.entries(NATIVE_PEER_DEPENDENCIES)) {
+    const range = dependencies[name];
+    if (range === undefined) continue;
+    if (!/^~?\d/.test(range)) violations.push(`${name}@${range} can float to different peers`);
+    for (const [peer, peerRange] of Object.entries(peers)) {
+      const declared = dependencies[peer];
+      if (declared === undefined) {
+        if (!NATIVE_OPTIONAL_PEERS[name]?.includes(peer)) {
+          violations.push(`${name} needs ${peer}@${peerRange}, which is not declared`);
+        }
+        continue;
+      }
+      if (!rangeBounds(declared).every((version) => Bun.semver.satisfies(version, peerRange))) {
+        violations.push(`${name} needs ${peer}@${peerRange}, got ${declared}`);
+      }
+    }
+  }
+  return violations;
+}
+
+function listFiles(node: VirtualNode): VirtualFile[] {
+  return node.type === "file" ? [node] : node.children.flatMap(listFiles);
+}
+
+type PackageJson = {
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+};
+
+async function generateNativePackageJson(config: ProjectConfig): Promise<Record<string, string>> {
+  const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
+  expect(result.success).toBe(true);
+  const file = result.tree
+    ? listFiles(result.tree.root).find(({ path }) => path.endsWith("apps/native/package.json"))
+    : undefined;
+  if (!file) throw new Error("Generated project has no apps/native/package.json");
+  const packageJson = JSON.parse(file.content) as PackageJson;
+  return { ...packageJson.dependencies, ...packageJson.devDependencies };
+}
+
+const NATIVE_FRONTEND_UIS = [
+  ["native-bare", "none"],
+  ["native-bare", "tamagui"],
+  ["native-bare", "gluestack-ui"],
+  ["native-uniwind", "uniwind"],
+  ["native-unistyles", "unistyles"],
+] as const;
+
+const NATIVE_STACKS = {
+  "mobile only": {
+    ecosystem: "react-native",
+    backend: "none",
+    runtime: "none",
+    database: "none",
+    orm: "none",
+    api: "none",
+    auth: "none",
+  },
+  "Hono, tRPC, and Better Auth": {
+    ecosystem: "typescript",
+    backend: "hono",
+    runtime: "bun",
+    database: "sqlite",
+    orm: "drizzle",
+    api: "trpc",
+    auth: "better-auth",
+    mobileDeepLinking: "expo-linking",
+  },
+  "every mobile option": {
+    ecosystem: "react-native",
+    backend: "none",
+    runtime: "none",
+    database: "none",
+    orm: "none",
+    api: "none",
+    auth: "none",
+    mobileStorage: "mmkv",
+    mobilePush: "expo-notifications",
+    mobileOTA: "expo-updates",
+    mobileDeepLinking: "expo-linking",
+    mobileLibraries: [
+      "expo-sqlite",
+      "expo-camera",
+      "expo-image-picker",
+      "expo-location",
+      "expo-sensors",
+      "expo-file-system",
+      "expo-image",
+      "expo-audio",
+      "expo-video",
+      "expo-contacts",
+      "expo-calendar",
+      "expo-local-authentication",
+      "expo-sharing",
+      "expo-clipboard",
+      "expo-task-manager",
+      "expo-background-task",
+      "expo-maps",
+      "expo-brightness",
+      "expo-battery",
+      "expo-screen-capture",
+    ],
+  },
+} satisfies Record<string, Partial<ProjectConfig>>;
+
+/** Template dependencies that no Expo or React Native release constrains. */
+const UNCOUPLED_NATIVE_PACKAGES = new Set([
+  "@stardazed/streams-text-encoding",
+  "@tanstack/react-form",
+  "@tanstack/react-query",
+  "@types/node",
+  "@ungap/structured-clone",
+  "ajv",
+]);
+
+/** Every dependency a native package.json template declares, across all Handlebars branches. */
+function readNativeTemplateDependencies(variant: string): string[] {
+  const content = fs.readFileSync(
+    path.join(TEMPLATES_DIR, `frontend/native/${variant}/package.json.hbs`),
+    "utf-8",
+  );
+  const sections = content.slice(content.indexOf('"dependencies"'));
+  return [...sections.matchAll(/^\s*"([^"]+)": "[~^]?\d[^"]*"/gm)].map(([, name]) => name!);
+}
 
 const candidate = (name: string, updateType: VersionInfo["updateType"]): VersionInfo => ({
   name,
@@ -56,7 +208,9 @@ describe("dependency update policy", () => {
       "18.3.1",
     );
     expect(getGeneratedPackageJsonPins(new Set(["react"])).size).toBe(0);
-    for (const pin of TEMPLATE_DEPENDENCY_PINS) {
+    for (const pin of TEMPLATE_DEPENDENCY_PINS.filter(
+      ({ marker }) => marker === "@redwoodjs/web",
+    )) {
       for (const [name, version] of Object.entries(pin.versions)) {
         expect(version).not.toBe(dependencyVersionMap[name as keyof typeof dependencyVersionMap]);
       }
@@ -103,20 +257,83 @@ describe("dependency update policy", () => {
     expect(dependencyVersionMap).toMatchObject({
       "better-auth": "1.6.22",
       "@better-auth/expo": "1.6.22",
+      "@better-auth/core": "1.6.22",
       "@better-auth/drizzle-adapter": "1.6.22",
       "@better-auth/prisma-adapter": "1.6.22",
       "@better-auth/mongo-adapter": "1.6.22",
     });
   });
 
-  it("holds Expo 56 static exports on the verified Reanimated pair", () => {
-    expect(dependencyVersionMap).toMatchObject({
-      "react-native-reanimated": "^4.5.3",
-      "react-native-worklets": "^0.11.4",
-    });
-    expect(getLatestChannelPinnedVersion("react-native-reanimated")).toBe("^4.5.3");
-    expect(getLatestChannelPinnedVersion("react-native-worklets")).toBe("^0.11.4");
+  it("holds every Expo- or React Native-coupled native template dependency", () => {
+    for (const variant of ["bare", "unistyles", "uniwind"]) {
+      const unheld = readNativeTemplateDependencies(variant).filter(
+        (name) => !(name in NATIVE_DEPENDENCY_VERSIONS) && !UNCOUPLED_NATIVE_PACKAGES.has(name),
+      );
+      expect({ variant, unheld }).toEqual({ variant, unheld: [] });
+    }
   });
+
+  it("keeps native apps on the Expo SDK set in template sync", () => {
+    expect(NATIVE_DEPENDENCY_VERSIONS).toMatchObject({
+      react: "19.2.3",
+      "react-native": "0.85.3",
+      "react-native-reanimated": "4.3.1",
+      "react-native-worklets": "0.8.3",
+    });
+    for (const variant of ["bare", "unistyles", "uniwind"]) {
+      const template = `frontend/native/${variant}/package.json.hbs`;
+      expect(getTemplatePinnedVersion(template, "react-native")).toBe("0.85.3");
+    }
+    const latestChannelPins = getGeneratedPackageJsonPins(new Set(["expo", "react"]));
+    expect(latestChannelPins.get("react")).toBe("19.2.3");
+    expect(latestChannelPins.get("react-native-worklets")).toBe("0.8.3");
+    for (const [name, version] of Object.entries(dependencyVersionMap)) {
+      if (name in NATIVE_DEPENDENCY_VERSIONS && name.startsWith("expo-")) {
+        expect(getPinnedDependencyVersion(name)).toBe(version);
+      }
+    }
+  });
+
+  it("keeps the native dependency set inside its own peer ranges", () => {
+    expect(findPeerViolations(NATIVE_DEPENDENCY_VERSIONS)).toEqual([]);
+    expect(
+      findPeerViolations({
+        ...NATIVE_DEPENDENCY_VERSIONS,
+        "react-native-reanimated": "^4.3.1",
+        "react-native-worklets": "^0.11.4",
+      }),
+    ).toEqual([
+      "react-native-reanimated@^4.3.1 can float to different peers",
+      "react-native-reanimated needs react-native-worklets@0.8.x, got ^0.11.4",
+      "react-native-worklets@^0.11.4 can float to different peers",
+    ]);
+  });
+
+  for (const [stackName, stack] of Object.entries(NATIVE_STACKS)) {
+    for (const [frontend, mobileUI] of NATIVE_FRONTEND_UIS) {
+      for (const mobileNavigation of ["expo-router", "react-navigation"] as const) {
+        it(`generates coupled native dependencies for ${frontend} with ${mobileUI} and ${mobileNavigation}, ${stackName}`, async () => {
+          const dependencies = await generateNativePackageJson(
+            makeConfig({
+              ...stack,
+              frontend: [frontend],
+              mobileUI,
+              mobileNavigation,
+              mobileTesting: "react-native-testing-library",
+              packageManager: "npm",
+            }),
+          );
+
+          for (const [name, version] of Object.entries(dependencies)) {
+            if (name in NATIVE_DEPENDENCY_VERSIONS) {
+              expect(`${name}@${version}`).toBe(`${name}@${NATIVE_DEPENDENCY_VERSIONS[name]}`);
+            }
+          }
+          expect(findPeerViolations(dependencies)).toEqual([]);
+        });
+      }
+    }
+  }
 
   it("never automates downgrades", () => {
     const downgrade = candidate("example", "downgrade");
