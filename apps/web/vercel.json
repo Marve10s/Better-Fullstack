@@ -252,11 +252,6 @@
       "permanent": true
     },
     {
-      "source": "/docs/cli/gen.md",
-      "destination": "/docs/cli/experimental.md",
-      "permanent": true
-    },
-    {
       "source": "/docs/cli/registry.md",
       "destination": "/docs/cli/experimental.md",
       "permanent": true
@@ -289,11 +284,6 @@
     {
       "source": "/docs/cli/check",
       "destination": "/docs/cli/update",
-      "permanent": true
-    },
-    {
-      "source": "/docs/cli/gen",
-      "destination": "/docs/cli/experimental",
       "permanent": true
     },
     {
