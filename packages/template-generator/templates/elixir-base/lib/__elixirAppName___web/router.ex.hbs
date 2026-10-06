@@ -19,6 +19,9 @@ defmodule {{elixirModuleName}}Web.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+{{#if (eq elixirAuth "phx-gen-auth")}}
+    plug :fetch_session
+{{/if}}
 {{#if (eq elixirApi "open_api_spex")}}
     plug OpenApiSpex.Plug.PutApiSpec, module: {{elixirModuleName}}Web.ApiSpec
 {{/if}}
