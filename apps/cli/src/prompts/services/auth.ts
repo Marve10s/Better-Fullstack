@@ -1,16 +1,18 @@
-import type { Auth, Backend } from "@/types";
+import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
+import type { Auth, Backend, Database, ORM } from "@/types";
 
 import { DEFAULT_CONFIG } from "@/constants";
-import { getSupportedCapabilityOptions } from "@/types";
 import { exitCancelled } from "@/presentation/errors";
-import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
+import { getBetterAuthDatabaseIncompatibility, getSupportedCapabilityOptions } from "@/types";
 
 type AuthPromptContext = {
   auth?: Auth;
   backend?: Backend;
   frontend?: string[];
   ecosystem?: "typescript" | "react-native" | "go";
+  database?: Database;
+  orm?: ORM;
 };
 
 export function resolveAuthPrompt(context: AuthPromptContext = {}): PromptSingleResolution<Auth> {
@@ -36,7 +38,12 @@ export function resolveAuthPrompt(context: AuthPromptContext = {}): PromptSingle
   });
   const options = authOptionOrder.flatMap(({ value }) => {
     const option = supportedOptions.find((candidate) => candidate.id === value);
-    return option
+    const databaseIssue = getBetterAuthDatabaseIncompatibility(
+      value,
+      { database: context.database, orm: context.orm },
+      { partial: true },
+    );
+    return option && !databaseIssue
       ? [
           {
             value: option.id,
@@ -80,12 +87,14 @@ export async function getAuthChoice(
   backend?: Backend,
   frontend?: string[],
   ecosystem: "typescript" | "react-native" | "go" = "typescript",
+  data: { database?: Database; orm?: ORM } = {},
 ) {
   const resolution = resolveAuthPrompt({
     auth,
     backend,
     frontend,
     ecosystem,
+    ...data,
   });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";

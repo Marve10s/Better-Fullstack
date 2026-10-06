@@ -42,6 +42,7 @@ import {
   formatStackGraphIssue,
   getDisabledReason,
   getCodeQualitySelectionIssue,
+  getBetterAuthDatabaseIncompatibility,
   getJobQueueIncompatibility,
   getShadcnLintFrontendIssue,
   hasVitePlusWorkspaceRoot,
@@ -441,27 +442,11 @@ function validateDatabaseSetup(config: Partial<ProjectConfig>, providedFlags: Se
 export function validateEcosystemAuthCompatibility(
   config: Partial<ProjectConfig>,
   providedFlags?: Set<string>,
+  partial = false,
 ) {
   const auth = config.auth;
 
   if (!auth || auth === "none") {
-    return;
-  }
-
-  const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-  if (
-    (auth === "better-auth" || auth === "better-auth-organizations") &&
-    config.orm &&
-    ormsWithoutBetterAuth.includes(config.orm)
-  ) {
-    config.auth = "none";
-    if (providedFlags?.has("auth") && !isSilent()) {
-      consola.warn(
-        pc.yellow(
-          `Unsupported auth selection '${auth}' with ${config.orm}: no Better Auth adapter exists. Falling back to '--auth none'.`,
-        ),
-      );
-    }
     return;
   }
 
@@ -475,19 +460,27 @@ export function validateEcosystemAuthCompatibility(
     auth,
   );
 
-  if (!normalized.normalized || normalized.value === auth) {
+  if (normalized.normalized && normalized.value !== auth) {
+    config.auth = normalized.value;
+
+    if (providedFlags?.has("auth") && normalized.reason && !isSilent()) {
+      consola.warn(
+        pc.yellow(
+          `Unsupported auth selection '${auth}' for the current stack: ${normalized.reason}. Falling back to '--auth ${normalized.value}'.`,
+        ),
+      );
+    }
     return;
   }
 
-  config.auth = normalized.value;
-
-  if (providedFlags?.has("auth") && normalized.reason && !isSilent()) {
-    consola.warn(
-      pc.yellow(
-        `Unsupported auth selection '${auth}' for the current stack: ${normalized.reason}. Falling back to '--auth ${normalized.value}'.`,
-      ),
-    );
-  }
+  if ((config.ecosystem ?? "typescript") !== "typescript") return;
+  const reason = getBetterAuthDatabaseIncompatibility(auth, config, { partial });
+  if (!reason) return;
+  // Better Auth that was asked for is rejected; a default one gives way to the database choice.
+  if (!providedFlags) throw new Error(reason);
+  if (providedFlags.has("auth")) exitWithError(reason);
+  config.auth = "none";
+  if (!isSilent()) consola.warn(pc.yellow(`Auth set to 'None' (${reason})`));
 }
 
 function validateConvexConstraints(config: Partial<ProjectConfig>, providedFlags: Set<string>) {
@@ -1669,7 +1662,7 @@ export function validateFullConfig(
     }
   }
 
-  validateEcosystemAuthCompatibility(config, providedFlags);
+  validateEcosystemAuthCompatibility(config, providedFlags, partial);
   validateDatabaseOrmAuth(config, providedFlags);
   validateDatabaseSetup(config, providedFlags);
 

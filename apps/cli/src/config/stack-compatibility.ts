@@ -1,8 +1,11 @@
 import {
   analyzeStackCompatibility,
   getAddonStackPartBinding,
+  getBetterAuthDatabaseIncompatibility,
   getJobQueueIncompatibility,
   getPythonLoggingIncompatibility,
+  isToolingOverlayOnly,
+  validateStackParts,
   type CompatibilityInput,
   type ProjectConfig,
 } from "@/types";
@@ -44,6 +47,34 @@ export function getRequestedJobQueueRejection(
 ): string | null {
   if (!requestedJobQueue || adjustedConfig.jobQueue === requestedJobQueue) return null;
   return getJobQueueIncompatibility(requestedJobQueue, adjustedConfig);
+}
+
+/**
+ * Compatibility adjustments may reset Better Auth when another choice leaves it without an adapter,
+ * as the builder does. Better Auth requested by flag or tool input is rejected instead, with the
+ * shared reason.
+ */
+export function getRequestedBetterAuthRejection(
+  requestedAuth: ProjectConfig["auth"] | undefined,
+  adjustedConfig: Partial<ProjectConfig>,
+): string | null {
+  if (!requestedAuth || adjustedConfig.auth === requestedAuth) return null;
+  return getBetterAuthDatabaseIncompatibility(requestedAuth, adjustedConfig);
+}
+
+// Checks the Better Auth selection the generator will use: graph input is judged by its own auth,
+// database, and ORM parts rather than by stale flat fields.
+export function getBetterAuthSelectionIssue(config: Partial<ProjectConfig>): string | null {
+  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
+    const issue = validateStackParts(config.stackParts).issues.find(
+      (candidate) =>
+        candidate.role === "auth" &&
+        (candidate.toolId === "better-auth" || candidate.toolId === "better-auth-organizations"),
+    );
+    return issue?.message ?? null;
+  }
+  if ((config.ecosystem ?? "typescript") !== "typescript") return null;
+  return getBetterAuthDatabaseIncompatibility(config.auth, config);
 }
 
 function getProjectBackendFromCompatibility(backend: string): string {

@@ -178,6 +178,7 @@ import {
   WEB_DEPLOY_VALUES,
 } from "@/config/schemas";
 import {
+  getBetterAuthDatabaseIncompatibility,
   getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
@@ -1660,6 +1661,22 @@ function createTypeScriptBackendCompatibilityIssue(
       backend: context.ownerToolId,
       runtime: context.siblingToolIdsByRole?.runtime,
       database: context.siblingToolIdsByRole?.database ?? context.primaryToolIdsByRole?.database,
+    });
+    if (reason) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `${reason}.`,
+      });
+    }
+  }
+
+  if (part.role === "auth") {
+    const reason = getBetterAuthDatabaseIncompatibility(part.toolId, {
+      database: context.siblingToolIdsByRole?.database ?? context.primaryToolIdsByRole?.database,
+      orm: context.siblingToolIdsByRole?.orm,
     });
     if (reason) {
       return createStackGraphIssue({

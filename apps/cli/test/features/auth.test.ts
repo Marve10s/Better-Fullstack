@@ -1846,7 +1846,7 @@ describe("Authentication Configurations", () => {
       expect(users).toContain('current.code === "ER_DUP_ENTRY"');
     });
 
-    it("TypeORM + better-auth should be auto-adjusted to none", async () => {
+    it("TypeORM + better-auth is rejected because Better Auth has no TypeORM adapter", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
           projectName: "typeorm-better-auth",
@@ -1857,11 +1857,10 @@ describe("Authentication Configurations", () => {
           runtime: "node",
         }),
       );
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Better Auth has no TypeORM adapter");
     });
 
-    it("Sequelize + better-auth should be auto-adjusted to none", async () => {
+    it("Sequelize + better-auth is rejected because Better Auth has no Sequelize adapter", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
           projectName: "sequelize-better-auth",
@@ -1872,11 +1871,10 @@ describe("Authentication Configurations", () => {
           runtime: "node",
         }),
       );
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Better Auth has no Sequelize adapter");
     });
 
-    it("MikroORM + better-auth should be auto-adjusted to none", async () => {
+    it("MikroORM + better-auth is rejected because Better Auth has no MikroORM adapter", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
           projectName: "mikroorm-better-auth",
@@ -1886,8 +1884,7 @@ describe("Authentication Configurations", () => {
           auth: "better-auth",
         }),
       );
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Better Auth has no MikroORM adapter");
     });
 
     it("should scaffold Drizzle with Clerk", async () => {
