@@ -7,7 +7,7 @@ import {
 } from "@convex-dev/agent/react";
 import { api } from "@{{projectName}}/backend/convex/_generated/api";
 import { useMutation } from "convex/react";
-import { Button, Divider, Spinner, Surface, TextField, useThemeColor } from "heroui-native";
+import { Button, Input, Separator, Spinner, Surface, TextField, useThemeColor } from "heroui-native";
 import { useRef, useEffect, useState } from "react";
 import {
   View,
@@ -131,12 +131,12 @@ export default function AIScreen() {
             )}
           </ScrollView>
 
-          <Divider className="mb-3" />
+          <Separator className="mb-3" />
 
           <View className="flex-row items-center gap-2">
             <View className="flex-1">
               <TextField>
-                <TextField.Input
+                <Input
                   value={input}
                   onChangeText={setInput}
                   placeholder="Type a message..."
@@ -179,7 +179,16 @@ import { DefaultChatTransport } from "ai";
 import { fetch as expoFetch } from "expo/fetch";
 import { Ionicons } from "@expo/vector-icons";
 import { Container } from "@/components/container";
-import { Button, Divider, ErrorView, Spinner, Surface, TextField, useThemeColor } from "heroui-native";
+import {
+  Button,
+  FieldError,
+  Input,
+  Separator,
+  Spinner,
+  Surface,
+  TextField,
+  useThemeColor,
+} from "heroui-native";
 import { env } from "@{{projectName}}/env/native";
 
 const generateAPIUrl = (relativePath: string) => {
@@ -223,14 +232,14 @@ export default function AIScreen() {
       <Container>
         <View className="flex-1 justify-center items-center px-4">
           <Surface variant="secondary" className="p-4 rounded-lg">
-            <ErrorView isInvalid>
+            <FieldError isInvalid>
               <Text className="text-danger text-center font-medium mb-1">
                 {error.message}
               </Text>
               <Text className="text-muted text-center text-xs">
                 Please check your connection and try again.
               </Text>
-            </ErrorView>
+            </FieldError>
           </Surface>
         </View>
       </Container>
@@ -295,12 +304,12 @@ export default function AIScreen() {
             )}
           </ScrollView>
 
-          <Divider className="mb-3" />
+          <Separator className="mb-3" />
 
           <View className="flex-row items-center gap-2">
             <View className="flex-1">
               <TextField>
-                <TextField.Input
+                <Input
                   value={input}
                   onChangeText={setInput}
                   placeholder="Type a message..."

@@ -24,6 +24,7 @@ import {
   selectAutomatedUpdates,
   type VersionInfo,
 } from "@/dependencies/dependency-checker";
+import { getTemplatePinnedVersion } from "@/dependencies/dependency-update-policy";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -121,6 +122,8 @@ async function updateTemplateFiles(updates: VersionInfo[], templatesDir: string)
   for (const update of templateUpdates) {
     const files = findTemplateFilesWithPackage(templatesDir, update.name);
     for (const { filePath } of files) {
+      const templateKey = path.relative(templatesDir, filePath).split(path.sep).join("/");
+      if (getTemplatePinnedVersion(templateKey, update.name)) continue;
       const content = fs.readFileSync(filePath, "utf-8");
       const escapedName = update.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const pattern = new RegExp(`("${escapedName}"\\s*:\\s*")([~^]?[\\d][^"]+)(")`, "g");
