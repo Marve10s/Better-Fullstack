@@ -1,0 +1,111 @@
+---
+title: "Spring Boot vs Quarkus for a Java API"
+description: "Choose Spring Boot or Quarkus by what the framework does at build time, the threading model, library fit, and packaging, with the Better Fullstack command for each."
+date: 2026-10-06
+authors:
+  - Ibrahim Elkamali
+image: /search-media/stack-decisions-1200x630.png
+video: /search-media/stack-decisions-1200x630.mp4
+translationStatus: pending
+tags:
+  - spring-boot
+  - quarkus
+  - java
+  - backend
+keywords:
+  - spring boot vs quarkus
+  - quarkus vs spring boot
+  - java web framework comparison
+  - java api starter
+  - spring boot quarkus native
+---
+
+![Stack decision map: choose an ecosystem, generate, inspect, and keep the code](/search-media/stack-decisions-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/stack-decisions-1200x630.png" src="/search-media/stack-decisions-1200x630.mp4"></video>
+
+Spring Boot and Quarkus both turn a set of annotated Java classes into a running HTTP service with configuration, dependency injection, and testing support. They differ in when the framework does its work, how requests are scheduled onto threads, and which programming model your existing code and libraries expect.
+
+In Better Fullstack they also differ sharply in how much is generated, which is covered below.
+
+## What the framework does for you
+
+[Spring Boot](https://docs.spring.io/spring-boot/index.html) "takes an opinionated view of the Spring platform and third-party libraries" so most applications need little configuration. It lists embedded servers, security, metrics, health checks, and externalized configuration among its non-functional features. Web applications use either the `spring-boot-starter-webmvc` module or, for reactive applications, `spring-boot-starter-webflux` ([web reference](https://docs.spring.io/spring-boot/reference/web/index.html)).
+
+[Quarkus](https://quarkus.io/container-first/) moves work to build time: "As much processing as possible is done at build time; thus, your application only contains the classes used at runtime." It also tries to avoid reflection. Endpoints are written with Jakarta REST annotations such as `@Path` and `@GET`, and the [Quarkus about page](https://quarkus.io/about/) says it is designed to combine imperative code with the non-blocking reactive style.
+
+## Concurrency and runtime model
+
+Spring MVC is the servlet-based stack. [Spring WebFlux](https://docs.spring.io/spring-boot/reference/web/reactive.html) "does not require the servlet API, is fully asynchronous and non-blocking," and implements Reactive Streams through Reactor. On Java 21 or later, setting `spring.threads.virtual.enabled` to `true` makes Spring Boot's auto-configured task executor use [virtual threads](https://docs.spring.io/spring-boot/reference/features/task-execution-and-scheduling.html).
+
+[Quarkus REST](https://quarkus.io/guides/rest) chooses the thread from the method signature. Methods that return a plain value run on a worker thread; methods that return `Uni`, `Multi`, or `CompletionStage` run on the I/O event loop. `@Blocking`, `@NonBlocking`, and `@RunOnVirtualThread` override that choice.
+
+Both frameworks support blocking and non-blocking code. The question is which style your data access and client libraries use, because blocking calls on an event loop thread hold up other requests.
+
+## Ecosystem and library fit
+
+Code written against Spring's APIs (Spring Data repositories, Spring Security filters, Spring configuration properties) moves to Quarkus only through a port. Libraries that rely on runtime reflection or classpath scanning need checking against Quarkus's build-time model. If the team already runs Spring services, that shared knowledge and code is a concrete reason to stay.
+
+## Deployment and packaging
+
+Spring Boot applications start with `java -jar` or deploy as a traditional war, and its documentation includes GraalVM native image support. Quarkus builds a [native executable](https://quarkus.io/guides/building-native-image) with `./mvnw package -Dnative` or `quarkus build --native`, and `-Dquarkus.native.container-build=true` builds it inside a container when GraalVM is not installed locally. For development, `./mvnw quarkus:dev` runs [dev mode](https://quarkus.io/guides/getting-started), where saved changes take effect without a restart.
+
+## What Better Fullstack generates
+
+The two commands below generate a Maven project with each framework:
+
+```bash
+bun create better-fullstack@latest my-api \
+  --ecosystem java \
+  --java-web-framework spring-boot \
+  --java-build-tool maven \
+  --java-orm spring-data-jpa \
+  --java-testing-libraries junit5
+```
+
+```bash
+bun create better-fullstack@latest my-api \
+  --ecosystem java \
+  --java-web-framework quarkus \
+  --java-build-tool maven \
+  --java-orm none \
+  --java-auth none \
+  --java-api none \
+  --java-libraries none
+```
+
+Add `--dry-run` to preview either project without writing files. Both target Java 21 and include the Maven wrapper; `--java-build-tool gradle` produces a Gradle Kotlin DSL build instead. The outputs are not the same size:
+
+| Concern          | Spring Boot command                                                  | Quarkus command                                              |
+| ---------------- | -------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Platform         | `spring-boot-starter-parent` 4.0.6 with `spring-boot-starter-webmvc` | Quarkus BOM 3.35.2 with `quarkus-rest`                       |
+| Endpoints        | `GET /health`, plus `GET` and `POST /users`                          | `GET /hello` returning plain text                            |
+| Data layer       | `AppUser` entity, repository, and service with Spring Data JPA       | none                                                         |
+| Configuration    | `application.yml` reading `PORT` and a local `.env`                  | no `application.properties`; CORS origin read from config    |
+| Tests            | a `@SpringBootTest` context-load test                                | `quarkus-junit5` dependency, but no test class               |
+| Run              | `./mvnw spring-boot:run`                                             | `./mvnw quarkus:dev`                                         |
+
+Two limits shape this comparison:
+
+- **The Quarkus option is a single REST resource.** The CLI accepts `--java-orm`, `--java-auth`, `--java-api`, and `--java-libraries` only with Spring Boot, which is why the Quarkus command sets each of them to `none`. Persistence, security, and any other Quarkus extensions are yours to add.
+- **The Spring Boot data layer runs on an embedded H2 database.** The datasource is an H2 file under `./data` in PostgreSQL compatibility mode, with `ddl-auto: update` and the H2 console enabled. Adding `--database postgres` does not change that output; add the PostgreSQL JDBC driver and datasource settings yourself before connecting to a real PostgreSQL server.
+
+The Spring-only options are where Spring Boot's generated surface grows: `--java-orm` offers `spring-data-jpa`, `jooq`, and `mybatis`; `--java-auth` offers `spring-security` and `keycloak`; and `--java-api` offers `spring-graphql`, `openapi-generator`, and `grpc`.
+
+These are generated projects, not runtime-verified deployments. Run `./mvnw test` and start the service before committing to either.
+
+## Decision table
+
+| If this is the stronger constraint                                  | Start with                                    |
+| ------------------------------------------------------------------- | --------------------------------------------- |
+| Existing Spring code, Spring Data, or Spring Security               | Spring Boot                                   |
+| Generated persistence, security, or API options today               | Spring Boot                                   |
+| Native executables and build-time processing as a primary goal      | Quarkus, adding persistence yourself          |
+| Reactive endpoints chosen per method                                | Quarkus, or Spring WebFlux                    |
+| Unsure                                                              | Build one endpoint with real data access in both |
+
+## Related guides
+
+- [Spring Boot with PostgreSQL and JPA](/guides/java/spring-boot-postgres-jpa/)
+- [Spring Security API](/guides/java/spring-security-api/)
+- [Java API pack](/guides/packs/create-java-api/)

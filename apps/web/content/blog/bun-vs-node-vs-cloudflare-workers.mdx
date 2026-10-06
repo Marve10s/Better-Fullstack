@@ -1,0 +1,132 @@
+---
+title: "Bun vs Node.js vs Cloudflare Workers as the server runtime"
+description: "Choose Bun, Node.js, or Cloudflare Workers for a TypeScript server by execution model, API compatibility, and deployment, with a Better Fullstack command for each."
+date: 2026-10-06
+authors:
+  - Ibrahim Elkamali
+image: /search-media/stack-decisions-1200x630.png
+video: /search-media/stack-decisions-1200x630.mp4
+translationStatus: pending
+tags:
+  - bun
+  - nodejs
+  - cloudflare-workers
+  - runtime
+  - backend
+keywords:
+  - bun vs node
+  - node vs cloudflare workers
+  - bun vs cloudflare workers
+  - typescript server runtime
+  - hono bun node workers
+---
+
+![Stack decision map: choose an ecosystem, generate, inspect, and keep the code](/search-media/stack-decisions-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/stack-decisions-1200x630.png" src="/search-media/stack-decisions-1200x630.mp4"></video>
+
+In a Better Fullstack TypeScript project, `--runtime` decides where the separate server runs. The schema offers `bun`, `node`, and `workers`, plus `none` for stacks without a separate server runtime. Bun and Node.js run your server as a long-lived process on a machine you choose. Cloudflare Workers runs it on Cloudflare's network under a different execution model.
+
+Hono is the backend that targets all three, so this post holds Hono constant and compares only the runtime. For the backend framework choice itself, read [Hono vs Express vs Fastify vs Elysia](/blog/hono-vs-express-vs-fastify-vs-elysia/).
+
+## Execution model
+
+**Node.js** runs JavaScript on an event loop and offers a worker pool for expensive tasks such as file I/O. Its guide on [not blocking the event loop](https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop) puts the consequence plainly: "While a thread is blocked working on behalf of one client, it cannot handle requests from any other clients."
+
+**Bun** describes itself as [an all-in-one toolkit](https://bun.com/docs) whose runtime is "designed as a drop-in replacement for Node.js" and is powered by JavaScriptCore. The same tool is also the package manager, test runner, and bundler. The event-loop rule about not blocking applies to a Bun server too.
+
+**Cloudflare Workers** runs code in [V8 isolates](https://developers.cloudflare.com/workers/reference/how-workers-works/) on Cloudflare's network instead of in a process you manage. Cloudflare recommends that you do not use or mutate global state, because there is no guarantee that two requests reach the same instance. Each request also runs under [platform limits](https://developers.cloudflare.com/workers/platform/limits/) for CPU time, memory per isolate, and subrequests, and the CPU time limit differs between the Free and Paid plans.
+
+## TypeScript and API compatibility
+
+Bun executes `.ts` files directly. Node.js runs TypeScript through [type stripping](https://nodejs.org/en/learn/typescript/run-natively), enabled by default from v22.18.0. It does not type-check, and syntax that needs code generation, such as `enum`, needs a separate transpile step.
+
+API compatibility is where the three diverge most:
+
+- Node.js is the reference for Node APIs.
+- Bun's [compatibility page](https://bun.com/docs/runtime/nodejs-compat) treats a package that works in Node.js but not in Bun as a bug in Bun, and marks modules such as `node:async_hooks` as partially implemented.
+- Workers provides [a subset of Node.js APIs](https://developers.cloudflare.com/workers/runtime-apis/nodejs/); APIs that do not fit a serverless context are not included.
+
+## Library fit
+
+A library written for the Fetch API (`Request`, `Response`, `fetch`) runs on all three. A library that depends on Node-specific APIs works on Node.js, is meant to work on Bun under the compatibility goal above, and needs checking against the Workers subset. Better Fullstack encodes some of these limits: with `--runtime workers`, the CLI rejects MongoDB, Docker database setup, the SigNoz observability option (which uses the OpenTelemetry Node SDK), and the Nango integration (whose Node SDK is not available on Workers).
+
+Database access changes too. A long-running process can hold a connection or open a local SQLite file. A Worker reaches Cloudflare's D1 database through a [binding on the `env` object](https://developers.cloudflare.com/d1/worker-api/).
+
+## Deployment constraints
+
+A Bun or Node.js server can run on any host that runs the process: a VM, a container, or a platform service. A Worker deploys to Cloudflare. In Better Fullstack, `--runtime workers` requires `--server-deploy cloudflare` and generates a Hono backend: `--backend nitro` or `--backend fets` is switched to Hono, and other backends are rejected.
+
+## What Better Fullstack generates
+
+The three commands below share the frontend, backend, ORM, API, and auth selections:
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth
+```
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime node \
+  --database sqlite \
+  --orm drizzle \
+  --api orpc \
+  --auth better-auth
+```
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime workers \
+  --database sqlite \
+  --orm drizzle \
+  --db-setup d1 \
+  --server-deploy cloudflare \
+  --api orpc \
+  --auth better-auth
+```
+
+Add `--dry-run` to preview any of them without writing files. The oRPC router, the Hono routes in `apps/server/src/index.ts`, and the Drizzle schema are the same in all three. The runtime changes how the server starts, how it reads configuration, and how it reaches the database:
+
+| Concern            | `--runtime bun`                         | `--runtime node`                               | `--runtime workers`                                          |
+| ------------------ | --------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------ |
+| Server entry       | `export default app`                    | `serve()` from `@hono/node-server` on port 3000 | `export default app` as the Worker entrypoint               |
+| Dev command        | `bun run --hot src/index.ts`            | `tsx watch src/index.ts`                       | `alchemy dev` in `packages/infra`                            |
+| Start or deploy    | `bun run dist/index.js`                 | `node dist/index.js`                           | `alchemy deploy` in `packages/infra`                         |
+| Database client    | `@libsql/client` with `DATABASE_URL`    | `@libsql/client` with `DATABASE_URL`           | `drizzle-orm/d1` on the `DB` binding                         |
+| Environment        | Zod-validated `process.env` via `@t3-oss/env-core` | Zod-validated `process.env` via `@t3-oss/env-core` | `env` from `cloudflare:workers`, typed from the Alchemy bindings |
+
+Bun serves the default export because, per its [server docs](https://bun.com/docs/runtime/http/server), a default export with a `fetch` handler is passed to `Bun.serve`. Node.js needs Hono's [Node.js adapter](https://hono.dev/docs/getting-started/nodejs). For Bun and Node.js, `apps/server/.env` points `DATABASE_URL` at a local SQLite file, `file:../../local.db`.
+
+The Workers project adds `packages/infra/alchemy.run.ts`, which declares a D1 database and a Worker with `compatibility: "node"` and binds `DB`, `CORS_ORIGIN`, `BETTER_AUTH_SECRET`, and `BETTER_AUTH_URL`. `apps/server` has no `dev` or `start` script of its own in this variant; development and deployment go through Alchemy. The Better Auth configuration includes commented-out cookie settings to enable when deploying to a `workers.dev` domain.
+
+These are generated projects. They do not prove that a deployment target runs them; install, build, and run or deploy one request path on the runtime you plan to use.
+
+## Decision table
+
+| If this is the stronger constraint                                | Start with                    |
+| ----------------------------------------------------------------- | ----------------------------- |
+| Widest compatibility with existing Node.js libraries              | Node.js                       |
+| One tool for running TypeScript, installing, testing, and bundling | Bun                          |
+| Deploying to Cloudflare's network without managing servers        | Cloudflare Workers            |
+| MongoDB, Docker databases, or Node-only SDKs                      | Node.js or Bun                |
+| A backend other than Hono                                         | Node.js or Bun                |
+
+## Compare real generated stacks
+
+- [TanStack Router + Hono + oRPC + Drizzle](/stack/tanstack-router-hono-orpc-drizzle)
+
+The [Hono Better Auth guide](/guides/typescript/hono-better-auth/) shows the server package in more detail.
