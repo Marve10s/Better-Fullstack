@@ -36,6 +36,7 @@ describe("docs navigation", () => {
       "experimental",
       "telemetry",
       "completion",
+      "options",
     ]);
     expect(ecosystemsMeta.pages).toEqual(["index", "multi-ecosystem", "native-apps"]);
     expect(aiMeta.pages).toEqual(["overview", "mcp"]);
@@ -51,6 +52,7 @@ describe("docs navigation", () => {
     await expectDocPage("cli/experimental.mdx");
     await expectDocPage("cli/telemetry.mdx");
     await expectDocPage("cli/completion.mdx");
+    await expectDocPage("cli/options.mdx");
     await expectDocPage("ecosystems/multi-ecosystem.mdx");
     await expectDocPage("ecosystems/native-apps.mdx");
     await expectDocPage("builder.mdx");

@@ -1,0 +1,125 @@
+---
+title: Browse and Search Options
+description: List option categories and their options, or search every ecosystem by ID, label, or alias, and get the CLI flag that selects each option.
+translationStatus: pending
+updated: 2026-10-06
+---
+
+`list` and `search` read the option catalog that ships with the CLI. They answer questions such as
+"what auth options exist for Go" and "which category is drizzle in, and what is its flag" without
+prompts, a browser, or a project directory. Both commands are read-only and send no telemetry.
+
+## List categories and options
+
+Without a category, `list` prints every option category with its flag and option count.
+`--ecosystem` keeps only the categories that ecosystem uses:
+
+```bash
+npx create-better-fullstack@latest list --ecosystem go
+```
+
+With a category ID, `list` prints that category's options. Each row shows the option ID, its
+label, the exact argument that selects it, and any aliases:
+
+```bash
+npx create-better-fullstack@latest list goAuth --ecosystem go
+```
+
+```text
+●  Go Auth (goAuth), single select, --go-auth
+│
+│  id      label                flag              aliases
+│  casbin  Casbin               --go-auth casbin
+│  jwt     golang-jwt           --go-auth jwt
+│  goth    Goth                 --go-auth goth
+│  oauth2  golang.org/x/oauth2  --go-auth oauth2
+│  none    None                 --go-auth none
+```
+
+Category IDs are the canonical names used by `bfs_get_schema` and `bts.jsonc`, such as `orm`,
+`webFrontend`, or `goAuth`. An unknown category exits with status 1 and names the valid
+categories, or the closest match when you typed a flag name such as `go-auth`.
+
+## Search across ecosystems
+
+`search` matches text against option IDs, labels, and aliases in every category. Exact matches come
+first, then prefix matches, then other substring matches:
+
+```bash
+npx create-better-fullstack@latest search drizzle
+```
+
+```text
+│  id       label    flag           category  ecosystems  aliases
+│  drizzle  Drizzle  --orm drizzle  orm       typescript
+```
+
+Add `--ecosystem <id>` to search one ecosystem. A search with no matches exits with status 0 and
+prints a notice, or an empty `matches` array in JSON mode.
+
+Some categories have no dedicated flag, such as the tooling categories selected through
+`--part`. Their rows show `-` as the flag.
+
+## JSON output
+
+Pass `--json` to either command for machine-readable output. JSON mode writes only the JSON
+document to stdout, so it is safe to pipe into `jq`. Errors go to stderr with a non-zero exit code.
+
+`list` without a category returns the categories:
+
+```json
+{
+  "ecosystem": "go",
+  "categories": [
+    {
+      "id": "goAuth",
+      "label": "Go Auth",
+      "selectionMode": "single",
+      "flag": "--go-auth",
+      "ecosystems": ["go"],
+      "optionCount": 5
+    }
+  ]
+}
+```
+
+`list <category>` returns one `category` object in the same shape plus an `options` array:
+
+```json
+{
+  "ecosystem": "go",
+  "category": { "id": "goAuth", "label": "Go Auth", "...": "..." },
+  "options": [{ "id": "casbin", "label": "Casbin", "aliases": [], "flag": "--go-auth casbin" }]
+}
+```
+
+`search` returns the trimmed query and each match with its category and ecosystems:
+
+```json
+{
+  "query": "sveltekit",
+  "ecosystem": null,
+  "matches": [
+    {
+      "id": "svelte",
+      "label": "SvelteKit",
+      "aliases": ["sveltekit"],
+      "flag": "--frontend svelte",
+      "category": "webFrontend",
+      "categoryLabel": "Web Frontend",
+      "ecosystems": ["typescript"]
+    }
+  ]
+}
+```
+
+| Field           | Meaning                                                                                 |
+| --------------- | --------------------------------------------------------------------------------------- |
+| `ecosystem`     | The `--ecosystem` filter, or `null`.                                                    |
+| `selectionMode` | `single` or `multiple`. Multiple-select flags accept several space-separated values.    |
+| `flag`          | On a category, the flag name. On an option, the full argument. `null` when none exists. |
+| `ecosystems`    | Ecosystems whose stacks use the category.                                               |
+| `aliases`       | Alternative IDs the CLI also accepts for the option.                                    |
+
+AI agents get the same data from the [`bfs_list_options` and `bfs_search_options`](/docs/ai/mcp/)
+MCP tools.
