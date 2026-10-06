@@ -136,7 +136,7 @@ The `tasks` procedures are ready on the server, but no screen calls them yet. Th
 
 ## Deployment notes
 
-Mobile and server ship separately. Build the app with your Expo build profiles, and set `EXPO_PUBLIC_SERVER_URL` to the deployed API at build time. Deploy `apps/server` to a host that runs Bun, and replace the local SQLite file with a hosted libSQL or Turso database by changing `DATABASE_URL`. Do not put server secrets in the mobile bundle; anything prefixed `EXPO_PUBLIC_` ships to devices.
+Mobile and server ship separately. Build the app with your Expo build profiles, and set `EXPO_PUBLIC_SERVER_URL` to the deployed API at build time. Deploy `apps/server` to a host that runs Bun, and point `DATABASE_URL` at a hosted libSQL or Turso database. Turso also needs an auth token, which this scaffold does not read because the command selects `--db-setup none`. Add `DATABASE_AUTH_TOKEN` to the server schema in `packages/env/src/server.ts`, pass `authToken: env.DATABASE_AUTH_TOKEN` to `createClient` in `packages/db/src/index.ts`, add `authToken: process.env.DATABASE_AUTH_TOKEN` to `dbCredentials` in `packages/db/drizzle.config.ts`, and set the token in the server environment. Do not put server secrets in the mobile bundle; anything prefixed `EXPO_PUBLIC_` ships to devices.
 
 ## Troubleshooting
 

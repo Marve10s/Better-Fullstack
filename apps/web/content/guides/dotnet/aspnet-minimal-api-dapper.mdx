@@ -71,14 +71,31 @@ Endpoints, the `TodoItem` model, and the Dapper helper all live in `Program.cs`.
 ## Prerequisites
 
 - .NET SDK 10 or newer.
-- A PostgreSQL server. `appsettings.json` points at `localhost:5432` with the `postgres` user and a database named after the project.
+- A PostgreSQL server. `appsettings.json` points at `localhost:5432` with the `postgres` user and password and a database named `my-dapper-api`, which the app does not create.
 
 ## Run and verify
+
+Create the database the connection string names before the first request. The generated code creates the `Todos` table, not the database:
+
+```bash
+createdb -h localhost -U postgres my-dapper-api
+```
+
+Then restore and start the app:
 
 ```bash
 cd my-dapper-api
 dotnet restore
 dotnet run
+```
+
+The app listens on the URL it prints at startup, `http://localhost:5000` by default, or on `PORT` when it is set. `GET /` returns a JSON status, `GET /health` returns `Healthy`, and the todo endpoints read and write PostgreSQL:
+
+```bash
+curl -X POST http://localhost:5000/api/todos \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Write SQL"}'
+curl http://localhost:5000/api/todos
 ```
 
 Override the connection string with a real environment variable instead of editing the committed file:
@@ -115,7 +132,7 @@ public static async Task EnsureSchemaAsync(System.Data.Common.DbConnection db)
 }
 ```
 
-That keeps the first request working against an empty database, at the cost of one extra statement per call. Move the call to startup, or replace it with a migration tool, once the schema has more than one table.
+That keeps the first request working against a database with no tables, at the cost of one extra statement per call. Move the call to startup, or replace it with a migration tool, once the schema has more than one table.
 
 ## Representative snippets
 
@@ -154,13 +171,15 @@ The `Dockerfile` publishes with the .NET 10 SDK image and runs on the ASP.NET 10
 
 ## Troubleshooting
 
-| Symptom                                          | Check                                                                                     |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| `Failed to connect to 127.0.0.1:5432`            | Start PostgreSQL or set `ConnectionStrings__DefaultConnection`.                           |
-| `DATABASE_URL` has no effect                     | The app reads `ConnectionStrings:DefaultConnection`, not `DATABASE_URL`.                  |
-| Container ignores `PORT`                         | The image sets `ASPNETCORE_URLS`, which takes precedence.                                 |
-| `dotnet test` from the root runs nothing         | Pass the test project path; there is no solution file.                                    |
-| The generated README mentions TypeScript and npm | The .NET scaffold currently writes the TypeScript README. Use the commands in this guide. |
+| Symptom                                          | Check                                                                                                            |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `Failed to connect to 127.0.0.1:5432`            | Start PostgreSQL or set `ConnectionStrings__DefaultConnection`.                                                  |
+| `database "my-dapper-api" does not exist`        | Create it with `createdb`; the app creates only the `Todos` table.                                               |
+| `DATABASE_URL` has no effect                     | The app reads `ConnectionStrings:DefaultConnection`, not `DATABASE_URL`.                                         |
+| Container ignores `PORT`                         | The image sets `ASPNETCORE_URLS`, which takes precedence.                                                        |
+| `dotnet test` from the root runs nothing         | Pass the test project path; there is no solution file.                                                           |
+| `localhost:5000` returns 403 on macOS            | AirPlay Receiver also listens on port 5000. Start the app with another port, for example `PORT=5080 dotnet run`. |
+| The generated README mentions TypeScript and npm | The .NET scaffold currently writes the TypeScript README. Use the commands in this guide.                        |
 
 ## Next steps
 

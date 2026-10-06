@@ -114,9 +114,9 @@ Because the module is an extension function, the test boots the same configurati
 
 ## Growing the service
 
-The CORS block allows only `GET` and the `Content-Type` header. Add `allowMethod(HttpMethod.Post)` and any other methods before browser clients send writes.
+The CORS block calls `allowMethod(HttpMethod.Get)` and allows the `Content-Type` header. Ktor's CORS plugin also allows `POST` and `HEAD` by default, so preflight requests for other methods return 403. Add `allowMethod(HttpMethod.Put)`, `allowMethod(HttpMethod.Delete)`, or `allowMethod(HttpMethod.Patch)` before browser clients send those methods.
 
-For request and response bodies, add `@Serializable` data classes. The kotlinx.serialization Gradle plugin is not applied in the generated build, so add it next to `kotlin("jvm")` before annotating classes:
+For request and response bodies, add `@Serializable` data classes. The kotlinx.serialization Gradle plugin is not applied in the generated build. Without it, annotated classes still compile, but responding with one fails at runtime because no serializer is generated. Add the plugin next to `kotlin("jvm")`:
 
 ```kotlin
 plugins {
@@ -147,9 +147,9 @@ Choose Ktor for a lightweight Kotlin service where you want to see every plugin 
 | Symptom                                            | Check                                                                                                 |
 | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | CLI reports "Spring-only Java features"            | Pass `none` for `--java-orm`, `--java-auth`, `--java-api`, and `--java-libraries`.                    |
-| Browser `POST` requests fail CORS                  | The generated CORS plugin allows `GET` only.                                                          |
+| Browser `PUT` or `DELETE` requests fail CORS       | The generated CORS plugin allows `GET`, `POST`, and `HEAD`; add the other methods.                    |
 | `CORS_ORIGIN` from `.env` has no effect            | Export it in the environment; the app does not read `.env`.                                           |
-| `@Serializable` fails to compile                   | Apply the `plugin.serialization` Gradle plugin.                                                       |
+| `Serializer for class '...' is not found`          | Apply the `plugin.serialization` Gradle plugin.                                                       |
 | The README mentions plain Java and `src/main/java` | The generated README describes a plain Java project; the Kotlin sources live under `src/main/kotlin`. |
 
 ## Next steps

@@ -100,22 +100,9 @@ dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
 
-## Add interactivity to a page
+## Interactivity
 
-The app enables the interactive server render mode, but `Home.razor` does not opt in, so it renders as static server-side HTML. Add a render mode to components that handle events:
-
-```razor
-@page "/counter"
-@rendermode RenderMode.InteractiveServer
-
-<button @onclick="() => count++">Clicked @count times</button>
-
-@code {
-    private int count;
-}
-```
-
-`App.razor` already loads `_framework/blazor.web.js`, which interactive components need. The generated `_Imports.razor` does not add `@using static Microsoft.AspNetCore.Components.Web.RenderMode`, so use the qualified `RenderMode.InteractiveServer` name or add that import.
+`Program.cs` registers the interactive server render mode, and `App.razor` includes a `<script src="_framework/blazor.web.js">` tag. The generated app does not serve that script: a request for `/_framework/blazor.web.js` returns 404, so the Blazor client never starts in the browser. Pages render as static server-side HTML, and a component marked `@rendermode RenderMode.InteractiveServer` shows its prerendered markup but does not run `@onclick` or other event handlers.
 
 ## Representative snippets
 
@@ -160,13 +147,14 @@ The `Dockerfile` publishes with the .NET 10 SDK and runs on the ASP.NET 10 runti
 
 ## Troubleshooting
 
-| Symptom                                          | Check                                                                                     |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| `SQLite Error 1: 'no such table: Todos'`         | Create and apply an EF Core migration.                                                    |
-| Button clicks on a page do nothing               | Add `@rendermode RenderMode.InteractiveServer` to the component.                          |
-| Identity user store fails to resolve             | `AppDbContext` must derive from `IdentityDbContext` and have a migration.                 |
-| The `.http` file's `GET /` returns HTML          | `/` is the Blazor page here; use `/api/status` for the JSON status response.              |
-| The generated README mentions TypeScript and npm | The .NET scaffold currently writes the TypeScript README. Use the commands in this guide. |
+| Symptom                                          | Check                                                                                                            |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `SQLite Error 1: 'no such table: Todos'`         | Create and apply an EF Core migration.                                                                           |
+| Button clicks on a page do nothing               | `/_framework/blazor.web.js` returns 404 in the generated app, so the Blazor client does not start.               |
+| Identity user store fails to resolve             | `AppDbContext` must derive from `IdentityDbContext` and have a migration.                                        |
+| The `.http` file's `GET /` returns HTML          | `/` is the Blazor page here; use `/api/status` for the JSON status response.                                     |
+| `localhost:5000` returns 403 on macOS            | AirPlay Receiver also listens on port 5000. Start the app with another port, for example `PORT=5080 dotnet run`. |
+| The generated README mentions TypeScript and npm | The .NET scaffold currently writes the TypeScript README. Use the commands in this guide.                        |
 
 ## Next steps
 

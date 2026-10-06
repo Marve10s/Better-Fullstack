@@ -144,13 +144,14 @@ The `Dockerfile` publishes with the .NET 10 SDK and runs on the ASP.NET 10 runti
 
 ## Troubleshooting
 
-| Symptom                                             | Check                                                                                     |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| The `.http` file's `/api/todos` request returns 404 | The generated `.http` file still lists `/api/todos`; GraphQL requests go to `/graphql`.   |
-| `relation "Todos" does not exist`                   | Create and apply an EF Core migration.                                                    |
-| A new resolver field is missing                     | Public methods named `GetX` become field `x`; rebuild and restart the app.                |
-| No containers start during tests                    | The generated test does not use Testcontainers yet.                                       |
-| The generated README mentions TypeScript and npm    | The .NET scaffold currently writes the TypeScript README. Use the commands in this guide. |
+| Symptom                                             | Check                                                                                                            |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| The `.http` file's `/api/todos` request returns 404 | The generated `.http` file still lists `/api/todos`; GraphQL requests go to `/graphql`.                          |
+| `relation "Todos" does not exist`                   | Create and apply an EF Core migration.                                                                           |
+| A new resolver field is missing                     | Public methods named `GetX` become field `x`; rebuild and restart the app.                                       |
+| No containers start during tests                    | The generated test does not use Testcontainers yet.                                                              |
+| `localhost:5000` returns 403 on macOS               | AirPlay Receiver also listens on port 5000. Start the app with another port, for example `PORT=5080 dotnet run`. |
+| The generated README mentions TypeScript and npm    | The .NET scaffold currently writes the TypeScript README. Use the commands in this guide.                        |
 
 ## Next steps
 
