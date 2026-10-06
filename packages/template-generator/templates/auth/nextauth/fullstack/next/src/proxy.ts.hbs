@@ -1,0 +1,8 @@
+// Pages require a session; API routes enforce auth in their own handlers and procedures.
+export { auth as proxy } from "@{{projectName}}/auth";
+
+export const config = {
+  matcher: [
+    "/((?!api|_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+  ],
+};

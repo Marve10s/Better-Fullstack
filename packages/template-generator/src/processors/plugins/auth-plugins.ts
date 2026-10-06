@@ -8,6 +8,7 @@ export async function processAuthPlugins(
   config: ProjectConfig,
 ): Promise<void> {
   const authIndexPath = "packages/auth/src/index.ts";
+  if (config.auth !== "better-auth" && config.auth !== "better-auth-organizations") return;
   if (!vfs.exists(authIndexPath)) return;
 
   let tsMorph: typeof TsMorphTypes;

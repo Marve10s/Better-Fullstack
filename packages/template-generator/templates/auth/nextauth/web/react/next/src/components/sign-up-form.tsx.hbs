@@ -1,3 +1,4 @@
+{{#if (hasAuthJsCredentials orm database)}}
 "use client";
 
 import { useForm } from "@tanstack/react-form";
@@ -28,8 +29,6 @@ export default function SignUpForm({
       confirmPassword: "",
     },
     onSubmit: async ({ value }) => {
-      // Implement your sign-up logic here
-      // This could call an API route to create a user in your database
       try {
         const response = await fetch("/api/auth/register", {
           method: "POST",
@@ -219,3 +218,4 @@ export default function SignUpForm({
     </div>
   );
 }
+{{/if}}

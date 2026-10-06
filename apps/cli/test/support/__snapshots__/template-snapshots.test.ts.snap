@@ -11982,7 +11982,7 @@ export default nextConfig;
     "@trpc/client": "catalog:",
     "@trpc/tanstack-react-query": "^11.19.0",
     "@tanstack/react-query": "^5.104.0",
-    "@clerk/nextjs": "^7.9.7",
+    "@clerk/nextjs": "catalog:",
     "lucide-react": "^1.21.0"
   },
   "devDependencies": {
@@ -12194,7 +12194,8 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
       "@trpc/server": "^11.19.0",
-      "@trpc/client": "^11.19.0"
+      "@trpc/client": "^11.19.0",
+      "@clerk/nextjs": "^7.9.7"
     }
   },
   "scripts": {
@@ -12251,7 +12252,8 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "@snapshot-self-next-clerk/db": "workspace:*",
     "@trpc/server": "catalog:",
     "@trpc/client": "catalog:",
-    "next": "catalog:"
+    "next": "catalog:",
+    "@clerk/nextjs": "catalog:"
   }
 }
 "
@@ -12264,7 +12266,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     },
     {
       "content": 
-"import { initTRPC } from "@trpc/server";
+"import { initTRPC, TRPCError } from "@trpc/server";
 import type { Context } from "./context";
 
 export const t = initTRPC.context<Context>().create();
@@ -12273,6 +12275,21 @@ export const router = t.router;
 
 export const publicProcedure = t.procedure;
 
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.session) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Authentication required",
+      cause: "No session",
+    });
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      session: ctx.session,
+    },
+  });
+});
 "
 ,
       "path": "packages/api/src/index.ts",
@@ -12280,7 +12297,7 @@ export const publicProcedure = t.procedure;
     {
       "content": 
 "import {
-  publicProcedure,
+  protectedProcedure, publicProcedure,
   router,
 } from "../index";
 
@@ -12294,6 +12311,12 @@ export const appRouter = router({
   // </better-fullstack:recipe-registrations>
   healthCheck: publicProcedure.query(() => {
     return "OK";
+  }),
+  privateData: protectedProcedure.query(({ ctx }) => {
+    return {
+      message: "This is private",
+      user: ctx.session.user,
+    };
   }),
 });
 export type AppRouter = typeof appRouter;
@@ -12584,7 +12607,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: self-tanstack-
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
     "@orpc/tanstack-query": "^1.15.4",
-    "@clerk/tanstack-react-start": "^1.6.1",
+    "@clerk/tanstack-react-start": "catalog:",
     "srvx": "^0.11.22",
     "lucide-react": "^1.21.0"
   },
@@ -12906,7 +12929,8 @@ export default defineConfig({
       "@orpc/server": "^1.15.4",
       "@orpc/client": "^1.15.4",
       "@orpc/openapi": "^1.15.4",
-      "@orpc/zod": "^1.15.4"
+      "@orpc/zod": "^1.15.4",
+      "@clerk/tanstack-react-start": "^1.6.1"
     }
   },
   "scripts": {
@@ -12964,7 +12988,8 @@ export default defineConfig({
     "@orpc/server": "catalog:",
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
-    "@orpc/zod": "catalog:"
+    "@orpc/zod": "catalog:",
+    "@clerk/tanstack-react-start": "catalog:"
   }
 }
 "
@@ -12977,25 +13002,43 @@ export default defineConfig({
     },
     {
       "content": 
-"import { os } from "@orpc/server";
+"import { ORPCError, os } from "@orpc/server";
 import type { Context } from "./context";
 
 export const o = os.$context<Context>();
 
 export const publicProcedure = o;
 
+const requireAuth = o.middleware(async ({ context, next }) => {
+  if (!context.session?.user) {
+    throw new ORPCError("UNAUTHORIZED");
+  }
+  return next({
+    context: {
+      session: context.session,
+    },
+  });
+});
+
+export const protectedProcedure = publicProcedure.use(requireAuth);
 "
 ,
       "path": "packages/api/src/index.ts",
     },
     {
       "content": 
-"import { publicProcedure } from "../index";
+"import { protectedProcedure, publicProcedure } from "../index";
 import type { RouterClient } from "@orpc/server";
 
 export const appRouter = {
   healthCheck: publicProcedure.handler(() => {
     return "OK";
+  }),
+  privateData: protectedProcedure.handler(({ context }) => {
+    return {
+      message: "This is private",
+      user: context.session?.user,
+    };
   }),
 };
 export type AppRouter = typeof appRouter;

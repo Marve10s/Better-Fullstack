@@ -37,11 +37,11 @@ export const dependencyVersionMap = {
   "@clerk/tanstack-react-start": "^1.6.1",
   "@clerk/clerk-expo": "^2.20.0",
 
-  // Auth.js (NextAuth v5)
-  "next-auth": "^4.24.15",
-  "@auth/core": "^0.34.3",
+  // Auth.js (NextAuth v5). v5 is published only under the beta tag, so pin it exactly.
+  "next-auth": "5.0.0-beta.32",
   "@auth/drizzle-adapter": "^1.11.3",
   "@auth/prisma-adapter": "^2.11.3",
+  bcryptjs: "^3.0.3",
 
   // Stack Auth
   "@stackframe/stack": "^2.8.108",

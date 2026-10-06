@@ -1,0 +1,37 @@
+{{#if (hasAuthJsCredentials orm database)}}
+import { hash } from "bcryptjs";
+{{#if (eq orm "drizzle")}}
+import { db } from "@{{projectName}}/db";
+import { users } from "@{{projectName}}/db/schema/auth";
+{{/if}}
+{{#if (eq orm "prisma")}}
+import prisma from "@{{projectName}}/db";
+{{/if}}
+
+export async function findUserByEmail(email: string) {
+{{#if (eq orm "drizzle")}}
+  return db.query.users.findFirst({
+    where: (user, { eq }) => eq(user.email, email.toLowerCase()),
+  });
+{{/if}}
+{{#if (eq orm "prisma")}}
+  return prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+{{/if}}
+}
+
+export async function registerUser(input: { name: string; email: string; password: string }) {
+  const email = input.email.toLowerCase();
+  if (await findUserByEmail(email)) {
+    return false;
+  }
+
+  const password = await hash(input.password, 12);
+{{#if (eq orm "drizzle")}}
+  await db.insert(users).values({ name: input.name, email, password });
+{{/if}}
+{{#if (eq orm "prisma")}}
+  await prisma.user.create({ data: { name: input.name, email, password } });
+{{/if}}
+  return true;
+}
+{{/if}}

@@ -1,3 +1,4 @@
+{{#if (hasAuthJsCredentials orm database)}}
 "use client";
 
 import { useForm } from "@tanstack/react-form";
@@ -172,3 +173,39 @@ export default function SignInForm({
     </div>
   );
 }
+{{else}}
+"use client";
+
+import { signIn } from "next-auth/react";
+import Loader from "./loader";
+import { Button } from "./ui/button";
+import { useAuthClient } from "@/lib/auth-client";
+
+export default function SignInForm() {
+  const { isLoading } = useAuthClient();
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  return (
+    <div className="mx-auto w-full mt-10 max-w-md p-6">
+      <h1 className="mb-6 text-center text-3xl font-bold">Welcome</h1>
+      <div className="grid gap-2">
+        <Button
+          variant="outline"
+          onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+        >
+          Continue with GitHub
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+        >
+          Continue with Google
+        </Button>
+      </div>
+    </div>
+  );
+}
+{{/if}}

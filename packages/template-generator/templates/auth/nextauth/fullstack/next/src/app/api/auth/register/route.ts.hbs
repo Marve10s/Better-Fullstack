@@ -1,0 +1,25 @@
+{{#if (hasAuthJsCredentials orm database)}}
+import { registerUser } from "@{{projectName}}/auth/users";
+import { NextResponse } from "next/server";
+import { z } from "zod";
+
+const registerSchema = z.object({
+  name: z.string().trim().min(2),
+  email: z.email(),
+  password: z.string().min(8),
+});
+
+export async function POST(request: Request) {
+  const parsed = registerSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ message: "Invalid registration details" }, { status: 400 });
+  }
+
+  const created = await registerUser(parsed.data);
+  if (!created) {
+    return NextResponse.json({ message: "An account with this email already exists" }, { status: 409 });
+  }
+
+  return NextResponse.json({ message: "Account created" }, { status: 201 });
+}
+{{/if}}

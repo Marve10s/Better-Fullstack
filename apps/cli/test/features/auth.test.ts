@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -352,14 +353,32 @@ describe("Authentication Configurations", () => {
 
       expectSuccess(result);
       const projectDir = result.projectDir!;
-      const authOptions = await readFile(join(projectDir, "apps/web/src/lib/auth.ts"), "utf-8");
-      const middleware = await readFile(
-        join(projectDir, "apps/web/src/middleware.ts"),
-        "utf-8",
-      );
-      expect(authOptions).toContain('strategy: "jwt"');
-      expect(middleware).toContain("api/auth");
-      expect(middleware).not.toContain('"/(api|trpc)(.*)"');
+      const read = (path: string) => readFile(join(projectDir, path), "utf-8");
+      const authConfig = await read("packages/auth/src/index.ts");
+      const proxy = await read("apps/web/src/proxy.ts");
+      const apiContext = await read("packages/api/src/context.ts");
+      const apiProcedures = await read("packages/api/src/index.ts");
+      const signUpForm = await read("apps/web/src/components/sign-up-form.tsx");
+      const registerRoute = await read("apps/web/src/app/api/auth/register/route.ts");
+      const userSchema = await read("packages/db/src/schema/auth.ts");
+      const rootPackageJson = await read("package.json");
+
+      expect(authConfig).toContain('strategy: "jwt"');
+      expect(authConfig).toContain("await compare(password, user.password)");
+      expect(proxy).toContain('export { auth as proxy } from "@nextauth-self-next-drizzle/auth"');
+      expect(proxy).toContain("(?!api|_next");
+      expect(proxy).not.toContain('"/(api|trpc)(.*)"');
+
+      expect(apiContext).toContain('import { auth } from "@nextauth-self-next-drizzle/auth"');
+      expect(apiContext).toContain("const session = await auth();");
+      expect(apiContext).not.toContain("session: null,");
+      expect(apiProcedures).toContain("export const protectedProcedure");
+
+      expect(signUpForm).toContain('fetch("/api/auth/register"');
+      expect(registerRoute).toContain("export async function POST");
+      expect(registerRoute).toContain("registerUser(parsed.data)");
+      expect(userSchema).toContain('password: text("password")');
+      expect(rootPackageJson).toMatch(/"next-auth": "5\./);
     });
 
     it("should work with nextauth + self backend + next + prisma", async () => {
@@ -381,6 +400,79 @@ describe("Authentication Configurations", () => {
       });
 
       expectSuccess(result);
+      const projectDir = result.projectDir!;
+      const users = await readFile(join(projectDir, "packages/auth/src/users.ts"), "utf-8");
+      const userModel = await readFile(
+        join(projectDir, "packages/db/prisma/schema/auth.prisma"),
+        "utf-8",
+      );
+      expect(users).toContain("prisma.user.create");
+      expect(userModel).toMatch(/password\s+String\?/);
+      expect(
+        await readFile(join(projectDir, "apps/web/src/app/api/auth/register/route.ts"), "utf-8"),
+      ).toContain("registerUser");
+    });
+
+    it("should wire nextauth sessions into the oRPC context", async () => {
+      const result = await runTRPCTest({
+        projectName: "nextauth-self-next-orpc",
+        auth: "nextauth",
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "orpc",
+        frontend: ["next"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const projectDir = result.projectDir!;
+      const apiContext = await readFile(join(projectDir, "packages/api/src/context.ts"), "utf-8");
+      const apiProcedures = await readFile(join(projectDir, "packages/api/src/index.ts"), "utf-8");
+      expect(apiContext).toContain('import { auth } from "@nextauth-self-next-orpc/auth"');
+      expect(apiContext).toContain("const session = await auth();");
+      expect(apiContext).not.toMatch(/return \{\s*\}/);
+      expect(apiProcedures).toContain("context.session?.user");
+    });
+
+    it("should generate an OAuth-only nextauth setup without a database adapter", async () => {
+      const result = await runTRPCTest({
+        projectName: "nextauth-self-next-oauth-only",
+        auth: "nextauth",
+        backend: "self",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        api: "trpc",
+        frontend: ["next"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const projectDir = result.projectDir!;
+      const authConfig = await readFile(join(projectDir, "packages/auth/src/index.ts"), "utf-8");
+      const signInForm = await readFile(
+        join(projectDir, "apps/web/src/components/sign-in-form.tsx"),
+        "utf-8",
+      );
+      expect(authConfig).not.toContain("Credentials(");
+      expect(authConfig).not.toContain("adapter:");
+      expect(signInForm).not.toContain('signIn("credentials"');
+      expect(existsSync(join(projectDir, "apps/web/src/components/sign-up-form.tsx"))).toBe(false);
+      expect(existsSync(join(projectDir, "apps/web/src/app/api/auth/register/route.ts"))).toBe(
+        false,
+      );
     });
 
     it("should work with nextauth + self backend + next + sqlite", async () => {
@@ -1165,6 +1257,15 @@ describe("Authentication Configurations", () => {
       const webEnvSchema = await readFile(join(projectDir, "packages/env/src/web.ts"), "utf8");
       const webPackageJson = await readFile(join(projectDir, "apps/web/package.json"), "utf8");
 
+      const apiContext = await readFile(join(projectDir, "packages/api/src/context.ts"), "utf8");
+      const apiProcedures = await readFile(join(projectDir, "packages/api/src/index.ts"), "utf8");
+      const apiPackageJson = await readFile(join(projectDir, "packages/api/package.json"), "utf8");
+
+      expect(apiContext).toContain('import { auth } from "@clerk/nextjs/server"');
+      expect(apiContext).toContain("const { userId } = await auth();");
+      expect(apiContext).not.toContain("session: null,");
+      expect(apiProcedures).toContain("export const protectedProcedure");
+      expect(apiPackageJson).toContain("@clerk/nextjs");
       expect(middleware).toContain("clerkMiddleware");
       expect(dashboard).toContain('await auth()');
       expect(dashboard).toContain('redirect("/")');
@@ -1207,6 +1308,13 @@ describe("Authentication Configurations", () => {
       const webEnvSchema = await readFile(join(projectDir, "packages/env/src/web.ts"), "utf8");
       const webPackageJson = await readFile(join(projectDir, "apps/web/package.json"), "utf8");
 
+      const apiContext = await readFile(join(projectDir, "packages/api/src/context.ts"), "utf8");
+      const apiProcedures = await readFile(join(projectDir, "packages/api/src/index.ts"), "utf8");
+
+      expect(apiContext).toContain('import { auth } from "@clerk/tanstack-react-start/server"');
+      expect(apiContext).toContain("const { userId } = await auth();");
+      expect(apiContext).not.toMatch(/return \{\s*\}/);
+      expect(apiProcedures).toContain("context.session?.user");
       expect(startFile).toContain("clerkMiddleware()");
       expect(dashboard).toContain("@clerk/tanstack-react-start");
       expect(dashboard).toContain("createServerFn");
