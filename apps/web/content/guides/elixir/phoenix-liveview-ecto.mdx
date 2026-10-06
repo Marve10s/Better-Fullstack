@@ -38,7 +38,8 @@ npm create better-fullstack@latest my-liveview-app -- \
 
 - A Phoenix 1.7 application with `phoenix_live_view` and the LiveView socket mounted at `/live`.
 - Ecto SQL with Postgrex, a `Repo`, and an `items` migration.
-- An `ItemLive.Index` LiveView at `/items` that renders items through LiveView streams.
+- An `ItemLive.Index` LiveView at `/items` that renders items through LiveView streams and creates items from a `phx-submit` form.
+- A root layout that loads the Phoenix and LiveView JavaScript clients from the installed Hex packages and connects a `LiveSocket`.
 - A JSON health endpoint at `/api/health`.
 - ExUnit with a `ConnCase` support module, Credo, and a multi-stage `Dockerfile` that builds a Mix release.
 
@@ -54,6 +55,7 @@ my-liveview-app/
 ├── config/
 │   ├── config.exs
 │   ├── dev.exs
+│   ├── prod.exs
 │   ├── runtime.exs
 │   └── test.exs
 ├── lib/
@@ -65,6 +67,7 @@ my-liveview-app/
 │   └── my_liveview_app_web/
 │       ├── endpoint.ex
 │       ├── router.ex
+│       ├── components/layouts/root.html.heex
 │       ├── controllers/
 │       └── live/item_live/index.ex
 ├── priv/repo/
@@ -89,7 +92,7 @@ mix ecto.setup
 mix phx.server
 ```
 
-`mix ecto.setup` is a generated alias that creates the database, runs migrations, and runs `priv/repo/seeds.exs`, which inserts one sample item. The server listens on port 4000 unless `PORT` is set.
+`mix ecto.setup` is a generated alias that creates the database, runs migrations, and runs `priv/repo/seeds.exs`, which inserts one sample item. The server listens on port 4000 unless `PORT` is set. `GET /api/health` returns `{"status":"ok"}` with the app name, and LiveDashboard is available at `/dev/dashboard` in development.
 
 ```bash
 mix test
@@ -97,22 +100,11 @@ mix test
 
 The `test` alias creates and migrates the test database before running ExUnit, so PostgreSQL must be reachable for the test run too.
 
-## Add the LiveView JavaScript client
+## Use the form on /items
 
-The scaffold has no `assets/` directory, and the root layout in `components/layouts/root.html.heex` does not load a script. `/items` renders its initial HTML on the server, but the `phx-submit="create"` form only reaches `handle_event/3` once the browser connects a LiveSocket.
+Open `http://localhost:4000/items`. The page lists the seed item, and the browser connects to the LiveView socket at `/live`. Submitting the form with a name sends the `create` event to `handle_event/3`, which inserts the item and appends it to the list without a page reload.
 
-Add an asset pipeline (for example the `esbuild` Hex package) and a client entry point before relying on interactive events:
-
-```js
-import { Socket } from "phoenix";
-import { LiveSocket } from "phoenix_live_view";
-
-const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
-const liveSocket = new LiveSocket("/live", Socket, { params: { _csrf_token: csrfToken } });
-liveSocket.connect();
-```
-
-The root layout already renders the `csrf-token` meta tag this snippet reads.
+The scaffold has no `assets/` directory or JavaScript build step. The endpoint serves `phoenix.min.js` and `phoenix_live_view.min.js` straight from the `phoenix` and `phoenix_live_view` packages, and an inline script in `components/layouts/root.html.heex` starts the `LiveSocket`. Add an asset pipeline, such as the `esbuild` Hex package, when you need your own hooks or bundled JavaScript.
 
 ## Representative snippets
 
@@ -164,19 +156,35 @@ Choose the [Phoenix GraphQL guide](/guides/elixir/phoenix-absinthe-graphql/) or 
 
 ## Deployment notes
 
-The `Dockerfile` builds a `prod` release and starts it with `bin/my_liveview_app start`. `config/runtime.exs` requires `SECRET_KEY_BASE` in production and reads `DATABASE_URL`, `POOL_SIZE`, `ECTO_SSL`, `PHX_HOST`, and `PORT`.
+The `Dockerfile` runs `mix release` with `MIX_ENV=prod` and starts the result with `bin/my_liveview_app start`. Run the same build locally with:
+
+```bash
+MIX_ENV=prod mix deps.get --only prod
+MIX_ENV=prod mix release
+```
+
+`config/runtime.exs` sets the production values when the release boots:
+
+| Variable          | Required | Purpose                                                                   |
+| ----------------- | -------- | ------------------------------------------------------------------------- |
+| `SECRET_KEY_BASE` | Yes      | Signs sessions and LiveView tokens. The release stops at boot without it. |
+| `DATABASE_URL`    | Yes      | The only production database setting. Without it, every query fails.      |
+| `PHX_HOST`        | No       | Host used in generated URLs. Defaults to `example.com`.                   |
+| `PORT`            | No       | HTTP port. Defaults to `4000`.                                            |
+| `POOL_SIZE`       | No       | Ecto pool size. Defaults to `10`.                                         |
+| `ECTO_SSL`        | No       | Set to `true` to connect to PostgreSQL over SSL.                          |
 
 The scaffold does not generate a release migration module, so `mix ecto.migrate` is not available inside the release. Add a `Release.migrate/0` function, or run migrations from a build step that has Mix, before routing traffic.
 
 ## Troubleshooting
 
-| Symptom                                         | Check                                                                                                                                              |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Submitting the form on `/items` does nothing    | Add the LiveView JavaScript client; the scaffold does not load one.                                                                                |
-| `mix ecto.setup` cannot connect                 | Confirm PostgreSQL is running and the `POSTGRES_*` variables match your server.                                                                    |
-| Release exits with `SECRET_KEY_BASE is missing` | Generate one with `mix phx.gen.secret` and set it in the runtime environment.                                                                      |
-| `/dev/dashboard` returns 404                    | The router guards LiveDashboard with `dev_routes`, which no config file sets. Add `config :my_liveview_app, dev_routes: true` to `config/dev.exs`. |
-| `relation "items" does not exist` in production | Migrations do not run at release start; apply them before deploying.                                                                               |
+| Symptom                                               | Check                                                                                                                                                                                                            |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A rejected item reloads the `/items` view             | The error branch passes an `Ecto.Changeset` to `to_form/1`, which the scaffold's dependencies cannot convert, so the LiveView process crashes and remounts without a message. Names must be 2 to 120 characters. |
+| `mix ecto.setup` cannot connect                       | Confirm PostgreSQL is running and the `POSTGRES_*` variables match your server.                                                                                                                                  |
+| Release exits with `SECRET_KEY_BASE is missing`       | Generate one with `mix phx.gen.secret` and set it in the runtime environment.                                                                                                                                    |
+| Release queries fail with `missing the :database key` | Set `DATABASE_URL`; production has no other database configuration.                                                                                                                                              |
+| `relation "items" does not exist` in production       | Migrations do not run at release start; apply them before deploying.                                                                                                                                             |
 
 ## Next steps
 

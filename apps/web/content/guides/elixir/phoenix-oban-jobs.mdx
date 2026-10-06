@@ -53,6 +53,7 @@ my-jobs-api/
 ├── config/
 │   ├── config.exs
 │   ├── dev.exs
+│   ├── prod.exs
 │   ├── runtime.exs
 │   └── test.exs
 ├── lib/
@@ -99,15 +100,17 @@ curl -X POST http://localhost:4000/api/items \
 
 ## Enqueue the sample worker
 
-The worker logs its arguments and returns `:ok`. Nothing in the scaffold enqueues it, so insert a job yourself:
+The worker logs its arguments and returns `:ok`. Nothing in the scaffold enqueues it, so insert a job yourself from `iex -S mix phx.server`:
 
 ```elixir
+item = MyJobsApi.Catalog.list_items() |> List.last()
+
 %{"item_id" => item.id}
 |> MyJobsApi.Workers.SampleWorker.new()
 |> Oban.insert()
 ```
 
-Run that from `iex -S mix phx.server` to watch the log line, or call it from `Catalog.create_item/1` after a successful insert.
+The `default` queue picks the job up and logs `Processed Oban job with args=%{"item_id" => ...}`. To enqueue from application code instead, call the same pipeline from `Catalog.create_item/1` after a successful insert.
 
 ```elixir
 defmodule MyJobsApi.Workers.SampleWorker do
@@ -143,11 +146,7 @@ Add queues to the `queues` list when different job types need separate concurren
 mix test
 ```
 
-The generated test covers `/api/health`. `config/test.exs` does not override the Oban configuration, so the `default` queue and the Pruner also start during tests. Oban documents `testing: :manual` for test environments:
-
-```elixir
-config :my_jobs_api, Oban, testing: :manual
-```
+The generated test covers `/api/health`. `config/test.exs` does not override the Oban configuration, so the `default` queue and the Pruner also start during tests.
 
 ## When to choose it
 
@@ -161,11 +160,20 @@ Choose Oban when jobs must be persisted, retried, and inspected in SQL, and the 
 
 ## Deployment notes
 
-`fly.toml` builds from the generated `Dockerfile`, sets `PHX_HOST` and `PORT=4000`, forces HTTPS, and lets Fly stop idle machines. Set the remaining production values as secrets:
+`fly.toml` builds from the generated `Dockerfile`, sets `PHX_HOST` and `PORT=4000`, forces HTTPS, and lets Fly stop idle machines. The `Dockerfile` runs `mix release` with `MIX_ENV=prod`; run the same build locally with:
+
+```bash
+MIX_ENV=prod mix deps.get --only prod
+MIX_ENV=prod mix release
+```
+
+`config/runtime.exs` requires two values in production. `SECRET_KEY_BASE` must be set or the release stops at boot, and `DATABASE_URL` is the only production database setting, so the API and Oban cannot reach PostgreSQL without it. Set both as secrets:
 
 ```bash
 fly secrets set SECRET_KEY_BASE="$(mix phx.gen.secret)" DATABASE_URL="ecto://..."
 ```
+
+`POOL_SIZE` (default `10`) and `ECTO_SSL` (`true` enables SSL) are optional.
 
 The release does not include a migration task. Add one before the first deploy so the `items` and `oban_jobs` tables exist in production. Replace the local Swoosh adapter with a real provider adapter in `config/runtime.exs` before sending mail.
 

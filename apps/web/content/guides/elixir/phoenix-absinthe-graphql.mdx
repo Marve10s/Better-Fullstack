@@ -128,7 +128,7 @@ forward "/graphql", Absinthe.Plug, schema: MyGraphqlAppWeb.GraphQL.Schema
 
 ## Extending the schema
 
-The schema has no mutations. `Catalog.create_item/1` already validates input through `Item.changeset/2`, so a first mutation can call it and return changeset errors:
+The schema has no mutations. `MyGraphqlApp.Catalog.create_item/1` already validates input through `Item.changeset/2`, so a first mutation can call it through the resolver module. The schema aliases only `MyGraphqlAppWeb.GraphQL.Resolvers`, so add the mutation after the `query` block in `graphql/schema.ex` and point it at a resolver:
 
 ```elixir
 mutation do
@@ -136,12 +136,33 @@ mutation do
     arg :name, non_null(:string)
     arg :description, :string
 
-    resolve(fn args, _resolution -> Catalog.create_item(args) end)
+    resolve(&Resolvers.Catalog.create_item/3)
   end
 end
 ```
 
-Absinthe expects `{:error, ...}` values it can serialize, so convert an `Ecto.Changeset` into messages before returning it in a real schema.
+Then add the resolver to `graphql/resolvers/catalog.ex`, where `Catalog` already aliases `MyGraphqlApp.Catalog`. Absinthe cannot serialize an `Ecto.Changeset`, so the resolver turns changeset errors into messages:
+
+```elixir
+def create_item(_parent, args, _resolution) do
+  case Catalog.create_item(args) do
+    {:ok, item} ->
+      {:ok, item}
+
+    {:error, changeset} ->
+      {:error,
+       changeset
+       |> Ecto.Changeset.traverse_errors(fn {message, opts} ->
+         Enum.reduce(opts, message, fn {key, value}, acc ->
+           String.replace(acc, "%{#{key}}", to_string(value))
+         end)
+       end)
+       |> Enum.map(fn {field, messages} -> "#{field} #{Enum.join(messages, ", ")}" end)}
+  end
+end
+```
+
+A valid `mutation { createItem(name: "Second") { id name } }` returns the new item. A one-character name returns `null` for `createItem` and the error message `name should be at least 2 character(s)`.
 
 ## When to choose it
 
@@ -155,7 +176,7 @@ Choose Absinthe when several clients need different shapes of the same data and 
 
 ## Deployment notes
 
-This command sets `--elixir-deploy none`, so no `Dockerfile` or platform config is generated. `config/runtime.exs` still defines the production settings: `SECRET_KEY_BASE` is required, and `DATABASE_URL`, `PHX_HOST`, and `PORT` are read at boot. Pick `--elixir-deploy docker`, `fly`, `gigalixir`, or `mix-release` to generate deployment files.
+This command sets `--elixir-deploy none`, so no `Dockerfile` or platform config is generated. `config/runtime.exs` still defines the production settings: `SECRET_KEY_BASE` and `DATABASE_URL` are required, and `PHX_HOST`, `PORT`, `POOL_SIZE`, and `ECTO_SSL` are optional. Pick `--elixir-deploy docker`, `fly`, `gigalixir`, or `mix-release` to generate deployment files.
 
 ## Troubleshooting
 
