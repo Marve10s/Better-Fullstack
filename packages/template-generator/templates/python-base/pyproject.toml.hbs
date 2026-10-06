@@ -183,6 +183,12 @@ dependencies = [
 {{#if (eq pythonObservability "prometheus-client")}}
     "prometheus-client>=0.21.0",
 {{/if}}
+{{#if (eq pythonLogging "loguru")}}
+    "loguru>=0.7.3",
+{{/if}}
+{{#if (eq pythonLogging "structlog")}}
+    "structlog>=26.1.0",
+{{/if}}
 {{#if (includes pythonCli "typer")}}
     "typer>=0.16.0",
 {{/if}}

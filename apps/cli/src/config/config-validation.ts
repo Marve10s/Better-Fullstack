@@ -27,6 +27,7 @@ import {
 } from "@/config/compatibility-rules";
 import {
   buildCompatibilityInputFromConfig,
+  getPythonLoggingSelectionIssue,
   hasSelectedTypeScriptBackendPart,
 } from "@/config/stack-compatibility";
 import { validatePeerDependencies } from "@/platform/peer-dependency-validator";
@@ -1388,6 +1389,23 @@ export function validatePythonApiConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
+export function validatePythonLoggingConstraints(config: Partial<ProjectConfig>) {
+  const issue = getPythonLoggingSelectionIssue(config);
+  if (!issue) return;
+
+  incompatibilityError({
+    message: `${issue.reason}.`,
+    provided: {
+      "python-web-framework": issue.config.pythonWebFramework ?? "none",
+      "python-logging": issue.config.pythonLogging ?? "none",
+    },
+    suggestions: [
+      "Use FastAPI, Django, Flask, Litestar, Starlette, aiohttp, or no web framework",
+      "Set --python-logging none",
+    ],
+  });
+}
+
 export function validatePythonExpansionConstraints(config: Partial<ProjectConfig>) {
   const pythonConfig =
     config.ecosystem === "python"
@@ -1653,6 +1671,7 @@ export function validateFullConfig(
   validateApiConstraints(config, options);
   validatePythonApiConstraints(config);
   validatePythonExpansionConstraints(config);
+  validatePythonLoggingConstraints(config);
   validateGoExpansionConstraints(config);
   validateRustExpansionCompatibility(config);
   validateEmailConstraints(config);
@@ -1830,6 +1849,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateApiFrontendCompatibility(config.api, config.frontend, config.astroIntegration);
     validatePythonApiConstraints(config);
     validatePythonExpansionConstraints(config);
+    validatePythonLoggingConstraints(config);
     validateGoExpansionConstraints(config);
     validateEmailConstraints(config);
     validateObservabilityConstraints(config);

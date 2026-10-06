@@ -5014,6 +5014,34 @@ export const TECH_OPTIONS: Record<
       default: true,
     },
   ],
+  pythonLogging: [
+    {
+      id: "loguru",
+      name: "Loguru",
+      description: "Ready-to-use logger with stdlib interception and JSON serialization",
+      icon: "https://cdn.simpleicons.org/python/3776AB",
+      color: "from-emerald-500 to-teal-600",
+      default: false,
+      isNew: true,
+    },
+    {
+      id: "structlog",
+      name: "structlog",
+      description: "Structured key-value logging rendered through the standard library",
+      icon: "https://cdn.simpleicons.org/python/3776AB",
+      color: "from-sky-500 to-indigo-600",
+      default: false,
+      isNew: true,
+    },
+    {
+      id: "none",
+      name: "No Logging Library",
+      description: "Keep the framework's default logging",
+      icon: "",
+      color: "from-gray-400 to-gray-600",
+      default: true,
+    },
+  ],
   pythonCli: [
     {
       id: "typer",

@@ -763,6 +763,12 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         configKey: "pythonObservability",
       },
       {
+        flag: "python-logging",
+        summary: "Python logging.",
+        source: { kind: "category", category: "pythonLogging" },
+        configKey: "pythonLogging",
+      },
+      {
         flag: "python-cli",
         summary: "Python CLI tooling.",
         source: { kind: "category", category: "pythonCli" },

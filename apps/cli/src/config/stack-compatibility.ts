@@ -1,6 +1,8 @@
 import {
   analyzeStackCompatibility,
   getAddonStackPartBinding,
+  getPythonLoggingIncompatibility,
+  stackGraphToLegacyProjectConfigForEcosystem,
   type CompatibilityInput,
   type ProjectConfig,
 } from "@/types";
@@ -33,6 +35,23 @@ export function getCompatibilityBackend(
 
 function getProjectBackendFromCompatibility(backend: string): string {
   return backend.startsWith("self-") ? "self" : backend;
+}
+
+// Checks the selection the generator will use: a Python backend part wins over
+// stale flat fields.
+export function getPythonLoggingSelectionIssue(config: Partial<ProjectConfig>) {
+  const pythonConfig = config.stackParts?.some(
+    (part) => part.role === "backend" && part.ecosystem === "python" && part.source !== "provided",
+  )
+    ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "python")
+    : config.ecosystem === "python"
+      ? config
+      : undefined;
+  const reason = getPythonLoggingIncompatibility(
+    pythonConfig?.pythonLogging,
+    pythonConfig?.pythonWebFramework,
+  );
+  return reason && pythonConfig ? { reason, config: pythonConfig } : null;
 }
 
 export function hasSelectedTypeScriptBackendPart(config: Partial<ProjectConfig>): boolean {
@@ -179,6 +198,7 @@ export function buildCompatibilityInputFromConfig(
     pythonCaching: asString(config.pythonCaching),
     pythonRealtime: asString(config.pythonRealtime),
     pythonObservability: asString(config.pythonObservability),
+    pythonLogging: asString(config.pythonLogging),
     pythonCli: asStringArray(config.pythonCli),
     pythonCloudSdk: asString(config.pythonCloudSdk),
     pythonHttpClient: asString(config.pythonHttpClient),

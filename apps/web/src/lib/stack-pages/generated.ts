@@ -116,6 +116,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -311,7 +312,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -324,7 +325,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-clerk",
     ],
     guideUrl: "/guides/typescript/nextjs-drizzle-better-auth",
-    contentHash: "88fdf593a8bec71e5165e9666ad8b0634f7b03748bc50734e20e584df9d90f2a",
+    contentHash: "cd91e8e7f5afc17f9fe4439ce480eace25f6d7083e117f3f61dd0fc8c72a43e4",
     updated: "2026-07-17",
   },
   {
@@ -441,6 +442,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -647,7 +649,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -659,7 +661,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
       "nextjs-postgres-prisma-nextauth",
     ],
-    contentHash: "babc2adc1357f44124ae5f2fafb21f1427f961ba2bf8119c02f2074ad61a6d22",
+    contentHash: "cd0675c18b55a85abe8bef86beaf7abed52979d090bb6c86b79df3db686b230e",
     updated: "2026-07-17",
   },
   {
@@ -776,6 +778,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -969,7 +972,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -978,7 +981,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
       "nextjs-hono-openapi-drizzle",
     ],
-    contentHash: "8657e55ac722e617076632ec3df87ac028396415ed0d9d1ac4901d4da205fa44",
+    contentHash: "62b94831cacf730c9b8c1f45522d3499f7538fa5dffe077cd371d54658dcf904",
     updated: "2026-07-17",
   },
   {
@@ -1095,6 +1098,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -1170,7 +1174,7 @@ export const GENERATED_STACK_PAGES = [
         category: "webFrontend",
         id: "tanstack-start",
         label: "Tanstack Start",
-        description: "Full-stack React and Solid framework powered by TanStack Router",
+        description: "Full-stack React framework powered by TanStack Router",
         ownership: "Primary frontend",
       },
       {
@@ -1289,7 +1293,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -1302,7 +1306,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-resend",
     ],
     guideUrl: "/guides/typescript/create-tanstack-start-project",
-    contentHash: "c1939978c2b2d4ee875503e7c0faac25680bb233e959761e032a83df6e4ada0a",
+    contentHash: "f37eac09ab682e17064bac98af669fbe6a140716cc34a04d8882772013a31e45",
     updated: "2026-07-17",
   },
   {
@@ -1419,6 +1423,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -1609,7 +1614,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -1619,7 +1624,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-prisma-better-auth",
     ],
     guideUrl: "/guides/typescript/hono-trpc-drizzle",
-    contentHash: "67ccdb5870ccc7142a9152b7a6adca8f6c5b7b94f042b0227f9ce51d4fbac455",
+    contentHash: "9db2e40a69ca971a9df95b5851e8e2393633d9e6d667b15a59f800d2b9fc0e32",
     updated: "2026-07-17",
   },
   {
@@ -1736,6 +1741,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -1929,7 +1935,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -1938,7 +1944,7 @@ export const GENERATED_STACK_PAGES = [
       "sveltekit-hono-drizzle",
       "nextjs-hono-drizzle-better-auth",
     ],
-    contentHash: "df2aec26e2d44b27570cad808c24f5358f8b5bb0185425c2764c972deb69f923",
+    contentHash: "4491284c4e1183ff2661de8176d3f88f75a119852a0a32f613c5c7a1daba508e",
     updated: "2026-07-17",
   },
   {
@@ -2055,6 +2061,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -2248,8 +2255,8 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
-      constraints: ["Ui Library is intentionally set to none."],
+      typesPackageVersion: "2.7.0",
+      constraints: ["UI Library is intentionally set to none."],
       runtimeVerified: false,
     },
     relatedSlugs: [
@@ -2258,7 +2265,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-hono-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/sveltekit-hono-drizzle",
-    contentHash: "d5ba4b96fe1ae9d44bd1496c4e60b11d38e9541e8baf87da5267a62a829effc6",
+    contentHash: "58787c486cc5df658254085b33ccd71ffe346ed62842de9f21029960ff481923",
     updated: "2026-07-17",
   },
   {
@@ -2375,6 +2382,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -2569,8 +2577,8 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
-      constraints: ["Ui Library is intentionally set to none."],
+      typesPackageVersion: "2.7.0",
+      constraints: ["UI Library is intentionally set to none."],
       runtimeVerified: false,
     },
     relatedSlugs: [
@@ -2578,7 +2586,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-orpc-drizzle",
       "nextjs-hono-drizzle-better-auth",
     ],
-    contentHash: "842c110070ba139455c885230283c63d0de54f3058f953150a021cd6257b9be9",
+    contentHash: "3e098a93e499412a510abb8af646a59494b466c7f6b18ed54f9d271cd1bdf165",
     updated: "2026-07-17",
   },
   {
@@ -2695,6 +2703,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -2891,10 +2900,10 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
-        "Ui Library is intentionally set to none.",
+        "UI Library is intentionally set to none.",
       ],
       runtimeVerified: false,
     },
@@ -2904,7 +2913,7 @@ export const GENERATED_STACK_PAGES = [
       "solidstart-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/nuxt-prisma-better-auth",
-    contentHash: "468ef6491f303a748be2655fa1ff359b07f7853580dc2e7e4cf211c6d329b41b",
+    contentHash: "791ef3b48d7c5dd3e20a1ed90f9bbb3fabfb9ebbe43e7d27eddafb9c109f4105",
     updated: "2026-07-17",
   },
   {
@@ -3021,6 +3030,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -3223,7 +3233,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["The selection includes Astro's React integration alongside tRPC."],
       runtimeVerified: false,
     },
@@ -3233,7 +3243,7 @@ export const GENERATED_STACK_PAGES = [
       "react-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/astro-react-hono",
-    contentHash: "80231ad31130be67fa5b2d3c1d73f3db439b6d0135eb36bce5e457d15e93eb61",
+    contentHash: "ba8fc8620d142a5917bca3b4355fc885dc4428a00dc6a194dc7565dfbb6e4533",
     updated: "2026-07-17",
   },
   {
@@ -3350,6 +3360,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -3544,10 +3555,10 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
-        "Ui Library is intentionally set to none.",
+        "UI Library is intentionally set to none.",
       ],
       runtimeVerified: false,
     },
@@ -3557,7 +3568,7 @@ export const GENERATED_STACK_PAGES = [
       "react-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/solidstart-orpc-drizzle",
-    contentHash: "b7a339f3b3f93edb549dd5c2906d89c0f7a754cc60ae55c24e8c9c4b11d858db",
+    contentHash: "d56bbda1782459d2600dc661a3c937f6eb74916ca159756d9d37f1fefdcc59d2",
     updated: "2026-07-17",
   },
   {
@@ -3674,6 +3685,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -3870,11 +3882,11 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Auth is intentionally set to none.",
-        "Ui Library is intentionally set to none.",
-        "Api is intentionally set to none.",
+        "UI Library is intentionally set to none.",
+        "API is intentionally set to none.",
         "The Angular selection keeps the external API integration set to none.",
       ],
       runtimeVerified: false,
@@ -3884,7 +3896,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-postgres-prisma-nextauth",
       "nextjs-prisma-better-auth",
     ],
-    contentHash: "e9621b86155d251061723ee94ea01cb875a924f35c5c7b2762ea0cdb28008d6c",
+    contentHash: "1a1df564fed7b871177adfafa111e11f57029ca0baf03cfa43d54871aeb08ad6",
     updated: "2026-07-17",
   },
   {
@@ -4001,6 +4013,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -4166,7 +4179,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [],
       runtimeVerified: false,
     },
@@ -4176,7 +4189,7 @@ export const GENERATED_STACK_PAGES = [
       "python-fastapi-postgres-sqlalchemy",
     ],
     guideUrl: "/guides/rust/axum-leptos-fullstack",
-    contentHash: "eed9ab3ee7f7ad81876017fd5d184cc846d00125a7d31abbcd01174a560cd2af",
+    contentHash: "dae74653971b5367fa3bda8cc03898d7f404a9cb663a4b9962a1c863f5ed0f99",
     updated: "2026-07-17",
   },
   {
@@ -4293,6 +4306,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -4414,7 +4428,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem python --database postgres --python-web-framework fastapi --python-orm sqlalchemy --python-validation pydantic --python-ai none --python-auth none --python-api none --python-task-queue none --python-graphql none --python-quality ruff --python-testing none --python-caching none --python-realtime none --python-observability none --python-cli none --python-cloud-sdk none --python-http-client none --python-data none --python-media none --python-server none --python-package-manager uv --python-message-queue none --email none --observability none --caching none --search none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem python --database postgres --python-web-framework fastapi --python-orm sqlalchemy --python-validation pydantic --python-ai none --python-auth none --python-api none --python-task-queue none --python-graphql none --python-quality ruff --python-testing none --python-caching none --python-realtime none --python-observability none --python-logging none --python-cli none --python-cloud-sdk none --python-http-client none --python-data none --python-media none --python-server none --python-package-manager uv --python-message-queue none --email none --observability none --caching none --search none --ai-docs claude-md agents-md",
     builderUrl: "/new?eco=python&db=postgres&au=none",
     meaningfulParameters: [
       { key: "eco", value: "python" },
@@ -4451,7 +4465,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [],
       runtimeVerified: false,
     },
@@ -4461,7 +4475,7 @@ export const GENERATED_STACK_PAGES = [
       "go-gin-postgres-gorm",
     ],
     guideUrl: "/guides/python/fastapi-postgres-sqlalchemy",
-    contentHash: "43feca3ea429ff99d64409fda19fb379378b2f2579e00b1e1f815c6f9134cd1d",
+    contentHash: "1243d5008f79a06395386eeaa0d7daa1a4653a0efea9f302327b722bfbde3745",
     updated: "2026-07-17",
   },
   {
@@ -4578,6 +4592,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -4725,7 +4740,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [],
       runtimeVerified: false,
     },
@@ -4735,7 +4750,7 @@ export const GENERATED_STACK_PAGES = [
       "python-fastapi-postgres-sqlmodel",
     ],
     guideUrl: "/guides/go/gin-postgres-gorm",
-    contentHash: "490555d96cc8147b52569b98175e06cd63a85a994bfe9b67f185c83632dd925b",
+    contentHash: "404de04a754384c814834ad3de6fb6f105370466ea1c7c9d9f0450d6a6917968",
     updated: "2026-07-17",
   },
   {
@@ -4852,6 +4867,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -4927,7 +4943,7 @@ export const GENERATED_STACK_PAGES = [
         category: "webFrontend",
         id: "tanstack-start",
         label: "Tanstack Start",
-        description: "Full-stack React and Solid framework powered by TanStack Router",
+        description: "Full-stack React framework powered by TanStack Router",
         ownership: "Primary frontend",
       },
       {
@@ -5047,7 +5063,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -5060,7 +5076,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/tanstack-start-postgres-drizzle",
-    contentHash: "a544e49345761dd13d6df3e4db496798366f69e8f11acc0a6b29a32da04219b4",
+    contentHash: "3ebe026cf622f24bf1a40ad8c947dd394a97315921b7efc0a09318843254aecb",
     updated: "2026-07-30",
   },
   {
@@ -5177,6 +5193,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -5252,7 +5269,7 @@ export const GENERATED_STACK_PAGES = [
         category: "webFrontend",
         id: "tanstack-start",
         label: "Tanstack Start",
-        description: "Full-stack React and Solid framework powered by TanStack Router",
+        description: "Full-stack React framework powered by TanStack Router",
         ownership: "Primary frontend",
       },
       {
@@ -5372,7 +5389,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -5384,7 +5401,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-better-auth",
       "nextjs-prisma-better-auth",
     ],
-    contentHash: "13659e735454adbdd353accff90be554a73c6b7c4da62846a7c01a82e12e7b04",
+    contentHash: "677a8c7e9a1f79f27243c4ecf1525e74e0d1495d6c7384961d28754609bf923a",
     updated: "2026-07-30",
   },
   {
@@ -5501,6 +5518,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -5576,7 +5594,7 @@ export const GENERATED_STACK_PAGES = [
         category: "webFrontend",
         id: "tanstack-start",
         label: "Tanstack Start",
-        description: "Full-stack React and Solid framework powered by TanStack Router",
+        description: "Full-stack React framework powered by TanStack Router",
         ownership: "Primary frontend",
       },
       {
@@ -5697,7 +5715,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -5710,7 +5728,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/tanstack-start-resend",
-    contentHash: "2de2fd353d96242f897b8796eea60c915fc46f15024aad4f605662615de4657c",
+    contentHash: "2b8191cea8c9da43f7037cf001d781f63a70c9394f55c24b7214b50ecf0cfe03",
     updated: "2026-07-30",
   },
   {
@@ -5827,6 +5845,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -5902,7 +5921,7 @@ export const GENERATED_STACK_PAGES = [
         category: "webFrontend",
         id: "tanstack-start",
         label: "Tanstack Start",
-        description: "Full-stack React and Solid framework powered by TanStack Router",
+        description: "Full-stack React framework powered by TanStack Router",
         ownership: "Primary frontend",
       },
       {
@@ -6023,7 +6042,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -6035,7 +6054,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-clerk",
       "tanstack-start-postgres-drizzle-resend",
     ],
-    contentHash: "9cc8650fb6f61820b1a42425e8928c6e0001b6b6d0c84693075eb693cb63e729",
+    contentHash: "2dbe8dbc469c1d5c66fe0af266942ac3038cb1323ff18c61816b1748c835775e",
     updated: "2026-07-30",
   },
   {
@@ -6152,6 +6171,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -6345,7 +6365,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -6355,7 +6375,7 @@ export const GENERATED_STACK_PAGES = [
       "sveltekit-hono-drizzle",
     ],
     guideUrl: "/guides/typescript/hono-better-auth",
-    contentHash: "74eb6829f9a7c3821c9bb4eacd871bb85b6716d719cc28a58543ae70c638695c",
+    contentHash: "c8c52ccce33ee85479c194f11d96f50e920f737b8d6f19fd9d5f73e8466de84f",
     updated: "2026-07-30",
   },
   {
@@ -6472,6 +6492,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -6666,7 +6687,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Auth is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -6679,7 +6700,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/hono-openapi-drizzle",
-    contentHash: "2fa89eae372b2838eb8bf09050f01a319aa7f169a2ceda702e7f13c7ffc2913e",
+    contentHash: "9a273e37cb9956fb227c48f99918737b586abc2c4e0e9e6c5847b21d0e46643c",
     updated: "2026-07-30",
   },
   {
@@ -6796,6 +6817,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -6989,7 +7011,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["The selected shadcn/ui setup is paired with Tailwind CSS."],
       runtimeVerified: false,
     },
@@ -6999,7 +7021,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/hono-better-auth",
-    contentHash: "f3fa97932685896ad5af9def41899ac0c4a3896b76889c88f41aa87e87ff7986",
+    contentHash: "9f107280776abc55176fe7afca70ccb651e6da512415cb6e5399b2787f0e4c10",
     updated: "2026-07-30",
   },
   {
@@ -7116,6 +7138,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -7311,7 +7334,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Auth is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -7324,7 +7347,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-router-hono-trpc-drizzle",
     ],
     guideUrl: "/guides/typescript/nextjs-hono-api",
-    contentHash: "48d5abf614acb85efce541da5644d422f38261fec200b6c40d5126ca33ac8983",
+    contentHash: "709d807b31013fcc3243bffc9d4ae9bd930fe1148bd6c10bb636ab6fa821c492",
     updated: "2026-07-30",
   },
   {
@@ -7441,6 +7464,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -7637,7 +7661,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -7649,7 +7673,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-clerk",
       "nextjs-drizzle-resend-better-auth",
     ],
-    contentHash: "f7d734fb6ea9ac975f8bab2db3ef84732450d8e4946a5f20d873e9c66f347dbe",
+    contentHash: "cb6ad2b2fc4c7b3cca52ed1c140ae3598990fd377976bf2eb5436f922b0d600a",
     updated: "2026-07-30",
   },
   {
@@ -7766,6 +7790,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -7963,7 +7988,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -7976,7 +8001,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-postgres-prisma-nextauth",
     ],
     guideUrl: "/guides/typescript/nextjs-prisma-better-auth",
-    contentHash: "9ba1de1212a41147500674e74c64273aa6c6ce194992c3e78aaef6954de1e426",
+    contentHash: "bbc9a103489e85c71c03b1228ca7b5a38e90f71636ca68b42ac0185abdd38bc6",
     updated: "2026-07-30",
   },
   {
@@ -8093,6 +8118,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -8289,7 +8315,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -8302,7 +8328,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/nextjs-drizzle-better-auth",
-    contentHash: "523ddfc4c1d285ecc6dd024166635babb409ef6e6106e0afa25632b17e866ca9",
+    contentHash: "b92a2a207da625b1b870bb744b8c4b3e55367b90b29c9f04a601c873e9fd7650",
     updated: "2026-07-30",
   },
   {
@@ -8419,6 +8445,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -8616,7 +8643,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [
         "Runtime is intentionally set to none.",
         "The selected shadcn/ui setup is paired with Tailwind CSS.",
@@ -8628,7 +8655,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-prisma-stripe-better-auth",
       "nextjs-drizzle-better-auth",
     ],
-    contentHash: "a58569980642c8e1f5d05194a1f1b013830dfda428bb80f0c12b4cc2a71def48",
+    contentHash: "15dacea49c21c0a5458332aece496264c980f55a3ea752650532e717d7471648",
     updated: "2026-07-30",
   },
   {
@@ -8745,6 +8772,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -8867,7 +8895,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem python --database postgres --python-web-framework fastapi --python-orm sqlmodel --python-validation pydantic --python-ai none --python-auth none --python-api none --python-task-queue none --python-graphql none --python-quality ruff --python-testing pytest --python-caching none --python-realtime none --python-observability none --python-cli none --python-cloud-sdk none --python-http-client none --python-data none --python-media none --python-server none --python-package-manager uv --python-message-queue none --email none --observability none --caching none --search none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem python --database postgres --python-web-framework fastapi --python-orm sqlmodel --python-validation pydantic --python-ai none --python-auth none --python-api none --python-task-queue none --python-graphql none --python-quality ruff --python-testing pytest --python-caching none --python-realtime none --python-observability none --python-logging none --python-cli none --python-cloud-sdk none --python-http-client none --python-data none --python-media none --python-server none --python-package-manager uv --python-message-queue none --email none --observability none --caching none --search none --ai-docs claude-md agents-md",
     builderUrl: "/new?eco=python&db=postgres&au=none&porm=sqlmodel&ptest=pytest",
     meaningfulParameters: [
       { key: "eco", value: "python" },
@@ -8906,7 +8934,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [],
       runtimeVerified: false,
     },
@@ -8916,7 +8944,7 @@ export const GENERATED_STACK_PAGES = [
       "go-gin-postgres-gorm",
     ],
     guideUrl: "/guides/python/fastapi-postgres-sqlmodel",
-    contentHash: "b2f6e845d47eb52114bcba5a6823aa1f2d16acb2cb86133ff027c624e896fec5",
+    contentHash: "8ba93495619ea2921ed5b31c74afb96da942563afc2427e082a376b99bd57094",
     updated: "2026-07-30",
   },
   {
@@ -9033,6 +9061,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -9153,7 +9182,7 @@ export const GENERATED_STACK_PAGES = [
       ],
     },
     command:
-      "bun create better-fullstack@latest my-app --ecosystem python --database postgres --python-web-framework django --python-orm none --python-validation pydantic --python-ai none --python-auth none --python-api django-rest-framework --python-task-queue none --python-graphql none --python-quality ruff --python-testing pytest --python-caching none --python-realtime none --python-observability none --python-cli none --python-cloud-sdk none --python-http-client none --python-data none --python-media none --python-server none --python-package-manager uv --python-message-queue none --email none --observability none --caching none --search none --ai-docs claude-md agents-md",
+      "bun create better-fullstack@latest my-app --ecosystem python --database postgres --python-web-framework django --python-orm none --python-validation pydantic --python-ai none --python-auth none --python-api django-rest-framework --python-task-queue none --python-graphql none --python-quality ruff --python-testing pytest --python-caching none --python-realtime none --python-observability none --python-logging none --python-cli none --python-cloud-sdk none --python-http-client none --python-data none --python-media none --python-server none --python-package-manager uv --python-message-queue none --email none --observability none --caching none --search none --ai-docs claude-md agents-md",
     builderUrl:
       "/new?eco=python&db=postgres&au=none&pwf=django&porm=none&papi=django-rest-framework&ptest=pytest",
     meaningfulParameters: [
@@ -9193,7 +9222,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: ["Python ORM / Database is intentionally set to none."],
       runtimeVerified: false,
     },
@@ -9203,7 +9232,7 @@ export const GENERATED_STACK_PAGES = [
       "go-gin-postgres-gorm",
     ],
     guideUrl: "/guides/python/django-rest-api",
-    contentHash: "ff7a52c5dcc9eaebe401fd41590ce6385caf221535db08324842f59c381d675a",
+    contentHash: "142fdb9ac3fb46ac947619b23a769c934642998e0a50dbf49d69a01bf2745d74",
     updated: "2026-07-30",
   },
   {
@@ -9320,6 +9349,7 @@ export const GENERATED_STACK_PAGES = [
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       pythonCloudSdk: "none",
       pythonHttpClient: "none",
@@ -9472,7 +9502,7 @@ export const GENERATED_STACK_PAGES = [
     compatibility: {
       graphIssueCount: 0,
       selectedOptionIssueCount: 0,
-      typesPackageVersion: "2.6.4",
+      typesPackageVersion: "2.7.0",
       constraints: [],
       runtimeVerified: false,
     },
@@ -9482,7 +9512,7 @@ export const GENERATED_STACK_PAGES = [
       "python-fastapi-postgres-sqlmodel",
     ],
     guideUrl: "/guides/go/echo-sqlc-api",
-    contentHash: "8d73a32b560887e18ee73535607e4beb97da59ef0593e9cb49d67a32776a512b",
+    contentHash: "09a6c8c2b56ed48275ddfaab3956a2eaddef4c3ff21552d06b180bd09f7ce980",
     updated: "2026-07-30",
   },
 ] as const satisfies readonly GeneratedStackPage[];

@@ -122,6 +122,7 @@ import {
   PYTHON_CACHING_VALUES,
   PYTHON_REALTIME_VALUES,
   PYTHON_OBSERVABILITY_VALUES,
+  PYTHON_LOGGING_VALUES,
   PYTHON_CLI_VALUES,
   PYTHON_CLOUD_SDK_VALUES,
   PYTHON_DATA_VALUES,
@@ -734,6 +735,7 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
     caching: "pythonCaching",
     realtime: "pythonRealtime",
     observability: "pythonObservability",
+    logging: "pythonLogging",
     cloudSdk: "pythonCloudSdk",
     httpClient: "pythonHttpClient",
     media: "pythonMedia",
@@ -1122,6 +1124,7 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(["meilisearch"], "search", "python", "search"),
   ...defineTools(PYTHON_REALTIME_VALUES, "realtime", "python", "pythonRealtime"),
   ...defineTools(PYTHON_OBSERVABILITY_VALUES, "observability", "python", "pythonObservability"),
+  ...defineTools(PYTHON_LOGGING_VALUES, "logging", "python", "pythonLogging"),
   ...defineTools(PYTHON_CLI_VALUES, "cli", "python", "pythonCli", {
     allowMultiple: true,
   }),

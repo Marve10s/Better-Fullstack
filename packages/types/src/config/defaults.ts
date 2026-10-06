@@ -98,6 +98,7 @@ export function createCliDefaultProjectConfigBase(
     pythonCaching: "none",
     pythonRealtime: "none",
     pythonObservability: "none",
+    pythonLogging: "none",
     pythonCli: [],
     pythonCloudSdk: "none",
     pythonHttpClient: "none",

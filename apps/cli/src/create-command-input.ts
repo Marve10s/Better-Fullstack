@@ -120,6 +120,7 @@ import {
   PythonCachingSchema,
   PythonRealtimeSchema,
   PythonObservabilitySchema,
+  PythonLoggingSchema,
   PythonCliSchema,
   PythonCloudSdkSchema,
   PythonDataSchema,
@@ -363,6 +364,7 @@ export const CreateCommandOptionsSchema = z.object({
   pythonObservability: PythonObservabilitySchema.optional().describe(
     "Python observability (opentelemetry, signoz)",
   ),
+  pythonLogging: PythonLoggingSchema.optional().describe("Python logging (loguru, structlog)"),
   pythonCli: z
     .array(PythonCliSchema)
     .optional()

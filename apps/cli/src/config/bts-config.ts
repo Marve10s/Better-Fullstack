@@ -112,6 +112,7 @@ function normalizeGraphConfigForPersistence(
     normalized.pythonCaching = "none";
     normalized.pythonRealtime = "none";
     normalized.pythonObservability = "none";
+    normalized.pythonLogging = "none";
     normalized.pythonCli = [];
     normalized.pythonCloudSdk = "none";
     normalized.pythonHttpClient = "none";
@@ -445,6 +446,7 @@ export function buildBtsConfigForPersistence(
     pythonCaching: persistedConfig.pythonCaching,
     pythonRealtime: persistedConfig.pythonRealtime,
     pythonObservability: persistedConfig.pythonObservability,
+    pythonLogging: persistedConfig.pythonLogging,
     pythonCli: persistedConfig.pythonCli,
     pythonCloudSdk: persistedConfig.pythonCloudSdk,
     pythonHttpClient: persistedConfig.pythonHttpClient,
@@ -640,6 +642,7 @@ export function serializeBtsConfig(
     pythonCaching: btsConfig.pythonCaching,
     pythonRealtime: btsConfig.pythonRealtime,
     pythonObservability: btsConfig.pythonObservability,
+    pythonLogging: btsConfig.pythonLogging ?? "none",
     pythonCli: btsConfig.pythonCli,
     pythonCloudSdk: btsConfig.pythonCloudSdk,
     pythonHttpClient: btsConfig.pythonHttpClient,

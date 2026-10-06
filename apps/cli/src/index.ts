@@ -169,6 +169,7 @@ export async function createVirtual(
       pythonCaching: options.pythonCaching || "none",
       pythonRealtime: options.pythonRealtime || "none",
       pythonObservability: options.pythonObservability || "none",
+      pythonLogging: options.pythonLogging || "none",
       pythonCli: options.pythonCli || [],
       pythonCloudSdk: options.pythonCloudSdk || "none",
       pythonHttpClient: options.pythonHttpClient || "none",

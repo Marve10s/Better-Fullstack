@@ -736,6 +736,10 @@ export const PythonObservabilitySchema = z
   .enum(["opentelemetry", "signoz", "prometheus-client", "none"])
   .describe("Python observability/tracing library");
 
+export const PythonLoggingSchema = z
+  .enum(["loguru", "structlog", "none"])
+  .describe("Python logging library");
+
 export const PythonCliSchema = z
   .enum(["typer", "click", "rich", "none"])
   .describe("Python CLI tooling libraries");
@@ -1307,6 +1311,7 @@ export const CreateInputSchema = z.object({
   pythonCaching: PythonCachingSchema.optional(),
   pythonRealtime: PythonRealtimeSchema.optional(),
   pythonObservability: PythonObservabilitySchema.optional(),
+  pythonLogging: PythonLoggingSchema.optional(),
   pythonCli: z.array(PythonCliSchema).optional(),
   pythonCloudSdk: PythonCloudSdkSchema.optional(),
   pythonHttpClient: PythonHttpClientSchema.optional(),
@@ -1507,6 +1512,7 @@ export const ProjectConfigSchema = z.object({
   pythonCaching: PythonCachingSchema,
   pythonRealtime: PythonRealtimeSchema,
   pythonObservability: PythonObservabilitySchema,
+  pythonLogging: PythonLoggingSchema,
   pythonCli: z.array(PythonCliSchema),
   pythonCloudSdk: PythonCloudSdkSchema,
   pythonHttpClient: PythonHttpClientSchema,
@@ -1693,6 +1699,7 @@ export const BetterTStackConfigSchema = z.object({
   pythonCaching: PythonCachingSchema,
   pythonRealtime: PythonRealtimeSchema,
   pythonObservability: PythonObservabilitySchema,
+  pythonLogging: PythonLoggingSchema,
   pythonCli: z.array(PythonCliSchema),
   pythonCloudSdk: PythonCloudSdkSchema,
   pythonHttpClient: PythonHttpClientSchema,
@@ -1892,6 +1899,7 @@ export const PYTHON_TESTING_VALUES = PythonTestingSchema.options;
 export const PYTHON_CACHING_VALUES = PythonCachingSchema.options;
 export const PYTHON_REALTIME_VALUES = PythonRealtimeSchema.options;
 export const PYTHON_OBSERVABILITY_VALUES = PythonObservabilitySchema.options;
+export const PYTHON_LOGGING_VALUES = PythonLoggingSchema.options;
 export const PYTHON_CLI_VALUES = PythonCliSchema.options;
 export const PYTHON_CLOUD_SDK_VALUES = PythonCloudSdkSchema.options;
 export const PYTHON_HTTP_CLIENT_VALUES = PythonHttpClientSchema.options;

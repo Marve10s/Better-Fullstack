@@ -1,0 +1,20 @@
+{{#if (and (eq pythonServer "gunicorn") (ne pythonLogging "none"))}}
+"""Gunicorn settings: send Gunicorn's own logs through the app's logging setup."""
+
+from typing import Any
+
+from gunicorn.glogging import Logger
+
+from app.logging_config import configure_logging
+
+
+class AppLogger(Logger):
+    """Gunicorn logger whose output is handled by app.logging_config."""
+
+    def setup(self, cfg: Any) -> None:
+        super().setup(cfg)
+        configure_logging()
+
+
+logger_class = AppLogger
+{{/if}}

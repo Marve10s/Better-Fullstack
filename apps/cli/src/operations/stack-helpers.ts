@@ -34,7 +34,10 @@ import { listPresets } from "@/commands/stack/presets";
 import { getStarterTrackRecommendation } from "@/commands/stack/starter-tracks";
 import { applyEffectBackendDefaults } from "@/config/config-processing";
 import { getEffectiveStack, getGraphSummary } from "@/config/graph-summary";
-import { getCompatibilityBackend } from "@/config/stack-compatibility";
+import {
+  getCompatibilityBackend,
+  getPythonLoggingSelectionIssue,
+} from "@/config/stack-compatibility";
 
 const MCP_ECOSYSTEMS = new Set<OptionCategoryEcosystem>(
   EcosystemSchema.options as OptionCategoryEcosystem[],
@@ -305,6 +308,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   pythonCaching: "none",
   pythonRealtime: "none",
   pythonObservability: "none",
+  pythonLogging: "none",
   pythonCli: [],
   pythonCloudSdk: "none",
   pythonHttpClient: "none",
@@ -423,10 +427,23 @@ function getMcpProjectConfigDefaults(input: Record<string, unknown>) {
 
 export function validateMcpProjectConfigCompatibility(
   config: Pick<ProjectConfig, "ecosystem" | "integrations"> &
-    Partial<Pick<ProjectConfig, "backend" | "runtime" | "webDeploy" | "stackParts" | "addons">>,
+    Partial<
+      Pick<
+        ProjectConfig,
+        | "backend"
+        | "runtime"
+        | "webDeploy"
+        | "stackParts"
+        | "addons"
+        | "pythonWebFramework"
+        | "pythonLogging"
+      >
+    >,
 ): void {
   const qualityIssue = getCodeQualitySelectionIssue(config.addons ?? []);
   if (qualityIssue) throw new Error(qualityIssue);
+  const pythonLoggingIssue = getPythonLoggingSelectionIssue(config);
+  if (pythonLoggingIssue) throw new Error(pythonLoggingIssue.reason);
   if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
     const qualityIssues = validateStackParts(config.stackParts).issues.filter(
       (issue) => issue.role === "codeQuality",

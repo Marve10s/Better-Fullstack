@@ -1903,6 +1903,14 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://aiocache.aio-libs.org/",
     githubUrl: "https://github.com/aio-libs/aiocache",
   },
+  loguru: {
+    docsUrl: "https://loguru.readthedocs.io/",
+    githubUrl: "https://github.com/Delgan/loguru",
+  },
+  structlog: {
+    docsUrl: "https://www.structlog.org/",
+    githubUrl: "https://github.com/hynek/structlog",
+  },
   "python-socketio": {
     docsUrl: "https://python-socketio.readthedocs.io/",
     githubUrl: "https://github.com/miguelgrinberg/python-socketio",

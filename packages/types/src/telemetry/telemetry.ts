@@ -333,6 +333,7 @@ export const TELEMETRY_PROJECT_CONFIG_KEYS = [
   "pythonCaching",
   "pythonRealtime",
   "pythonObservability",
+  "pythonLogging",
   "pythonCli",
   "pythonCloudSdk",
   "pythonHttpClient",

@@ -184,6 +184,7 @@ const PYTHON_BASE_CONFIG: Partial<ProjectConfig> = {
   pythonCaching: "none",
   pythonRealtime: "none",
   pythonObservability: "none",
+  pythonLogging: "none",
   pythonAi: [],
   pythonTesting: [],
   pythonCli: [],
@@ -2817,6 +2818,13 @@ describe("stack update planner", () => {
           update: { pythonObservability: "opentelemetry" },
           field: "pythonObservability",
           expected: "opentelemetry",
+        },
+        {
+          name: "python-logging-structlog",
+          config: PYTHON_BASE_CONFIG,
+          update: { pythonLogging: "structlog" },
+          field: "pythonLogging",
+          expected: "structlog",
         },
         {
           name: "python-cli-typer",

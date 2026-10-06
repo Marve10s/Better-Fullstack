@@ -1594,6 +1594,7 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     pythonPackageManager: configuredPythonPackageManager,
     pythonMessageQueue,
     pythonObservability,
+    pythonLogging,
   } = config;
 
   // Graph-derived and legacy configs may omit this recently introduced field.
@@ -1715,6 +1716,11 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     features.push("- **SigNoz** - OpenTelemetry tracing with SigNoz-ready OTLP configuration");
   } else if (pythonObservability === "opentelemetry") {
     features.push("- **OpenTelemetry** - OTLP tracing and exporter configuration");
+  }
+  if (pythonLogging === "loguru") {
+    features.push("- **Loguru** - Request-aware logging with JSON output in production");
+  } else if (pythonLogging === "structlog") {
+    features.push("- **structlog** - Structured request-aware logging with JSON output in production");
   }
   if (pythonTesting.includes("pytest-cov")) {
     features.push("- **pytest-cov** - Coverage reports for the generated test suite");
@@ -1863,6 +1869,9 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     structure.push("│       ├── metrics.py    # Prometheus metrics helpers");
   } else if (pythonObservability === "signoz" || pythonObservability === "opentelemetry") {
     structure.push("│       ├── otel.py       # OpenTelemetry tracing helpers");
+  }
+  if (pythonLogging === "loguru" || pythonLogging === "structlog") {
+    structure.push("│       ├── logging_config.py # Logging setup and request logging");
   }
 
   structure.push("├── tests/");

@@ -116,6 +116,7 @@ import {
   PythonMediaSchema,
   PythonMessageQueueSchema,
   PythonObservabilitySchema,
+  PythonLoggingSchema,
   PythonOrmSchema,
   PythonPackageManagerSchema,
   PythonQualitySchema,
@@ -222,6 +223,7 @@ export const crossEcosystemInputSchema = {
   pythonObservability: PythonObservabilitySchema.optional().describe(
     "Python observability (OpenTelemetry, SigNoz, or Prometheus)",
   ),
+  pythonLogging: PythonLoggingSchema.optional().describe("Python logging library"),
   pythonCli: z.array(PythonCliSchema).optional().describe("Python CLI tooling"),
   pythonCloudSdk: PythonCloudSdkSchema.optional().describe("Python cloud SDK"),
   pythonHttpClient: PythonHttpClientSchema.optional().describe("Python HTTP client"),
