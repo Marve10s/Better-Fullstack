@@ -418,6 +418,14 @@ describe("SEO contracts", () => {
     expect(faviconSvg).toContain("#C6E853");
   });
 
+  it("keeps the shared builder view out of search indexes", async () => {
+    const { Route } = await import("@/routes/stack");
+    const head = await Route.options.head?.({} as never);
+
+    expect(head?.meta).toContainEqual({ name: "robots", content: NOINDEX_ROBOTS });
+    expect(head?.meta).toContainEqual({ name: "googlebot", content: NOINDEX_ROBOTS });
+  });
+
   it("keeps non-content API responses out of search indexes", async () => {
     const apiRoutes = ["src/routes/api/stats.ts", "src/routes/api/preview.ts"];
     const routeSources = await Promise.all(apiRoutes.map((route) => Bun.file(route).text()));

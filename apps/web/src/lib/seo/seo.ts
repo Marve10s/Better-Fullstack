@@ -68,6 +68,7 @@ export function buildPageHead({
       { title },
       { name: "description", content: description },
       { name: "robots", content: robots },
+      { name: "googlebot", content: robots },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
       { property: "og:type", content: ogType },
