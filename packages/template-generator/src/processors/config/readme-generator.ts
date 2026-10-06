@@ -518,7 +518,9 @@ ${
   - \`CLERK_SECRET_KEY\`
 - Clerk middleware and a protected \`/dashboard\` route are already generated`
       : ""
-  }${backend === "self" && auth === "nextauth" ? generateAuthJsSetup(options, webPort) : ""}
+  }${backend === "self" && auth === "nextauth" ? generateAuthJsSetup(options, webPort) : ""}${
+    auth === "passport" ? generatePassportSetup() : ""
+  }
 
 Then, run the development server:
 
@@ -706,7 +708,7 @@ function generateAIExampleSection(options: ProjectConfig): string {
 ## AI Chat Example
 
 The AI chat endpoint requires a signed-in user and rejects signed-out requests before calling the model provider.
-`
+${options.auth === "passport" ? `\n${PASSPORT_SAME_SITE_NOTE}\n` : ""}`
     : `
 ## AI Chat Example
 
@@ -885,6 +887,16 @@ function generateAuthJsSetup(config: ProjectConfig, webPort: string): string {
 - OAuth: create GitHub or Google OAuth apps with the callback URL \`http://localhost:${webPort}/api/auth/callback/<provider>\`, then set \`AUTH_GITHUB_ID\`, \`AUTH_GITHUB_SECRET\`, \`AUTH_GOOGLE_ID\`, and \`AUTH_GOOGLE_SECRET\` in \`apps/web/.env\`.
 ${signInSetup}
 - \`apps/web/src/proxy.ts\` redirects signed-out page requests to \`/login\` and answers 401 for API routes that do not check auth themselves. Its \`publicApiRoutes\` list names the routes that do; API procedures read the session from \`packages/auth\`.`;
+}
+
+const PASSPORT_SAME_SITE_NOTE =
+  "The Passport session cookie is `SameSite=Lax`, so the browser sends it to the API only when the web app and the API are on the same site, such as `app.example.com` and `api.example.com` (`localhost` on different ports also counts). If they are on different sites, serve the API from the web app's domain or proxy it there; setting the cookie to `sameSite: \"none\"` with `secure: true` in `apps/server/src/index.ts` also works but lets every site send it.";
+
+function generatePassportSetup(): string {
+  return `
+## Passport Authentication Setup
+
+${PASSPORT_SAME_SITE_NOTE}`;
 }
 
 function generateRunningInstructions(

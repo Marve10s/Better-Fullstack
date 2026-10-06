@@ -46,6 +46,14 @@ const toNativeRequest = async (request: Request): Promise<Request> => {
 };
 {{/if}}
 
+{{#if (and (includes examples "ai") (isBetterAuth auth))}}
+// The AI route trusts the session cookie, so accept JSON only, and only from the configured web
+// origin or with no Origin (native apps, servers), to stop cross-site posts that skip preflight.
+function isTrustedAiRequest(origin: string | null, contentType: string | null) {
+	return (!origin || origin === env.CORS_ORIGIN) && /^application\/json\s*(;|$)/i.test(contentType ?? "");
+}
+
+{{/if}}
 const router: Router<any, any, any> = createRouter({
 	openAPI: {
 		info: {
@@ -198,6 +206,9 @@ const router: Router<any, any, any> = createRouter({
 		path: "/ai",
 		handler: async (request) => {
 {{#if (isBetterAuth auth)}}
+			if (!isTrustedAiRequest(request.headers.get("origin"), request.headers.get("content-type"))) {
+				return Response.json({ message: "Forbidden" }, { status: 403 });
+			}
 			const session = await auth.api.getSession({
 				headers: new Headers(request.headers as HeadersInit),
 			});
@@ -223,6 +234,9 @@ const router: Router<any, any, any> = createRouter({
 		path: "/ai",
 		handler: async (request) => {
 {{#if (isBetterAuth auth)}}
+			if (!isTrustedAiRequest(request.headers.get("origin"), request.headers.get("content-type"))) {
+				return Response.json({ message: "Forbidden" }, { status: 403 });
+			}
 			const session = await auth.api.getSession({
 				headers: new Headers(request.headers as HeadersInit),
 			});

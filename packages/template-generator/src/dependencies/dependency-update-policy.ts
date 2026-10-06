@@ -52,6 +52,12 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     pinnedVersion: "^1.21.0",
     reason: "Keep the Lucide framework packages on the reviewed Yarn-compatible release.",
   },
+  h3: {
+    pinnedVersion: "^1.15.11",
+    holdLatestChannel: true,
+    reason:
+      "nitropack 2 runs h3 1.x events; Nitro auto-imports resolve the project's h3, so h3 2 helpers such as readBody and handleCors break every request.",
+  },
   hono: {
     pinnedVersion: "^4.12.27",
     reason: "Newer releases are quarantined by Yarn hardened mode.",

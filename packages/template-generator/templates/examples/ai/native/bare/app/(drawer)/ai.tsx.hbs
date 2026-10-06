@@ -339,7 +339,11 @@ export default function AIScreen() {
       fetch: expoFetch as unknown as typeof globalThis.fetch,
       api: generateAPIUrl("/ai"),
 {{#if (isBetterAuth auth)}}
-      headers: () => {
+      credentials: Platform.OS === "web" ? "include" : undefined,
+      headers: (): Record<string, string> => {
+        if (Platform.OS === "web") {
+          return {};
+        }
         const cookies = authClient.getCookie();
         return cookies ? { Cookie: cookies } : {};
       },

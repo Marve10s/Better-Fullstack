@@ -1,16 +1,8 @@
-{{#*inline "requireUser"}}
-{{#if (isBetterAuth auth)}}
-if (!(await authComponent.safeGetAuthUser(ctx))) {
-  throw new Error("Not authenticated");
-}
-{{else if (eq auth "clerk")}}
-if (!(await ctx.auth.getUserIdentity())) {
-  throw new Error("Not authenticated");
-}
-{{/if}}
-{{/inline}}
 import {
   createThread,
+{{#if (or (isBetterAuth auth) (eq auth "clerk"))}}
+  getThreadMetadata,
+{{/if}}
   listUIMessages,
   saveMessage,
   syncStreams,
@@ -20,17 +12,43 @@ import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 
 import { components, internal } from "./_generated/api";
-import { internalAction, mutation, query } from "./_generated/server";
+import { internalAction, mutation, query{{#if (or (isBetterAuth auth) (eq auth "clerk"))}}, type MutationCtx, type QueryCtx{{/if}} } from "./_generated/server";
 import { chatAgent } from "./agent";
 {{#if (isBetterAuth auth)}}
 import { authComponent } from "./auth";
+{{/if}}
+{{#if (or (isBetterAuth auth) (eq auth "clerk"))}}
+
+async function requireUserId(ctx: QueryCtx | MutationCtx) {
+{{#if (isBetterAuth auth)}}
+  const userId = (await authComponent.safeGetAuthUser(ctx))?._id;
+{{else}}
+  const userId = (await ctx.auth.getUserIdentity())?.subject;
+{{/if}}
+  if (!userId) {
+    throw new Error("Not authenticated");
+  }
+  return userId;
+}
+
+async function requireThreadOwner(ctx: QueryCtx | MutationCtx, threadId: string) {
+  const userId = await requireUserId(ctx);
+  const thread = await getThreadMetadata(ctx, components.agent, { threadId });
+  if (thread.userId !== userId) {
+    throw new Error("Thread not found");
+  }
+}
 {{/if}}
 
 export const createNewThread = mutation({
   args: {},
   handler: async (ctx) => {
-    {{> requireUser}}
+{{#if (or (isBetterAuth auth) (eq auth "clerk"))}}
+    const userId = await requireUserId(ctx);
+    const threadId = await createThread(ctx, components.agent, { userId });
+{{else}}
     const threadId = await createThread(ctx, components.agent, {});
+{{/if}}
     return threadId;
   },
 });
@@ -42,6 +60,9 @@ export const listMessages = query({
     streamArgs: vStreamArgs,
   },
   handler: async (ctx, args) => {
+{{#if (or (isBetterAuth auth) (eq auth "clerk"))}}
+    await requireThreadOwner(ctx, args.threadId);
+{{/if}}
     const paginated = await listUIMessages(ctx, components.agent, args);
     const streams = await syncStreams(ctx, components.agent, args);
     return { ...paginated, streams };
@@ -54,7 +75,9 @@ export const sendMessage = mutation({
     prompt: v.string(),
   },
   handler: async (ctx, { threadId, prompt }) => {
-    {{> requireUser}}
+{{#if (or (isBetterAuth auth) (eq auth "clerk"))}}
+    await requireThreadOwner(ctx, threadId);
+{{/if}}
     const { messageId } = await saveMessage(ctx, components.agent, {
       threadId,
       prompt,
