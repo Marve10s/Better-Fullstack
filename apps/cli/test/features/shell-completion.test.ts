@@ -117,8 +117,15 @@ describe("completion command", () => {
     }
   });
 
-  it.each(["bash", "zsh"] as const)("%s script passes a syntax check", (shell) => {
-    const result = Bun.spawnSync([shell, "-n"], { stdin: Buffer.from(scripts.get(shell) ?? "") });
+  it("bash script passes a syntax check", () => {
+    const result = Bun.spawnSync(["bash", "-n"], { stdin: Buffer.from(scripts.get("bash") ?? "") });
+    expect(result.stderr.toString()).toBe("");
+    expect(result.exitCode).toBe(0);
+  });
+
+  // CI runners ship bash but not zsh.
+  it.skipIf(!Bun.which("zsh"))("zsh script passes a syntax check", () => {
+    const result = Bun.spawnSync(["zsh", "-n"], { stdin: Buffer.from(scripts.get("zsh") ?? "") });
     expect(result.stderr.toString()).toBe("");
     expect(result.exitCode).toBe(0);
   });
