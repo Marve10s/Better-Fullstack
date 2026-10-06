@@ -228,6 +228,13 @@ app.route("/", openApiApp);
 
 {{#if (and (includes examples "ai") (or (eq runtime "bun") (eq runtime "node")))}}
 app.post("/ai", async (c) => {
+{{#if (isBetterAuth auth)}}
+	const session = await auth.api.getSession({ headers: c.req.raw.headers });
+	if (!session) {
+		return c.json({ message: "Unauthorized" }, 401);
+	}
+
+{{/if}}
 	const body = await c.req.json();
 	const uiMessages = body.messages || [];
 	const model = google("gemini-2.5-flash");
@@ -242,6 +249,13 @@ app.post("/ai", async (c) => {
 
 {{#if (and (includes examples "ai") (eq runtime "workers"))}}
 app.post("/ai", async (c) => {
+{{#if (isBetterAuth auth)}}
+	const session = await auth.api.getSession({ headers: c.req.raw.headers });
+	if (!session) {
+		return c.json({ message: "Unauthorized" }, 401);
+	}
+
+{{/if}}
 	const body = await c.req.json();
 	const uiMessages = body.messages || [];
 	const google = createGoogleGenerativeAI({

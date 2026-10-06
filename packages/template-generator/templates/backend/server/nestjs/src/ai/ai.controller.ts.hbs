@@ -1,5 +1,9 @@
 {{#if (includes examples "ai")}}
 import { Controller, Post, Req, Res } from "@nestjs/common";
+{{#if (isBetterAuth auth)}}
+import { auth } from "@{{projectName}}/auth";
+import { fromNodeHeaders } from "better-auth/node";
+{{/if}}
 import { AiService } from "./ai.service";
 import type { Request, Response } from "express";
 
@@ -9,6 +13,14 @@ export class AiController {
 
 	@Post()
 	async chat(@Req() req: Request, @Res() res: Response) {
+{{#if (isBetterAuth auth)}}
+		const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
+		if (!session) {
+			res.status(401).json({ message: "Unauthorized" });
+			return;
+		}
+
+{{/if}}
 		return this.aiService.streamChat(req, res);
 	}
 }

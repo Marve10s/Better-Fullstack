@@ -35,7 +35,7 @@ import { google } from "@ai-sdk/google";
 {{/if}}
 {{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
-import { toNodeHandler } from "better-auth/node";
+import { {{#if (includes examples "ai")}}fromNodeHeaders, {{/if}}toNodeHandler } from "better-auth/node";
 {{/if}}
 {{#if (eq auth "passport")}}
 import { passport } from "@{{projectName}}/auth";
@@ -231,6 +231,20 @@ app.use("/docs", apiReference({ spec: { url: "/openapi.json" } }));
 
 {{#if (includes examples "ai")}}
 app.post("/ai", async (req, res) => {
+{{#if (isBetterAuth auth)}}
+	const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
+	if (!session) {
+		res.status(401).json({ message: "Unauthorized" });
+		return;
+	}
+
+{{else if (eq auth "passport")}}
+	if (!req.isAuthenticated()) {
+		res.status(401).json({ message: "Unauthorized" });
+		return;
+	}
+
+{{/if}}
 	const { messages = [] } = (req.body || {}) as { messages: UIMessage[] };
 	const model = google("gemini-2.5-flash");
 	const result = streamText({

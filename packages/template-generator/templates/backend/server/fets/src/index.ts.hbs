@@ -197,6 +197,15 @@ const router: Router<any, any, any> = createRouter({
 		method: "POST",
 		path: "/ai",
 		handler: async (request) => {
+{{#if (isBetterAuth auth)}}
+			const session = await auth.api.getSession({
+				headers: new Headers(request.headers as HeadersInit),
+			});
+			if (!session) {
+				return Response.json({ message: "Unauthorized" }, { status: 401 });
+			}
+
+{{/if}}
 			const body = await request.json();
 			const uiMessages = body.messages || [];
 			const model = google("gemini-2.5-flash");
@@ -213,6 +222,15 @@ const router: Router<any, any, any> = createRouter({
 		method: "POST",
 		path: "/ai",
 		handler: async (request) => {
+{{#if (isBetterAuth auth)}}
+			const session = await auth.api.getSession({
+				headers: new Headers(request.headers as HeadersInit),
+			});
+			if (!session) {
+				return Response.json({ message: "Unauthorized" }, { status: 401 });
+			}
+
+{{/if}}
 			const body = await request.json();
 			const uiMessages = body.messages || [];
 			const google = createGoogleGenerativeAI({

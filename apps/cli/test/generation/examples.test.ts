@@ -346,6 +346,367 @@ describe("Example Configurations", () => {
     });
   });
 
+  describe("AI Example endpoint auth", () => {
+    const SIGN_IN_MESSAGE = "Sign in to use the AI chat.";
+    const UNAUTHENTICATED_README =
+      "The AI chat endpoint is unauthenticated, so anyone who can reach it spends your model provider quota; protect it before deploying.";
+    const PROTECTED_README =
+      "The AI chat endpoint requires a signed-in user and rejects signed-out requests before calling the model provider.";
+
+    const nextRoute = "apps/web/src/app/api/ai/route.ts";
+    const tanstackStartRoute = "apps/web/src/routes/api/ai/$.ts";
+    const serverIndex = "apps/server/src/index.ts";
+
+    const fullstack = { runtime: "none", database: "sqlite", orm: "drizzle", api: "trpc" } as const;
+    const standalone = {
+      runtime: "bun",
+      database: "sqlite",
+      orm: "drizzle",
+      api: "trpc",
+      frontend: ["tanstack-router"],
+    } as const;
+
+    // `lookup` is the session lookup, `reject` the signed-out response; both must run before `provider`.
+    const protectedCases: Array<{
+      name: string;
+      config: Partial<TestConfig>;
+      endpoint: string;
+      lookup: string;
+      reject: string;
+      provider: string;
+    }> = [
+      {
+        name: "Next.js + Better Auth",
+        config: { ...fullstack, backend: "self", frontend: ["next"], auth: "better-auth" },
+        endpoint: nextRoute,
+        lookup: "await auth.api.getSession({ headers: req.headers })",
+        reject: "{ status: 401 }",
+        provider: "streamText(",
+      },
+      {
+        name: "Next.js + Better Auth organizations",
+        config: { ...fullstack, backend: "self", frontend: ["next"], auth: "better-auth-organizations" },
+        endpoint: nextRoute,
+        lookup: "await auth.api.getSession({ headers: req.headers })",
+        reject: "{ status: 401 }",
+        provider: "streamText(",
+      },
+      {
+        name: "Next.js + Better Auth + LangGraph",
+        config: { ...fullstack, backend: "self", frontend: ["next"], auth: "better-auth", ai: "langgraph" },
+        endpoint: nextRoute,
+        lookup: "await auth.api.getSession({ headers: req.headers })",
+        reject: "{ status: 401 }",
+        provider: "agent.stream(",
+      },
+      {
+        name: "Next.js + Clerk",
+        config: { ...fullstack, backend: "self", frontend: ["next"], auth: "clerk" },
+        endpoint: nextRoute,
+        lookup: "const { userId } = await auth();",
+        reject: "{ status: 401 }",
+        provider: "streamText(",
+      },
+      {
+        name: "Next.js + Auth.js",
+        config: { ...fullstack, backend: "self", frontend: ["next"], auth: "nextauth" },
+        endpoint: nextRoute,
+        lookup: "const session = await auth();",
+        reject: "{ status: 401 }",
+        provider: "streamText(",
+      },
+      {
+        name: "Next.js + Stack Auth",
+        config: { ...fullstack, backend: "self", frontend: ["next"], auth: "stack-auth" },
+        endpoint: nextRoute,
+        lookup: "await stackServerApp.getUser()",
+        reject: "{ status: 401 }",
+        provider: "streamText(",
+      },
+      {
+        name: "Next.js + Supabase Auth",
+        config: { ...fullstack, backend: "self", frontend: ["next"], auth: "supabase-auth" },
+        endpoint: nextRoute,
+        lookup: "await supabase.auth.getUser()",
+        reject: "{ status: 401 }",
+        provider: "streamText(",
+      },
+      {
+        name: "Next.js + Auth0",
+        config: { ...fullstack, backend: "self", frontend: ["next"], auth: "auth0" },
+        endpoint: nextRoute,
+        lookup: "await auth0.getSession()",
+        reject: "{ status: 401 }",
+        provider: "streamText(",
+      },
+      {
+        name: "TanStack Start + Better Auth",
+        config: { ...fullstack, backend: "self", frontend: ["tanstack-start"], auth: "better-auth" },
+        endpoint: tanstackStartRoute,
+        lookup: "await auth.api.getSession({ headers: request.headers })",
+        reject: "{ status: 401 }",
+        provider: "streamText(",
+      },
+      {
+        name: "TanStack Start + Better Auth + ModelFusion",
+        config: {
+          ...fullstack,
+          backend: "self",
+          frontend: ["tanstack-start"],
+          auth: "better-auth",
+          ai: "modelfusion",
+        },
+        endpoint: tanstackStartRoute,
+        lookup: "await auth.api.getSession({ headers: request.headers })",
+        reject: "{ status: 401 }",
+        provider: "streamText(",
+      },
+      {
+        name: "TanStack Start + Clerk",
+        config: { ...fullstack, backend: "self", frontend: ["tanstack-start"], auth: "clerk" },
+        endpoint: tanstackStartRoute,
+        lookup: "const { userId } = await auth();",
+        reject: "{ status: 401 }",
+        provider: "streamText(",
+      },
+      {
+        name: "TanStack Start + Supabase Auth",
+        config: { ...fullstack, backend: "self", frontend: ["tanstack-start"], auth: "supabase-auth" },
+        endpoint: tanstackStartRoute,
+        lookup: "await createClient().auth.getUser()",
+        reject: "{ status: 401 }",
+        provider: "streamText(",
+      },
+      {
+        name: "Hono + Better Auth",
+        config: { ...standalone, backend: "hono", auth: "better-auth" },
+        endpoint: serverIndex,
+        lookup: "await auth.api.getSession({ headers: c.req.raw.headers })",
+        reject: 'c.json({ message: "Unauthorized" }, 401)',
+        provider: "streamText(",
+      },
+      {
+        name: "Hono on Workers + Better Auth",
+        config: {
+          ...standalone,
+          backend: "hono",
+          runtime: "workers",
+          serverDeploy: "cloudflare",
+          auth: "better-auth",
+        },
+        endpoint: serverIndex,
+        lookup: "await auth.api.getSession({ headers: c.req.raw.headers })",
+        reject: 'c.json({ message: "Unauthorized" }, 401)',
+        provider: "createGoogleGenerativeAI(",
+      },
+      {
+        name: "Express + Better Auth",
+        config: { ...standalone, backend: "express", runtime: "node", auth: "better-auth" },
+        endpoint: serverIndex,
+        lookup: "await auth.api.getSession({ headers: fromNodeHeaders(req.headers) })",
+        reject: "res.status(401)",
+        provider: "streamText(",
+      },
+      {
+        name: "Express + Passport",
+        config: { ...standalone, backend: "express", runtime: "node", auth: "passport" },
+        endpoint: serverIndex,
+        lookup: "if (!req.isAuthenticated())",
+        reject: "res.status(401)",
+        provider: "streamText(",
+      },
+      {
+        name: "Fastify + Better Auth",
+        config: { ...standalone, backend: "fastify", runtime: "node", auth: "better-auth" },
+        endpoint: serverIndex,
+        lookup: "headers: nodeHeadersToHeaders(request.headers)",
+        reject: "reply.status(401)",
+        provider: "streamText(",
+      },
+      {
+        name: "Elysia + Better Auth",
+        config: { ...standalone, backend: "elysia", auth: "better-auth" },
+        endpoint: serverIndex,
+        lookup: "headers: context.request.headers",
+        reject: "context.status(401",
+        provider: "streamText(",
+      },
+      {
+        name: "feTS + Better Auth",
+        config: { ...standalone, backend: "fets", auth: "better-auth" },
+        endpoint: serverIndex,
+        lookup: "headers: new Headers(request.headers as HeadersInit)",
+        reject: "{ status: 401 }",
+        provider: "streamText(",
+      },
+      {
+        name: "NestJS + Better Auth",
+        config: { ...standalone, backend: "nestjs", runtime: "node", auth: "better-auth" },
+        endpoint: "apps/server/src/ai/ai.controller.ts",
+        lookup: "await auth.api.getSession({ headers: fromNodeHeaders(req.headers) })",
+        reject: "res.status(401)",
+        provider: "this.aiService.streamChat(",
+      },
+      {
+        name: "Nitro + Better Auth",
+        config: { ...standalone, backend: "nitro", auth: "better-auth" },
+        endpoint: "apps/server/routes/ai.post.ts",
+        lookup: "await auth.api.getSession({ headers: event.headers })",
+        reject: "setResponseStatus(event, 401)",
+        provider: "streamText(",
+      },
+      {
+        name: "AdonisJS + Better Auth",
+        config: { ...standalone, backend: "adonisjs", runtime: "node", auth: "better-auth" },
+        endpoint: "apps/server/start/routes.ts",
+        lookup: "headers: fromNodeHeaders(request.request.headers)",
+        reject: "response.status(401)",
+        provider: "streamText(",
+      },
+      {
+        name: "Convex + Better Auth",
+        config: {
+          backend: "convex",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          api: "none",
+          frontend: ["tanstack-router"],
+          auth: "better-auth",
+        },
+        endpoint: "packages/backend/convex/chat.ts",
+        lookup: "await authComponent.safeGetAuthUser(ctx)",
+        reject: 'throw new Error("Not authenticated")',
+        provider: "saveMessage(",
+      },
+      {
+        name: "Convex + Clerk",
+        config: {
+          backend: "convex",
+          runtime: "none",
+          database: "none",
+          orm: "none",
+          api: "none",
+          frontend: ["tanstack-router"],
+          auth: "clerk",
+        },
+        endpoint: "packages/backend/convex/chat.ts",
+        lookup: "await ctx.auth.getUserIdentity()",
+        reject: 'throw new Error("Not authenticated")',
+        provider: "saveMessage(",
+      },
+    ];
+
+    async function generateAIProject(name: string, config: Partial<TestConfig>) {
+      const result = await runTRPCTest({
+        projectName: name,
+        examples: ["ai"],
+        addons: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+        ...config,
+      } as TestConfig);
+      expectSuccess(result);
+      return result.projectDir!;
+    }
+
+    for (const testCase of protectedCases) {
+      it(`rejects signed-out callers before the provider call: ${testCase.name}`, async () => {
+        const projectDir = await generateAIProject(
+          `ai-auth-${testCase.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+          testCase.config,
+        );
+        const endpoint = await Bun.file(join(projectDir, testCase.endpoint)).text();
+        const lookupAt = endpoint.indexOf(testCase.lookup);
+        const rejectAt = endpoint.indexOf(testCase.reject, lookupAt);
+        const providerAt = endpoint.indexOf(testCase.provider, lookupAt);
+
+        expect(lookupAt).toBeGreaterThan(-1);
+        expect(rejectAt).toBeGreaterThan(lookupAt);
+        expect(providerAt).toBeGreaterThan(rejectAt);
+
+        const readme = await Bun.file(join(projectDir, "README.md")).text();
+        expect(readme).toContain(PROTECTED_README);
+      });
+    }
+
+    it("handles a 401 on the Next.js page and sends cookies cross-origin from a Vite page", async () => {
+      const nextDir = await generateAIProject("ai-auth-next-page", {
+        ...fullstack,
+        backend: "self",
+        frontend: ["next"],
+        auth: "better-auth",
+      });
+      const nextPage = await Bun.file(join(nextDir, "apps/web/src/app/ai/page.tsx")).text();
+      expect(nextPage).toContain("response.status === 401");
+      expect(nextPage).toContain(SIGN_IN_MESSAGE);
+      expect(nextPage).toContain("{error && ");
+      expect(nextPage).not.toContain('credentials: "include"');
+
+      const viteDir = await generateAIProject("ai-auth-vite-page", {
+        ...standalone,
+        backend: "hono",
+        auth: "better-auth",
+      });
+      const vitePage = await Bun.file(join(viteDir, "apps/web/src/routes/ai.tsx")).text();
+      expect(vitePage).toContain('credentials: "include"');
+      expect(vitePage).toContain(SIGN_IN_MESSAGE);
+    });
+
+    it("leaves the endpoint open and warns in the README when no server lookup exists", async () => {
+      for (const auth of ["workos", "kinde"] as const) {
+        const projectDir = await generateAIProject(`ai-auth-next-${auth}`, {
+          ...fullstack,
+          backend: "self",
+          frontend: ["next"],
+          auth,
+        });
+        const route = await Bun.file(join(projectDir, nextRoute)).text();
+        const page = await Bun.file(join(projectDir, "apps/web/src/app/ai/page.tsx")).text();
+        const readme = await Bun.file(join(projectDir, "README.md")).text();
+
+        expect(route).not.toContain("401");
+        expect(page).not.toContain(SIGN_IN_MESSAGE);
+        expect(readme).toContain(UNAUTHENTICATED_README);
+      }
+    });
+
+    it("keeps auth-none endpoints and pages free of auth code", async () => {
+      const cases: Array<{ config: Partial<TestConfig>; endpoint: string; page: string }> = [
+        {
+          config: { ...fullstack, backend: "self", frontend: ["next"], auth: "none" },
+          endpoint: nextRoute,
+          page: "apps/web/src/app/ai/page.tsx",
+        },
+        {
+          config: { ...fullstack, backend: "self", frontend: ["tanstack-start"], auth: "none" },
+          endpoint: tanstackStartRoute,
+          page: "apps/web/src/routes/ai.tsx",
+        },
+        {
+          config: { ...standalone, backend: "hono", auth: "none" },
+          endpoint: serverIndex,
+          page: "apps/web/src/routes/ai.tsx",
+        },
+      ];
+
+      for (const [index, testCase] of cases.entries()) {
+        const projectDir = await generateAIProject(`ai-auth-none-${index}`, testCase.config);
+        const endpoint = await Bun.file(join(projectDir, testCase.endpoint)).text();
+        const page = await Bun.file(join(projectDir, testCase.page)).text();
+        const readme = await Bun.file(join(projectDir, "README.md")).text();
+
+        expect(endpoint).not.toContain("getSession");
+        expect(endpoint).not.toContain("401");
+        expect(page).not.toContain(SIGN_IN_MESSAGE);
+        expect(page).not.toContain("credentials");
+        expect(readme).toContain(UNAUTHENTICATED_README);
+      }
+    });
+  });
+
   describe("Examples with None Option", () => {
     it("should work with examples none", async () => {
       const result = await runTRPCTest({

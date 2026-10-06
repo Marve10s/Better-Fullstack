@@ -43,7 +43,7 @@ import { google } from "@ai-sdk/google";
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-{{#if (and (eq api "openapi") (isBetterAuth auth))}}
+{{#if (and (isBetterAuth auth) (or (eq api "openapi") (includes examples "ai")))}}
 function nodeHeadersToHeaders(headers: Record<string, string | string[] | undefined>) {
 	const webHeaders = new Headers();
 	for (const [key, value] of Object.entries(headers)) {
@@ -288,7 +288,16 @@ interface AiRequestBody {
 	messages: UIMessage[];
 }
 
-fastify.post('/ai', async function (request) {
+fastify.post('/ai', async function (request{{#if (isBetterAuth auth)}}, reply{{/if}}) {
+{{#if (isBetterAuth auth)}}
+	const session = await auth.api.getSession({
+		headers: nodeHeadersToHeaders(request.headers),
+	});
+	if (!session) {
+		return reply.status(401).send({ message: "Unauthorized" });
+	}
+
+{{/if}}
 	const { messages } = request.body as AiRequestBody;
 	const model = google('gemini-2.5-flash');
 	const result = streamText({

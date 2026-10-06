@@ -180,6 +180,9 @@ import { fetch as expoFetch } from "expo/fetch";
 import { Ionicons } from "@expo/vector-icons";
 import { Container } from "@/components/container";
 import { Button, Divider, ErrorView, Spinner, Surface, TextField, useThemeColor } from "heroui-native";
+{{#if (isBetterAuth auth)}}
+import { authClient } from "@/lib/auth-client";
+{{/if}}
 import { env } from "@{{projectName}}/env/native";
 
 const generateAPIUrl = (relativePath: string) => {
@@ -199,6 +202,12 @@ export default function AIScreen() {
     transport: new DefaultChatTransport({
       fetch: expoFetch as unknown as typeof globalThis.fetch,
       api: generateAPIUrl("/ai"),
+{{#if (isBetterAuth auth)}}
+      headers: () => {
+        const cookies = authClient.getCookie();
+        return cookies ? { Cookie: cookies } : {};
+      },
+{{/if}}
     }),
     onError: (error) => console.error(error, "AI Chat Error"),
   });

@@ -218,6 +218,15 @@ new Elysia({ adapter: node() })
 {{/if}}
 {{#if (includes examples "ai")}}
 	.post("/ai", async (context) => {
+{{#if (isBetterAuth auth)}}
+		const session = await auth.api.getSession({
+			headers: context.request.headers,
+		});
+		if (!session) {
+			return context.status(401, { message: "Unauthorized" });
+		}
+
+{{/if}}
 		const body = (await context.request.json()) as { messages?: UIMessage[] };
 		const uiMessages = body.messages ?? [];
 		const model = google("gemini-2.5-flash");

@@ -21,7 +21,7 @@ import { google } from "@ai-sdk/google";
 {{/if}}
 {{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
-import { toNodeHandler } from "better-auth/node";
+import { {{#if (includes examples "ai")}}fromNodeHeaders, {{/if}}toNodeHandler } from "better-auth/node";
 {{/if}}
 import router from "@adonisjs/core/services/router";
 
@@ -131,6 +131,15 @@ router.any("/api-reference/*", async ({ request, response }) => {
 {{#if (includes examples "ai")}}
 router.post("/ai", async ({ request, response }) => {
 	setCorsHeaders(response);
+{{#if (isBetterAuth auth)}}
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(request.request.headers),
+	});
+	if (!session) {
+		return response.status(401).json({ message: "Unauthorized" });
+	}
+
+{{/if}}
 	const body = request.body() as { messages?: UIMessage[] };
 	const messages = body.messages || [];
 	const model = google("gemini-2.5-flash");

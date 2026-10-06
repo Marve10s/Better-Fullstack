@@ -1,3 +1,33 @@
+{{#*inline "requireUser"}}
+{{#if (isBetterAuth auth)}}
+const session = await auth.api.getSession({ headers: request.headers });
+if (!session) {
+	return Response.json({ message: "Unauthorized" }, { status: 401 });
+}
+
+{{else if (eq auth "clerk")}}
+const { userId } = await auth();
+if (!userId) {
+	return Response.json({ message: "Unauthorized" }, { status: 401 });
+}
+
+{{else if (eq auth "supabase-auth")}}
+const {
+	data: { user },
+} = await createClient().auth.getUser();
+if (!user) {
+	return Response.json({ message: "Unauthorized" }, { status: 401 });
+}
+
+{{/if}}
+{{/inline}}
+{{#if (isBetterAuth auth)}}
+import { auth } from "@{{projectName}}/auth";
+{{else if (eq auth "clerk")}}
+import { auth } from "@clerk/tanstack-react-start/server";
+{{else if (eq auth "supabase-auth")}}
+import { createClient } from "@/lib/supabase/server";
+{{/if}}
 {{#if (eq ai "modelfusion")}}
 import { createFileRoute } from "@tanstack/react-router";
 import { streamText, openai } from "modelfusion";
@@ -12,6 +42,7 @@ export const Route = createFileRoute("/api/ai/$")({
 	server: {
 		handlers: {
 			POST: async ({ request }) => {
+				{{> requireUser}}
 				try {
 					const { messages } = await request.json();
 
@@ -85,6 +116,7 @@ export const Route = createFileRoute("/api/ai/$")({
 	server: {
 		handlers: {
 			POST: async ({ request }) => {
+				{{> requireUser}}
 				try {
 					const { messages } = await request.json();
 
@@ -157,6 +189,7 @@ export const Route = createFileRoute("/api/ai/$")({
 	server: {
 		handlers: {
 			POST: async ({ request }) => {
+				{{> requireUser}}
 				try {
 					const { messages } = await request.json();
 
@@ -216,6 +249,7 @@ export const Route = createFileRoute("/api/ai/$")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        {{> requireUser}}
         try {
           const { messages }: { messages: UIMessage[] } = await request.json();
 

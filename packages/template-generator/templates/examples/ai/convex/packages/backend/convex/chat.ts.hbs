@@ -1,3 +1,14 @@
+{{#*inline "requireUser"}}
+{{#if (isBetterAuth auth)}}
+if (!(await authComponent.safeGetAuthUser(ctx))) {
+  throw new Error("Not authenticated");
+}
+{{else if (eq auth "clerk")}}
+if (!(await ctx.auth.getUserIdentity())) {
+  throw new Error("Not authenticated");
+}
+{{/if}}
+{{/inline}}
 import {
   createThread,
   listUIMessages,
@@ -11,10 +22,14 @@ import { v } from "convex/values";
 import { components, internal } from "./_generated/api";
 import { internalAction, mutation, query } from "./_generated/server";
 import { chatAgent } from "./agent";
+{{#if (isBetterAuth auth)}}
+import { authComponent } from "./auth";
+{{/if}}
 
 export const createNewThread = mutation({
   args: {},
   handler: async (ctx) => {
+    {{> requireUser}}
     const threadId = await createThread(ctx, components.agent, {});
     return threadId;
   },
@@ -39,6 +54,7 @@ export const sendMessage = mutation({
     prompt: v.string(),
   },
   handler: async (ctx, { threadId, prompt }) => {
+    {{> requireUser}}
     const { messageId } = await saveMessage(ctx, components.agent, {
       threadId,
       prompt,

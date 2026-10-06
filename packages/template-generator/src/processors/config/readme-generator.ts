@@ -13,6 +13,7 @@ import {
   hasWebFrontend,
 } from "@/graph/graph-backend";
 import { getGraphProjectTasks } from "@/graph/graph-project";
+import { hasAiExampleEndpoint, hasAiRouteAuth } from "@/platform/ai-example";
 import { hasAuthJsCredentials } from "@/platform/auth-js";
 
 const JAVA_GROUP_ID = "com.example";
@@ -556,7 +557,7 @@ ${
   examples.includes("chat-sdk")
     ? `\n${generateChatSdkExampleSection(options, packageManagerRunCmd, webPort, ai)}\n`
     : ""
-}
+}${generateAIExampleSection(options)}
   ${
     addons.includes("pwa") && (frontend.includes("react-router") || frontend.includes("react-vite"))
       ? "\n## PWA Support with React Router v7\n\nThere is a known compatibility issue between VitePWA and React Router v7.\nSee: https://github.com/vite-pwa/vite-plugin-pwa/issues/809\n"
@@ -695,6 +696,22 @@ Use \`--model\` to override the default model for a single command:
 \`\`\`bash
 ${runPrefix} ai:text -- --model openai/gpt-5.5 "write a concise PR summary"
 \`\`\``;
+}
+
+function generateAIExampleSection(options: ProjectConfig): string {
+  if (!hasAiExampleEndpoint(options)) return "";
+
+  return hasAiRouteAuth(options.auth)
+    ? `
+## AI Chat Example
+
+The AI chat endpoint requires a signed-in user and rejects signed-out requests before calling the model provider.
+`
+    : `
+## AI Chat Example
+
+The AI chat endpoint is unauthenticated, so anyone who can reach it spends your model provider quota; protect it before deploying.
+`;
 }
 
 function generateChatSdkExampleSection(

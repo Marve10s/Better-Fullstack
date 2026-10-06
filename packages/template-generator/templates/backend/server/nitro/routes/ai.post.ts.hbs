@@ -1,8 +1,22 @@
 {{#if (includes examples "ai")}}
+{{#*inline "requireUser"}}
+{{#if (isBetterAuth auth)}}
+const session = await auth.api.getSession({ headers: event.headers });
+if (!session) {
+	setResponseStatus(event, 401);
+	return { message: "Unauthorized" };
+}
+
+{{/if}}
+{{/inline}}
+{{#if (isBetterAuth auth)}}
+import { auth } from "@{{projectName}}/auth";
+{{/if}}
 {{#if (eq ai "modelfusion")}}
 import { streamText, openai } from "modelfusion";
 
 export default defineEventHandler(async (event) => {
+	{{> requireUser}}
 	const body = await readBody<{ messages?: { role: string; content: string }[] }>(event);
 	const messages = body.messages || [];
 
@@ -65,6 +79,7 @@ const agent = createReactAgent({
 });
 
 export default defineEventHandler(async (event) => {
+	{{> requireUser}}
 	const body = await readBody<{ messages?: { role: string; content: string }[] }>(event);
 	const messages = body.messages || [];
 
@@ -118,6 +133,7 @@ import { env } from "@{{projectName}}/env/server";
 {{/if}}
 
 export default defineEventHandler(async (event) => {
+	{{> requireUser}}
 	const body = await readBody<{ messages?: UIMessage[] }>(event);
 	const messages = body.messages || [];
 
