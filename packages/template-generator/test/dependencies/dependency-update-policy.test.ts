@@ -14,6 +14,7 @@ import {
   getGeneratedPackageJsonPins,
   getPinnedDependencyVersion,
   getTemplatePinnedVersion,
+  SYNCHRONIZED_DEPENDENCY_FAMILIES,
   TEMPLATE_DEPENDENCY_PINS,
 } from "@/dependencies/dependency-update-policy";
 
@@ -102,11 +103,50 @@ describe("dependency update policy", () => {
   it("keeps the Better Auth family on the reviewed exact release", () => {
     expect(dependencyVersionMap).toMatchObject({
       "better-auth": "1.6.22",
+      "@better-auth/core": "1.6.22",
       "@better-auth/expo": "1.6.22",
       "@better-auth/drizzle-adapter": "1.6.22",
       "@better-auth/prisma-adapter": "1.6.22",
       "@better-auth/mongo-adapter": "1.6.22",
     });
+  });
+
+  it("keeps every Better Auth package in one synchronized family", () => {
+    const betterAuthFamily = SYNCHRONIZED_DEPENDENCY_FAMILIES.find(
+      (family) => family.name === "Better Auth",
+    );
+    const versionMapPackages = Object.keys(dependencyVersionMap).filter(
+      (name) => name === "better-auth" || name.startsWith("@better-auth/"),
+    );
+
+    expect([...(betterAuthFamily?.packages ?? [])].sort()).toEqual(versionMapPackages.sort());
+  });
+
+  it("gives each synchronized family one version and one update policy", () => {
+    for (const family of SYNCHRONIZED_DEPENDENCY_FAMILIES) {
+      expect(family.packages.filter((name) => !(name in dependencyVersionMap))).toEqual([]);
+      const versions = new Set(
+        family.packages.map(
+          (name) => dependencyVersionMap[name as keyof typeof dependencyVersionMap],
+        ),
+      );
+      const policies = new Set(
+        family.packages.map((name) => {
+          const policy = DEPENDENCY_UPDATE_POLICIES[name];
+          return JSON.stringify([
+            policy?.pinnedVersion,
+            policy?.holdLatestChannel,
+            policy?.allowMajor,
+          ]);
+        }),
+      );
+
+      expect({ family: family.name, versions: versions.size, policies: policies.size }).toEqual({
+        family: family.name,
+        versions: 1,
+        policies: 1,
+      });
+    }
   });
 
   it("holds Expo 56 static exports on the verified Reanimated pair", () => {

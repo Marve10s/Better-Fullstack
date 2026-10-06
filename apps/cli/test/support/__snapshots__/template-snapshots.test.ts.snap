@@ -4064,6 +4064,7 @@ export type AppRouter = typeof appRouter;
     "@snapshot-next-self-fullstack/env": "workspace:*",
     "@snapshot-next-self-fullstack/db": "workspace:*",
     "better-auth": "catalog:",
+    "@better-auth/core": "1.6.22",
     "@better-auth/drizzle-adapter": "1.6.22"
   }
 }
@@ -5958,6 +5959,7 @@ export type AppRouterClient = RouterClient<typeof appRouter>;
     "@snapshot-solid-start-v2-fullstack/env": "workspace:*",
     "@snapshot-solid-start-v2-fullstack/db": "workspace:*",
     "better-auth": "catalog:",
+    "@better-auth/core": "1.6.22",
     "@better-auth/drizzle-adapter": "1.6.22"
   }
 }
@@ -8688,6 +8690,7 @@ export const openApiDocument = createOpenApiDocument();
     "@snapshot-hono-openapi/env": "workspace:*",
     "@snapshot-hono-openapi/db": "workspace:*",
     "better-auth": "catalog:",
+    "@better-auth/core": "1.6.22",
     "@better-auth/drizzle-adapter": "1.6.22"
   }
 }
@@ -9784,6 +9787,7 @@ export async function executeApolloRequest(
     "@snapshot-hono-apollo-server/env": "workspace:*",
     "@snapshot-hono-apollo-server/db": "workspace:*",
     "better-auth": "catalog:",
+    "@better-auth/core": "1.6.22",
     "@better-auth/drizzle-adapter": "1.6.22"
   }
 }
@@ -10997,6 +11001,7 @@ export type AppRouter = typeof appRouter;
     "@snapshot-better-auth-full/env": "workspace:*",
     "@snapshot-better-auth-full/db": "workspace:*",
     "better-auth": "catalog:",
+    "@better-auth/core": "1.6.22",
     "@better-auth/drizzle-adapter": "1.6.22"
   }
 }

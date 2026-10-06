@@ -1,15 +1,19 @@
+import { dependencyVersionMap } from "@better-fullstack/template-generator";
 import { describe, expect, it } from "bun:test";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { parse as parseYaml } from "yaml";
 
 import type { Backend, Database, Frontend, ORM } from "@/types";
 
+import { collectPackageJsonPaths } from "@/lifecycle/dependency-version-channel";
 import {
   AUTH_PROVIDERS,
   createCustomConfig,
   expectError,
   expectSuccess,
+  PACKAGE_MANAGERS,
   runTRPCTest,
   type TestConfig,
 } from "@test/support/test-utils";
@@ -87,6 +91,80 @@ describe("Authentication Configurations", () => {
 
       expectSuccess(result);
     });
+
+    // Adapters and the Expo plugin peer on ^core, so npm installs the newest core next to the
+    // exact one better-auth needs unless each manifest declares core at the family version.
+    const betterAuthAdapterStacks = [
+      { orm: "drizzle", database: "sqlite", frontend: ["tanstack-router", "native-bare"] },
+      { orm: "prisma", database: "sqlite", frontend: ["tanstack-router"] },
+      { orm: "mongoose", database: "mongodb", frontend: ["tanstack-router"] },
+    ] as const;
+    for (const packageManager of PACKAGE_MANAGERS) {
+      for (const stack of betterAuthAdapterStacks) {
+        it(`declares one Better Auth core beside the ${stack.orm} adapter for ${packageManager}`, async () => {
+          const result = await runTRPCTest({
+            projectName: `better-auth-core-${stack.orm}-${packageManager}`,
+            auth: "better-auth",
+            backend: "hono",
+            runtime: "node",
+            database: stack.database,
+            orm: stack.orm,
+            api: "trpc",
+            frontend: [...stack.frontend],
+            addons: ["turborepo"],
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            packageManager,
+            install: false,
+          });
+          expectSuccess(result);
+          const projectDir = result.projectDir!;
+
+          // bun keeps shared versions in the root workspaces catalog, pnpm in pnpm-workspace.yaml.
+          const rootManifest = JSON.parse(
+            await readFile(join(projectDir, "package.json"), "utf8"),
+          ) as {
+            workspaces?: { catalog?: Record<string, string> };
+          };
+          const pnpmWorkspacePath = join(projectDir, "pnpm-workspace.yaml");
+          const catalog = existsSync(pnpmWorkspacePath)
+            ? ((
+                parseYaml(await readFile(pnpmWorkspacePath, "utf8")) as {
+                  catalog?: Record<string, string>;
+                }
+              ).catalog ?? {})
+            : (rootManifest.workspaces?.catalog ?? {});
+
+          const familyVersions = new Set<string>();
+          const corePeerManifests: string[] = [];
+          for (const manifestPath of await collectPackageJsonPaths(projectDir)) {
+            const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as {
+              dependencies?: Record<string, string>;
+            };
+            const familyDeps = Object.entries(manifest.dependencies ?? {})
+              .filter(([name]) => name === "better-auth" || name.startsWith("@better-auth/"))
+              .map(
+                ([name, version]) =>
+                  [name, version === "catalog:" ? catalog[name] : version] as const,
+              );
+            for (const [, version] of familyDeps) familyVersions.add(version ?? "missing");
+            if (
+              familyDeps.some(([name]) => name !== "@better-auth/core" && name !== "better-auth")
+            ) {
+              corePeerManifests.push(manifestPath);
+              expect(Object.fromEntries(familyDeps)["@better-auth/core"]).toBe(
+                dependencyVersionMap["better-auth"],
+              );
+            }
+          }
+
+          expect(corePeerManifests.length).toBe(stack.frontend.includes("native-bare") ? 2 : 1);
+          expect([...familyVersions]).toEqual([dependencyVersionMap["better-auth"]]);
+        });
+      }
+    }
 
     it("should work with better-auth + no database (non-convex)", async () => {
       const result = await runTRPCTest({

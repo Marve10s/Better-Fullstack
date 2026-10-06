@@ -148,7 +148,9 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
 
   if (isBetterAuth(auth)) {
     if (authExists) {
-      const authDependencies: AvailableDependencies[] = ["better-auth"];
+      // Adapters and the Expo plugin peer on @better-auth/core; declaring it beside
+      // better-auth keeps package managers from installing a second, newer core.
+      const authDependencies: AvailableDependencies[] = ["better-auth", "@better-auth/core"];
       if (orm === "drizzle") authDependencies.push("@better-auth/drizzle-adapter");
       if (orm === "prisma") authDependencies.push("@better-auth/prisma-adapter");
       if (orm === "mongoose") authDependencies.push("@better-auth/mongo-adapter");
@@ -184,7 +186,15 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
       addPackageDependency({
         vfs,
         packagePath: nativePath,
-        dependencies: ["better-auth", "@better-auth/expo", "expo-linking", "expo-constants", "expo-web-browser", "expo-network"],
+        dependencies: [
+          "better-auth",
+          "@better-auth/core",
+          "@better-auth/expo",
+          "expo-linking",
+          "expo-constants",
+          "expo-web-browser",
+          "expo-network",
+        ],
       });
     }
   } else if (auth === "clerk") {
