@@ -146,7 +146,7 @@ Add queues to the `queues` list when different job types need separate concurren
 mix test
 ```
 
-The generated test covers `/api/health`. `config/test.exs` does not override the Oban configuration, so the `default` queue and the Pruner also start during tests.
+The generated test covers `/api/health`. `config/test.exs` sets `testing: :manual` for Oban, so the `default` queue and the Pruner do not start under ExUnit and jobs inserted during a test are not run. In this mode Oban refuses to start until its migrations are current; the `test` alias migrates the test database first. To run enqueued jobs inside a test, call `Oban.drain_queue(queue: :default)`.
 
 ## When to choose it
 
@@ -160,7 +160,7 @@ Choose Oban when jobs must be persisted, retried, and inspected in SQL, and the 
 
 ## Deployment notes
 
-`fly.toml` builds from the generated `Dockerfile`, sets `PHX_HOST` and `PORT=4000`, forces HTTPS, and lets Fly stop idle machines. The `Dockerfile` runs `mix release` with `MIX_ENV=prod`; run the same build locally with:
+`fly.toml` builds from the generated `Dockerfile`, sets `PHX_HOST` and `PORT=4000`, forces HTTPS, and sets `min_machines_running = 1`. Oban runs inside the application, so if Fly stopped every idle machine, queued and scheduled jobs would wait until a request started one again. Fly still stops machines above that minimum when traffic drops. The `Dockerfile` runs `mix release` with `MIX_ENV=prod`; run the same build locally with:
 
 ```bash
 MIX_ENV=prod mix deps.get --only prod

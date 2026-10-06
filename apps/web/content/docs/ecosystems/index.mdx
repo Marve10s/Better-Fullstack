@@ -178,7 +178,7 @@ npm create better-fullstack@latest my-phoenix-app -- \
   --no-install
 ```
 
-A few schema-level choices stay intentionally rejected until templates exist (`ecto`, `ueberauth`, `guardian`, `nimble-options`, `nebulex`, `opentelemetry`, `prom_ex`, `mox`, `bypass`, `wallaby`, `fly`, `gigalixir`). The CLI surfaces those as unsupported-tool messages instead of generating partial Phoenix code.
+Oban and `phx-gen-auth` require `ecto-sql` with PostgreSQL. Pow and ExMachina require an Ecto SQL repository (`ecto-sql`, `myxql`, or `ecto_sqlite3`), and Absinthe needs an Ecto layer. Auth, APIs, realtime, Gettext, Wallaby, and the HTTP server adapters require Phoenix. Every deploy target generates files: `docker`, `mix-release`, `fly`, and `gigalixir` add a release `Dockerfile`, `fly` also adds `fly.toml`, and `gigalixir` adds a `Procfile`.
 
 ## .NET
 
