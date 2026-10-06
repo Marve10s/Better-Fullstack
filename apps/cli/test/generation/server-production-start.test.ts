@@ -514,7 +514,7 @@ function exportTarget(manifest: PackageJson, subpath: string): string | undefine
     const target = typeof value === "string" ? value : value.default;
     if (key === subpath) return target;
     if (key.endsWith("*") && subpath.startsWith(key.slice(0, -1)) && target) {
-      return target.replace("*", subpath.slice(key.length - 1));
+      return target.replaceAll("*", subpath.slice(key.length - 1));
     }
   }
   return undefined;
@@ -581,7 +581,7 @@ function expectCompiledImportsResolve(generated: Generated, image: ImageModel, o
       if (specifier.startsWith("#")) {
         if (!under(path, build)) continue;
         const key = Object.keys(manifest.imports ?? {}).find((pattern) =>
-          specifier.startsWith(pattern.replace("*", "")),
+          specifier.startsWith(pattern.replaceAll("*", "")),
         );
         expect(
           key,
