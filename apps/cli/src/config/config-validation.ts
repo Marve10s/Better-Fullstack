@@ -27,6 +27,7 @@ import {
 } from "@/config/compatibility-rules";
 import {
   buildCompatibilityInputFromConfig,
+  getAuthSelectionIssue,
   getPythonLoggingSelectionIssue,
   hasSelectedTypeScriptBackendPart,
 } from "@/config/stack-compatibility";
@@ -50,7 +51,7 @@ import {
   isSignozSupportedPythonWebFramework,
   isToolingOverlayOnly,
   isTurnstileWebFrontend,
-  normalizeCapabilitySelection,
+  parseStackPartSpecs,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
 } from "@/types";
@@ -438,56 +439,32 @@ function validateDatabaseSetup(config: Partial<ProjectConfig>, providedFlags: Se
   }
 }
 
+/**
+ * Auth the user asked for by `--auth` or an auth `--part` is rejected with the shared reason. Only
+ * a default the user never chose is reset, and the reset is reported as an adjustment would be.
+ */
 export function validateEcosystemAuthCompatibility(
   config: Partial<ProjectConfig>,
-  providedFlags?: Set<string>,
+  providedFlags: Set<string>,
+  { partial = false, partSpecs = [] as readonly string[] } = {},
 ) {
-  const auth = config.auth;
+  const reason = getAuthSelectionIssue(config, { partial });
+  if (!reason) return;
 
-  if (!auth || auth === "none") {
-    return;
-  }
+  const isRequested =
+    providedFlags.has("auth") ||
+    parseStackPartSpecs([...partSpecs], "selected").some((part) => part.role === "auth");
+  if (isRequested) exitWithError(reason);
 
-  const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-  if (
-    (auth === "better-auth" || auth === "better-auth-organizations") &&
-    config.orm &&
-    ormsWithoutBetterAuth.includes(config.orm)
-  ) {
-    config.auth = "none";
-    if (providedFlags?.has("auth") && !isSilent()) {
-      consola.warn(
-        pc.yellow(
-          `Unsupported auth selection '${auth}' with ${config.orm}: no Better Auth adapter exists. Falling back to '--auth none'.`,
-        ),
-      );
-    }
-    return;
-  }
-
-  const normalized = normalizeCapabilitySelection(
-    "auth",
-    {
-      ecosystem: config.ecosystem,
-      backend: config.backend,
-      frontend: config.frontend,
-    },
-    auth,
-  );
-
-  if (!normalized.normalized || normalized.value === auth) {
-    return;
-  }
-
-  config.auth = normalized.value;
-
-  if (providedFlags?.has("auth") && normalized.reason && !isSilent()) {
-    consola.warn(
-      pc.yellow(
-        `Unsupported auth selection '${auth}' for the current stack: ${normalized.reason}. Falling back to '--auth ${normalized.value}'.`,
-      ),
+  config.auth = "none";
+  if (config.stackParts) {
+    config.stackParts = config.stackParts.filter(
+      (part) =>
+        part.role !== "auth" ||
+        (part.ecosystem !== "typescript" && part.ecosystem !== "react-native"),
     );
   }
+  if (!isSilent()) consola.warn(pc.yellow(`Auth set to 'None' (${reason})`));
 }
 
 function validateConvexConstraints(config: Partial<ProjectConfig>, providedFlags: Set<string>) {
@@ -1669,7 +1646,6 @@ export function validateFullConfig(
     }
   }
 
-  validateEcosystemAuthCompatibility(config, providedFlags);
   validateDatabaseOrmAuth(config, providedFlags);
   validateDatabaseSetup(config, providedFlags);
 
@@ -1682,6 +1658,8 @@ export function validateFullConfig(
   validateEffectBackendConstraints(config);
 
   validateFrontendConstraints(config, providedFlags);
+  // Auth is judged against the backend and frontend once those are known to be valid.
+  validateEcosystemAuthCompatibility(config, providedFlags, { partial, partSpecs: options.part });
 
   validateApiConstraints(config, options);
   validatePythonApiConstraints(config);
@@ -1855,7 +1833,8 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateIntegrationsConstraints(config);
     validateJobQueueConstraints(config);
     validateContainerAddonConstraints(config);
-    validateEcosystemAuthCompatibility(config);
+    const authIssue = getAuthSelectionIssue(config);
+    if (authIssue) throw new Error(authIssue);
     validateDatabaseOrmAuth(config);
     validateEffectBackendConstraints(config);
 

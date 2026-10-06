@@ -1,5 +1,7 @@
 import type { Auth, Ecosystem } from "@/config/types";
 
+import { AUTH_VALUES, BACKEND_VALUES, ECOSYSTEM_VALUES, FRONTEND_VALUES } from "@/config/schemas";
+
 export type CapabilityName = "auth";
 
 export type CapabilityStackContext = {
@@ -8,6 +10,8 @@ export type CapabilityStackContext = {
   frontend?: readonly string[];
   webFrontend?: readonly string[];
   nativeFrontend?: readonly string[];
+  database?: string;
+  orm?: string;
 };
 
 export type CapabilityDefinitionBase = {
@@ -211,8 +215,19 @@ function getNextOnlyAuthLabel(
   }
 }
 
+const BETTER_AUTH_UNSUPPORTED_ORMS = new Set(["typeorm", "sequelize", "mikroorm"]);
+
 function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth): string | null {
   if (optionId === "none") return null;
+
+  if (optionId === "better-auth" || optionId === "better-auth-organizations") {
+    if (context.database === "redis") {
+      return "Better Auth requires a SQL database (not Redis)";
+    }
+    if (context.orm && BETTER_AUTH_UNSUPPORTED_ORMS.has(context.orm)) {
+      return `Better Auth has no ${context.orm} adapter`;
+    }
+  }
 
   const ecosystem = context.ecosystem ?? "typescript";
   const backend = context.backend;
@@ -349,7 +364,7 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
   }
 
   const nextOnlyLabel = getNextOnlyAuthLabel(optionId);
-  if (backend !== "self" && backend !== "self-next") {
+  if (!isSelfBackend(backend)) {
     return `${nextOnlyLabel} needs fullstack Next.js`;
   }
 
@@ -358,6 +373,49 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
   }
 
   return null;
+}
+
+function isAuth(value: string): value is Auth {
+  return (AUTH_VALUES as readonly string[]).includes(value);
+}
+
+function hasFrontendAnswer(stack: CapabilityStackContext): boolean {
+  return (
+    stack.frontend !== undefined ||
+    stack.webFrontend !== undefined ||
+    stack.nativeFrontend !== undefined
+  );
+}
+
+/**
+ * Shared reason an auth provider cannot be generated for a stack. Compatibility analysis, graph
+ * validation, CLI and MCP validation, prompts, and the builder all report this text.
+ * With `partial`, an undefined ecosystem, backend, or frontend is still unanswered: the auth is
+ * judged unsupported only when no answer to those questions could support it.
+ */
+export function getAuthIncompatibility(
+  auth: string | undefined,
+  stack: CapabilityStackContext,
+  { partial = false } = {},
+): string | null {
+  if (!auth || !isAuth(auth)) return null;
+  const reason = getAuthDisabledReason(stack, auth);
+  if (!reason || !partial) return reason;
+
+  const ecosystems = stack.ecosystem === undefined ? ECOSYSTEM_VALUES : [stack.ecosystem];
+  const backends = stack.backend === undefined ? BACKEND_VALUES : [stack.backend];
+  const frontends = hasFrontendAnswer(stack)
+    ? [{}]
+    : FRONTEND_VALUES.map((frontend) => ({ frontend: [frontend] }));
+  const canBeSupported = ecosystems.some((ecosystem) =>
+    backends.some((backend) =>
+      frontends.some(
+        (frontend) =>
+          getAuthDisabledReason({ ...stack, ecosystem, backend, ...frontend }, auth) === null,
+      ),
+    ),
+  );
+  return canBeSupported ? null : reason;
 }
 
 export function getCapabilityDefinitions<K extends CapabilityName>(
@@ -372,7 +430,7 @@ export function getCapabilityDisabledReason<K extends CapabilityName>(
   optionId: CapabilityDefinitionMap[K]["id"],
 ): string | null {
   if (capability === "auth") {
-    return getAuthDisabledReason(context, optionId as Auth) as string | null;
+    return getAuthIncompatibility(optionId, context);
   }
 
   return null;

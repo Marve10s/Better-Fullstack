@@ -22,6 +22,7 @@ export {
 import { hasGeneratedJobQueueRequirements, type ProjectConfig } from "@/types";
 
 import { applyEffectBackendDefaults } from "@/config/config-processing";
+import { getAuthSelectionIssue } from "@/config/stack-compatibility";
 
 // Re-export virtual filesystem types for programmatic usage
 export {
@@ -257,6 +258,9 @@ export async function createVirtual(
       config.stackParts = options.stackParts;
     }
     applyEffectBackendDefaults(config, new Set(Object.keys(options)));
+
+    const authIssue = getAuthSelectionIssue(config);
+    if (authIssue) return { success: false, error: authIssue };
 
     const hasLegacyContainerAddon =
       !config.stackParts &&

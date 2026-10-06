@@ -1,8 +1,11 @@
 import {
   analyzeStackCompatibility,
   getAddonStackPartBinding,
+  getAuthIncompatibility,
   getJobQueueIncompatibility,
   getPythonLoggingIncompatibility,
+  isToolingOverlayOnly,
+  stackGraphToLegacyProjectConfigForEcosystem,
   type CompatibilityInput,
   type ProjectConfig,
 } from "@/types";
@@ -44,6 +47,46 @@ export function getRequestedJobQueueRejection(
 ): string | null {
   if (!requestedJobQueue || adjustedConfig.jobQueue === requestedJobQueue) return null;
   return getJobQueueIncompatibility(requestedJobQueue, adjustedConfig);
+}
+
+function getAuthStack(config: Partial<ProjectConfig>) {
+  return {
+    ecosystem: config.ecosystem && getCompatibilityEcosystem(config),
+    backend: config.backend,
+    frontend: config.frontend,
+    database: config.database,
+    orm: config.orm,
+  };
+}
+
+/**
+ * Checks the auth selection the generator will use. A stack graph is projected the way the
+ * generator projects it, so its auth part wins over a stale flat `auth` field. With `partial`,
+ * unanswered selections are left open for prompts to fill.
+ */
+export function getAuthSelectionIssue(
+  config: Partial<ProjectConfig>,
+  { partial = false } = {},
+): string | null {
+  const usesGraph = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+  const selection = usesGraph
+    ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript")
+    : config;
+  return getAuthIncompatibility(selection.auth, getAuthStack(selection), {
+    partial: partial && !usesGraph,
+  });
+}
+
+/**
+ * Compatibility adjustments may reset auth that another choice made unsupported, as the builder
+ * does. Auth the user requested by flag or tool input is rejected instead, with the shared reason.
+ */
+export function getRequestedAuthRejection(
+  requestedAuth: ProjectConfig["auth"] | undefined,
+  adjustedConfig: Partial<ProjectConfig>,
+): string | null {
+  if (!requestedAuth || adjustedConfig.auth === requestedAuth) return null;
+  return getAuthIncompatibility(requestedAuth, getAuthStack(adjustedConfig));
 }
 
 function getProjectBackendFromCompatibility(backend: string): string {

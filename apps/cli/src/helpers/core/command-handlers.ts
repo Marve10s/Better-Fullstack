@@ -17,6 +17,7 @@ import type {
 import { resolveCreateConfigBase } from "@/config/config-source";
 import { displayConfig } from "@/config/display-config";
 import {
+  getRequestedAuthRejection,
   getRequestedJobQueueRejection,
   resolveCompatibilityAdjustments,
 } from "@/config/stack-compatibility";
@@ -337,13 +338,15 @@ function reportCompatibilityAdjustments(adjustments: string[]) {
   }
 }
 
-function rejectAdjustedJobQueueFlag(
+function rejectAdjustedRequestedFlags(
   config: ProjectConfig,
   changes: Partial<ProjectConfig>,
   providedFlags: Set<string>,
 ) {
-  if (!providedFlags.has("jobQueue")) return;
-  const rejection = getRequestedJobQueueRejection(config.jobQueue, { ...config, ...changes });
+  const adjusted = { ...config, ...changes };
+  const rejection =
+    (providedFlags.has("jobQueue") && getRequestedJobQueueRejection(config.jobQueue, adjusted)) ||
+    (providedFlags.has("auth") && getRequestedAuthRejection(config.auth, adjusted));
   if (rejection) exitWithError(rejection);
 }
 
@@ -780,7 +783,7 @@ export async function createProjectHandler(
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
-          rejectAdjustedJobQueueFlag(config, changes, providedFlags);
+          rejectAdjustedRequestedFlags(config, changes, providedFlags);
           if (adjustments.length > 0) {
             config = { ...config, ...changes };
             cliInput = { ...cliInput, ...changes };
@@ -821,7 +824,7 @@ export async function createProjectHandler(
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
-          rejectAdjustedJobQueueFlag(config, changes, providedFlags);
+          rejectAdjustedRequestedFlags(config, changes, providedFlags);
           if (adjustments.length > 0) {
             config = { ...config, ...changes };
             cliInput = { ...cliInput, ...changes };

@@ -16,10 +16,7 @@ import type {
   UILibrary,
 } from "@/config/types";
 
-import {
-  getCapabilityDisabledReason,
-  normalizeCapabilitySelection,
-} from "@/capabilities/capabilities";
+import { getAuthIncompatibility, normalizeCapabilitySelection } from "@/capabilities/capabilities";
 import {
   getCodeQualitySelectionIssue,
   getShadcnLintFrontendIssue,
@@ -1142,12 +1139,14 @@ export const analyzeStackCompatibility = (
         });
       }
     }
-    if (!["better-auth", "none"].includes(nextStack.auth)) {
+    const solidAuthReason =
+      nextStack.auth === "better-auth" ? null : getAuthIncompatibility(nextStack.auth, nextStack);
+    if (solidAuthReason) {
       nextStack.auth = "better-auth";
       changed = true;
       changes.push({
         category: "auth",
-        message: "Auth set to 'Better Auth' (the only provider for TanStack Start (Solid) yet)",
+        message: `Auth set to 'Better Auth' (${solidAuthReason})`,
       });
     }
     const examples = nextStack.examples.filter((example) =>
@@ -1529,29 +1528,6 @@ export const analyzeStackCompatibility = (
   // AUTH CONSTRAINTS
   // ============================================
 
-  // Redis is a key-value store without SQL support - better-auth requires SQL tables
-  const isBetterAuthSelection =
-    nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations";
-
-  if (isBetterAuthSelection && nextStack.database === "redis") {
-    nextStack.auth = "none";
-    changed = true;
-    changes.push({
-      category: "auth",
-      message: "Auth set to 'None' (Better Auth requires a SQL database, not Redis)",
-    });
-  }
-
-  const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-  if (isBetterAuthSelection && ormsWithoutBetterAuth.includes(nextStack.orm)) {
-    nextStack.auth = "none";
-    changed = true;
-    changes.push({
-      category: "auth",
-      message: `Auth set to 'None' (${nextStack.orm} has no Better Auth adapter)`,
-    });
-  }
-
   const normalizedAuth = normalizeCapabilitySelection(
     "auth",
     {
@@ -1559,6 +1535,8 @@ export const analyzeStackCompatibility = (
       backend: nextStack.backend,
       webFrontend: nextStack.webFrontend,
       nativeFrontend: nextStack.nativeFrontend,
+      database: nextStack.database,
+      orm: nextStack.orm,
     },
     nextStack.auth as Auth,
   );
@@ -3653,25 +3631,7 @@ export const getDisabledReason = (
   // AUTH CONSTRAINTS
   // ============================================
   if (category === "auth") {
-    const isBetterAuthOption =
-      optionId === "better-auth" || optionId === "better-auth-organizations";
-    if (isBetterAuthOption && currentStack.database === "redis") {
-      return "Better Auth requires a SQL database (not Redis)";
-    }
-    const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-    if (isBetterAuthOption && ormsWithoutBetterAuth.includes(currentStack.orm)) {
-      return `Better Auth has no ${currentStack.orm} adapter`;
-    }
-    return getCapabilityDisabledReason(
-      "auth",
-      {
-        ecosystem: currentStack.ecosystem,
-        backend: currentStack.backend,
-        webFrontend: currentStack.webFrontend,
-        nativeFrontend: currentStack.nativeFrontend,
-      },
-      optionId as Auth,
-    );
+    return getAuthIncompatibility(optionId, currentStack);
   }
 
   // ============================================
@@ -5856,21 +5816,14 @@ export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backe
   if (frontend === "redwood" && backend && backend !== "none") return false;
   if (frontend === "fresh" && backend && backend !== "none") return false;
 
-  if (auth && auth !== "none") {
-    return (
-      getCapabilityDisabledReason(
-        "auth",
-        {
-          ecosystem: "typescript",
-          backend,
-          webFrontend: [frontend],
-        },
-        auth as Auth,
-      ) === null
-    );
-  }
-
-  return true;
+  // An unanswered backend may still be one that supports the auth.
+  return (
+    getAuthIncompatibility(
+      auth,
+      { ecosystem: "typescript", backend, webFrontend: [frontend] },
+      { partial: true },
+    ) === null
+  );
 }
 
 export function requiresChatSdkVercelAIForSelection(

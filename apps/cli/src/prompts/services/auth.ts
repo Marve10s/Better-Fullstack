@@ -1,4 +1,4 @@
-import type { Auth, Backend } from "@/types";
+import type { Auth, Backend, Database, ORM } from "@/types";
 
 import { DEFAULT_CONFIG } from "@/constants";
 import { getSupportedCapabilityOptions } from "@/types";
@@ -11,6 +11,8 @@ type AuthPromptContext = {
   backend?: Backend;
   frontend?: string[];
   ecosystem?: "typescript" | "react-native" | "go";
+  database?: Database;
+  orm?: ORM;
 };
 
 export function resolveAuthPrompt(context: AuthPromptContext = {}): PromptSingleResolution<Auth> {
@@ -33,6 +35,8 @@ export function resolveAuthPrompt(context: AuthPromptContext = {}): PromptSingle
     ecosystem: context.ecosystem ?? "typescript",
     backend: context.backend,
     frontend: context.frontend,
+    database: context.database,
+    orm: context.orm,
   });
   const options = authOptionOrder.flatMap(({ value }) => {
     const option = supportedOptions.find((candidate) => candidate.id === value);
@@ -80,12 +84,14 @@ export async function getAuthChoice(
   backend?: Backend,
   frontend?: string[],
   ecosystem: "typescript" | "react-native" | "go" = "typescript",
+  data: { database?: Database; orm?: ORM } = {},
 ) {
   const resolution = resolveAuthPrompt({
     auth,
     backend,
     frontend,
     ecosystem,
+    ...data,
   });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";

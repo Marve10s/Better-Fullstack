@@ -7,6 +7,7 @@ import type {
   StackPartSource,
 } from "@/config/types";
 
+import { getAuthIncompatibility } from "@/capabilities/capabilities";
 import {
   getCodeQualitySelectionIssue,
   getShadcnLintFrontendIssue,
@@ -299,7 +300,6 @@ const TYPESCRIPT_APOLLO_SERVER_COMPATIBLE_FRONTENDS = new Set([
   "next",
   "vinext",
 ]);
-const BETTER_AUTH_UNSUPPORTED_ORM_TOOLS = new Set(["typeorm", "mikroorm", "sequelize"]);
 const ELIXIR_ECTO_REQUIRED_TOOLS = new Set(["absinthe"]);
 const ELIXIR_ECTO_SQL_REQUIRED_TOOLS = new Set(["oban"]);
 const ELIXIR_SQL_REPO_REQUIRED_TOOLS = new Set(["pow", "ex_machina", "phx-gen-auth"]);
@@ -2717,6 +2717,30 @@ function createJavaCompatibilityIssue(
   return undefined;
 }
 
+// A TypeScript auth part owned by a TypeScript backend is judged against the stack it is
+// generated into. Any other owner leaves the backend unanswered, so only data rules apply.
+function getTypeScriptAuthPartIncompatibility(toolId: string, context: StackPartOptionContext) {
+  const ownedByBackend = context.ownerRole === "backend" && context.ownerEcosystem === "typescript";
+  const frontend = [
+    context.primaryEcosystemsByRole?.frontend === "typescript"
+      ? context.primaryToolIdsByRole?.frontend
+      : undefined,
+    context.primaryEcosystemsByRole?.mobile === "react-native"
+      ? context.primaryToolIdsByRole?.mobile
+      : undefined,
+  ].filter((tool) => tool !== undefined);
+  return getAuthIncompatibility(
+    toolId,
+    {
+      ecosystem: "typescript",
+      database: context.siblingToolIdsByRole?.database ?? context.primaryToolIdsByRole?.database,
+      orm: context.siblingToolIdsByRole?.orm,
+      ...(ownedByBackend ? { backend: context.ownerToolId, frontend } : {}),
+    },
+    { partial: !ownedByBackend },
+  );
+}
+
 export function getPythonLoggingIncompatibility(
   pythonLogging: string | undefined,
   pythonWebFramework: string | undefined,
@@ -2864,30 +2888,15 @@ function getStackPartCompatibilityIssue(
     }
   }
 
-  if (
-    part.ecosystem === "typescript" &&
-    part.role === "auth" &&
-    (part.toolId === "better-auth" || part.toolId === "better-auth-organizations")
-  ) {
-    const databaseTool = context.primaryToolIdsByRole?.database;
-    if (databaseTool === "redis") {
+  if (part.ecosystem === "typescript" && part.role === "auth") {
+    const reason = getTypeScriptAuthPartIncompatibility(part.toolId, context);
+    if (reason) {
       return createStackGraphIssue({
         code: "INCOMPATIBLE_GRAPH_SELECTION",
         partId: part.id,
         role: part.role,
         toolId: part.toolId,
-        message: "'better-auth' cannot use Redis as the primary database.",
-      });
-    }
-
-    const ormTool = context.siblingToolIdsByRole?.orm;
-    if (ormTool && BETTER_AUTH_UNSUPPORTED_ORM_TOOLS.has(ormTool)) {
-      return createStackGraphIssue({
-        code: "INCOMPATIBLE_GRAPH_SELECTION",
-        partId: part.id,
-        role: part.role,
-        toolId: part.toolId,
-        message: `'better-auth' is not compatible with the '${ormTool}' ORM selection.`,
+        message: reason,
       });
     }
   }

@@ -734,13 +734,19 @@ function getPromptResolutionValue(
   const frontends = results.frontend ?? flags.frontend;
   const contextByKey: Record<string, Record<string, unknown>> = {
     frontend: { frontend: flags.frontend, backend: flags.backend, auth: flags.auth },
-    backend: { backendFramework: flags.backend, frontends, jobQueue: flags.jobQueue },
+    backend: {
+      backendFramework: flags.backend,
+      frontends,
+      jobQueue: flags.jobQueue,
+      auth: flags.auth,
+    },
     runtime: { runtime: flags.runtime, backend: results.backend, jobQueue: flags.jobQueue },
     database: {
       database: flags.database,
       backend: results.backend,
       runtime: results.runtime,
       jobQueue: flags.jobQueue,
+      auth: flags.auth,
     },
     orm: {
       orm: flags.orm,
@@ -748,6 +754,7 @@ function getPromptResolutionValue(
       database: results.database,
       backend: results.backend,
       runtime: results.runtime,
+      auth: flags.auth,
     },
     api: {
       api: flags.api,
@@ -760,6 +767,8 @@ function getPromptResolutionValue(
       backend: results.backend,
       frontend: frontends,
       ecosystem: results.ecosystem,
+      database: results.database,
+      orm: results.orm,
     },
     payments: {
       payments: flags.payments,
@@ -948,7 +957,7 @@ export async function gatherConfig(
     },
     backend: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Backend);
-      return getBackendFrameworkChoice(flags.backend, results.frontend, flags.jobQueue);
+      return getBackendFrameworkChoice(flags.backend, results.frontend, flags.jobQueue, flags.auth);
     },
     runtime: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Runtime);
@@ -957,7 +966,13 @@ export async function gatherConfig(
     database: ({ results }) => {
       const database = resolveDatabaseFlagForEcosystem(results.ecosystem, flags.database);
       if (database !== undefined) return Promise.resolve(database);
-      return getDatabaseChoice(flags.database, results.backend, results.runtime, flags.jobQueue);
+      return getDatabaseChoice(
+        flags.database,
+        results.backend,
+        results.runtime,
+        flags.jobQueue,
+        flags.auth,
+      );
     },
     orm: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as ORM);
@@ -967,6 +982,7 @@ export async function gatherConfig(
         results.database,
         results.backend,
         results.runtime,
+        flags.auth,
       );
     },
     api: ({ results }) => {
@@ -980,7 +996,10 @@ export async function gatherConfig(
     },
     auth: ({ results }) => {
       if (results.ecosystem === "typescript") {
-        return getAuthChoice(flags.auth, results.backend, results.frontend, "typescript");
+        return getAuthChoice(flags.auth, results.backend, results.frontend, "typescript", {
+          database: results.database,
+          orm: results.orm,
+        });
       }
       if (results.ecosystem === "react-native") {
         return Promise.resolve((flags.auth ?? "none") as Auth);
