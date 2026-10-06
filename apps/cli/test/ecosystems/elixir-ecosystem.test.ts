@@ -99,7 +99,7 @@ describe("Elixir library expansion", () => {
     const router = getVirtualTreeFileContent(tree, "lib/elixir_roadmap_full_web/router.ex");
     expect(router).toContain("pow_routes()");
     expect(router).toContain(
-      "plug OpenApiSpex.Plug.PutApiSpec, module: ElixirRoadmapFullWeb.ApiSpec",
+      "plug OpenApiSpex.Plug.PutApiSpec,\n      module: ElixirRoadmapFullWeb.ApiSpec",
     );
     expect(router).toContain('forward "/openapi", OpenApiSpex.Plug.RenderSpec, []');
     expect(hasVirtualFile(tree.root, "lib/elixir_roadmap_full_web/api_spec.ex")).toBe(true);
@@ -524,7 +524,7 @@ describe("Elixir library expansion", () => {
     }
   });
 
-  it("migrates Oban to the installed version and keeps it in testing mode under ExUnit", async () => {
+  it("upgrades Oban in a separate migration that runs after the original one", async () => {
     const result = await createVirtual({
       ...base,
       projectName: "elixir-oban-jobs",
@@ -534,18 +534,38 @@ describe("Elixir library expansion", () => {
       elixirJobs: "oban",
       elixirDeploy: "fly",
     });
+    const withoutOban = await createVirtual({
+      ...base,
+      projectName: "elixir-no-oban",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "none",
+      elixirApi: "rest",
+    });
 
     expect(result.success).toBe(true);
     const tree = result.tree!;
-    const migration = getVirtualTreeFileContent(
-      tree,
-      "priv/repo/migrations/20260101000002_add_oban_jobs.exs",
-    );
-    expect(migration).toContain("def up, do: Oban.Migration.up()");
-    expect(migration).toContain("def down, do: Oban.Migration.down(version: 1)");
+    const migrations = listVirtualTreeFilePaths(tree)
+      .map((path) => path.replace(/^\/+/, ""))
+      .filter((path) => path.startsWith("priv/repo/migrations/"))
+      .sort();
+    const original = "priv/repo/migrations/20260101000002_add_oban_jobs.exs";
+    const upgrade = "priv/repo/migrations/20261007000000_upgrade_oban_jobs_to_v14.exs";
+    expect(migrations.slice(-2)).toEqual([original, upgrade]);
+    const originalContent = getVirtualTreeFileContent(tree, original);
+    expect(originalContent).toContain("Oban.Migration.up(version: 12)");
+    expect(originalContent).toContain("Oban.Migration.down(version: 1)");
+    const upgradeContent = getVirtualTreeFileContent(tree, upgrade);
+    expect(upgradeContent).toContain("Oban.Migration.up(version: 14)");
+    expect(upgradeContent).toContain("Oban.Migration.down(version: 13)");
+    expect(getVirtualTreeFileContent(tree, "mix.exs")).toContain('{:oban, "~> 2.24.0"}');
     expect(getVirtualTreeFileContent(tree, "config/test.exs")).toContain(
       "config :elixir_oban_jobs, Oban, testing: :manual",
     );
+
+    expect(withoutOban.success).toBe(true);
+    expect(
+      listVirtualTreeFilePaths(withoutOban.tree!).filter((path) => path.includes("oban_jobs")),
+    ).toEqual([]);
   });
 
   it("keeps one Fly machine running only when Oban runs inside the app", async () => {
@@ -640,4 +660,31 @@ describe("Elixir library expansion", () => {
 ]
 `);
   });
+
+  it.each(["phoenix", "phoenix-live-view", "none"] as const)(
+    "formats HEEx files whenever %s generates them",
+    async (elixirWebFramework) => {
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-format-heex",
+        elixirWebFramework,
+        elixirRealtime: "none",
+        elixirOrm: "none",
+        elixirAuth: "none",
+        elixirApi: elixirWebFramework === "none" ? "none" : "rest",
+        elixirHttpServer: elixirWebFramework === "none" ? "none" : "bandit",
+        elixirI18n: "none",
+      });
+
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      const hasHeex = listVirtualTreeFilePaths(tree).some((path) => path.endsWith(".heex"));
+      expect(hasHeex).toBe(elixirWebFramework !== "none");
+      const formatter = getVirtualTreeFileContent(tree, ".formatter.exs") ?? "";
+      const mix = getVirtualTreeFileContent(tree, "mix.exs") ?? "";
+      expect(formatter.includes("plugins: [Phoenix.LiveView.HTMLFormatter]")).toBe(hasHeex);
+      expect(formatter.includes('"{config,lib,test}/**/*.{heex,ex,exs}"')).toBe(hasHeex);
+      expect(mix.includes('{:phoenix_live_view, "~> 1.0"}')).toBe(hasHeex);
+    },
+  );
 });

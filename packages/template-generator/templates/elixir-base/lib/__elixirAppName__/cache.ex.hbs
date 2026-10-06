@@ -13,10 +13,12 @@ end
 defmodule {{elixirModuleName}}.Cache do
   @moduledoc "Redis-backed cache helpers using the supervised Redix connection."
 
-  def get(key), do: Redix.command({{elixirModuleName}}.Redix, ["GET", key])
+  @conn {{elixirModuleName}}.Redix
+
+  def get(key), do: Redix.command(@conn, ["GET", key])
 
   def put(key, value, ttl_seconds \\ 300) do
-    Redix.command({{elixirModuleName}}.Redix, ["SET", key, value, "EX", ttl_seconds])
+    Redix.command(@conn, ["SET", key, value, "EX", ttl_seconds])
   end
 end
 {{/if}}

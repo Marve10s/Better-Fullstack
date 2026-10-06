@@ -9,11 +9,16 @@ defmodule {{elixirModuleName}}Web.Router do
 {{else}}
     plug :fetch_flash
 {{/if}}
-    plug :put_root_layout, html: { {{~elixirModuleName}}Web.Layouts, :root}
+
+    plug :put_root_layout,
+      html: { {{~elixirModuleName}}Web.Layouts, :root}
+
     plug :protect_from_forgery
     plug :put_secure_browser_headers
 {{#if (eq elixirAuth "pow")}}
-    plug Pow.Plug.Session, otp_app: :{{elixirAppName}}
+
+    plug Pow.Plug.Session,
+      otp_app: :{{elixirAppName}}
 {{/if}}
   end
 
@@ -23,7 +28,9 @@ defmodule {{elixirModuleName}}Web.Router do
     plug :fetch_session
 {{/if}}
 {{#if (eq elixirApi "open_api_spex")}}
-    plug OpenApiSpex.Plug.PutApiSpec, module: {{elixirModuleName}}Web.ApiSpec
+
+    plug OpenApiSpex.Plug.PutApiSpec,
+      module: {{elixirModuleName}}Web.ApiSpec
 {{/if}}
   end
 
@@ -71,7 +78,9 @@ defmodule {{elixirModuleName}}Web.Router do
   end
 {{#if (eq elixirApi "absinthe")}}
 
-  forward "/graphql", Absinthe.Plug, schema: {{elixirModuleName}}Web.GraphQL.Schema
+  forward "/graphql",
+          Absinthe.Plug,
+          schema: {{elixirModuleName}}Web.GraphQL.Schema
 {{/if}}
 {{#if (eq elixirApi "open_api_spex")}}
 
@@ -85,12 +94,17 @@ defmodule {{elixirModuleName}}Web.Router do
     default_model_expand_depth: 3
 {{/if}}
 
-  if Application.compile_env(:{{elixirAppName}}, :dev_routes) do
+  if Application.compile_env(
+       :{{elixirAppName}},
+       :dev_routes
+     ) do
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
       pipe_through :browser
-      live_dashboard "/dashboard", metrics: {{elixirModuleName}}Web.Telemetry
+
+      live_dashboard "/dashboard",
+        metrics: {{elixirModuleName}}Web.Telemetry
     end
   end
 end

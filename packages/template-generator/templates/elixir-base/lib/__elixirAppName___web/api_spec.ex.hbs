@@ -6,7 +6,10 @@ defmodule {{elixirModuleName}}Web.ApiSpec do
 
   def spec do
     %OpenApi{
-      info: %Info{title: "{{projectName}} API", version: "1.0.0"},
+      info: %Info{
+        title: "{{projectName}} API",
+        version: "1.0.0"
+      },
       servers: [%Server{url: "/"}],
       paths: %{}
     }

@@ -43,7 +43,7 @@
 {{/if}}
   ],
 {{/if}}
-{{#if (eq elixirWebFramework "phoenix-live-view")}}
+{{#if (ne elixirWebFramework "none")}}
   plugins: [Phoenix.LiveView.HTMLFormatter],
   inputs: ["*.{heex,ex,exs}", "{config,lib,test}/**/*.{heex,ex,exs}", "priv/*/**/*.exs"]
 {{else}}

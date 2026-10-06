@@ -26582,6 +26582,7 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
   "priv/repo/migrations/20260101000000_create_items.exs",
   "priv/repo/migrations/20260101000001_create_users.exs",
   "priv/repo/migrations/20260101000002_add_oban_jobs.exs",
+  "priv/repo/migrations/20261007000000_upgrade_oban_jobs_to_v14.exs",
   "priv/repo/seeds.exs",
   "test/snapshot_elixir_phoenix_liveview_full_web/controllers/health_controller_test.exs",
   "test/support/conn_case.ex",
@@ -26752,7 +26753,7 @@ POSTGRES_TEST_DB=snapshot_elixir_phoenix_ecto_rest_test"
 
 exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-liveview-full 1`] = `
 {
-  "fileCount": 47,
+  "fileCount": 48,
   "files": [
     {
       "content": 
@@ -26930,6 +26931,10 @@ POSTGRES_TEST_DB=snapshot_elixir_phoenix_liveview_full_test"
     {
       "content": "[exists]",
       "path": "priv/repo/migrations/20260101000002_add_oban_jobs.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "priv/repo/migrations/20261007000000_upgrade_oban_jobs_to_v14.exs",
     },
     {
       "content": "[exists]",

@@ -1,7 +1,8 @@
 import Config
 {{#if (eq elixirApplicationFramework "ash")}}
 
-config :{{elixirAppName}}, ash_domains: [{{elixirModuleName}}.CatalogDomain]
+config :{{elixirAppName}},
+  ash_domains: [{{elixirModuleName}}.CatalogDomain]
 
 config :ash, default_string_length_count: :codepoints
 {{/if}}
@@ -16,17 +17,21 @@ config :{{elixirAppName}},
 {{/if}}
 {{#if (ne elixirWebFramework "none")}}
 
-config :{{elixirAppName}}, {{elixirModuleName}}Web.Endpoint,
-  url: [host: "localhost"],
+config :{{elixirAppName}},
+       {{elixirModuleName}}Web.Endpoint,
+       url: [host: "localhost"],
 {{#if (eq elixirHttpServer "bandit")}}
-  adapter: Bandit.PhoenixAdapter,
+       adapter: Bandit.PhoenixAdapter,
 {{/if}}
-  render_errors: [
-    formats: [html: {{elixirModuleName}}Web.ErrorHTML, json: {{elixirModuleName}}Web.ErrorJSON],
-    layout: false
-  ],
-  pubsub_server: {{elixirModuleName}}.PubSub,
-  live_view: [signing_salt: "change-me"]
+       render_errors: [
+         formats: [
+           html: {{elixirModuleName}}Web.ErrorHTML,
+           json: {{elixirModuleName}}Web.ErrorJSON
+         ],
+         layout: false
+       ],
+       pubsub_server: {{elixirModuleName}}.PubSub,
+       live_view: [signing_salt: "change-me"]
 {{/if}}
 
 config :logger, :console,
@@ -38,49 +43,59 @@ config :phoenix, :json_library, Jason
 {{/if}}
 {{#if (eq elixirJobs "oban")}}
 
-config :{{elixirAppName}}, Oban,
-  repo: {{elixirModuleName}}.Repo,
-  queues: [default: 10],
-  plugins: [Oban.Plugins.Pruner]
+config :{{elixirAppName}},
+       Oban,
+       repo: {{elixirModuleName}}.Repo,
+       queues: [default: 10],
+       plugins: [Oban.Plugins.Pruner]
 {{/if}}
 {{#if (eq elixirJobs "quantum")}}
 
-config :{{elixirAppName}}, {{elixirModuleName}}.Scheduler,
-  jobs: [
-    heartbeat: [
-      schedule: "@hourly",
-      task: fn -> :ok end
-    ]
-  ]
+config :{{elixirAppName}},
+       {{elixirModuleName}}.Scheduler,
+       jobs: [
+         heartbeat: [
+           schedule: "@hourly",
+           task: fn -> :ok end
+         ]
+       ]
 {{/if}}
 {{#if (eq elixirEmail "swoosh")}}
 
-config :{{elixirAppName}}, {{elixirModuleName}}.Mailer, adapter: Swoosh.Adapters.Local
+config :{{elixirAppName}},
+       {{elixirModuleName}}.Mailer,
+       adapter: Swoosh.Adapters.Local
 
 config :swoosh, api_client: Swoosh.ApiClient.Finch
 {{/if}}
 {{#if (eq elixirEmail "bamboo")}}
 
-config :{{elixirAppName}}, {{elixirModuleName}}.Mailer, adapter: Bamboo.LocalAdapter
+config :{{elixirAppName}},
+       {{elixirModuleName}}.Mailer,
+       adapter: Bamboo.LocalAdapter
 {{/if}}
 {{#if (eq elixirCaching "nebulex")}}
 
-config :{{elixirAppName}}, {{elixirModuleName}}.Cache,
-  gc_interval: :timer.hours(12),
-  max_size: 100_000
+config :{{elixirAppName}},
+       {{elixirModuleName}}.Cache,
+       gc_interval: :timer.hours(12),
+       max_size: 100_000
 {{/if}}
 {{#if (eq elixirObservability "prom_ex")}}
 
-config :{{elixirAppName}}, {{elixirModuleName}}.PromEx,
-  manual_metrics_start_delay: :no_delay,
-  drop_metrics_groups: [],
-  grafana: [
-    host: System.get_env("GRAFANA_HOST", "http://localhost:3000"),
-    auth_token: System.get_env("GRAFANA_TOKEN", ""),
-    upload_dashboards_on_start: false,
-    folder_name: "{{projectName}} Dashboards",
-    annotate_app_lifecycle: true
-  ]
+grafana_folder = "{{projectName}} Dashboards"
+
+config :{{elixirAppName}},
+       {{elixirModuleName}}.PromEx,
+       manual_metrics_start_delay: :no_delay,
+       drop_metrics_groups: [],
+       grafana: [
+         host: System.get_env("GRAFANA_HOST", "http://localhost:3000"),
+         auth_token: System.get_env("GRAFANA_TOKEN", ""),
+         upload_dashboards_on_start: false,
+         folder_name: grafana_folder,
+         annotate_app_lifecycle: true
+       ]
 {{/if}}
 {{#if (eq elixirObservability "sentry")}}
 
@@ -92,19 +107,23 @@ config :sentry,
 {{/if}}
 {{#if (eq elixirClustering "libcluster")}}
 
-config :{{elixirAppName}}, :cluster_topologies,
-  local_epmd: [strategy: Cluster.Strategy.Epmd, config: [hosts: []]]
+config :{{elixirAppName}},
+       :cluster_topologies,
+       local_epmd: [strategy: Cluster.Strategy.Epmd, config: [hosts: []]]
 {{/if}}
 {{#if (eq elixirAuth "pow")}}
 
-config :{{elixirAppName}}, :pow,
-  user: {{elixirModuleName}}.Users.User,
-  repo: {{elixirModuleName}}.Repo,
-  web_module: {{elixirModuleName}}Web
+config :{{elixirAppName}},
+       :pow,
+       user: {{elixirModuleName}}.Users.User,
+       repo: {{elixirModuleName}}.Repo,
+       web_module: {{elixirModuleName}}Web
 {{/if}}
 {{#if (eq elixirAuth "guardian")}}
 
-config :{{elixirAppName}}, {{elixirModuleName}}.Auth.Guardian, issuer: "{{elixirAppName}}"
+config :{{elixirAppName}},
+       {{elixirModuleName}}.Auth.Guardian,
+       issuer: "{{elixirAppName}}"
 {{/if}}
 {{#if (eq elixirAuth "ueberauth")}}
 

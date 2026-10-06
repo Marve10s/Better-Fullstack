@@ -10,7 +10,11 @@ defmodule {{elixirModuleName}}.ExternalService do
   end
 
   defp impl do
-    Application.get_env(:{{elixirAppName}}, :external_service, __MODULE__.Default)
+    Application.get_env(
+      :{{elixirAppName}},
+      :external_service,
+      __MODULE__.Default
+    )
   end
 
   defmodule Default do

@@ -37,7 +37,7 @@ npm create better-fullstack@latest my-jobs-api -- \
 
 - A Phoenix 1.7 JSON API with `GET /api/items`, `GET /api/items/:id`, `POST /api/items`, and `GET /api/health`.
 - Ecto SQL with PostgreSQL, an `items` migration, and a seed file.
-- Oban started in the application supervision tree, a `default` queue with 10 workers, the `Pruner` plugin, and a migration that creates the Oban tables.
+- Oban started in the application supervision tree, a `default` queue with 10 workers, the `Pruner` plugin, a migration that creates the Oban tables, and a second migration that upgrades them to the schema version Oban 2.24 requires.
 - A `MyJobsApi.Workers.SampleWorker` module.
 - A Swoosh `Mailer` using the local adapter, plus Finch for its HTTP client.
 - A `Dockerfile` and a `fly.toml` for Fly.io.
@@ -71,7 +71,8 @@ my-jobs-api/
 │           └── item_controller.ex
 ├── priv/repo/migrations/
 │   ├── 20260101000000_create_items.exs
-│   └── 20260101000002_add_oban_jobs.exs
+│   ├── 20260101000002_add_oban_jobs.exs
+│   └── 20261007000000_upgrade_oban_jobs_to_v14.exs
 └── test/
 ```
 
@@ -90,7 +91,7 @@ mix ecto.setup
 mix phx.server
 ```
 
-`mix ecto.setup` runs both migrations, so the `oban_jobs` table exists before the server starts. Create an item through the REST API:
+`mix ecto.setup` runs all three migrations, so the `oban_jobs` table exists before the server starts. Create an item through the REST API:
 
 ```bash
 curl -X POST http://localhost:4000/api/items \
@@ -146,7 +147,7 @@ Add queues to the `queues` list when different job types need separate concurren
 mix test
 ```
 
-The generated test covers `/api/health`. `config/test.exs` sets `testing: :manual` for Oban, so the `default` queue and the Pruner do not start under ExUnit and jobs inserted during a test are not run. In this mode Oban refuses to start until its migrations are current; the `test` alias migrates the test database first. To run enqueued jobs inside a test, call `Oban.drain_queue(queue: :default)`.
+The generated test covers `/api/health`. `config/test.exs` sets `testing: :manual` for Oban, so the `default` queue and the Pruner do not start under ExUnit and jobs inserted during a test are not run. In this mode Oban refuses to start until its migrations are current; the `test` alias migrates the test database first. `20260101000002_add_oban_jobs.exs` creates the Oban tables at schema version 12 and `20261007000000_upgrade_oban_jobs_to_v14.exs` upgrades them to version 14, so a database migrated before the upgrade file existed only needs `mix ecto.migrate`. To run enqueued jobs inside a test, call `Oban.drain_queue(queue: :default)`.
 
 ## When to choose it
 

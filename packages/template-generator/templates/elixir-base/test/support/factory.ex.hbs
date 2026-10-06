@@ -3,7 +3,10 @@ defmodule {{elixirModuleName}}.Factory do
   use ExMachina.Ecto, repo: {{elixirModuleName}}.Repo
 
   def item_factory do
-    %{{elixirModuleName}}.Catalog.Item{name: "Generated item", description: "Factory fixture"}
+    %{{elixirModuleName}}.Catalog.Item{
+      name: "Generated item",
+      description: "Factory fixture"
+    }
   end
 end
 {{/if}}

@@ -17,8 +17,20 @@ defmodule {{elixirModuleName}}.Application do
     redis_url = System.get_env("REDIS_URL", "redis://localhost:6379")
 
 {{/if}}
+{{#if (eq elixirJobs "oban")}}
+    oban_config =
+      Application.fetch_env!(
+        :{{elixirAppName}},
+        Oban
+      )
+
+{{/if}}
 {{#if (eq elixirClustering "libcluster")}}
-    topologies = Application.fetch_env!(:{{elixirAppName}}, :cluster_topologies)
+    topologies =
+      Application.fetch_env!(
+        :{{elixirAppName}},
+        :cluster_topologies
+      )
 
 {{/if}}
 {{#if (or (eq elixirObservability "prom_ex") (eq elixirOrm "ecto-sql") (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3") (ne elixirWebFramework "none") (eq elixirHttp "finch") (eq elixirEmail "swoosh") (ne elixirCaching "none") (eq elixirClustering "libcluster") (ne elixirJobs "none"))}}
@@ -48,13 +60,22 @@ defmodule {{elixirModuleName}}.Application do
       {{elixirModuleName}}.Cache{{#if (or (ne elixirWebFramework "none") (eq elixirClustering "libcluster") (ne elixirJobs "none"))}},{{/if}}
 {{/if}}
 {{#if (eq elixirCaching "redix")}}
-      {Redix, {redis_url, name: {{elixirModuleName}}.Redix}}{{#if (or (ne elixirWebFramework "none") (eq elixirClustering "libcluster") (ne elixirJobs "none"))}},{{/if}}
+      {
+        Redix,
+        {redis_url, name: {{elixirModuleName}}.Redix}
+      }{{#if (or (ne elixirWebFramework "none") (eq elixirClustering "libcluster") (ne elixirJobs "none"))}},{{/if}}
 {{/if}}
 {{#if (eq elixirClustering "libcluster")}}
-      {Cluster.Supervisor, [topologies, [name: {{elixirModuleName}}.ClusterSupervisor]]}{{#if (or (ne elixirWebFramework "none") (ne elixirJobs "none"))}},{{/if}}
+      {
+        Cluster.Supervisor,
+        [
+          topologies,
+          [name: {{elixirModuleName}}.ClusterSupervisor]
+        ]
+      }{{#if (or (ne elixirWebFramework "none") (ne elixirJobs "none"))}},{{/if}}
 {{/if}}
 {{#if (eq elixirJobs "oban")}}
-      {Oban, Application.fetch_env!(:{{elixirAppName}}, Oban)}{{#if (or (ne elixirWebFramework "none"))}},{{/if}}
+      {Oban, oban_config}{{#if (or (ne elixirWebFramework "none"))}},{{/if}}
 {{/if}}
 {{#if (eq elixirJobs "quantum")}}
       {{elixirModuleName}}.Scheduler{{#if (or (ne elixirWebFramework "none"))}},{{/if}}
@@ -67,14 +88,22 @@ defmodule {{elixirModuleName}}.Application do
     children = []
 {{/if}}
 
-    opts = [strategy: :one_for_one, name: {{elixirModuleName}}.Supervisor]
+    opts = [
+      strategy: :one_for_one,
+      name: {{elixirModuleName}}.Supervisor
+    ]
+
     Supervisor.start_link(children, opts)
   end
 
   @impl true
   def config_change(changed, _new, removed) do
 {{#if (ne elixirWebFramework "none")}}
-    {{elixirModuleName}}Web.Endpoint.config_change(changed, removed)
+    {{elixirModuleName}}Web.Endpoint.config_change(
+      changed,
+      removed
+    )
+
 {{else}}
     _ = {changed, removed}
 {{/if}}
