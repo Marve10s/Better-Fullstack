@@ -18,7 +18,7 @@ const AUTH_TECH_OPTIONS = getCapabilityDefinitions("auth").map((cap) => ({
 }));
 
 const TOOLING_ICONS: Record<string, string> = {
-  "vite-plus": "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/logo.svg",
+  "vite-plus": "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/docs/public/favicon.svg",
   turborepo: "https://cdn.simpleicons.org/turborepo/EF4444",
   nx: "https://cdn.simpleicons.org/nx/143055",
   biome: "https://cdn.simpleicons.org/biome/60A5FA",
@@ -2674,7 +2674,7 @@ export const TECH_OPTIONS: Record<
       id: "vite-plus",
       name: "Vite+",
       description: "Unified web toolchain and workspace runner (Beta)",
-      icon: "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/logo.svg",
+      icon: "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/docs/public/favicon.svg",
       color: "from-violet-500 to-cyan-400",
       default: false,
     },
