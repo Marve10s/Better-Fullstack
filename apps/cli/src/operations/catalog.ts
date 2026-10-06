@@ -215,7 +215,7 @@ export const listOptionsOperation = defineOperation({
   name: "list_options",
   title: "List options",
   description:
-    "Lists option categories with their CLI flag, selection mode, ecosystems, and option count. With a category, returns that category's options with label, aliases, and the CLI flag that selects each one. Use ecosystem to keep only that ecosystem's categories.",
+    "Lists option categories with their CLI flag, bfs_get_schema category name (schemaCategory), selection mode, ecosystems, and option count. With a category, returns that category's options with label, aliases, and the CLI flag that selects each one. Aliases are older IDs that builder URLs and search still accept; CLI flags take only the flag value. Use ecosystem to keep only that ecosystem's categories.",
   input: z.object({
     category: z
       .string()

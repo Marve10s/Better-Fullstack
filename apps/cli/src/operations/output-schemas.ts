@@ -36,6 +36,7 @@ export const schemaOutputSchema = z.object({
 export const catalogCategoryOutputSchema = z.object({
   id: z.string(),
   label: z.string(),
+  schemaCategory: z.string().nullable(),
   selectionMode: z.enum(["single", "multiple"]),
   flag: z.string().nullable(),
   ecosystems: z.array(EcosystemSchema),

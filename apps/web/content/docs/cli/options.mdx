@@ -19,7 +19,7 @@ npx create-better-fullstack@latest list --ecosystem go
 ```
 
 With a category ID, `list` prints that category's options. Each row shows the option ID, its
-label, the exact argument that selects it, and any aliases:
+label, the exact argument that selects it, and any legacy IDs:
 
 ```bash
 npx create-better-fullstack@latest list goAuth --ecosystem go
@@ -28,7 +28,7 @@ npx create-better-fullstack@latest list goAuth --ecosystem go
 ```text
 ●  Go Auth (goAuth), single select, --go-auth
 │
-│  id      label                flag              aliases
+│  id      label                flag              legacy ids
 │  casbin  Casbin               --go-auth casbin
 │  jwt     golang-jwt           --go-auth jwt
 │  goth    Goth                 --go-auth goth
@@ -36,9 +36,14 @@ npx create-better-fullstack@latest list goAuth --ecosystem go
 │  none    None                 --go-auth none
 ```
 
-Category IDs are the canonical names used by `bfs_get_schema` and `bts.jsonc`, such as `orm`,
-`webFrontend`, or `goAuth`. An unknown category exits with status 1 and names the valid
-categories, or the closest match when you typed a flag name such as `go-auth`.
+Category IDs are the option catalog's names, such as `orm`, `webFrontend`, or `goAuth`. An unknown
+category exits with status 1 and names the valid categories, or the closest match when you typed a
+flag name such as `go-auth`.
+
+`bfs_get_schema` names some categories differently: `webFrontend` and `nativeFrontend` are both
+`frontend` there, and `backendLibraries` is `effect`. It has no entry for `aiDocs`, `git`,
+`install`, or `versionChannel`. The JSON output gives each category's `bfs_get_schema` name as
+`schemaCategory`.
 
 ## Search across ecosystems
 
@@ -50,7 +55,7 @@ npx create-better-fullstack@latest search drizzle
 ```
 
 ```text
-│  id       label    flag           category  ecosystems  aliases
+│  id       label    flag           category  ecosystems  legacy ids
 │  drizzle  Drizzle  --orm drizzle  orm       typescript
 ```
 
@@ -74,6 +79,7 @@ document to stdout, so it is safe to pipe into `jq`. Errors go to stderr with a 
     {
       "id": "goAuth",
       "label": "Go Auth",
+      "schemaCategory": "goAuth",
       "selectionMode": "single",
       "flag": "--go-auth",
       "ecosystems": ["go"],
@@ -113,13 +119,18 @@ document to stdout, so it is safe to pipe into `jq`. Errors go to stderr with a 
 }
 ```
 
-| Field           | Meaning                                                                                 |
-| --------------- | --------------------------------------------------------------------------------------- |
-| `ecosystem`     | The `--ecosystem` filter, or `null`.                                                    |
-| `selectionMode` | `single` or `multiple`. Multiple-select flags accept several space-separated values.    |
-| `flag`          | On a category, the flag name. On an option, the full argument. `null` when none exists. |
-| `ecosystems`    | Ecosystems whose stacks use the category.                                               |
-| `aliases`       | Alternative IDs the CLI also accepts for the option.                                    |
+| Field            | Meaning                                                                                 |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| `ecosystem`      | The `--ecosystem` filter, or `null`.                                                    |
+| `schemaCategory` | The category name `bfs_get_schema` accepts, or `null` when it has no entry.             |
+| `selectionMode`  | `single` or `multiple`. Multiple-select flags accept several space-separated values.    |
+| `flag`           | On a category, the flag name. On an option, the full argument. `null` when none exists. |
+| `ecosystems`     | Ecosystems whose stacks use the category.                                               |
+| `aliases`        | Older IDs for the option. See below.                                                    |
+
+Aliases are IDs an option used to have, such as `sveltekit` for `svelte`. Builder share URLs and
+saved builder stacks that still contain one load as the current option, and `search` matches them.
+`create` flags do not accept them: pass the value shown in `flag`.
 
 AI agents get the same data from the [`bfs_list_options` and `bfs_search_options`](/docs/ai/mcp/)
 MCP tools.

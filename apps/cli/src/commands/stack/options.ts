@@ -51,7 +51,7 @@ export function listCommand(input: {
   );
   log.message(
     columns(
-      ["id", "label", "flag", "aliases"],
+      ["id", "label", "flag", "legacy ids"],
       options.map((option) => [
         option.id,
         option.label,
@@ -79,7 +79,7 @@ export function searchCommand(input: {
   }
   log.message(
     columns(
-      ["id", "label", "flag", "category", "ecosystems", "aliases"],
+      ["id", "label", "flag", "category", "ecosystems", "legacy ids"],
       result.matches.map((match) => [
         match.id,
         match.label,

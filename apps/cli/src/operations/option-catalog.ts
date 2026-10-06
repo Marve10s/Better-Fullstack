@@ -12,9 +12,12 @@ import {
   isMultiEcosystemMobileCategory,
 } from "@better-fullstack/types";
 
+import { getMcpSchemaCategory } from "@/operations/stack-helpers";
+
 export type CatalogCategory = {
   id: OptionCategory;
   label: string;
+  schemaCategory: string | null;
   selectionMode: OptionSelectionMode;
   flag: string | null;
   ecosystems: OptionCategoryEcosystem[];
@@ -91,6 +94,7 @@ function toCategory(category: OptionCategory): CatalogCategory {
   return {
     id: category,
     label: getCategoryDisplayName(category),
+    schemaCategory: getMcpSchemaCategory(category),
     selectionMode: metadata.selectionMode,
     flag: flag ? `--${flag.name}` : null,
     ecosystems: CATEGORY_ECOSYSTEMS.get(category) ?? [],
