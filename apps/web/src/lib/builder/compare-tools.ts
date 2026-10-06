@@ -993,7 +993,7 @@ const epicStack: CompetitorComparison = {
     {
       dimension: "After scaffolding",
       betterFullstack: "add, status, and update commands",
-      competitor: "Manual updates; the generated code is yours",
+      competitor: "epicli update prepares patches and a prompt for an AI assistant to apply",
     },
   ],
   sections: [
@@ -1001,14 +1001,14 @@ const epicStack: CompetitorComparison = {
       heading: "What the Epic Stack gives you",
       paragraphs: [
         "A production-oriented app with most decisions already made: Fly.io deployment with multi-region SQLite through LiteFS, Prisma, email and password auth with two-factor authentication, role-based permissions, transactional email with Resend, Conform forms with Zod validation, Tigris image storage, caching, Tailwind with Radix UI, Sentry error monitoring, and CI through GitHub Actions. Decision documents in the repository explain many of these choices.",
-        "Its docs are direct about updates: the generated code \"is completely yours and there is no way to update it other than making manual changes\", so you follow Epic Stack improvements and apply them yourself.",
+        "Its docs are direct about updates: the generated code \"is completely yours and there is no way to update it other than making manual changes\", so you follow Epic Stack improvements and apply them yourself. The epicli tool from the same organisation helps with that: `npx epicli update` reads the Epic Stack commit recorded in your package.json, shows the upstream changes since then, and creates patches plus a prompt that you give to an AI assistant such as Cursor or Claude Code to apply them. Its README notes that the further an app diverges from the Epic Stack, the more likely those prompts run into issues.",
       ],
     },
     {
       heading: "What Better Fullstack adds",
       paragraphs: [
         "Choice at every layer: the framework, backend, database, ORM, auth provider, payments, email, job queues, AI SDKs, and deployment target. Several Epic Stack pieces are available as options, including SQLite, Prisma, Resend, Conform, Tailwind, Sentry, Playwright, Vitest, MSW, and Fly deployment, but Better Fullstack does not reproduce Epic Stack features such as LiteFS replication or its built-in two-factor auth.",
-        "After scaffolding, Better Fullstack records your selections so the add command can extend the project and the update command can compare it with current templates and apply reviewed changes.",
+        "After scaffolding, Better Fullstack records your selections and a baseline of the generated files. The add command extends the project. The update command compares that baseline with current templates and, after you confirm the reviewed plan, writes the changes itself instead of handing them to an assistant: files you edited and conflicts are left for manual review, and a recovery point can roll the write back. Moving a project between Better Fullstack releases is still a manual-review operation while its update support policy is in qualification.",
       ],
     },
     {
