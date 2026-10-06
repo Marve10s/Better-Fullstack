@@ -382,6 +382,127 @@ describe("applyDependencyVersionChannel", () => {
     expect(packageJson.dependencies.react).toBe("^19.3.0");
   });
 
+  describe("Better Auth family", () => {
+    // The drizzle adapter's latest and beta tags lag one publish behind, and the mongo adapter
+    // cannot be fetched. better-auth requires one exact core, so any split installs two cores.
+    const registry: Record<string, { tags: Record<string, string>; versions: string[] }> = {
+      "better-auth": {
+        tags: { latest: "1.7.8", beta: "1.8.0-beta.3" },
+        versions: ["1.6.22", "1.7.7", "1.7.8", "1.8.0-beta.2", "1.8.0-beta.3"],
+      },
+      "@better-auth/core": {
+        tags: { latest: "1.7.8", beta: "1.8.0-beta.3" },
+        versions: ["1.6.22", "1.7.7", "1.7.8", "1.8.0-beta.2", "1.8.0-beta.3"],
+      },
+      "@better-auth/expo": {
+        tags: { latest: "1.7.8", beta: "1.8.0-beta.3" },
+        versions: ["1.6.22", "1.7.7", "1.7.8", "1.8.0-beta.2", "1.8.0-beta.3"],
+      },
+      "@better-auth/drizzle-adapter": {
+        tags: { latest: "1.7.7", beta: "1.8.0-beta.2" },
+        versions: ["1.6.22", "1.7.7", "1.8.0-beta.2"],
+      },
+    };
+
+    const mockRegistry = () => {
+      global.fetch = mock(async (input: string | URL | Request) => {
+        const packageInfo = registry[decodeURIComponent(String(input).split("/").pop() ?? "")];
+        if (!packageInfo) return new Response("{}", { status: 404 });
+        return Response.json({
+          "dist-tags": packageInfo.tags,
+          versions: Object.fromEntries(packageInfo.versions.map((version) => [version, {}])),
+        });
+      }) as unknown as typeof fetch;
+    };
+
+    const writeProject = async (authDependencies: Record<string, string>) => {
+      const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-ba-"));
+      const manifests: Record<string, Record<string, string>> = {
+        "packages/auth": authDependencies,
+        "apps/web": { "better-auth": "1.6.22" },
+        "apps/native": {
+          "better-auth": "1.6.22",
+          "@better-auth/core": "1.6.22",
+          "@better-auth/expo": "1.6.22",
+        },
+      };
+      await fs.writeJson(path.join(projectDir, "package.json"), { name: "root" });
+      for (const [dir, dependencies] of Object.entries(manifests)) {
+        await fs.outputJson(path.join(projectDir, dir, "package.json"), {
+          name: dir,
+          dependencies,
+        });
+      }
+      return projectDir;
+    };
+
+    const readFamilyVersions = async (projectDir: string) => {
+      const versions = new Set<string>();
+      for (const packageJsonPath of await collectPackageJsonPaths(projectDir)) {
+        const { dependencies = {} } = (await fs.readJson(packageJsonPath)) as {
+          dependencies?: Record<string, string>;
+        };
+        for (const [name, version] of Object.entries(dependencies)) {
+          if (name === "better-auth" || name.startsWith("@better-auth/")) versions.add(version);
+        }
+      }
+      return [...versions].sort();
+    };
+
+    const generatedAuthDependencies = {
+      "better-auth": "1.6.22",
+      "@better-auth/core": "1.6.22",
+      "@better-auth/drizzle-adapter": "1.6.22",
+      "@better-auth/expo": "1.6.22",
+    };
+
+    for (const [channel, expected] of [
+      ["stable", "1.6.22"],
+      ["latest", "1.7.7"],
+      ["beta", "1.8.0-beta.2"],
+    ] as const) {
+      it(`moves every package to one ${channel} release`, async () => {
+        mockRegistry();
+        const projectDir = await writeProject(generatedAuthDependencies);
+
+        await applyDependencyVersionChannel(projectDir, channel);
+
+        expect(await readFamilyVersions(projectDir)).toEqual([expected]);
+      });
+    }
+
+    it("moves pnpm catalog entries with the rest of the family", async () => {
+      mockRegistry();
+      const projectDir = await writeProject({
+        ...generatedAuthDependencies,
+        "better-auth": "catalog:",
+      });
+      await fs.writeFile(
+        path.join(projectDir, "pnpm-workspace.yaml"),
+        "packages:\n  - apps/*\n  - packages/*\ncatalog:\n  better-auth: 1.6.22\n  zod: ^4.0.0\n",
+      );
+
+      await applyDependencyVersionChannel(projectDir, "latest");
+
+      expect(await readFamilyVersions(projectDir)).toEqual(["1.7.7", "catalog:"]);
+      expect(await fs.readFile(path.join(projectDir, "pnpm-workspace.yaml"), "utf8")).toBe(
+        "packages:\n  - apps/*\n  - packages/*\ncatalog:\n  better-auth: 1.7.7\n  zod: ^4.0.0\n",
+      );
+    });
+
+    it("keeps the whole family when one package cannot be resolved", async () => {
+      mockRegistry();
+      const projectDir = await writeProject({
+        ...generatedAuthDependencies,
+        "@better-auth/mongo-adapter": "1.6.22",
+      });
+
+      await applyDependencyVersionChannel(projectDir, "latest");
+
+      expect(await readFamilyVersions(projectDir)).toEqual(["1.6.22"]);
+    });
+  });
+
   it("keeps compatibility-held packages installable on the latest channel", async () => {
     const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-holds-"));
 

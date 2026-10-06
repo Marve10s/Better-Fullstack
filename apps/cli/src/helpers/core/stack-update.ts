@@ -2160,7 +2160,9 @@ export async function planStackUpdate(
   const uniqueFilesToRemove = [...new Set(filesToRemove)].sort();
   const projectedPackageJsonContents = new Map<string, string | null>();
   for (const operation of operations) {
-    if (!operation.path.endsWith("package.json")) continue;
+    if (!operation.path.endsWith("package.json") && operation.path !== "pnpm-workspace.yaml") {
+      continue;
+    }
     const packageJsonPath = path.join(projectDir, operation.path);
     if (operation.writeMode === "remove") {
       projectedPackageJsonContents.set(packageJsonPath, null);
