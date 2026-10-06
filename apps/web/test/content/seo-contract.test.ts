@@ -54,6 +54,29 @@ describe("SEO contracts", () => {
     });
   });
 
+  it("never redirects a published docs, guide, or blog page away", async () => {
+    const config = (await Bun.file("vercel.json").json()) as {
+      redirects?: Array<{ source: string; destination: string }>;
+    };
+    const publishedPaths = new Set<string>();
+    for await (const file of new Bun.Glob("content/{docs,guides,blog}/**/*.mdx").scan()) {
+      const segments = file
+        .replace(/\.mdx$/, "")
+        .split("/")
+        .slice(1);
+      if (segments.at(-1)?.includes(".")) continue;
+      if (segments.at(-1) === "index") segments.pop();
+      publishedPaths.add(`/${segments.join("/")}`);
+    }
+
+    expect(publishedPaths).toContain("/docs/cli/create");
+    expect(
+      config.redirects?.filter((redirect) =>
+        publishedPaths.has(redirect.source.replace(/\.md$/, "")),
+      ),
+    ).toEqual([]);
+  });
+
   it("includes product pages and excludes retired benchmark pages from the dynamic sitemap", () => {
     const entries = getSitemapEntriesFromPages({
       docsPages: [
