@@ -105,7 +105,7 @@ Add `--dry-run` to preview any of them without writing files. The oRPC router, t
 | ------------------ | --------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------ |
 | Server entry       | `export default app`                    | `serve()` from `@hono/node-server` on port 3000 | `export default app` as the Worker entrypoint               |
 | Dev command        | `bun run --hot src/index.ts`            | `tsx watch src/index.ts`                       | `alchemy dev` in `packages/infra`                            |
-| Start or deploy    | `bun run dist/index.js`                 | `node dist/index.js`                           | `alchemy deploy` in `packages/infra`                         |
+| Start or deploy    | `bun run dist/index.mjs`                | `node dist/index.mjs`                          | `alchemy deploy` in `packages/infra`                         |
 | Database client    | `@libsql/client` with `DATABASE_URL`    | `@libsql/client` with `DATABASE_URL`           | `drizzle-orm/d1` on the `DB` binding                         |
 | Environment        | Zod-validated `process.env` via `@t3-oss/env-core` | Zod-validated `process.env` via `@t3-oss/env-core` | `env` from `cloudflare:workers`, typed from the Alchemy bindings |
 

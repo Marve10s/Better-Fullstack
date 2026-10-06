@@ -566,6 +566,7 @@ ${
       : ""
   }
 ${generateDeploymentCommands(packageManagerRunCmd, webDeploy, serverDeploy)}
+${generateServerImageSection(projectName, serverDeploy, backend, addons)}
 ${generateGitHooksSection(packageManagerRunCmd, addons)}
 
 ## Project Structure
@@ -1308,6 +1309,52 @@ function generateScriptsList(
   }
 
   return scripts;
+}
+
+const SERVER_IMAGE_DEPLOY_STEPS: Partial<Record<ProjectConfig["serverDeploy"], string>> = {
+  docker: "Run `docker compose up --build` from the repository root.",
+  fly: "Run `fly deploy --config apps/server/fly.toml` from the repository root.",
+  railway:
+    "Keep the Railway service root directory at the repository root and set its config file path to `/apps/server/railway.toml`.",
+  render:
+    "Connect the repository as a Render Blueprint; `render.yaml` builds from the repository root.",
+};
+
+function generateServerImageSection(
+  projectName: string,
+  serverDeploy: ProjectConfig["serverDeploy"],
+  backend: ProjectConfig["backend"],
+  addons: ProjectConfig["addons"],
+): string {
+  // Encore allows no server deploy target; the Compose addon runs the image Encore builds.
+  if (backend === "encore") {
+    if (!addons.includes("docker-compose")) return "";
+
+    return `## Server deployment
+
+Encore builds the server image itself. From \`apps/server\`:
+
+\`\`\`bash
+encore build docker ${projectName}-server
+\`\`\`
+
+Then run \`docker compose up\` from the repository root; the \`server\` service uses that image.
+`;
+  }
+
+  const step = SERVER_IMAGE_DEPLOY_STEPS[serverDeploy];
+  if (!step || backend === "self" || backend === "none") return "";
+
+  return `## Server deployment
+
+\`apps/server/Dockerfile\` builds the server image from the repository root, because the server depends on workspace packages:
+
+\`\`\`bash
+docker build -f apps/server/Dockerfile .
+\`\`\`
+
+${step}
+`;
 }
 
 function generateDeploymentCommands(

@@ -54,7 +54,8 @@ export function processBackendDeps(vfs: VirtualFileSystem, config: ProjectConfig
   } else if (backend === "encore") {
     deps.push("encore.dev");
   } else if (backend === "adonisjs") {
-    deps.push("@adonisjs/core", "@adonisjs/cors", "reflect-metadata");
+    // The compiled server imports workspace packages as TypeScript; tsx loads them at run time.
+    deps.push("@adonisjs/core", "@adonisjs/cors", "reflect-metadata", "tsx");
     devDeps.push("@adonisjs/assembler", "@adonisjs/tsconfig", "@types/node");
   } else if (backend === "nitro") {
     deps.push("nitropack", "h3");
@@ -80,7 +81,8 @@ export function processBackendDeps(vfs: VirtualFileSystem, config: ProjectConfig
 
   if (isBetterAuth(auth)) deps.push("better-auth");
 
-  if (runtime === "node") devDeps.push("tsx", "@types/node");
+  if (runtime === "node")
+    devDeps.push(...(deps.includes("tsx") ? [] : ["tsx" as const]), "@types/node");
   else if (runtime === "bun") devDeps.push("@types/bun");
 
   if (serverDeploy === "netlify") devDeps.push("@netlify/functions");

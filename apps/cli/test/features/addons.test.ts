@@ -1443,7 +1443,7 @@ describe("Addon Configurations", () => {
             backend: "adonisjs" as const,
             runtime: "node" as const,
             output: "/app/apps/server/build ./apps/server/build",
-            command: 'CMD ["node", "bin/server.js"]',
+            command: 'CMD ["node", "--import", "tsx", "bin/server.js"]',
           },
           {
             backend: "nitro" as const,
