@@ -49,13 +49,13 @@ API compatibility is where the three diverge most:
 
 ## Library fit
 
-A library written for the Fetch API (`Request`, `Response`, `fetch`) runs on all three. A library that depends on Node-specific APIs works on Node.js, is meant to work on Bun under the compatibility goal above, and needs checking against the Workers subset. Better Fullstack encodes some of these limits: with `--runtime workers`, the CLI rejects MongoDB, Docker database setup, the SigNoz observability option (which uses the OpenTelemetry Node SDK), and the Nango integration (whose Node SDK is not available on Workers).
+A library written for the Fetch API (`Request`, `Response`, `fetch`) runs on all three. A library that depends on Node-specific APIs works on Node.js, is meant to work on Bun under the compatibility goal above, and needs checking against the Workers subset. Better Fullstack encodes some of these limits: with `--runtime workers` and the other options passed as flags, the CLI rejects MongoDB, Docker database setup, the SigNoz observability option (which uses the OpenTelemetry Node SDK), and the Nango integration (whose Node SDK is not available on Workers). A preset created with `--yes` goes through compatibility adjustment first, which changes the stack instead of failing: MongoDB is replaced with SQLite, Drizzle, and D1, and SigNoz and Nango are removed. Read the adjustment summary the CLI prints.
 
 Database access changes too. A long-running process can hold a connection or open a local SQLite file. A Worker reaches Cloudflare's D1 database through a [binding on the `env` object](https://developers.cloudflare.com/d1/worker-api/).
 
 ## Deployment constraints
 
-A Bun or Node.js server can run on any host that runs the process: a VM, a container, or a platform service. A Worker deploys to Cloudflare. In Better Fullstack, `--runtime workers` requires `--server-deploy cloudflare` and generates a Hono backend: `--backend nitro` or `--backend fets` is switched to Hono, and other backends are rejected.
+A Bun or Node.js server can run on any host that runs the process: a VM, a container, or a platform service. A Worker deploys to Cloudflare. In Better Fullstack, `--runtime workers` requires `--server-deploy cloudflare` and generates a Hono backend: `--backend nitro` or `--backend fets` is switched to Hono. Other backends are rejected when passed as flags, and replaced with Hono when a preset is adjusted.
 
 ## What Better Fullstack generates
 
