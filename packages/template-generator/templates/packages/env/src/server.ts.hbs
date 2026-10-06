@@ -120,6 +120,16 @@ export const env = createEnv({
 		UPSTASH_REDIS_REST_URL: z.url(),
 		UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
 {{/if}}
+{{#if (eq jobQueue "upstash-qstash")}}
+		QSTASH_URL: z.url().default("https://qstash.upstash.io"),
+		QSTASH_TOKEN: z.string().min(1),
+		QSTASH_CURRENT_SIGNING_KEY: z.string().min(1),
+		QSTASH_NEXT_SIGNING_KEY: z.string().min(1),
+		QSTASH_WEBHOOK_URL: z.url(),
+{{/if}}
+{{#if (eq jobQueue "hatchet")}}
+		HATCHET_CLIENT_TOKEN: z.string().min(1),
+{{/if}}
 {{#if (eq ai "openai-sdk")}}
 		OPENAI_API_KEY: z.string().min(1),
 		OPENAI_MODEL: z.string().min(1).default("gpt-5-mini"),

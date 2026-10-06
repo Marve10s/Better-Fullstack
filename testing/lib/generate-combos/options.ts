@@ -76,6 +76,7 @@ import {
   JAVA_TESTING_LIBRARIES_VALUES,
   JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
+  getJobQueueIncompatibility,
   LOGGING_VALUES,
   MOBILE_DEEP_LINKING_VALUES,
   MOBILE_LIBRARIES_VALUES,
@@ -360,7 +361,16 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
       testing: sampleScalar(TESTING_VALUES, 0.35, "testing"),
       ai: sampleScalar(AI_VALUES, 0.78, "ai"),
       realtime: backend === "none" ? "none" : sampleScalar(REALTIME_VALUES, 0.84, "realtime"),
-      jobQueue: backend === "none" ? "none" : sampleScalar(JOB_QUEUE_VALUES, 0.88, "jobQueue"),
+      jobQueue:
+        backend === "none"
+          ? "none"
+          : sampleScalar(
+              JOB_QUEUE_VALUES.filter(
+                (value) => !getJobQueueIncompatibility(value, { backend, runtime, database }),
+              ),
+              0.88,
+              "jobQueue",
+            ),
       animation: sampleScalar(ANIMATION_VALUES, 0.74, "animation"),
       cssFramework,
       uiLibrary,

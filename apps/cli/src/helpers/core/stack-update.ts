@@ -36,6 +36,7 @@ import {
   buildCompatibilityInputFromConfig,
   compatibilityChangesToProjectConfig,
   getCompatibilityBackend,
+  getRequestedJobQueueRejection,
   hasSelectedTypeScriptBackendPart,
 } from "@/config/stack-compatibility";
 import { getDefaultConfig } from "@/constants";
@@ -1847,6 +1848,13 @@ export async function planStackUpdate(
       );
       proposedConfig = adjustedConfig;
     }
+  }
+  const jobQueueRejection = getRequestedJobQueueRejection(
+    requestedChanges.jobQueue,
+    proposedConfig,
+  );
+  if (jobQueueRejection) {
+    return { success: false, projectDir, error: `Invalid stack update: ${jobQueueRejection}` };
   }
   try {
     validateConfigForProgrammaticUse(proposedConfig);

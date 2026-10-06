@@ -41,6 +41,7 @@ import {
   formatStackGraphIssue,
   getDisabledReason,
   getCodeQualitySelectionIssue,
+  getJobQueueIncompatibility,
   getShadcnLintFrontendIssue,
   hasVitePlusWorkspaceRoot,
   hasSignozSupportedGoServerTarget,
@@ -79,6 +80,20 @@ function validateIntegrationsConstraints(config: Partial<ProjectConfig>) {
     "nango",
   );
 
+  if (reason) throw new Error(reason);
+}
+
+function validateJobQueueConstraints(config: Partial<ProjectConfig>, partial = false) {
+  // The graph is authoritative: a stale flat jobQueue must not decide what gets generated.
+  const usesGraph = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+  const selection = usesGraph
+    ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript")
+    : config;
+  if ((selection.ecosystem ?? "typescript") !== "typescript") return;
+
+  const reason = getJobQueueIncompatibility(selection.jobQueue, selection, {
+    partial: partial && !usesGraph,
+  });
   if (reason) throw new Error(reason);
 }
 
@@ -1666,6 +1681,7 @@ export function validateFullConfig(
   validateScopedLibraryFlags(config);
   validateI18nConstraints(config);
   validateIntegrationsConstraints(config);
+  validateJobQueueConstraints(config, partial);
 
   const hasGraphBackend = config.stackParts?.some(
     (part) =>
@@ -1818,6 +1834,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     }
 
     validateIntegrationsConstraints(config);
+    validateJobQueueConstraints(config);
     validateContainerAddonConstraints(config);
     validateEcosystemAuthCompatibility(config);
     validateDatabaseOrmAuth(config);

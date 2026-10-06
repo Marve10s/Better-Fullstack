@@ -371,7 +371,7 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   jobQueue: {
     schemaValues: JOB_QUEUE_VALUES,
     resolve: resolveJobQueuePrompt,
-    coverageContexts: [{ backend: "hono" }, { backend: "none" }],
+    coverageContexts: [{ backend: "hono", runtime: "bun", database: "postgres" }, { backend: "none" }],
   },
   logging: {
     schemaValues: LOGGING_VALUES,

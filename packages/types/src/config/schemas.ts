@@ -433,7 +433,16 @@ export const RealtimeSchema = z
   .describe("Real-time/WebSocket solution");
 
 export const JobQueueSchema = z
-  .enum(["bullmq", "trigger-dev", "inngest", "temporal", "none"])
+  .enum([
+    "bullmq",
+    "trigger-dev",
+    "inngest",
+    "temporal",
+    "pg-boss",
+    "upstash-qstash",
+    "hatchet",
+    "none",
+  ])
   .describe("Job queue/background worker solution");
 
 export const CMSSchema = z

@@ -19,7 +19,7 @@ export {
   recovery,
 } from "@/run";
 
-import type { ProjectConfig } from "@/types";
+import { hasGeneratedJobQueueRequirements, type ProjectConfig } from "@/types";
 
 import { applyEffectBackendDefaults } from "@/config/config-processing";
 
@@ -262,7 +262,19 @@ export async function createVirtual(
       (config.addons ?? []).some(
         (addon) => addon === "docker-compose" || addon === "devcontainer" || addon === "kong",
       );
-    if (config.integrations === "nango" || config.payments !== "none" || hasLegacyContainerAddon) {
+    // Graph input generates from its own job queue part, so check it alongside the flat field.
+    const jobQueueSelections = [
+      config.jobQueue,
+      ...(config.stackParts ?? [])
+        .filter((part) => part.role === "jobQueue")
+        .map((part) => part.toolId),
+    ];
+    if (
+      config.integrations === "nango" ||
+      config.payments !== "none" ||
+      jobQueueSelections.some(hasGeneratedJobQueueRequirements) ||
+      hasLegacyContainerAddon
+    ) {
       const [{ validateConfigForProgrammaticUse }, { runWithContextAsync }] = await Promise.all([
         import("@/config/config-validation"),
         import("@/presentation/context"),

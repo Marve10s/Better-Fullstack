@@ -7,6 +7,9 @@ import { node } from "@elysiajs/node";
 {{/if}}
 import { Elysia{{#if (eq api "openapi")}}, t{{/if}} } from "elysia";
 import { cors } from "@elysiajs/cors";
+{{#if (eq jobQueue "upstash-qstash")}}
+import { handleWelcomeEmailJob, WELCOME_EMAIL_PATH } from "./jobs/qstash";
+{{/if}}
 {{#if (eq api "openapi")}}
 import { openapi } from "@elysiajs/openapi";
 {{/if}}
@@ -224,6 +227,11 @@ new Elysia({ adapter: node() })
 		});
 
 		return result.toUIMessageStreamResponse();
+	})
+{{/if}}
+{{#if (eq jobQueue "upstash-qstash")}}
+	.post(WELCOME_EMAIL_PATH, ({ request }) => handleWelcomeEmailJob(request), {
+		parse: "none",
 	})
 {{/if}}
 	.get("/", () => "OK"){{#if (and (eq observability "signoz") (eq runtime "bun"))}};

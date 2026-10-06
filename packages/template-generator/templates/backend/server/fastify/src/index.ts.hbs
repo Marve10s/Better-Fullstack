@@ -1,6 +1,9 @@
 import { env } from "@{{projectName}}/env/server";
 import Fastify{{#if (eq api "apollo-server")}}, { type FastifyRequest }{{/if}} from "fastify";
 import fastifyCors from "@fastify/cors";
+{{#if (eq jobQueue "upstash-qstash")}}
+import { processWelcomeEmailJob, WELCOME_EMAIL_PATH } from "./jobs/qstash";
+{{/if}}
 {{#if (eq api "openapi")}}
 import swagger, { type FastifyDynamicSwaggerOptions } from "@fastify/swagger";
 import apiReference from "@scalar/fastify-api-reference";
@@ -297,6 +300,25 @@ fastify.post('/ai', async function (request) {
 });
 {{/if}}
 
+{{#if (eq jobQueue "upstash-qstash")}}
+fastify.register(async (jobsApp) => {
+	// QStash signs the raw body, so keep it as a string for verification.
+	jobsApp.removeAllContentTypeParsers();
+	jobsApp.addContentTypeParser("*", { parseAs: "string" }, (_request, body, done) => {
+		done(null, body);
+	});
+
+	jobsApp.post(WELCOME_EMAIL_PATH, async (request, reply) => {
+		const signature = request.headers["upstash-signature"];
+		const result = await processWelcomeEmailJob({
+			signature: typeof signature === "string" ? signature : undefined,
+			body: typeof request.body === "string" ? request.body : "",
+		});
+		reply.status(result.status).send(result.body);
+	});
+});
+
+{{/if}}
 fastify.get('/', async () => {
 	return 'OK';
 });

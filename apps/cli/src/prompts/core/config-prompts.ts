@@ -730,9 +730,14 @@ function getPromptResolutionValue(
   const frontends = results.frontend ?? flags.frontend;
   const contextByKey: Record<string, Record<string, unknown>> = {
     frontend: { frontend: flags.frontend, backend: flags.backend, auth: flags.auth },
-    backend: { backendFramework: flags.backend, frontends },
-    runtime: { runtime: flags.runtime, backend: results.backend },
-    database: { database: flags.database, backend: results.backend, runtime: results.runtime },
+    backend: { backendFramework: flags.backend, frontends, jobQueue: flags.jobQueue },
+    runtime: { runtime: flags.runtime, backend: results.backend, jobQueue: flags.jobQueue },
+    database: {
+      database: flags.database,
+      backend: results.backend,
+      runtime: results.runtime,
+      jobQueue: flags.jobQueue,
+    },
     orm: {
       orm: flags.orm,
       hasDatabase: results.database !== undefined && results.database !== "none",
@@ -781,7 +786,12 @@ function getPromptResolutionValue(
       ecosystem: results.ecosystem,
     },
     realtime: { realtime: flags.realtime, backend: results.backend },
-    jobQueue: { jobQueue: flags.jobQueue, backend: results.backend },
+    jobQueue: {
+      jobQueue: flags.jobQueue,
+      backend: results.backend,
+      runtime: results.runtime,
+      database: results.database,
+    },
     fileUpload: { fileUpload: flags.fileUpload, backend: results.backend },
     logging: { logging: flags.logging, backend: results.backend },
     rateLimit: { rateLimit: flags.rateLimit, backend: results.backend },
@@ -934,16 +944,16 @@ export async function gatherConfig(
     },
     backend: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Backend);
-      return getBackendFrameworkChoice(flags.backend, results.frontend);
+      return getBackendFrameworkChoice(flags.backend, results.frontend, flags.jobQueue);
     },
     runtime: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Runtime);
-      return getRuntimeChoice(flags.runtime, results.backend);
+      return getRuntimeChoice(flags.runtime, results.backend, flags.jobQueue);
     },
     database: ({ results }) => {
       const database = resolveDatabaseFlagForEcosystem(results.ecosystem, flags.database);
       if (database !== undefined) return Promise.resolve(database);
-      return getDatabaseChoice(flags.database, results.backend, results.runtime);
+      return getDatabaseChoice(flags.database, results.backend, results.runtime, flags.jobQueue);
     },
     orm: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as ORM);
@@ -1111,7 +1121,7 @@ export async function gatherConfig(
     },
     jobQueue: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as JobQueue);
-      return getJobQueueChoice(flags.jobQueue, results.backend);
+      return getJobQueueChoice(flags.jobQueue, results.backend, results.runtime, results.database);
     },
     fileUpload: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as FileUpload);

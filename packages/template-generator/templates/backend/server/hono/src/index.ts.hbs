@@ -39,6 +39,9 @@ import { createContext as createGraphQLContext } from "@{{projectName}}/api/cont
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 import { Hono } from "hono";
+{{#if (eq jobQueue "upstash-qstash")}}
+import { handleWelcomeEmailJob, WELCOME_EMAIL_PATH } from "./jobs/qstash";
+{{/if}}
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 {{#if (and (includes examples "chat-sdk") (eq runtime "node"))}}
@@ -254,6 +257,10 @@ app.post("/ai", async (c) => {
 });
 {{/if}}
 
+{{#if (eq jobQueue "upstash-qstash")}}
+app.post(WELCOME_EMAIL_PATH, (c) => handleWelcomeEmailJob(c.req.raw));
+
+{{/if}}
 {{#if (and (includes examples "chat-sdk") (eq runtime "node"))}}
 app.post("/api/webhooks/github", async (c) => {
 	const handler = chatSdkBot.webhooks.github;

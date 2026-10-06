@@ -221,7 +221,16 @@ export const OPTION_DISPLAY_ORDER: Readonly<Record<string, readonly string[]>> =
     "none",
   ],
   javaWebFramework: ["spring-boot", "quarkus", "ktor", "micronaut", "none"],
-  jobQueue: ["bullmq", "temporal", "inngest", "trigger-dev", "none"],
+  jobQueue: [
+    "bullmq",
+    "temporal",
+    "inngest",
+    "pg-boss",
+    "trigger-dev",
+    "upstash-qstash",
+    "hatchet",
+    "none",
+  ],
   kotlinMobileLibraries: [
     "ktor-client",
     "coil",

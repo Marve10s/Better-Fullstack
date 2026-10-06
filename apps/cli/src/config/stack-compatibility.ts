@@ -1,6 +1,7 @@
 import {
   analyzeStackCompatibility,
   getAddonStackPartBinding,
+  getJobQueueIncompatibility,
   type CompatibilityInput,
   type ProjectConfig,
 } from "@/types";
@@ -29,6 +30,19 @@ export function getCompatibilityBackend(
   if (webFrontend.includes("solid-start")) return "self-solid-start";
   if (webFrontend.includes("tanstack-start-solid")) return "self-tanstack-start-solid";
   return "self";
+}
+
+/**
+ * Compatibility adjustments may reset a job queue that another choice made unsupported, as the
+ * builder does. A job queue the user requested by flag or tool input is rejected instead, with the
+ * shared reason, so the request is never silently dropped.
+ */
+export function getRequestedJobQueueRejection(
+  requestedJobQueue: ProjectConfig["jobQueue"] | undefined,
+  adjustedConfig: Partial<ProjectConfig>,
+): string | null {
+  if (!requestedJobQueue || adjustedConfig.jobQueue === requestedJobQueue) return null;
+  return getJobQueueIncompatibility(requestedJobQueue, adjustedConfig);
 }
 
 function getProjectBackendFromCompatibility(backend: string): string {
