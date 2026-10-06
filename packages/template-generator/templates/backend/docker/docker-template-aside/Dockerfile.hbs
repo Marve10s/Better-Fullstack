@@ -1,0 +1,77 @@
+# Production image for the {{projectName}} server.
+# Build from the repository root so workspace packages resolve:
+#   docker build -f apps/server/Dockerfile .
+
+{{#if (eq runtime "bun")}}
+{{#if (eq packageManager "bun")}}
+FROM oven/bun:1 AS base
+{{else}}
+FROM node:20-slim AS base
+{{/if}}
+{{else}}
+FROM node:20-alpine AS base
+{{/if}}
+{{#if (eq packageManager "pnpm")}}
+RUN corepack enable && corepack prepare pnpm@latest --activate
+{{else if (eq packageManager "yarn")}}
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
+{{else if (and (eq packageManager "bun") (ne runtime "bun"))}}
+RUN npm install -g bun
+{{/if}}
+WORKDIR /app
+
+FROM base AS builder
+COPY . .
+{{#if (eq packageManager "pnpm")}}
+RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi
+RUN pnpm --filter server build
+{{else if (eq packageManager "yarn")}}
+RUN if [ -f yarn.lock ]; then yarn install --immutable; else yarn install; fi
+RUN yarn workspace server build
+{{else if (eq packageManager "bun")}}
+RUN if [ -f bun.lock ]; then bun install --frozen-lockfile; else bun install; fi
+RUN bun run --filter server build
+{{else}}
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+RUN npm run build --workspace=server
+{{/if}}
+
+# The server build bundles workspace packages and leaves the server's own
+# dependencies external, so the image needs only those, without dev dependencies.
+FROM base AS deps
+COPY . .
+{{#if (eq packageManager "pnpm")}}
+RUN if [ -f pnpm-lock.yaml ]; then pnpm install --prod --frozen-lockfile --filter "server..."; else pnpm install --prod --filter "server..."; fi
+{{else if (eq packageManager "yarn")}}
+RUN yarn workspaces focus server --production
+{{else if (eq packageManager "bun")}}
+RUN if [ -f bun.lock ]; then bun install --production --frozen-lockfile --filter server; else bun install --production --filter server; fi
+{{else}}
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev --workspace=server; else npm install --omit=dev --workspace=server; fi
+{{/if}}
+# Hoisting package managers may leave this empty; the runner copies it either way.
+RUN mkdir -p apps/server/node_modules
+
+{{#if (eq runtime "bun")}}
+FROM oven/bun:1-slim AS runner
+{{else}}
+FROM node:20-alpine AS runner
+{{/if}}
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3000
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/server/node_modules ./apps/server/node_modules
+COPY --from=builder /app/apps/server/package.json ./apps/server/package.json
+{{#if (eq backend "adonisjs")}}
+COPY --from=builder /app/apps/server/build ./apps/server/build
+WORKDIR /app/apps/server/build
+{{else if (eq backend "nitro")}}
+COPY --from=builder /app/apps/server/.output ./apps/server/.output
+WORKDIR /app/apps/server
+{{else}}
+COPY --from=builder /app/apps/server/dist ./apps/server/dist
+WORKDIR /app/apps/server
+{{/if}}
+EXPOSE 3000
+CMD [{{#if (eq runtime "bun")}}"bun", "run"{{else}}"node"{{/if}}, "{{#if (eq backend "adonisjs")}}bin/server.js{{else if (eq backend "nitro")}}.output/server/index.mjs{{else}}dist/index.mjs{{/if}}"]

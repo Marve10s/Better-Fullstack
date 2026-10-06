@@ -1,6 +1,6 @@
 import type { Config, Context } from "@netlify/functions";
 
-import app from "../../dist/index.js";
+import app from "../../dist/index.mjs";
 
 export default async (request: Request, _context: Context) => {
   return app.fetch(request);

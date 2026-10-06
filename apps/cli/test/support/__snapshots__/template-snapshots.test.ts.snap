@@ -2274,7 +2274,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: tanstack-route
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -6371,7 +6371,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: express-node-t
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js"
+    "start": "node dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -7128,7 +7128,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: hono-bun-orpc 
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -7954,7 +7954,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: hono-openapi 1
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -9108,7 +9108,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: hono-apollo-se
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -10204,7 +10204,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: better-auth-fu
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -13300,7 +13300,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: mongodb-mongoo
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -14033,7 +14033,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: postgres-prism
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -14788,7 +14788,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: algolia-search
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -15712,7 +15712,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: opensearch-sea
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -17306,7 +17306,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: i18n-paraglide
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -18248,7 +18248,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: ai-cli-root-to
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -19173,7 +19173,7 @@ exports[`Template Snapshots Key File Content Snapshots key files: nx-root-toolin
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -20848,7 +20848,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",
@@ -21612,7 +21612,7 @@ export const orpc = createTanstackQueryUtils(client);
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.js"
+    "start": "bun run dist/index.mjs"
   },
   "dependencies": {
     "dotenv": "catalog:",

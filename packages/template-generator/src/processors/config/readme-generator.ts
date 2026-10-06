@@ -563,6 +563,7 @@ ${
       : ""
   }
 ${generateDeploymentCommands(packageManagerRunCmd, webDeploy, serverDeploy)}
+${generateServerImageSection(serverDeploy, backend)}
 ${generateGitHooksSection(packageManagerRunCmd, addons)}
 
 ## Project Structure
@@ -1279,6 +1280,34 @@ function generateScriptsList(
   }
 
   return scripts;
+}
+
+const SERVER_IMAGE_DEPLOY_STEPS: Partial<Record<ProjectConfig["serverDeploy"], string>> = {
+  docker: "Run `docker compose up --build` from the repository root.",
+  fly: "Run `fly deploy --config apps/server/fly.toml` from the repository root.",
+  railway:
+    "Keep the Railway service root directory at the repository root and set its config file path to `/apps/server/railway.toml`.",
+  render:
+    "Connect the repository as a Render Blueprint; `render.yaml` builds from the repository root.",
+};
+
+function generateServerImageSection(
+  serverDeploy: ProjectConfig["serverDeploy"],
+  backend: ProjectConfig["backend"],
+): string {
+  const step = SERVER_IMAGE_DEPLOY_STEPS[serverDeploy];
+  if (!step || backend === "self" || backend === "none") return "";
+
+  return `## Server deployment
+
+\`apps/server/Dockerfile\` builds the server image from the repository root, because the server depends on workspace packages:
+
+\`\`\`bash
+docker build -f apps/server/Dockerfile .
+\`\`\`
+
+${step}
+`;
 }
 
 function generateDeploymentCommands(

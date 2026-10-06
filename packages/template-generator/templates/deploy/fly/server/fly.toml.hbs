@@ -1,5 +1,8 @@
 # Fly.io configuration for {{projectName}} server
 # See https://fly.io/docs/reference/configuration/ for all options
+#
+# Deploy from the repository root so the image can resolve workspace packages:
+#   fly deploy --config apps/server/fly.toml
 
 app = "{{projectName}}-server"
 primary_region = "iad"

@@ -2,6 +2,7 @@ import { isBackendUtilsCompatibleBackend, type ProjectConfig } from "@better-ful
 
 import type { VirtualFileSystem } from "@/core/virtual-fs";
 
+import { processServerImageTemplates } from "@/template-handlers/core/backend";
 import { type TemplateData, processSingleTemplate, processTemplatesFromPrefix } from "@/template-handlers/core/utils";
 
 type DockerComposeProjectConfig = ProjectConfig & {
@@ -149,7 +150,6 @@ function processDockerComposeTemplates(
 
   // Place docker-compose.yml at project root
   processTemplatesFromPrefix(vfs, templates, "addons/docker-compose", "", config, [
-    "addons/docker-compose/apps/server",
     "addons/docker-compose/apps/web",
     "addons/docker-compose/go",
     "addons/docker-compose/java",
@@ -159,13 +159,7 @@ function processDockerComposeTemplates(
 
   // Place server Dockerfile if backend exists
   if (config.backend !== "self" && config.backend !== "none") {
-    processTemplatesFromPrefix(
-      vfs,
-      templates,
-      "addons/docker-compose/apps/server",
-      "apps/server",
-      config,
-    );
+    processServerImageTemplates(vfs, templates, config);
   }
 
   // Place web Dockerfile based on frontend

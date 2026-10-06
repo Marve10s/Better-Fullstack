@@ -295,7 +295,7 @@ describe("Netlify Deployment", () => {
 
       expect(toml).toContain('functions = "netlify/functions"');
       expect(toml).toContain('node_bundler = "esbuild"');
-      expect(functionFile).toContain('import app from "../../dist/index.js"');
+      expect(functionFile).toContain('import app from "../../dist/index.mjs"');
       expect(functionFile).toContain('path: "/*"');
       expect(serverIndex).toContain("export default app");
       expect(serverIndex).not.toContain("@hono/node-server");
