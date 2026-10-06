@@ -9,7 +9,7 @@ builder = "dockerfile"
 dockerfilePath = "apps/server/Dockerfile"
 
 [deploy]
-healthcheckPath = "/health"
+healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3

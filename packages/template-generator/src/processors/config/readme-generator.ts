@@ -563,7 +563,7 @@ ${
       : ""
   }
 ${generateDeploymentCommands(packageManagerRunCmd, webDeploy, serverDeploy)}
-${generateServerImageSection(serverDeploy, backend)}
+${generateServerImageSection(projectName, serverDeploy, backend, addons)}
 ${generateGitHooksSection(packageManagerRunCmd, addons)}
 
 ## Project Structure
@@ -1292,9 +1292,27 @@ const SERVER_IMAGE_DEPLOY_STEPS: Partial<Record<ProjectConfig["serverDeploy"], s
 };
 
 function generateServerImageSection(
+  projectName: string,
   serverDeploy: ProjectConfig["serverDeploy"],
   backend: ProjectConfig["backend"],
+  addons: ProjectConfig["addons"],
 ): string {
+  // Encore allows no server deploy target; the Compose addon runs the image Encore builds.
+  if (backend === "encore") {
+    if (!addons.includes("docker-compose")) return "";
+
+    return `## Server deployment
+
+Encore builds the server image itself. From \`apps/server\`:
+
+\`\`\`bash
+encore build docker ${projectName}-server
+\`\`\`
+
+Then run \`docker compose up\` from the repository root; the \`server\` service uses that image.
+`;
+  }
+
   const step = SERVER_IMAGE_DEPLOY_STEPS[serverDeploy];
   if (!step || backend === "self" || backend === "none") return "";
 

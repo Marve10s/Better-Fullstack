@@ -157,8 +157,8 @@ function processDockerComposeTemplates(
     "addons/docker-compose/rust",
   ]);
 
-  // Place server Dockerfile if backend exists
-  if (config.backend !== "self" && config.backend !== "none") {
+  // Place server Dockerfile if backend exists. Encore builds its image with `encore build docker`.
+  if (config.backend !== "self" && config.backend !== "none" && config.backend !== "encore") {
     processServerImageTemplates(vfs, templates, config);
   }
 

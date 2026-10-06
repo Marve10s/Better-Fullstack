@@ -6,10 +6,10 @@
 {{#if (eq packageManager "bun")}}
 FROM oven/bun:1 AS base
 {{else}}
-FROM node:20-slim AS base
+FROM node:24-slim AS base
 {{/if}}
 {{else}}
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 {{/if}}
 {{#if (eq packageManager "pnpm")}}
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -21,9 +21,23 @@ RUN npm install -g bun
 WORKDIR /app
 
 FROM base AS builder
+{{#if (eq orm "prisma")}}
+# The install below runs prisma generate, and prisma.config.ts reads DATABASE_URL.
+# Generating the client does not connect to the database, so a placeholder is enough.
+# It exists only in this stage; the server reads the real value at run time.
+{{#if (eq database "postgres")}}
+ARG DATABASE_URL="postgresql://build:build@localhost:5432/build"
+{{else if (eq database "mysql")}}
+ARG DATABASE_URL="mysql://build:build@localhost:3306/build"
+{{else if (eq database "mongodb")}}
+ARG DATABASE_URL="mongodb://localhost:27017/build"
+{{else}}
+ARG DATABASE_URL="file:./build.db"
+{{/if}}
+{{/if}}
 COPY . .
 {{#if (eq packageManager "pnpm")}}
-RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi
+RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile --dangerously-allow-all-builds; else pnpm install --dangerously-allow-all-builds; fi
 RUN pnpm --filter server build
 {{else if (eq packageManager "yarn")}}
 RUN if [ -f yarn.lock ]; then yarn install --immutable; else yarn install; fi
@@ -36,12 +50,25 @@ RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 RUN npm run build --workspace=server
 {{/if}}
 
-# The server build bundles workspace packages and leaves the server's own
-# dependencies external, so the image needs only those, without dev dependencies.
+# Production dependencies of the server workspace, without dev dependencies.
 FROM base AS deps
 COPY . .
+# The workspaces' own install scripts (Git hook setup, prisma generate) need dev tools
+# that this stage leaves out. The builder stage already ran them, and the runner takes
+# what they produced from there, so drop them here. Dependencies keep their install
+# scripts, so native modules still build.
+RUN {{#if (and (eq runtime "bun") (eq packageManager "bun"))}}bun{{else}}node{{/if}} -e 'const fs = require("fs"); \
+  const dirs = ["apps", "packages"].filter((root) => fs.existsSync(root)) \
+    .flatMap((root) => fs.readdirSync(root).map((name) => root + "/" + name)); \
+  for (const dir of [".", ...dirs]) { \
+    const file = dir + "/package.json"; \
+    if (!fs.existsSync(file)) continue; \
+    const pkg = JSON.parse(fs.readFileSync(file, "utf8")); \
+    for (const name of ["preinstall", "install", "postinstall", "preprepare", "prepare", "postprepare"]) delete pkg.scripts?.[name]; \
+    fs.writeFileSync(file, JSON.stringify(pkg, null, 2)); \
+  }'
 {{#if (eq packageManager "pnpm")}}
-RUN if [ -f pnpm-lock.yaml ]; then pnpm install --prod --frozen-lockfile --filter "server..."; else pnpm install --prod --filter "server..."; fi
+RUN if [ -f pnpm-lock.yaml ]; then pnpm install --prod --frozen-lockfile --dangerously-allow-all-builds --filter "server..."; else pnpm install --prod --dangerously-allow-all-builds --filter "server..."; fi
 {{else if (eq packageManager "yarn")}}
 RUN yarn workspaces focus server --production
 {{else if (eq packageManager "bun")}}
@@ -55,7 +82,7 @@ RUN mkdir -p apps/server/node_modules
 {{#if (eq runtime "bun")}}
 FROM oven/bun:1-slim AS runner
 {{else}}
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 {{/if}}
 WORKDIR /app
 ENV NODE_ENV=production
@@ -64,6 +91,12 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/server/node_modules ./apps/server/node_modules
 COPY --from=builder /app/apps/server/package.json ./apps/server/package.json
 {{#if (eq backend "adonisjs")}}
+# AdonisJS compiles with tsc instead of bundling, so its output imports the workspace
+# packages, which link into the node_modules above. They stay TypeScript, so CMD loads tsx.
+COPY --from=deps /app/packages ./packages
+{{#if (eq orm "prisma")}}
+COPY --from=builder /app/packages/db/prisma/generated ./packages/db/prisma/generated
+{{/if}}
 COPY --from=builder /app/apps/server/build ./apps/server/build
 WORKDIR /app/apps/server/build
 {{else if (eq backend "nitro")}}
@@ -74,4 +107,4 @@ COPY --from=builder /app/apps/server/dist ./apps/server/dist
 WORKDIR /app/apps/server
 {{/if}}
 EXPOSE 3000
-CMD [{{#if (eq runtime "bun")}}"bun", "run"{{else}}"node"{{/if}}, "{{#if (eq backend "adonisjs")}}bin/server.js{{else if (eq backend "nitro")}}.output/server/index.mjs{{else}}dist/index.mjs{{/if}}"]
+CMD [{{#if (eq runtime "bun")}}"bun", "run"{{else}}"node"{{/if}}, {{#if (eq backend "adonisjs")}}"--import", "tsx", "bin/server.js"{{else if (eq backend "nitro")}}".output/server/index.mjs"{{else}}"dist/index.mjs"{{/if}}]
