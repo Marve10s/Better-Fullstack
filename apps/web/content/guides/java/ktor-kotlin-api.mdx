@@ -1,0 +1,159 @@
+---
+title: Ktor API with Kotlin and Gradle
+description: Create a Kotlin HTTP API with Ktor 3, Netty, kotlinx.serialization, CORS, the Gradle wrapper, and a Ktor test host test using Better Fullstack.
+translationStatus: pending
+updated: 2026-10-06
+category: Java
+tags:
+  - ktor
+  - kotlin
+  - gradle
+  - jvm
+keywords:
+  - ktor starter
+  - kotlin api starter
+  - ktor gradle project
+  - create ktor app
+  - kotlin rest api boilerplate
+---
+
+Use this stack when you want a small Kotlin HTTP service on the JVM, with explicit routing and plugins instead of a dependency-injection framework.
+
+```npm
+npm create better-fullstack@latest my-ktor-api -- \
+  --ecosystem java \
+  --java-language kotlin \
+  --java-web-framework ktor \
+  --java-build-tool gradle \
+  --java-orm none \
+  --java-auth none \
+  --java-api none \
+  --java-libraries none \
+  --java-testing-libraries junit5
+```
+
+## What this creates
+
+- A Ktor 3 server on the Netty engine, written in Kotlin 2.
+- The `ContentNegotiation` plugin with kotlinx.serialization JSON, and the `CORS` plugin.
+- Two routes: `GET /` returns a JSON message and `GET /health` returns `{"status":"ok"}`.
+- A Gradle Kotlin DSL build with the `application` plugin, a JVM 21 toolchain, and the Gradle wrapper.
+- A test that runs the application module in Ktor's `testApplication` host.
+
+## Generated shape
+
+```txt
+my-ktor-api/
+├── build.gradle.kts
+├── settings.gradle.kts
+├── gradlew
+├── gradlew.bat
+├── gradle/wrapper/
+├── .env.example
+└── src/
+    ├── main/kotlin/com/betterfullstack/server/Application.kt
+    └── test/kotlin/com/betterfullstack/server/ApplicationTest.kt
+```
+
+The package is always `com.betterfullstack.server`, and `settings.gradle.kts` names the Gradle project `my-ktor-api-server`. Rename both when the service gets its real identity.
+
+## Prerequisites
+
+- A JDK 21 installation. The build declares `jvmToolchain(21)`.
+- No separate Gradle install; the wrapper downloads the version pinned in `gradle/wrapper/gradle-wrapper.properties`.
+
+## Run and verify
+
+```bash
+cd my-ktor-api
+./gradlew test
+./gradlew run
+```
+
+The server binds `0.0.0.0` on `PORT`, or 8080 when `PORT` is unset:
+
+```bash
+curl http://localhost:8080/health
+```
+
+`.env.example` lists `PORT` and `CORS_ORIGIN`, but the application reads only real environment variables through `System.getenv`. Export them in your shell or process manager; nothing loads a `.env` file.
+
+## Representative snippets
+
+`main` starts the embedded server and `Application.module()` installs plugins and routes:
+
+```kotlin
+fun main() {
+    val port = System.getenv("PORT")?.toIntOrNull() ?: 8080
+    embeddedServer(Netty, port = port, host = "0.0.0.0", module = Application::module).start(wait = true)
+}
+
+fun Application.module() {
+    install(ContentNegotiation) { json() }
+    install(CORS) {
+        allowMethod(HttpMethod.Get)
+        allowHeader(HttpHeaders.ContentType)
+        val origin = System.getenv("CORS_ORIGIN")
+        if (origin.isNullOrBlank()) anyHost() else allowHost(origin.removePrefix("http://").removePrefix("https://"), schemes = listOf("http", "https"))
+    }
+    routing {
+        get("/") { call.respond(mapOf("message" to "my-ktor-api Ktor API")) }
+        get("/health") { call.respond(HttpStatusCode.OK, mapOf("status" to "ok")) }
+    }
+}
+```
+
+Because the module is an extension function, the test boots the same configuration without opening a port:
+
+```kotlin
+@Test fun healthEndpointIsReady() = testApplication {
+    application { module() }
+    assertEquals(HttpStatusCode.OK, client.get("/health").status)
+}
+```
+
+## Growing the service
+
+The CORS block calls `allowMethod(HttpMethod.Get)` and allows the `Content-Type` header. Ktor's CORS plugin also allows `POST` and `HEAD` by default, so preflight requests for other methods return 403. Add `allowMethod(HttpMethod.Put)`, `allowMethod(HttpMethod.Delete)`, or `allowMethod(HttpMethod.Patch)` before browser clients send those methods.
+
+For request and response bodies, add `@Serializable` data classes. The kotlinx.serialization Gradle plugin is not applied in the generated build. Without it, annotated classes still compile, but responding with one fails at runtime because no serializer is generated. Add the plugin next to `kotlin("jvm")`:
+
+```kotlin
+plugins {
+    kotlin("jvm") version "2.3.21"
+    kotlin("plugin.serialization") version "2.3.21"
+    application
+}
+```
+
+Keep the plugin version equal to the Kotlin version.
+
+## When to choose it
+
+Choose Ktor for a lightweight Kotlin service where you want to see every plugin and route in code. Choose [Spring Boot with PostgreSQL and JPA](/guides/java/spring-boot-postgres-jpa/) when you need Spring Data, Spring Security, and the wider Spring library set, which Better Fullstack only wires for Spring Boot.
+
+## Compatibility notes
+
+- Ktor uses its own template. `--java-orm`, `--java-auth`, `--java-api`, and `--java-libraries` are Spring Boot features, so set each to `none`. When they are omitted, the CLI stops with "Spring-only Java features require the Spring Boot scaffold".
+- `--java-build-tool maven` generates a `pom.xml` and the Maven wrapper instead of the Gradle files.
+- The test runs on the JUnit Platform through `kotlin("test")`. The `--java-testing-libraries` selection does not add other test files to the Ktor template.
+
+## Deployment notes
+
+`./gradlew build` compiles and tests the service. The `application` plugin also provides `./gradlew installDist`, which writes start scripts under `build/install/`. No `Dockerfile` is generated for Ktor, so package it with your own image or platform buildpack, and set `PORT` and `CORS_ORIGIN` in that environment.
+
+## Troubleshooting
+
+| Symptom                                            | Check                                                                                                 |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| CLI reports "Spring-only Java features"            | Pass `none` for `--java-orm`, `--java-auth`, `--java-api`, and `--java-libraries`.                    |
+| Browser `PUT` or `DELETE` requests fail CORS       | The generated CORS plugin allows `GET`, `POST`, and `HEAD`; add the other methods.                    |
+| `CORS_ORIGIN` from `.env` has no effect            | Export it in the environment; the app does not read `.env`.                                           |
+| `Serializer for class '...' is not found`          | Apply the `plugin.serialization` Gradle plugin.                                                       |
+| The README mentions plain Java and `src/main/java` | The generated README describes a plain Java project; the Kotlin sources live under `src/main/kotlin`. |
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=java&jlang=kotlin&jwf=ktor&jbt=gradle&jorm=none&jauth=none&japi=none&jlib=none&jtest=junit5).
+- Read the [Java ecosystem docs](/docs/ecosystems/#java-and-kotlin).
+- Compare with [Quarkus REST API with Maven](/guides/java/quarkus-rest-api/).

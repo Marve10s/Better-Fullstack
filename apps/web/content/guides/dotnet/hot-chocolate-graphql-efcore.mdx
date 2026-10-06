@@ -1,0 +1,160 @@
+---
+title: ASP.NET Core GraphQL with Hot Chocolate and EF Core
+description: Create a .NET GraphQL API with Hot Chocolate, EF Core, PostgreSQL, Serilog, health checks, xUnit, and Testcontainers using Better Fullstack.
+translationStatus: pending
+updated: 2026-10-06
+category: .NET
+tags:
+  - aspnet-core
+  - graphql
+  - hot-chocolate
+  - ef-core
+keywords:
+  - hot chocolate graphql starter
+  - aspnet core graphql api
+  - dotnet graphql ef core
+  - hot chocolate postgres
+  - create dotnet graphql project
+---
+
+Use this stack when a .NET backend should expose GraphQL instead of REST, with EF Core and PostgreSQL ready to back the resolvers.
+
+```npm
+npm create better-fullstack@latest my-graphql-api -- \
+  --ecosystem dotnet \
+  --dotnet-web-framework aspnet-minimal \
+  --dotnet-orm ef-core \
+  --dotnet-auth none \
+  --dotnet-api graphql-hotchocolate \
+  --dotnet-testing xunit testcontainers-dotnet \
+  --dotnet-job-queue none \
+  --dotnet-realtime none \
+  --dotnet-observability serilog health-checks \
+  --dotnet-validation none \
+  --dotnet-caching none \
+  --dotnet-deploy docker \
+  --dotnet-libraries none \
+  --database postgres
+```
+
+This matches the `.NET GraphQL` template preset, with every option written out.
+
+## What this creates
+
+- An ASP.NET Core application with `HotChocolate.AspNetCore`, registered through `AddGraphQLServer()` and mapped with `MapGraphQL()`.
+- A `Query` type with one `hello` field.
+- An EF Core `AppDbContext` with a `Todos` set, using the Npgsql provider.
+- Serilog console logging and ASP.NET Core health checks at `/health`.
+- An xUnit test project that references `Testcontainers`, plus a `Dockerfile`.
+
+## Generated shape
+
+```txt
+my-graphql-api/
+├── my_graphql_api.csproj
+├── my_graphql_api.http
+├── Program.cs
+├── appsettings.json
+├── appsettings.Development.json
+├── Dockerfile
+└── my_graphql_api.Tests/
+    ├── my_graphql_api.Tests.csproj
+    └── ApiTests.cs
+```
+
+`Program.cs` holds service registration, the `TodoItem` model, `AppDbContext`, and the `Query` class.
+
+## Prerequisites
+
+- .NET SDK 10 or newer.
+- PostgreSQL for the data context. The `hello` field works without a database.
+- Docker if you write tests that start containers through Testcontainers.
+
+## Run and verify
+
+```bash
+cd my-graphql-api
+dotnet restore
+dotnet run
+```
+
+Send a query to the URL ASP.NET Core prints at startup:
+
+```bash
+curl -X POST http://localhost:5000/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ hello }"}'
+```
+
+Hot Chocolate exposes the `Hello()` method as the `hello` field. Run the generated test project by path, since no solution file is generated:
+
+```bash
+dotnet test my_graphql_api.Tests/my_graphql_api.Tests.csproj
+```
+
+## Connect the schema to EF Core
+
+The generated schema does not read from the database yet. `AppDbContext` is registered, but `Query` only returns a string:
+
+```csharp
+builder.Services.AddGraphQLServer().AddQueryType<Query>();
+
+public sealed class Query
+{
+    public string Hello() => "Hello from my-graphql-api";
+}
+```
+
+Hot Chocolate injects services into resolver parameters marked with `[Service]`, so a first data field can take the context directly:
+
+```csharp
+public sealed class Query
+{
+    public string Hello() => "Hello from my-graphql-api";
+
+    public IQueryable<TodoItem> GetTodos([Service] AppDbContext db) => db.Todos.OrderBy(todo => todo.Id);
+}
+```
+
+Nothing creates the `Todos` table at startup. `Microsoft.EntityFrameworkCore.Design` is already referenced, so generate and apply a migration before querying it:
+
+```bash
+dotnet tool install --global dotnet-ef
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+```
+
+## Tests
+
+The test project boots the application with `WebApplicationFactory<Program>` and asserts that `/` returns 200. It references the core `Testcontainers` package but contains no container test. For a PostgreSQL container, add the `Testcontainers.PostgreSql` module to the test project and point `ConnectionStrings:DefaultConnection` at the container in a custom factory.
+
+## When to choose it
+
+Choose Hot Chocolate when clients need to pick fields and combine data in one request. Choose `--dotnet-api minimal-api` when a handful of REST endpoints is enough; the [EF Core guide](/guides/dotnet/aspnet-core-efcore/) covers that path.
+
+## Compatibility notes
+
+- `--dotnet-api graphql-hotchocolate` replaces the Minimal API todo endpoints, so `/api/todos` is not mapped.
+- `--dotnet-orm ef-core` chooses Npgsql for `--database postgres` and the SQLite provider for `sqlite`.
+- `--dotnet-observability` accepts several values. This command combines Serilog with health checks; `AddHealthChecks()` has no database check.
+
+## Deployment notes
+
+The `Dockerfile` publishes with the .NET 10 SDK and runs on the ASP.NET 10 runtime image, listening on port 8080 through `ASPNETCORE_URLS`. Set `ConnectionStrings__DefaultConnection` and apply migrations before routing traffic.
+
+## Troubleshooting
+
+| Symptom                                             | Check                                                                                                            |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| The `.http` file's `/api/todos` request returns 404 | The generated `.http` file still lists `/api/todos`; GraphQL requests go to `/graphql`.                          |
+| `relation "Todos" does not exist`                   | Create and apply an EF Core migration.                                                                           |
+| A new resolver field is missing                     | Public methods named `GetX` become field `x`; rebuild and restart the app.                                       |
+| No containers start during tests                    | The generated test does not use Testcontainers yet.                                                              |
+| `localhost:5000` returns 403 on macOS               | AirPlay Receiver also listens on port 5000. Start the app with another port, for example `PORT=5080 dotnet run`. |
+| The generated README mentions TypeScript and npm    | The .NET scaffold currently writes the TypeScript README. Use the commands in this guide.                        |
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=dotnet&dnwf=aspnet-minimal&dnorm=ef-core&dnauth=none&dnapi=graphql-hotchocolate&dntest=xunit,testcontainers-dotnet&dnjob=none&dnrt=none&dnobs=serilog,health-checks&dncache=none&dndeploy=docker&db=postgres).
+- Read the [.NET ecosystem docs](/docs/ecosystems/#net).
+- Compare with [ASP.NET Core Minimal API with Dapper](/guides/dotnet/aspnet-minimal-api-dapper/).

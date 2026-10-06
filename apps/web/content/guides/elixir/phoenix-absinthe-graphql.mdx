@@ -1,0 +1,194 @@
+---
+title: Phoenix GraphQL API with Absinthe and Ecto
+description: Create a Phoenix GraphQL API with Absinthe, Ecto SQL, PostgreSQL, Phoenix Channels, and ExUnit using Better Fullstack.
+translationStatus: pending
+updated: 2026-10-06
+category: Elixir
+tags:
+  - phoenix
+  - absinthe
+  - graphql
+  - ecto
+keywords:
+  - phoenix graphql starter
+  - absinthe phoenix starter
+  - elixir graphql api boilerplate
+  - absinthe ecto postgres
+  - create phoenix graphql api
+---
+
+Use this stack when clients should query a Phoenix backend through one GraphQL endpoint, with Ecto and PostgreSQL behind the resolvers and Phoenix Channels available for push updates.
+
+```npm
+npm create better-fullstack@latest my-graphql-app -- \
+  --ecosystem elixir \
+  --elixir-web-framework phoenix \
+  --elixir-orm ecto-sql \
+  --elixir-auth none \
+  --elixir-api absinthe \
+  --elixir-realtime channels \
+  --elixir-jobs none \
+  --elixir-testing ex_unit \
+  --elixir-deploy none
+```
+
+## What this creates
+
+- A Phoenix 1.7 application with `absinthe` and `absinthe_plug`.
+- An Absinthe schema with an `item` object and an `items` query, forwarded at `/graphql`.
+- A resolver module that reads items through the `Catalog` context and Ecto SQL.
+- A `UserSocket` at `/socket` with a `room:*` channel that replies to `ping` events.
+- A JSON health endpoint at `/api/health`, an ExUnit `ConnCase`, and Credo.
+
+## Generated shape
+
+```txt
+my-graphql-app/
+├── mix.exs
+├── .env.example
+├── config/
+├── lib/
+│   ├── my_graphql_app/
+│   │   ├── catalog.ex
+│   │   ├── catalog/item.ex
+│   │   └── repo.ex
+│   └── my_graphql_app_web/
+│       ├── router.ex
+│       ├── endpoint.ex
+│       ├── channels/
+│       │   ├── room_channel.ex
+│       │   └── user_socket.ex
+│       ├── controllers/
+│       └── graphql/
+│           ├── schema.ex
+│           └── resolvers/catalog.ex
+├── priv/repo/
+│   ├── migrations/20260101000000_create_items.exs
+│   └── seeds.exs
+└── test/
+```
+
+The scaffold also writes `controllers/item_controller.ex`, but with `--elixir-api absinthe` the router does not route it. The only `/api` route is `/api/health`; data access goes through `/graphql`.
+
+## Prerequisites
+
+- Elixir 1.16 or newer with a matching Erlang/OTP release.
+- A local PostgreSQL server reachable with the `POSTGRES_*` values in `config/dev.exs` (defaults: `postgres`/`postgres` on `localhost`).
+
+## Run and verify
+
+```bash
+cd my-graphql-app
+mix deps.get
+mix ecto.setup
+mix phx.server
+```
+
+`mix ecto.setup` creates the database, runs the `items` migration, and inserts one seed item. Query it with any HTTP client:
+
+```bash
+curl -X POST http://localhost:4000/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ items { id name description } }"}'
+```
+
+Run the tests with `mix test`. The generated suite covers `/api/health`; it does not query the GraphQL schema yet.
+
+## Representative snippets
+
+The schema exposes one query and delegates to a resolver:
+
+```elixir
+object :item do
+  field :id, non_null(:id)
+  field :name, non_null(:string)
+  field :description, :string
+end
+
+query do
+  field :items, non_null(list_of(non_null(:item))) do
+    resolve(&Resolvers.Catalog.items/3)
+  end
+end
+```
+
+The resolver stays thin and calls the context, so GraphQL and any future REST controller share the same data functions:
+
+```elixir
+def items(_parent, _args, _resolution) do
+  {:ok, Catalog.list_items()}
+end
+```
+
+The router forwards GraphQL outside the `:api` pipeline:
+
+```elixir
+forward "/graphql", Absinthe.Plug, schema: MyGraphqlAppWeb.GraphQL.Schema
+```
+
+## Extending the schema
+
+The schema has no mutations. `MyGraphqlApp.Catalog.create_item/1` already validates input through `Item.changeset/2`, so a first mutation can call it through the resolver module. The schema aliases only `MyGraphqlAppWeb.GraphQL.Resolvers`, so add the mutation after the `query` block in `graphql/schema.ex` and point it at a resolver:
+
+```elixir
+mutation do
+  field :create_item, :item do
+    arg :name, non_null(:string)
+    arg :description, :string
+
+    resolve(&Resolvers.Catalog.create_item/3)
+  end
+end
+```
+
+Then add the resolver to `graphql/resolvers/catalog.ex`, where `Catalog` already aliases `MyGraphqlApp.Catalog`. Absinthe cannot serialize an `Ecto.Changeset`, so the resolver turns changeset errors into messages:
+
+```elixir
+def create_item(_parent, args, _resolution) do
+  case Catalog.create_item(args) do
+    {:ok, item} ->
+      {:ok, item}
+
+    {:error, changeset} ->
+      {:error,
+       changeset
+       |> Ecto.Changeset.traverse_errors(fn {message, opts} ->
+         Enum.reduce(opts, message, fn {key, value}, acc ->
+           String.replace(acc, "%{#{key}}", to_string(value))
+         end)
+       end)
+       |> Enum.map(fn {field, messages} -> "#{field} #{Enum.join(messages, ", ")}" end)}
+  end
+end
+```
+
+A valid `mutation { createItem(name: "Second") { id name } }` returns the new item. A one-character name returns `null` for `createItem` and the error message `name should be at least 2 character(s)`.
+
+## When to choose it
+
+Choose Absinthe when several clients need different shapes of the same data and you want one typed contract. Choose `--elixir-api rest` when a few fixed JSON endpoints are enough; that path routes `ItemController` under `/api/items`.
+
+## Compatibility notes
+
+- `--elixir-api absinthe` requires an Ecto database layer. The CLI rejects `--elixir-orm none` with Absinthe.
+- `--elixir-realtime channels` adds the `UserSocket` and `RoomChannel`. `UserSocket.connect/3` accepts every connection, so add token checks before exposing private topics.
+- The JSON library is Jason, selected through `--elixir-json jason` by default.
+
+## Deployment notes
+
+This command sets `--elixir-deploy none`, so no `Dockerfile` or platform config is generated. `config/runtime.exs` still defines the production settings: `SECRET_KEY_BASE` and `DATABASE_URL` are required, and `PHX_HOST`, `PORT`, `POOL_SIZE`, and `ECTO_SSL` are optional. Pick `--elixir-deploy docker`, `fly`, `gigalixir`, or `mix-release` to generate deployment files.
+
+## Troubleshooting
+
+| Symptom                                 | Check                                                                                         |
+| --------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `/graphql` returns an empty list        | Run `mix ecto.setup` so the seed item exists.                                                 |
+| `/api/items` returns 404                | Expected with Absinthe; the REST controller is generated but not routed.                      |
+| Channel joins succeed without a token   | `UserSocket.connect/3` returns `{:ok, socket}` for every client; add authentication.          |
+| `mix test` cannot connect to PostgreSQL | The `test` alias creates and migrates the test database first, so the server must be running. |
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=elixir&ewf=phoenix&eorm=ecto-sql&eauth=none&eapi=absinthe&ert=channels&ejob=none&etest=ex_unit&edeploy=none).
+- Read the [Elixir ecosystem docs](/docs/ecosystems/#elixir).
+- Compare with [Phoenix REST API with Oban](/guides/elixir/phoenix-oban-jobs/).
