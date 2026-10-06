@@ -27,6 +27,7 @@ import {
   getStarterTrackRecommendation,
   getStarterTracksResult,
 } from "@/commands/stack/starter-tracks";
+import { COMPLETION_SHELLS, renderCompletionScript } from "@/commands/system/completion";
 import { historyHandler } from "@/commands/system/history";
 import { INSTALL_AGENT_INPUT_IDS, type InstallReceipt } from "@/commands/system/install-core";
 import { telemetryHandler } from "@/commands/system/telemetry";
@@ -956,6 +957,22 @@ export const router = os.router({
       log.message("MCP server is started via the 'mcp' subcommand intercepted in cli.ts.");
       log.message("Run: create-better-fullstack mcp");
     }),
+  completion: os
+    .meta({ description: "Print a shell completion script for bash, zsh, fish, or PowerShell" })
+    .input(
+      z.tuple([
+        z.enum(COMPLETION_SHELLS).describe("Shell to complete: bash, zsh, fish, or powershell"),
+      ]),
+    )
+    .handler(async ({ input: [shell] }) => {
+      process.stdout.write(
+        renderCompletionScript(shell, {
+          program: createBtsCli().toJSON(),
+          defaultCommand: getDefaultCommandName(),
+          hiddenFlags: [HIDDEN_LEGACY_OPTION],
+        }),
+      );
+    }),
   doctor: os
     .meta({
       description:
@@ -1263,6 +1280,18 @@ export const router = os.router({
 
 const caller = createRouterClient(router, { context: {} });
 
+const HIDDEN_LEGACY_OPTION = "--addons";
+
+function getDefaultCommandName() {
+  const [name] =
+    Object.entries(router).find(([, procedure]) => {
+      const { meta } = procedure["~orpc"];
+      return "default" in meta && meta.default === true;
+    }) ?? [];
+  if (!name) throw new CLIError("The CLI router has no default command.");
+  return name;
+}
+
 export function createBtsCli() {
   const cli = createCli({
     router,
@@ -1279,10 +1308,10 @@ export function createBtsCli() {
       }) => void;
     };
     const visit = (command: CommandNode) => {
-      command.options?.find((option) => option.long === "--addons")?.hideHelp?.();
+      command.options?.find((option) => option.long === HIDDEN_LEGACY_OPTION)?.hideHelp?.();
       command.configureHelp?.({
         visibleOptions: (target) =>
-          (target.options ?? []).filter((option) => option.long !== "--addons"),
+          (target.options ?? []).filter((option) => option.long !== HIDDEN_LEGACY_OPTION),
       });
       command.commands?.forEach(visit);
     };
