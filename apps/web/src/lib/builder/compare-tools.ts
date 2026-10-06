@@ -1037,6 +1037,692 @@ const epicStack: CompetitorComparison = {
   ],
 };
 
+const BETTER_FULLSTACK_UPDATE_SUMMARY =
+  "add and update commands; upgrades across releases need manual review";
+
+const springInitializr: CompetitorComparison = {
+  slug: "spring-initializr",
+  competitorName: "Spring Initializr",
+  competitorUrl: "https://start.spring.io",
+  competitorRepo: "https://github.com/spring-io/initializr",
+  title: "Better Fullstack vs Spring Initializr: 2026 Comparison",
+  description:
+    "Spring Initializr generates a Spring Boot project skeleton with the starters you pick. Better Fullstack scaffolds Spring Boot, Quarkus, Micronaut, or Ktor with sample code and integrations. A sourced comparison.",
+  heading: "Better Fullstack vs Spring Initializr",
+  factsCheckedOn: "2026-10-06",
+  intro: [
+    "Spring Initializr is the Spring team's project generator. Its reference documentation describes \"an extensible API to generate JVM-based projects\", and start.spring.io is the public instance. You choose a build tool, a language, a Spring Boot version, a Java version, packaging, and a list of dependencies, and it returns a project with those starters declared.",
+    `Better Fullstack covers the JVM as one of ${ECOSYSTEM_COUNT_LABEL} ecosystems. Its Java ecosystem offers Spring Boot, Quarkus, Micronaut, and Ktor in Java, and Kotlin for Spring Boot and Ktor. For Spring Boot, many options also come with sample code, such as a JPA entity with its repository, service, and controller, or a Spring Security configuration.`,
+  ],
+  rows: [
+    {
+      dimension: "Scope",
+      betterFullstack: "Backend with sample code, optionally next to web and mobile apps",
+      competitor: "A Spring Boot project skeleton with the selected starters",
+    },
+    {
+      dimension: "Frameworks",
+      betterFullstack: "Spring Boot, Quarkus, Micronaut, Ktor",
+      competitor: "Spring Boot",
+    },
+    {
+      dimension: "Languages",
+      betterFullstack: "Java, or Kotlin with Spring Boot or Ktor",
+      competitor: "Java, Kotlin, or Groovy",
+    },
+    {
+      dimension: "Build tool",
+      betterFullstack: "Maven or Gradle (Kotlin DSL)",
+      competitor: "Maven, or Gradle with the Groovy or Kotlin DSL",
+    },
+    {
+      dimension: "Versions",
+      betterFullstack: "Pinned per release: Spring Boot 4.0.6 and Java 21 in current templates",
+      competitor: "Choice of Spring Boot version (4.1.1 by default) and Java 17, 21, 25, or 27",
+    },
+    {
+      dimension: "Dependencies",
+      betterFullstack:
+        "Spring Data JPA, jOOQ, or MyBatis; Spring Security or Keycloak; Spring libraries such as Actuator, Flyway, and Kafka",
+      competitor:
+        "Spring starters for web, data, security, messaging, observability, Spring Cloud, cloud providers, and AI",
+    },
+    {
+      dimension: "Database setup",
+      betterFullstack: "Embedded H2 file database in PostgreSQL mode for SQL data layers",
+      competitor: "The drivers you select; no generated schema or entities",
+    },
+    {
+      dimension: "Interfaces",
+      betterFullstack: "CLI, visual web builder, MCP server for AI agents",
+      competitor: "Web UI, HTTP API, Spring Boot CLI, IntelliJ IDEA, VS Code, Spring Tools",
+    },
+  ],
+  sections: [
+    {
+      heading: "What Spring Initializr gives you",
+      paragraphs: [
+        "A ready-to-build project: the Maven or Gradle build file with your starters, the build tool wrapper, an application class, a test that loads the application context, and an application properties file. It does not write controllers, entities, or a frontend; those come next, in your own code. On start.spring.io, the Share option creates a link to the current selection.",
+        "The same service is reachable in several ways: `curl https://start.spring.io/starter.zip` with dependency parameters, the Spring Boot CLI's init command, the Spring Boot wizard in IntelliJ IDEA, Microsoft's Spring Initializr extension for VS Code, and Spring Tools for Eclipse and VS Code. Organizations can run their own customized instance with the spring-io/initializr library.",
+      ],
+    },
+    {
+      heading: "Keeping a Spring project current",
+      paragraphs: [
+        "Spring Initializr creates new projects. For upgrades, the OpenRewrite community maintains rewrite-spring recipes, and Broadcom's commercial Spring Application Advisor, part of its Spring Enterprise offering, applies OpenRewrite-based upgrades incrementally.",
+        "Better Fullstack records your selections in bts.jsonc, and its update command plans template changes for review. Upgrades across Better Fullstack releases are not yet a supported path and require manual review.",
+      ],
+    },
+    {
+      heading: "What Better Fullstack adds",
+      paragraphs: [
+        "A choice of JVM framework beyond Spring Boot, plus code for the options you pick: with Spring Data JPA you get an AppUser entity, repository, service, and REST controller, and options such as Spring Security, Spring GraphQL, gRPC, and Flyway or Liquibase come with their configuration. Testing options include JUnit 5, Mockito, Testcontainers, AssertJ, REST Assured, WireMock, Awaitility, ArchUnit, and jqwik.",
+        "In a multi-ecosystem project, the Spring Boot backend can sit next to a TypeScript web frontend or a mobile app, with one set of compatibility rules across them.",
+      ],
+    },
+    {
+      heading: "Where Spring Initializr is ahead",
+      paragraphs: [
+        "Its Spring catalog is larger and follows Spring releases closely: Spring Cloud, Azure and Google Cloud integrations, Spring AI starters, Groovy, War packaging, and a choice of Spring Boot and Java versions. Better Fullstack pins the versions in its templates, and its SQL data layers run on an embedded H2 database, so moving to PostgreSQL means adding the driver and changing the datasource yourself.",
+        "Pick Spring Initializr when you want the official starting point for a Spring Boot app, with exactly the starters you name and no sample code to remove.",
+      ],
+    },
+    {
+      heading: "Try the closest Better Fullstack equivalent",
+      paragraphs: [
+        "The java-spring preset scaffolds Spring Boot with Maven and JUnit 5: `bun create better-fullstack@latest my-app --template java-spring`. The java-jpa preset adds Spring Data JPA, Flyway, and validation.",
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question: "Does Better Fullstack use start.spring.io?",
+      answer:
+        "No. Better Fullstack generates Java projects from its own templates, so the build file, configuration, and sample code match the other options you selected.",
+    },
+    {
+      question: "Which Spring Boot version does each tool generate?",
+      answer:
+        "Spring Initializr lets you choose; its default was 4.1.1 on 2026-10-06. Better Fullstack's current templates pin Spring Boot 4.0.6 with Java 21, which you can change in pom.xml or build.gradle.kts after generation.",
+    },
+    {
+      question: "Can I use Kotlin with both tools?",
+      answer:
+        "Yes. Spring Initializr offers Kotlin for any Spring Boot project. Better Fullstack supports Kotlin with Spring Boot and Ktor, and its Kotlin scaffold supports Spring Data JPA and Spring GraphQL but not jOOQ, MyBatis, gRPC, or OpenAPI Generator.",
+    },
+  ],
+};
+
+const jhipster: CompetitorComparison = {
+  slug: "jhipster",
+  competitorName: "JHipster",
+  competitorUrl: "https://www.jhipster.tech",
+  competitorRepo: "https://github.com/jhipster/generator-jhipster",
+  title: "Better Fullstack vs JHipster: 2026 Comparison",
+  description: `JHipster generates Spring Boot apps with an Angular, React, or Vue frontend and entities from JDL. Better Fullstack scaffolds a configurable stack across ${ECOSYSTEM_COUNT_LABEL} ecosystems. A sourced comparison.`,
+  heading: "Better Fullstack vs JHipster",
+  factsCheckedOn: "2026-10-06",
+  intro: [
+    "JHipster describes itself as \"a development platform to quickly generate, develop, & deploy modern web applications & microservice architectures\". Its core generator produces a Spring Boot backend with an Angular, React, or Vue frontend, and its JHipster Domain Language (JDL) describes entities and relationships so JHipster can generate the database layer, REST API, and UI screens for them.",
+    "Better Fullstack is a configurable project generator. Its Java ecosystem scaffolds Spring Boot, Quarkus, Micronaut, or Ktor backends with a choice of libraries, and a multi-ecosystem project can pair that backend with a TypeScript web frontend. It does not generate entities from a domain model.",
+  ],
+  rows: [
+    {
+      dimension: "Model",
+      betterFullstack: "Configurable stack generator",
+      competitor: "Application generator with entity generation",
+    },
+    {
+      dimension: "Backend",
+      betterFullstack: "Spring Boot, Quarkus, Micronaut, or Ktor in Java; Kotlin with Spring Boot or Ktor",
+      competitor: "Spring Boot; blueprints for Kotlin, Node.js (NestJS), Quarkus, Micronaut, .NET",
+    },
+    {
+      dimension: "Frontend",
+      betterFullstack: "A TypeScript web frontend from the catalog, in a multi-ecosystem project",
+      competitor: "Angular, React, or Vue in the same application",
+    },
+    {
+      dimension: "Databases",
+      betterFullstack:
+        "Spring Data JPA, jOOQ, or MyBatis on embedded H2 (PostgreSQL mode); Spring Data libraries for MongoDB, Redis, and others",
+      competitor:
+        "PostgreSQL, MySQL, MariaDB, Oracle, MSSQL, H2, MongoDB, Cassandra, Couchbase, Neo4j",
+    },
+    {
+      dimension: "Entities",
+      betterFullstack: "One sample entity; no domain-model generator",
+      competitor: "JDL files, JDL Studio, and the jhipster jdl command",
+    },
+    {
+      dimension: "Architecture",
+      betterFullstack: "One backend, or several services in a multi-ecosystem project",
+      competitor: "Monolith, microservices, and gateway, with Consul or Eureka",
+    },
+    {
+      dimension: "Upgrades",
+      betterFullstack: BETTER_FULLSTACK_UPDATE_SUMMARY,
+      competitor: "jhipster upgrade regenerates the app and merges it through Git",
+    },
+    {
+      dimension: "Interfaces",
+      betterFullstack: "CLI, visual web builder, MCP server for AI agents",
+      competitor: "CLI, JHipster Online, JDL Studio, jhipster-mcp server",
+    },
+  ],
+  sections: [
+    {
+      heading: "What JHipster gives you",
+      paragraphs: [
+        "A complete application: authentication with JWT, OAuth 2.0 and OpenID Connect (Keycloak by default, with Okta and Auth0 documented), or sessions; an optional reactive stack with Spring WebFlux; and test setups including Cypress or Playwright, Cucumber, and Gatling. Sub-generators add Docker Compose and Kubernetes (including Helm and Knative) configuration, Heroku deployment, and CI pipelines for GitHub Actions, GitLab, Jenkins, and others.",
+        "Entities are where JHipster differs most from a scaffolder. You describe entities and relationships in JDL, by hand or in JDL Studio, and `jhipster jdl` generates the JPA entities, Spring server-side components, and frontend screens for them. Blueprints replace parts of the generated code; the official list includes Kotlin, Node.js with NestJS, Quarkus, Micronaut, and .NET, and their release status varies, so check each blueprint's repository.",
+      ],
+    },
+    {
+      heading: "Project status, in dates",
+      paragraphs: [
+        "JHipster 9.0.0 was released on 2026-03-11 with Spring Boot 4 support and Java 21 as the minimum. Releases have continued since, with 9.4.0 published on 2026-09-18, which added Playwright support.",
+        "Upgrades are a built-in workflow: `npx generator-jhipster@latest upgrade` generates the app with the old and new versions on a separate branch and merges the result, so you resolve any conflicts in Git.",
+      ],
+    },
+    {
+      heading: "Tools around JHipster",
+      paragraphs: [
+        "JHipster Online (start.jhipster.tech) generates applications in the browser, and JDL Studio draws and edits JDL models. The JHipster IDE extension for Eclipse and VS Code adds JDL editing support; its latest release is from 2023-01-07. The jhipster-mcp repository in the JHipster GitHub organization provides an MCP server that lets AI agents drive the JHipster CLI with JDL; version 1.0.0 was published in May 2026.",
+      ],
+    },
+    {
+      heading: "What Better Fullstack adds",
+      paragraphs: [
+        "A choice of JVM framework and library set instead of one Spring Boot architecture: Quarkus, Micronaut, or Ktor, data layers such as jOOQ or MyBatis, Spring GraphQL, gRPC, OpenAPI Generator, and Spring libraries such as Actuator, Kafka, and Spring Session, all checked by the same compatibility rules.",
+        `Beyond Java, a project can combine a backend with a web frontend such as Next.js, SvelteKit, or Nuxt and a mobile app, chosen from ${OPTION_COUNT_LABEL} options across ${ECOSYSTEM_COUNT_LABEL} ecosystems.`,
+      ],
+    },
+    {
+      heading: "When JHipster is the right choice",
+      paragraphs: [
+        "Pick JHipster when you want a working Spring Boot application with CRUD screens generated from a domain model, a microservice architecture with a gateway, a wide choice of production databases, or a dedicated upgrade command. Better Fullstack does not generate entity screens, a Java-hosted frontend, or microservice gateways.",
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question: "Can Better Fullstack generate entities from JDL?",
+      answer:
+        "No. Better Fullstack has no domain-model or entity generator. With Spring Data JPA it writes one sample entity with its repository, service, and controller, and you add further entities yourself.",
+    },
+    {
+      question: "Is JHipster still maintained?",
+      answer:
+        "Yes. JHipster 9.0.0 was released on 2026-03-11 and 9.4.0 on 2026-09-18, with regular releases in between (checked 2026-10-06).",
+    },
+    {
+      question: "Can both tools upgrade a generated project?",
+      answer:
+        "JHipster's upgrade command regenerates the project with the new version and merges it through Git. Better Fullstack's update command plans changes from current templates for review, but upgrades across its own releases are not yet a supported path and require manual review.",
+    },
+  ],
+};
+
+const cookiecutter: CompetitorComparison = {
+  slug: "cookiecutter",
+  competitorName: "Cookiecutter",
+  competitorUrl: "https://cookiecutter.readthedocs.io",
+  competitorRepo: "https://github.com/cookiecutter/cookiecutter",
+  title: "Better Fullstack vs Cookiecutter: 2026 Comparison",
+  description:
+    "Cookiecutter renders project templates such as cookiecutter-django. Better Fullstack scaffolds Python backends from a catalog of frameworks and libraries. A sourced comparison for Python web projects.",
+  heading: "Better Fullstack vs Cookiecutter",
+  factsCheckedOn: "2026-10-06",
+  intro: [
+    "Cookiecutter \"creates projects from cookiecutters (project templates)\". It is a command-line template engine: a template is a directory of Jinja2-templated files plus a cookiecutter.json file that defines the questions, and it can come from a local folder, a Git repository, or a zip file. Cookiecutter has no opinion about frameworks; that comes from the template you choose.",
+    "For Python web projects, a common choice is cookiecutter-django, a separate project with its own maintainers and releases, hosted in the same GitHub organization. This page compares Better Fullstack's Python ecosystem with Cookiecutter itself and with cookiecutter-django as a concrete example.",
+  ],
+  rows: [
+    {
+      dimension: "What it is",
+      betterFullstack: "Project generator with its own option catalog",
+      competitor: "Template engine; templates are separate projects",
+    },
+    {
+      dimension: "Python frameworks",
+      betterFullstack: "FastAPI, Django, Flask, Litestar, Starlette, aiohttp, Streamlit",
+      competitor: "Whatever the template provides (cookiecutter-django: Django)",
+    },
+    {
+      dimension: "Data",
+      betterFullstack:
+        "SQLAlchemy, SQLModel, Tortoise ORM, or Peewee with SQLite or PostgreSQL; PyMongo with MongoDB",
+      competitor: "cookiecutter-django: Django ORM with PostgreSQL 14 to 18",
+    },
+    {
+      dimension: "Auth",
+      betterFullstack: "Authlib, PyJWT, or FastAPI Users",
+      competitor: "cookiecutter-django: django-allauth with a custom user model",
+    },
+    {
+      dimension: "Background jobs",
+      betterFullstack: "Celery, RQ, Dramatiq, Huey, or Taskiq",
+      competitor: "cookiecutter-django: optional Celery",
+    },
+    {
+      dimension: "Containers",
+      betterFullstack: "Docker Compose add-on",
+      competitor: "cookiecutter-django: Docker Compose for development and production, with Traefik",
+    },
+    {
+      dimension: "Customization",
+      betterFullstack: "Choose options; templates are maintained in Better Fullstack",
+      competitor: "Write or fork any template, with Jinja2 and hook scripts",
+    },
+    {
+      dimension: "Updating a project",
+      betterFullstack: BETTER_FULLSTACK_UPDATE_SUMMARY,
+      competitor: "Replay for regenerating; updates through separate tools such as cruft",
+    },
+  ],
+  sections: [
+    {
+      heading: "What Cookiecutter gives you",
+      paragraphs: [
+        "Templates use Jinja2 for file contents and file names, and cookiecutter.json defines the variables, including choice and boolean questions. Hooks run before the prompts, before generation, or after generation; Python scripts are recommended, and if a hook fails, generation stops and the output directory is cleaned up. Replay stores your answers so you can run the same template again, for example after it has been updated.",
+        "There is no central template registry. The Cookiecutter docs point to a GitHub search for templates and list a few, including cookiecutter-pypackage and cookiecutter-django. Cookiecutter 2.7.1 was released on 2026-03-04, two days after 2.7.0; the release before those was 2.6.0, on 2024-02-21.",
+      ],
+    },
+    {
+      heading: "cookiecutter-django in brief",
+      paragraphs: [
+        "cookiecutter-django targets Django 6.0 and Python 3.14. It sets up django-allauth registration with a custom user model, settings through django-environ, PostgreSQL, optional Celery, optional Docker Compose for development and production with Traefik, Django REST Framework or Django Ninja, email through Anymail with a choice of providers, media storage on AWS, Google Cloud, or Azure, optional Sentry, and CI configuration for GitHub, GitLab, and others. It publishes date-based releases often; 2026.10.5 was released on 2026-10-06.",
+        "One note on FastAPI templates: FastAPI's full-stack-fastapi-template no longer uses Cookiecutter. It moved to Copier and then, in its 0.11.0 release (2026-08-11), removed Copier as well; its README now asks you to create a repository from it as a GitHub template.",
+      ],
+    },
+    {
+      heading: "What Better Fullstack adds",
+      paragraphs: [
+        "A choice of Python framework and libraries in one command: an ORM with Alembic migrations for SQLAlchemy or SQLModel, auth, a task queue, Strawberry or Ariadne for GraphQL, AI SDKs such as LangChain, LlamaIndex, the OpenAI and Anthropic SDKs, and Pydantic AI, Ruff, mypy, or Pyright for code quality, pytest, and uv or Poetry for packaging. The compatibility rules adjust combinations that do not fit, such as DRF without Django.",
+        "A Python backend can also sit next to a TypeScript web frontend or a mobile app in a multi-ecosystem project.",
+      ],
+    },
+    {
+      heading: "Where Cookiecutter is ahead",
+      paragraphs: [
+        "Any template can be used or written, so Cookiecutter covers projects far outside Better Fullstack's catalog, and cookiecutter-django is a much more complete Django starting point. Better Fullstack's Django option generates a small Django app configured in a single module, with optional Django REST Framework or Django Ninja; it does not set up Django ORM models, the admin, django-allauth, or a production Docker setup.",
+        "Pick Cookiecutter with cookiecutter-django when you want a full Django project with its conventions. Pick Better Fullstack when a Python API is one part of a larger stack, or when you want FastAPI, Litestar, or Flask with libraries chosen up front.",
+      ],
+    },
+    {
+      heading: "Try the closest Better Fullstack equivalent",
+      paragraphs: [
+        "The python-fastapi preset scaffolds FastAPI with SQLAlchemy, Pydantic, PostgreSQL, and Ruff: `bun create better-fullstack@latest my-app --template python-fastapi`. The python-django preset scaffolds the single-module Django app with Django REST Framework.",
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question: "Is cookiecutter-django part of Cookiecutter?",
+      answer:
+        "No. It is a separate project in the same GitHub organization, with its own maintainers and release schedule. Cookiecutter is the engine that renders it.",
+    },
+    {
+      question: "Can Cookiecutter update an existing project?",
+      answer:
+        "Cookiecutter's replay feature stores your answers so you can regenerate from an updated template. Applying template changes to an existing project is handled by separate tools: cruft works with Cookiecutter templates, and Copier is a different template tool with updates built in.",
+    },
+    {
+      question: "Which should I use for a Django project?",
+      answer:
+        "cookiecutter-django, if you want a full Django project with auth, Docker, and production settings in place. Better Fullstack's Django option is a minimal starting point and fits better when Django serves an API inside a larger multi-part stack.",
+    },
+  ],
+};
+
+const dotnetNew: CompetitorComparison = {
+  slug: "dotnet-new",
+  competitorName: "dotnet new",
+  competitorUrl: "https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-new",
+  competitorRepo: "https://github.com/dotnet/sdk",
+  title: "Better Fullstack vs dotnet new: 2026 Comparison",
+  description:
+    "dotnet new creates .NET projects from the SDK's built-in templates and NuGet template packages. Better Fullstack scaffolds ASP.NET Core with data access, auth, and libraries chosen up front. A sourced comparison.",
+  heading: "Better Fullstack vs dotnet new",
+  factsCheckedOn: "2026-10-06",
+  intro: [
+    "`dotnet new` is the .NET CLI command that \"creates a new project, configuration file, or solution based on the specified template\". The .NET SDK ships templates for ASP.NET Core (web, webapi, mvc, webapp, blazor, grpc), worker services, console apps, class libraries, and xUnit, NUnit, and MSTest projects, and more templates install from NuGet with `dotnet new install`.",
+    "Better Fullstack's .NET ecosystem generates an ASP.NET Core project from its own templates, with the data access library, auth library, API style, background jobs, logging, caching, tests, and deployment files chosen at the same time and checked for compatibility.",
+  ],
+  rows: [
+    {
+      dimension: "Scope",
+      betterFullstack: "An ASP.NET Core project with selected libraries, optionally next to web and mobile apps",
+      competitor: "One project, item, or solution per template",
+    },
+    {
+      dimension: "App types",
+      betterFullstack: "Minimal APIs, MVC, or Blazor; Blazor WebAssembly or Blazor Web App frontends",
+      competitor:
+        "Empty web, Web API, Native AOT API, MVC, Razor Pages, Blazor, gRPC, worker, console, class library, tests",
+    },
+    {
+      dimension: "Data access",
+      betterFullstack: "EF Core, Dapper, or linq2db with PostgreSQL or SQLite",
+      competitor: "An Identity database (SQLite or LocalDB) when Individual auth is selected",
+    },
+    {
+      dimension: "Auth",
+      betterFullstack: "ASP.NET Core Identity services, Duende IdentityServer, or Auth0",
+      competitor: "Individual accounts, Microsoft Entra ID, or Windows auth, depending on the template",
+    },
+    {
+      dimension: "Libraries",
+      betterFullstack:
+        "MediatR, FluentValidation, Hangfire, Quartz.NET, SignalR, Serilog, OpenTelemetry, Polly, MassTransit, and more",
+      competitor: "Added after creation with dotnet add package",
+    },
+    {
+      dimension: "Multi-service apps",
+      betterFullstack: "Backends, frontends, and mobile apps in one multi-ecosystem project",
+      competitor: "Aspire templates, installed with Aspire.ProjectTemplates",
+    },
+    {
+      dimension: "Interfaces",
+      betterFullstack: "CLI, visual web builder, MCP server for AI agents",
+      competitor: "CLI, plus new-project dialogs in Visual Studio, VS Code, and Rider",
+    },
+  ],
+  sections: [
+    {
+      heading: "What dotnet new gives you",
+      paragraphs: [
+        "`dotnet new webapi` creates a minimal API project with an OpenAPI document enabled (`--no-openapi` turns it off, `--use-controllers` switches to controllers). The mvc, webapp, and blazor templates accept `--auth Individual`, which sets up ASP.NET Core Identity with a SQLite database by default or LocalDB with `--use-local-db`. The Angular and React SPA templates have been discontinued since the .NET 8 SDK; Visual Studio now provides JavaScript SPA templates with an ASP.NET Core backend.",
+        "`dotnet new search` finds template packages on NuGet, `dotnet new install` adds them, and `dotnet new update` updates installed packages. Built-in templates update with the SDK: .NET 10, a long-term support release, came out on 2025-11-11, and its latest patch as of this check was released on 2026-09-08.",
+      ],
+    },
+    {
+      heading: "Templates for AI and distributed apps",
+      paragraphs: [
+        "Microsoft publishes template packages beyond the SDK: Aspire templates for multi-service apps, an MCP server template (`dotnet new mcpserver`, in preview), and an AI chat web app template (`dotnet new aichatweb`). Templates installed this way also appear in the Visual Studio and VS Code new-project flows.",
+      ],
+    },
+    {
+      heading: "Upgrading existing projects",
+      paragraphs: [
+        "dotnet new creates projects; it does not update projects created from older templates. Microsoft's docs state that the .NET Upgrade Assistant is officially deprecated and point to the GitHub Copilot modernization agent in Visual Studio instead.",
+        "Better Fullstack records your selections in bts.jsonc, and its update command plans template changes for review. Upgrades across Better Fullstack releases are not yet a supported path and require manual review.",
+      ],
+    },
+    {
+      heading: "What Better Fullstack adds",
+      paragraphs: [
+        "One selection covers the libraries you would otherwise add one by one: EF Core, Dapper, or linq2db; Hot Chocolate GraphQL or gRPC; Hangfire, Quartz.NET, or hosted services; SignalR; Serilog, NLog, OpenTelemetry, and health checks; Redis or in-memory caching; xUnit, NUnit, Moq, and Testcontainers; and Docker, Azure, or AWS deployment files. The generated project targets net10.0.",
+        "A .NET backend can also sit next to a TypeScript web frontend such as React or a mobile app in a multi-ecosystem project.",
+      ],
+    },
+    {
+      heading: "Where dotnet new is ahead",
+      paragraphs: [
+        "It is the official tool, ships with the SDK, works in Visual Studio, VS Code, and Rider, and can use any template package on NuGet. Its Individual auth option gives you working register and login pages; Better Fullstack's ASP.NET Core Identity option registers Identity services with an EF Core store but does not generate login pages or endpoints. Better Fullstack also has no Aspire option.",
+      ],
+    },
+    {
+      heading: "Try the closest Better Fullstack equivalent",
+      paragraphs: [
+        "The dotnet-minimal-api preset scaffolds Minimal APIs with EF Core, ASP.NET Core Identity, SignalR, xUnit, Serilog, and a Dockerfile: `bun create better-fullstack@latest my-app --template dotnet-minimal-api`.",
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question: "Does Better Fullstack call dotnet new?",
+      answer:
+        "No. It generates the project from its own templates, so Program.cs and the project file already reference the libraries you selected.",
+    },
+    {
+      question: "Can dotnet new update a project I already created?",
+      answer:
+        "No. `dotnet new update` updates installed template packages, not projects created from them. For framework upgrades, Microsoft points to the GitHub Copilot modernization agent, since the .NET Upgrade Assistant is deprecated.",
+    },
+    {
+      question: "Does dotnet new still include React and Angular templates?",
+      answer:
+        "Not as built-in templates; they have been discontinued since the .NET 8 SDK, and Visual Studio provides SPA templates instead. Better Fullstack can pair a .NET backend with a TypeScript frontend such as React in a multi-ecosystem project.",
+    },
+  ],
+};
+
+const cargoGenerate: CompetitorComparison = {
+  slug: "cargo-generate",
+  competitorName: "cargo-generate",
+  competitorUrl: "https://cargo-generate.github.io/cargo-generate/",
+  competitorRepo: "https://github.com/cargo-generate/cargo-generate",
+  title: "Better Fullstack vs cargo-generate: 2026 Comparison",
+  description:
+    "cargo-generate creates Rust projects from Git repository templates. Better Fullstack scaffolds Rust web services and apps from a catalog of frameworks and crates. A sourced comparison.",
+  heading: "Better Fullstack vs cargo-generate",
+  factsCheckedOn: "2026-10-06",
+  intro: [
+    "cargo-generate is \"a developer tool to help you get up and running quickly with a new Rust project by leveraging a pre-existing git repository as a template\". It is framework-agnostic: templates are separate repositories, written with Liquid placeholders and optional Rhai scripts, and published by their own projects.",
+    "Better Fullstack's Rust ecosystem works from a fixed catalog instead. You choose a web framework, a frontend crate, a database layer, an API layer, and libraries, and it generates a Cargo workspace with a crate for each piece, after checking the selection for compatibility. The frontend crate is a starter page that does not call the backend yet; the generator writes the connection details into the docs and example environment file.",
+  ],
+  rows: [
+    {
+      dimension: "What it is",
+      betterFullstack: "Project generator with its own option catalog",
+      competitor: "Template engine for Rust projects",
+    },
+    {
+      dimension: "Templates",
+      betterFullstack: "Maintained in Better Fullstack",
+      competitor: "Any Git repository or local folder; found through the cargo-generate GitHub topic",
+    },
+    {
+      dimension: "Web frameworks",
+      betterFullstack: "Axum, Actix Web, Rocket, Poem, Loco, Warp, Salvo",
+      competitor: "Whatever the template provides",
+    },
+    {
+      dimension: "Frontend",
+      betterFullstack: "Leptos, Dioxus, or Yew crate in the same workspace",
+      competitor: "Templates such as leptos-rs/start-axum",
+    },
+    {
+      dimension: "Data and APIs",
+      betterFullstack:
+        "SeaORM, SQLx, Diesel, MongoDB, rusqlite, or tokio-postgres; Tonic, async-graphql, or jsonrpsee",
+      competitor: "Whatever the template provides",
+    },
+    {
+      dimension: "Template logic",
+      betterFullstack: "Compatibility rules across options",
+      competitor: "Liquid, placeholders, conditionals, Rhai hooks",
+    },
+    {
+      dimension: "After generation",
+      betterFullstack: BETTER_FULLSTACK_UPDATE_SUMMARY,
+      competitor: "Generates once; the generated project is yours",
+    },
+    {
+      dimension: "Interfaces",
+      betterFullstack: "CLI, visual web builder, MCP server for AI agents",
+      competitor: "CLI and Rust library",
+    },
+  ],
+  sections: [
+    {
+      heading: "What cargo-generate gives you",
+      paragraphs: [
+        "A template author defines placeholders in cargo-generate.toml with prompts, choices, defaults, and regex validation, uses Liquid in file contents and names, includes or excludes files conditionally, and runs Rhai hook scripts at init, before, or after expansion. Hooks that run system commands need your approval or `--allow-commands`. Templates can come from a Git URL, a gh: shorthand, a local path, a subfolder, or a saved favorite, and `--define` with `--silent` supports non-interactive use.",
+        "Install it with `cargo install cargo-generate`, cargo-binstall, or prebuilt binaries. cargo-generate is also a Rust library, and the cargo-generate organization publishes a GitHub Action that template authors use to test their templates.",
+      ],
+    },
+    {
+      heading: "Templates people use",
+      paragraphs: [
+        "Many Rust projects publish cargo-generate templates: ratatui/templates for terminal apps, aya-rs/aya-template for eBPF programs, knurling-rs/app-template and esp-rs/esp-idf-template for embedded targets, and leptos-rs/start-axum, which cargo-leptos uses through its `cargo leptos new` command. These are separate projects with their own maintainers.",
+      ],
+    },
+    {
+      heading: "Project status, in dates",
+      paragraphs: [
+        "cargo-generate 0.25.0 was released on 2026-09-18, after 0.24.0 on 2026-08-31, which moved to a pure-Rust Git stack. Releases have come every few weeks since May 2026.",
+      ],
+    },
+    {
+      heading: "What Better Fullstack adds",
+      paragraphs: [
+        "Choices that are known to work together: a web framework, a database layer, an API layer such as Tonic with a generated proto crate or async-graphql, auth crates such as oauth2, openidconnect, or tower-sessions, caching, messaging, OpenTelemetry, and a Leptos, Dioxus, or Yew frontend crate. Optional clap and Ratatui crates add a CLI or terminal UI, and libraries such as cargo-nextest and cargo-audit come with their configuration.",
+        "A Rust backend can also serve a TypeScript web frontend, or a Rust frontend crate can pair with a backend from another ecosystem, in a multi-ecosystem project.",
+      ],
+    },
+    {
+      heading: "When cargo-generate is the right choice",
+      paragraphs: [
+        "Pick cargo-generate when a framework or community already publishes a template for what you are building, such as embedded firmware or eBPF, or when you want to write templates for your own team. Better Fullstack only generates the web services, frontends, and CLI apps in its catalog, and you cannot point it at an arbitrary template repository.",
+      ],
+    },
+    {
+      heading: "Try the closest Better Fullstack equivalent",
+      paragraphs: [
+        "The rust-api preset scaffolds Axum with SeaORM and PostgreSQL: `bun create better-fullstack@latest my-app --template rust-api`. The rust-fullstack preset adds a Leptos frontend crate.",
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question: "Does Better Fullstack use cargo-generate?",
+      answer:
+        "No. It renders Rust projects from its own templates, so the generated Cargo workspace already includes the crates you selected.",
+    },
+    {
+      question: "Can cargo-generate run without prompts?",
+      answer:
+        "Yes. Values can come from `--define` flags, a template values file, or environment variables, and `--silent` fails instead of prompting when a value is missing.",
+    },
+    {
+      question: "Which should I use for a Leptos app?",
+      answer:
+        "For the Leptos team's starter, use `cargo leptos new` with leptos-rs/start-axum. Better Fullstack fits when you want a Leptos client crate next to a server crate with a database layer, auth, and other options chosen up front.",
+    },
+  ],
+};
+
+const mixPhxNew: CompetitorComparison = {
+  slug: "mix-phx-new",
+  competitorName: "mix phx.new",
+  competitorUrl: "https://hexdocs.pm/phoenix/Mix.Tasks.Phx.New.html",
+  competitorRepo: "https://github.com/phoenixframework/phoenix/tree/main/installer",
+  title: "Better Fullstack vs mix phx.new: 2026 Comparison",
+  description:
+    "mix phx.new is Phoenix's official project generator. Better Fullstack scaffolds Phoenix or plain Elixir apps with libraries chosen up front, alongside other ecosystems. A sourced comparison.",
+  heading: "Better Fullstack vs mix phx.new",
+  factsCheckedOn: "2026-10-06",
+  intro: [
+    "`mix phx.new` \"creates a new Phoenix project\". It is installed with `mix archive.install hex phx_new` and is versioned with Phoenix itself; the current release is 1.8.15, published on 2026-09-25. A default project includes LiveView, Ecto, Tailwind CSS with daisyUI, esbuild, LiveDashboard, a Swoosh mailer, Gettext, and an AGENTS.md file for coding agents.",
+    "Better Fullstack treats Elixir as one of its ecosystems. It generates a Phoenix app, with or without LiveView, or a plain Mix app from its own templates, with libraries such as Oban, Absinthe, Cachex, and PromEx chosen at the same time and checked for compatibility.",
+  ],
+  rows: [
+    {
+      dimension: "What it is",
+      betterFullstack: "Multi-ecosystem generator with an Elixir option set",
+      competitor: "Official Phoenix project generator",
+    },
+    {
+      dimension: "Phoenix version",
+      betterFullstack: "Phoenix 1.7 (templates pin ~> 1.7.21)",
+      competitor: "Phoenix 1.8",
+    },
+    {
+      dimension: "Defaults",
+      betterFullstack: "Phoenix, Phoenix LiveView, or a plain Mix app; no asset pipeline",
+      competitor: "LiveView, Ecto, Tailwind with daisyUI, esbuild, LiveDashboard, Swoosh, Gettext",
+    },
+    {
+      dimension: "Databases",
+      betterFullstack: "PostgreSQL, MySQL, or SQLite through Ecto",
+      competitor: "PostgreSQL (default), MySQL, MSSQL, or SQLite3",
+    },
+    {
+      dimension: "Auth",
+      betterFullstack: "Email and password session endpoints, Ueberauth, Guardian, or Pow",
+      competitor: "mix phx.gen.auth with magic-link login and sudo mode",
+    },
+    {
+      dimension: "Libraries",
+      betterFullstack:
+        "Oban, Quantum, Absinthe, gRPC, OpenApiSpex, Cachex, PromEx, Sentry, Ash, and more",
+      competitor: "Added to mix.exs after generation",
+    },
+    {
+      dimension: "Code generators",
+      betterFullstack: "add command for catalog options",
+      competitor: "phx.gen.live, phx.gen.html, phx.gen.json, phx.gen.context, and more",
+    },
+    {
+      dimension: "Deployment",
+      betterFullstack: "Docker, Fly.io, Gigalixir, or a Mix release",
+      competitor: "mix phx.gen.release --docker, plus official deployment guides",
+    },
+  ],
+  sections: [
+    {
+      heading: "What mix phx.new gives you",
+      paragraphs: [
+        "Flags shape the project: `--database` picks postgres, mysql, mssql, or sqlite3, `--no-html` and `--no-assets` produce an API-only app, `--no-ecto`, `--no-mailer`, `--no-dashboard`, and `--no-gettext` drop those pieces, `--umbrella` splits the domain and web layers into separate apps, and `--adapter` chooses Bandit (the default) or Cowboy. The generated AGENTS.md can be skipped with `--no-agents-md`, and a precommit alias runs compilation with warnings as errors, formatting, and tests.",
+        "For a machine without Elixir, Phoenix also documents a one-line installer that installs Erlang, Elixir, and Phoenix and generates an app.",
+      ],
+    },
+    {
+      heading: "Generators after phx.new",
+      paragraphs: [
+        "Phoenix's generators are a large part of its workflow. `mix phx.gen.live`, `phx.gen.html`, and `phx.gen.json` generate a context, schema, migration, and LiveView, HTML, or JSON interface for a resource, and since Phoenix 1.8 they use scopes for data access. `mix phx.gen.auth` generates authentication, with magic links as the default login method and a sudo mode for sensitive actions. Others cover channels, presence, notifiers, and release files with a Dockerfile.",
+      ],
+    },
+    {
+      heading: "Keeping up with Phoenix releases",
+      paragraphs: [
+        "The Phoenix changelog lists deprecations and potential breaking changes for each release, and `mix local.phx` updates the generator. Community tools help with the rest: PhoenixDiff shows the difference between projects generated by two Phoenix versions, and Igniter, a code generation and project patching framework from the Ash project, can run upgrade patchers that packages provide.",
+        "Better Fullstack records your selections in bts.jsonc, and its update command plans template changes for review. Upgrades across Better Fullstack releases are not yet a supported path and require manual review.",
+      ],
+    },
+    {
+      heading: "What Better Fullstack adds",
+      paragraphs: [
+        "Libraries chosen at creation time: Oban or Quantum for jobs, Absinthe, gRPC, or OpenApiSpex for APIs, Channels and Presence, Swoosh or Bamboo, Cachex, Nebulex, or Redix, OpenTelemetry, PromEx, or Sentry, Mox, Bypass, Wallaby, StreamData, and ExMachina for tests, Credo, Dialyxir, Sobelow, and mix_audit for code quality, Ash, libcluster, and Docker, Fly.io, or Gigalixir deployment files.",
+        "An Elixir backend can also sit next to a TypeScript web frontend or a mobile app in a multi-ecosystem project.",
+      ],
+    },
+    {
+      heading: "Where mix phx.new is ahead",
+      paragraphs: [
+        "It generates the current Phoenix release, while Better Fullstack's templates pin Phoenix 1.7 and include no Tailwind or esbuild asset pipeline. Its phx.gen.auth output is a complete authentication system; Better Fullstack's phx-gen-auth option generates a small email-and-password flow with JSON session endpoints, not the output of mix phx.gen.auth. Phoenix's resource generators have no equivalent in Better Fullstack.",
+        "Pick mix phx.new for a Phoenix application that follows the official guides. Pick Better Fullstack when Phoenix is one service in a larger stack, or when you want a set of Elixir libraries wired in from the start.",
+      ],
+    },
+    {
+      heading: "Try the closest Better Fullstack equivalent",
+      paragraphs: [
+        "The elixir-phoenix-api preset scaffolds Phoenix with Ecto SQL, a REST API, Channels, and a Dockerfile: `bun create better-fullstack@latest my-app --template elixir-phoenix-api`. The elixir-liveview-full preset adds LiveView, auth, Absinthe, and Oban.",
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question: "Does Better Fullstack run mix phx.new?",
+      answer:
+        "No. It generates Elixir projects from its own templates, which currently pin Phoenix 1.7. mix phx.new generates Phoenix 1.8 projects.",
+    },
+    {
+      question: "Do both tools write files for coding agents?",
+      answer:
+        "Yes. mix phx.new writes an AGENTS.md with Phoenix guidelines unless you pass --no-agents-md. Better Fullstack can write CLAUDE.md, AGENTS.md, or .cursorrules describing the selected stack.",
+    },
+    {
+      question: "Which databases does each tool support?",
+      answer:
+        "mix phx.new supports PostgreSQL, MySQL, MSSQL, and SQLite3 through Ecto. Better Fullstack supports PostgreSQL, MySQL, and SQLite through Ecto.",
+    },
+  ],
+};
+
 export const COMPETITOR_COMPARISONS: CompetitorComparison[] = [
   createT3App,
   betterTStack,
@@ -1048,6 +1734,12 @@ export const COMPETITOR_COMPARISONS: CompetitorComparison[] = [
   wasp,
   redwoodJs,
   epicStack,
+  springInitializr,
+  jhipster,
+  cookiecutter,
+  dotnetNew,
+  cargoGenerate,
+  mixPhxNew,
 ];
 
 export function getCompetitorComparison(slug: string) {
