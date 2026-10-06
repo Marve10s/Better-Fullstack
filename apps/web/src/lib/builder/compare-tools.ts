@@ -1052,7 +1052,7 @@ const springInitializr: CompetitorComparison = {
   factsCheckedOn: "2026-10-06",
   intro: [
     "Spring Initializr is the Spring team's project generator. Its reference documentation describes \"an extensible API to generate JVM-based projects\", and start.spring.io is the public instance. You choose a build tool, a language, a Spring Boot version, a Java version, packaging, and a list of dependencies, and it returns a project with those starters declared.",
-    `Better Fullstack covers the JVM as one of ${ECOSYSTEM_COUNT_LABEL} ecosystems. Its Java ecosystem offers Spring Boot, Quarkus, Micronaut, and Ktor, in Java or Kotlin. For Spring Boot, many options also come with sample code, such as a JPA entity with its repository, service, and controller, or a Spring Security configuration.`,
+    `Better Fullstack covers the JVM as one of ${ECOSYSTEM_COUNT_LABEL} ecosystems. Its Java ecosystem offers Spring Boot, Quarkus, Micronaut, and Ktor in Java, and Kotlin for Spring Boot and Ktor. For Spring Boot, many options also come with sample code, such as a JPA entity with its repository, service, and controller, or a Spring Security configuration.`,
   ],
   rows: [
     {
@@ -1174,7 +1174,7 @@ const jhipster: CompetitorComparison = {
     },
     {
       dimension: "Backend",
-      betterFullstack: "Spring Boot, Quarkus, Micronaut, or Ktor, in Java or Kotlin",
+      betterFullstack: "Spring Boot, Quarkus, Micronaut, or Ktor in Java; Kotlin with Spring Boot or Ktor",
       competitor: "Spring Boot; blueprints for Kotlin, Node.js (NestJS), Quarkus, Micronaut, .NET",
     },
     {
@@ -1501,7 +1501,7 @@ const cargoGenerate: CompetitorComparison = {
   factsCheckedOn: "2026-10-06",
   intro: [
     "cargo-generate is \"a developer tool to help you get up and running quickly with a new Rust project by leveraging a pre-existing git repository as a template\". It is framework-agnostic: templates are separate repositories, written with Liquid placeholders and optional Rhai scripts, and published by their own projects.",
-    "Better Fullstack's Rust ecosystem works from a fixed catalog instead. You choose a web framework, a frontend crate, a database layer, an API layer, and libraries, and it generates a Cargo workspace where those pieces are wired together and checked for compatibility.",
+    "Better Fullstack's Rust ecosystem works from a fixed catalog instead. You choose a web framework, a frontend crate, a database layer, an API layer, and libraries, and it generates a Cargo workspace with a crate for each piece, after checking the selection for compatibility. The frontend crate is a starter page that does not call the backend yet; the generator writes the connection details into the docs and example environment file.",
   ],
   rows: [
     {
