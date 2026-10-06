@@ -711,7 +711,7 @@ const nx: CompetitorComparison = {
     {
       dimension: "Interfaces",
       betterFullstack: "CLI, visual web builder, MCP server for AI agents",
-      competitor: "CLI, with optional Nx Cloud setup for CI",
+      competitor: "CLI, Nx Console editor extension, Nx MCP server, optional Nx Cloud setup for CI",
     },
   ],
   sections: [
@@ -726,7 +726,7 @@ const nx: CompetitorComparison = {
       heading: "What Better Fullstack adds",
       paragraphs: [
         "Better Fullstack decides what goes inside the apps: the frontend, backend, API layer, database and ORM, auth, payments, email, job queues, and AI SDKs, with compatibility checks across all of them. It covers backends in other ecosystems too, such as Rust, Python, Go, Java, Elixir, and .NET.",
-        "Selecting the Nx add-on adds the nx package and writes an nx.json with target defaults for the generated tasks, so a Better Fullstack project can use Nx for task running and caching from the first commit.",
+        "Selecting the Nx add-on adds the nx package and writes an nx.json with target defaults for the generated tasks, so a Better Fullstack project can run its tasks through Nx from the first commit. The generated targets do not turn on caching; enable it per target in nx.json.",
       ],
     },
     {
@@ -897,7 +897,7 @@ const redwoodJs: CompetitorComparison = {
     {
       dimension: "Status",
       betterFullstack: "Active releases",
-      competitor: "Maintenance releases, no new features planned",
+      competitor: "Development winding down as of the 8.9.0 release",
     },
   ],
   sections: [
@@ -910,7 +910,7 @@ const redwoodJs: CompetitorComparison = {
     {
       heading: "Project status, in dates",
       paragraphs: [
-        "On 2025-04-04 the Redwood team announced two paths: Redwood GraphQL, the existing framework under a new name, and RedwoodSDK, a new React framework for Cloudflare. The team said Redwood GraphQL would keep receiving releases but that no new features were planned. As of 2026-10-06, the latest create-redwood-app release on npm is 8.9.0, published 2025-10-21, and the redwoodjs.com site redirects to RedwoodSDK.",
+        "On 2025-04-04 the Redwood team announced two paths: Redwood GraphQL, the existing framework under a new name, and RedwoodSDK, a new React framework for Cloudflare. The team said Redwood GraphQL would keep receiving releases but that no new features were planned. The 8.9.0 release notes, published 2025-10-21, say development of Redwood GraphQL is winding down and point users who want further security updates and fixes to the CedarJS fork. As of 2026-10-06, 8.9.0 is the latest create-redwood-app release on npm, and the redwoodjs.com site redirects to RedwoodSDK.",
       ],
     },
     {
@@ -931,7 +931,7 @@ const redwoodJs: CompetitorComparison = {
     {
       question: "Is RedwoodJS still maintained?",
       answer:
-        "The framework continues as Redwood GraphQL with maintenance releases. In its April 2025 announcement the team said no new features were planned and that new development moved to RedwoodSDK. The latest create-redwood-app release is 8.9.0 (2025-10-21, checked 2026-10-06).",
+        "Development is winding down. The framework was renamed Redwood GraphQL in April 2025, when the team said no new features were planned and that new development moved to RedwoodSDK. The 8.9.0 release notes (2025-10-21) say development is winding down and point to the CedarJS fork for further security updates and fixes. 8.9.0 is the latest create-redwood-app release (checked 2026-10-06).",
     },
     {
       question: "Can Better Fullstack scaffold a RedwoodJS app?",
