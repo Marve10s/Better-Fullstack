@@ -22,8 +22,8 @@ defmodule {{elixirModuleName}}Web do
       unquote(verified_routes())
     end
   end
-
 {{#if (eq elixirWebFramework "phoenix-live-view")}}
+
   def live_view do
     quote do
       use Phoenix.LiveView
@@ -58,8 +58,8 @@ defmodule {{elixirModuleName}}Web do
 {{/if}}
     end
   end
-
 {{#if (eq elixirWebFramework "phoenix-live-view")}}
+
   defp html_helpers do
     quote do
       import Phoenix.HTML

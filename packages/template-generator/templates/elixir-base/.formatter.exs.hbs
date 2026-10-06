@@ -1,0 +1,52 @@
+[
+{{#if (or (eq elixirApplicationFramework "ash") (ne elixirOrm "none") (eq elixirOrm "ecto-sql") (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3") (eq elixirJobs "oban") (eq elixirApi "absinthe") (eq elixirApi "open_api_spex") (eq elixirApi "grpc") (eq elixirEmail "swoosh") (eq elixirCaching "nebulex") (eq elixirHttp "tesla") (includes elixirLibraries "nx") (eq elixirTesting "stream_data") (ne elixirWebFramework "none"))}}
+  import_deps: [
+{{#if (eq elixirApplicationFramework "ash")}}
+    :ash{{#if (or (ne elixirOrm "none") (eq elixirOrm "ecto-sql") (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3") (eq elixirJobs "oban") (eq elixirApi "absinthe") (eq elixirApi "open_api_spex") (eq elixirApi "grpc") (eq elixirEmail "swoosh") (eq elixirCaching "nebulex") (eq elixirHttp "tesla") (includes elixirLibraries "nx") (eq elixirTesting "stream_data") (ne elixirWebFramework "none"))}},{{/if}}
+{{/if}}
+{{#if (ne elixirOrm "none")}}
+    :ecto{{#if (or (eq elixirOrm "ecto-sql") (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3") (eq elixirJobs "oban") (eq elixirApi "absinthe") (eq elixirApi "open_api_spex") (eq elixirApi "grpc") (eq elixirEmail "swoosh") (eq elixirCaching "nebulex") (eq elixirHttp "tesla") (includes elixirLibraries "nx") (eq elixirTesting "stream_data") (ne elixirWebFramework "none"))}},{{/if}}
+{{/if}}
+{{#if (or (eq elixirOrm "ecto-sql") (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3"))}}
+    :ecto_sql{{#if (or (eq elixirJobs "oban") (eq elixirApi "absinthe") (eq elixirApi "open_api_spex") (eq elixirApi "grpc") (eq elixirEmail "swoosh") (eq elixirCaching "nebulex") (eq elixirHttp "tesla") (includes elixirLibraries "nx") (eq elixirTesting "stream_data") (ne elixirWebFramework "none"))}},{{/if}}
+{{/if}}
+{{#if (eq elixirJobs "oban")}}
+    :oban{{#if (or (eq elixirApi "absinthe") (eq elixirApi "open_api_spex") (eq elixirApi "grpc") (eq elixirEmail "swoosh") (eq elixirCaching "nebulex") (eq elixirHttp "tesla") (includes elixirLibraries "nx") (eq elixirTesting "stream_data") (ne elixirWebFramework "none"))}},{{/if}}
+{{/if}}
+{{#if (eq elixirApi "absinthe")}}
+    :absinthe{{#if (or (eq elixirApi "open_api_spex") (eq elixirApi "grpc") (eq elixirEmail "swoosh") (eq elixirCaching "nebulex") (eq elixirHttp "tesla") (includes elixirLibraries "nx") (eq elixirTesting "stream_data") (ne elixirWebFramework "none"))}},{{/if}}
+{{/if}}
+{{#if (eq elixirApi "open_api_spex")}}
+    :open_api_spex{{#if (or (eq elixirApi "grpc") (eq elixirEmail "swoosh") (eq elixirCaching "nebulex") (eq elixirHttp "tesla") (includes elixirLibraries "nx") (eq elixirTesting "stream_data") (ne elixirWebFramework "none"))}},{{/if}}
+{{/if}}
+{{#if (eq elixirApi "grpc")}}
+    :grpc,
+    :protobuf{{#if (or (eq elixirEmail "swoosh") (eq elixirCaching "nebulex") (eq elixirHttp "tesla") (includes elixirLibraries "nx") (eq elixirTesting "stream_data") (ne elixirWebFramework "none"))}},{{/if}}
+{{/if}}
+{{#if (eq elixirEmail "swoosh")}}
+    :swoosh{{#if (or (eq elixirCaching "nebulex") (eq elixirHttp "tesla") (includes elixirLibraries "nx") (eq elixirTesting "stream_data") (ne elixirWebFramework "none"))}},{{/if}}
+{{/if}}
+{{#if (eq elixirCaching "nebulex")}}
+    :nebulex{{#if (or (eq elixirHttp "tesla") (includes elixirLibraries "nx") (eq elixirTesting "stream_data") (ne elixirWebFramework "none"))}},{{/if}}
+{{/if}}
+{{#if (eq elixirHttp "tesla")}}
+    :tesla{{#if (or (includes elixirLibraries "nx") (eq elixirTesting "stream_data") (ne elixirWebFramework "none"))}},{{/if}}
+{{/if}}
+{{#if (includes elixirLibraries "nx")}}
+    :nx{{#if (or (eq elixirTesting "stream_data") (ne elixirWebFramework "none"))}},{{/if}}
+{{/if}}
+{{#if (eq elixirTesting "stream_data")}}
+    :stream_data{{#if (or (ne elixirWebFramework "none"))}},{{/if}}
+{{/if}}
+{{#if (ne elixirWebFramework "none")}}
+    :phoenix
+{{/if}}
+  ],
+{{/if}}
+{{#if (eq elixirWebFramework "phoenix-live-view")}}
+  plugins: [Phoenix.LiveView.HTMLFormatter],
+  inputs: ["*.{heex,ex,exs}", "{config,lib,test}/**/*.{heex,ex,exs}", "priv/*/**/*.exs"]
+{{else}}
+  inputs: ["*.{ex,exs}", "{config,lib,test}/**/*.{ex,exs}", "priv/*/**/*.exs"]
+{{/if}}
+]

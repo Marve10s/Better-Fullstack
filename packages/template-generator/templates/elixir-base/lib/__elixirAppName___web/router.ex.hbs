@@ -9,7 +9,7 @@ defmodule {{elixirModuleName}}Web.Router do
 {{else}}
     plug :fetch_flash
 {{/if}}
-    plug :put_root_layout, html: { {{elixirModuleName}}Web.Layouts, :root}
+    plug :put_root_layout, html: { {{~elixirModuleName}}Web.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
 {{#if (eq elixirAuth "pow")}}
@@ -35,15 +35,15 @@ defmodule {{elixirModuleName}}Web.Router do
     live "/items", ItemLive.Index, :index
 {{/if}}
   end
-
 {{#if (eq elixirAuth "pow")}}
+
   scope "/" do
     pipe_through :browser
     pow_routes()
   end
 {{/if}}
-
 {{#if (eq elixirAuth "ueberauth")}}
+
   scope "/auth", {{elixirModuleName}}Web do
     pipe_through :browser
 
@@ -69,11 +69,12 @@ defmodule {{elixirModuleName}}Web.Router do
     resources "/items", ItemController, only: [:index, :show, :create]
 {{/if}}
   end
-
 {{#if (eq elixirApi "absinthe")}}
+
   forward "/graphql", Absinthe.Plug, schema: {{elixirModuleName}}Web.GraphQL.Schema
 {{/if}}
 {{#if (eq elixirApi "open_api_spex")}}
+
   scope "/api" do
     pipe_through :api
     forward "/openapi", OpenApiSpex.Plug.RenderSpec, []

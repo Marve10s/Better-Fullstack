@@ -6,15 +6,14 @@ defmodule {{elixirModuleName}}Web.Endpoint do
     key: "_{{elixirAppName}}_key",
     signing_salt: "change-me"
   ]
-
 {{#if (or (eq elixirRealtime "channels") (eq elixirRealtime "presence"))}}
+
   socket "/socket", {{elixirModuleName}}Web.UserSocket,
     websocket: true,
     longpoll: false
 {{/if}}
 
-  socket "/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]]
+  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   plug Plug.Static,
     at: "/",

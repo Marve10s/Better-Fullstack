@@ -1,6 +1,6 @@
 import Config
-
 {{#if (ne elixirWebFramework "none")}}
+
 config :{{elixirAppName}}, {{elixirModuleName}}Web.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: String.to_integer(System.get_env("PORT") || "4000")],
   check_origin: false,
@@ -11,8 +11,13 @@ config :{{elixirAppName}}, {{elixirModuleName}}Web.Endpoint,
 
 config :{{elixirAppName}}, dev_routes: true
 {{/if}}
+{{#if (eq elixirAuth "guardian")}}
 
+config :{{elixirAppName}}, {{elixirModuleName}}.Auth.Guardian,
+  secret_key: "dev-only-guardian-secret-placeholder-do-not-use-in-production-0000000"
+{{/if}}
 {{#if (eq elixirOrm "ecto-sql")}}
+
 config :{{elixirAppName}}, {{elixirModuleName}}.Repo,
   username: System.get_env("POSTGRES_USER", "postgres"),
   password: System.get_env("POSTGRES_PASSWORD", "postgres"),
@@ -23,6 +28,7 @@ config :{{elixirAppName}}, {{elixirModuleName}}.Repo,
   pool_size: 10
 {{/if}}
 {{#if (eq elixirOrm "myxql")}}
+
 config :{{elixirAppName}}, {{elixirModuleName}}.Repo,
   username: System.get_env("MYSQL_USER", "root"),
   password: System.get_env("MYSQL_PASSWORD", "mysql"),
@@ -33,6 +39,7 @@ config :{{elixirAppName}}, {{elixirModuleName}}.Repo,
   pool_size: 10
 {{/if}}
 {{#if (eq elixirOrm "ecto_sqlite3")}}
+
 config :{{elixirAppName}}, {{elixirModuleName}}.Repo,
   database: System.get_env("DATABASE_PATH", "{{elixirAppName}}_dev.db"),
   pool_size: 5
