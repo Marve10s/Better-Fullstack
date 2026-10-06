@@ -7,7 +7,7 @@
 	const chat = new Chat({
 		transport: new DefaultChatTransport({
 			api: `${PUBLIC_SERVER_URL}/ai`,
-{{#if (hasAiRouteAuth auth)}}
+{{#if (hasAiRouteAuth auth backend frontend)}}
 			credentials: "include",
 			fetch: async (url, init) => {
 				const response = await fetch(url, init);
@@ -72,7 +72,7 @@
 				</div>
 			</div>
 		{/each}
-{{#if (hasAiRouteAuth auth)}}
+{{#if (hasAiRouteAuth auth backend frontend)}}
 		{#if chat.error}
 			<p class="text-center text-sm text-red-500">{chat.error.message}</p>
 		{/if}

@@ -13,7 +13,7 @@ const chat = new Chat({
   messages,
   transport: new DefaultChatTransport({
     api: `${config.public.serverUrl}/ai`,
-{{#if (hasAiRouteAuth auth)}}
+{{#if (hasAiRouteAuth auth backend frontend)}}
     credentials: 'include',
     fetch: async (url, init) => {
       const response = await fetch(url, init)
@@ -51,7 +51,7 @@ async function handleSubmit(e: Event) {
     </div>
 
     <div class="shrink-0 pt-4 border-t border-gray-200 dark:border-gray-800">
-{{#if (hasAiRouteAuth auth)}}
+{{#if (hasAiRouteAuth auth backend frontend)}}
       <p v-if="chat.error" class="mb-2 text-sm text-error">\{{ chat.error.message }}</p>
 {{/if}}
       <UChatPrompt

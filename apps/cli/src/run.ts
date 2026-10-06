@@ -16,7 +16,7 @@ import { createRouterClient, os } from "@orpc/server";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import pc from "picocolors";
-import { createCli } from "trpc-cli";
+import { createCli, parseRouter } from "trpc-cli";
 import z from "zod";
 
 import type { AddResult } from "@/helpers/core/add-handler";
@@ -968,6 +968,7 @@ export const router = os.router({
       process.stdout.write(
         renderCompletionScript(shell, {
           program: createBtsCli().toJSON(),
+          procedures: parseRouter({ router }),
           defaultCommand: getDefaultCommandName(),
           hiddenFlags: [HIDDEN_LEGACY_OPTION],
         }),

@@ -1,7 +1,16 @@
+import { hasAiExampleEndpoint, hasAiRouteAuth } from "@better-fullstack/template-generator";
+import {
+  AuthSchema,
+  BackendSchema,
+  legacyProjectConfigToStackParts,
+  type ProjectConfig,
+} from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 import { join } from "node:path";
 
+import { createVirtual } from "@/index";
 import { EXAMPLES, expectError, expectSuccess, runTRPCTest, type TestConfig } from "@test/support/test-utils";
+import { getAllFiles } from "@test/support/validation-utils";
 
 const REMOVED_AI_HELPERS = [
   "toUIMessageStream(",
@@ -932,6 +941,114 @@ describe("Example Configurations", () => {
         expect(page).not.toContain(SIGN_IN_MESSAGE);
         expect(page).not.toContain("credentials");
         expect(readme).toContain(UNAUTHENTICATED_README);
+      }
+    });
+
+    async function generateVirtualAIProject(config: Partial<ProjectConfig>) {
+      const result = await createVirtual({ examples: ["ai"], ...config });
+      expect(result.error).toBeUndefined();
+      return new Map(getAllFiles(result.tree!).map((file) => [file.path.replace(/^\//, ""), file.content]));
+    }
+
+    // createVirtual does not normalize auth, so it reaches pairs the CLI resets to none.
+    function virtualConfig(backend: ProjectConfig["backend"], frontend: ProjectConfig["frontend"]) {
+      if (backend === "self") return { ...fullstack, backend, frontend };
+      if (backend === "convex") return { ...convex, frontend };
+      const runtime = ["express", "fastify", "nestjs", "adonisjs"].includes(backend) ? "node" : "bun";
+      return { ...standalone, backend, frontend, runtime } as const;
+    }
+
+    // Where each server arrangement rejects a signed-out caller, and the call that must come after.
+    function aiEndpoint(backend: ProjectConfig["backend"], frontend: ProjectConfig["frontend"]) {
+      if (backend === "self" && frontend.includes("next")) {
+        return { file: nextRoute, start: "export async function POST(", reject: "{ status: 401 }", call: "streamText(" };
+      }
+      if (backend === "self") {
+        return {
+          file: tanstackStartRoute,
+          start: "POST: async ({ request }) =>",
+          reject: "{ status: 401 }",
+          call: "streamText(",
+        };
+      }
+      if (backend === "convex") {
+        return {
+          file: "packages/backend/convex/chat.ts",
+          start: "export const sendMessage",
+          reject: "await requireThreadOwner(",
+          call: "ctx.scheduler.runAfter(",
+        };
+      }
+      const files: Partial<Record<ProjectConfig["backend"], string>> = {
+        nestjs: "apps/server/src/ai/ai.controller.ts",
+        nitro: "apps/server/routes/ai.post.ts",
+        adonisjs: "apps/server/start/routes.ts",
+      };
+      const starts: Partial<Record<ProjectConfig["backend"], string>> = {
+        fastify: "fastify.post('/ai'",
+        elysia: '.post("/ai"',
+        fets: 'path: "/ai"',
+        nestjs: "async chat(",
+        nitro: "export default defineEventHandler(",
+        adonisjs: 'router.post("/ai"',
+      };
+      return {
+        file: files[backend] ?? serverIndex,
+        start: starts[backend] ?? 'app.post("/ai"',
+        reject: "401",
+        call: backend === "nestjs" ? "this.aiService.streamChat(" : "streamText(",
+      };
+    }
+
+    it("rejects signed-out callers before the provider call for every pair the helper reports as protected", async () => {
+      const arrangements: Array<[ProjectConfig["backend"], ProjectConfig["frontend"]]> = [
+        ["self", ["next"]],
+        ["self", ["tanstack-start"]],
+        ...BackendSchema.options
+          .filter((backend) => backend !== "self")
+          .map((backend): [ProjectConfig["backend"], ProjectConfig["frontend"]] => [backend, ["tanstack-router"]]),
+      ];
+      const pairs = arrangements.flatMap(([backend, frontend]) =>
+        hasAiExampleEndpoint({ backend, frontend, examples: ["ai"] })
+          ? AuthSchema.options
+              .filter((auth) => hasAiRouteAuth({ auth, backend, frontend }))
+              .map((auth) => ({ backend, frontend, auth }))
+          : [],
+      );
+      expect(pairs).toContainEqual({ backend: "hono", frontend: ["tanstack-router"], auth: "better-auth" });
+
+      for (const { backend, frontend, auth } of pairs) {
+        const pair = `${backend} + ${frontend[0]} + ${auth}`;
+        const files = await generateVirtualAIProject({ ...virtualConfig(backend, frontend), auth });
+        const endpoint = aiEndpoint(backend, frontend);
+        const source = files.get(endpoint.file) ?? "";
+        const body = source.slice(Math.max(source.indexOf(endpoint.start), 0));
+        const rejectAt = body.indexOf(endpoint.reject);
+        const callAt = body.indexOf(endpoint.call);
+
+        expect({ pair, handler: source.includes(endpoint.start) }).toEqual({ pair, handler: true });
+        expect({ pair, rejectsFirst: rejectAt > -1 && rejectAt < callAt }).toEqual({ pair, rejectsFirst: true });
+        if (backend === "convex") expect(source).toContain('throw new Error("Not authenticated")');
+        expect({ pair, readme: files.get("README.md")?.includes(PROTECTED_README) }).toEqual({ pair, readme: true });
+      }
+    });
+
+    it("leaves a standalone server endpoint open and says so when its auth option has no server lookup", async () => {
+      const config = {
+        ...virtualConfig("hono", ["tanstack-router"]),
+        auth: "clerk",
+        examples: ["ai"],
+      } satisfies Partial<ProjectConfig>;
+      for (const input of [config, { ...config, stackParts: legacyProjectConfigToStackParts(config, "selected") }]) {
+        const files = await generateVirtualAIProject(input);
+        const route = files.get(serverIndex) ?? "";
+        const readme = files.get("README.md") ?? "";
+
+        expect(route).toContain('app.post("/ai"');
+        expect(route).not.toContain("401");
+        expect(files.get("apps/web/src/routes/ai.tsx")).not.toContain(SIGN_IN_MESSAGE);
+        expect(readme).not.toContain(PROTECTED_README);
+        if (!input.stackParts) expect(readme).toContain(UNAUTHENTICATED_README);
       }
     });
   });

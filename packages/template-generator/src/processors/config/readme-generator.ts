@@ -704,7 +704,7 @@ ${runPrefix} ai:text -- --model openai/gpt-5.5 "write a concise PR summary"
 function generateAIExampleSection(options: ProjectConfig): string {
   if (!hasAiExampleEndpoint(options)) return "";
 
-  return hasAiRouteAuth(options.auth)
+  return hasAiRouteAuth(options)
     ? `
 ## AI Chat Example
 

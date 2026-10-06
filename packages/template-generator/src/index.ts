@@ -16,3 +16,4 @@ export {
 } from "@/preflight-validation";
 
 export { getGraphProjectTasks, type GraphProjectTask } from "@/graph/graph-project";
+export { hasAiExampleEndpoint, hasAiRouteAuth } from "@/platform/ai-example";
