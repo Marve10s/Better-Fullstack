@@ -3,6 +3,7 @@ import type { ProjectConfig } from "@better-fullstack/types";
 import type { VirtualFileSystem } from "@/core/virtual-fs";
 
 import { addPackageDependency, type AvailableDependencies } from "@/dependencies/add-deps";
+import { hasAuthJsCredentials } from "@/platform/auth-js";
 
 function isBetterAuth(auth: ProjectConfig["auth"]): boolean {
   return auth === "better-auth" || auth === "better-auth-organizations";
@@ -189,6 +190,7 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
   } else if (auth === "clerk") {
     const hasNextJs = frontend.includes("next");
     const hasTanStackStart = frontend.includes("tanstack-start");
+    const apiPath = "packages/api/package.json";
 
     if (webExists && hasNextJs) {
       addPackageDependency({
@@ -203,8 +205,16 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
         dependencies: ["@clerk/tanstack-react-start", "srvx"],
       });
     }
+
+    // The API context reads the signed-in user through Clerk's server auth() helper
+    if (vfs.exists(apiPath) && (hasNextJs || hasTanStackStart)) {
+      addPackageDependency({
+        vfs,
+        packagePath: apiPath,
+        dependencies: [hasNextJs ? "@clerk/nextjs" : "@clerk/tanstack-react-start"],
+      });
+    }
   } else if (auth === "nextauth") {
-    const { orm } = config;
     const hasNextJs = frontend.includes("next");
 
     // NextAuth only works with Next.js (self backend)
@@ -212,23 +222,23 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
       addPackageDependency({
         vfs,
         packagePath: webPath,
-        dependencies: ["next-auth", "@auth/core", "@tanstack/react-form", "zod"],
+        dependencies: ["next-auth", "@tanstack/react-form", "zod"],
       });
+    }
 
-      // Add ORM-specific adapter
-      if (orm === "drizzle") {
-        addPackageDependency({
-          vfs,
-          packagePath: webPath,
-          dependencies: ["@auth/drizzle-adapter"],
-        });
-      } else if (orm === "prisma") {
-        addPackageDependency({
-          vfs,
-          packagePath: webPath,
-          dependencies: ["@auth/prisma-adapter"],
-        });
+    if (authExists) {
+      const authDependencies: AvailableDependencies[] = ["next-auth"];
+      if (hasAuthJsCredentials(config)) {
+        authDependencies.push(
+          orm === "prisma" ? "@auth/prisma-adapter" : "@auth/drizzle-adapter",
+          "bcryptjs",
+        );
       }
+      addPackageDependency({
+        vfs,
+        packagePath: authPath,
+        dependencies: authDependencies,
+      });
     }
   } else if (auth === "stack-auth") {
     const hasNextJs = frontend.includes("next");

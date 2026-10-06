@@ -43,6 +43,9 @@ import "@mantine/core/styles.css";
 {{#if (or (eq auth "auth0") (or (eq auth "workos") (eq auth "kinde")))}}
 import { AuthProvider } from "@/lib/auth-client";
 {{/if}}
+{{#if (eq auth "nextauth")}}
+import { SessionProvider } from "next-auth/react";
+{{/if}}
 import { ThemeProvider } from "./theme-provider";
 import { Toaster } from "./ui/sonner";
 
@@ -67,6 +70,9 @@ export default function Providers({
     {{/if}}
     {{#if (or (eq auth "auth0") (or (eq auth "workos") (eq auth "kinde")))}}
     <AuthProvider>
+    {{/if}}
+    {{#if (eq auth "nextauth")}}
+    <SessionProvider>
     {{/if}}
     <ThemeProvider
       attribute="class"
@@ -102,6 +108,9 @@ export default function Providers({
       {{/if}}
       <Toaster richColors />
     </ThemeProvider>
+    {{#if (eq auth "nextauth")}}
+    </SessionProvider>
+    {{/if}}
     {{#if (or (eq auth "auth0") (or (eq auth "workos") (eq auth "kinde")))}}
     </AuthProvider>
     {{/if}}

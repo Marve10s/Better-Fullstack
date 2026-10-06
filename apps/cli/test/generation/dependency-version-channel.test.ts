@@ -440,6 +440,32 @@ describe("applyDependencyVersionChannel", () => {
     expect(packageJson.dependencies.react).toBe("^19.3.0");
   });
 
+  it("keeps the Auth.js v5 prerelease pin when npm latest is an older major", async () => {
+    const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-next-auth-"));
+
+    await fs.writeJson(
+      path.join(projectDir, "package.json"),
+      { name: "next-auth-hold-test", dependencies: { "next-auth": "5.0.0-beta.32" } },
+      { spaces: 2 },
+    );
+
+    global.fetch = mock(
+      async () =>
+        new Response(
+          JSON.stringify({
+            "dist-tags": { latest: "4.24.15", beta: "5.0.0-beta.32" },
+            versions: { "4.24.15": {}, "5.0.0-beta.32": {} },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+    ) as unknown as typeof fetch;
+
+    await applyDependencyVersionChannel(projectDir, "latest");
+
+    const packageJson = await fs.readJson(path.join(projectDir, "package.json"));
+    expect(packageJson.dependencies["next-auth"]).toBe("5.0.0-beta.32");
+  });
+
   it("keeps template-pinned Redwood React peers on the latest channel", async () => {
     const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-redwood-"));
 

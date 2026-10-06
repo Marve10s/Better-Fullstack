@@ -5,6 +5,7 @@ import { extname } from "pathe";
 
 import { BINARY_EXTENSIONS } from "@/core/binary-extensions";
 import { getCompiledTemplate } from "@/core/compiled-template-cache";
+import { hasAuthJsCredentials } from "@/platform/auth-js";
 import { composeTheme, type BaseColorName, type AccentColorName } from "@/shadcn-themes";
 
 Handlebars.registerHelper("eq", (a, b) => a === b);
@@ -23,6 +24,17 @@ Handlebars.registerHelper(
 Handlebars.registerHelper(
   "hasBetterAuthOrganizations",
   (auth) => auth === "better-auth-organizations",
+);
+Handlebars.registerHelper(
+  "hasApiSession",
+  (auth) =>
+    auth === "better-auth" ||
+    auth === "better-auth-organizations" ||
+    auth === "clerk" ||
+    auth === "nextauth",
+);
+Handlebars.registerHelper("hasAuthJsCredentials", (orm, database) =>
+  hasAuthJsCredentials({ orm, database }),
 );
 
 // ---------------------------------------------------------------------------

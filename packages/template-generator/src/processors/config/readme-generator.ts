@@ -13,6 +13,7 @@ import {
   hasWebFrontend,
 } from "@/graph/graph-backend";
 import { getGraphProjectTasks } from "@/graph/graph-project";
+import { hasAuthJsCredentials } from "@/platform/auth-js";
 
 const JAVA_GROUP_ID = "com.example";
 const JAVA_RESERVED_WORDS = new Set([
@@ -516,7 +517,7 @@ ${
   - \`CLERK_SECRET_KEY\`
 - Clerk middleware and a protected \`/dashboard\` route are already generated`
       : ""
-  }
+  }${backend === "self" && auth === "nextauth" ? generateAuthJsSetup(options, webPort) : ""}
 
 Then, run the development server:
 
@@ -854,6 +855,21 @@ function generateStackDescription(
   return parts.length > 0 ? `${parts.join(", ")}, and more` : "";
 }
 
+function generateAuthJsSetup(config: ProjectConfig, webPort: string): string {
+  const signInSetup = hasAuthJsCredentials(config)
+    ? `- Email and password sign-up posts to \`/api/auth/register\`, which stores a bcrypt hash in the users table. Push the database schema before signing up.
+- Passwords are limited to 72 bytes, the most bcrypt reads. Sign-in takes the same time whether or not an account exists, but registration answers 409 for an email that is already registered, so anyone can check whether an email has an account. Hiding that requires an email verification flow.`
+    : `- Email and password sign-in is not generated because Auth.js has no database adapter here for the selected ORM and database. Configure at least one OAuth provider before signing in.`;
+
+  return `
+## Auth.js Authentication Setup
+
+- \`AUTH_SECRET\` is generated in \`apps/web/.env\`. Use a new value in production (\`npx auth secret\`).
+- OAuth: create GitHub or Google OAuth apps with the callback URL \`http://localhost:${webPort}/api/auth/callback/<provider>\`, then set \`AUTH_GITHUB_ID\`, \`AUTH_GITHUB_SECRET\`, \`AUTH_GOOGLE_ID\`, and \`AUTH_GOOGLE_SECRET\` in \`apps/web/.env\`.
+${signInSetup}
+- \`apps/web/src/proxy.ts\` redirects signed-out page requests to \`/login\` and answers 401 for API routes that do not check auth themselves. Its \`publicApiRoutes\` list names the routes that do; API procedures read the session from \`packages/auth\`.`;
+}
+
 function generateRunningInstructions(
   frontend: ProjectConfig["frontend"],
   backend: ProjectConfig["backend"],
@@ -1097,7 +1113,7 @@ function generateFeaturesList(
     const authNames: Record<string, string> = {
       "better-auth": "Better Auth",
       clerk: "Clerk",
-      nextauth: "NextAuth.js",
+      nextauth: "Auth.js",
       "supabase-auth": "Supabase Auth",
       auth0: "Auth0",
       "stack-auth": "Stack Auth",
