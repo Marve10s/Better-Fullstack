@@ -12,7 +12,7 @@ COPY lib lib
 {{#if (includes elixirLibraries "rustler")}}
 COPY native native
 {{/if}}
-{{#if (or (ne elixirWebFramework "none") (or (eq elixirOrm "ecto-sql") (or (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3"))))}}
+{{#if (or (eq elixirOrm "ecto-sql") (or (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3")))}}
 COPY priv priv
 {{/if}}
 RUN mix release

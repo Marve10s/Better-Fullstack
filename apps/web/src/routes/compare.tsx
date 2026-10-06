@@ -7,6 +7,7 @@ import {
 } from "react-icons/tb";
 
 import Footer from "@/components/home/footer";
+import { COMPETITOR_COMPARISONS } from "@/lib/builder/compare-tools";
 import {
   COMPARISON_COUNTS,
   ECOSYSTEM_COUNT_LABEL,
@@ -552,33 +553,20 @@ function ComparePage() {
           <div className="mx-auto max-w-3xl">
             <h2 className="font-mono text-lg font-bold sm:text-xl">In-depth comparisons</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <Link
-                to="/compare/$slug"
-                params={{ slug: "create-t3-app" }}
-                className="group rounded-lg border border-border p-4 transition-colors hover:bg-muted/30"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold">Better Fullstack vs create-t3-app</span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                </div>
-                <p className="mt-1.5 text-xs text-muted-foreground">
-                  One curated Next.js stack vs a configurable catalog - philosophy, maintenance
-                  status, and when each fits.
-                </p>
-              </Link>
-              <Link
-                to="/compare/$slug"
-                params={{ slug: "better-t-stack" }}
-                className="group rounded-lg border border-border p-4 transition-colors hover:bg-muted/30"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold">Better Fullstack vs Better-T-Stack</span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                </div>
-                <p className="mt-1.5 text-xs text-muted-foreground">
-                  Shared DNA, different scope: TypeScript-only vs eight language ecosystems.
-                </p>
-              </Link>
+              {COMPETITOR_COMPARISONS.map((comparison) => (
+                <Link
+                  key={comparison.slug}
+                  to="/compare/$slug"
+                  params={{ slug: comparison.slug }}
+                  className="group rounded-lg border border-border p-4 transition-colors hover:bg-muted/30"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold">{comparison.heading}</span>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                  </div>
+                  <p className="mt-1.5 text-xs text-muted-foreground">{comparison.description}</p>
+                </Link>
+              ))}
             </div>
           </div>
         </div>

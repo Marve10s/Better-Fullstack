@@ -26463,6 +26463,7 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
   "README.md",
   "config/config.exs",
   "config/dev.exs",
+  "config/prod.exs",
   "config/runtime.exs",
   "config/test.exs",
   "lib/snapshot_elixir_phoenix_ecto_rest.ex",
@@ -26502,6 +26503,7 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
   "README.md",
   "config/config.exs",
   "config/dev.exs",
+  "config/prod.exs",
   "config/runtime.exs",
   "config/test.exs",
   "lib/snapshot_elixir_phoenix_liveview_full.ex",
@@ -26544,7 +26546,7 @@ exports[`Template Snapshots - Elixir Ecosystem Elixir File Structure Snapshots f
 
 exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-ecto-rest 1`] = `
 {
-  "fileCount": 34,
+  "fileCount": 35,
   "files": [
     {
       "content": 
@@ -26578,6 +26580,10 @@ POSTGRES_TEST_DB=snapshot_elixir_phoenix_ecto_rest_test"
     {
       "content": "[exists]",
       "path": "config/dev.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/prod.exs",
     },
     {
       "content": "[exists]",
@@ -26697,7 +26703,7 @@ POSTGRES_TEST_DB=snapshot_elixir_phoenix_ecto_rest_test"
 
 exports[`Template Snapshots - Elixir Ecosystem Elixir Key File Content Snapshots key files: phoenix-liveview-full 1`] = `
 {
-  "fileCount": 45,
+  "fileCount": 46,
   "files": [
     {
       "content": 
@@ -26731,6 +26737,10 @@ POSTGRES_TEST_DB=snapshot_elixir_phoenix_liveview_full_test"
     {
       "content": "[exists]",
       "path": "config/dev.exs",
+    },
+    {
+      "content": "[exists]",
+      "path": "config/prod.exs",
     },
     {
       "content": "[exists]",

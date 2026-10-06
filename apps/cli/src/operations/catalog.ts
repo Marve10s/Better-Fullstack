@@ -60,8 +60,11 @@ import {
   getStarterTracksResult,
 } from "@/commands/stack/starter-tracks";
 import { defineOperation } from "@/operations/operation";
+import { listCatalogOptions, searchCatalogOptions } from "@/operations/option-catalog";
 import {
   capabilityEvidenceOutputSchema,
+  catalogListOutputSchema,
+  catalogSearchOutputSchema,
   compatibilityOutputSchema,
   guidanceOutputSchema,
   schemaOutputSchema,
@@ -206,6 +209,41 @@ export const getSchemaOperation = defineOperation({
         ? { category: result.category, options: result.options }
         : { categories: result };
   },
+});
+
+export const listOptionsOperation = defineOperation({
+  name: "list_options",
+  title: "List options",
+  description:
+    "Lists option categories with their CLI flag, bfs_get_schema category name (schemaCategory), selection mode, ecosystems, and option count. With a category, returns that category's options with label, aliases, and the CLI flag that selects each one. Aliases are older IDs that builder URLs and search still accept; CLI flags take only the flag value. Use ecosystem to keep only that ecosystem's categories.",
+  input: z.object({
+    category: z
+      .string()
+      .optional()
+      .describe("Canonical category ID such as 'orm' or 'goAuth'. Omit to list categories."),
+    ecosystem: EcosystemSchema.optional().describe("Only include this ecosystem's categories"),
+  }),
+  output: catalogListOutputSchema,
+  safety: "read",
+  idempotent: true,
+  openWorld: false,
+  run: async (input) => listCatalogOptions(input),
+});
+
+export const searchOptionsOperation = defineOperation({
+  name: "search_options",
+  title: "Search options",
+  description:
+    "Finds options whose ID, label, or alias contains the query, across every category and ecosystem. Each match includes its category, ecosystems, aliases, and the CLI flag that selects it. Exact matches come first.",
+  input: z.object({
+    query: z.string().trim().min(1).describe("Text to match, such as 'drizzle' or 'sveltekit'"),
+    ecosystem: EcosystemSchema.optional().describe("Only search this ecosystem's categories"),
+  }),
+  output: catalogSearchOutputSchema,
+  safety: "read",
+  idempotent: true,
+  openWorld: false,
+  run: async (input) => searchCatalogOptions(input),
 });
 
 export const listPresetsOperation = defineOperation({

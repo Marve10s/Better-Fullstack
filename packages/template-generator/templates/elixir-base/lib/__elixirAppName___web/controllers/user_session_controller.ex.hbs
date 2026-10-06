@@ -3,6 +3,8 @@ defmodule {{elixirModuleName}}Web.UserSessionController do
 
   alias {{elixirModuleName}}.Accounts
 
+  plug :require_json_body when action in [:register, :login, :logout]
+
   def register(conn, %{"user" => user_params}) do
     case Accounts.create_user(user_params) do
       {:ok, user} ->
@@ -38,6 +40,22 @@ defmodule {{elixirModuleName}}Web.UserSessionController do
     conn
     |> configure_session(drop: true)
     |> json(%{data: %{ok: true}})
+  end
+
+  # These actions write or clear the session cookie. Cross-site HTML forms can
+  # only send urlencoded, multipart, or text/plain bodies, so requiring JSON
+  # stops another site from logging a visitor in or out (login CSRF).
+  defp require_json_body(conn, _opts) do
+    with [content_type | _] <- get_req_header(conn, "content-type"),
+         {:ok, "application", "json", _params} <- Plug.Conn.Utils.content_type(content_type) do
+      conn
+    else
+      _ ->
+        conn
+        |> put_status(:unsupported_media_type)
+        |> json(%{errors: %{content_type: ["must be application/json"]}})
+        |> halt()
+    end
   end
 
   defp user_json(user) do

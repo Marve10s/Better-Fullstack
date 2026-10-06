@@ -52,6 +52,7 @@ import {
   EFFECT_VALUES,
   EMAIL_VALUES,
   ECOMMERCE_VALUES,
+  EXAMPLES_VALUES,
   FEATURE_FLAGS_VALUES,
   INTEGRATIONS_VALUES,
   FILE_STORAGE_VALUES,
@@ -927,7 +928,6 @@ const APP_PLATFORM_VALUES = [
 const toolingSelectionIds = (category: Parameters<typeof getToolingSelectionOptions>[0]) =>
   getToolingSelectionOptions(category).map((selection) => selection.id);
 
-const EXAMPLE_VALUES = ["ai", "chat-sdk"] as const satisfies readonly string[];
 const BOOLEAN_OPTION_VALUES = ["true", "false"] as const satisfies readonly string[];
 
 const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
@@ -1034,7 +1034,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   packageManager: PACKAGE_MANAGER_VALUES,
   workspaceShape: WORKSPACE_SHAPE_VALUES,
   versionChannel: VERSION_CHANNEL_VALUES,
-  examples: EXAMPLE_VALUES,
+  examples: EXAMPLES_VALUES,
   ai: AI_VALUES,
   aiDocs: AI_DOCS_VALUES,
   git: BOOLEAN_OPTION_VALUES,
@@ -1467,6 +1467,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   examples: {
     ai: "AI Example",
     "chat-sdk": "Chat SDK Bots",
+    "tanstack-showcase": "TanStack Showcase",
   },
   ai: {
     "vercel-ai": "Vercel AI SDK",

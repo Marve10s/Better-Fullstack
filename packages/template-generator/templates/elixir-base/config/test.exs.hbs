@@ -3,7 +3,7 @@ import Config
 {{#if (ne elixirWebFramework "none")}}
 config :{{elixirAppName}}, {{elixirModuleName}}Web.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "test-secret-key-base-replace-before-production",
+  secret_key_base: "test-only-secret-key-base-placeholder-do-not-use-in-production-00000",
 {{#if (eq elixirTesting "wallaby")}}
   server: true
 {{else}}

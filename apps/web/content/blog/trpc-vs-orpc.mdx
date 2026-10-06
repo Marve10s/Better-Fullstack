@@ -1,0 +1,129 @@
+---
+title: "tRPC vs oRPC: choose by client reach and contract needs"
+description: "Compare tRPC and oRPC by typing model, client frameworks, OpenAPI needs, and deployment fit, with the Better Fullstack command that generates each."
+date: 2026-10-06
+authors:
+  - Ibrahim Elkamali
+image: /search-media/hono-api-1200x630.png
+video: /search-media/hono-api-1200x630.mp4
+translationStatus: pending
+tags:
+  - trpc
+  - orpc
+  - api
+keywords:
+  - trpc vs orpc
+  - orpc vs trpc
+  - typescript rpc comparison
+  - type-safe api starter
+  - hono trpc orpc
+---
+
+![Hono API stack with typed contracts, Better Auth, and PostgreSQL](/search-media/hono-api-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/hono-api-1200x630.png" src="/search-media/hono-api-1200x630.mp4"></video>
+
+tRPC and oRPC solve the same first problem: a TypeScript client calls server procedures with inferred types and no code generation step. Both projects describe that goal in their own documentation ([tRPC](https://trpc.io/docs), [oRPC](https://orpc.dev/docs/getting-started)).
+
+The differences appear at the edges of the API. Which clients call it? Does anything outside your TypeScript code need to call it? Should the contract exist before the implementation? Answer those three questions and the choice usually follows.
+
+## The shared ground
+
+Both libraries give you:
+
+- procedures written as TypeScript functions on the server;
+- runtime input validation with schema libraries such as Zod, Valibot, and ArkType ([tRPC validators](https://trpc.io/docs/server/validators), [oRPC overview](https://orpc.dev/docs/getting-started));
+- client types inferred from the server router;
+- a TanStack Query integration.
+
+Neither one replaces authorization checks inside procedures, input size limits, or error responses that a client can act on. Those stay your job with either library.
+
+## Typing model and contracts
+
+With tRPC, the router type is the contract. The server exports `AppRouter`, the client imports that type, and changes flow through TypeScript inference. This works well when server and client live in one repository and ship together.
+
+oRPC uses the same inference by default. It also supports a contract-first style: the [`@orpc/contract`](https://orpc.dev/docs/contract-first/define-contract) package describes input, output, errors, and metadata without business logic, and the implementation must match it. That matters when a contract is reviewed before anyone writes a handler, or when separate teams own each side.
+
+## Who calls the API
+
+This is usually the deciding criterion.
+
+tRPC's official client integrations center on React, through its [TanStack React Query integration](https://trpc.io/docs/client/tanstack-react-query/setup) and Next.js. For a frontend without an official integration, the tRPC docs point to the framework-agnostic [vanilla client](https://trpc.io/docs/client/vanilla).
+
+oRPC can also [serve the same router as a REST API with OpenAPI metadata](https://orpc.dev/docs/openapi/getting-started). Procedures without explicit routing metadata are exposed as `POST` endpoints whose paths follow the router structure. If partners, scripts, or clients written in other languages need the API, that is a concrete reason to start with oRPC. tRPC's documentation centers on its own client protocol, so confirm how you would produce an OpenAPI description before choosing it for that case.
+
+## Runtime and deployment
+
+Both mount inside the server you already run. oRPC documents adapters for Node.js, Bun, Deno, and Cloudflare Workers. tRPC can run standalone or be mounted as an endpoint on an existing server through its adapters. Pick the backend and runtime first, then check the adapter for that exact host.
+
+## What Better Fullstack generates
+
+The two commands below differ only in `--api`:
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api trpc
+```
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc
+```
+
+Add `--dry-run` to preview either project without writing files. The generated projects differ in these places:
+
+| Concern               | `--api trpc`                                          | `--api orpc`                                                          |
+| --------------------- | ----------------------------------------------------- | --------------------------------------------------------------------- |
+| Procedure builder     | `initTRPC` in `packages/api/src/index.ts`             | `os` from `@orpc/server` in `packages/api/src/index.ts`               |
+| Auth guard            | `protectedProcedure` throws `TRPCError` UNAUTHORIZED  | `protectedProcedure` throws `ORPCError("UNAUTHORIZED")`               |
+| Hono mount            | `@hono/trpc-server` on `/trpc/*`                      | `RPCHandler` on `/rpc`, plus `OpenAPIHandler` on `/api-reference`     |
+| API reference         | none                                                  | `OpenAPIReferencePlugin` with the Zod JSON Schema converter           |
+| Web client            | `httpBatchLink` with `createTRPCOptionsProxy`         | `RPCLink` with `createTanstackQueryUtils`                             |
+
+Better Fullstack also enforces the client reach difference. tRPC is offered only with React-based frontends. With Svelte, Nuxt, Solid, or SolidStart, oRPC is the option of the two that the CLI accepts; `--frontend svelte --api trpc` is rejected with a suggestion to use oRPC. This command generates a SvelteKit client that uses `@orpc/tanstack-query` with `@tanstack/svelte-query`:
+
+```bash
+bun create better-fullstack@latest my-app \
+  --ecosystem typescript \
+  --frontend svelte \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc
+```
+
+These are generated projects, not runtime-verified deployments. Install, build, and exercise the slice you care about before committing to either.
+
+## Decision table
+
+| If this is the stronger constraint                   | Start with                                      |
+| ---------------------------------------------------- | ----------------------------------------------- |
+| React client in the same repository, nothing else    | Either; the one your team already knows         |
+| Svelte, Nuxt, Solid, or SolidStart client            | oRPC                                            |
+| OpenAPI description from the same router             | oRPC                                            |
+| Contract reviewed before implementation              | oRPC with `@orpc/contract`                      |
+| Existing tRPC routers in production                  | tRPC, unless a requirement above rules it out   |
+
+## Compare real generated stacks
+
+- [TanStack Router + Hono + tRPC + Drizzle](/stack/tanstack-router-hono-trpc-drizzle)
+- [TanStack Router + Hono + oRPC + Drizzle](/stack/tanstack-router-hono-orpc-drizzle)
+- [SvelteKit + Hono + Drizzle with oRPC](/stack/sveltekit-hono-drizzle)
+
+The [Hono tRPC Drizzle guide](/guides/typescript/hono-trpc-drizzle) and [Hono Better Auth guide](/guides/typescript/hono-better-auth) show both layers in a full project. If the API mostly serves one web app, read [self backend vs separate API](/blog/self-backend-vs-separate-api/) before adding a separate server at all.

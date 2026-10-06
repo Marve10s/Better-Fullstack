@@ -18,7 +18,12 @@ import {
 import { describe, expect, it } from "bun:test";
 
 import { createVirtual } from "@/index";
-import { getVirtualTreeFileContent, hasVirtualFile } from "@test/support/virtual-tree-utils";
+import {
+  getVirtualTreeFileContent,
+  hasVirtualFile,
+  listVirtualTreeFilePaths,
+  listVirtualTreeFiles,
+} from "@test/support/virtual-tree-utils";
 
 const base = {
   ecosystem: "elixir" as const,
@@ -328,6 +333,103 @@ describe("Elixir library expansion", () => {
     );
     expect(hasVirtualFile(tree.root, "test/elixir_sqlite_quality/property_test.exs")).toBe(true);
   });
+
+  it("emits Phoenix dev, test, and prod config and a session-aware API pipeline", async () => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "elixir-phoenix-runtime",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "phx-gen-auth",
+      elixirApi: "rest",
+      elixirDeploy: "docker",
+    });
+
+    expect(result.success).toBe(true);
+    const tree = result.tree!;
+    for (const env of ["dev", "test"]) {
+      const config = getVirtualTreeFileContent(tree, `config/${env}.exs`);
+      const secret = config?.match(/secret_key_base: "([^"]+)"/)?.[1] ?? "";
+      expect(secret.length).toBeGreaterThanOrEqual(64);
+    }
+    expect(getVirtualTreeFileContent(tree, "config/config.exs")).toContain(
+      'import_config "#{config_env()}.exs"',
+    );
+    expect(hasVirtualFile(tree.root, "config/prod.exs")).toBe(true);
+    expect(getVirtualTreeFileContent(tree, "config/dev.exs")).toContain(
+      "config :elixir_phoenix_runtime, dev_routes: true",
+    );
+    const router = getVirtualTreeFileContent(tree, "lib/elixir_phoenix_runtime_web/router.ex");
+    const apiPipeline = router?.match(/pipeline :api do[\s\S]*?\n  end/)?.[0];
+    expect(apiPipeline).toContain("plug :fetch_session");
+  });
+
+  it("only lets JSON requests reach the phx-gen-auth session actions", async () => {
+    const withAuth = await createVirtual({
+      ...base,
+      projectName: "elixir-session-json",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "phx-gen-auth",
+      elixirApi: "rest",
+    });
+
+    expect(withAuth.success).toBe(true);
+    const router = getVirtualTreeFileContent(withAuth.tree!, "lib/elixir_session_json_web/router.ex");
+    const sessionActions = [...(router ?? "").matchAll(/UserSessionController, :(\w+)/g)].map(
+      (match) => match[1],
+    );
+    expect(sessionActions).toEqual(["register", "login", "logout"]);
+    const controller = getVirtualTreeFileContent(
+      withAuth.tree!,
+      "lib/elixir_session_json_web/controllers/user_session_controller.ex",
+    );
+    const guardedActions = controller
+      ?.match(/plug :require_json_body when action in \[([^\]]*)\]/)?.[1]
+      ?.split(",")
+      .map((action) => action.trim().replace(/^:/, ""));
+    expect(guardedActions).toEqual(expect.arrayContaining(sessionActions));
+    expect(controller).toContain("put_status(:unsupported_media_type)");
+
+    const withoutAuth = await createVirtual({
+      ...base,
+      projectName: "elixir-session-none",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "none",
+      elixirApi: "rest",
+    });
+
+    expect(withoutAuth.success).toBe(true);
+    const filesWithPlug = listVirtualTreeFiles(withoutAuth.tree!).filter((file) =>
+      file.content.includes("require_json_body"),
+    );
+    expect(filesWithPlug).toEqual([]);
+  });
+
+  it.each(["phoenix", "phoenix-live-view"] as const)(
+    "copies only generated paths into the %s release image without an ORM",
+    async (elixirWebFramework) => {
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-docker-no-orm",
+        elixirWebFramework,
+        elixirOrm: "none",
+        elixirAuth: "none",
+        elixirApi: "rest",
+        elixirDeploy: "docker",
+      });
+
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      const paths = listVirtualTreeFilePaths(tree).map((path) => path.replace(/^\/+/, ""));
+      const sources = [
+        ...(getVirtualTreeFileContent(tree, "Dockerfile") ?? "").matchAll(/^COPY (?!--)(.+) \S+$/gm),
+      ].flatMap((match) => match[1].split(" "));
+      expect(sources).toContain("lib");
+      const missing = sources.filter(
+        (source) => !paths.some((path) => path === source || path.startsWith(`${source}/`)),
+      );
+      expect(missing).toEqual([]);
+    },
+  );
 
   it("keeps StreamData available to Ash outside the test environment", async () => {
     const result = await createVirtual({

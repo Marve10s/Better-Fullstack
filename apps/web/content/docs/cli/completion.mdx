@@ -1,0 +1,64 @@
+---
+title: Shell Completion
+description: Print a bash, zsh, fish, or PowerShell completion script for Better Fullstack commands, flags, and option values.
+translationStatus: pending
+updated: 2026-10-06
+---
+
+`completion` prints a shell completion script to stdout. The script completes commands, their
+flags, and the allowed values of option flags such as `--frontend` and `--database`. It registers
+both published binary names, `create-better-fullstack` and `create-bfs`.
+
+Completion needs the CLI on your `PATH`, so install it globally first:
+
+```bash
+npm install -g create-better-fullstack
+```
+
+## Bash
+
+```bash
+create-better-fullstack completion bash > ~/.bfs-completion.bash
+echo 'source ~/.bfs-completion.bash' >> ~/.bashrc
+```
+
+## Zsh
+
+Save the script as `_create-better-fullstack` in a directory on `fpath`:
+
+```bash
+mkdir -p ~/.zfunc
+create-better-fullstack completion zsh > ~/.zfunc/_create-better-fullstack
+```
+
+Then add the directory to `fpath` in `~/.zshrc` before `compinit` runs:
+
+```bash
+fpath=(~/.zfunc $fpath)
+autoload -Uz compinit && compinit
+```
+
+## Fish
+
+```fish
+mkdir -p ~/.config/fish/conf.d
+create-better-fullstack completion fish > ~/.config/fish/conf.d/create-better-fullstack.fish
+```
+
+Fish loads `conf.d` files at startup, so both binary names complete in new shells.
+
+## PowerShell
+
+```powershell
+if (-not (Test-Path $PROFILE)) { New-Item -ItemType File -Path $PROFILE -Force | Out-Null }
+create-better-fullstack completion powershell > "$HOME\bfs-completion.ps1"
+Add-Content $PROFILE '. "$HOME\bfs-completion.ps1"'
+```
+
+## Keep it current
+
+The installed CLI builds the script from its own command router and option schema. Regenerate the
+file after upgrading so new commands and option values appear.
+
+Printing the script has no side effects. It sends no telemetry, shows no notices, and writes only
+the script to stdout.
