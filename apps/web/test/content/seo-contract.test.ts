@@ -2,6 +2,7 @@ import { OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
 import { blogPostHead } from "@/lib/blog/seo";
+import { COMPETITOR_COMPARISONS } from "@/lib/builder/compare-tools";
 import {
   generateDocsLlmsTxt,
   generateLlmsFullTxt,
@@ -86,6 +87,9 @@ describe("SEO contracts", () => {
     expect(paths).toContain("/stack/nextjs-hono-drizzle-better-auth");
     expect(paths).not.toContain("/analytics");
     expect(paths).not.toContain("/telemetry");
+    for (const comparison of COMPETITOR_COMPARISONS) {
+      expect(xml).toContain(canonicalUrl(`/compare/${comparison.slug}`));
+    }
     expect(xml).toContain(canonicalUrl("/docs/cli/create"));
     expect(xml).toContain(canonicalUrl("/guides/typescript/create-tanstack-start-project"));
     expect(xml).toContain(canonicalUrl("/stack/nextjs-hono-drizzle-better-auth"));
@@ -295,6 +299,9 @@ describe("SEO contracts", () => {
     expect(llms).toContain("https://better-fullstack.dev/docs/ai/mcp");
     expect(llms).toContain("## Stack Templates");
     expect(llms).toContain("https://better-fullstack.dev/stack/nextjs-hono-drizzle-better-auth");
+    for (const comparison of COMPETITOR_COMPARISONS) {
+      expect(llms).toContain(canonicalUrl(`/compare/${comparison.slug}`));
+    }
   });
 
   it("generates scoped, full-corpus, and semantic Markdown indexes", () => {
@@ -349,6 +356,9 @@ describe("SEO contracts", () => {
     expect(sitemap).toContain("/docs/cli/update.md");
     expect(sitemap).toContain("/guides/typescript/example.md");
     expect(sitemap).toContain("/llms-full.txt");
+    for (const comparison of COMPETITOR_COMPARISONS) {
+      expect(sitemap).toContain(canonicalUrl(`/compare/${comparison.slug}`));
+    }
   });
 
   it("uses existing manifest icon paths", async () => {

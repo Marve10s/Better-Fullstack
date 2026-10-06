@@ -1,3 +1,4 @@
+import { COMPETITOR_COMPARISONS } from "@/lib/builder/compare-tools";
 import { canonicalUrl } from "@/lib/seo/seo";
 
 type SitemapEntry = {
@@ -23,8 +24,14 @@ const staticSitemapEntries: SitemapEntry[] = [
   { path: "/", changefreq: "daily", priority: 1 },
   { path: "/new", changefreq: "daily", priority: 0.9 },
   { path: "/compare", changefreq: "weekly", priority: 0.8 },
-  { path: "/compare/create-t3-app", changefreq: "weekly", priority: 0.7 },
-  { path: "/compare/better-t-stack", changefreq: "weekly", priority: 0.7 },
+  ...COMPETITOR_COMPARISONS.map(
+    (comparison): SitemapEntry => ({
+      path: `/compare/${comparison.slug}`,
+      changefreq: "weekly",
+      lastmod: comparison.factsCheckedOn,
+      priority: 0.7,
+    }),
+  ),
   { path: "/mcp", changefreq: "weekly", priority: 0.7 },
   { path: "/run-before-you-clone", changefreq: "weekly", priority: 0.9 },
   { path: "/templates", changefreq: "weekly", priority: 0.9 },

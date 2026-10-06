@@ -1,3 +1,4 @@
+import { COMPETITOR_COMPARISONS } from "@/lib/builder/compare-tools";
 import { ECOSYSTEM_COUNT_LABEL, ECOSYSTEM_NAMES, OPTION_COUNT_LABEL } from "@/lib/project/project-stats";
 import { SITE_NAME, SITE_URL, canonicalUrl } from "@/lib/seo/seo";
 
@@ -23,6 +24,10 @@ function pageLine(title: string | undefined, url: string, description?: string) 
   const suffix = description ? ` - ${description}` : "";
   return `- [${label}](${canonicalUrl(url)})${suffix}`;
 }
+
+const comparisonLines = COMPETITOR_COMPARISONS.map((comparison) =>
+  pageLine(comparison.heading, `/compare/${comparison.slug}`, comparison.description),
+);
 
 export function generateLlmsTxt({
   docsPages,
@@ -107,6 +112,10 @@ export function generateLlmsTxt({
     pageLine("Markdown sitemap", "/sitemap.md", "Semantic index of public content"),
     pageLine("Guides", "/guides", "Stack-specific starter guides"),
     pageLine("Blog", "/blog", "Engineering write-ups"),
+    "",
+    "## Comparisons",
+    "",
+    ...comparisonLines,
     "",
     "## Important Docs",
     "",
@@ -276,6 +285,10 @@ export function generateMarkdownSitemap({
       ),
       "",
     ]),
+    "## Comparisons",
+    "",
+    ...comparisonLines,
+    "",
     ...(stackPages.length
       ? [
           "## Generated Stack Pages",
