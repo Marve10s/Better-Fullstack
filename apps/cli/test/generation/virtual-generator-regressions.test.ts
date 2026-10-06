@@ -134,6 +134,32 @@ describe("Virtual Generator Regressions", () => {
     );
   });
 
+  it.each([
+    { frontend: "tanstack-start", webDeploy: "none" },
+    { frontend: "tanstack-start", webDeploy: "cloudflare" },
+    { frontend: "tanstack-start-solid", webDeploy: "none" },
+  ] as const)(
+    "keeps $frontend server chunks in source evaluation order ($webDeploy deploy)",
+    async ({ frontend, webDeploy }) => {
+      const result = await createVirtual({
+        projectName: `${frontend}-ssr-order`,
+        frontend: [frontend],
+        backend: "self",
+        runtime: "none",
+        api: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "better-auth",
+        webDeploy,
+      });
+
+      expect(result.success).toBe(true);
+      expect(readTextFromTree(result.tree!, "apps/web/vite.config.ts")).toMatch(
+        /environments: \{\s*ssr: \{\s*build: \{[^}]*rolldownOptions: \{ output: \{ strictExecutionOrder: true \} \}/,
+      );
+    },
+  );
+
   it("does not leak Mocha smoke tests into Playwright projects", async () => {
     const result = await createVirtual({
       projectName: "playwright-only",
