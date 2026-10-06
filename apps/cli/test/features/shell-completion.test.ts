@@ -199,6 +199,7 @@ complete_words create-bfs create my-app --database = post
 complete_words create-bfs completion ''
 complete_words create-bfs recovery --project-dir ./app ''
 complete_words create-bfs recovery show ''
+complete_words create-bfs recovery --json false ''
 `;
     const result = Bun.spawnSync(["bash", "-c", probe]);
     const [
@@ -209,6 +210,7 @@ complete_words create-bfs recovery show ''
       shells,
       recoveryActions,
       afterAction,
+      afterSwitchValue,
     ] = result.stdout.toString().trim().split("\n");
     expect(databaseValues?.split(" ")).toEqual(getCategoryCliValues("database"));
     expect(flags?.split(" ")).toContain("--database");
@@ -223,5 +225,7 @@ complete_words create-bfs recovery show ''
     expect(recoveryActions?.split(" ")).toEqual(positionalValues("recovery"));
     // The transaction ID that follows the action has no fixed values, so flags are offered.
     expect(afterAction?.split(" ")).toContain("--project-dir");
+    // An explicit boolean after a switch is consumed by the parser, not a positional.
+    expect(afterSwitchValue?.split(" ")).toEqual(positionalValues("recovery"));
   });
 });

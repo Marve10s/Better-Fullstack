@@ -175,7 +175,12 @@ ${flags}
       elif ((skip)); then
         skip=0
       elif [[ \${COMP_WORDS[i]} == -* ]]; then
-        [[ " $takes " == *" \${COMP_WORDS[i]} "* ]] && skip=1
+        # A switch may be followed by an explicit true or false, which is not a positional.
+        if [[ " $takes " == *" \${COMP_WORDS[i]} "* ]]; then
+          skip=1
+        elif [[ \${COMP_WORDS[i+1]} == true || \${COMP_WORDS[i+1]} == false ]]; then
+          skip=1
+        fi
       else
         position=$((position + 1))
       fi
@@ -244,7 +249,11 @@ ${flags}
       if ((skip)); then
         skip=0
       elif [[ \${words[i]} == -* ]]; then
-        [[ \${words[i]} != *=* && " $takes " == *" \${words[i]} "* ]] && skip=1
+        if [[ \${words[i]} != *=* && " $takes " == *" \${words[i]} "* ]]; then
+          skip=1
+        elif [[ \${words[i+1]} == true || \${words[i+1]} == false ]]; then
+          skip=1
+        fi
       else
         position=$((position + 1))
       fi
@@ -344,6 +353,8 @@ function __better_fullstack_position
         else if string match -q -- '-*' $token
             if not string match -q -- '*=*' $token; and contains -- $token $takes
                 set skip 1
+            else if contains -- "$tokens[(math $index + 1)]" true false
+                set skip 1
             end
         else
             set position (math $position + 1)
@@ -425,11 +436,15 @@ ${positionals}
         # Count the positional words before the cursor, skipping flags and the values they take.
         $position = 0
         $skip = $false
-        foreach ($word in @($words | Select-Object -Skip $start)) {
+        $rest = @($words | Select-Object -Skip $start)
+        for ($i = 0; $i -lt $rest.Count; $i++) {
+            $word = $rest[$i]
+            $next = if ($i + 1 -lt $rest.Count) { $rest[$i + 1] } else { '' }
             if ($skip) {
                 $skip = $false
             } elseif ($word.StartsWith('-')) {
-                $skip = -not $word.Contains('=') -and $values.ContainsKey("$command $word")
+                $takesValue = -not $word.Contains('=') -and $values.ContainsKey("$command $word")
+                $skip = $takesValue -or $next -eq 'true' -or $next -eq 'false'
             } else {
                 $position++
             }
