@@ -123,6 +123,7 @@ import {
   getPythonCachingChoice,
   getPythonRealtimeChoice,
   getPythonObservabilityChoice,
+  getPythonLoggingChoice,
   getPythonCliChoice,
   getPythonCloudSdkChoice,
   getPythonDataChoice,
@@ -1053,6 +1054,12 @@ export async function gatherMultiEcosystemConfig(
             backendSections,
             () => getPythonObservabilityChoice(flags.pythonObservability),
           );
+    const pythonLogging =
+      pythonWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("python", "pythonLogging", configScope, backendSections, () =>
+            getPythonLoggingChoice(flags.pythonLogging, pythonWebFramework),
+          );
     const pythonCli =
       pythonWebFramework === "none"
         ? []
@@ -1122,6 +1129,7 @@ export async function gatherMultiEcosystemConfig(
       pythonCaching,
       pythonRealtime,
       pythonObservability,
+      pythonLogging,
       pythonCli,
       pythonCloudSdk,
       pythonHttpClient,
@@ -1147,6 +1155,7 @@ export async function gatherMultiEcosystemConfig(
     if (pythonObservability !== "none") {
       stackPartSpecs.push(`backend.observability:python:${pythonObservability}`);
     }
+    if (pythonLogging !== "none") stackPartSpecs.push(`backend.logging:python:${pythonLogging}`);
     for (const cli of pythonCli) {
       if (cli !== "none") stackPartSpecs.push(`backend.cli:python:${cli}`);
     }

@@ -89,6 +89,7 @@ function makeConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     pythonCaching: "none",
     pythonRealtime: "none",
     pythonObservability: "none",
+    pythonLogging: "none",
     pythonCli: [],
     pythonCloudSdk: "none",
     pythonHttpClient: "none",
@@ -219,6 +220,7 @@ describe("generateReproducibleCommand", () => {
         "--python-caching none " +
         "--python-realtime none " +
         "--python-observability none " +
+        "--python-logging none " +
         "--python-cli none " +
         "--python-cloud-sdk none " +
         "--python-http-client none " +
@@ -286,6 +288,7 @@ describe("generateReproducibleCommand", () => {
       pythonTaskQueue: "celery",
       pythonGraphql: "none",
       pythonQuality: "ruff",
+      pythonLogging: "loguru",
       pythonCloudSdk: "boto3",
       pythonHttpClient: "requests",
       pythonData: ["numpy", "pandas", "scipy"],
@@ -315,6 +318,7 @@ describe("generateReproducibleCommand", () => {
         "--python-caching none " +
         "--python-realtime none " +
         "--python-observability none " +
+        "--python-logging loguru " +
         "--python-cli none " +
         "--python-cloud-sdk boto3 " +
         "--python-http-client requests " +

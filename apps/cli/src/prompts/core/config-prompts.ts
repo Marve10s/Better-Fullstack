@@ -114,6 +114,7 @@ import type {
   PythonCaching,
   PythonRealtime,
   PythonObservability,
+  PythonLogging,
   PythonCli,
   PythonCloudSdk,
   PythonData,
@@ -284,6 +285,7 @@ import {
   getPythonCachingChoice,
   getPythonRealtimeChoice,
   getPythonObservabilityChoice,
+  getPythonLoggingChoice,
   getPythonCliChoice,
   getPythonCloudSdkChoice,
   getPythonDataChoice,
@@ -426,6 +428,7 @@ type PromptGroupResults = {
   pythonCaching: PythonCaching;
   pythonRealtime: PythonRealtime;
   pythonObservability: PythonObservability;
+  pythonLogging: PythonLogging;
   pythonCli: PythonCli[];
   pythonCloudSdk: PythonCloudSdk;
   pythonHttpClient: PythonHttpClient;
@@ -610,6 +613,7 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   pythonCaching: true,
   pythonRealtime: true,
   pythonObservability: true,
+  pythonLogging: true,
   pythonCli: true,
   pythonCloudSdk: true,
   pythonHttpClient: true,
@@ -1423,6 +1427,10 @@ export async function gatherConfig(
       }
       return getPythonObservabilityChoice(flags.pythonObservability);
     },
+    pythonLogging: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonLogging);
+      return getPythonLoggingChoice(flags.pythonLogging, results.pythonWebFramework);
+    },
     pythonCli: ({ results }) => {
       if (results.ecosystem !== "python") return Promise.resolve([] as PythonCli[]);
       return getPythonCliChoice(flags.pythonCli);
@@ -1896,6 +1904,7 @@ export async function gatherConfig(
     pythonCaching: result.pythonCaching,
     pythonRealtime: result.pythonRealtime,
     pythonObservability: result.pythonObservability,
+    pythonLogging: result.pythonLogging,
     pythonCli: result.pythonCli,
     pythonCloudSdk: result.pythonCloudSdk,
     pythonHttpClient: result.pythonHttpClient,

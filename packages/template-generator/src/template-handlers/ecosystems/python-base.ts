@@ -19,6 +19,7 @@ export async function processPythonBaseTemplate(
     // Graph-derived and legacy configs may omit this recently introduced field.
     // Python projects still use uv by default, matching CLI commands and docs.
     pythonPackageManager: config.pythonPackageManager ?? "uv",
+    pythonLogging: config.pythonLogging ?? "none",
   };
 
   for (const [templatePath, content] of templates) {

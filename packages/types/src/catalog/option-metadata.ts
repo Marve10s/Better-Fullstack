@@ -115,6 +115,7 @@ import {
   PYTHON_CACHING_VALUES,
   PYTHON_REALTIME_VALUES,
   PYTHON_OBSERVABILITY_VALUES,
+  PYTHON_LOGGING_VALUES,
   PYTHON_CLI_VALUES,
   PYTHON_CLOUD_SDK_VALUES,
   PYTHON_DATA_VALUES,
@@ -279,6 +280,7 @@ export type OptionCategory =
   | "pythonCaching"
   | "pythonRealtime"
   | "pythonObservability"
+  | "pythonLogging"
   | "pythonCli"
   | "pythonCloudSdk"
   | "pythonHttpClient"
@@ -513,6 +515,7 @@ export const PYTHON_CATEGORY_ORDER = [
   "pythonCaching",
   "pythonRealtime",
   "pythonObservability",
+  "pythonLogging",
   "pythonCli",
   "pythonCloudSdk",
   "pythonHttpClient",
@@ -740,6 +743,7 @@ export function getCategoryDisplayName(categoryKey: string): string {
     pythonCaching: "Python Caching",
     pythonRealtime: "Python Realtime",
     pythonObservability: "Python Observability",
+    pythonLogging: "Python Logging",
     pythonCli: "Python CLI Tooling",
     pythonCloudSdk: "Python Cloud SDK",
     pythonHttpClient: "Python HTTP Client",
@@ -1079,6 +1083,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   pythonCaching: PYTHON_CACHING_VALUES,
   pythonRealtime: PYTHON_REALTIME_VALUES,
   pythonObservability: PYTHON_OBSERVABILITY_VALUES,
+  pythonLogging: PYTHON_LOGGING_VALUES,
   pythonCli: PYTHON_CLI_VALUES,
   pythonCloudSdk: PYTHON_CLOUD_SDK_VALUES,
   pythonHttpClient: PYTHON_HTTP_CLIENT_VALUES,
@@ -1739,6 +1744,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     signoz: "SigNoz",
     "prometheus-client": "Prometheus Client",
   },
+  pythonLogging: {
+    loguru: "Loguru",
+    structlog: "structlog",
+  },
   pythonCli: {
     typer: "Typer",
     click: "Click",
@@ -2316,6 +2325,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   pythonCaching: buildCategoryMetadata("pythonCaching"),
   pythonRealtime: buildCategoryMetadata("pythonRealtime"),
   pythonObservability: buildCategoryMetadata("pythonObservability"),
+  pythonLogging: buildCategoryMetadata("pythonLogging"),
   pythonCli: buildCategoryMetadata("pythonCli"),
   pythonCloudSdk: buildCategoryMetadata("pythonCloudSdk"),
   pythonHttpClient: buildCategoryMetadata("pythonHttpClient"),

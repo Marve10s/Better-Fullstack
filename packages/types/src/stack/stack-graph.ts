@@ -122,6 +122,7 @@ import {
   PYTHON_CACHING_VALUES,
   PYTHON_REALTIME_VALUES,
   PYTHON_OBSERVABILITY_VALUES,
+  PYTHON_LOGGING_VALUES,
   PYTHON_CLI_VALUES,
   PYTHON_CLOUD_SDK_VALUES,
   PYTHON_DATA_VALUES,
@@ -735,6 +736,7 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
     caching: "pythonCaching",
     realtime: "pythonRealtime",
     observability: "pythonObservability",
+    logging: "pythonLogging",
     cloudSdk: "pythonCloudSdk",
     httpClient: "pythonHttpClient",
     media: "pythonMedia",
@@ -1123,6 +1125,7 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(["meilisearch"], "search", "python", "search"),
   ...defineTools(PYTHON_REALTIME_VALUES, "realtime", "python", "pythonRealtime"),
   ...defineTools(PYTHON_OBSERVABILITY_VALUES, "observability", "python", "pythonObservability"),
+  ...defineTools(PYTHON_LOGGING_VALUES, "logging", "python", "pythonLogging"),
   ...defineTools(PYTHON_CLI_VALUES, "cli", "python", "pythonCli", {
     allowMultiple: true,
   }),
@@ -2714,6 +2717,16 @@ function createJavaCompatibilityIssue(
   return undefined;
 }
 
+export function getPythonLoggingIncompatibility(
+  pythonLogging: string | undefined,
+  pythonWebFramework: string | undefined,
+): string | null {
+  if (!pythonLogging || pythonLogging === "none") return null;
+  return pythonWebFramework === "streamlit"
+    ? "Streamlit configures its own server logging and has no request middleware, so Python logging is not wired for it"
+    : null;
+}
+
 function getStackPartCompatibilityIssue(
   part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem"> &
     Partial<Pick<StackPart, "source">>,
@@ -2780,6 +2793,19 @@ function getStackPartCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: "Go migrations require SQLite, PostgreSQL, or MySQL",
+      });
+    }
+  }
+
+  if (part.ecosystem === "python" && part.role === "logging") {
+    const reason = getPythonLoggingIncompatibility(part.toolId, context.ownerToolId);
+    if (reason) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: reason,
       });
     }
   }

@@ -1659,6 +1659,18 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "multiple": false
       },
       {
+        "flag": "--python-logging",
+        "summary": "Python logging.",
+        "values": [
+          "loguru",
+          "structlog",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
         "flag": "--python-cli",
         "summary": "Python CLI tooling.",
         "values": [

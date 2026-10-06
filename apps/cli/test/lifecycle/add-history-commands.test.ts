@@ -909,6 +909,7 @@ describe("CLI history command", () => {
         "--python-caching none " +
         "--python-realtime none " +
         "--python-observability none " +
+        "--python-logging none " +
         "--python-cli none " +
         "--python-cloud-sdk none " +
         "--python-http-client none " +
@@ -962,6 +963,8 @@ describe("CLI history command", () => {
           "--python-realtime",
           "none",
           "--python-observability",
+          "none",
+          "--python-logging",
           "none",
           "--python-cli",
           "none",

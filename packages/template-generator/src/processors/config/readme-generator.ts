@@ -1701,6 +1701,7 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     pythonPackageManager: configuredPythonPackageManager,
     pythonMessageQueue,
     pythonObservability,
+    pythonLogging,
   } = config;
 
   // Graph-derived and legacy configs may omit this recently introduced field.
@@ -1716,6 +1717,15 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
         ? "uv run "
         : venvBin;
   const runCommand = (command: string) => `${runPrefix}${command}`;
+  const hasPythonLogging = pythonLogging === "loguru" || pythonLogging === "structlog";
+  // `python -m app.main` sets up logging before the dev server starts, so the reload
+  // process and Flask's request handler go through it as well.
+  const fastapiDevCommand = hasPythonLogging
+    ? "python -m app.main"
+    : "uvicorn app.main:app --reload --host 0.0.0.0 --port 8000";
+  const flaskDevCommand = hasPythonLogging
+    ? "python -m app.main"
+    : "flask --app app.main run --reload --port 8000";
   const installCommand =
     pythonPackageManager === "poetry"
       ? "poetry install --extras dev"
@@ -1822,6 +1832,13 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
     features.push("- **SigNoz** - OpenTelemetry tracing with SigNoz-ready OTLP configuration");
   } else if (pythonObservability === "opentelemetry") {
     features.push("- **OpenTelemetry** - OTLP tracing and exporter configuration");
+  }
+  if (pythonLogging === "loguru") {
+    features.push("- **Loguru** - Request-aware logging with JSON output in production");
+  } else if (pythonLogging === "structlog") {
+    features.push(
+      "- **structlog** - Structured request-aware logging with JSON output in production",
+    );
   }
   if (pythonTesting.includes("pytest-cov")) {
     features.push("- **pytest-cov** - Coverage reports for the generated test suite");
@@ -1971,6 +1988,9 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   } else if (pythonObservability === "signoz" || pythonObservability === "opentelemetry") {
     structure.push("│       ├── otel.py       # OpenTelemetry tracing helpers");
   }
+  if (hasPythonLogging) {
+    structure.push("│       ├── logging_config.py # Logging setup and request logging");
+  }
 
   structure.push("├── tests/");
   structure.push("│   ├── __init__.py");
@@ -1987,11 +2007,11 @@ function generatePythonReadmeContent(config: ProjectConfig): string {
   let scripts = `- \`${runCommand("python -m app.main")}\`: Run the application`;
 
   if (pythonWebFramework === "fastapi") {
-    scripts = `- \`${runCommand("uvicorn app.main:app --reload --host 0.0.0.0 --port 8000")}\`: Start FastAPI dev server`;
+    scripts = `- \`${runCommand(fastapiDevCommand)}\`: Start FastAPI dev server`;
   } else if (pythonWebFramework === "django") {
     scripts = `- \`${runCommand("python -m app.main")}\`: Start Django dev server`;
   } else if (pythonWebFramework === "flask") {
-    scripts = `- \`${runCommand("flask --app app.main run --reload --port 8000")}\`: Start Flask dev server`;
+    scripts = `- \`${runCommand(flaskDevCommand)}\`: Start Flask dev server`;
   } else if (pythonWebFramework === "litestar") {
     scripts = `- \`${runCommand("litestar --app src.app.main:app run --reload --port 8000")}\`: Start Litestar dev server`;
   } else if (pythonWebFramework === "streamlit") {
@@ -2078,7 +2098,7 @@ ${
     ? `Start the FastAPI development server:
 
 \`\`\`bash
-${runCommand("uvicorn app.main:app --reload")}
+${runCommand(hasPythonLogging ? fastapiDevCommand : "uvicorn app.main:app --reload")}
 \`\`\`
 
 The API will be running at [http://localhost:8000](http://localhost:8000).
@@ -2096,7 +2116,7 @@ The application will be running at [http://localhost:8000](http://localhost:8000
         ? `Start the Flask development server:
 
 \`\`\`bash
-${runCommand("flask --app app.main run --reload --port 8000")}
+${runCommand(flaskDevCommand)}
 \`\`\`
 
 The API will be running at [http://localhost:8000](http://localhost:8000).
@@ -2126,7 +2146,7 @@ ${runCommand("python -m app.main")}
 \`\`\`
 `
 }
-## Project Structure
+${hasPythonLogging ? getPythonLoggingReadmeSection(config, runCommand) : ""}## Project Structure
 
 \`\`\`
 ${structure.join("\n")}
@@ -2135,6 +2155,41 @@ ${structure.join("\n")}
 ## Available Commands
 
 ${scripts}
+`;
+}
+
+function getPythonLoggingReadmeSection(
+  { pythonLogging, pythonWebFramework }: ProjectConfig,
+  runCommand: (command: string) => string,
+): string {
+  const library = pythonLogging === "loguru" ? "Loguru" : "structlog";
+  // Lines printed outside the logging setup keep their own format; say so instead
+  // of implying that every line goes through it.
+  const unformatted: Partial<Record<ProjectConfig["pythonWebFramework"], string>> = {
+    fastapi: `\`${runCommand("uvicorn app.main:app --reload")}\` also works, but its reload process prints its own startup lines in Uvicorn's format before it imports the app.`,
+    flask:
+      "Flask prints its `* Serving Flask app` and `* Debug mode` banner directly. `flask run` adds Werkzeug's own line for every request, so use the command above to log each request once.",
+    litestar:
+      "With `--reload`, the reload process prints its own startup lines in Uvicorn's format before it imports the app.",
+    django: "The development server prints its startup banner directly.",
+    aiohttp: "aiohttp prints its `Running on` banner directly.",
+  };
+  const requests =
+    pythonWebFramework === "none"
+      ? ""
+      : "Each request is logged once with its method, path, status, and duration. Every line written while handling it carries a request id, taken from the `X-Request-ID` header when present, and the response returns the id in `X-Request-ID`.\n\n";
+  const limit = unformatted[pythonWebFramework];
+
+  return `## Logging
+
+\`src/app/logging_config.py\` sends app, framework, and server logs through ${library}. Set these in \`.env\`:
+
+- \`LOG_LEVEL\`: level for every logger, including the framework and server
+- \`LOG_FORMAT\`: \`auto\`, \`json\`, or \`console\`; \`auto\` writes JSON when \`APP_ENV=production\`
+- \`APP_ENV\`: \`development\` or \`production\`
+
+${requests}Tracebacks never include the values of local variables.
+${limit ? `\n${limit}\n` : ""}
 `;
 }
 

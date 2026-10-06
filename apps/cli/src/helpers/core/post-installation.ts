@@ -1502,6 +1502,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
     pythonQuality,
     pythonPackageManager,
     pythonObservability,
+    pythonLogging,
   } = config;
 
   const cdCmd = `cd ${relativePath}`;
@@ -1624,6 +1625,10 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
 
   if (pythonObservability && pythonObservability !== "none") {
     output += `${pc.cyan("•")} Observability: ${pythonObservability === "signoz" ? "SigNoz" : pythonObservability}\n`;
+  }
+
+  if (pythonLogging && pythonLogging !== "none") {
+    output += `${pc.cyan("•")} Logging: ${pythonLogging === "loguru" ? "Loguru" : "structlog"} (set APP_ENV=production for JSON logs, LOG_LEVEL to change the level)\n`;
   }
 
   if (pythonObservability === "signoz") {

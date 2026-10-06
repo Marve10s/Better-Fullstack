@@ -44,6 +44,7 @@ import {
 } from "@/stack/stack-compatibility-rules";
 import {
   getAddonStackPartBinding,
+  getPythonLoggingIncompatibility,
   getStackPartCompatibilityIssueForPart,
   legacyProjectConfigToStackParts,
 } from "@/stack/stack-graph";
@@ -494,6 +495,7 @@ export type CompatibilityInput = {
   pythonCaching: string;
   pythonRealtime: string;
   pythonObservability: string;
+  pythonLogging: string;
   pythonCli: string[];
   pythonCloudSdk: string;
   pythonHttpClient: string;
@@ -2256,6 +2258,18 @@ export const analyzeStackCompatibility = (
         message: "Python observability set to 'None' (SigNoz request tracing is wired for FastAPI)",
       });
     }
+    const pythonLoggingIssue = getPythonLoggingIncompatibility(
+      nextStack.pythonLogging,
+      nextStack.pythonWebFramework,
+    );
+    if (pythonLoggingIssue) {
+      nextStack.pythonLogging = "none";
+      changed = true;
+      changes.push({
+        category: "pythonLogging",
+        message: `Python logging set to 'None' (${pythonLoggingIssue})`,
+      });
+    }
     if (nextStack.pythonWebFramework !== "django" && nextStack.pythonApi !== "none") {
       nextStack.pythonApi = "none";
       changed = true;
@@ -3199,6 +3213,13 @@ export const getDisabledReason = (
     )
   ) {
     return "SigNoz request tracing is currently wired for FastAPI";
+  }
+  if (category === "pythonLogging" || category === "pythonWebFramework") {
+    const reason = getPythonLoggingIncompatibility(
+      category === "pythonLogging" ? optionId : currentStack.pythonLogging,
+      category === "pythonWebFramework" ? optionId : currentStack.pythonWebFramework,
+    );
+    if (reason) return reason;
   }
   if (
     category === "integrations" &&
@@ -4983,6 +5004,14 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     currentEcosystem: "python",
     authoritative: true,
     candidateIdPrefix: "candidate:native",
+  },
+  pythonLogging: {
+    role: "logging",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
   },
   pythonCli: {
     role: "cli",

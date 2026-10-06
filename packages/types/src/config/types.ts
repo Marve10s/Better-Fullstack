@@ -98,6 +98,7 @@ import type {
   PythonCachingSchema,
   PythonRealtimeSchema,
   PythonObservabilitySchema,
+  PythonLoggingSchema,
   PythonCliSchema,
   PythonCloudSdkSchema,
   PythonHttpClientSchema,
@@ -271,6 +272,7 @@ export type PythonTesting = z.infer<typeof PythonTestingSchema>;
 export type PythonCaching = z.infer<typeof PythonCachingSchema>;
 export type PythonRealtime = z.infer<typeof PythonRealtimeSchema>;
 export type PythonObservability = z.infer<typeof PythonObservabilitySchema>;
+export type PythonLogging = z.infer<typeof PythonLoggingSchema>;
 export type PythonCli = z.infer<typeof PythonCliSchema>;
 export type PythonCloudSdk = z.infer<typeof PythonCloudSdkSchema>;
 export type PythonHttpClient = z.infer<typeof PythonHttpClientSchema>;

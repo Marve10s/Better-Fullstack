@@ -613,6 +613,7 @@ export async function createProjectHandler(
               pythonCaching: "none",
               pythonRealtime: "none",
               pythonObservability: "none",
+              pythonLogging: "none",
               pythonCli: [],
               pythonCloudSdk: "none",
               pythonHttpClient: "none",

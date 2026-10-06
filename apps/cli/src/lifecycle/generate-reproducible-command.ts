@@ -1102,6 +1102,7 @@ function getPythonFlags(config: ProjectConfig) {
   flags.push(`--python-caching ${config.pythonCaching}`);
   flags.push(`--python-realtime ${config.pythonRealtime}`);
   flags.push(`--python-observability ${config.pythonObservability}`);
+  flags.push(`--python-logging ${config.pythonLogging}`);
   flags.push(formatArrayFlag("python-cli", config.pythonCli));
   flags.push(`--python-cloud-sdk ${config.pythonCloudSdk}`);
   flags.push(`--python-http-client ${config.pythonHttpClient}`);

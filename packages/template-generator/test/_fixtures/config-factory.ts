@@ -90,6 +90,7 @@ const DEFAULT_CONFIG = {
   pythonCaching: "none",
   pythonRealtime: "none",
   pythonObservability: "none",
+  pythonLogging: "none",
   pythonCli: [],
   pythonCloudSdk: "none",
   pythonHttpClient: "none",
