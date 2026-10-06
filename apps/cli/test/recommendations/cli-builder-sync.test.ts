@@ -72,6 +72,13 @@ const NON_BUILDER_CREATE_OPTION_KEYS = new Set([
   "part",
 ]);
 
+// The builder adds the TanStack showcase only through the Future Stack and TanStack presets: the
+// shared builder rules do not yet limit it to the frontends the CLI requires. An empty examples
+// selection already means none.
+const CLI_VALUES_WITHOUT_BUILDER_OPTION: Partial<Record<OptionCategory, readonly string[]>> = {
+  examples: ["tanstack-showcase", "none"],
+};
+
 const createOptionKeys = Object.keys(CreateCommandOptionsSchema.shape);
 
 function getCreateOptionKey(category: keyof typeof TECH_OPTIONS) {
@@ -157,8 +164,9 @@ describe("CLI and Builder catalog parity", () => {
             (option) => getOptionMetadata(category, option.id)?.cliValue ?? option.id,
           ),
         );
+        const exempt = CLI_VALUES_WITHOUT_BUILDER_OPTION[category] ?? [];
         const missingBuilderValues = getCategoryCliValues(category).filter(
-          (value) => !builderCliValues.has(value),
+          (value) => !builderCliValues.has(value) && !exempt.includes(value),
         );
 
         expect(missingBuilderValues).toEqual([]);

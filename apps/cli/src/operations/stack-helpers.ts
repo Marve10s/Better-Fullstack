@@ -110,6 +110,12 @@ function getMcpSchemaOptionValues(key: string): string[] {
   ];
 }
 
+/** The category name `bfs_get_schema` accepts for a catalog category, or null when it has none. */
+export function getMcpSchemaCategory(category: OptionCategory): string | null {
+  const key = MCP_LEGACY_CATEGORY_KEYS[category]?.[0] ?? category;
+  return getMcpSchemaOptionValues(key).length > 0 ? key : null;
+}
+
 export function getMcpCategoryKeysForEcosystem(ecosystem: OptionCategoryEcosystem): string[] {
   const keys = getCategoryOrderForEcosystem(ecosystem).flatMap(
     (category) => MCP_LEGACY_CATEGORY_KEYS[category] ?? [category],

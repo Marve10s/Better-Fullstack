@@ -10,6 +10,7 @@
     "gen",
     "experimental",
     "telemetry",
-    "completion"
+    "completion",
+    "options"
   ]
 }
