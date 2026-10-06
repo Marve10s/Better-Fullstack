@@ -13,6 +13,7 @@ import {
   hasWebFrontend,
 } from "@/graph/graph-backend";
 import { getGraphProjectTasks } from "@/graph/graph-project";
+import { hasAiExampleEndpoint, hasAiRouteAuth } from "@/platform/ai-example";
 import { hasAuthJsCredentials } from "@/platform/auth-js";
 
 const JAVA_GROUP_ID = "com.example";
@@ -517,7 +518,9 @@ ${
   - \`CLERK_SECRET_KEY\`
 - Clerk middleware and a protected \`/dashboard\` route are already generated`
       : ""
-  }${backend === "self" && auth === "nextauth" ? generateAuthJsSetup(options, webPort) : ""}
+  }${backend === "self" && auth === "nextauth" ? generateAuthJsSetup(options, webPort) : ""}${
+    auth === "passport" ? generatePassportSetup() : ""
+  }
 
 Then, run the development server:
 
@@ -556,7 +559,7 @@ ${
   examples.includes("chat-sdk")
     ? `\n${generateChatSdkExampleSection(options, packageManagerRunCmd, webPort, ai)}\n`
     : ""
-}
+}${generateAIExampleSection(options)}
   ${
     addons.includes("pwa") && (frontend.includes("react-router") || frontend.includes("react-vite"))
       ? "\n## PWA Support with React Router v7\n\nThere is a known compatibility issue between VitePWA and React Router v7.\nSee: https://github.com/vite-pwa/vite-plugin-pwa/issues/809\n"
@@ -695,6 +698,22 @@ Use \`--model\` to override the default model for a single command:
 \`\`\`bash
 ${runPrefix} ai:text -- --model openai/gpt-5.5 "write a concise PR summary"
 \`\`\``;
+}
+
+function generateAIExampleSection(options: ProjectConfig): string {
+  if (!hasAiExampleEndpoint(options)) return "";
+
+  return hasAiRouteAuth(options.auth)
+    ? `
+## AI Chat Example
+
+The AI chat endpoint requires a signed-in user and rejects signed-out requests before calling the model provider.
+${options.auth === "passport" ? `\n${PASSPORT_SAME_SITE_NOTE}\n` : ""}`
+    : `
+## AI Chat Example
+
+The AI chat endpoint is unauthenticated, so anyone who can reach it spends your model provider quota; protect it before deploying.
+`;
 }
 
 function generateChatSdkExampleSection(
@@ -868,6 +887,16 @@ function generateAuthJsSetup(config: ProjectConfig, webPort: string): string {
 - OAuth: create GitHub or Google OAuth apps with the callback URL \`http://localhost:${webPort}/api/auth/callback/<provider>\`, then set \`AUTH_GITHUB_ID\`, \`AUTH_GITHUB_SECRET\`, \`AUTH_GOOGLE_ID\`, and \`AUTH_GOOGLE_SECRET\` in \`apps/web/.env\`.
 ${signInSetup}
 - \`apps/web/src/proxy.ts\` redirects signed-out page requests to \`/login\` and answers 401 for API routes that do not check auth themselves. Its \`publicApiRoutes\` list names the routes that do; API procedures read the session from \`packages/auth\`.`;
+}
+
+const PASSPORT_SAME_SITE_NOTE =
+  "The Passport session cookie is `SameSite=Lax`, so the browser sends it to the API only when the web app and the API are on the same site, such as `app.example.com` and `api.example.com` (`localhost` on different ports also counts). If they are on different sites, serve the API from the web app's domain or proxy it there; setting the cookie to `sameSite: \"none\"` with `secure: true` in `apps/server/src/index.ts` also works but lets every site send it.";
+
+function generatePassportSetup(): string {
+  return `
+## Passport Authentication Setup
+
+${PASSPORT_SAME_SITE_NOTE}`;
 }
 
 function generateRunningInstructions(

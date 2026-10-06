@@ -170,7 +170,7 @@ export const dependencyVersionMap = {
 
   // Nitro
   nitropack: "^2.13.4",
-  h3: "^2.0.0",
+  h3: "^1.15.11",
 
   // feTS
   fets: "^0.8.12",

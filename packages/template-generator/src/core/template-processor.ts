@@ -5,6 +5,7 @@ import { extname } from "pathe";
 
 import { BINARY_EXTENSIONS } from "@/core/binary-extensions";
 import { getCompiledTemplate } from "@/core/compiled-template-cache";
+import { hasAiRouteAuth } from "@/platform/ai-example";
 import { hasAuthJsCredentials } from "@/platform/auth-js";
 import { composeTheme, type BaseColorName, type AccentColorName } from "@/shadcn-themes";
 
@@ -33,6 +34,7 @@ Handlebars.registerHelper(
     auth === "clerk" ||
     auth === "nextauth",
 );
+Handlebars.registerHelper("hasAiRouteAuth", (auth) => hasAiRouteAuth(auth));
 Handlebars.registerHelper("hasAuthJsCredentials", (orm, database) =>
   hasAuthJsCredentials({ orm, database }),
 );

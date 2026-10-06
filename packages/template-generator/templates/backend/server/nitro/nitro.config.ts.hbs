@@ -13,6 +13,7 @@ export default defineNitroConfig({
 	preset: "cloudflare-module",
 {{/if}}
 	sourceMap: true,
+{{#unless (isBetterAuth auth)}}
 	// Route rules
 	routeRules: {
 		"/**": {
@@ -20,13 +21,9 @@ export default defineNitroConfig({
 			headers: {
 				"Access-Control-Allow-Origin": "*",
 				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-{{#if (isBetterAuth auth)}}
-				"Access-Control-Allow-Headers": "Content-Type, Authorization{{#if (eq botProtection "turnstile")}}, X-Turnstile-Token{{/if}}",
-				"Access-Control-Allow-Credentials": "true",
-{{else}}
 				"Access-Control-Allow-Headers": "Content-Type",
-{{/if}}
 			},
 		},
 	},
+{{/unless}}
 });

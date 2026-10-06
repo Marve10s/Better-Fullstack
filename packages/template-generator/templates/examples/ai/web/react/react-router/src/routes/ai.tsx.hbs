@@ -178,6 +178,9 @@ const AI: React.FC = () => {
     try {
       const response = await fetch(`${env.VITE_SERVER_URL}/ai`, {
         method: "POST",
+{{#if (and (hasAiRouteAuth auth) (ne backend "self"))}}
+        credentials: "include",
+{{/if}}
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [...messages, userMessage].map((m) => ({
@@ -187,6 +190,15 @@ const AI: React.FC = () => {
         }),
       });
 
+{{#if (hasAiRouteAuth auth)}}
+      if (response.status === 401) {
+        setMessages((prev) => [
+          ...prev,
+          { id: (Date.now() + 1).toString(), role: "assistant", content: "Sign in to use the AI chat." },
+        ]);
+        return;
+      }
+{{/if}}
       if (!response.ok) throw new Error("Failed to send message");
 
       const reader = response.body?.getReader();
@@ -352,6 +364,9 @@ const AI: React.FC = () => {
     try {
       const response = await fetch(`${env.VITE_SERVER_URL}/ai`, {
         method: "POST",
+{{#if (and (hasAiRouteAuth auth) (ne backend "self"))}}
+        credentials: "include",
+{{/if}}
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [...messages, userMessage].map((m) => ({
@@ -361,6 +376,15 @@ const AI: React.FC = () => {
         }),
       });
 
+{{#if (hasAiRouteAuth auth)}}
+      if (response.status === 401) {
+        setMessages((prev) => [
+          ...prev,
+          { id: (Date.now() + 1).toString(), role: "assistant", content: "Sign in to use the AI chat." },
+        ]);
+        return;
+      }
+{{/if}}
       if (!response.ok) throw new Error("Failed to send message");
 
       const reader = response.body?.getReader();
@@ -540,9 +564,21 @@ function MessageBubble({
 
 const AI: React.FC = () => {
   const [input, setInput] = useState("");
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status{{#if (hasAiRouteAuth auth)}}, error{{/if}} } = useChat({
     transport: new DefaultChatTransport({
       api: `${env.VITE_SERVER_URL}/ai`,
+{{#if (hasAiRouteAuth auth)}}
+{{#unless (eq backend "self")}}
+      credentials: "include",
+{{/unless}}
+      fetch: async (url, init) => {
+        const response = await fetch(url, init);
+        if (response.status === 401) {
+          throw new Error("Sign in to use the AI chat.");
+        }
+        return response;
+      },
+{{/if}}
     }),
   });
   const isBusy = status === "submitted" || status === "streaming";
@@ -577,6 +613,9 @@ const AI: React.FC = () => {
             />
           ))
         )}
+{{#if (hasAiRouteAuth auth)}}
+        {error && <p className="text-center text-sm text-destructive">{error.message}</p>}
+{{/if}}
         <div ref={messagesEndRef} />
       </div>
 

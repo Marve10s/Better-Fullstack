@@ -13,6 +13,16 @@ const chat = new Chat({
   messages,
   transport: new DefaultChatTransport({
     api: `${config.public.serverUrl}/ai`,
+{{#if (hasAiRouteAuth auth)}}
+    credentials: 'include',
+    fetch: async (url, init) => {
+      const response = await fetch(url, init)
+      if (response.status === 401) {
+        throw new Error('Sign in to use the AI chat.')
+      }
+      return response
+    },
+{{/if}}
   }),
   onError(error) {
     console.error('Chat error:', error)
@@ -41,6 +51,9 @@ async function handleSubmit(e: Event) {
     </div>
 
     <div class="shrink-0 pt-4 border-t border-gray-200 dark:border-gray-800">
+{{#if (hasAiRouteAuth auth)}}
+      <p v-if="chat.error" class="mb-2 text-sm text-error">\{{ chat.error.message }}</p>
+{{/if}}
       <UChatPrompt
         v-model="input"
         :error="chat.error"
