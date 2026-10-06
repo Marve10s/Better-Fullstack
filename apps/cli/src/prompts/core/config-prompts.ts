@@ -781,7 +781,12 @@ function getPromptResolutionValue(
       ecosystem: results.ecosystem,
     },
     realtime: { realtime: flags.realtime, backend: results.backend },
-    jobQueue: { jobQueue: flags.jobQueue, backend: results.backend },
+    jobQueue: {
+      jobQueue: flags.jobQueue,
+      backend: results.backend,
+      runtime: results.runtime,
+      database: results.database,
+    },
     fileUpload: { fileUpload: flags.fileUpload, backend: results.backend },
     logging: { logging: flags.logging, backend: results.backend },
     rateLimit: { rateLimit: flags.rateLimit, backend: results.backend },
@@ -1111,7 +1116,7 @@ export async function gatherConfig(
     },
     jobQueue: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as JobQueue);
-      return getJobQueueChoice(flags.jobQueue, results.backend);
+      return getJobQueueChoice(flags.jobQueue, results.backend, results.runtime, results.database);
     },
     fileUpload: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as FileUpload);

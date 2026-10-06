@@ -1,0 +1,23 @@
+import { boss, startBoss, WELCOME_EMAIL_QUEUE, type WelcomeEmailJob } from "./queue";
+
+/**
+ * Long-running worker process. Start it next to the server with `jobs:worker`.
+ */
+await startBoss();
+
+await boss.work<WelcomeEmailJob>(WELCOME_EMAIL_QUEUE, async (jobs) => {
+	for (const job of jobs) {
+		// Replace this log with your email provider call.
+		console.log(`[pg-boss] Sent welcome email to ${job.data.email} (job ${job.id})`);
+	}
+});
+
+console.log(`[pg-boss] Worker listening on "${WELCOME_EMAIL_QUEUE}"`);
+
+async function shutdown() {
+	await boss.stop();
+	process.exit(0);
+}
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);

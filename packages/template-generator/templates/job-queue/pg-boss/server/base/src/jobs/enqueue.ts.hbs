@@ -1,0 +1,6 @@
+import { boss, enqueueWelcomeEmail } from "./queue";
+
+const jobId = await enqueueWelcomeEmail({ userId: "user_123", email: "user@example.com" });
+console.log(`[pg-boss] Enqueued welcome email job ${jobId}`);
+
+await boss.stop();

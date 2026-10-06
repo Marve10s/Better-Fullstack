@@ -1295,6 +1295,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   jobQueue: {
     bullmq: "BullMQ",
     "trigger-dev": "Trigger.dev",
+    "pg-boss": "pg-boss",
+    "upstash-qstash": "Upstash QStash",
   },
   i18n: {
     paraglide: "Paraglide",

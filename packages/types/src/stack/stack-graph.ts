@@ -177,6 +177,7 @@ import {
   WEB_DEPLOY_VALUES,
 } from "@/config/schemas";
 import {
+  getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
   hasPWACompatibleFrontend,
@@ -1647,6 +1648,23 @@ function createTypeScriptBackendCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: "Nango's Node SDK is not available on Cloudflare Workers.",
+      });
+    }
+  }
+
+  if (part.role === "jobQueue" && part.ecosystem === "typescript") {
+    const reason = getJobQueueIncompatibility(part.toolId, {
+      backend: context.ownerToolId,
+      runtime: context.siblingToolIdsByRole?.runtime,
+      database: context.siblingToolIdsByRole?.database ?? context.primaryToolIdsByRole?.database,
+    });
+    if (reason) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `${reason}.`,
       });
     }
   }

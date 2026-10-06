@@ -82,6 +82,26 @@ function validateIntegrationsConstraints(config: Partial<ProjectConfig>) {
   if (reason) throw new Error(reason);
 }
 
+function validateJobQueueConstraints(config: Partial<ProjectConfig>) {
+  if (!config.jobQueue || config.jobQueue === "none") return;
+
+  const compatibilityConfig =
+    config.stackParts && hasSelectedTypeScriptBackendPart(config)
+      ? {
+          ...config,
+          ...stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript"),
+          ecosystem: "typescript" as const,
+        }
+      : config;
+  const reason = getDisabledReason(
+    buildCompatibilityInputFromConfig(compatibilityConfig),
+    "jobQueue",
+    config.jobQueue,
+  );
+
+  if (reason) throw new Error(reason);
+}
+
 const CONTAINER_ADDON_VALUES = ["docker-compose", "devcontainer", "kong"] as const;
 
 function validateContainerAddonConstraints(config: Partial<ProjectConfig>) {
@@ -1666,6 +1686,7 @@ export function validateFullConfig(
   validateScopedLibraryFlags(config);
   validateI18nConstraints(config);
   validateIntegrationsConstraints(config);
+  validateJobQueueConstraints(config);
 
   const hasGraphBackend = config.stackParts?.some(
     (part) =>
@@ -1818,6 +1839,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     }
 
     validateIntegrationsConstraints(config);
+    validateJobQueueConstraints(config);
     validateContainerAddonConstraints(config);
     validateEcosystemAuthCompatibility(config);
     validateDatabaseOrmAuth(config);

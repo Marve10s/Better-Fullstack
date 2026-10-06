@@ -1314,6 +1314,9 @@ describe("stack graph structural round-trip (phase 0)", () => {
     if (field === "cms" && (value === "payload" || value === "keystatic")) {
       config.frontend = ["next"];
     }
+    if (field === "jobQueue" && value === "pg-boss") {
+      config.database = "postgres";
+    }
     return config;
   }
 

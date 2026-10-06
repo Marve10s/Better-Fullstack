@@ -21,6 +21,9 @@ import { apiReference } from "@scalar/express-api-reference";
 import { executeApolloRequest } from "@{{projectName}}/api";
 {{/if}}
 import cors from "cors";
+{{#if (eq jobQueue "upstash-qstash")}}
+import { processWelcomeEmailJob, WELCOME_EMAIL_PATH } from "./jobs/qstash";
+{{/if}}
 import express{{#if (or (eq api "apollo-server") (and (eq api "openapi") (isBetterAuth auth)))}}, { type Request }{{/if}} from "express";
 {{#if (eq realtime "ws")}}
 import { createServer } from "node:http";
@@ -131,6 +134,17 @@ app.use(async (req, res, next) => {
 });
 {{/if}}
 
+{{#if (eq jobQueue "upstash-qstash")}}
+// QStash signs the raw body, so this route reads it as text before express.json().
+app.post(WELCOME_EMAIL_PATH, express.text({ type: "*/*" }), async (req, res) => {
+	const result = await processWelcomeEmailJob({
+		signature: req.header("upstash-signature"),
+		body: typeof req.body === "string" ? req.body : "",
+	});
+	res.status(result.status).json(result.body);
+});
+
+{{/if}}
 app.use(express.json());
 {{#if (eq api "apollo-server")}}
 function expressHeadersToWebHeaders(headers: Request["headers"]) {

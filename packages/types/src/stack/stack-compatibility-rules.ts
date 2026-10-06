@@ -1,4 +1,12 @@
-import type { Backend, CSSFramework, Frontend, Runtime, UILibrary, WebDeploy } from "@/config/types";
+import type {
+  Backend,
+  CSSFramework,
+  Frontend,
+  JobQueue,
+  Runtime,
+  UILibrary,
+  WebDeploy,
+} from "@/config/types";
 
 const WEB_FRAMEWORKS: readonly Frontend[] = [
   "tanstack-router",
@@ -305,6 +313,42 @@ export function isBackendUtilsCompatibleBackend(backend: string | undefined): bo
   return (
     backend !== undefined && (BACKEND_UTILS_COMPATIBLE_BACKENDS as readonly string[]).includes(backend)
   );
+}
+
+const GENERATED_JOB_QUEUE_BACKENDS = new Set(["hono", "express", "fastify", "elysia"]);
+
+const GENERATED_JOB_QUEUE_REQUIREMENTS: Partial<
+  Record<JobQueue, { label: string; workerProcess: boolean; postgres: boolean }>
+> = {
+  "pg-boss": { label: "pg-boss", workerProcess: true, postgres: true },
+  hatchet: { label: "Hatchet", workerProcess: true, postgres: false },
+  "upstash-qstash": { label: "Upstash QStash", workerProcess: false, postgres: false },
+};
+
+export function hasGeneratedJobQueueRequirements(jobQueue: string | undefined): boolean {
+  return GENERATED_JOB_QUEUE_REQUIREMENTS[jobQueue as JobQueue] !== undefined;
+}
+
+/**
+ * Shared reason for job queues whose generated worker or receiver only exists for some stacks.
+ * Legacy compatibility, graph validation, CLI validation, and the builder all report this text.
+ */
+export function getJobQueueIncompatibility(
+  jobQueue: string | undefined,
+  stack: { backend?: string; runtime?: string; database?: string },
+): string | null {
+  const requirements = GENERATED_JOB_QUEUE_REQUIREMENTS[jobQueue as JobQueue];
+  if (!requirements) return null;
+  if (!stack.backend || !GENERATED_JOB_QUEUE_BACKENDS.has(stack.backend)) {
+    return `${requirements.label} is generated for Hono, Express, Fastify, and Elysia backends`;
+  }
+  if (requirements.workerProcess && stack.runtime === "workers") {
+    return `${requirements.label} needs a long-running Node.js or Bun worker process, not Cloudflare Workers`;
+  }
+  if (requirements.postgres && stack.database !== "postgres") {
+    return `${requirements.label} requires PostgreSQL`;
+  }
+  return null;
 }
 
 export function isExampleAIAllowed(backend?: Backend, frontends: Frontend[] = []) {

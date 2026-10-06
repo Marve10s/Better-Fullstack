@@ -573,6 +573,9 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "trigger-dev",
           "inngest",
           "temporal",
+          "pg-boss",
+          "upstash-qstash",
+          "hatchet",
           "none"
         ],
         "valueHint": null,

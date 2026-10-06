@@ -549,6 +549,7 @@ The analytics component is already mounted and requires no environment variables
 `
     : ""
 }
+${generateJobQueueSection(options, packageManagerRunCmd)}
 ${ai === "ai-cli" ? `\n${generateAICLISection(packageManagerRunCmd, packageManager)}\n` : ""}
 ${
   examples.includes("chat-sdk")
@@ -573,6 +574,60 @@ ${generateProjectStructure(projectName, frontend, backend, addons, isConvex, api
 
 ${generateScriptsList(packageManagerRunCmd, database, orm, hasWeb, hasNative, addons, backend, dbSetup)}
 `;
+}
+
+function generateJobQueueSection(options: ProjectConfig, packageManagerRunCmd: string): string {
+  const run = (script: string) => `cd apps/server && ${packageManagerRunCmd} ${script}`;
+
+  if (options.jobQueue === "pg-boss") {
+    return `
+## Background jobs (pg-boss)
+
+Jobs are stored in your PostgreSQL database through \`DATABASE_URL\`; pg-boss creates its own \`pgboss\` schema on first start. The example \`welcome-email\` queue lives in \`apps/server/src/jobs/queue.ts\`, and \`enqueueWelcomeEmail()\` is the producer to call from your routes.
+
+Run the worker as a separate long-running process next to the server, then enqueue a test job:
+
+\`\`\`bash
+${run("jobs:worker")}
+${run("jobs:enqueue")}
+\`\`\`
+`;
+  }
+
+  if (options.jobQueue === "hatchet") {
+    return `
+## Background jobs (Hatchet)
+
+Create a Hatchet Cloud tenant or run Hatchet yourself, then set \`HATCHET_CLIENT_TOKEN\` in \`apps/server/.env\`. For a local Hatchet engine without TLS, also set \`HATCHET_CLIENT_TLS_STRATEGY=none\`. The example \`welcome-email\` task lives in \`apps/server/src/jobs/hatchet.ts\`, and \`enqueueWelcomeEmail()\` is the producer to call from your routes.
+
+Run the worker as a separate long-running process next to the server, then enqueue a test run:
+
+\`\`\`bash
+${run("jobs:worker")}
+${run("jobs:enqueue")}
+\`\`\`
+`;
+  }
+
+  if (options.jobQueue === "upstash-qstash") {
+    return `
+## Background jobs (Upstash QStash)
+
+QStash delivers each job as a signed HTTP request to \`POST /api/jobs/welcome-email\` on the server, which verifies the signature before running the job. Set \`QSTASH_TOKEN\`, \`QSTASH_CURRENT_SIGNING_KEY\`, and \`QSTASH_NEXT_SIGNING_KEY\` from the [Upstash console](https://console.upstash.com/qstash), and set \`QSTASH_WEBHOOK_URL\` to the public URL of that route. QStash cannot reach \`localhost\`, so use a tunnel in development or the local QStash dev server (\`npx @upstash/qstash-cli dev\`) with \`QSTASH_URL=http://127.0.0.1:8080\` and the keys it prints.
+
+\`publishWelcomeEmail()\` in \`apps/server/src/jobs/qstash.ts\` is the producer to call from your routes.${
+      options.runtime === "workers"
+        ? ""
+        : ` With the server running, publish a test job:
+
+\`\`\`bash
+${run("jobs:enqueue")}
+\`\`\``
+    }
+`;
+  }
+
+  return "";
 }
 
 function generateAICLISection(

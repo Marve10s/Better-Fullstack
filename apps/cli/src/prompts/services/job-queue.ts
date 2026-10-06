@@ -1,8 +1,14 @@
-import type { Backend, JobQueue } from "@/types";
+import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 
 import { exitCancelled } from "@/presentation/errors";
-import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
+import {
+  getJobQueueIncompatibility,
+  type Backend,
+  type Database,
+  type JobQueue,
+  type Runtime,
+} from "@/types";
 
 const JOB_QUEUE_PROMPT_OPTIONS = [
   {
@@ -26,6 +32,21 @@ const JOB_QUEUE_PROMPT_OPTIONS = [
     hint: "Durable workflow orchestration for reliable distributed systems",
   },
   {
+    value: "pg-boss" as const,
+    label: "pg-boss",
+    hint: "PostgreSQL-backed job queue with a long-running worker",
+  },
+  {
+    value: "upstash-qstash" as const,
+    label: "Upstash QStash",
+    hint: "Serverless HTTP job delivery with signed requests",
+  },
+  {
+    value: "hatchet" as const,
+    label: "Hatchet",
+    hint: "Durable task orchestration with a hosted or self-hosted engine",
+  },
+  {
     value: "none" as const,
     label: "None",
     hint: "Skip job queue/background worker setup",
@@ -35,6 +56,8 @@ const JOB_QUEUE_PROMPT_OPTIONS = [
 type JobQueuePromptContext = {
   jobQueue?: JobQueue;
   backend?: Backend;
+  runtime?: Runtime;
+  database?: Database;
 };
 
 export function resolveJobQueuePrompt(
@@ -49,23 +72,32 @@ export function resolveJobQueuePrompt(
     };
   }
 
+  const options = JOB_QUEUE_PROMPT_OPTIONS.filter(
+    (option) => !getJobQueueIncompatibility(option.value, context),
+  );
+
   return context.jobQueue !== undefined
     ? {
         shouldPrompt: false,
         mode: "single",
-        options: JOB_QUEUE_PROMPT_OPTIONS,
+        options,
         autoValue: context.jobQueue,
       }
     : {
         shouldPrompt: true,
         mode: "single",
-        options: JOB_QUEUE_PROMPT_OPTIONS,
+        options,
         initialValue: "none",
       };
 }
 
-export async function getJobQueueChoice(jobQueue?: JobQueue, backend?: Backend) {
-  const resolution = resolveJobQueuePrompt({ jobQueue, backend });
+export async function getJobQueueChoice(
+  jobQueue?: JobQueue,
+  backend?: Backend,
+  runtime?: Runtime,
+  database?: Database,
+) {
+  const resolution = resolveJobQueuePrompt({ jobQueue, backend, runtime, database });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

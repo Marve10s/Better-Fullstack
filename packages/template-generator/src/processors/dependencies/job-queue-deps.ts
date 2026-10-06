@@ -4,6 +4,11 @@ import type { VirtualFileSystem } from "@/core/virtual-fs";
 
 import { addPackageDependency, type AvailableDependencies } from "@/dependencies/add-deps";
 
+type PackageJson = {
+  scripts?: Record<string, string>;
+  [key: string]: unknown;
+};
+
 export function processJobQueueDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
   const { jobQueue, backend } = config;
 
@@ -24,6 +29,7 @@ export function processJobQueueDeps(vfs: VirtualFileSystem, config: ProjectConfi
         dependencies: deps,
       });
     }
+    addJobQueueScripts(vfs, serverPath, config);
   }
 }
 
@@ -46,7 +52,38 @@ function getJobQueueDeps(jobQueue: ProjectConfig["jobQueue"]): AvailableDependen
       deps.push("@temporalio/workflow");
       deps.push("@temporalio/activity");
       break;
+    case "pg-boss":
+      deps.push("pg-boss");
+      break;
+    case "upstash-qstash":
+      deps.push("@upstash/qstash");
+      break;
+    case "hatchet":
+      // zod is a required peer of the Hatchet SDK.
+      deps.push("@hatchet-dev/typescript-sdk", "zod");
+      break;
   }
 
   return deps;
+}
+
+function addJobQueueScripts(vfs: VirtualFileSystem, serverPath: string, config: ProjectConfig) {
+  const runner =
+    config.runtime === "bun" ? "bun run" : config.runtime === "node" ? "tsx" : undefined;
+  if (!runner) return;
+
+  const scripts: Record<string, string> = {};
+  if (config.jobQueue === "pg-boss" || config.jobQueue === "hatchet") {
+    scripts["jobs:worker"] = `${runner} src/jobs/worker.ts`;
+    scripts["jobs:enqueue"] = `${runner} src/jobs/enqueue.ts`;
+  } else if (config.jobQueue === "upstash-qstash") {
+    scripts["jobs:enqueue"] = `${runner} src/jobs/enqueue.ts`;
+  } else {
+    return;
+  }
+
+  const pkgJson = vfs.readJson<PackageJson>(serverPath);
+  if (!pkgJson) return;
+  pkgJson.scripts = { ...pkgJson.scripts, ...scripts };
+  vfs.writeJson(serverPath, pkgJson);
 }

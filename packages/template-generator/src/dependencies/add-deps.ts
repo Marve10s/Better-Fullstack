@@ -616,6 +616,9 @@ export const dependencyVersionMap = {
   "@temporalio/worker": "^1.24.0",
   "@temporalio/workflow": "^1.24.0",
   "@temporalio/activity": "^1.24.0",
+  "pg-boss": "^12.37.0",
+  "@upstash/qstash": "^2.12.0",
+  "@hatchet-dev/typescript-sdk": "^1.35.1",
 
   // Testing - Jest
   jest: "^30.5.2",

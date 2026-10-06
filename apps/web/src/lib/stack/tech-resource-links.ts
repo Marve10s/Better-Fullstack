@@ -1227,6 +1227,18 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.temporal.io/",
     githubUrl: "https://github.com/temporalio/sdk-typescript",
   },
+  "pg-boss": {
+    docsUrl: "https://pgboss.io/",
+    githubUrl: "https://github.com/timgit/pg-boss",
+  },
+  "upstash-qstash": {
+    docsUrl: "https://upstash.com/docs/qstash",
+    githubUrl: "https://github.com/upstash/qstash-js",
+  },
+  hatchet: {
+    docsUrl: "https://docs.hatchet.run/",
+    githubUrl: "https://github.com/hatchet-dev/hatchet",
+  },
   "upstash-redis": {
     docsUrl: "https://upstash.com/docs/redis",
     githubUrl: "https://github.com/upstash/redis-js",

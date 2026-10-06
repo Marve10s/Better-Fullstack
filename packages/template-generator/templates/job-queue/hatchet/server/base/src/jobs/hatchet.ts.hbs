@@ -1,0 +1,32 @@
+import { env } from "@{{projectName}}/env/server";
+import { HatchetClient } from "@hatchet-dev/typescript-sdk/v1";
+
+/**
+ * Hatchet client. The token from Hatchet Cloud or a self-hosted Hatchet
+ * instance encodes the engine address.
+ * @see https://docs.hatchet.run
+ */
+export const hatchet = HatchetClient.init({ token: env.HATCHET_CLIENT_TOKEN });
+
+export type WelcomeEmailInput = {
+	userId: string;
+	email: string;
+};
+
+export const welcomeEmail = hatchet.task({
+	name: "welcome-email",
+	retries: 3,
+	fn: async (input: WelcomeEmailInput) => {
+		// Replace this log with your email provider call.
+		console.log(`[hatchet] Sent welcome email to ${input.email}`);
+		return { delivered: true, userId: input.userId };
+	},
+});
+
+/**
+ * Producer: call this from a route or service to enqueue the example task.
+ */
+export async function enqueueWelcomeEmail(input: WelcomeEmailInput) {
+	const run = await welcomeEmail.runNoWait(input);
+	return run.getWorkflowRunId();
+}

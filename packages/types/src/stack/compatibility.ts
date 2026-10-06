@@ -34,6 +34,7 @@ import {
 } from "@/catalog/option-metadata";
 import { ANALYTICS_VALUES } from "@/config/schemas";
 import {
+  getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
   hasPWACompatibleFrontend,
   hasTanStackAICompatibleFrontend,
@@ -49,6 +50,8 @@ import {
 
 export {
   BACKEND_UTILS_COMPATIBLE_BACKENDS,
+  getJobQueueIncompatibility,
+  hasGeneratedJobQueueRequirements,
   getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
   hasPWACompatibleFrontend,
@@ -2714,6 +2717,19 @@ export const analyzeStackCompatibility = (
     });
   }
 
+  const jobQueueIssue =
+    nextStack.ecosystem === "typescript"
+      ? getJobQueueIncompatibility(nextStack.jobQueue, nextStack)
+      : null;
+  if (jobQueueIssue) {
+    nextStack.jobQueue = "none";
+    changed = true;
+    changes.push({
+      category: "jobQueue",
+      message: `Job queue set to 'None' (${jobQueueIssue})`,
+    });
+  }
+
   // Workspace shape: single-app (flat) only applies to a qualifying thin self
   // app; normalize back to monorepo for anything else so we never emit a broken
   // flat layout.
@@ -3749,6 +3765,11 @@ export const getDisabledReason = (
     if (currentStack.runtime === "workers" || usesCloudflareFullstackRuntime(currentStack)) {
       return "Nango's Node SDK is not available on Cloudflare Workers";
     }
+  }
+
+  if (category === "jobQueue" && currentStack.ecosystem === "typescript") {
+    const reason = getJobQueueIncompatibility(optionId, currentStack);
+    if (reason) return reason;
   }
 
   // ============================================

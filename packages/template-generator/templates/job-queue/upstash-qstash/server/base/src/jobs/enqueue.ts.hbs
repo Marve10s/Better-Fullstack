@@ -1,0 +1,6 @@
+{{#if (ne runtime "workers")}}
+import { publishWelcomeEmail } from "./qstash";
+
+const messageId = await publishWelcomeEmail({ userId: "user_123", email: "user@example.com" });
+console.log(`[qstash] Published welcome email message ${messageId}`);
+{{/if}}

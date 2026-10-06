@@ -19,7 +19,7 @@ export {
   recovery,
 } from "@/run";
 
-import type { ProjectConfig } from "@/types";
+import { hasGeneratedJobQueueRequirements, type ProjectConfig } from "@/types";
 
 import { applyEffectBackendDefaults } from "@/config/config-processing";
 
@@ -262,7 +262,12 @@ export async function createVirtual(
       (config.addons ?? []).some(
         (addon) => addon === "docker-compose" || addon === "devcontainer" || addon === "kong",
       );
-    if (config.integrations === "nango" || config.payments !== "none" || hasLegacyContainerAddon) {
+    if (
+      config.integrations === "nango" ||
+      config.payments !== "none" ||
+      hasGeneratedJobQueueRequirements(config.jobQueue) ||
+      hasLegacyContainerAddon
+    ) {
       const [{ validateConfigForProgrammaticUse }, { runWithContextAsync }] = await Promise.all([
         import("@/config/config-validation"),
         import("@/presentation/context"),

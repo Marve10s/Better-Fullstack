@@ -16,6 +16,7 @@ import {
   formatStackPartSpec,
   getCategoryOrderForEcosystem,
   getCodeQualitySelectionIssue,
+  getJobQueueIncompatibility,
   getReplacedCodeQualityTools,
   getToolingCapability,
   getToolingCategory,
@@ -423,16 +424,24 @@ function getMcpProjectConfigDefaults(input: Record<string, unknown>) {
 
 export function validateMcpProjectConfigCompatibility(
   config: Pick<ProjectConfig, "ecosystem" | "integrations"> &
-    Partial<Pick<ProjectConfig, "backend" | "runtime" | "webDeploy" | "stackParts" | "addons">>,
+    Partial<
+      Pick<
+        ProjectConfig,
+        "backend" | "runtime" | "database" | "jobQueue" | "webDeploy" | "stackParts" | "addons"
+      >
+    >,
 ): void {
   const qualityIssue = getCodeQualitySelectionIssue(config.addons ?? []);
   if (qualityIssue) throw new Error(qualityIssue);
   if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
     const qualityIssues = validateStackParts(config.stackParts).issues.filter(
-      (issue) => issue.role === "codeQuality",
+      (issue) => issue.role === "codeQuality" || issue.role === "jobQueue",
     );
     if (qualityIssues.length)
       throw new Error(qualityIssues.map((issue) => issue.message).join("\n"));
+  } else if (config.ecosystem === "typescript") {
+    const jobQueueIssue = getJobQueueIncompatibility(config.jobQueue, config);
+    if (jobQueueIssue) throw new Error(jobQueueIssue);
   }
   if (config.integrations !== "nango") return;
 
