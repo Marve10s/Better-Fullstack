@@ -26,7 +26,7 @@ keywords:
 
 Better Auth, Clerk, and Auth.js can all sign users into a Next.js application. They differ on a question that is expensive to reverse: who stores the user records, and who runs the code that issues sessions.
 
-Better Auth and Auth.js are libraries that run inside your application and write to your database. Clerk is a hosted user management service that your application calls. Start from that difference, then check framework support and maintenance status.
+Better Auth and Auth.js are libraries that run inside your application. In the database-backed setup the generated projects use, they write to your database; both also support stateless sessions that need no database. Clerk is a hosted user management service that your application calls. Start from that difference, then check framework support and maintenance status.
 
 ## What you own
 
@@ -36,7 +36,7 @@ Better Auth and Auth.js are libraries that run inside your application and write
 
 [Auth.js](https://authjs.dev/getting-started) is an open source library that runs in your application and supports OAuth, magic links, credentials, and WebAuthn, with optional database adapters for Drizzle, Prisma, and others.
 
-The trade is concrete. With a library, you run the auth endpoints, store the tables, and operate both yourself. With Clerk, those parts move to a vendor, and your app depends on Clerk's API keys and service for every sign-in.
+The trade is concrete. With a library, you run the auth endpoints yourself. When users and sessions live in a database, as in the generated projects, you store and operate those tables too. With Clerk, those parts move to a vendor, and your app depends on Clerk's API keys and service for every sign-in.
 
 ## Maintenance status
 
