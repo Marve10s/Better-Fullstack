@@ -16,7 +16,10 @@ import type {
 
 import { resolveCreateConfigBase } from "@/config/config-source";
 import { displayConfig } from "@/config/display-config";
-import { resolveCompatibilityAdjustments } from "@/config/stack-compatibility";
+import {
+  getRequestedJobQueueRejection,
+  resolveCompatibilityAdjustments,
+} from "@/config/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "@/config/templates";
 import { BUILDER_URL, getDefaultConfig } from "@/constants";
 import { CreateCommandOptionsSchema } from "@/create-command-input";
@@ -332,6 +335,16 @@ function reportCompatibilityAdjustments(adjustments: string[]) {
   for (const adjustment of adjustments) {
     log.message(pc.yellow(`  ${adjustment}`));
   }
+}
+
+function rejectAdjustedJobQueueFlag(
+  config: ProjectConfig,
+  changes: Partial<ProjectConfig>,
+  providedFlags: Set<string>,
+) {
+  if (!providedFlags.has("jobQueue")) return;
+  const rejection = getRequestedJobQueueRejection(config.jobQueue, { ...config, ...changes });
+  if (rejection) exitWithError(rejection);
 }
 
 function shouldPromptForVersionChannel(
@@ -766,6 +779,7 @@ export async function createProjectHandler(
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
+          rejectAdjustedJobQueueFlag(config, changes, providedFlags);
           if (adjustments.length > 0) {
             config = { ...config, ...changes };
             cliInput = { ...cliInput, ...changes };
@@ -806,6 +820,7 @@ export async function createProjectHandler(
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
+          rejectAdjustedJobQueueFlag(config, changes, providedFlags);
           if (adjustments.length > 0) {
             config = { ...config, ...changes };
             cliInput = { ...cliInput, ...changes };

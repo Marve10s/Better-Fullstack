@@ -262,10 +262,17 @@ export async function createVirtual(
       (config.addons ?? []).some(
         (addon) => addon === "docker-compose" || addon === "devcontainer" || addon === "kong",
       );
+    // Graph input generates from its own job queue part, so check it alongside the flat field.
+    const jobQueueSelections = [
+      config.jobQueue,
+      ...(config.stackParts ?? [])
+        .filter((part) => part.role === "jobQueue")
+        .map((part) => part.toolId),
+    ];
     if (
       config.integrations === "nango" ||
       config.payments !== "none" ||
-      hasGeneratedJobQueueRequirements(config.jobQueue) ||
+      jobQueueSelections.some(hasGeneratedJobQueueRequirements) ||
       hasLegacyContainerAddon
     ) {
       const [{ validateConfigForProgrammaticUse }, { runWithContextAsync }] = await Promise.all([

@@ -332,20 +332,24 @@ export function hasGeneratedJobQueueRequirements(jobQueue: string | undefined): 
 /**
  * Shared reason for job queues whose generated worker or receiver only exists for some stacks.
  * Legacy compatibility, graph validation, CLI validation, and the builder all report this text.
+ * With `partial`, an undefined selection is still unanswered and is not judged, so prompts can
+ * offer only the choices that keep the job queue valid.
  */
 export function getJobQueueIncompatibility(
   jobQueue: string | undefined,
   stack: { backend?: string; runtime?: string; database?: string },
+  { partial = false } = {},
 ): string | null {
   const requirements = GENERATED_JOB_QUEUE_REQUIREMENTS[jobQueue as JobQueue];
   if (!requirements) return null;
-  if (!stack.backend || !GENERATED_JOB_QUEUE_BACKENDS.has(stack.backend)) {
+  const isUnanswered = (value: string | undefined) => partial && value === undefined;
+  if (!isUnanswered(stack.backend) && !GENERATED_JOB_QUEUE_BACKENDS.has(stack.backend ?? "")) {
     return `${requirements.label} is generated for Hono, Express, Fastify, and Elysia backends`;
   }
   if (requirements.workerProcess && stack.runtime === "workers") {
     return `${requirements.label} needs a long-running Node.js or Bun worker process, not Cloudflare Workers`;
   }
-  if (requirements.postgres && stack.database !== "postgres") {
+  if (requirements.postgres && !isUnanswered(stack.database) && stack.database !== "postgres") {
     return `${requirements.label} requires PostgreSQL`;
   }
   return null;

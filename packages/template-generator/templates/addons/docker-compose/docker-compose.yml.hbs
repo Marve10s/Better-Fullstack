@@ -158,6 +158,29 @@ services:
 {{/if}}
 {{/if}}
     restart: unless-stopped
+{{#if (or (eq jobQueue "pg-boss") (eq jobQueue "hatchet"))}}
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+{{#if (eq runtime "bun")}}
+    command: ["bun", "run", "dist/jobs/worker.mjs"]
+{{else}}
+    command: ["node", "dist/jobs/worker.mjs"]
+{{/if}}
+    env_file:
+      - apps/server/.env
+    environment:
+      - NODE_ENV=production
+{{#if (eq database "postgres")}}
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/{{projectName}}
+    depends_on:
+      db:
+        condition: service_healthy
+{{/if}}
+    restart: unless-stopped
+{{/if}}
 {{/unless}}
 {{/unless}}
 

@@ -578,6 +578,13 @@ ${generateScriptsList(packageManagerRunCmd, database, orm, hasWeb, hasNative, ad
 
 function generateJobQueueSection(options: ProjectConfig, packageManagerRunCmd: string): string {
   const run = (script: string) => `cd apps/server && ${packageManagerRunCmd} ${script}`;
+  const productionWorker = `
+In production, \`build\` also compiles the worker to \`apps/server/dist/jobs/worker.mjs\`; start it with \`${run("jobs:worker:start")}\`.${
+    options.addons.includes("docker-compose")
+      ? " Docker Compose runs it from the server image as the `worker` service."
+      : ""
+  }
+`;
 
   if (options.jobQueue === "pg-boss") {
     return `
@@ -591,7 +598,7 @@ Run the worker as a separate long-running process next to the server, then enque
 ${run("jobs:worker")}
 ${run("jobs:enqueue")}
 \`\`\`
-`;
+${productionWorker}`;
   }
 
   if (options.jobQueue === "hatchet") {
@@ -606,7 +613,7 @@ Run the worker as a separate long-running process next to the server, then enque
 ${run("jobs:worker")}
 ${run("jobs:enqueue")}
 \`\`\`
-`;
+${productionWorker}`;
   }
 
   if (options.jobQueue === "upstash-qstash") {

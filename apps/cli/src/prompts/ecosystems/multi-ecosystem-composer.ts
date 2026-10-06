@@ -551,11 +551,17 @@ export async function gatherMultiEcosystemConfig(
   let dbSetup: ProjectConfig["dbSetup"] = "none";
 
   if (backendEcosystem === "typescript") {
-    const backend = promptValue(await getBackendFrameworkChoice(flags.backend, frontendList));
+    const backend = promptValue(
+      await getBackendFrameworkChoice(flags.backend, frontendList, flags.jobQueue),
+    );
     const runtime =
-      backend === "none" ? "none" : promptValue(await getRuntimeChoice(flags.runtime, backend));
+      backend === "none"
+        ? "none"
+        : promptValue(await getRuntimeChoice(flags.runtime, backend, flags.jobQueue));
     if (backend !== "none") {
-      database = promptValue(await getDatabaseChoice(flags.database, backend, runtime));
+      database = promptValue(
+        await getDatabaseChoice(flags.database, backend, runtime, flags.jobQueue),
+      );
       dbSetup = promptValue(
         await getDBSetupChoice(database, flags.dbSetup, flags.orm, backend, runtime),
       );

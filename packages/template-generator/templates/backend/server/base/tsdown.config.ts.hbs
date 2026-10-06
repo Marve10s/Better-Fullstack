@@ -1,7 +1,14 @@
 import { defineConfig } from 'tsdown';
 
 export default defineConfig({
+{{#if (or (eq jobQueue "pg-boss") (eq jobQueue "hatchet"))}}
+    entry: {
+        index: './src/index.ts',
+        'jobs/worker': './src/jobs/worker.ts',
+    },
+{{else}}
     entry: './src/index.ts',
+{{/if}}
     format: 'esm',
     outDir: './dist',
     clean: true,

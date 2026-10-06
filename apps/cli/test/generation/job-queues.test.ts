@@ -1,14 +1,52 @@
-import { dependencyVersionMap } from "@better-fullstack/template-generator";
-import { getDisabledReason } from "@better-fullstack/types";
+import {
+  dependencyVersionMap,
+  EMBEDDED_TEMPLATES,
+  generateVirtualProject,
+} from "@better-fullstack/template-generator";
+import { writeTreeToFilesystem } from "@better-fullstack/template-generator/fs-writer";
+import {
+  createCliDefaultProjectConfigBase,
+  getDisabledReason,
+  parseStackPartSpecs,
+  type ProjectConfig,
+} from "@better-fullstack/types";
 import { createCustomConfig, expectSuccess, runTRPCTest } from "@test/support/test-utils";
 import { getVirtualFileContent, readVirtualFileContent } from "@test/support/virtual-tree-utils";
-import { describe, expect, test } from "bun:test";
-import { readFile } from "node:fs/promises";
+import { afterAll, describe, expect, test } from "bun:test";
+import { existsSync } from "node:fs";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { homedir, tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 
+import { writeBtsConfig } from "@/config/bts-config";
+import { validateConfigForProgrammaticUse } from "@/config/config-validation";
 import { buildCompatibilityInputFromConfig } from "@/config/stack-compatibility";
+import { planStackUpdate } from "@/helpers/core/stack-update";
 import { createVirtual } from "@/index";
+import { recordScaffoldManifest } from "@/lifecycle/scaffold-manifest";
 import { buildProjectConfig } from "@/operations/stack-helpers";
+import { runWithContextAsync } from "@/presentation/context";
+import { resolveBackendPrompt } from "@/prompts/architecture/backend";
+import { resolveRuntimePrompt } from "@/prompts/architecture/runtime";
+import { resolveDatabasePrompt } from "@/prompts/data/database";
 import { resolveJobQueuePrompt } from "@/prompts/services/job-queue";
+import { processAndValidateFlags } from "@/validation";
+
+const CLI_ENTRY = resolve(import.meta.dir, "../../src/cli.ts");
+const NATIVE_BUN = resolve(homedir(), ".bun", "bin", "bun");
+const BUN_EXECUTABLE =
+  process.env.BFS_TEST_BUN_BIN || (existsSync(NATIVE_BUN) ? NATIVE_BUN : "bun");
+const TEMP_ROOTS: string[] = [];
+
+afterAll(async () => {
+  await Promise.all(TEMP_ROOTS.map((root) => rm(root, { recursive: true, force: true })));
+});
+
+async function makeTempRoot() {
+  const root = await mkdtemp(join(tmpdir(), "bfs-job-queues-"));
+  TEMP_ROOTS.push(root);
+  return root;
+}
 
 type ServerPackageJson = {
   dependencies: Record<string, string>;
@@ -25,6 +63,93 @@ async function readServerPackage(projectDir: string | undefined): Promise<Server
 
 function promptValues(context: Parameters<typeof resolveJobQueuePrompt>[0]) {
   return resolveJobQueuePrompt(context).options.map((option) => option.value);
+}
+
+function graph(...specs: string[]) {
+  return parseStackPartSpecs(["frontend:typescript:tanstack-router", ...specs], "selected");
+}
+
+const GRAPH_REJECTED = [
+  {
+    specs: [
+      "backend:typescript:hono",
+      "backend.runtime:typescript:workers",
+      "backend.jobQueue:typescript:hatchet",
+    ],
+    error: "Hatchet needs a long-running Node.js or Bun worker process, not Cloudflare Workers",
+  },
+  {
+    specs: [
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "database:universal:sqlite",
+      "backend.jobQueue:typescript:pg-boss",
+    ],
+    error: "pg-boss requires PostgreSQL",
+  },
+  {
+    specs: [
+      "backend:typescript:nestjs",
+      "backend.runtime:typescript:node",
+      "backend.jobQueue:typescript:upstash-qstash",
+    ],
+    error: "Upstash QStash is generated for Hono, Express, Fastify, and Elysia backends",
+  },
+] as const;
+
+const HATCHET_GRAPH = [
+  "backend:typescript:hono",
+  "backend.runtime:typescript:bun",
+  "database:universal:sqlite",
+  "backend.orm:typescript:drizzle",
+  "backend.jobQueue:typescript:hatchet",
+];
+
+async function runCreate(args: string[]) {
+  const cwd = await makeTempRoot();
+  const child = Bun.spawn(
+    [
+      BUN_EXECUTABLE,
+      CLI_ENTRY,
+      "create",
+      ...args,
+      "--dry-run",
+      "--no-install",
+      "--no-git",
+      "--disable-analytics",
+    ],
+    {
+      cwd,
+      env: { ...Bun.env, BFS_SKIP_BUILDER_PROMPT: "1", CI: "true" },
+      stdout: "pipe",
+      stderr: "pipe",
+    },
+  );
+  const [exitCode, stdout, stderr] = await Promise.all([
+    child.exited,
+    new Response(child.stdout).text(),
+    new Response(child.stderr).text(),
+  ]);
+  return { exitCode, output: `${stdout}${stderr}` };
+}
+
+async function scaffoldDefaultProject() {
+  const projectDir = join(await makeTempRoot(), "app");
+  const config = {
+    ...createCliDefaultProjectConfigBase(),
+    addons: [],
+    projectName: "app",
+    projectDir,
+    relativePath: ".",
+    git: false,
+    install: false,
+  } as ProjectConfig;
+  const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
+  if (!result.success || !result.tree) throw new Error(result.error ?? "Failed to generate");
+  await writeTreeToFilesystem(result.tree, projectDir);
+  await writeBtsConfig(config);
+  await recordScaffoldManifest(projectDir);
+  return projectDir;
 }
 
 describe("generated job queues", () => {
@@ -264,4 +389,136 @@ describe("generated job queues", () => {
       promptValues({ backend: "nestjs", runtime: "node", database: "postgres" }),
     ).not.toContain("upstash-qstash");
   });
+
+  test("graph-only input is validated against the job queue the generator uses", async () => {
+    const results = await Promise.all(
+      GRAPH_REJECTED.map(({ specs }) => createVirtual({ stackParts: graph(...specs) })),
+    );
+
+    for (const [index, { specs, error }] of GRAPH_REJECTED.entries()) {
+      expect(results[index]?.success).toBe(false);
+      expect(results[index]?.error).toContain(error);
+      expect(() =>
+        buildProjectConfig({ part: ["frontend:typescript:tanstack-router", ...specs] }),
+      ).toThrow(error);
+    }
+  });
+
+  test("the graph job queue wins over a stale flat jobQueue", async () => {
+    const result = await createVirtual({
+      jobQueue: "pg-boss",
+      stackParts: graph(...HATCHET_GRAPH),
+    });
+    expect(result.error).toBeUndefined();
+    expect(result.success).toBe(true);
+    expect(
+      getVirtualFileContent(result.tree!.root, "apps/server/src/jobs/hatchet.ts"),
+    ).toBeDefined();
+
+    expect(() =>
+      validateConfigForProgrammaticUse({
+        ...createCliDefaultProjectConfigBase(),
+        jobQueue: "pg-boss",
+        stackParts: graph(...HATCHET_GRAPH),
+      }),
+    ).not.toThrow();
+    expect(
+      buildProjectConfig({
+        jobQueue: "pg-boss",
+        part: ["frontend:typescript:tanstack-router", ...HATCHET_GRAPH],
+      }).stackParts?.find((part) => part.role === "jobQueue")?.toolId,
+    ).toBe("hatchet");
+  });
+
+  test("non-interactive create rejects an explicit incompatible job queue flag", async () => {
+    const { exitCode, output } = await runCreate(["jobs", "--yes", "--job-queue", "pg-boss"]);
+
+    expect(exitCode).not.toBe(0);
+    expect(output).toContain("pg-boss requires PostgreSQL");
+    expect(output).not.toContain("Adjusted incompatible options");
+  });
+
+  test("update planning rejects an explicit incompatible job queue instead of dropping it", async () => {
+    const projectDir = await scaffoldDefaultProject();
+
+    const plan = await planStackUpdate(projectDir, { jobQueue: "pg-boss" });
+
+    expect(plan.success).toBe(false);
+    if (plan.success) return;
+    expect(plan.error).toBe("Invalid stack update: pg-boss requires PostgreSQL");
+  });
+
+  test("partial flags defer the job queue rule until the stack is chosen", async () => {
+    await runWithContextAsync({ silent: true }, async () => {
+      expect(() =>
+        processAndValidateFlags({ jobQueue: "pg-boss" }, new Set(["jobQueue"]), "jobs"),
+      ).not.toThrow();
+      expect(() =>
+        processAndValidateFlags(
+          { jobQueue: "pg-boss", database: "sqlite" },
+          new Set(["jobQueue", "database"]),
+          "jobs",
+        ),
+      ).toThrow("pg-boss requires PostgreSQL");
+    });
+
+    const backends = resolveBackendPrompt({ frontends: ["next"], jobQueue: "pg-boss" });
+    expect(backends.options.map((option) => option.value)).toEqual([
+      "hono",
+      "express",
+      "fastify",
+      "elysia",
+    ]);
+    expect(backends.initialValue).toBe("hono");
+
+    const runtimes = resolveRuntimePrompt({ backend: "hono", jobQueue: "pg-boss" });
+    expect(runtimes.options.map((option) => option.value)).toEqual(["bun", "node"]);
+
+    const databases = resolveDatabasePrompt({
+      backend: "hono",
+      runtime: "bun",
+      jobQueue: "pg-boss",
+    });
+    expect(databases.options.map((option) => option.value)).toEqual(["postgres"]);
+    expect(databases.initialValue).toBe("postgres");
+  });
+
+  const builtWorkers = [
+    { jobQueue: "pg-boss", runtime: "bun", command: ["bun", "run", "dist/jobs/worker.mjs"] },
+    { jobQueue: "hatchet", runtime: "node", command: ["node", "dist/jobs/worker.mjs"] },
+  ] as const;
+
+  for (const { jobQueue, runtime, command } of builtWorkers) {
+    test(`${jobQueue} builds its worker into the server image and runs it from there`, async () => {
+      const result = await createVirtual({
+        projectName: `jobs-built-${jobQueue}`,
+        backend: "hono",
+        runtime,
+        database: "postgres",
+        orm: "drizzle",
+        jobQueue,
+        addons: ["docker-compose"],
+      });
+      expect(result.error).toBeUndefined();
+      const root = result.tree!.root;
+      const tsdown = readVirtualFileContent(root, "apps/server/tsdown.config.ts");
+      const dockerfile = readVirtualFileContent(root, "apps/server/Dockerfile");
+      const compose = readVirtualFileContent(root, "docker-compose.yml");
+      const readme = readVirtualFileContent(root, "README.md");
+      const pkg: ServerPackageJson = JSON.parse(
+        readVirtualFileContent(root, "apps/server/package.json"),
+      );
+
+      // tsdown emits each entry key under outDir, so this entry builds dist/jobs/worker.mjs.
+      expect(tsdown).toMatch(/['"]jobs\/worker['"]: ['"]\.\/src\/jobs\/worker\.ts['"]/);
+      expect(tsdown).toContain("outDir: './dist'");
+      // The image keeps the built dist next to package.json and runs from apps/server.
+      expect(dockerfile).toContain("COPY --from=builder /app/apps/server/dist ./apps/server/dist");
+      expect(dockerfile).toContain("WORKDIR /app/apps/server");
+      expect(pkg.scripts["jobs:worker:start"]).toBe(command.join(" "));
+      expect(compose).toContain("  worker:\n");
+      expect(compose).toContain(`command: ${JSON.stringify(command).replaceAll(",", ", ")}`);
+      expect(readme).toContain("jobs:worker:start");
+    });
+  }
 });

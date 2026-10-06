@@ -3,7 +3,11 @@ import { describe, expect, it } from "bun:test";
 import type { CompatibilityInput } from "@/stack/compatibility";
 
 import { createCliDefaultProjectConfigBase } from "@/config/defaults";
-import { analyzeStackCompatibility, getDisabledReason } from "@/stack/compatibility";
+import {
+  analyzeStackCompatibility,
+  getDisabledReason,
+  getJobQueueIncompatibility,
+} from "@/stack/compatibility";
 import { legacyProjectConfigToStackParts, validateStackParts } from "@/stack/stack-graph";
 import {
   DEFAULT_STACK_SELECTION,
@@ -93,6 +97,28 @@ describe("generated job queue compatibility", () => {
         graphIssues({ ...stack, jobQueue }).filter((message) => message.includes("job")),
       ).toEqual([]);
     }
+  });
+
+  it("judges only answered selections for partial input", () => {
+    const partial = { partial: true };
+
+    expect(getJobQueueIncompatibility("pg-boss", {}, partial)).toBeNull();
+    expect(
+      getJobQueueIncompatibility("pg-boss", { backend: "hono", runtime: "bun" }, partial),
+    ).toBe(null);
+    expect(getJobQueueIncompatibility("pg-boss", { database: "sqlite" }, partial)).toBe(
+      "pg-boss requires PostgreSQL",
+    );
+    expect(getJobQueueIncompatibility("hatchet", { runtime: "workers" }, partial)).toBe(
+      "Hatchet needs a long-running Node.js or Bun worker process, not Cloudflare Workers",
+    );
+    expect(getJobQueueIncompatibility("upstash-qstash", { backend: "nestjs" }, partial)).toBe(
+      "Upstash QStash is generated for Hono, Express, Fastify, and Elysia backends",
+    );
+    // A complete stack still treats a missing backend or database as unsupported.
+    expect(getJobQueueIncompatibility("pg-boss", { backend: "hono" })).toBe(
+      "pg-boss requires PostgreSQL",
+    );
   });
 
   it("round-trips the new options through builder URLs and the reproducible command", () => {

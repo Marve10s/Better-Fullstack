@@ -41,6 +41,7 @@ import {
   formatStackGraphIssue,
   getDisabledReason,
   getCodeQualitySelectionIssue,
+  getJobQueueIncompatibility,
   getShadcnLintFrontendIssue,
   hasVitePlusWorkspaceRoot,
   hasSignozSupportedGoServerTarget,
@@ -82,23 +83,17 @@ function validateIntegrationsConstraints(config: Partial<ProjectConfig>) {
   if (reason) throw new Error(reason);
 }
 
-function validateJobQueueConstraints(config: Partial<ProjectConfig>) {
-  if (!config.jobQueue || config.jobQueue === "none") return;
+function validateJobQueueConstraints(config: Partial<ProjectConfig>, partial = false) {
+  // The graph is authoritative: a stale flat jobQueue must not decide what gets generated.
+  const usesGraph = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+  const selection = usesGraph
+    ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript")
+    : config;
+  if ((selection.ecosystem ?? "typescript") !== "typescript") return;
 
-  const compatibilityConfig =
-    config.stackParts && hasSelectedTypeScriptBackendPart(config)
-      ? {
-          ...config,
-          ...stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript"),
-          ecosystem: "typescript" as const,
-        }
-      : config;
-  const reason = getDisabledReason(
-    buildCompatibilityInputFromConfig(compatibilityConfig),
-    "jobQueue",
-    config.jobQueue,
-  );
-
+  const reason = getJobQueueIncompatibility(selection.jobQueue, selection, {
+    partial: partial && !usesGraph,
+  });
   if (reason) throw new Error(reason);
 }
 
@@ -1686,7 +1681,7 @@ export function validateFullConfig(
   validateScopedLibraryFlags(config);
   validateI18nConstraints(config);
   validateIntegrationsConstraints(config);
-  validateJobQueueConstraints(config);
+  validateJobQueueConstraints(config, partial);
 
   const hasGraphBackend = config.stackParts?.some(
     (part) =>

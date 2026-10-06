@@ -75,6 +75,9 @@ function addJobQueueScripts(vfs: VirtualFileSystem, serverPath: string, config: 
   const scripts: Record<string, string> = {};
   if (config.jobQueue === "pg-boss" || config.jobQueue === "hatchet") {
     scripts["jobs:worker"] = `${runner} src/jobs/worker.ts`;
+    // `build` emits the worker next to the server entry, so built images can run it.
+    scripts["jobs:worker:start"] =
+      config.runtime === "bun" ? "bun run dist/jobs/worker.mjs" : "node dist/jobs/worker.mjs";
     scripts["jobs:enqueue"] = `${runner} src/jobs/enqueue.ts`;
   } else if (config.jobQueue === "upstash-qstash") {
     scripts["jobs:enqueue"] = `${runner} src/jobs/enqueue.ts`;
