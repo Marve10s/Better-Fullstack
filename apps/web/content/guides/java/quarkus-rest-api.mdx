@@ -1,0 +1,166 @@
+---
+title: Quarkus REST API with Maven
+description: Create a Java 21 Quarkus REST API with Quarkus REST, the Maven wrapper, JUnit 5, and REST Assured using Better Fullstack.
+translationStatus: pending
+updated: 2026-10-06
+category: Java
+tags:
+  - quarkus
+  - maven
+  - rest-assured
+  - java
+keywords:
+  - quarkus starter
+  - quarkus rest api starter
+  - create quarkus project
+  - quarkus maven boilerplate
+  - java rest api starter
+---
+
+Use this stack when you want a Java REST service on Quarkus, with live reload in development and a Maven build that produces a runnable application.
+
+```npm
+npm create better-fullstack@latest my-quarkus-api -- \
+  --ecosystem java \
+  --java-web-framework quarkus \
+  --java-build-tool maven \
+  --java-orm none \
+  --java-auth none \
+  --java-api none \
+  --java-libraries none \
+  --java-testing-libraries junit5 rest-assured
+```
+
+## What this creates
+
+- A Maven project that imports the Quarkus 3 platform BOM and uses `quarkus-rest`.
+- An `Application` class annotated with `@QuarkusMain`.
+- A `GreetingResource` at `GET /hello` that returns plain text.
+- `quarkus-junit5`, REST Assured, and one REST Assured test.
+- The Maven wrapper and a `.gitattributes` file that keeps wrapper scripts on the right line endings.
+
+## Generated shape
+
+The Java package comes from the project name with separators removed, so `my-quarkus-api` uses `com.example.myquarkusapi`.
+
+```txt
+my-quarkus-api/
+├── pom.xml
+├── mvnw
+├── mvnw.cmd
+├── .mvn/wrapper/maven-wrapper.properties
+├── .env.example
+└── src/
+    ├── main/java/com/example/myquarkusapi/
+    │   ├── Application.java
+    │   └── resource/GreetingResource.java
+    └── test/java/com/example/myquarkusapi/
+        └── RestAssuredHttpTest.java
+```
+
+No `src/main/resources/application.properties` is generated. Quarkus runs on its defaults until you add one.
+
+## Prerequisites
+
+- A JDK 21 installation. The `pom.xml` sets `maven.compiler.release` to 21.
+- No separate Maven install; use `./mvnw`.
+
+## Run and verify
+
+```bash
+cd my-quarkus-api
+./mvnw test
+./mvnw quarkus:dev
+```
+
+Dev mode serves the resource on port 8080 and recompiles on change:
+
+```bash
+curl http://localhost:8080/hello
+```
+
+Package the application with:
+
+```bash
+./mvnw package
+```
+
+## Representative snippets
+
+The resource reads an optional `cors.origin` value and sets the `Access-Control-Allow-Origin` header itself:
+
+```java
+@Path("/hello")
+public class GreetingResource {
+
+  @GET
+  @Produces(MediaType.TEXT_PLAIN)
+  public RestResponse<String> hello() {
+    String corsOrigin = ConfigProvider.getConfig()
+      .getOptionalValue("cors.origin", String.class)
+      .filter(value -> !value.isEmpty())
+      .orElse("*");
+    return RestResponse.ResponseBuilder.ok("Hello from my-quarkus-api")
+      .header("Access-Control-Allow-Origin", corsOrigin)
+      .build();
+  }
+}
+```
+
+MicroProfile Config maps the `CORS_ORIGIN` environment variable to `cors.origin`, and Quarkus also reads a `.env` file in the project root. Copy `.env.example` to `.env` to use the generated value locally.
+
+## Test against the Quarkus application
+
+The generated `RestAssuredHttpTest` starts a JDK `HttpServer` with a stub `/health` route and checks it with REST Assured. It shows the REST Assured style but does not boot Quarkus or call `GreetingResource`. A `@QuarkusTest` exercises the real application:
+
+```java
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+
+import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class GreetingResourceTest {
+  @Test
+  void helloEndpoint() {
+    given()
+      .when().get("/hello")
+      .then()
+      .statusCode(200)
+      .body(equalTo("Hello from my-quarkus-api"));
+  }
+}
+```
+
+`quarkus-junit5` is already a test dependency, so this compiles without new packages.
+
+## When to choose it
+
+Choose Quarkus for a Java service that should start fast and use Jakarta REST annotations with build-time processing. Choose [Spring Boot with PostgreSQL and JPA](/guides/java/spring-boot-postgres-jpa/) when you need the persistence, security, and library options that Better Fullstack wires only for Spring Boot.
+
+## Compatibility notes
+
+- Quarkus requires `--java-build-tool maven` or `gradle`. With Gradle, the project uses the `io.quarkus` Gradle plugin and runs with `./gradlew quarkusDev`.
+- `--java-orm`, `--java-auth`, `--java-api`, and `--java-libraries` are Spring Boot features. Set each to `none`; when they are omitted, the CLI stops with "Spring-only Java features require the Spring Boot scaffold".
+- `--java-language kotlin` is not available for Quarkus; the Kotlin scaffold covers Spring Boot and Ktor.
+- With `--java-testing-libraries junit5` alone, the Quarkus template adds the dependency but no test file. `rest-assured`, `mockito`, `wiremock`, `archunit`, `awaitility`, and `jqwik` each add a sample test; `testcontainers` and `assertj` add none here.
+
+## Deployment notes
+
+`./mvnw package` builds the Quarkus fast-jar layout under `target/quarkus-app/`. Run it with `java -jar target/quarkus-app/quarkus-run.jar`. No `Dockerfile` is generated for the Java ecosystem, so add one or use a platform buildpack, and set `CORS_ORIGIN` in that environment.
+
+## Troubleshooting
+
+| Symptom                                 | Check                                                                                     |
+| --------------------------------------- | ----------------------------------------------------------------------------------------- |
+| CLI reports "Spring-only Java features" | Pass `none` for `--java-orm`, `--java-auth`, `--java-api`, and `--java-libraries`.        |
+| Tests pass but `/hello` is untested     | The generated test targets a stub server; add a `@QuarkusTest`.                           |
+| `Access-Control-Allow-Origin` is `*`    | Set `CORS_ORIGIN` or `cors.origin`; the resource falls back to `*`.                       |
+| CORS preflight requests fail            | The resource sets one header on `GET`; enable `quarkus.http.cors` for full CORS handling. |
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=java&jwf=quarkus&jbt=maven&jorm=none&jauth=none&japi=none&jlib=none&jtest=junit5,rest-assured).
+- Read the [Java ecosystem docs](/docs/ecosystems/#java-and-kotlin).
+- Compare with [Ktor API with Kotlin and Gradle](/guides/java/ktor-kotlin-api/).

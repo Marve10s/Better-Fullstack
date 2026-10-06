@@ -1,0 +1,186 @@
+---
+title: Phoenix REST API with Oban Background Jobs
+description: Create a Phoenix JSON API with Ecto SQL, PostgreSQL, Oban background jobs, Swoosh email, and Fly.io deploy files using Better Fullstack.
+translationStatus: pending
+updated: 2026-10-06
+category: Elixir
+tags:
+  - phoenix
+  - oban
+  - ecto
+  - background-jobs
+keywords:
+  - phoenix oban starter
+  - elixir background jobs
+  - oban postgres setup
+  - phoenix rest api starter
+  - phoenix fly.io deploy
+---
+
+Use this stack when a Phoenix API needs durable background work stored in PostgreSQL, so jobs survive restarts and retry without a separate queue service.
+
+```npm
+npm create better-fullstack@latest my-jobs-api -- \
+  --ecosystem elixir \
+  --elixir-web-framework phoenix \
+  --elixir-orm ecto-sql \
+  --elixir-auth none \
+  --elixir-api rest \
+  --elixir-realtime none \
+  --elixir-jobs oban \
+  --elixir-email swoosh \
+  --elixir-testing ex_unit \
+  --elixir-deploy fly
+```
+
+## What this creates
+
+- A Phoenix 1.7 JSON API with `GET /api/items`, `GET /api/items/:id`, `POST /api/items`, and `GET /api/health`.
+- Ecto SQL with PostgreSQL, an `items` migration, and a seed file.
+- Oban started in the application supervision tree, a `default` queue with 10 workers, the `Pruner` plugin, and a migration that creates the Oban tables.
+- A `MyJobsApi.Workers.SampleWorker` module.
+- A Swoosh `Mailer` using the local adapter, plus Finch for its HTTP client.
+- A `Dockerfile` and a `fly.toml` for Fly.io.
+
+## Generated shape
+
+```txt
+my-jobs-api/
+├── mix.exs
+├── Dockerfile
+├── fly.toml
+├── .env.example
+├── config/
+│   ├── config.exs
+│   ├── dev.exs
+│   ├── runtime.exs
+│   └── test.exs
+├── lib/
+│   ├── my_jobs_api/
+│   │   ├── application.ex
+│   │   ├── catalog.ex
+│   │   ├── catalog/item.ex
+│   │   ├── mailer.ex
+│   │   ├── repo.ex
+│   │   └── workers/sample_worker.ex
+│   └── my_jobs_api_web/
+│       ├── router.ex
+│       └── controllers/
+│           ├── health_controller.ex
+│           └── item_controller.ex
+├── priv/repo/migrations/
+│   ├── 20260101000000_create_items.exs
+│   └── 20260101000002_add_oban_jobs.exs
+└── test/
+```
+
+## Prerequisites
+
+- Elixir 1.16 or newer with a matching Erlang/OTP release.
+- PostgreSQL. Oban stores jobs in the same database as the application through `MyJobsApi.Repo`.
+- The `flyctl` CLI if you deploy with the generated `fly.toml`.
+
+## Run and verify
+
+```bash
+cd my-jobs-api
+mix deps.get
+mix ecto.setup
+mix phx.server
+```
+
+`mix ecto.setup` runs both migrations, so the `oban_jobs` table exists before the server starts. Create an item through the REST API:
+
+```bash
+curl -X POST http://localhost:4000/api/items \
+  -H "Content-Type: application/json" \
+  -d '{"item":{"name":"First item","description":"Created over HTTP"}}'
+```
+
+## Enqueue the sample worker
+
+The worker logs its arguments and returns `:ok`. Nothing in the scaffold enqueues it, so insert a job yourself:
+
+```elixir
+%{"item_id" => item.id}
+|> MyJobsApi.Workers.SampleWorker.new()
+|> Oban.insert()
+```
+
+Run that from `iex -S mix phx.server` to watch the log line, or call it from `Catalog.create_item/1` after a successful insert.
+
+```elixir
+defmodule MyJobsApi.Workers.SampleWorker do
+  use Oban.Worker, queue: :default, max_attempts: 3
+
+  @impl Oban.Worker
+  def perform(%Oban.Job{args: args}) do
+    require Logger
+    Logger.info("Processed Oban job with args=#{inspect(args)}")
+    :ok
+  end
+end
+```
+
+Returning `{:error, reason}` or raising marks the attempt as failed, and Oban retries until `max_attempts` is reached.
+
+## Representative configuration
+
+```elixir
+config :my_jobs_api, Oban,
+  repo: MyJobsApi.Repo,
+  queues: [default: 10],
+  plugins: [Oban.Plugins.Pruner]
+
+config :my_jobs_api, MyJobsApi.Mailer, adapter: Swoosh.Adapters.Local
+```
+
+Add queues to the `queues` list when different job types need separate concurrency limits.
+
+## Tests
+
+```bash
+mix test
+```
+
+The generated test covers `/api/health`. `config/test.exs` does not override the Oban configuration, so the `default` queue and the Pruner also start during tests. Oban documents `testing: :manual` for test environments:
+
+```elixir
+config :my_jobs_api, Oban, testing: :manual
+```
+
+## When to choose it
+
+Choose Oban when jobs must be persisted, retried, and inspected in SQL, and the application already depends on PostgreSQL. Choose `--elixir-jobs quantum` for cron-style schedules that do not need persistence; Quantum does not require Ecto.
+
+## Compatibility notes
+
+- `--elixir-jobs oban` requires `--elixir-orm ecto-sql`. The CLI rejects Oban with `none`, `myxql`, or `ecto_sqlite3`.
+- `--elixir-email swoosh` generates the `Mailer` module and configuration, not a mail template or a sender.
+- `--elixir-realtime none` omits the `UserSocket` and channel modules.
+
+## Deployment notes
+
+`fly.toml` builds from the generated `Dockerfile`, sets `PHX_HOST` and `PORT=4000`, forces HTTPS, and lets Fly stop idle machines. Set the remaining production values as secrets:
+
+```bash
+fly secrets set SECRET_KEY_BASE="$(mix phx.gen.secret)" DATABASE_URL="ecto://..."
+```
+
+The release does not include a migration task. Add one before the first deploy so the `items` and `oban_jobs` tables exist in production. Replace the local Swoosh adapter with a real provider adapter in `config/runtime.exs` before sending mail.
+
+## Troubleshooting
+
+| Symptom                               | Check                                                                                                                  |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `relation "oban_jobs" does not exist` | Run `mix ecto.migrate`; the Oban migration is a regular Ecto migration.                                                |
+| Jobs stay in the `available` state    | Confirm Oban is in the supervision tree and the job's queue is listed in `queues`.                                     |
+| `POST /api/items` returns 400         | Wrap fields in an `item` object; the controller matches `%{"item" => attrs}`.                                          |
+| Invalid items return 500, not 422     | `ItemController.create/2` uses `with` without an `else` or fallback controller; add one that renders changeset errors. |
+| Emails never leave the machine        | `Swoosh.Adapters.Local` keeps mail in memory; configure a provider adapter.                                            |
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=elixir&ewf=phoenix&eorm=ecto-sql&eauth=none&eapi=rest&ert=none&ejob=oban&emailx=swoosh&etest=ex_unit&edeploy=fly).
+- Read the [Elixir ecosystem docs](/docs/ecosystems/#elixir).
+- Compare with [Phoenix LiveView with Ecto and PostgreSQL](/guides/elixir/phoenix-liveview-ecto/).

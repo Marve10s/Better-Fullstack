@@ -1,0 +1,169 @@
+---
+title: ASP.NET Core Minimal API with Dapper and PostgreSQL
+description: Create a .NET Minimal API with Dapper, Npgsql, PostgreSQL, health checks, xUnit, and a Dockerfile using Better Fullstack.
+translationStatus: pending
+updated: 2026-10-06
+category: .NET
+tags:
+  - aspnet-core
+  - dapper
+  - postgres
+  - dotnet
+keywords:
+  - dapper minimal api starter
+  - aspnet core dapper postgres
+  - dotnet dapper boilerplate
+  - npgsql dapper example
+  - lightweight dotnet api starter
+---
+
+Use this stack when you want an ASP.NET Core API that runs hand-written SQL through Dapper, without an EF Core model or migrations.
+
+```npm
+npm create better-fullstack@latest my-dapper-api -- \
+  --ecosystem dotnet \
+  --dotnet-web-framework aspnet-minimal \
+  --dotnet-orm dapper \
+  --dotnet-auth none \
+  --dotnet-api minimal-api \
+  --dotnet-testing xunit \
+  --dotnet-job-queue none \
+  --dotnet-realtime none \
+  --dotnet-observability health-checks \
+  --dotnet-validation none \
+  --dotnet-caching none \
+  --dotnet-deploy docker \
+  --dotnet-libraries none \
+  --database postgres
+```
+
+Several .NET options have non-`none` defaults (Identity, SignalR, and Serilog among them), so this command sets each one explicitly.
+
+## What this creates
+
+- An ASP.NET Core Minimal API targeting `net10.0`.
+- Dapper and Npgsql package references, with a `TodoDapper` helper that opens connections and creates the `Todos` table.
+- `GET /api/todos` and `POST /api/todos` endpoints that run SQL through Dapper.
+- ASP.NET Core health checks mapped at `/health`.
+- An xUnit test project that boots the app with `WebApplicationFactory`.
+- A two-stage `Dockerfile` that publishes the app.
+
+## Generated shape
+
+The project name and namespace replace every character outside `A-Za-z0-9_` with an underscore, so `my-dapper-api` produces `my_dapper_api`.
+
+```txt
+my-dapper-api/
+├── my_dapper_api.csproj
+├── my_dapper_api.http
+├── Program.cs
+├── appsettings.json
+├── appsettings.Development.json
+├── Dockerfile
+├── .env.example
+└── my_dapper_api.Tests/
+    ├── my_dapper_api.Tests.csproj
+    └── ApiTests.cs
+```
+
+Endpoints, the `TodoItem` model, and the Dapper helper all live in `Program.cs`.
+
+## Prerequisites
+
+- .NET SDK 10 or newer.
+- A PostgreSQL server. `appsettings.json` points at `localhost:5432` with the `postgres` user and a database named after the project.
+
+## Run and verify
+
+```bash
+cd my-dapper-api
+dotnet restore
+dotnet run
+```
+
+Override the connection string with a real environment variable instead of editing the committed file:
+
+```bash
+export ConnectionStrings__DefaultConnection="Host=localhost;Port=5432;Database=my-dapper-api;Username=postgres;Password=postgres"
+```
+
+`.env.example` lists a `DATABASE_URL`, but `Program.cs` never reads it. Dapper uses `ConnectionStrings:DefaultConnection` only.
+
+No solution file is generated, so name the test project when running tests:
+
+```bash
+dotnet test my_dapper_api.Tests/my_dapper_api.Tests.csproj
+```
+
+The generated test requests `/` and does not touch the database.
+
+## How the schema is created
+
+Unlike the EF Core scaffold, this one needs no migration step. Each todo endpoint calls `EnsureSchemaAsync` before running its query:
+
+```csharp
+public static async Task EnsureSchemaAsync(System.Data.Common.DbConnection db)
+{
+    const string sql = """
+        CREATE TABLE IF NOT EXISTS Todos (
+            Id SERIAL PRIMARY KEY,
+            Title TEXT NOT NULL,
+            Complete BOOLEAN NOT NULL DEFAULT FALSE
+        )
+        """;
+    await db.ExecuteAsync(sql);
+}
+```
+
+That keeps the first request working against an empty database, at the cost of one extra statement per call. Move the call to startup, or replace it with a migration tool, once the schema has more than one table.
+
+## Representative snippets
+
+The insert returns the created row in one round trip with PostgreSQL's `RETURNING` clause:
+
+```csharp
+app.MapPost("/api/todos", async (TodoInput input) =>
+{
+    await using var db = TodoDapper.CreateConnection(dapperConnectionString);
+    await TodoDapper.EnsureSchemaAsync(db);
+    const string sql = """
+        INSERT INTO Todos (Title, Complete)
+        VALUES (@Title, @Complete)
+        RETURNING Id, Title, Complete
+        """;
+    var todo = await db.QuerySingleAsync<TodoItem>(sql, new { input.Title, Complete = false });
+    return Results.Created($"/api/todos/{todo.Id}", todo);
+});
+```
+
+PostgreSQL folds the unquoted identifiers to lowercase, and Dapper maps the `id`, `title`, and `complete` columns back onto `TodoItem` by name.
+
+## When to choose it
+
+Choose Dapper when the team prefers to read and review the SQL that runs, or when queries are reporting-heavy and an ORM model would add little. Choose the [EF Core guide](/guides/dotnet/aspnet-core-efcore/) when you want change tracking, migrations, and ASP.NET Identity stores.
+
+## Compatibility notes
+
+- `--dotnet-orm dapper` picks its driver from `--database`: Npgsql for `postgres`, SQLite otherwise.
+- `--dotnet-observability health-checks` registers `AddHealthChecks()` with no database check, so `/health` reports the process, not PostgreSQL.
+- Deployment for .NET comes from `--dotnet-deploy`, not the TypeScript `--web-deploy` and `--server-deploy` flags.
+
+## Deployment notes
+
+The `Dockerfile` publishes with the .NET 10 SDK image and runs on the ASP.NET 10 runtime image. It sets `ASPNETCORE_URLS=http://+:8080` and exposes port 8080. Because `Program.cs` only honors `PORT` when `ASPNETCORE_URLS` is unset, the container listens on 8080 regardless of `PORT`.
+
+## Troubleshooting
+
+| Symptom                                          | Check                                                                                     |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `Failed to connect to 127.0.0.1:5432`            | Start PostgreSQL or set `ConnectionStrings__DefaultConnection`.                           |
+| `DATABASE_URL` has no effect                     | The app reads `ConnectionStrings:DefaultConnection`, not `DATABASE_URL`.                  |
+| Container ignores `PORT`                         | The image sets `ASPNETCORE_URLS`, which takes precedence.                                 |
+| `dotnet test` from the root runs nothing         | Pass the test project path; there is no solution file.                                    |
+| The generated README mentions TypeScript and npm | The .NET scaffold currently writes the TypeScript README. Use the commands in this guide. |
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=dotnet&dnwf=aspnet-minimal&dnorm=dapper&dnauth=none&dnapi=minimal-api&dntest=xunit&dnjob=none&dnrt=none&dnobs=health-checks&dnval=none&dncache=none&dndeploy=docker&db=postgres).
+- Read the [.NET ecosystem docs](/docs/ecosystems/#net).
+- Review the [CLI create reference](/docs/cli/create/).

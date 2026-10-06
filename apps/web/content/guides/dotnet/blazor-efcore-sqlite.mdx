@@ -1,0 +1,175 @@
+---
+title: Blazor Web App with EF Core, Identity, and SQLite
+description: Create an ASP.NET Core Blazor app with Razor components, EF Core on SQLite, ASP.NET Identity, SignalR, Serilog, and xUnit using Better Fullstack.
+translationStatus: pending
+updated: 2026-10-06
+category: .NET
+tags:
+  - blazor
+  - ef-core
+  - sqlite
+  - dotnet
+keywords:
+  - blazor ef core starter
+  - blazor sqlite starter
+  - create blazor web app
+  - blazor identity ef core
+  - dotnet fullstack starter
+---
+
+Use this stack when one .NET project should serve both the UI, as Razor components, and a small JSON API, with a file-based SQLite database for local work.
+
+```npm
+npm create better-fullstack@latest my-blazor-app -- \
+  --ecosystem dotnet \
+  --dotnet-web-framework aspnet-blazor \
+  --dotnet-orm ef-core \
+  --dotnet-auth aspnet-identity \
+  --dotnet-api minimal-api \
+  --dotnet-testing xunit \
+  --dotnet-job-queue none \
+  --dotnet-realtime signalr \
+  --dotnet-observability serilog \
+  --dotnet-validation none \
+  --dotnet-caching none \
+  --dotnet-deploy docker \
+  --dotnet-libraries none \
+  --database sqlite
+```
+
+## What this creates
+
+- An ASP.NET Core app that registers Razor components with interactive server rendering.
+- `App.razor`, `Routes.razor`, and a `Home.razor` page at `/`.
+- EF Core with the SQLite provider and an `AppDbContext` holding a `Todos` set.
+- ASP.NET Core Identity registered against that context.
+- `GET /api/status`, `GET /api/todos`, and `POST /api/todos` beside the components.
+- A SignalR hub at `/hubs/updates`, Serilog console logging, an xUnit project, and a `Dockerfile`.
+
+## Generated shape
+
+```txt
+my-blazor-app/
+├── my_blazor_app.csproj
+├── my_blazor_app.http
+├── Program.cs
+├── appsettings.json
+├── appsettings.Development.json
+├── Dockerfile
+├── Components/
+│   ├── App.razor
+│   ├── Routes.razor
+│   ├── _Imports.razor
+│   └── Pages/
+│       └── Home.razor
+└── my_blazor_app.Tests/
+    ├── my_blazor_app.Tests.csproj
+    └── ApiTests.cs
+```
+
+The project name becomes `my_blazor_app`, and `_Imports.razor` imports `my_blazor_app.Components`.
+
+## Prerequisites
+
+- .NET SDK 10 or newer.
+- No database server. `appsettings.json` sets `Data Source=my_blazor_app.db`, a SQLite file next to the app.
+
+## Run and verify
+
+```bash
+cd my-blazor-app
+dotnet restore
+dotnet run
+```
+
+Open the URL ASP.NET Core prints. `/` renders `Home.razor`, which links to `/api/status`.
+
+```bash
+dotnet test my_blazor_app.Tests/my_blazor_app.Tests.csproj
+```
+
+No solution file is generated, so name the test project. The generated test requests `/` through `WebApplicationFactory<Program>` and expects a 200 response.
+
+## Create the database before using the todo endpoints
+
+`Program.cs` registers `AppDbContext` but never calls `Migrate()` or `EnsureCreated()`, so the SQLite file has no `Todos` table until you create it. `Microsoft.EntityFrameworkCore.Design` is already referenced:
+
+```bash
+dotnet tool install --global dotnet-ef
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+```
+
+## Add interactivity to a page
+
+The app enables the interactive server render mode, but `Home.razor` does not opt in, so it renders as static server-side HTML. Add a render mode to components that handle events:
+
+```razor
+@page "/counter"
+@rendermode RenderMode.InteractiveServer
+
+<button @onclick="() => count++">Clicked @count times</button>
+
+@code {
+    private int count;
+}
+```
+
+`App.razor` already loads `_framework/blazor.web.js`, which interactive components need. The generated `_Imports.razor` does not add `@using static Microsoft.AspNetCore.Components.Web.RenderMode`, so use the qualified `RenderMode.InteractiveServer` name or add that import.
+
+## Representative snippets
+
+Components and API endpoints share one pipeline:
+
+```csharp
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+app.MapGet("/api/todos", async (AppDbContext db) =>
+{
+    return Results.Ok(await db.Todos.OrderBy(todo => todo.Id).ToListAsync());
+});
+
+app.MapHub<UpdatesHub>("/hubs/updates");
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+```
+
+The hub broadcasts any message it receives to every connected client:
+
+```csharp
+public sealed class UpdatesHub : Hub
+{
+    public Task Broadcast(string message) => Clients.All.SendAsync("update", message);
+}
+```
+
+## When to choose it
+
+Choose Blazor when the team wants C# end to end and a server-rendered UI without a separate JavaScript build. Choose the [ASP.NET Core and EF Core guide](/guides/dotnet/aspnet-core-efcore/) for an API-only service on PostgreSQL.
+
+## Compatibility notes
+
+- `--dotnet-web-framework aspnet-blazor` is the server-side Blazor app. The separate `--dotnet-frontend` option (`blazor-webassembly`, `blazor-web-app`) adds a .NET frontend part in composed projects.
+- `--dotnet-auth aspnet-identity` calls `AddIdentityCore<IdentityUser>().AddEntityFrameworkStores<AppDbContext>()`, but `AppDbContext` derives from `DbContext`, not `IdentityDbContext`. Change the base class and add a migration before resolving the user store. No login pages are generated.
+- `--database postgres` switches EF Core to the Npgsql provider.
+
+## Deployment notes
+
+The `Dockerfile` publishes with the .NET 10 SDK and runs on the ASP.NET 10 runtime image on port 8080. The SQLite file lives inside the container's `/app` directory, so it is lost when the container is replaced. Mount a volume and point `ConnectionStrings__DefaultConnection` at it, or switch to PostgreSQL for hosted environments.
+
+## Troubleshooting
+
+| Symptom                                          | Check                                                                                     |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `SQLite Error 1: 'no such table: Todos'`         | Create and apply an EF Core migration.                                                    |
+| Button clicks on a page do nothing               | Add `@rendermode RenderMode.InteractiveServer` to the component.                          |
+| Identity user store fails to resolve             | `AppDbContext` must derive from `IdentityDbContext` and have a migration.                 |
+| The `.http` file's `GET /` returns HTML          | `/` is the Blazor page here; use `/api/status` for the JSON status response.              |
+| The generated README mentions TypeScript and npm | The .NET scaffold currently writes the TypeScript README. Use the commands in this guide. |
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=dotnet&dnwf=aspnet-blazor&dnorm=ef-core&dnauth=aspnet-identity&dnapi=minimal-api&dntest=xunit&dnjob=none&dnrt=signalr&dnobs=serilog&dncache=none&dndeploy=docker&db=sqlite).
+- Read the [.NET ecosystem docs](/docs/ecosystems/#net).
+- Review the [CLI create reference](/docs/cli/create/).
