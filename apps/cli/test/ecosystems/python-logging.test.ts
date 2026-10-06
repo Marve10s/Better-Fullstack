@@ -1,25 +1,27 @@
-import { describe, expect, it } from "bun:test";
-
-import { createVirtual } from "@/index";
 import {
-  validateConfigForProgrammaticUse,
-  validateFullConfig,
-} from "@/config/config-validation";
+  getVirtualFileContent as getFileContent,
+  hasVirtualFile as hasFile,
+  readVirtualFileContent,
+} from "@test/support/virtual-tree-utils";
+import { afterEach, describe, expect, it } from "bun:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import { validateConfigForProgrammaticUse, validateFullConfig } from "@/config/config-validation";
+import { createVirtual } from "@/index";
+import { createProjectOperation, planProjectOperation } from "@/operations/project-create";
 import { buildProjectConfig } from "@/operations/stack-helpers";
 import { runWithContext } from "@/presentation/context";
 import { resolvePythonLoggingPrompt } from "@/prompts/ecosystems/python-ecosystem";
 import { getPythonLoggingIncompatibility, parseStackPartSpecs } from "@/types";
-import {
-  getVirtualFileContent as getFileContent,
-  hasVirtualFile as hasFile,
-} from "@test/support/virtual-tree-utils";
 
 const STREAMLIT_REASON = getPythonLoggingIncompatibility("loguru", "streamlit") ?? "";
 
 const FRAMEWORK_WIRING = [
   ["fastapi", ["app.add_middleware(RequestLoggingMiddleware)", "log_config=None"]],
   ["starlette", ["Middleware(RequestLoggingMiddleware)", "log_config=None"]],
-  ["litestar", ["middleware=[RequestLoggingMiddleware]"]],
+  ["litestar", ["app.asgi_handler = RequestLoggingMiddleware(app.asgi_handler)"]],
   [
     "flask",
     [
@@ -42,9 +44,23 @@ function generatePython(overrides: Parameters<typeof createVirtual>[0]) {
   });
 }
 
+const MULTI_SERVICE = ["backend:python:fastapi:api", "backend:python:streamlit:ui"];
+
 function rejects(run: () => unknown) {
   expect(() => runWithContext({ silent: true }, run)).toThrow(STREAMLIT_REASON);
 }
+
+async function generatedFiles(overrides: Parameters<typeof createVirtual>[0], ...paths: string[]) {
+  const result = await generatePython(overrides);
+  expect(result.success).toBe(true);
+  return paths.map((path) => readVirtualFileContent(result.tree!.root, path));
+}
+
+const originalTelemetry = process.env.BTS_TELEMETRY_DISABLED;
+afterEach(() => {
+  if (originalTelemetry === undefined) delete process.env.BTS_TELEMETRY_DISABLED;
+  else process.env.BTS_TELEMETRY_DISABLED = originalTelemetry;
+});
 
 describe("Python logging", () => {
   for (const pythonLogging of ["loguru", "structlog"] as const) {
@@ -121,8 +137,169 @@ describe("Python logging", () => {
     );
   });
 
+  it("keeps local variable values out of tracebacks in every format", async () => {
+    const [loguru] = await generatedFiles(
+      { pythonWebFramework: "fastapi", pythonLogging: "loguru" },
+      "src/app/logging_config.py",
+    );
+    expect(loguru.match(/diagnose=False/g)).toHaveLength(2);
+
+    const [structlog, pyproject] = await generatedFiles(
+      { pythonWebFramework: "fastapi", pythonLogging: "structlog", pythonCli: ["rich"] },
+      "src/app/logging_config.py",
+      "pyproject.toml",
+    );
+    expect(pyproject).toContain('"rich>=');
+    expect(structlog).toContain("exception_formatter=structlog.dev.plain_traceback");
+    expect(structlog).toContain("ExceptionDictTransformer(show_locals=False)");
+  });
+
+  it("lets settings ignore .env keys that other libraries read", async () => {
+    for (const pythonLogging of ["loguru", "none"] as const) {
+      for (const pythonWebFramework of ["fastapi", "starlette"] as const) {
+        const [settings, envExample] = await generatedFiles(
+          { pythonWebFramework, pythonLogging },
+          "src/app/settings.py",
+          ".env.example",
+        );
+        expect(envExample).toContain("OPENAI_API_KEY=");
+        expect(settings).not.toContain("openai_api_key");
+        expect(settings).toContain('extra="ignore"');
+      }
+    }
+  });
+
+  it("configures logging again in each Gunicorn worker", async () => {
+    const [gunicorn] = await generatedFiles(
+      { pythonWebFramework: "fastapi", pythonServer: "gunicorn", pythonLogging: "structlog" },
+      "gunicorn.conf.py",
+    );
+    expect(gunicorn).toContain("def post_fork(server: Any, worker: Any) -> None:");
+    expect(gunicorn.slice(gunicorn.indexOf("def post_fork"))).toContain("configure_logging()");
+  });
+
+  it("makes LOG_LEVEL the threshold for every routed logger", async () => {
+    for (const [pythonLogging, handler] of [
+      ["loguru", "InterceptHandler(level)"],
+      ["structlog", "_StdoutHandler(level)"],
+    ] as const) {
+      const [loggingModule] = await generatedFiles(
+        { pythonWebFramework: "fastapi", pythonLogging },
+        "src/app/logging_config.py",
+      );
+      expect(loggingModule).toContain("existing.setLevel(logging.NOTSET)");
+      expect(loggingModule).toContain("max(logging.root.level, logging.WARNING)");
+      expect(loggingModule).toContain(handler);
+    }
+  });
+
+  it("documents dev commands that run the logging setup and states what it cannot format", async () => {
+    for (const pythonWebFramework of ["fastapi", "flask"] as const) {
+      const [withLogging] = await generatedFiles(
+        { pythonWebFramework, pythonLogging: "loguru" },
+        "README.md",
+      );
+      expect(withLogging).toContain("uv run python -m app.main`: Start");
+      expect(withLogging).not.toContain("--app app.main run");
+      expect(withLogging).toContain("## Logging");
+
+      const [withoutLogging] = await generatedFiles({ pythonWebFramework }, "README.md");
+      expect(withoutLogging).not.toContain("## Logging");
+      expect(withoutLogging).not.toContain("uv run python -m app.main");
+    }
+
+    const [flask] = await generatedFiles(
+      { pythonWebFramework: "flask", pythonLogging: "structlog" },
+      "README.md",
+    );
+    expect(flask).toContain("`flask run` adds Werkzeug's own line for every request");
+    const [litestar] = await generatedFiles(
+      { pythonWebFramework: "litestar", pythonLogging: "structlog" },
+      "README.md",
+    );
+    expect(litestar).toContain("the reload process prints its own startup lines");
+  });
+
+  it("logs unhandled errors inside the request context and returns the id", async () => {
+    for (const pythonWebFramework of ["fastapi", "starlette", "litestar", "aiohttp"] as const) {
+      for (const pythonLogging of ["loguru", "structlog"] as const) {
+        const [loggingModule] = await generatedFiles(
+          { pythonWebFramework, pythonLogging },
+          "src/app/logging_config.py",
+        );
+        const handled = loggingModule.slice(
+          loggingModule.indexOf("with request_context(request_id):"),
+        );
+        expect(handled).toContain('logger.exception("Unhandled error")');
+        expect(handled).toContain(
+          pythonWebFramework === "aiohttp"
+            ? "headers={REQUEST_ID_HEADER: request_id}"
+            : "await send_with_request_id(",
+        );
+      }
+    }
+  });
+
+  it("keeps the Flask request context open until the response body is closed", async () => {
+    const [loggingModule] = await generatedFiles(
+      { pythonWebFramework: "flask", pythonLogging: "loguru" },
+      "src/app/logging_config.py",
+    );
+    const middleware = loggingModule.slice(loggingModule.indexOf("class RequestLoggingMiddleware"));
+    expect(middleware).toContain(") -> Generator[bytes, None, None]:");
+    expect(middleware).toContain("yield from body");
+    expect(middleware).not.toContain("return self.app(environ");
+  });
+
+  it("logs Django error responses inside the request context", async () => {
+    const [loggingModule] = await generatedFiles(
+      { pythonWebFramework: "django", pythonLogging: "structlog" },
+      "src/app/logging_config.py",
+    );
+    expect(loggingModule).toContain("from django.utils.log import log_response");
+    expect(loggingModule).toContain("if response.status_code >= 400:");
+  });
+
+  it("puts request logging outside CORS and other app wrappers", async () => {
+    const [starlette] = await generatedFiles(
+      { pythonWebFramework: "starlette", pythonLogging: "loguru" },
+      "src/app/main.py",
+    );
+    expect(starlette.indexOf("Middleware(RequestLoggingMiddleware)")).toBeLessThan(
+      starlette.indexOf("CORSMiddleware,"),
+    );
+
+    const [fastapi] = await generatedFiles(
+      { pythonWebFramework: "fastapi", pythonLogging: "loguru" },
+      "src/app/main.py",
+    );
+    // FastAPI runs the middleware added last outermost.
+    expect(fastapi.indexOf("app.add_middleware(RequestLoggingMiddleware)")).toBeGreaterThan(
+      fastapi.indexOf("CORSMiddleware,"),
+    );
+
+    const [django] = await generatedFiles(
+      { pythonWebFramework: "django", pythonLogging: "loguru" },
+      "src/app/main.py",
+    );
+    expect(django.indexOf('"app.logging_config.request_logging_middleware"')).toBeLessThan(
+      django.indexOf('"corsheaders.middleware.CorsMiddleware"'),
+    );
+
+    const [flask] = await generatedFiles(
+      { pythonWebFramework: "flask", pythonLogging: "structlog", pythonGraphql: "ariadne" },
+      "src/app/main.py",
+    );
+    expect(flask.indexOf("RequestLoggingMiddleware(app.wsgi_app)")).toBeGreaterThan(
+      flask.indexOf("DispatcherMiddleware(app.wsgi_app"),
+    );
+  });
+
   it("leaves projects without a logging selection unchanged", async () => {
-    const result = await generatePython({ pythonWebFramework: "fastapi", pythonServer: "gunicorn" });
+    const result = await generatePython({
+      pythonWebFramework: "fastapi",
+      pythonServer: "gunicorn",
+    });
 
     expect(result.success).toBe(true);
     const root = result.tree!.root;
@@ -191,46 +368,86 @@ describe("Python logging", () => {
     ).toBe("structlog");
   });
 
-  it("rejects Streamlit with an explicit logging selection on every input path", () => {
+  it("rejects Streamlit with an explicit logging selection on every input path", async () => {
     expect(STREAMLIT_REASON).toContain("Streamlit");
+    const flatInputs = [
+      { pythonWebFramework: "streamlit", pythonLogging: "loguru" },
+      { pythonWebFramework: "streamlit", pythonLogging: "structlog" },
+    ] as const;
+    const graphInput = {
+      ecosystem: "python",
+      part: ["backend:python:streamlit", "backend.logging:python:loguru"],
+    } as const;
 
     rejects(() =>
       validateFullConfig(
-        { ecosystem: "python", pythonWebFramework: "streamlit", pythonLogging: "loguru" },
+        { ecosystem: "python", ...flatInputs[0] },
         new Set(["ecosystem", "pythonWebFramework", "pythonLogging"]),
         {} as never,
       ),
     );
+    for (const input of flatInputs) {
+      const result = await generatePython(input);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain(STREAMLIT_REASON);
+    }
+    for (const [ecosystem, part] of [
+      ["python", graphInput.part],
+      ["typescript", ["frontend:typescript:react-vite", ...graphInput.part]],
+    ] as const) {
+      const graphOnly = await createVirtual({
+        projectName: "python-logging-streamlit",
+        ecosystem,
+        stackParts: parseStackPartSpecs([...part]),
+      });
+      expect(graphOnly.success).toBe(false);
+      expect(graphOnly.error).toContain(STREAMLIT_REASON);
+    }
+
+    for (const input of [{ ecosystem: "python", ...flatInputs[1] }, graphInput]) {
+      await expect(planProjectOperation.invoke(input)).rejects.toThrow(STREAMLIT_REASON);
+    }
+    process.env.BTS_TELEMETRY_DISABLED = "1";
+    const targetDir = await mkdtemp(join(tmpdir(), "bfs-python-logging-"));
+    try {
+      await expect(
+        createProjectOperation.invoke({
+          ...graphInput,
+          projectName: "streamlit-logging",
+          targetDir,
+        }),
+      ).rejects.toThrow(STREAMLIT_REASON);
+    } finally {
+      await rm(targetDir, { recursive: true, force: true });
+    }
+  });
+
+  it("checks each logging part against the backend service that owns it", async () => {
+    const onStreamlit = parseStackPartSpecs([...MULTI_SERVICE, "ui.logging:python:loguru"]);
+    const onFastapi = parseStackPartSpecs([...MULTI_SERVICE, "api.logging:python:loguru"]);
+
     rejects(() =>
-      validateConfigForProgrammaticUse({
-        ecosystem: "python",
-        pythonWebFramework: "streamlit",
-        pythonLogging: "structlog",
-      }),
+      validateConfigForProgrammaticUse({ ecosystem: "python", stackParts: onStreamlit }),
     );
-    rejects(() =>
-      validateConfigForProgrammaticUse({
-        ecosystem: "typescript",
-        stackParts: parseStackPartSpecs([
-          "frontend:typescript:react-vite",
-          "backend:python:streamlit",
-          "backend.logging:python:loguru",
-        ]),
-      }),
-    );
-    rejects(() =>
-      buildProjectConfig({
-        ecosystem: "python",
-        pythonWebFramework: "streamlit",
-        pythonLogging: "loguru",
-      }),
-    );
-    rejects(() =>
-      buildProjectConfig({
-        ecosystem: "python",
-        part: ["backend:python:streamlit", "backend.logging:python:structlog"],
-      }),
-    );
+    expect(() =>
+      runWithContext({ silent: true }, () =>
+        validateConfigForProgrammaticUse({ ecosystem: "python", stackParts: onFastapi }),
+      ),
+    ).not.toThrow();
+
+    const rejected = await createVirtual({
+      projectName: "python-logging-ui",
+      ecosystem: "python",
+      stackParts: onStreamlit,
+    });
+    expect(rejected.success).toBe(false);
+    expect(rejected.error).toContain(STREAMLIT_REASON);
+    const accepted = await createVirtual({
+      projectName: "python-logging-api",
+      ecosystem: "python",
+      stackParts: onFastapi,
+    });
+    expect(accepted.success).toBe(true);
   });
 
   it("validates the graph instead of a stale flat logging value", () => {

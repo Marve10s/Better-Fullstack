@@ -1336,14 +1336,14 @@ app.config["APP_NAME"] = settings.app_name
 app = Flask(__name__)
 {{/if}}
 CORS(app, origins=os.getenv("CORS_ORIGIN") or "*")
-{{#if (ne pythonLogging "none")}}
-app.wsgi_app = RequestLoggingMiddleware(app.wsgi_app)  # type: ignore[method-assign]
-{{/if}}
 {{#if (eq pythonGraphql "strawberry")}}
 app.add_url_rule("/graphql", view_func=GraphQLView.as_view("graphql_view", schema=graphql_schema))
 {{/if}}
 {{#if (eq pythonGraphql "ariadne")}}
 app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {"/graphql": GraphQL(ariadne_schema, debug=True)})
+{{/if}}
+{{#if (ne pythonLogging "none")}}
+app.wsgi_app = RequestLoggingMiddleware(app.wsgi_app)  # type: ignore[method-assign]
 {{/if}}
 
 
@@ -1496,12 +1496,13 @@ app = Litestar(
     route_handlers=[index, health{{#if (eq pythonObservability "prometheus-client")}}, metrics{{/if}}{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, auth_token, auth_me{{/if}}{{#if (eq pythonGraphql "strawberry")}}, GraphQLController{{/if}}{{#if (eq pythonGraphql "ariadne")}}, graphql{{/if}}],
     cors_config=cors_config,
 {{#if (ne pythonLogging "none")}}
-    middleware=[RequestLoggingMiddleware],
     # `litestar run` lets Uvicorn configure its loggers after this module loads.
     on_startup=[configure_logging],
 {{/if}}
 )
 {{#if (ne pythonLogging "none")}}
+# Wrap the whole app rather than its routes, so CORS preflights and 404s are logged too.
+app.asgi_handler = RequestLoggingMiddleware(app.asgi_handler)
 # Litestar configures logging while it builds the app; route its loggers afterwards.
 configure_logging()
 {{/if}}
@@ -1542,15 +1543,16 @@ async def metrics(request: Request) -> Response:
 
 
 middleware = [
+{{#if (ne pythonLogging "none")}}
+    # First in the list runs outermost, so CORS preflight replies are logged too.
+    Middleware(RequestLoggingMiddleware),
+{{/if}}
     Middleware(
         CORSMiddleware,
         allow_origins=[os.getenv("CORS_ORIGIN") or "*"],
         allow_methods=["*"],
         allow_headers=["*"],
     ),
-{{#if (ne pythonLogging "none")}}
-    Middleware(RequestLoggingMiddleware),
-{{/if}}
 ]
 
 app = Starlette(

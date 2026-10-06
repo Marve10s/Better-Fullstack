@@ -1396,8 +1396,8 @@ export function validatePythonLoggingConstraints(config: Partial<ProjectConfig>)
   incompatibilityError({
     message: `${issue.reason}.`,
     provided: {
-      "python-web-framework": issue.config.pythonWebFramework ?? "none",
-      "python-logging": issue.config.pythonLogging ?? "none",
+      "python-web-framework": issue.selection.pythonWebFramework ?? "none",
+      "python-logging": issue.selection.pythonLogging ?? "none",
     },
     suggestions: [
       "Use FastAPI, Django, Flask, Litestar, Starlette, aiohttp, or no web framework",

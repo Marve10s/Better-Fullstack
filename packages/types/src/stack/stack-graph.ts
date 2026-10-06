@@ -2699,6 +2699,16 @@ function createJavaCompatibilityIssue(
   return undefined;
 }
 
+export function getPythonLoggingIncompatibility(
+  pythonLogging: string | undefined,
+  pythonWebFramework: string | undefined,
+): string | null {
+  if (!pythonLogging || pythonLogging === "none") return null;
+  return pythonWebFramework === "streamlit"
+    ? "Streamlit configures its own server logging and has no request middleware, so Python logging is not wired for it"
+    : null;
+}
+
 function getStackPartCompatibilityIssue(
   part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem"> &
     Partial<Pick<StackPart, "source">>,
@@ -2765,6 +2775,19 @@ function getStackPartCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: "Go migrations require SQLite, PostgreSQL, or MySQL",
+      });
+    }
+  }
+
+  if (part.ecosystem === "python" && part.role === "logging") {
+    const reason = getPythonLoggingIncompatibility(part.toolId, context.ownerToolId);
+    if (reason) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_OWNER_TOOL",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: reason,
       });
     }
   }

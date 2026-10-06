@@ -10,9 +10,13 @@ import {
   getCompatibilityDecision,
   getCompatibleFormLibraries,
   getDisabledReason,
-  getPythonLoggingIncompatibility,
   isAnalyticsFrontendSupported,
 } from "@/stack/compatibility";
+import {
+  getPythonLoggingIncompatibility,
+  parseStackPartSpecs,
+  validateStackParts,
+} from "@/stack/stack-graph";
 import { DEFAULT_STACK_SELECTION } from "@/stack/stack-translation";
 
 describe("compatibility issue helpers", () => {
@@ -488,7 +492,15 @@ describe("compatibility issue helpers", () => {
       ),
     ).toBe(reason);
 
-    for (const framework of ["fastapi", "django", "flask", "litestar", "starlette", "aiohttp", "none"]) {
+    for (const framework of [
+      "fastapi",
+      "django",
+      "flask",
+      "litestar",
+      "starlette",
+      "aiohttp",
+      "none",
+    ]) {
       const supported = { ...streamlit, pythonWebFramework: framework };
       expect(getPythonLoggingIncompatibility("structlog", framework)).toBeNull();
       expect(analyzeStackCompatibility(supported).adjustedStack?.pythonLogging ?? "loguru").toBe(
@@ -496,6 +508,17 @@ describe("compatibility issue helpers", () => {
       );
       expect(getDisabledReason(supported, "pythonLogging", "loguru")).toBeNull();
     }
+  });
+
+  it("checks each Python logging part against the backend that owns it", () => {
+    const reason = getPythonLoggingIncompatibility("loguru", "streamlit");
+    const issuesFor = (logging: string) =>
+      validateStackParts(
+        parseStackPartSpecs(["backend:python:fastapi:api", "backend:python:streamlit:ui", logging]),
+      ).issues.map((issue) => issue.message);
+
+    expect(issuesFor("ui.logging:python:loguru")).toContain(reason);
+    expect(issuesFor("api.logging:python:loguru")).not.toContain(reason);
   });
 
   it("returns structured API/frontend issues for React-only APIs", () => {

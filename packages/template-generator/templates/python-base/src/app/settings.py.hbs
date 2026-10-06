@@ -16,6 +16,9 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        # .env also holds values read by other libraries, such as API keys and
+        # broker URLs; settings only reads the fields declared below.
+        extra="ignore",
     )
 
     # Application settings

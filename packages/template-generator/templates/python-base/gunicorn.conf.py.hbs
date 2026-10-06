@@ -17,4 +17,14 @@ class AppLogger(Logger):
 
 
 logger_class = AppLogger
+
+
+def post_fork(server: Any, worker: Any) -> None:
+    """Configure logging again in each worker process.
+
+    With --preload the app is imported once in the master, so its own setup does
+    not run in the workers, and Uvicorn's worker class detaches its loggers from
+    the root handler before the fork.
+    """
+    configure_logging()
 {{/if}}

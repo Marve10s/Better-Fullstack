@@ -263,7 +263,19 @@ export async function createVirtual(
       (config.addons ?? []).some(
         (addon) => addon === "docker-compose" || addon === "devcontainer" || addon === "kong",
       );
-    if (config.integrations === "nango" || config.payments !== "none" || hasLegacyContainerAddon) {
+    // Graph input generates from its own logging parts, so check them alongside the flat field.
+    const pythonLoggingSelections = [
+      config.pythonLogging,
+      ...(config.stackParts ?? [])
+        .filter((part) => part.role === "logging" && part.ecosystem === "python")
+        .map((part) => part.toolId),
+    ];
+    if (
+      config.integrations === "nango" ||
+      config.payments !== "none" ||
+      pythonLoggingSelections.some((selection) => selection && selection !== "none") ||
+      hasLegacyContainerAddon
+    ) {
       const [{ validateConfigForProgrammaticUse }, { runWithContextAsync }] = await Promise.all([
         import("@/config/config-validation"),
         import("@/presentation/context"),

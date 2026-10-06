@@ -43,6 +43,7 @@ import {
 } from "@/stack/stack-compatibility-rules";
 import {
   getAddonStackPartBinding,
+  getPythonLoggingIncompatibility,
   getStackPartCompatibilityIssueForPart,
   legacyProjectConfigToStackParts,
 } from "@/stack/stack-graph";
@@ -182,16 +183,6 @@ export function hasSignozSupportedGoServerTarget(stack: {
 
 export function isSignozSupportedPythonWebFramework(framework: string): boolean {
   return SIGNOZ_SUPPORTED_PYTHON_WEB_FRAMEWORKS.has(framework);
-}
-
-export function getPythonLoggingIncompatibility(
-  pythonLogging: string | undefined,
-  pythonWebFramework: string | undefined,
-): string | null {
-  if (!pythonLogging || pythonLogging === "none") return null;
-  return pythonWebFramework === "streamlit"
-    ? "Streamlit configures its own server logging and has no request middleware, so Python logging is not wired for it"
-    : null;
 }
 
 // ============================================

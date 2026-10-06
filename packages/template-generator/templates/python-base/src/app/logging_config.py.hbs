@@ -1,10 +1,11 @@
 {{#if (ne pythonLogging "none")}}
 """Application logging with {{#if (eq pythonLogging "loguru")}}Loguru{{else}}structlog{{/if}}.
 
-`configure_logging()` runs at startup. LOG_LEVEL sets the level and
-LOG_FORMAT picks the output: `json`, `console`, or `auto`, which writes JSON
-when APP_ENV=production and readable lines otherwise. Standard library
-loggers, including the web framework and server, share the same output.
+`configure_logging()` runs at startup. LOG_LEVEL sets the level for every
+logger, including the web framework and server, and LOG_FORMAT picks the
+output: `json`, `console`, or `auto`, which writes JSON when
+APP_ENV=production and readable lines otherwise. Tracebacks never include
+local variable values, which can hold secrets.
 """
 
 {{#if (eq pythonLogging "loguru")}}
@@ -39,6 +40,9 @@ import structlog
 {{#if (eq pythonWebFramework "aiohttp")}}
 from aiohttp import web
 from aiohttp.typedefs import Handler
+{{/if}}
+{{#if (eq pythonWebFramework "django")}}
+from django.utils.log import log_response
 {{/if}}
 {{#if (ne pythonValidation "pydantic")}}
 from dotenv import load_dotenv
@@ -85,6 +89,9 @@ if TYPE_CHECKING:
 
 {{#if (ne pythonWebFramework "none")}}
 REQUEST_ID_HEADER = "X-Request-ID"
+{{#if (or (eq pythonWebFramework "fastapi") (eq pythonWebFramework "starlette") (eq pythonWebFramework "litestar"))}}
+_ERROR_BODY = b"Internal Server Error"
+{{/if}}
 
 {{/if}}
 # Server access logs repeat the request line logged by the middleware below, and
@@ -118,13 +125,15 @@ def _log_settings() -> tuple[str, bool]:
 
 
 def _route_stdlib_loggers() -> None:
-    """Send every existing standard library logger through the root handler."""
+    """Send every existing standard library logger through the root handler at LOG_LEVEL."""
     for existing in list(logging.root.manager.loggerDict.values()):
         if isinstance(existing, logging.Logger):
             existing.handlers.clear()
             existing.propagate = True
+            existing.setLevel(logging.NOTSET)
+    quiet_level = max(logging.root.level, logging.WARNING)
     for name in _QUIET_LOGGERS:
-        logging.getLogger(name).setLevel(logging.WARNING)
+        logging.getLogger(name).setLevel(quiet_level)
 
 
 def _write_stdout(text: str) -> None:
@@ -199,9 +208,15 @@ def configure_logging() -> None:
     if use_json:
         logger.add(_json_sink, level=level, backtrace=False, diagnose=False)
     else:
-        logger.add(_write_stdout, level=level, format=_console_format, colorize=sys.stdout.isatty())
+        logger.add(
+            _write_stdout,
+            level=level,
+            format=_console_format,
+            colorize=sys.stdout.isatty(),
+            diagnose=False,
+        )
     logger.configure(patcher=_patch_record)
-    logging.basicConfig(handlers=[InterceptHandler()], level=level, force=True)
+    logging.basicConfig(handlers=[InterceptHandler(level)], level=level, force=True)
     _route_stdlib_loggers()
 {{#if (ne pythonWebFramework "none")}}
 
@@ -263,16 +278,18 @@ def configure_logging() -> None:
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
-    # Production tracebacks leave out local variables, which can hold secrets.
+    # Tracebacks leave out local variables, which can hold secrets. The console
+    # renderer would otherwise use Rich or better-exceptions, which print them.
     json_tracebacks = structlog.processors.ExceptionRenderer(
         structlog.tracebacks.ExceptionDictTransformer(show_locals=False)
     )
-    renderers: list[Processor] = (
-        [json_tracebacks, structlog.processors.JSONRenderer()]
-        if use_json
-        else [structlog.dev.ConsoleRenderer(colors=sys.stdout.isatty())]
+    console = structlog.dev.ConsoleRenderer(
+        colors=sys.stdout.isatty(), exception_formatter=structlog.dev.plain_traceback
     )
-    handler = _StdoutHandler()
+    renderers: list[Processor] = (
+        [json_tracebacks, structlog.processors.JSONRenderer()] if use_json else [console]
+    )
+    handler = _StdoutHandler(level)
     handler.setFormatter(
         structlog.stdlib.ProcessorFormatter(
             foreign_pre_chain=shared_processors,
@@ -331,12 +348,14 @@ class RequestLoggingMiddleware:
         headers = dict(scope["headers"])
         request_id = _request_id(headers.get(b"x-request-id", b"").decode("latin-1"))
         status_code = 500
+        response_started = False
         started = time.perf_counter()
 
         async def send_with_request_id(message: Message) -> None:
-            nonlocal status_code
+            nonlocal status_code, response_started
             if message["type"] == "http.response.start":
                 status_code = message["status"]
+                response_started = True
                 message["headers"] = [
                     *message.get("headers", []),
                     (b"x-request-id", request_id.encode("latin-1")),
@@ -346,6 +365,25 @@ class RequestLoggingMiddleware:
         with request_context(request_id):
             try:
                 await self.app(scope, receive, send_with_request_id)
+            except Exception:
+                # Handle the error here so its traceback carries the request id and
+                # the 500 response returns it; the server would do neither.
+                logger.exception("Unhandled error")
+                status_code = 500
+                if not response_started:
+                    await send_with_request_id(
+                        {
+                            "type": "http.response.start",
+                            "status": 500,
+                            "headers": [
+                                (b"content-type", b"text/plain; charset=utf-8"),
+                                (b"content-length", str(len(_ERROR_BODY)).encode()),
+                            ],
+                        }
+                    )
+                    await send_with_request_id(
+                        {"type": "http.response.body", "body": _ERROR_BODY, "more_body": False}
+                    )
             finally:
                 _log_request(scope["method"], scope["path"], status_code, started)
 {{/if}}
@@ -360,7 +398,9 @@ class RequestLoggingMiddleware:
 
     def __call__(
         self, environ: "WSGIEnvironment", start_response: "StartResponse"
-    ) -> Iterable[bytes]:
+    ) -> Generator[bytes, None, None]:
+        # As a generator, the middleware keeps the request context open while the
+        # server sends the body, and logs the request when the server closes it.
         request_id = _request_id(environ.get("HTTP_X_REQUEST_ID"))
         status_code = 500
         started = time.perf_counter()
@@ -373,9 +413,18 @@ class RequestLoggingMiddleware:
             return start_response(status, [*headers, (REQUEST_ID_HEADER, request_id)], exc_info)
 
         with request_context(request_id):
+            body: Iterable[bytes] = ()
             try:
-                return self.app(environ, start_response_with_request_id)
+                body = self.app(environ, start_response_with_request_id)
+                yield from body
+            except Exception:
+                # A body can fail after its status was sent; record the request as failed.
+                status_code = 500
+                raise
             finally:
+                close = getattr(body, "close", None)
+                if close is not None:
+                    close()
                 _log_request(
                     environ.get("REQUEST_METHOD", ""),
                     environ.get("PATH_INFO", ""),
@@ -402,6 +451,16 @@ def request_logging_middleware(get_response: Callable[[Any], Any]) -> Callable[[
         with request_context(request_id):
             response = get_response(request)
             response[REQUEST_ID_HEADER] = request_id
+            if response.status_code >= 400:
+                # Django logs error responses after the middleware returns, without the
+                # request id; logging them here marks them so Django skips its copy.
+                log_response(
+                    "%s: %s",
+                    response.reason_phrase,
+                    request.path,
+                    response=response,
+                    request=request,
+                )
             _log_request(request.method or "", request.path, response.status_code, started)
         return response
 
@@ -427,6 +486,13 @@ async def request_logging_middleware(request: web.Request, handler: Handler) -> 
             status_code = exc.status
             exc.headers[REQUEST_ID_HEADER] = request_id
             raise
+        except Exception:
+            # Handle the error here so its traceback carries the request id and
+            # the 500 response returns it; aiohttp would do neither.
+            logger.exception("Unhandled error")
+            return web.Response(
+                status=500, text="Internal Server Error", headers={REQUEST_ID_HEADER: request_id}
+            )
         finally:
             _log_request(request.method, request.path, status_code, started)
 {{/if}}

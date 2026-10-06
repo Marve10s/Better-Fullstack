@@ -2,7 +2,6 @@ import {
   analyzeStackCompatibility,
   getAddonStackPartBinding,
   getPythonLoggingIncompatibility,
-  stackGraphToLegacyProjectConfigForEcosystem,
   type CompatibilityInput,
   type ProjectConfig,
 } from "@/types";
@@ -37,21 +36,34 @@ function getProjectBackendFromCompatibility(backend: string): string {
   return backend.startsWith("self-") ? "self" : backend;
 }
 
-// Checks the selection the generator will use: a Python backend part wins over
-// stale flat fields.
+// Checks the selections the generator will use: in a graph each Python logging
+// part is checked against the backend that owns it, and wins over stale flat fields.
 export function getPythonLoggingSelectionIssue(config: Partial<ProjectConfig>) {
-  const pythonConfig = config.stackParts?.some(
+  const parts = config.stackParts ?? [];
+  const usesGraph = parts.some(
     (part) => part.role === "backend" && part.ecosystem === "python" && part.source !== "provided",
-  )
-    ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "python")
-    : config.ecosystem === "python"
-      ? config
-      : undefined;
-  const reason = getPythonLoggingIncompatibility(
-    pythonConfig?.pythonLogging,
-    pythonConfig?.pythonWebFramework,
   );
-  return reason && pythonConfig ? { reason, config: pythonConfig } : null;
+  const selections = usesGraph
+    ? parts
+        .filter(
+          (part) =>
+            part.role === "logging" && part.ecosystem === "python" && part.source !== "provided",
+        )
+        .map((part) => ({
+          pythonLogging: part.toolId,
+          pythonWebFramework: parts.find((owner) => owner.id === part.ownerPartId)?.toolId,
+        }))
+    : config.ecosystem === "python"
+      ? [{ pythonLogging: config.pythonLogging, pythonWebFramework: config.pythonWebFramework }]
+      : [];
+  for (const selection of selections) {
+    const reason = getPythonLoggingIncompatibility(
+      selection.pythonLogging,
+      selection.pythonWebFramework,
+    );
+    if (reason) return { reason, selection };
+  }
+  return null;
 }
 
 export function hasSelectedTypeScriptBackendPart(config: Partial<ProjectConfig>): boolean {
