@@ -2,6 +2,7 @@ import type { Ecosystem, ProjectConfig } from "@better-fullstack/types";
 
 import {
   runDevCheck,
+  runProductionStartCheck,
   startDevServer,
   stopDevServer,
   isDbDependentProject,
@@ -37,6 +38,9 @@ type RegistryRetryOptions = {
   sleep?: (durationMs: number) => Promise<void>;
 };
 
+/** Checks a preset opts into beyond install, build, and type check. */
+export type RuntimeCheck = { kind: "production-start"; routes: readonly string[] };
+
 export type VerifyOptions = {
   devCheck?: boolean;
   strict?: boolean;
@@ -46,6 +50,7 @@ export type VerifyOptions = {
   doctorCliPath?: string;
   outputDir?: string;
   config?: ProjectConfig;
+  runtimeChecks?: readonly RuntimeCheck[];
 };
 
 export type VerifyResult = {
@@ -404,6 +409,18 @@ export async function verifyTypeScript(
     }
   } else {
     steps.push(skippedStep("build"));
+  }
+
+  const productionStart = options?.runtimeChecks?.find(
+    (check) => check.kind === "production-start",
+  );
+  if (productionStart && options?.config) {
+    const build = steps.at(-1)!;
+    steps.push(
+      build.success && !build.skipped
+        ? await runProductionStartCheck(projectDir, options.config, productionStart.routes)
+        : skippedStep("production-start"),
+    );
   }
 
   steps.push(...(await runTypeScriptQualityGate(projectDir, Boolean(options?.qualityGate))));

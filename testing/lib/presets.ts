@@ -1,5 +1,6 @@
 import type { Ecosystem, ProjectConfig } from "@better-fullstack/types";
 import type { ComboCandidate } from "@testing/lib/generate-combos/types";
+import type { RuntimeCheck } from "@testing/lib/verify";
 
 import {
   buildHistoryFingerprint,
@@ -161,6 +162,7 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
 type PresetDef = {
   ecosystem: Ecosystem;
   overrides: Partial<ProjectConfig>;
+  runtimeChecks?: readonly RuntimeCheck[];
 };
 
 export type PresetGroupId = "pr-core" | "pr-broad" | "all";
@@ -198,6 +200,8 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       ],
       examples: ["tanstack-showcase"],
     },
+    // A production build of this stack once answered 500 on every request.
+    runtimeChecks: [{ kind: "production-start", routes: ["/", "/login"] }],
   },
 
   t3: {
@@ -1126,6 +1130,7 @@ function buildSinglePresetCombo(presetId: string): ComboCandidate {
     fingerprint,
     fingerprintKey,
     command: buildCommand(config.projectName, config),
+    runtimeChecks: def.runtimeChecks,
   };
 }
 

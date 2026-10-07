@@ -2,6 +2,7 @@ import type { ProjectConfig } from "@better-fullstack/types";
 import type { StepResult } from "@testing/lib/verify";
 
 import { getLocalWebDevPort } from "@better-fullstack/types";
+import { join } from "node:path";
 
 const DEV_STARTUP_TIMEOUT_MS = 120_000;
 const TOTAL_DEV_CHECK_TIMEOUT_MS = 150_000;
@@ -235,10 +236,11 @@ async function killProcessTree(pid: number): Promise<void> {
 export async function startDevServer(
   projectDir: string,
   config: ProjectConfig,
+  command = ["bun", "run", "dev"],
 ): Promise<DevServerHandle> {
   const start = Date.now();
 
-  const proc = Bun.spawn(["bun", "run", "dev"], {
+  const proc = Bun.spawn(command, {
     cwd: projectDir,
     stdout: "pipe",
     stderr: "pipe",
@@ -429,6 +431,79 @@ export async function runDevCheck(projectDir: string, config: ProjectConfig): Pr
       stderr: `${err.message}\n${err.stderrBuf?.slice(-2000) ?? ""}`,
       classification: classifyDevCheckError(err.stderrBuf ?? "", err.stdoutBuf ?? "", config),
       advisory: isDbDependent,
+    };
+  } finally {
+    if (handle) {
+      await stopDevServer(handle);
+    }
+  }
+}
+
+// ── Production start ────────────────────────────────────────────────────
+
+// A Node stack frame or a named error in the server's own output.
+const LOGGED_EXCEPTION_PATTERN = /\b[A-Z]\w*Error: |^\s+at \S.*:\d+:\d+\)?$/m;
+
+/**
+ * Serve the built web app the way its package.json documents (`serve`), request each route,
+ * and fail on a non-2xx status, an error page, or an exception in the server output.
+ */
+export async function runProductionStartCheck(
+  projectDir: string,
+  config: ProjectConfig,
+  routes: readonly string[],
+): Promise<StepResult> {
+  const start = Date.now();
+  const command = ["bun", "run", "serve", "--port", String(getExpectedPort(config))];
+  let handle: DevServerHandle | null = null;
+
+  try {
+    handle = await startDevServer(join(projectDir, "apps", "web"), config, command);
+
+    const errors: string[] = [];
+    const responses: string[] = [];
+    for (const route of routes) {
+      try {
+        // oxlint-disable-next-line no-await-in-loop -- routes share one server and run in order
+        const resp = await fetch(`${handle.serverUrl}${route}`, {
+          signal: AbortSignal.timeout(HTTP_REQUEST_TIMEOUT_MS),
+        });
+        // oxlint-disable-next-line no-await-in-loop -- read each body before the next request
+        const body = await resp.text();
+        responses.push(`${route} → ${resp.status} (${body.length} bytes)`);
+        const validation = validateHtmlResponse(body, resp.status, config);
+        if (!resp.ok) {
+          errors.push(`${route}: HTTP ${resp.status}\n${body.slice(0, 1000)}`);
+        } else if (!validation.ok) {
+          errors.push(`${route}: ${validation.errors.join("; ")}`);
+        }
+      } catch (error) {
+        errors.push(`${route}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+
+    const logs = `${handle.stdoutBuf()}\n${handle.stderrBuf()}`;
+    if (LOGGED_EXCEPTION_PATTERN.test(logs)) {
+      errors.push(`Server logged an exception:\n${logs.slice(-2000)}`);
+    }
+
+    return {
+      step: "production-start",
+      success: errors.length === 0,
+      durationMs: Date.now() - start,
+      stdout: `${command.join(" ")}\n${responses.join("\n")}`,
+      stderr: errors.length > 0 ? errors.join("\n").slice(-4000) : undefined,
+      classification: errors.length > 0 ? "template" : undefined,
+    };
+  } catch (error) {
+    const err = error as Error & { stdoutBuf?: string; stderrBuf?: string };
+    return {
+      step: "production-start",
+      success: false,
+      durationMs: Date.now() - start,
+      stdout: err.stdoutBuf?.slice(-2000),
+      stderr: `${command.join(" ")}: ${err.message}\n${err.stderrBuf?.slice(-2000) ?? ""}`,
+      classification: classifyDevCheckError(err.stderrBuf ?? "", err.stdoutBuf ?? "", config),
     };
   } finally {
     if (handle) {
