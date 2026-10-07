@@ -302,6 +302,27 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
     },
   },
 
+  // The server image the docker deploy target generates, built and run as a user would.
+  "hono-node-prisma-docker": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["none"],
+      backend: "hono",
+      runtime: "node",
+      database: "sqlite",
+      orm: "prisma",
+      api: "trpc",
+      serverDeploy: "docker",
+      packageManager: "pnpm",
+    },
+    runtimeChecks: [
+      {
+        kind: "docker-image",
+        env: { DATABASE_URL: "file:/tmp/smoke.db", CORS_ORIGIN: "http://localhost:3001" },
+      },
+    ],
+  },
+
   "frontend-only-react-vite": {
     ecosystem: "typescript",
     overrides: {
@@ -1036,6 +1057,7 @@ const PRESET_GROUPS = {
     "elixir-plain-worker",
     "native-uniwind-trpc",
     "frontend-only-react-vite",
+    "hono-node-prisma-docker",
   ],
   "pr-broad": [
     "nextjs-minimal",

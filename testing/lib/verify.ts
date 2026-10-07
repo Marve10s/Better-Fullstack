@@ -13,6 +13,8 @@ import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 const STEP_TIMEOUT_MS = 300_000; // 5 minutes per step
+const DOCKER_BUILD_TIMEOUT_MS = 900_000;
+const DOCKER_READY_TIMEOUT_MS = 60_000;
 const NUXT_INSTALL_TIMEOUT_MS = 900_000; // Nuxt dependency resolution is materially heavier.
 const REGISTRY_PROPAGATION_RETRY_DELAYS_MS = [20_000, 40_000] as const;
 
@@ -39,7 +41,9 @@ type RegistryRetryOptions = {
 };
 
 /** Checks a preset opts into beyond install, build, and type check. */
-export type RuntimeCheck = { kind: "production-start"; routes: readonly string[] };
+export type RuntimeCheck =
+  | { kind: "production-start"; routes: readonly string[] }
+  | { kind: "docker-image"; env: Readonly<Record<string, string>> };
 
 export type VerifyOptions = {
   devCheck?: boolean;
@@ -336,12 +340,135 @@ async function runTypeScriptQualityGate(
   return steps;
 }
 
+// Docker output names registries and networks, so classify by outcome instead of by keyword.
+function dockerFailure(result: StepResult): StepResult {
+  return { ...result, classification: result.timedOut ? "environment" : "template" };
+}
+
+async function runDockerContainer(
+  tag: string,
+  projectDir: string,
+  env: Readonly<Record<string, string>>,
+): Promise<StepResult> {
+  const start = Date.now();
+  const envArgs = Object.entries(env).flatMap(([name, value]) => ["--env", `${name}=${value}`]);
+  const run = await runStep(
+    "docker-run",
+    "docker",
+    ["run", "--detach", "--publish", "127.0.0.1::3000", ...envArgs, tag],
+    projectDir,
+  );
+  if (!run.success) return dockerFailure(run);
+
+  const containerId = run.stdout?.trim() ?? "";
+  try {
+    const port = await runStep(
+      "docker-run",
+      "docker",
+      ["port", containerId, "3000/tcp"],
+      projectDir,
+    );
+    const url = `http://${port.stdout?.trim().split("\n")[0]}/`;
+    let lastError = port.success ? "" : (port.stderr ?? "");
+    const deadline = Date.now() + DOCKER_READY_TIMEOUT_MS;
+    while (port.success && Date.now() < deadline) {
+      try {
+        // oxlint-disable-next-line no-await-in-loop -- poll until the server accepts connections
+        const resp = await fetch(url, { signal: AbortSignal.timeout(5_000) });
+        // oxlint-disable-next-line no-await-in-loop -- read the answer before deciding
+        const body = await resp.text();
+        if (resp.ok) {
+          return {
+            step: "docker-run",
+            success: true,
+            durationMs: Date.now() - start,
+            stdout: `${url} → ${resp.status} ${body.slice(0, 200)}`,
+          };
+        }
+        lastError = `${url} → HTTP ${resp.status}\n${body.slice(0, 1000)}`;
+        break;
+      } catch (error) {
+        lastError = `${url}: ${error instanceof Error ? error.message : String(error)}`;
+      }
+      // oxlint-disable-next-line no-await-in-loop -- bounded readiness poll
+      await Bun.sleep(1_000);
+    }
+
+    const logs = await runStep("docker-run", "docker", ["logs", containerId], projectDir);
+    return {
+      step: "docker-run",
+      success: false,
+      durationMs: Date.now() - start,
+      stderr: `${lastError}\nContainer logs:\n${logs.stdout ?? ""}${logs.stderr ?? ""}`.slice(
+        -4000,
+      ),
+      classification: "template",
+    };
+  } finally {
+    await runStep("docker-cleanup", "docker", ["rm", "--force", containerId], projectDir);
+  }
+}
+
+/**
+ * Build the generated server image from the project root, as its Dockerfile documents, then
+ * run it and request the health route. The image installs and builds with the project's own
+ * package manager, so this replaces the host install and build.
+ */
+async function runDockerImageCheck(
+  comboName: string,
+  projectDir: string,
+  env: Readonly<Record<string, string>>,
+  strict: boolean,
+): Promise<StepResult[]> {
+  const daemon = await runStep("docker-build", "docker", ["info"], projectDir, {
+    timeoutMs: 30_000,
+  });
+  if (!daemon.success) {
+    return [
+      {
+        ...daemon,
+        stderr: `Docker is required to build the server image.\n${daemon.stderr ?? ""}`,
+        classification: strict ? "unknown" : "environment",
+      },
+    ];
+  }
+
+  const tag = `bfs-smoke-${comboName}`;
+  const build = await runStep(
+    "docker-build",
+    "docker",
+    ["build", "--file", "apps/server/Dockerfile", "--tag", tag, "."],
+    projectDir,
+    { timeoutMs: DOCKER_BUILD_TIMEOUT_MS },
+  );
+  if (!build.success) return [dockerFailure(build)];
+
+  try {
+    return [build, await runDockerContainer(tag, projectDir, env)];
+  } finally {
+    await runStep("docker-cleanup", "docker", ["image", "rm", "--force", tag], projectDir);
+  }
+}
+
 export async function verifyTypeScript(
   comboName: string,
   projectDir: string,
   options?: VerifyOptions,
 ): Promise<VerifyResult> {
   const steps: StepResult[] = [];
+
+  const dockerImage = options?.runtimeChecks?.find((check) => check.kind === "docker-image");
+  if (dockerImage) {
+    steps.push(
+      ...(await runDockerImageCheck(
+        comboName,
+        projectDir,
+        dockerImage.env,
+        Boolean(options?.strict),
+      )),
+    );
+    return wrapResult("typescript", comboName, projectDir, steps);
+  }
 
   // Convex projects require `convex codegen` before build/typecheck can work
   const isConvex = existsSync(join(projectDir, "packages", "backend", "convex"));
