@@ -3,8 +3,12 @@ import {
   getVerifier,
   runWithRegistryPropagationRetry,
   verifyElixir,
+  verifyTypeScript,
 } from "@testing/lib/verify";
 import { describe, expect, it } from "bun:test";
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 describe("smoke verifiers", () => {
   it("routes Elixir smoke combos to the Elixir verifier", () => {
@@ -103,5 +107,41 @@ describe("smoke verifiers", () => {
     expect(
       failure("#5 [internal] load metadata for docker.io/library/node:24-alpine\nERROR: failed to solve"),
     ).toBe("template");
+  });
+
+  it("removes the named container when `docker run` fails after creating it", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "bfs-fake-docker-"));
+    const log = join(dir, "calls.log");
+    writeFileSync(
+      join(dir, "docker"),
+      `#!/bin/sh
+echo "$*" >> "${log}"
+if [ "$1" = run ]; then
+  echo "docker: Error response from daemon: driver failed programming external connectivity" >&2
+  exit 125
+fi
+`,
+    );
+    chmodSync(join(dir, "docker"), 0o755);
+    const path = process.env.PATH;
+    process.env.PATH = `${dir}:${path}`;
+
+    try {
+      const result = await verifyTypeScript("docker-run-fails", dir, {
+        strict: true,
+        runtimeChecks: [{ kind: "docker-image", env: {} }],
+      });
+      const calls = readFileSync(log, "utf-8").trim().split("\n");
+      const container = calls.find((call) => call.startsWith("run "))?.match(/--name (\S+)/)?.[1];
+
+      expect(result.overallSuccess).toBe(false);
+      expect(result.steps.at(-1)?.classification).toBe("template");
+      expect(container).toStartWith("bfs-smoke-docker-run-fails-");
+      expect(calls).toContain(`rm --force ${container}`);
+      expect(calls).toContain("image rm --force bfs-smoke-docker-run-fails");
+    } finally {
+      process.env.PATH = path;
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

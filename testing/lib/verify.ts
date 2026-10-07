@@ -357,6 +357,7 @@ export function dockerFailure(result: StepResult): StepResult {
 
 async function runDockerContainer(
   tag: string,
+  container: string,
   projectDir: string,
   env: Readonly<Record<string, string>>,
 ): Promise<StepResult> {
@@ -365,58 +366,46 @@ async function runDockerContainer(
   const run = await runStep(
     "docker-run",
     "docker",
-    ["run", "--detach", "--publish", "127.0.0.1::3000", ...envArgs, tag],
+    ["run", "--detach", "--name", container, "--publish", "127.0.0.1::3000", ...envArgs, tag],
     projectDir,
   );
   if (!run.success) return dockerFailure(run);
 
-  const containerId = run.stdout?.trim() ?? "";
-  try {
-    const port = await runStep(
-      "docker-run",
-      "docker",
-      ["port", containerId, "3000/tcp"],
-      projectDir,
-    );
-    const url = `http://${port.stdout?.trim().split("\n")[0]}/`;
-    let lastError = port.success ? "" : (port.stderr ?? "");
-    const deadline = Date.now() + DOCKER_READY_TIMEOUT_MS;
-    while (port.success && Date.now() < deadline) {
-      try {
-        // oxlint-disable-next-line no-await-in-loop -- poll until the server accepts connections
-        const resp = await fetch(url, { signal: AbortSignal.timeout(5_000) });
-        // oxlint-disable-next-line no-await-in-loop -- read the answer before deciding
-        const body = await resp.text();
-        if (resp.ok) {
-          return {
-            step: "docker-run",
-            success: true,
-            durationMs: Date.now() - start,
-            stdout: `${url} → ${resp.status} ${body.slice(0, 200)}`,
-          };
-        }
-        lastError = `${url} → HTTP ${resp.status}\n${body.slice(0, 1000)}`;
-        break;
-      } catch (error) {
-        lastError = `${url}: ${error instanceof Error ? error.message : String(error)}`;
+  const port = await runStep("docker-run", "docker", ["port", container, "3000/tcp"], projectDir);
+  const url = `http://${port.stdout?.trim().split("\n")[0]}/`;
+  let lastError = port.success ? "" : (port.stderr ?? "");
+  const deadline = Date.now() + DOCKER_READY_TIMEOUT_MS;
+  while (port.success && Date.now() < deadline) {
+    try {
+      // oxlint-disable-next-line no-await-in-loop -- poll until the server accepts connections
+      const resp = await fetch(url, { signal: AbortSignal.timeout(5_000) });
+      // oxlint-disable-next-line no-await-in-loop -- read the answer before deciding
+      const body = await resp.text();
+      if (resp.ok) {
+        return {
+          step: "docker-run",
+          success: true,
+          durationMs: Date.now() - start,
+          stdout: `${url} → ${resp.status} ${body.slice(0, 200)}`,
+        };
       }
-      // oxlint-disable-next-line no-await-in-loop -- bounded readiness poll
-      await Bun.sleep(1_000);
+      lastError = `${url} → HTTP ${resp.status}\n${body.slice(0, 1000)}`;
+      break;
+    } catch (error) {
+      lastError = `${url}: ${error instanceof Error ? error.message : String(error)}`;
     }
-
-    const logs = await runStep("docker-run", "docker", ["logs", containerId], projectDir);
-    return {
-      step: "docker-run",
-      success: false,
-      durationMs: Date.now() - start,
-      stderr: `${lastError}\nContainer logs:\n${logs.stdout ?? ""}${logs.stderr ?? ""}`.slice(
-        -4000,
-      ),
-      classification: "template",
-    };
-  } finally {
-    await runStep("docker-cleanup", "docker", ["rm", "--force", containerId], projectDir);
+    // oxlint-disable-next-line no-await-in-loop -- bounded readiness poll
+    await Bun.sleep(1_000);
   }
+
+  const logs = await runStep("docker-run", "docker", ["logs", container], projectDir);
+  return {
+    step: "docker-run",
+    success: false,
+    durationMs: Date.now() - start,
+    stderr: `${lastError}\nContainer logs:\n${logs.stdout ?? ""}${logs.stderr ?? ""}`.slice(-4000),
+    classification: "template",
+  };
 }
 
 /**
@@ -453,9 +442,12 @@ async function runDockerImageCheck(
   );
   if (!build.success) return [dockerFailure(build)];
 
+  const container = `${tag}-${crypto.randomUUID()}`;
   try {
-    return [build, await runDockerContainer(tag, projectDir, env)];
+    return [build, await runDockerContainer(tag, container, projectDir, env)];
   } finally {
+    // A failed `docker run` can leave the container created but not started.
+    await runStep("docker-cleanup", "docker", ["rm", "--force", container], projectDir);
     await runStep("docker-cleanup", "docker", ["image", "rm", "--force", tag], projectDir);
   }
 }
