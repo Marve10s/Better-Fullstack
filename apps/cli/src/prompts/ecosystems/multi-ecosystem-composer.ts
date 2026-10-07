@@ -187,6 +187,18 @@ export type BackendEcosystem = Extract<
 export type FrontendEcosystem = "typescript" | "rust" | "dotnet";
 export type MobileEcosystem = "none" | "react-native" | "kotlin" | "swift" | "dart";
 
+/**
+ * The TypeScript web and React Native apps the composed stack generates. Backend and auth choices
+ * must account for both, so a mobile app neither hides a supported backend nor admits an
+ * unsupported one.
+ */
+export function getComposerAppFrontends(
+  webFrontend: Frontend,
+  nativeFrontend: Frontend,
+): Frontend[] {
+  return [webFrontend, nativeFrontend].filter((frontend) => frontend !== "none");
+}
+
 export async function getCompositionModeChoice(): Promise<CompositionMode> {
   const response = await navigableSelect<CompositionMode>({
     message: "Select project composition",
@@ -458,6 +470,7 @@ export async function gatherMultiEcosystemConfig(
       : "none";
   const swiftMobile = mobileEcosystem === "swift" ? "swiftui" : "none";
   const dartMobile = mobileEcosystem === "dart" ? "flutter" : "none";
+  const appFrontends = getComposerAppFrontends(frontend, nativeFrontend);
   const kotlinMobileLibraries =
     kotlinMobile !== "none" ? await selectKotlinMobileLibraries(flags.kotlinMobileLibraries) : [];
   const uiLibrary = hasWebStyling(frontendList)
@@ -553,7 +566,7 @@ export async function gatherMultiEcosystemConfig(
 
   if (backendEcosystem === "typescript") {
     const backend = promptValue(
-      await getBackendFrameworkChoice(flags.backend, frontendList, flags.jobQueue, flags.auth),
+      await getBackendFrameworkChoice(flags.backend, appFrontends, flags.jobQueue, flags.auth),
     );
     const runtime =
       backend === "none"
@@ -579,7 +592,7 @@ export async function gatherMultiEcosystemConfig(
       backend === "none"
         ? "none"
         : promptValue(
-            await getAuthChoice(flags.auth, backend, frontendList, "typescript", {
+            await getAuthChoice(flags.auth, backend, appFrontends, "typescript", {
               database,
               orm,
             }),

@@ -1,9 +1,12 @@
 import type { Backend, Frontend } from "@/types";
 
+import { log } from "@clack/prompts";
+
 import { DEFAULT_CONFIG } from "@/constants";
 import { isFrontendAllowedWithBackend } from "@/config/compatibility-rules";
 import { isFirstPrompt } from "@/presentation/context";
-import { exitCancelled } from "@/presentation/errors";
+import { exitCancelled, exitWithError } from "@/presentation/errors";
+import { canPromptInteractively } from "@/presentation/prompt-environment";
 import type { PromptMultiResolution, PromptOption } from "@/prompts/core/prompt-contract";
 import {
   GO_BACK_SYMBOL,
@@ -13,6 +16,7 @@ import {
   navigableSelect,
   setIsFirstPrompt,
 } from "@/prompts/core/navigable";
+import { getAuthIncompatibility } from "@/types";
 
 export const WEB_FRONTEND_PROMPT_OPTIONS: PromptOption<Frontend>[] = [
   {
@@ -156,6 +160,21 @@ export function resolveFrontendPrompt(
       };
 }
 
+/**
+ * Reason a frontend selection leaves the requested auth with no backend to run on. The prompt asks
+ * again instead of handing the backend prompt a selection it has no choice for.
+ */
+export function getFrontendSelectionIssue(
+  frontends: Frontend[],
+  context: Pick<FrontendPromptContext, "backend" | "auth"> = {},
+): string | null {
+  return getAuthIncompatibility(
+    context.auth,
+    { ecosystem: "typescript", backend: context.backend, frontend: frontends },
+    { partial: true },
+  );
+}
+
 export async function getFrontendChoice(
   frontendOptions?: Frontend[],
   backend?: Backend,
@@ -267,6 +286,15 @@ export async function getFrontendChoice(
     }
 
     if (shouldRestart) {
+      setIsFirstPrompt(wasFirstPrompt);
+      continue;
+    }
+
+    const selectionIssue = getFrontendSelectionIssue(result, { backend, auth });
+    if (selectionIssue) {
+      // Without a terminal the same defaults would be chosen again, so stop with the reason.
+      if (!canPromptInteractively()) return exitWithError(selectionIssue);
+      log.warn(`${selectionIssue}. Choose other frontends, or go back to change earlier answers.`);
       setIsFirstPrompt(wasFirstPrompt);
       continue;
     }

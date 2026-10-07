@@ -471,6 +471,9 @@ export async function createProjectHandler(
       };
       failureConfig = originalInput;
       const providedFlags = getProvidedFlags(explicitInput);
+      // Auth replayed from a saved config or history entry is the user's choice, so an
+      // unsupported provider is rejected rather than reset like an unrequested default.
+      if (configBase?.auth !== undefined) providedFlags.add("auth");
 
       // Input-only, so it runs before any directory is resolved, cleared, or
       // created. A rejected shape must never cost the user their files.

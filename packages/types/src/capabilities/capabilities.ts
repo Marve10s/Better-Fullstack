@@ -158,6 +158,13 @@ const CONVEX_CLERK_WEB = new Set([
   "tanstack-start",
   "next",
 ]);
+// Fullstack frontends whose templates generate no server route that invokes the Better Auth
+// handler. Next.js, TanStack Start, SvelteKit, SolidStart, and TanStack Start (Solid) mount it.
+const UNMOUNTED_BETTER_AUTH_FULLSTACK_LABELS: Record<string, string> = {
+  astro: "Astro",
+  nuxt: "Nuxt",
+  vinext: "Vinext",
+};
 
 function capitalizeFirst(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -184,6 +191,31 @@ function getFrontendSets(context: CapabilityStackContext): {
     webFrontend: dedupe(context.webFrontend ?? []),
     nativeFrontend: dedupe(context.nativeFrontend ?? []),
   };
+}
+
+// Every selected frontend needs its own Convex auth client: a supported web or native app must not
+// mask a web frontend the templates do not wire.
+function hasConvexAuthClients(
+  webFrontend: readonly string[],
+  hasNativeFrontend: boolean,
+  supportedWeb: ReadonlySet<string>,
+): boolean {
+  const web = webFrontend.filter((frontend) => frontend !== "none");
+  return (
+    (web.length > 0 || hasNativeFrontend) && web.every((frontend) => supportedWeb.has(frontend))
+  );
+}
+
+function getUnmountedBetterAuthReason(backend: string | undefined, webFrontend: string[]) {
+  if (backend === "encore") return "Better Auth isn't available for the Encore backend yet";
+  if (!isSelfBackend(backend)) return null;
+  const fullstackFrontends = backend?.startsWith("self-")
+    ? [backend.slice("self-".length)]
+    : webFrontend;
+  const label = fullstackFrontends
+    .map((frontend) => UNMOUNTED_BETTER_AUTH_FULLSTACK_LABELS[frontend])
+    .find((candidate) => candidate !== undefined);
+  return label ? `Better Auth isn't available for fullstack ${label} yet` : null;
 }
 
 function isSelfBackend(backend?: string): boolean {
@@ -228,7 +260,8 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
 
   if (
     (webFrontend.includes("tanstack-start-solid") || backend === "self-tanstack-start-solid") &&
-    optionId !== "better-auth"
+    optionId !== "better-auth" &&
+    optionId !== "better-auth-organizations"
   ) {
     return "TanStack Start (Solid) supports Better Auth only for now";
   }
@@ -245,7 +278,11 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
     return `${capitalizeFirst(ecosystem)} stacks do not support auth integrations yet`;
   }
 
-  if (webFrontend.some((frontend) => ["vanilla-vite", "vue"].includes(frontend))) {
+  // Passport is scaffolded on the server only, so it needs no client integration.
+  if (
+    optionId !== "passport" &&
+    webFrontend.some((frontend) => ["vanilla-vite", "vue"].includes(frontend))
+  ) {
     return "Auth client integrations are not yet wired for standalone Vue or Vanilla Vite frontends";
   }
 
@@ -259,25 +296,17 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
     }
 
     if (backend === "convex") {
-      const hasCompatibleFrontend =
-        webFrontend.some((frontend) => CONVEX_BETTER_AUTH_WEB.has(frontend)) ||
-        nativeFrontend.some((frontend) => NATIVE_FRONTENDS.has(frontend));
-
-      if (!hasCompatibleFrontend) {
+      if (!hasConvexAuthClients(webFrontend, hasNativeFrontend, CONVEX_BETTER_AUTH_WEB)) {
         return "Better-Auth with Convex requires React + Vite, TanStack Router, TanStack Start, Next.js, or React Native";
       }
     }
 
-    return null;
+    return getUnmountedBetterAuthReason(backend, webFrontend);
   }
 
   if (optionId === "clerk") {
     if (backend === "convex") {
-      const hasCompatibleFrontend =
-        webFrontend.some((frontend) => CONVEX_CLERK_WEB.has(frontend)) ||
-        nativeFrontend.some((frontend) => NATIVE_FRONTENDS.has(frontend));
-
-      if (!hasCompatibleFrontend) {
+      if (!hasConvexAuthClients(webFrontend, hasNativeFrontend, CONVEX_CLERK_WEB)) {
         return "Clerk with Convex requires React Router, React + Vite, TanStack Router, TanStack Start, Next.js, or React Native";
       }
 
@@ -360,6 +389,10 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
 
   if (!hasNextJs) {
     return `${nextOnlyLabel} needs the Next.js frontend`;
+  }
+
+  if (hasNativeFrontend) {
+    return `${nextOnlyLabel} needs a web-only Next.js project (no mobile app)`;
   }
 
   return null;

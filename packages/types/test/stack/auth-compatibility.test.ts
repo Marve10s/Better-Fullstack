@@ -158,6 +158,66 @@ const REJECTED: AuthCase[] = [
     ...SQLITE,
     reason: "GoBetterAuth is available only for Go stacks",
   },
+  // A supported native companion does not mask a web frontend Convex auth has no client for.
+  {
+    auth: "better-auth",
+    ...CONVEX,
+    frontend: ["svelte", "native-bare"],
+    reason:
+      "Better-Auth with Convex requires React + Vite, TanStack Router, TanStack Start, Next.js, or React Native",
+  },
+  {
+    auth: "clerk",
+    ...CONVEX,
+    frontend: ["svelte", "native-uniwind"],
+    reason:
+      "Clerk with Convex requires React Router, React + Vite, TanStack Router, TanStack Start, Next.js, or React Native",
+  },
+  // Better Auth is rejected where no generated route invokes its handler.
+  {
+    auth: "better-auth",
+    backend: "encore",
+    frontend: ["tanstack-router"],
+    database: "none",
+    orm: "none",
+    reason: "Better Auth isn't available for the Encore backend yet",
+  },
+  {
+    auth: "better-auth",
+    backend: "self",
+    frontend: ["nuxt"],
+    ...SQLITE,
+    reason: "Better Auth isn't available for fullstack Nuxt yet",
+  },
+  {
+    auth: "better-auth-organizations",
+    backend: "self",
+    frontend: ["astro"],
+    ...SQLITE,
+    reason: "Better Auth isn't available for fullstack Astro yet",
+  },
+  {
+    auth: "better-auth",
+    backend: "self",
+    frontend: ["vinext"],
+    ...SQLITE,
+    reason: "Better Auth isn't available for fullstack Vinext yet",
+  },
+  // Next.js-only providers generate no native auth, like Clerk and Supabase on a fullstack backend.
+  {
+    auth: "nextauth",
+    backend: "self",
+    frontend: ["next", "native-bare"],
+    ...SQLITE,
+    reason: "Auth.js (NextAuth) needs a web-only Next.js project (no mobile app)",
+  },
+  {
+    auth: "workos",
+    backend: "self",
+    frontend: ["next", "native-unistyles"],
+    ...SQLITE,
+    reason: "WorkOS AuthKit needs a web-only Next.js project (no mobile app)",
+  },
 ];
 
 function isNative(frontend: string) {
@@ -197,6 +257,15 @@ function graphIssues(testCase: AuthCase) {
     .map((issue) => issue.message);
 }
 
+function expectAccepted(testCase: Omit<AuthCase, "reason">) {
+  const pair = { ...testCase, reason: "" };
+  const input = compatibilityInput(pair);
+  expect(getAuthIncompatibility(testCase.auth, testCase)).toBeNull();
+  expect(getDisabledReason(input, "auth", testCase.auth)).toBeNull();
+  expect(graphIssues(pair)).toEqual([]);
+  expect(analyzeStackCompatibility(input).adjustedStack?.auth ?? testCase.auth).toBe(testCase.auth);
+}
+
 describe("auth compatibility has one reason per rule", () => {
   for (const testCase of REJECTED) {
     it(`rejects ${testCase.auth} on ${testCase.backend}/${testCase.frontend.join("+")}/${testCase.orm ?? "-"}/${testCase.database ?? "-"}`, () => {
@@ -227,14 +296,26 @@ describe("auth compatibility has one reason per rule", () => {
       { auth: "passport", backend: "express", frontend: ["tanstack-router"], ...SQLITE },
       { auth: "better-auth", ...CONVEX, frontend: ["tanstack-router"] },
       { auth: "better-auth", backend: "self", frontend: ["tanstack-start-solid"], ...SQLITE },
+      { auth: "better-auth", ...CONVEX, frontend: ["tanstack-router", "native-bare"] },
+      { auth: "clerk", ...CONVEX, frontend: ["native-bare"] },
+      { auth: "better-auth", backend: "self", frontend: ["svelte", "native-bare"], ...SQLITE },
+      { auth: "auth0", backend: "self", frontend: ["next"], ...SQLITE },
     ];
 
-    for (const testCase of accepted) {
-      const pair = { ...testCase, reason: "" };
-      expect(getAuthIncompatibility(testCase.auth, testCase)).toBeNull();
-      expect(getDisabledReason(compatibilityInput(pair), "auth", testCase.auth)).toBeNull();
-      expect(graphIssues(pair)).toEqual([]);
-    }
+    for (const testCase of accepted) expectAccepted(testCase);
+  });
+
+  it("accepts Better Auth Organizations on fullstack TanStack Start (Solid)", () => {
+    expectAccepted({
+      auth: "better-auth-organizations",
+      backend: "self",
+      frontend: ["tanstack-start-solid"],
+      ...SQLITE,
+    });
+  });
+
+  it("accepts Passport, which has no client integration, with a Vue frontend", () => {
+    expectAccepted({ auth: "passport", backend: "express", frontend: ["vue"], ...SQLITE });
   });
 
   it("the builder resets auth with the reason when a dependent choice changes", () => {

@@ -985,7 +985,7 @@ describe("Virtual Generator Regressions", () => {
     expect(graphqlRoute).not.toContain('from "@/lib/auth"');
   });
 
-  it("wires Nuxt self-backend oRPC auth context from Nitro request headers", async () => {
+  it("rejects Better Auth on fullstack Nuxt, which mounts no auth route", async () => {
     const result = await createVirtual({
       projectName: "nuxt-orpc-auth",
       frontend: ["nuxt"],
@@ -1002,19 +1002,10 @@ describe("Virtual Generator Regressions", () => {
       serverDeploy: "none",
     });
 
-    expect(result.success).toBe(true);
-
-    const context = readTextFromTree(result.tree!, "packages/api/src/context.ts");
-    const router = readTextFromTree(result.tree!, "packages/api/src/routers/index.ts");
-
-    expect(context).toContain('import type { IncomingMessage } from "node:http"');
-    expect(context).toContain("req: IncomingMessage");
-    expect(context).toContain("auth.api.getSession");
-    expect(context).toContain("headers: req.headers as any");
-    expect(router).toContain("privateData: protectedProcedure.handler");
-    expect(context).not.toContain(
-      "export async function createContext() {\n  return {\n    session: null",
-    );
+    expect(result).toEqual({
+      success: false,
+      error: "Better Auth isn't available for fullstack Nuxt yet",
+    });
   });
 
   it("does not import unused Kysely Generated type for Better Auth schemas", async () => {

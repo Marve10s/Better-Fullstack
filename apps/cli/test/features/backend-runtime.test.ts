@@ -510,7 +510,7 @@ describe("Backend and Runtime Combinations", () => {
         frontend: ["vinext"],
         database: "sqlite",
         orm: "drizzle",
-        auth: "better-auth",
+        auth: "none",
         api: "trpc",
         addons: ["none"],
         examples: ["none"],

@@ -1141,7 +1141,9 @@ export const analyzeStackCompatibility = (
       }
     }
     const solidAuthReason =
-      nextStack.auth === "better-auth" ? null : getAuthIncompatibility(nextStack.auth, nextStack);
+      nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations"
+        ? null
+        : getAuthIncompatibility(nextStack.auth, nextStack);
     if (solidAuthReason) {
       nextStack.auth = "better-auth";
       changed = true;

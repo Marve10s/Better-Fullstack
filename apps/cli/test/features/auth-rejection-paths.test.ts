@@ -26,10 +26,16 @@ import { recordScaffoldManifest } from "@/lifecycle/scaffold-manifest";
 import { checkCompatibilityOperation } from "@/operations/catalog";
 import { buildProjectConfig } from "@/operations/stack-helpers";
 import { runWithContextAsync } from "@/presentation/context";
-import { resolveBackendPrompt } from "@/prompts/architecture/backend";
-import { resolveFrontendPrompt } from "@/prompts/architecture/frontend";
+import { getBackendFrameworkChoice, resolveBackendPrompt } from "@/prompts/architecture/backend";
+import {
+  getFrontendSelectionIssue,
+  NATIVE_FRONTEND_PROMPT_OPTIONS,
+  resolveFrontendPrompt,
+  WEB_FRONTEND_PROMPT_OPTIONS,
+} from "@/prompts/architecture/frontend";
 import { resolveDatabasePrompt } from "@/prompts/data/database";
 import { resolveORMPrompt } from "@/prompts/data/orm";
+import { getComposerAppFrontends } from "@/prompts/ecosystems/multi-ecosystem-composer";
 import { resolveAuthPrompt } from "@/prompts/services/auth";
 import { processAndValidateFlags } from "@/validation";
 
@@ -103,7 +109,7 @@ const REJECTED: { stack: Stack; reason: string }[] = [
     reason: "Better Auth organizations is currently generated for non-Convex Better Auth stacks",
   },
   {
-    stack: { auth: "better-auth-organizations", frontend: ["tanstack-start-solid"], ...FULLSTACK },
+    stack: { auth: "clerk", frontend: ["tanstack-start-solid"], ...FULLSTACK },
     reason: "TanStack Start (Solid) supports Better Auth only for now",
   },
   {
@@ -126,6 +132,37 @@ const REJECTED: { stack: Stack; reason: string }[] = [
     stack: { auth: "clerk", frontend: ["svelte"], ...CONVEX },
     reason:
       "Clerk with Convex requires React Router, React + Vite, TanStack Router, TanStack Start, Next.js, or React Native",
+  },
+  // A native companion does not mask a web frontend Convex auth has no client for.
+  {
+    stack: { auth: "better-auth", frontend: ["svelte", "native-bare"], ...CONVEX },
+    reason:
+      "Better-Auth with Convex requires React + Vite, TanStack Router, TanStack Start, Next.js, or React Native",
+  },
+  // Better Auth needs a generated route that invokes its handler.
+  {
+    stack: {
+      auth: "better-auth",
+      frontend: ["tanstack-router"],
+      backend: "encore",
+      runtime: "none",
+      database: "none",
+      orm: "none",
+    },
+    reason: "Better Auth isn't available for the Encore backend yet",
+  },
+  {
+    stack: { auth: "better-auth", frontend: ["nuxt"], ...FULLSTACK },
+    reason: "Better Auth isn't available for fullstack Nuxt yet",
+  },
+  {
+    stack: { auth: "better-auth-organizations", frontend: ["astro"], ...FULLSTACK },
+    reason: "Better Auth isn't available for fullstack Astro yet",
+  },
+  // Next.js-only providers generate no native auth client or screens.
+  {
+    stack: { auth: "kinde", frontend: ["next", "native-bare"], ...FULLSTACK },
+    reason: "Kinde needs a web-only Next.js project (no mobile app)",
   },
 ];
 
@@ -176,21 +213,21 @@ function label(stack: Stack) {
 }
 
 async function runCreate(stack: Stack) {
-  const cwd = await makeTempRoot();
   const args = generateReproducibleCommand(fullConfig(stack))
     .split(" ")
     .slice(4)
     .map((arg) => (arg === "--git" ? "--no-git" : arg === "--install" ? "--no-install" : arg));
-  const child = Bun.spawn(
-    [BUN_EXECUTABLE, CLI_ENTRY, "create", "auth-app", ...args, "--dry-run", "--disable-analytics"],
-    {
-      cwd,
-      env: { ...Bun.env, BFS_SKIP_BUILDER_PROMPT: "1", CI: "true" },
-      stdin: "ignore",
-      stdout: "pipe",
-      stderr: "pipe",
-    },
-  );
+  return runCli(["create", "auth-app", ...args, "--dry-run"], await makeTempRoot());
+}
+
+async function runCli(args: string[], cwd: string) {
+  const child = Bun.spawn([BUN_EXECUTABLE, CLI_ENTRY, ...args, "--disable-analytics"], {
+    cwd,
+    env: { ...Bun.env, BFS_SKIP_BUILDER_PROMPT: "1", CI: "true" },
+    stdin: "ignore",
+    stdout: "pipe",
+    stderr: "pipe",
+  });
   const [exitCode, stdout, stderr] = await Promise.all([
     child.exited,
     new Response(child.stdout).text(),
@@ -208,6 +245,26 @@ async function scaffoldDefaultProject() {
   await writeBtsConfig(config);
   await recordScaffoldManifest(projectDir);
   return projectDir;
+}
+
+async function expectAcceptedEverywhere(stack: Stack) {
+  const flat = await createVirtual({ ...SETTINGS, ...stack });
+  expect({ pair: label(stack), error: flat.error }).toEqual({
+    pair: label(stack),
+    error: undefined,
+  });
+  const graph = await createVirtual({ stackParts: graphOf(stack) });
+  expect({ pair: label(stack), error: graph.error }).toEqual({
+    pair: label(stack),
+    error: undefined,
+  });
+  expect(buildProjectConfig({ ...SETTINGS, ...stack }).auth).toBe(stack.auth);
+  await runWithContextAsync({ silent: true }, async () => {
+    const flags = cliFlags(stack);
+    expect(processAndValidateFlags(flags, new Set(Object.keys(flags)), "auth-app").auth).toBe(
+      stack.auth,
+    );
+  });
 }
 
 function cliFlags(stack: Partial<Stack>) {
@@ -303,19 +360,38 @@ describe("unsupported auth is rejected on every path with the shared reason", ()
   });
 
   test("accepted pairs still generate on every path", async () => {
-    for (const stack of ACCEPTED) {
-      const flat = await createVirtual({ ...SETTINGS, ...stack });
-      expect(flat.error).toBeUndefined();
-      const graph = await createVirtual({ stackParts: graphOf(stack) });
-      expect(graph.error).toBeUndefined();
-      expect(buildProjectConfig({ ...SETTINGS, ...stack }).auth).toBe(stack.auth);
-      await runWithContextAsync({ silent: true }, async () => {
-        const flags = cliFlags(stack);
-        expect(processAndValidateFlags(flags, new Set(Object.keys(flags)), "auth-app").auth).toBe(
-          stack.auth,
-        );
-      });
-    }
+    for (const stack of ACCEPTED) await expectAcceptedEverywhere(stack);
+  });
+
+  test("Better Auth Organizations generates on fullstack TanStack Start (Solid)", async () => {
+    await expectAcceptedEverywhere({
+      auth: "better-auth-organizations",
+      frontend: ["tanstack-start-solid"],
+      ...FULLSTACK,
+    });
+  });
+
+  test("Passport, scaffolded on the server only, generates with a Vue frontend", async () => {
+    await expectAcceptedEverywhere({
+      auth: "passport",
+      frontend: ["vue"],
+      backend: "express",
+      runtime: "node",
+      ...SQLITE,
+    });
+  });
+
+  test("auth replayed from a saved config is rejected instead of reset", async () => {
+    const [{ stack, reason }] = REJECTED;
+    const root = await makeTempRoot();
+    await writeBtsConfig({ ...fullConfig(stack), projectDir: root });
+    const { exitCode, output } = await runCli(
+      ["create", "replayed", "--config", join(root, "bts.jsonc"), "--dry-run", "--no-install"],
+      root,
+    );
+    expect(exitCode).not.toBe(0);
+    expect(output).toContain(reason);
+    expect(output).not.toContain("Auth set to 'None'");
   });
 
   test("a stale flat auth next to a valid graph is accepted and the graph decides", async () => {
@@ -408,6 +484,76 @@ describe("prompts and partial flags", () => {
   });
 });
 
+describe("prompt sequences never strand a requested auth", () => {
+  const values = (resolution: { options: { value: string }[] }) =>
+    resolution.options.map((option) => option.value);
+
+  test("--auth nextauth then a native-only app is refused before the backend prompt", async () => {
+    const reason = "Auth.js (NextAuth) needs fullstack Next.js";
+    // TypeScript, then the frontend prompt: native apps stay on offer as companions.
+    expect(values(resolveFrontendPrompt({ auth: "nextauth" }))).toContain("native-bare");
+    // A native-only answer would leave the backend prompt with nothing to offer...
+    expect(values(resolveBackendPrompt({ frontends: ["native-bare"], auth: "nextauth" }))).toEqual(
+      [],
+    );
+    // ...so the frontend prompt refuses it with the reason and asks again.
+    expect(getFrontendSelectionIssue(["native-bare"], { auth: "nextauth" })).toBe(reason);
+    expect(getFrontendSelectionIssue(["next"], { auth: "nextauth" })).toBeNull();
+    // The backend prompt never renders an empty selector.
+    await runWithContextAsync({ silent: true }, async () => {
+      await expect(
+        getBackendFrameworkChoice(undefined, ["native-bare"], undefined, "nextauth"),
+      ).rejects.toThrow(reason);
+    });
+  });
+
+  test("every frontend answer the prompt accepts leaves a backend for the requested auth", () => {
+    const web = WEB_FRONTEND_PROMPT_OPTIONS.map((option) => option.value);
+    const native = NATIVE_FRONTEND_PROMPT_OPTIONS.map((option) => option.value);
+    const answers = [
+      [],
+      ...web.map((frontend) => [frontend]),
+      ...native.map((frontend) => [frontend]),
+      ...web.flatMap((frontend) => native.map((app) => [frontend, app])),
+    ];
+    for (const auth of AUTH_VALUES) {
+      const offered = new Set(values(resolveFrontendPrompt({ auth })));
+      for (const answer of answers) {
+        if (!answer.every((frontend) => offered.has(frontend))) continue;
+        if (getFrontendSelectionIssue(answer, { auth })) continue;
+        const backends = values(resolveBackendPrompt({ frontends: answer, auth }));
+        expect({ auth, answer, hasBackend: backends.length > 0 }).toEqual({
+          auth,
+          answer,
+          hasBackend: true,
+        });
+      }
+    }
+  });
+
+  test("the composer judges backend and auth choices by its web and mobile apps", () => {
+    // --auth clerk, no web frontend, and a React Native app: Convex wires Clerk for Expo.
+    const mobileOnly = getComposerAppFrontends("none", "native-bare");
+    expect(mobileOnly).toEqual(["native-bare"]);
+    expect(values(resolveBackendPrompt({ frontends: mobileOnly, auth: "clerk" }))).toEqual([
+      "convex",
+    ]);
+    expect(values(resolveAuthPrompt({ backend: "convex", frontend: mobileOnly }))).toContain(
+      "clerk",
+    );
+
+    // --auth clerk with Next.js and a React Native app: fullstack Clerk is web-only, so self is
+    // not offered and then rejected after the remaining prompts.
+    const webAndMobile = getComposerAppFrontends("next", "native-bare");
+    expect(values(resolveBackendPrompt({ frontends: webAndMobile, auth: "clerk" }))).toEqual([
+      "convex",
+    ]);
+    expect(values(resolveAuthPrompt({ backend: "self", frontend: webAndMobile }))).not.toContain(
+      "clerk",
+    );
+  });
+});
+
 describe("auth parity between createVirtual and the CLI", () => {
   const STANDALONE = [
     { backend: "hono", runtime: "bun", ...SQLITE },
@@ -444,7 +590,33 @@ describe("auth parity between createVirtual and the CLI", () => {
     { database: "redis", orm: "none" },
   ] as const;
 
+  // Native companions, and the app lists the multi-ecosystem composer passes.
+  const NATIVE_COMPANIONS = [
+    { ...FULLSTACK, frontend: ["next", "native-bare"] },
+    { ...FULLSTACK, frontend: ["tanstack-start", "native-uniwind"] },
+    { ...FULLSTACK, frontend: ["svelte", "native-bare"] },
+    { ...FULLSTACK, frontend: ["vinext"] },
+    {
+      backend: "hono",
+      runtime: "bun",
+      frontend: ["tanstack-router", "native-unistyles"],
+      ...SQLITE,
+    },
+    {
+      backend: "hono",
+      runtime: "bun",
+      frontend: getComposerAppFrontends("none", "native-bare"),
+      ...SQLITE,
+    },
+    { ...CONVEX, frontend: getComposerAppFrontends("none", "native-bare") },
+    { ...CONVEX, frontend: getComposerAppFrontends("react-vite", "native-uniwind") },
+    { ...CONVEX, frontend: getComposerAppFrontends("svelte", "native-bare") },
+    { ...CONVEX, frontend: getComposerAppFrontends("next", "native-bare") },
+    { backend: "encore", runtime: "none", frontend: ["next"], database: "none", orm: "none" },
+  ];
+
   const arrangements: Omit<Stack, "auth">[] = [
+    ...NATIVE_COMPANIONS,
     ...STANDALONE.map((backend) => ({ ...backend, frontend: ["tanstack-router"] })),
     { backend: "hono", runtime: "bun", frontend: ["vue"], ...SQLITE },
     { backend: "hono", runtime: "bun", frontend: ["vanilla-vite"], ...SQLITE },

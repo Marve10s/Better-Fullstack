@@ -1,7 +1,7 @@
 import type { PromptOption, PromptSingleResolution } from "@/prompts/core/prompt-contract";
 
 import { DEFAULT_CONFIG } from "@/constants";
-import { exitCancelled } from "@/presentation/errors";
+import { exitCancelled, exitWithError } from "@/presentation/errors";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
 import {
   getAuthIncompatibility,
@@ -159,6 +159,15 @@ export async function getBackendFrameworkChoice(
   const resolution = resolveBackendPrompt({ backendFramework, frontends, jobQueue, auth });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
+  }
+  if (resolution.options.length === 0) {
+    return exitWithError(
+      getAuthIncompatibility(
+        auth,
+        { ecosystem: "typescript", frontend: frontends },
+        { partial: true },
+      ) ?? "No backend supports the selected frontends and requirements",
+    );
   }
 
   const response = await navigableSelect<Backend>({
