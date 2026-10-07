@@ -296,7 +296,13 @@ describe("database and ORM pairing", () => {
       { database: "postgres", orm: "none", reason: "Database selection requires an ORM" },
     ];
     for (const { database, orm, reason } of missing) {
-      const options = { ...STACKS.standalone, frontend: [...STACKS.standalone.frontend], database, orm, auth: "none" };
+      const options = {
+        ...STACKS.standalone,
+        frontend: [...STACKS.standalone.frontend],
+        database,
+        orm,
+        auth: "none",
+      };
       expect(await createVirtual(options)).toEqual({ success: false, error: reason });
       expect(() => buildProjectConfig(options)).toThrow(reason);
       await expect(planProjectOperation.invoke(options)).rejects.toThrow(reason);

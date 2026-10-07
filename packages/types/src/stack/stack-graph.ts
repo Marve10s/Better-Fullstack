@@ -1677,7 +1677,10 @@ function createTypeScriptBackendCompatibilityIssue(
 
   if (part.role === "orm") {
     const appDatabases = context.parts
-      ? getProjectedDatabaseParts(context.parts, getProjectionAppOwners(context.parts, "typescript"))
+      ? getProjectedDatabaseParts(
+          context.parts,
+          getProjectionAppOwners(context.parts, "typescript"),
+        )
       : undefined;
     const database = getDataLayerDatabase({
       standalone: context.primaryToolIdsByRole?.database,
