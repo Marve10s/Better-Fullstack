@@ -5,6 +5,7 @@ import {
   formatStackPartSpec,
   getDisabledReason,
   legacyProjectConfigToStackParts,
+  parseStackPartSpecs,
   type ProjectConfig,
 } from "@better-fullstack/types";
 import { createCustomConfig, expectError, runTRPCTest } from "@test/support/test-utils";
@@ -21,6 +22,7 @@ import { buildCompatibilityInputFromConfig } from "@/config/stack-compatibility"
 import { planStackUpdate } from "@/helpers/core/stack-update";
 import { createVirtual } from "@/index";
 import { recordScaffoldManifest } from "@/lifecycle/scaffold-manifest";
+import { planProjectOperation } from "@/operations/project-create";
 import { buildProjectConfig } from "@/operations/stack-helpers";
 import { runWithContextAsync } from "@/presentation/context";
 import { resolveDatabasePrompt } from "@/prompts/data/database";
@@ -351,5 +353,83 @@ describe("Better Auth database adapters", () => {
     });
     expect(result.error).toBeUndefined();
     expect(authFile(result.tree)).toContain("drizzleAdapter(db");
+  });
+
+  const HONO_PARTS = ["backend:typescript:hono", "backend.runtime:typescript:bun"];
+  const WEB_PARTS = ["frontend:typescript:next", ...HONO_PARTS];
+
+  test("frontend- and mobile-owned Better Auth are judged like backend-owned Better Auth", async () => {
+    const reason = "Better Auth has no EdgeDB adapter.";
+    const owned = (owner: string) => [
+      ...WEB_PARTS,
+      "database:universal:edgedb",
+      `${owner}.auth:typescript:better-auth`,
+    ];
+    const graphs = [
+      owned("frontend"),
+      owned("backend"),
+      [
+        "mobile:react-native:native-bare",
+        ...HONO_PARTS,
+        "database:universal:edgedb",
+        "mobile.auth:react-native:better-auth",
+      ],
+    ];
+
+    const results = await Promise.all(
+      graphs.map((part) => createVirtual({ stackParts: parseStackPartSpecs(part) })),
+    );
+    for (const result of results) expect(result).toEqual({ success: false, error: reason });
+    for (const part of [owned("frontend"), owned("backend")]) {
+      expect(() => buildProjectConfig({ part })).toThrow(reason);
+    }
+    await expect(planProjectOperation.invoke({ part: owned("frontend") })).rejects.toThrow(reason);
+    await expect(planProjectOperation.invoke({ part: owned("backend") })).rejects.toThrow(reason);
+
+    const valid = await createVirtual({
+      stackParts: parseStackPartSpecs([
+        ...WEB_PARTS,
+        "database:universal:postgres",
+        "backend.orm:typescript:drizzle",
+        "frontend.auth:typescript:better-auth",
+      ]),
+    });
+    expect(valid.error).toBeUndefined();
+    expect(authFile(valid.tree)).toContain("drizzleAdapter(db");
+  });
+
+  test("graph input is judged by its own selections, not stale flat fields", async () => {
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:tanstack-router",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "database:universal:postgres",
+      "backend.orm:typescript:drizzle",
+      "backend.auth:typescript:better-auth",
+      "backend.jobQueue:typescript:pg-boss",
+    ]);
+
+    const fresh = await createVirtual({ stackParts });
+    expect(fresh.error).toBeUndefined();
+
+    const stale = await createVirtual({
+      stackParts,
+      database: "edgedb",
+      orm: "none",
+      auth: "better-auth",
+    });
+    expect(stale.error).toBeUndefined();
+    expect(authFile(stale.tree)).toContain("drizzleAdapter(db");
+
+    // Without a TypeScript backend only auth clients are generated, so there is no adapter to judge.
+    const clientsOnly = parseStackPartSpecs([
+      "mobile:react-native:native-bare",
+      "backend:go:gin",
+      "database:universal:postgres",
+      "mobile.auth:react-native:better-auth",
+    ]);
+    expect(() =>
+      validateEcosystemAuthCompatibility({ stackParts: clientsOnly, auth: "better-auth" }),
+    ).not.toThrow();
   });
 });

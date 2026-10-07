@@ -444,6 +444,23 @@ export function validateEcosystemAuthCompatibility(
   providedFlags?: Set<string>,
   partial = false,
 ) {
+  // The graph is authoritative: stale flat auth, database, and ORM must not decide what gets
+  // generated, so graph input is judged by its own projection before any flat field is read.
+  const usesGraph = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+  if (usesGraph) {
+    const selection = stackGraphToLegacyProjectConfigForEcosystem(
+      config as ProjectConfig,
+      "typescript",
+    );
+    // Without a TypeScript backend only auth clients are generated, so no adapter is needed.
+    const reason =
+      selection.backend === "none"
+        ? null
+        : getBetterAuthDatabaseIncompatibility(selection.auth, selection);
+    if (reason && providedFlags) exitWithError(reason);
+    if (reason) throw new Error(reason);
+  }
+
   const auth = config.auth;
 
   if (!auth || auth === "none") {
@@ -473,7 +490,7 @@ export function validateEcosystemAuthCompatibility(
     return;
   }
 
-  if ((config.ecosystem ?? "typescript") !== "typescript") return;
+  if (usesGraph || (config.ecosystem ?? "typescript") !== "typescript") return;
   const reason = getBetterAuthDatabaseIncompatibility(auth, config, { partial });
   if (!reason) return;
   // Better Auth that was asked for is rejected; a default one gives way to the database choice.

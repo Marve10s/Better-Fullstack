@@ -8,7 +8,11 @@ import {
   getBetterAuthDatabaseIncompatibility,
   getDisabledReason,
 } from "@/stack/compatibility";
-import { legacyProjectConfigToStackParts, validateStackParts } from "@/stack/stack-graph";
+import {
+  legacyProjectConfigToStackParts,
+  parseStackPartSpecs,
+  validateStackParts,
+} from "@/stack/stack-graph";
 import { DEFAULT_STACK_SELECTION } from "@/stack/stack-translation";
 
 const BACKENDS = [
@@ -34,6 +38,10 @@ function graphIssues(overrides: Record<string, unknown>) {
   return validateStackParts(legacyProjectConfigToStackParts(config)).issues.map(
     (issue) => issue.message,
   );
+}
+
+function partIssues(specs: string[]) {
+  return validateStackParts(parseStackPartSpecs(specs)).issues.map((issue) => issue.message);
 }
 
 describe("Better Auth database compatibility", () => {
@@ -136,5 +144,50 @@ describe("Better Auth database compatibility", () => {
     expect(getBetterAuthDatabaseIncompatibility("better-auth", { orm: "typeorm" }, partial)).toBe(
       "Better Auth has no TypeORM adapter",
     );
+  });
+
+  it("judges frontend- and mobile-owned Better Auth by the database and ORM the stack generates with", () => {
+    const hono = ["backend:typescript:hono", "backend.runtime:typescript:bun"];
+    const web = ["frontend:typescript:next", ...hono];
+
+    expect(
+      partIssues([...web, "database:universal:edgedb", "frontend.auth:typescript:better-auth"]),
+    ).toContain("Better Auth has no EdgeDB adapter.");
+    expect(
+      partIssues([...web, "database:universal:edgedb", "backend.auth:typescript:better-auth"]),
+    ).toContain("Better Auth has no EdgeDB adapter.");
+    expect(
+      partIssues([
+        ...web,
+        "database:universal:postgres",
+        "backend.orm:typescript:typeorm",
+        "frontend.auth:typescript:better-auth",
+      ]),
+    ).toContain("Better Auth has no TypeORM adapter.");
+    expect(
+      partIssues([
+        ...web,
+        "database:universal:postgres",
+        "backend.orm:typescript:drizzle",
+        "frontend.auth:typescript:better-auth",
+      ]),
+    ).toEqual([]);
+
+    const mobile = ["mobile:react-native:native-bare", ...hono, "backend.orm:typescript:drizzle"];
+    expect(
+      partIssues([...mobile, "database:universal:edgedb", "mobile.auth:react-native:better-auth"]),
+    ).toContain("Better Auth has no EdgeDB adapter.");
+    expect(
+      partIssues([...mobile, "database:universal:sqlite", "mobile.auth:react-native:better-auth"]),
+    ).toEqual([]);
+    // Without a TypeScript backend only auth clients are generated.
+    expect(
+      partIssues([
+        "mobile:react-native:native-bare",
+        "backend:go:gin",
+        "database:universal:postgres",
+        "mobile.auth:react-native:better-auth",
+      ]),
+    ).toEqual([]);
   });
 });
