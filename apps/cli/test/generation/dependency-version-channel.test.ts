@@ -1060,6 +1060,34 @@ describe("version channel lifecycle round trips", () => {
       });
     }, 120_000);
 
+    it("adds it at the family release when members mix exact and range specs", async () => {
+      const projectDir = await createProject("version-channel-family-mixed-specs", {
+        ...authStack,
+        versionChannel: "stable",
+      });
+      await simulateEarlierTemplate(projectDir);
+      const memberSpecs: Record<string, string> = {
+        "better-auth": "1.7.7",
+        "@better-auth/drizzle-adapter": "^1.7.7",
+      };
+      for (const manifestPath of await collectPackageJsonPaths(projectDir)) {
+        const manifest = (await fs.readJson(manifestPath)) as {
+          dependencies?: Record<string, string>;
+        };
+        for (const name of Object.keys(manifest.dependencies ?? {})) {
+          const spec = memberSpecs[name];
+          if (spec) manifest.dependencies![name] = spec;
+        }
+        await fs.writeJson(manifestPath, manifest, { spaces: 2 });
+      }
+
+      expect(await updateAndReadAuthDependencies(projectDir, "1.7.7")).toMatchObject({
+        "better-auth": "1.7.7",
+        "@better-auth/core": "1.7.7",
+        "@better-auth/drizzle-adapter": "^1.7.7",
+      });
+    }, 120_000);
+
     it("adds it at the template release when the family follows the template", async () => {
       const projectDir = await createProject("version-channel-family-template", {
         ...authStack,

@@ -138,7 +138,7 @@ function getVersionPrefix(version: string): string {
   return match?.[0] ?? "";
 }
 
-function applyVersionPrefix(currentVersion: string, resolvedVersion: string): string {
+export function applyVersionPrefix(currentVersion: string, resolvedVersion: string): string {
   return `${getVersionPrefix(currentVersion)}${resolvedVersion}`;
 }
 
@@ -390,7 +390,10 @@ export async function collectPackageJsonPaths(projectDir: string): Promise<strin
   return results.sort();
 }
 
-/** The one version each family declares across package manifests and the pnpm catalog. */
+/**
+ * The one release each family declares across package manifests and the pnpm catalog, without
+ * its range prefix: `1.7.7` and `^1.7.7` declare the same release.
+ */
 function collectFamilyVersions(
   families: readonly SynchronizedDependencyFamily[],
   files: ReadonlyMap<string, string>,
@@ -399,7 +402,8 @@ function collectFamilyVersions(
   const recordVersions = (section: PackageJsonVersionSection) => {
     for (const [name, version] of Object.entries(section)) {
       if (typeof version !== "string" || !isRegistrySemverSpec(version)) continue;
-      declaredVersions.set(name, (declaredVersions.get(name) ?? new Set()).add(version));
+      const release = version.slice(getVersionPrefix(version).length);
+      declaredVersions.set(name, (declaredVersions.get(name) ?? new Set()).add(release));
     }
   };
 

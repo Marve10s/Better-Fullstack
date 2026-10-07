@@ -45,6 +45,7 @@ import { getDefaultConfig } from "@/constants";
 import { CreateCommandOptionsSchema } from "@/create-command-input";
 import {
   applyDependencyVersionChannel,
+  applyVersionPrefix,
   collectDivergedFamilyVersions,
   isRegistrySemverSpec,
   planDependencyVersionChannel,
@@ -1424,7 +1425,7 @@ function diffJsonSection(
       section !== "scripts" &&
       familyVersion !== undefined &&
       isRegistrySemverSpec(String(proposedValue))
-        ? familyVersion
+        ? applyVersionPrefix(String(proposedValue), familyVersion)
         : String(proposedValue);
   }
 
