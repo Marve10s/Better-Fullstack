@@ -293,10 +293,15 @@ export async function createVirtual(
       );
     }
 
-    const { getBetterAuthSelectionIssue, getDatabaseOrmSelectionIssue } =
-      await import("@/config/stack-compatibility");
+    const {
+      getBetterAuthSelectionIssue,
+      getDatabaseOrmRequirementSelectionIssue,
+      getDatabaseOrmSelectionIssue,
+    } = await import("@/config/stack-compatibility");
     const selectionIssue =
-      getDatabaseOrmSelectionIssue(config) ?? getBetterAuthSelectionIssue(config);
+      getDatabaseOrmSelectionIssue(config) ??
+      getBetterAuthSelectionIssue(config) ??
+      getDatabaseOrmRequirementSelectionIssue(config);
     if (selectionIssue) return { success: false, error: selectionIssue };
 
     const { generateVirtualProject: generate, EMBEDDED_TEMPLATES } =

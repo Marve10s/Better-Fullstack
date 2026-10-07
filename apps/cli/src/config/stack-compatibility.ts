@@ -3,6 +3,7 @@ import {
   getAddonStackPartBinding,
   getBetterAuthDatabaseIncompatibility,
   getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getPythonLoggingIncompatibility,
   isToolingOverlayOnly,
@@ -107,6 +108,16 @@ export function getDatabaseOrmSelectionIssue(config: Partial<ProjectConfig>): st
   }
   if (!usesGenericOrm(config)) return null;
   return getDatabaseOrmIncompatibility(config.database, config.orm);
+}
+
+// Checks that a flat TypeScript data layer has both a database and an ORM, reported after Better
+// Auth as the CLI does. Graph input reports a missing database with its ORM part instead.
+export function getDatabaseOrmRequirementSelectionIssue(
+  config: Partial<ProjectConfig>,
+): string | null {
+  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) return null;
+  if (!usesGenericOrm(config)) return null;
+  return getDatabaseOrmRequirementIssue(config.database, config.orm);
 }
 
 // The generic orm field only drives TypeScript and React Native generation; other ecosystems keep

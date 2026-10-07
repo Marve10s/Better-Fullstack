@@ -290,6 +290,44 @@ describe("database and ORM pairing", () => {
     }
   });
 
+  test("programmatic and graph input require both sides of a TypeScript data layer", async () => {
+    const missing = [
+      { database: "none", orm: "mongoose", reason: "ORM selection requires a database" },
+      { database: "postgres", orm: "none", reason: "Database selection requires an ORM" },
+    ];
+    for (const { database, orm, reason } of missing) {
+      const options = { ...STACKS.standalone, frontend: [...STACKS.standalone.frontend], database, orm, auth: "none" };
+      expect(await createVirtual(options)).toEqual({ success: false, error: reason });
+      expect(() => buildProjectConfig(options)).toThrow(reason);
+      await expect(planProjectOperation.invoke(options)).rejects.toThrow(reason);
+    }
+
+    const ormWithoutDatabase = parseStackPartSpecs([
+      "frontend:typescript:tanstack-router",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "backend.orm:typescript:mongoose",
+    ]);
+    const part = ormWithoutDatabase.map((candidate) =>
+      formatStackPartSpec(candidate, ormWithoutDatabase),
+    );
+    expect(await createVirtual({ stackParts: ormWithoutDatabase })).toEqual({
+      success: false,
+      error: "ORM selection requires a database",
+    });
+    expect(() => buildProjectConfig({ part })).toThrow("ORM selection requires a database");
+
+    // Other ecosystems keep their own data layer rules and ignore the TypeScript requirement.
+    const python = {
+      ecosystem: "python",
+      database: "postgres",
+      pythonWebFramework: "fastapi",
+      pythonOrm: "sqlalchemy",
+    } as const;
+    expect((await createVirtual(python)).error).toBeUndefined();
+    expect(() => buildProjectConfig(python)).not.toThrow();
+  });
+
   test("valid pairs still generate", async () => {
     const results = await Promise.all(
       [

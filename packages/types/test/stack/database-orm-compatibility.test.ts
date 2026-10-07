@@ -181,6 +181,39 @@ describe("database and ORM pair compatibility", () => {
     }
   });
 
+  it("judges the ORM against a mobile-owned database when generation uses it", () => {
+    for (const [database, orm, issues] of [
+      ["mongodb", "kysely", [KYSELY]],
+      ["sqlite", "drizzle", []],
+    ] as const) {
+      const parts = parseStackPartSpecs([
+        "backend:typescript:hono",
+        "backend.runtime:typescript:bun",
+        "mobile:react-native:native-bare",
+        `mobile.database:universal:${database}`,
+        `backend.orm:typescript:${orm}`,
+      ]);
+      const projected = stackGraphToLegacyProjectConfigForEcosystem(
+        { ...createCliDefaultProjectConfigBase("bun"), projectName: "pair", stackParts: parts },
+        "typescript",
+      );
+      expect(projected.database).toBe(database);
+      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toEqual([...issues]);
+    }
+  });
+
+  it("requires a database for a backend-owned ORM in the graph", () => {
+    const parts = parseStackPartSpecs([
+      "frontend:typescript:tanstack-router",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "backend.orm:typescript:mongoose",
+    ]);
+    expect(validateStackParts(parts).issues).toContainEqual(
+      expect.objectContaining({ role: "orm", message: "ORM selection requires a database" }),
+    );
+  });
+
   it("keeps the ORM-free choice available for EdgeDB and Redis", () => {
     for (const database of ["edgedb", "redis"]) {
       const input: CompatibilityInput = {
@@ -195,6 +228,6 @@ describe("database and ORM pair compatibility", () => {
     }
     expect(
       getDisabledReason({ ...DEFAULT_STACK_SELECTION, database: "postgres" }, "orm", "none"),
-    ).toBe("Database requires an ORM");
+    ).toBe("Database selection requires an ORM");
   });
 });

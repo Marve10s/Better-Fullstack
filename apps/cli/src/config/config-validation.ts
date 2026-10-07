@@ -45,6 +45,7 @@ import {
   getCodeQualitySelectionIssue,
   getBetterAuthDatabaseIncompatibility,
   getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getShadcnLintFrontendIssue,
   hasVitePlusWorkspaceRoot,
@@ -176,23 +177,18 @@ function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string
     });
   }
 
-  // EdgeDB has its own built-in query builder, no separate ORM needed
-  // Redis is a key-value store and doesn't use traditional ORMs
+  const requirementIssue =
+    has("orm") && has("database") ? getDatabaseOrmRequirementIssue(db, orm) : null;
   if (
-    has("database") &&
-    has("orm") &&
-    db &&
-    db !== "none" &&
-    db !== "edgedb" &&
-    db !== "redis" &&
+    requirementIssue &&
     orm === "none" &&
     !hasGraphOrm &&
     !hasEcosystemOrm &&
     !isNonTypeScriptSqliteDefault
   ) {
     missingRequirementError({
-      message: "Database selection requires an ORM.",
-      provided: { database: db, orm: "none" },
+      message: requirementIssue,
+      provided: { database: db ?? "none", orm: "none" },
       suggestions: [
         "Use --orm drizzle (recommended)",
         "Use --orm prisma",
@@ -201,10 +197,10 @@ function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string
     });
   }
 
-  if (has("orm") && has("database") && orm && orm !== "none" && db === "none") {
+  if (requirementIssue && orm !== "none") {
     missingRequirementError({
-      message: "ORM selection requires a database.",
-      provided: { orm, database: "none" },
+      message: requirementIssue,
+      provided: { orm: orm ?? "none", database: "none" },
       suggestions: [
         "Use --database postgres",
         "Use --database sqlite",

@@ -180,6 +180,7 @@ import {
 import {
   getBetterAuthDatabaseIncompatibility,
   getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
@@ -1675,13 +1676,16 @@ function createTypeScriptBackendCompatibilityIssue(
   }
 
   if (part.role === "orm") {
-    const reason = getDatabaseOrmIncompatibility(
-      getDataLayerDatabase(
-        context.primaryToolIdsByRole?.database,
-        context.siblingToolIdsByRole?.database,
-      ),
-      part.toolId,
-    );
+    const appDatabases = context.parts
+      ? getProjectedDatabaseParts(context.parts, getProjectionAppOwners(context.parts, "typescript"))
+      : undefined;
+    const database = getDataLayerDatabase({
+      standalone: context.primaryToolIdsByRole?.database,
+      mobile: appDatabases?.mobile?.toolId,
+      frontend: appDatabases?.frontend?.toolId,
+      backend: context.siblingToolIdsByRole?.database,
+    });
+    const reason = getDatabaseOrmIncompatibility(database, part.toolId);
     if (reason) {
       return createStackGraphIssue({
         code: "INCOMPATIBLE_GRAPH_SELECTION",
@@ -3905,10 +3909,39 @@ type GraphProjectionEcosystem = Exclude<
   "universal" | "kotlin" | "swift" | "dart"
 >;
 
-// Generation builds a backend's data layer against the standalone database when the graph has one
-// and otherwise against the database that backend owns; validation judges the same database.
-function getDataLayerDatabase<T>(standaloneDatabase: T | undefined, backendDatabase: T | undefined) {
-  return standaloneDatabase ?? backendDatabase;
+// The TypeScript projection builds a backend's data layer on a standalone database, else on the
+// database the mobile app, the frontend, or the backend owns, in that order. Validation judges the
+// same database.
+function getDataLayerDatabase<T>(databases: {
+  standalone?: T;
+  mobile?: T;
+  frontend?: T;
+  backend?: T;
+}) {
+  return databases.standalone ?? databases.mobile ?? databases.frontend ?? databases.backend;
+}
+
+function getProjectionAppOwners(parts: readonly StackPart[], ecosystem: GraphProjectionEcosystem) {
+  return {
+    frontend: parts.find(
+      (part) => part.role === "frontend" && part.ecosystem === ecosystem && !part.ownerPartId,
+    ),
+    mobile: parts.find(
+      (part) => part.role === "mobile" && part.ecosystem === "react-native" && !part.ownerPartId,
+    ),
+  };
+}
+
+function getProjectedDatabaseParts(
+  parts: readonly StackPart[],
+  owners: { backend?: StackPart; frontend?: StackPart; mobile?: StackPart },
+) {
+  return {
+    standalone: getSelectedPrimaryPart(parts, "database"),
+    mobile: getSelectedScopedPart(parts, owners.mobile, "database"),
+    frontend: getSelectedScopedPart(parts, owners.frontend, "database"),
+    backend: getSelectedScopedPart(parts, owners.backend, "database"),
+  };
 }
 
 function getSelectedPrimaryPart(parts: readonly StackPart[], role: StackPartRole) {
@@ -4029,16 +4062,11 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   const backend = parts.find(
     (part) => part.role === "backend" && part.ecosystem === ecosystem && !part.ownerPartId,
   );
-  const frontend = parts.find(
-    (part) => part.role === "frontend" && part.ecosystem === ecosystem && !part.ownerPartId,
-  );
-  const mobile = parts.find(
-    (part) => part.role === "mobile" && part.ecosystem === "react-native" && !part.ownerPartId,
-  );
-  const database = getDataLayerDatabase(
-    getSelectedPrimaryPart(parts, "database"),
-    getSelectedScopedPart(parts, backend, "database"),
-  );
+  const { frontend, mobile } = getProjectionAppOwners(parts, ecosystem);
+  const databases = getProjectedDatabaseParts(parts, { backend, frontend, mobile });
+  const database = getDataLayerDatabase(databases);
+  // Database setup keeps following the standalone or backend-owned database.
+  const setupDatabase = databases.standalone ?? databases.backend;
   const orm = getSelectedScopedPart(parts, backend, "orm");
   const api = getSelectedScopedPart(parts, backend, "api");
   const auth =
@@ -4093,7 +4121,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
     projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
   }
 
-  const frontendScopedPartRoles = new Set<StackPartRole>(["auth"]);
+  const frontendScopedPartRoles = new Set<StackPartRole>(["auth", "database"]);
   for (const part of parts) {
     if (
       part.source === "provided" ||
@@ -4105,7 +4133,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
     projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
   }
 
-  const mobileScopedPartRoles = new Set<StackPartRole>(["auth", "payments"]);
+  const mobileScopedPartRoles = new Set<StackPartRole>(["auth", "payments", "database"]);
   for (const part of parts) {
     if (
       part.source === "provided" ||
@@ -4118,7 +4146,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   }
 
   for (const part of parts) {
-    if (part.source === "provided" || part.ownerPartId !== database?.id) {
+    if (part.source === "provided" || part.ownerPartId !== setupDatabase?.id) {
       continue;
     }
     projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
@@ -4240,6 +4268,31 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
       if (compatibilityIssue) {
         issues.push(compatibilityIssue);
       }
+    }
+  }
+
+  // Judged on the whole graph rather than per option, so the builder can still offer an ORM
+  // before a database is chosen.
+  for (const part of parts) {
+    if (part.role !== "orm" || part.ecosystem !== "typescript" || part.source === "provided") {
+      continue;
+    }
+    const backend = part.ownerPartId ? partsById.get(part.ownerPartId) : undefined;
+    if (backend?.role !== "backend") continue;
+    const database = getDataLayerDatabase(
+      getProjectedDatabaseParts(parts, { ...getProjectionAppOwners(parts, "typescript"), backend }),
+    );
+    const message = getDatabaseOrmRequirementIssue(database?.toolId ?? "none", part.toolId);
+    if (message) {
+      issues.push(
+        createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: part.id,
+          role: part.role,
+          toolId: part.toolId,
+          message,
+        }),
+      );
     }
   }
 

@@ -38,6 +38,7 @@ import { getEffectiveStack, getGraphSummary } from "@/config/graph-summary";
 import {
   getBetterAuthSelectionIssue,
   getCompatibilityBackend,
+  getDatabaseOrmRequirementSelectionIssue,
   getDatabaseOrmSelectionIssue,
   getPythonLoggingSelectionIssue,
 } from "@/config/stack-compatibility";
@@ -458,7 +459,9 @@ export function validateMcpProjectConfigCompatibility(
   const pythonLoggingIssue = getPythonLoggingSelectionIssue(config);
   if (pythonLoggingIssue) throw new Error(pythonLoggingIssue.reason);
   const selectionIssue =
-    getDatabaseOrmSelectionIssue(config) ?? getBetterAuthSelectionIssue(config);
+    getDatabaseOrmSelectionIssue(config) ??
+    getBetterAuthSelectionIssue(config) ??
+    getDatabaseOrmRequirementSelectionIssue(config);
   if (selectionIssue) throw new Error(selectionIssue);
   if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
     const qualityIssues = validateStackParts(config.stackParts).issues.filter(

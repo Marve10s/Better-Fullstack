@@ -386,6 +386,23 @@ export function getDatabaseOrmIncompatibility(
   return ORMLESS_DATABASE_REASONS[database] ?? null;
 }
 
+/**
+ * Shared reason for a TypeScript data layer missing one side: an ORM without a database, or a
+ * database without an ORM unless the database brings its own client. An unanswered side is left
+ * open for prompts to fill.
+ */
+export function getDatabaseOrmRequirementIssue(
+  database: string | undefined,
+  orm: string | undefined,
+): string | null {
+  if (!database || !orm) return null;
+  if (orm !== "none" && database === "none") return "ORM selection requires a database";
+  if (orm === "none" && database !== "none" && !ORMLESS_DATABASE_REASONS[database]) {
+    return "Database selection requires an ORM";
+  }
+  return null;
+}
+
 const BETTER_AUTH_UNSUPPORTED_TOOLS: Record<string, string> = {
   redis: "Redis",
   edgedb: "EdgeDB",

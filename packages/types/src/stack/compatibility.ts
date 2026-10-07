@@ -36,6 +36,7 @@ import { ANALYTICS_VALUES } from "@/config/schemas";
 import {
   getBetterAuthDatabaseIncompatibility,
   getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
   hasPWACompatibleFrontend,
@@ -55,6 +56,7 @@ export {
   BACKEND_UTILS_COMPATIBLE_BACKENDS,
   getBetterAuthDatabaseIncompatibility,
   getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   hasGeneratedJobQueueRequirements,
   getUnsupportedWebDeployFrontend,
@@ -3513,12 +3515,9 @@ export const getDisabledReason = (
     }
     const databaseOrmIssue = getDatabaseOrmIncompatibility(currentStack.database, optionId);
     if (databaseOrmIssue) return databaseOrmIssue;
-    if (
-      optionId === "none" &&
-      currentStack.database !== "none" &&
-      getReplacementOrm(currentStack.database).orm !== "none"
-    ) {
-      return "Database requires an ORM";
+    if (optionId === "none") {
+      const requirementIssue = getDatabaseOrmRequirementIssue(currentStack.database, optionId);
+      if (requirementIssue) return requirementIssue;
     }
   }
 
