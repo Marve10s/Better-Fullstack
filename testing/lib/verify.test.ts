@@ -1,3 +1,7 @@
+import type { ProjectConfig } from "@better-fullstack/types";
+
+import { runProductionStartCheck } from "@testing/lib/dev-check";
+import { makeBaseConfig } from "@testing/lib/presets";
 import {
   dockerFailure,
   getVerifier,
@@ -6,7 +10,7 @@ import {
   verifyTypeScript,
 } from "@testing/lib/verify";
 import { describe, expect, it } from "bun:test";
-import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -105,7 +109,9 @@ describe("smoke verifiers", () => {
       ),
     ).toBe("template");
     expect(
-      failure("#5 [internal] load metadata for docker.io/library/node:24-alpine\nERROR: failed to solve"),
+      failure(
+        "#5 [internal] load metadata for docker.io/library/node:24-alpine\nERROR: failed to solve",
+      ),
     ).toBe("template");
   });
 
@@ -141,6 +147,32 @@ fi
       expect(calls).toContain("image rm --force bfs-smoke-docker-run-fails");
     } finally {
       process.env.PATH = path;
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("gates a production server that exits before serving, even on a database error", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "bfs-serve-exits-"));
+    const web = join(dir, "apps", "web");
+    mkdirSync(web, { recursive: true });
+    writeFileSync(join(web, "package.json"), JSON.stringify({ scripts: { serve: "bun exit.ts" } }));
+    writeFileSync(
+      join(web, "exit.ts"),
+      'console.error("PrismaClientInitializationError: Can\'t reach database server at localhost:5432");\nprocess.exit(1);\n',
+    );
+    const config = {
+      ...makeBaseConfig("serve-exits", "typescript"),
+      frontend: ["tanstack-start"],
+      database: "postgres",
+    } satisfies ProjectConfig;
+
+    try {
+      const result = await runProductionStartCheck(dir, config, ["/"]);
+
+      expect(result.success).toBe(false);
+      expect(result.stderr).toContain("exited with code 1");
+      expect(result.classification).toBe("template");
+    } finally {
       rmSync(dir, { recursive: true, force: true });
     }
   });

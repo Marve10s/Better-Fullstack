@@ -503,7 +503,8 @@ export async function runProductionStartCheck(
       durationMs: Date.now() - start,
       stdout: err.stdoutBuf?.slice(-2000),
       stderr: `${command.join(" ")}: ${err.message}\n${err.stderrBuf?.slice(-2000) ?? ""}`,
-      classification: classifyDevCheckError(err.stderrBuf ?? "", err.stdoutBuf ?? "", config),
+      // CI provides the database, so a server that cannot start is the template's fault.
+      classification: "template",
     };
   } finally {
     if (handle) {
