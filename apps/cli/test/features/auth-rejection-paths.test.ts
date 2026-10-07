@@ -486,9 +486,12 @@ describe("prompts and partial flags", () => {
       "self",
       "convex",
     ]);
-    expect(
-      values(resolveBackendPrompt({ frontends: ["tanstack-router"], auth: "passport" })),
-    ).toEqual(["express"]);
+    const passport = resolveBackendPrompt({ frontends: ["tanstack-router"], auth: "passport" });
+    expect(values(passport)).toEqual(["express"]);
+    expect(passport.initialValue).toBe("express");
+    const passportOnVue = resolveBackendPrompt({ frontends: ["vue"], auth: "passport" });
+    expect(values(passportOnVue)).toEqual(["express"]);
+    expect(passportOnVue.initialValue).toBe("express");
     expect(
       values(resolveDatabasePrompt({ backend: "hono", runtime: "bun", auth: "better-auth" })),
     ).not.toContain("redis");
@@ -580,6 +583,17 @@ describe("prompt sequences never strand a requested auth", () => {
     });
   });
 
+  test("without a terminal the backend prompt answers with a backend that keeps the auth", async () => {
+    await runWithContextAsync({ silent: true }, async () => {
+      expect(await getBackendFrameworkChoice(undefined, ["native-bare"], undefined, "clerk")).toBe(
+        "convex",
+      );
+      expect(await getBackendFrameworkChoice(undefined, ["vue"], undefined, "passport")).toBe(
+        "express",
+      );
+    });
+  });
+
   test("every frontend answer the prompt accepts leaves a backend for the requested auth", () => {
     const web = WEB_FRONTEND_PROMPT_OPTIONS.map((option) => option.value);
     const native = NATIVE_FRONTEND_PROMPT_OPTIONS.map((option) => option.value);
@@ -608,9 +622,9 @@ describe("prompt sequences never strand a requested auth", () => {
     // --auth clerk, no web frontend, and a React Native app: Convex wires Clerk for Expo.
     const mobileOnly = getComposerAppFrontends("none", "native-bare");
     expect(mobileOnly).toEqual(["native-bare"]);
-    expect(values(resolveBackendPrompt({ frontends: mobileOnly, auth: "clerk" }))).toEqual([
-      "convex",
-    ]);
+    const clerkMobileOnly = resolveBackendPrompt({ frontends: mobileOnly, auth: "clerk" });
+    expect(values(clerkMobileOnly)).toEqual(["convex"]);
+    expect(clerkMobileOnly.initialValue).toBe("convex");
     expect(values(resolveAuthPrompt({ backend: "convex", frontend: mobileOnly }))).toContain(
       "clerk",
     );

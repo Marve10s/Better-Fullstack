@@ -146,7 +146,11 @@ export function resolveBackendPrompt(
         shouldPrompt: true,
         mode: "single",
         options,
-        initialValue: offersSelf ? "self" : DEFAULT_CONFIG.backend,
+        initialValue: offersSelf
+          ? "self"
+          : options.some((option) => option.value === DEFAULT_CONFIG.backend)
+            ? DEFAULT_CONFIG.backend
+            : options[0]?.value,
       };
 }
 
