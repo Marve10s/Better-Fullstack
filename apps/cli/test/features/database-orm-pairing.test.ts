@@ -334,6 +334,50 @@ describe("database and ORM pairing", () => {
     expect(() => buildProjectConfig(python)).not.toThrow();
   });
 
+  test("a database setup provider must host the database before the pair is judged", async () => {
+    const ATLAS =
+      "MongoDB Atlas setup requires MongoDB database. Please use '--database mongodb' or choose a different setup.";
+    const cases = [
+      { input: { database: "sqlite", orm: "kysely", dbSetup: "mongodb-atlas" }, reason: ATLAS },
+      {
+        input: { database: "postgres", orm: "prisma", dbSetup: "upstash" },
+        reason:
+          "Upstash setup requires Redis database. Please use '--database redis' or choose a different setup.",
+      },
+      {
+        input: { orm: "kysely", dbSetup: "mongodb-atlas" },
+        reason:
+          "Database setup requires a database. Please choose a database or set '--db-setup none'.",
+      },
+    ];
+    for (const { input, reason } of cases) {
+      const options = {
+        ...STACKS.standalone,
+        frontend: [...STACKS.standalone.frontend],
+        auth: "none",
+        ...input,
+      };
+      expect(await createVirtual(options)).toEqual({ success: false, error: reason });
+      expect(() => buildProjectConfig(options)).toThrow(reason);
+      await expect(planProjectOperation.invoke(options)).rejects.toThrow(reason);
+    }
+
+    const stackParts = parseStackPartSpecs([
+      "frontend:typescript:tanstack-router",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "database:universal:sqlite",
+      "database.dbSetup:universal:mongodb-atlas",
+      "backend.orm:typescript:kysely",
+    ]);
+    const part = stackParts.map((candidate) => formatStackPartSpec(candidate, stackParts));
+    expect(await createVirtual({ stackParts })).toEqual({
+      success: false,
+      error: "MongoDB Atlas setup requires MongoDB.",
+    });
+    expect(() => buildProjectConfig({ part })).toThrow("MongoDB Atlas setup requires MongoDB.");
+  });
+
   test("valid pairs still generate", async () => {
     const results = await Promise.all(
       [

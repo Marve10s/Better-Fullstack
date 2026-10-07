@@ -296,10 +296,10 @@ export async function createVirtual(
     const {
       getBetterAuthSelectionIssue,
       getDatabaseOrmRequirementSelectionIssue,
-      getDatabaseOrmSelectionIssue,
+      getDataLayerSelectionIssue,
     } = await import("@/config/stack-compatibility");
     const selectionIssue =
-      getDatabaseOrmSelectionIssue(config) ??
+      getDataLayerSelectionIssue(config) ??
       getBetterAuthSelectionIssue(config) ??
       getDatabaseOrmRequirementSelectionIssue(config);
     if (selectionIssue) return { success: false, error: selectionIssue };

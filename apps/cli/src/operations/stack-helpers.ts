@@ -39,7 +39,7 @@ import {
   getBetterAuthSelectionIssue,
   getCompatibilityBackend,
   getDatabaseOrmRequirementSelectionIssue,
-  getDatabaseOrmSelectionIssue,
+  getDataLayerSelectionIssue,
   getPythonLoggingSelectionIssue,
 } from "@/config/stack-compatibility";
 
@@ -443,6 +443,7 @@ export function validateMcpProjectConfigCompatibility(
         | "backend"
         | "runtime"
         | "database"
+        | "dbSetup"
         | "jobQueue"
         | "webDeploy"
         | "stackParts"
@@ -459,7 +460,7 @@ export function validateMcpProjectConfigCompatibility(
   const pythonLoggingIssue = getPythonLoggingSelectionIssue(config);
   if (pythonLoggingIssue) throw new Error(pythonLoggingIssue.reason);
   const selectionIssue =
-    getDatabaseOrmSelectionIssue(config) ??
+    getDataLayerSelectionIssue(config) ??
     getBetterAuthSelectionIssue(config) ??
     getDatabaseOrmRequirementSelectionIssue(config);
   if (selectionIssue) throw new Error(selectionIssue);
