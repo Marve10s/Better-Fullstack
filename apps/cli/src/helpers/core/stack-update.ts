@@ -61,6 +61,7 @@ import {
   analyzeStackCompatibility,
   createStackPart,
   formatStackPartSpec,
+  getDatabaseOrmIncompatibility,
   getReplacedCodeQualityTools,
   getToolingCapability,
   getToolingCategory,
@@ -1792,6 +1793,12 @@ export async function planStackUpdate(
   let proposedConfig = mergeProjectConfig(currentConfig, requestedChanges, options);
   const dependencyExpansion = applyKnownDependencyExpansions(proposedConfig, requestedChanges);
   proposedConfig = dependencyExpansion.config;
+  // A requested database or ORM is judged against the data layer it joins before compatibility
+  // adjustments could replace the ORM the project already uses.
+  const dataLayerRejection =
+    requestedChanges.database !== undefined || requestedChanges.orm !== undefined
+      ? getDatabaseOrmIncompatibility(proposedConfig.database, proposedConfig.orm)
+      : null;
   const shouldApplyCompatibilityAdjustments =
     proposedConfig.ecosystem === "typescript" || proposedConfig.ecosystem === "react-native";
   const compatibilityResult = shouldApplyCompatibilityAdjustments
@@ -1851,6 +1858,7 @@ export async function planStackUpdate(
     }
   }
   const requestedRejection =
+    dataLayerRejection ??
     getRequestedJobQueueRejection(requestedChanges.jobQueue, proposedConfig) ??
     getRequestedBetterAuthRejection(requestedChanges.auth, proposedConfig);
   if (requestedRejection) {

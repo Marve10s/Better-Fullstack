@@ -2,6 +2,7 @@ import {
   analyzeStackCompatibility,
   getAddonStackPartBinding,
   getBetterAuthDatabaseIncompatibility,
+  getDatabaseOrmIncompatibility,
   getJobQueueIncompatibility,
   getPythonLoggingIncompatibility,
   isToolingOverlayOnly,
@@ -75,6 +76,33 @@ export function getBetterAuthSelectionIssue(config: Partial<ProjectConfig>): str
   }
   if ((config.ecosystem ?? "typescript") !== "typescript") return null;
   return getBetterAuthDatabaseIncompatibility(config.auth, config);
+}
+
+/**
+ * Compatibility adjustments replace an ORM the database cannot use, as the builder does. An ORM
+ * requested by flag or tool input is rejected instead, with the shared reason.
+ */
+export function getRequestedOrmRejection(
+  requestedOrm: ProjectConfig["orm"] | undefined,
+  adjustedConfig: Partial<ProjectConfig>,
+): string | null {
+  if (!requestedOrm || adjustedConfig.orm === requestedOrm) return null;
+  return getDatabaseOrmIncompatibility(adjustedConfig.database, requestedOrm);
+}
+
+// Checks the database and ORM pair the generator will use: graph input is judged by its own
+// database and ORM parts rather than by stale flat fields.
+export function getDatabaseOrmSelectionIssue(config: Partial<ProjectConfig>): string | null {
+  const parts = config.stackParts ?? [];
+  if (parts.length && !isToolingOverlayOnly(parts)) {
+    const issue = validateStackParts(parts).issues.find(
+      (candidate) =>
+        candidate.role === "orm" &&
+        parts.find((part) => part.id === candidate.partId)?.ecosystem === "typescript",
+    );
+    return issue?.message ?? null;
+  }
+  return getDatabaseOrmIncompatibility(config.database, config.orm);
 }
 
 function getProjectBackendFromCompatibility(backend: string): string {

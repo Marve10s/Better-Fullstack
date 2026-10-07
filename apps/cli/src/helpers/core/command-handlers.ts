@@ -19,6 +19,7 @@ import { displayConfig } from "@/config/display-config";
 import {
   getRequestedBetterAuthRejection,
   getRequestedJobQueueRejection,
+  getRequestedOrmRejection,
   resolveCompatibilityAdjustments,
 } from "@/config/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "@/config/templates";
@@ -350,7 +351,8 @@ function rejectAdjustedRequestedFlags(
       : null) ??
     (providedFlags.has("auth")
       ? getRequestedBetterAuthRejection(config.auth, adjustedConfig)
-      : null);
+      : null) ??
+    (providedFlags.has("orm") ? getRequestedOrmRejection(config.orm, adjustedConfig) : null);
   if (rejection) exitWithError(rejection);
 }
 

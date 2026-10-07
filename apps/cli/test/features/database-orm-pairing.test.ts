@@ -1,0 +1,227 @@
+import { EMBEDDED_TEMPLATES, generateVirtualProject } from "@better-fullstack/template-generator";
+import { writeTreeToFilesystem } from "@better-fullstack/template-generator/fs-writer";
+import {
+  createCliDefaultProjectConfigBase,
+  formatStackPartSpec,
+  legacyProjectConfigToStackParts,
+  type ProjectConfig,
+} from "@better-fullstack/types";
+import { createCustomConfig, expectError, runTRPCTest } from "@test/support/test-utils";
+import { afterAll, describe, expect, test } from "bun:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import { writeBtsConfig } from "@/config/bts-config";
+import { planStackUpdate } from "@/helpers/core/stack-update";
+import { createVirtual } from "@/index";
+import { recordScaffoldManifest } from "@/lifecycle/scaffold-manifest";
+import { planProjectOperation } from "@/operations/project-create";
+import { planAdditionOperation, planStackUpdateOperation } from "@/operations/project-mutate";
+import { buildProjectConfig } from "@/operations/stack-helpers";
+import { resolveDatabasePrompt } from "@/prompts/data/database";
+import { resolveORMPrompt } from "@/prompts/data/orm";
+
+const TEMP_ROOTS: string[] = [];
+
+afterAll(async () => {
+  await Promise.all(TEMP_ROOTS.map((root) => rm(root, { recursive: true, force: true })));
+});
+
+const STACKS = {
+  fullstack: { frontend: ["svelte"], backend: "self", runtime: "none", api: "orpc" },
+  standalone: { frontend: ["tanstack-router"], backend: "hono", runtime: "bun", api: "trpc" },
+} as const;
+
+const REJECTED = [
+  { database: "mongodb", orm: "drizzle", reason: "Drizzle ORM does not support MongoDB" },
+  {
+    database: "mongodb",
+    orm: "typeorm",
+    reason: "TypeORM does not support MongoDB in Better Fullstack",
+  },
+  { database: "mongodb", orm: "kysely", reason: "Kysely does not support MongoDB" },
+  {
+    database: "mongodb",
+    orm: "mikroorm",
+    reason: "MikroORM does not support MongoDB in Better Fullstack",
+  },
+  { database: "mongodb", orm: "sequelize", reason: "Sequelize does not support MongoDB" },
+  { database: "postgres", orm: "mongoose", reason: "Mongoose ORM requires MongoDB database" },
+  { database: "redis", orm: "mongoose", reason: "Mongoose ORM requires MongoDB database" },
+  {
+    database: "edgedb",
+    orm: "prisma",
+    reason: "EdgeDB has its own built-in query builder and does not require an ORM",
+  },
+  {
+    database: "redis",
+    orm: "drizzle",
+    reason: "Redis is a key-value store and does not require an ORM",
+  },
+] as const;
+
+function graphParts(stack: (typeof STACKS)[keyof typeof STACKS], database: string, orm: string) {
+  return legacyProjectConfigToStackParts({
+    ...createCliDefaultProjectConfigBase(),
+    projectName: "pair",
+    ...stack,
+    frontend: [...stack.frontend],
+    addons: [],
+    database,
+    orm,
+    auth: "none",
+  } as ProjectConfig);
+}
+
+async function scaffoldProject(overrides: Partial<ProjectConfig>) {
+  const root = await mkdtemp(join(tmpdir(), "bfs-db-orm-"));
+  TEMP_ROOTS.push(root);
+  const projectDir = join(root, "app");
+  const config = {
+    ...createCliDefaultProjectConfigBase(),
+    ...STACKS.standalone,
+    frontend: [...STACKS.standalone.frontend],
+    addons: [],
+    auth: "none",
+    projectName: "app",
+    projectDir,
+    relativePath: ".",
+    git: false,
+    install: false,
+    ...overrides,
+  } as ProjectConfig;
+  const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
+  if (!result.success || !result.tree) throw new Error(result.error ?? "Failed to generate");
+  await writeTreeToFilesystem(result.tree, projectDir);
+  await writeBtsConfig(config);
+  await recordScaffoldManifest(projectDir);
+  return projectDir;
+}
+
+const CASES = Object.entries(STACKS).flatMap(([stackName, stack]) =>
+  REJECTED.map(({ database, orm, reason }) => ({
+    label: `${stackName} ${database}/${orm}`,
+    stack,
+    options: { ...stack, frontend: [...stack.frontend], database, orm, auth: "none" },
+    reason,
+  })),
+);
+
+const databasesFor = (orm: "kysely" | "mongoose") =>
+  resolveDatabasePrompt({ backend: "hono", runtime: "bun", orm }).options.map(
+    (option) => option.value,
+  );
+
+const ormsFor = (database: "mongodb" | "postgres" | "redis") =>
+  resolveORMPrompt({ hasDatabase: true, database });
+
+describe("database and ORM pairing", () => {
+  test("CLI flags reject every impossible pair with the shared reason", async () => {
+    const results = await Promise.all(
+      CASES.map(({ options }, index) =>
+        runTRPCTest(createCustomConfig({ projectName: `pair-${index}`, ...options })),
+      ),
+    );
+    for (const [index, { label, reason }] of CASES.entries()) {
+      expectError(results[index]!, reason);
+      expect(results[index]!.error, label).not.toContain(`${reason}.`);
+    }
+  });
+
+  test("createVirtual rejects every impossible flat pair with the shared reason", async () => {
+    const results = await Promise.all(CASES.map(({ options }) => createVirtual(options)));
+    for (const [index, { label, reason }] of CASES.entries()) {
+      expect(results[index], label).toEqual({ success: false, error: reason });
+    }
+  });
+
+  test("createVirtual rejects every impossible pair in graph input with the shared reason", async () => {
+    const results = await Promise.all(
+      CASES.map(({ stack, options }) =>
+        createVirtual({ stackParts: graphParts(stack, options.database, options.orm) }),
+      ),
+    );
+    for (const [index, { label, reason }] of CASES.entries()) {
+      expect(results[index], label).toEqual({ success: false, error: reason });
+    }
+  });
+
+  test("MCP config construction and planning reject every impossible pair", async () => {
+    for (const { stack, options, reason } of CASES) {
+      expect(() => buildProjectConfig(options)).toThrow(reason);
+      const parts = graphParts(stack, options.database, options.orm);
+      const part = parts.map((candidate) => formatStackPartSpec(candidate, parts));
+      expect(() => buildProjectConfig({ part })).toThrow(reason);
+    }
+    await Promise.all(
+      CASES.map(({ options, reason }) =>
+        expect(planProjectOperation.invoke(options)).rejects.toThrow(reason),
+      ),
+    );
+  });
+
+  test("valid pairs still generate", async () => {
+    const results = await Promise.all(
+      [
+        { database: "mongodb", orm: "prisma" },
+        { database: "mongodb", orm: "mongoose" },
+        { database: "postgres", orm: "kysely" },
+        { database: "redis", orm: "none" },
+        { database: "edgedb", orm: "none" },
+      ].map((data) => createVirtual({ ...STACKS.standalone, ...data, auth: "none" })),
+    );
+    for (const result of results) expect(result.error).toBeUndefined();
+  });
+
+  test("prompts only offer databases and ORMs that pair with the other choice", () => {
+    expect(databasesFor("kysely")).toEqual(["none", "sqlite", "postgres", "mysql"]);
+    expect(databasesFor("mongoose")).toEqual(["none", "mongodb"]);
+
+    expect(ormsFor("mongodb").options.map((option) => option.value)).toEqual([
+      "prisma",
+      "mongoose",
+    ]);
+    expect(ormsFor("postgres").options.map((option) => option.value)).toEqual([
+      "drizzle",
+      "prisma",
+      "typeorm",
+      "kysely",
+      "mikroorm",
+      "sequelize",
+    ]);
+    expect(ormsFor("redis")).toMatchObject({ shouldPrompt: false, autoValue: "none" });
+  });
+
+  test("update and add planning reject a database or ORM the project's data layer cannot use", async () => {
+    const mongoProject = await scaffoldProject({ database: "mongodb", orm: "prisma" });
+    const ormPlan = await planStackUpdate(mongoProject, { orm: "kysely" });
+    expect(ormPlan).toMatchObject({
+      success: false,
+      error: "Invalid stack update: Kysely does not support MongoDB",
+    });
+    const mcpPlan = await planStackUpdateOperation.invoke({
+      projectDir: mongoProject,
+      orm: "kysely",
+    });
+    expect(mcpPlan.output).toEqual(ormPlan);
+
+    const postgresProject = await scaffoldProject({ database: "postgres", orm: "drizzle" });
+    expect(await planStackUpdate(postgresProject, { database: "mongodb" })).toMatchObject({
+      success: false,
+      error: "Invalid stack update: Drizzle ORM does not support MongoDB",
+    });
+    const switched = await planStackUpdate(postgresProject, { database: "mongodb", orm: "prisma" });
+    expect(switched.success).toBe(true);
+
+    const redisProject = await scaffoldProject({ database: "redis", orm: "none" });
+    const addition = await planAdditionOperation.invoke({
+      projectDir: redisProject,
+      part: ["backend.orm:typescript:drizzle"],
+    });
+    expect(addition.output).toMatchObject({
+      success: false,
+      error: "Invalid stack update: Redis is a key-value store and does not require an ORM",
+    });
+  });
+});

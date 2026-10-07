@@ -43,6 +43,7 @@ import {
   getDisabledReason,
   getCodeQualitySelectionIssue,
   getBetterAuthDatabaseIncompatibility,
+  getDatabaseOrmIncompatibility,
   getJobQueueIncompatibility,
   getShadcnLintFrontendIssue,
   hasVitePlusWorkspaceRoot,
@@ -151,83 +152,23 @@ function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string
     db === "sqlite" &&
     !hasEcosystemOrm;
 
-  if (has("orm") && has("database") && orm === "mongoose" && db !== "mongodb") {
+  const pairIssue = has("orm") && has("database") ? getDatabaseOrmIncompatibility(db, orm) : null;
+  if (pairIssue) {
     incompatibilityError({
-      message: "Mongoose ORM requires MongoDB database.",
-      provided: { orm: "mongoose", database: db || "none" },
-      suggestions: ["Use --database mongodb", "Choose a different ORM (drizzle, prisma)"],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "drizzle" && db === "mongodb") {
-    incompatibilityError({
-      message: "Drizzle ORM does not support MongoDB.",
-      provided: { orm: "drizzle", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "typeorm" && db === "mongodb") {
-    incompatibilityError({
-      message: "TypeORM does not support MongoDB in Better Fullstack.",
-      provided: { orm: "typeorm", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "kysely" && db === "mongodb") {
-    incompatibilityError({
-      message: "Kysely does not support MongoDB.",
-      provided: { orm: "kysely", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "mikroorm" && db === "mongodb") {
-    incompatibilityError({
-      message: "MikroORM does not support MongoDB in Better Fullstack.",
-      provided: { orm: "mikroorm", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "sequelize" && db === "mongodb") {
-    incompatibilityError({
-      message: "Sequelize does not support MongoDB.",
-      provided: { orm: "sequelize", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (
-    has("database") &&
-    has("orm") &&
-    db === "mongodb" &&
-    orm &&
-    orm !== "mongoose" &&
-    orm !== "prisma" &&
-    orm !== "none"
-  ) {
-    incompatibilityError({
-      message:
-        "In Better-Fullstack, MongoDB is currently supported only with Mongoose or Prisma ORM.",
-      provided: { database: "mongodb", orm },
-      suggestions: ["Use --orm mongoose", "Use --orm prisma"],
+      message: pairIssue,
+      provided: { database: db ?? "none", orm: orm ?? "none" },
+      suggestions:
+        orm === "mongoose"
+          ? ["Use --database mongodb", "Choose a different ORM (drizzle, prisma)"]
+          : db === "mongodb"
+            ? [
+                "Use --orm mongoose or --orm prisma for MongoDB",
+                "Choose a different database (postgres, sqlite, mysql)",
+              ]
+            : [
+                `Use --orm none with ${db === "edgedb" ? "EdgeDB" : "Redis"}`,
+                "Choose a different database if you want to use an ORM",
+              ],
     });
   }
 
@@ -252,30 +193,6 @@ function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string
         "Use --orm drizzle (recommended)",
         "Use --orm prisma",
         "Use --orm mongoose (MongoDB only)",
-      ],
-    });
-  }
-
-  // EdgeDB should not have an ORM (it has its own query builder)
-  if (has("database") && has("orm") && db === "edgedb" && orm && orm !== "none") {
-    incompatibilityError({
-      message: "EdgeDB has its own built-in query builder and does not require an ORM.",
-      provided: { database: "edgedb", orm },
-      suggestions: [
-        "Use --orm none with EdgeDB",
-        "Choose a different database if you want to use an ORM",
-      ],
-    });
-  }
-
-  // Redis should not have an ORM (it's a key-value store with its own client)
-  if (has("database") && has("orm") && db === "redis" && orm && orm !== "none") {
-    incompatibilityError({
-      message: "Redis is a key-value store and does not require an ORM.",
-      provided: { database: "redis", orm },
-      suggestions: [
-        "Use --orm none with Redis",
-        "Choose a different database if you want to use an ORM",
       ],
     });
   }

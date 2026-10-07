@@ -293,9 +293,11 @@ export async function createVirtual(
       );
     }
 
-    const { getBetterAuthSelectionIssue } = await import("@/config/stack-compatibility");
-    const betterAuthIssue = getBetterAuthSelectionIssue(config);
-    if (betterAuthIssue) return { success: false, error: betterAuthIssue };
+    const { getBetterAuthSelectionIssue, getDatabaseOrmSelectionIssue } =
+      await import("@/config/stack-compatibility");
+    const selectionIssue =
+      getDatabaseOrmSelectionIssue(config) ?? getBetterAuthSelectionIssue(config);
+    if (selectionIssue) return { success: false, error: selectionIssue };
 
     const { generateVirtualProject: generate, EMBEDDED_TEMPLATES } =
       await import("@better-fullstack/template-generator");

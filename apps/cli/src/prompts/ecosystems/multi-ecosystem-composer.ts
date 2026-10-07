@@ -561,7 +561,14 @@ export async function gatherMultiEcosystemConfig(
         : promptValue(await getRuntimeChoice(flags.runtime, backend, flags.jobQueue));
     if (backend !== "none") {
       database = promptValue(
-        await getDatabaseChoice(flags.database, backend, runtime, flags.jobQueue, flags.auth),
+        await getDatabaseChoice(
+          flags.database,
+          backend,
+          runtime,
+          flags.jobQueue,
+          flags.auth,
+          flags.orm,
+        ),
       );
       dbSetup = promptValue(
         await getDBSetupChoice(database, flags.dbSetup, flags.orm, backend, runtime),
