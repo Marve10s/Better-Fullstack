@@ -1,4 +1,9 @@
-import { getVerifier, runWithRegistryPropagationRetry, verifyElixir } from "@testing/lib/verify";
+import {
+  dockerFailure,
+  getVerifier,
+  runWithRegistryPropagationRetry,
+  verifyElixir,
+} from "@testing/lib/verify";
 import { describe, expect, it } from "bun:test";
 
 describe("smoke verifiers", () => {
@@ -60,5 +65,43 @@ describe("smoke verifiers", () => {
     expect(result.success).toBe(false);
     expect(result.classification).toBe("template");
     expect(attempts).toBe(3);
+  });
+
+  it("gates a Docker build that times out, since a hang is not proof of a network fault", () => {
+    const result = dockerFailure({
+      step: "docker-build",
+      success: false,
+      durationMs: 900_000,
+      stderr: "#9 [builder 4/5] RUN pnpm --filter server build\nProcess timed out after 900s.",
+      timedOut: true,
+      classification: "environment",
+    });
+
+    expect(result.classification).toBe("template");
+  });
+
+  it("treats only an explicit registry or network error as environmental", () => {
+    const failure = (stderr: string) =>
+      dockerFailure({ step: "docker-build", success: false, durationMs: 1, stderr, exitCode: 1 })
+        .classification;
+
+    expect(
+      failure(
+        'ERROR: failed to solve: node:24-alpine: failed to resolve source metadata for docker.io/library/node:24-alpine: failed to do request: Head "https://registry-1.docker.io/v2/library/node/manifests/24-alpine": dial tcp: lookup registry-1.docker.io: no such host',
+      ),
+    ).toBe("environment");
+    expect(
+      failure(
+        " ERR_PNPM_META_FETCH_FAIL  GET https://registry.npmjs.org/hono: request to https://registry.npmjs.org/hono failed, reason: getaddrinfo ENOTFOUND registry.npmjs.org",
+      ),
+    ).toBe("environment");
+    expect(
+      failure(
+        " WARN  GET https://registry.npmjs.org/hono error (ECONNRESET). Will retry in 10 seconds.\n#10 ERROR: process \"/bin/sh -c pnpm --filter server build\" did not complete successfully: exit code: 2\nsrc/index.ts(3,1): error TS2307: Cannot find module './routers'",
+      ),
+    ).toBe("template");
+    expect(
+      failure("#5 [internal] load metadata for docker.io/library/node:24-alpine\nERROR: failed to solve"),
+    ).toBe("template");
   });
 });

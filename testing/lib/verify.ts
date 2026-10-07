@@ -340,9 +340,19 @@ async function runTypeScriptQualityGate(
   return steps;
 }
 
-// Docker output names registries and networks, so classify by outcome instead of by keyword.
-function dockerFailure(result: StepResult): StepResult {
-  return { ...result, classification: result.timedOut ? "environment" : "template" };
+// A base-image pull or package download that could not reach its host. Docker's normal output
+// names registries, so match network errors only, and skip package managers' retry warnings.
+const DOCKER_NETWORK_FAILURE_PATTERN =
+  /toomanyrequests|TLS handshake timeout|dial tcp\b[^\n]*(?:no such host|i\/o timeout|connection refused|network is unreachable)|^(?![^\n]*Will retry)[^\n]*\b(?:ENOTFOUND|EAI_AGAIN|ETIMEDOUT|ECONNRESET)\b/m;
+
+/**
+ * Only a proven network failure is environmental. A timeout alone proves nothing (a hung build
+ * also times out), so it gates like any other Docker failure.
+ */
+export function dockerFailure(result: StepResult): StepResult {
+  const output = `${result.stderr ?? ""}\n${result.stdout ?? ""}`;
+  const network = !result.timedOut && DOCKER_NETWORK_FAILURE_PATTERN.test(output);
+  return { ...result, classification: network ? "environment" : "template" };
 }
 
 async function runDockerContainer(
