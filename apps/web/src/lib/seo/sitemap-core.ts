@@ -28,7 +28,6 @@ const staticSitemapEntries: SitemapEntry[] = [
     (comparison): SitemapEntry => ({
       path: `/compare/${comparison.slug}`,
       changefreq: "weekly",
-      lastmod: comparison.factsCheckedOn,
       priority: 0.7,
     }),
   ),

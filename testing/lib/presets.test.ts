@@ -14,6 +14,7 @@ const PR_CORE_PRESET_NAMES = [
   "preset-elixir-plain-worker",
   "preset-native-uniwind-trpc",
   "preset-frontend-only-react-vite",
+  "preset-hono-node-prisma-docker",
 ];
 
 const PR_BROAD_PRESET_NAMES = [

@@ -187,7 +187,7 @@ function RouteComponent() {
     try {
       const response = await fetch({{#if (eq backend "self")}}"/api/ai"{{else}}`${env.VITE_SERVER_URL}/ai`{{/if}}, {
         method: "POST",
-{{#if (and (hasAiRouteAuth auth) (ne backend "self"))}}
+{{#if (and (hasAiRouteAuth auth backend frontend) (ne backend "self"))}}
         credentials: "include",
 {{/if}}
         headers: { "Content-Type": "application/json" },
@@ -199,7 +199,7 @@ function RouteComponent() {
         }),
       });
 
-{{#if (hasAiRouteAuth auth)}}
+{{#if (hasAiRouteAuth auth backend frontend)}}
       if (response.status === 401) {
         setMessages((prev) => [
           ...prev,
@@ -377,7 +377,7 @@ function RouteComponent() {
     try {
       const response = await fetch({{#if (eq backend "self")}}"/api/ai"{{else}}`${env.VITE_SERVER_URL}/ai`{{/if}}, {
         method: "POST",
-{{#if (and (hasAiRouteAuth auth) (ne backend "self"))}}
+{{#if (and (hasAiRouteAuth auth backend frontend) (ne backend "self"))}}
         credentials: "include",
 {{/if}}
         headers: { "Content-Type": "application/json" },
@@ -389,7 +389,7 @@ function RouteComponent() {
         }),
       });
 
-{{#if (hasAiRouteAuth auth)}}
+{{#if (hasAiRouteAuth auth backend frontend)}}
       if (response.status === 401) {
         setMessages((prev) => [
           ...prev,
@@ -581,10 +581,10 @@ function MessageBubble({
 
 function RouteComponent() {
   const [input, setInput] = useState("");
-  const { messages, sendMessage, status{{#if (hasAiRouteAuth auth)}}, error{{/if}} } = useChat({
+  const { messages, sendMessage, status{{#if (hasAiRouteAuth auth backend frontend)}}, error{{/if}} } = useChat({
     transport: new DefaultChatTransport({
       api: {{#if (eq backend "self")}}"/api/ai"{{else}}`${env.VITE_SERVER_URL}/ai`{{/if}},
-{{#if (hasAiRouteAuth auth)}}
+{{#if (hasAiRouteAuth auth backend frontend)}}
 {{#unless (eq backend "self")}}
       credentials: "include",
 {{/unless}}
@@ -630,7 +630,7 @@ function RouteComponent() {
             />
           ))
         )}
-{{#if (hasAiRouteAuth auth)}}
+{{#if (hasAiRouteAuth auth backend frontend)}}
         {error && <p className="text-center text-sm text-destructive">{error.message}</p>}
 {{/if}}
         <div ref={messagesEndRef} />

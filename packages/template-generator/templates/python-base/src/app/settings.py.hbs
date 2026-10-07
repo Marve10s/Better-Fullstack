@@ -2,6 +2,9 @@
 """Application settings using pydantic-settings."""
 
 from functools import lru_cache
+{{#if (ne pythonLogging "none")}}
+from typing import Literal
+{{/if}}
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -13,6 +16,9 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        # .env also holds values read by other libraries, such as API keys and
+        # broker URLs; settings only reads the fields declared below.
+        extra="ignore",
     )
 
     # Application settings
@@ -24,6 +30,13 @@ class Settings(BaseSettings):
     # API settings
     api_prefix: str = "/api"
     api_version: str = "v1"
+{{#if (ne pythonLogging "none")}}
+
+    # Logging settings (auto writes JSON when app_env is "production")
+    app_env: str = "development"
+    log_level: str = "INFO"
+    log_format: Literal["auto", "json", "console"] = "auto"
+{{/if}}
 
 {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel") (eq pythonOrm "tortoise-orm"))}}
     # Database settings

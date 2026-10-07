@@ -87,6 +87,23 @@ describe("stack selection translation", () => {
     expect(parsed).toEqual(input);
   });
 
+  it("round-trips the Python logging selection through the URL, command, and config", () => {
+    const selection = normalizeStackSelection({
+      ...DEFAULT_SELECTION,
+      ecosystem: "python",
+      pythonLogging: "loguru",
+    });
+
+    const params = createStackSelectionSearchParams(selection);
+    expect(params.get(STACK_SELECTION_URL_KEYS.pythonLogging)).toBe("loguru");
+    expect(parseStackSelectionFromUrlRecord(Object.fromEntries(params.entries()))).toEqual(
+      selection,
+    );
+    expect(generateStackSelectionCommand(selection)).toContain("--python-logging loguru");
+    expect(toProjectConfig(selection).pythonLogging).toBe("loguru");
+    expect(DEFAULT_SELECTION.pythonLogging).toBe("none");
+  });
+
   it("detects the default TypeScript stack and emits --yes", () => {
     expect(isCliDefaultStackSelection(DEFAULT_SELECTION)).toBe(true);
     expect(generateStackSelectionCommand(DEFAULT_SELECTION)).toBe(
@@ -503,6 +520,7 @@ describe("stack selection translation", () => {
           pythonCaching: "aiocache",
           pythonRealtime: "websockets",
           pythonObservability: "prometheus-client",
+          pythonLogging: "structlog",
           pythonCli: ["typer", "rich"],
         },
         expectedParts: [
@@ -511,6 +529,7 @@ describe("stack selection translation", () => {
           "backend.caching:python:aiocache",
           "backend.realtime:python:websockets",
           "backend.observability:python:prometheus-client",
+          "backend.logging:python:structlog",
           "backend.cli:python:typer",
           "backend.cli:python:rich",
         ],

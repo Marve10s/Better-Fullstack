@@ -27,6 +27,7 @@ import {
 } from "@/config/compatibility-rules";
 import {
   buildCompatibilityInputFromConfig,
+  getPythonLoggingSelectionIssue,
   hasSelectedTypeScriptBackendPart,
 } from "@/config/stack-compatibility";
 import { validatePeerDependencies } from "@/platform/peer-dependency-validator";
@@ -41,6 +42,7 @@ import {
   formatStackGraphIssue,
   getDisabledReason,
   getCodeQualitySelectionIssue,
+  getBetterAuthDatabaseIncompatibility,
   getJobQueueIncompatibility,
   getShadcnLintFrontendIssue,
   hasVitePlusWorkspaceRoot,
@@ -440,27 +442,28 @@ function validateDatabaseSetup(config: Partial<ProjectConfig>, providedFlags: Se
 export function validateEcosystemAuthCompatibility(
   config: Partial<ProjectConfig>,
   providedFlags?: Set<string>,
+  partial = false,
 ) {
+  // The graph is authoritative: stale flat auth, database, and ORM must not decide what gets
+  // generated, so graph input is judged by its own projection before any flat field is read.
+  const usesGraph = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+  if (usesGraph) {
+    const selection = stackGraphToLegacyProjectConfigForEcosystem(
+      config as ProjectConfig,
+      "typescript",
+    );
+    // Without a TypeScript backend only auth clients are generated, so no adapter is needed.
+    const reason =
+      selection.backend === "none"
+        ? null
+        : getBetterAuthDatabaseIncompatibility(selection.auth, selection);
+    if (reason && providedFlags) exitWithError(reason);
+    if (reason) throw new Error(reason);
+  }
+
   const auth = config.auth;
 
   if (!auth || auth === "none") {
-    return;
-  }
-
-  const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-  if (
-    (auth === "better-auth" || auth === "better-auth-organizations") &&
-    config.orm &&
-    ormsWithoutBetterAuth.includes(config.orm)
-  ) {
-    config.auth = "none";
-    if (providedFlags?.has("auth") && !isSilent()) {
-      consola.warn(
-        pc.yellow(
-          `Unsupported auth selection '${auth}' with ${config.orm}: no Better Auth adapter exists. Falling back to '--auth none'.`,
-        ),
-      );
-    }
     return;
   }
 
@@ -474,19 +477,27 @@ export function validateEcosystemAuthCompatibility(
     auth,
   );
 
-  if (!normalized.normalized || normalized.value === auth) {
+  if (normalized.normalized && normalized.value !== auth) {
+    config.auth = normalized.value;
+
+    if (providedFlags?.has("auth") && normalized.reason && !isSilent()) {
+      consola.warn(
+        pc.yellow(
+          `Unsupported auth selection '${auth}' for the current stack: ${normalized.reason}. Falling back to '--auth ${normalized.value}'.`,
+        ),
+      );
+    }
     return;
   }
 
-  config.auth = normalized.value;
-
-  if (providedFlags?.has("auth") && normalized.reason && !isSilent()) {
-    consola.warn(
-      pc.yellow(
-        `Unsupported auth selection '${auth}' for the current stack: ${normalized.reason}. Falling back to '--auth ${normalized.value}'.`,
-      ),
-    );
-  }
+  if (usesGraph || (config.ecosystem ?? "typescript") !== "typescript") return;
+  const reason = getBetterAuthDatabaseIncompatibility(auth, config, { partial });
+  if (!reason) return;
+  // Better Auth that was asked for is rejected; a default one gives way to the database choice.
+  if (!providedFlags) throw new Error(reason);
+  if (providedFlags.has("auth")) exitWithError(reason);
+  config.auth = "none";
+  if (!isSilent()) consola.warn(pc.yellow(`Auth set to 'None' (${reason})`));
 }
 
 function validateConvexConstraints(config: Partial<ProjectConfig>, providedFlags: Set<string>) {
@@ -1403,6 +1414,23 @@ export function validatePythonApiConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
+export function validatePythonLoggingConstraints(config: Partial<ProjectConfig>) {
+  const issue = getPythonLoggingSelectionIssue(config);
+  if (!issue) return;
+
+  incompatibilityError({
+    message: `${issue.reason}.`,
+    provided: {
+      "python-web-framework": issue.selection.pythonWebFramework ?? "none",
+      "python-logging": issue.selection.pythonLogging ?? "none",
+    },
+    suggestions: [
+      "Use FastAPI, Django, Flask, Litestar, Starlette, aiohttp, or no web framework",
+      "Set --python-logging none",
+    ],
+  });
+}
+
 export function validatePythonExpansionConstraints(config: Partial<ProjectConfig>) {
   const pythonConfig =
     config.ecosystem === "python"
@@ -1651,7 +1679,7 @@ export function validateFullConfig(
     }
   }
 
-  validateEcosystemAuthCompatibility(config, providedFlags);
+  validateEcosystemAuthCompatibility(config, providedFlags, partial);
   validateDatabaseOrmAuth(config, providedFlags);
   validateDatabaseSetup(config, providedFlags);
 
@@ -1668,6 +1696,7 @@ export function validateFullConfig(
   validateApiConstraints(config, options);
   validatePythonApiConstraints(config);
   validatePythonExpansionConstraints(config);
+  validatePythonLoggingConstraints(config);
   validateGoExpansionConstraints(config);
   validateRustExpansionCompatibility(config);
   validateEmailConstraints(config);
@@ -1847,6 +1876,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateApiFrontendCompatibility(config.api, config.frontend, config.astroIntegration);
     validatePythonApiConstraints(config);
     validatePythonExpansionConstraints(config);
+    validatePythonLoggingConstraints(config);
     validateGoExpansionConstraints(config);
     validateEmailConstraints(config);
     validateObservabilityConstraints(config);

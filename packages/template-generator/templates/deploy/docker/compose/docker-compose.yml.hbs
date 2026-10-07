@@ -36,8 +36,8 @@ services:
 {{#if (eq serverDeploy "docker")}}
   server:
     build:
-      context: ./apps/server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/server/Dockerfile
     container_name: {{projectName}}-server
     ports:
       - "3001:3000"

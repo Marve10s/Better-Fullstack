@@ -169,6 +169,7 @@ export async function createVirtual(
       pythonCaching: options.pythonCaching || "none",
       pythonRealtime: options.pythonRealtime || "none",
       pythonObservability: options.pythonObservability || "none",
+      pythonLogging: options.pythonLogging || "none",
       pythonCli: options.pythonCli || [],
       pythonCloudSdk: options.pythonCloudSdk || "none",
       pythonHttpClient: options.pythonHttpClient || "none",
@@ -269,10 +270,18 @@ export async function createVirtual(
         .filter((part) => part.role === "jobQueue")
         .map((part) => part.toolId),
     ];
+    // Graph input generates from its own logging parts, so check them alongside the flat field.
+    const pythonLoggingSelections = [
+      config.pythonLogging,
+      ...(config.stackParts ?? [])
+        .filter((part) => part.role === "logging" && part.ecosystem === "python")
+        .map((part) => part.toolId),
+    ];
     if (
       config.integrations === "nango" ||
       config.payments !== "none" ||
       jobQueueSelections.some(hasGeneratedJobQueueRequirements) ||
+      pythonLoggingSelections.some((selection) => selection && selection !== "none") ||
       hasLegacyContainerAddon
     ) {
       const [{ validateConfigForProgrammaticUse }, { runWithContextAsync }] = await Promise.all([
@@ -283,6 +292,10 @@ export async function createVirtual(
         validateConfigForProgrammaticUse(config),
       );
     }
+
+    const { getBetterAuthSelectionIssue } = await import("@/config/stack-compatibility");
+    const betterAuthIssue = getBetterAuthSelectionIssue(config);
+    if (betterAuthIssue) return { success: false, error: betterAuthIssue };
 
     const { generateVirtualProject: generate, EMBEDDED_TEMPLATES } =
       await import("@better-fullstack/template-generator");

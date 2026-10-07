@@ -34,6 +34,7 @@ import {
 } from "@/catalog/option-metadata";
 import { ANALYTICS_VALUES } from "@/config/schemas";
 import {
+  getBetterAuthDatabaseIncompatibility,
   getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
   hasPWACompatibleFrontend,
@@ -44,12 +45,14 @@ import {
 } from "@/stack/stack-compatibility-rules";
 import {
   getAddonStackPartBinding,
+  getPythonLoggingIncompatibility,
   getStackPartCompatibilityIssueForPart,
   legacyProjectConfigToStackParts,
 } from "@/stack/stack-graph";
 
 export {
   BACKEND_UTILS_COMPATIBLE_BACKENDS,
+  getBetterAuthDatabaseIncompatibility,
   getJobQueueIncompatibility,
   hasGeneratedJobQueueRequirements,
   getUnsupportedWebDeployFrontend,
@@ -494,6 +497,7 @@ export type CompatibilityInput = {
   pythonCaching: string;
   pythonRealtime: string;
   pythonObservability: string;
+  pythonLogging: string;
   pythonCli: string[];
   pythonCloudSdk: string;
   pythonHttpClient: string;
@@ -1527,29 +1531,6 @@ export const analyzeStackCompatibility = (
   // AUTH CONSTRAINTS
   // ============================================
 
-  // Redis is a key-value store without SQL support - better-auth requires SQL tables
-  const isBetterAuthSelection =
-    nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations";
-
-  if (isBetterAuthSelection && nextStack.database === "redis") {
-    nextStack.auth = "none";
-    changed = true;
-    changes.push({
-      category: "auth",
-      message: "Auth set to 'None' (Better Auth requires a SQL database, not Redis)",
-    });
-  }
-
-  const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-  if (isBetterAuthSelection && ormsWithoutBetterAuth.includes(nextStack.orm)) {
-    nextStack.auth = "none";
-    changed = true;
-    changes.push({
-      category: "auth",
-      message: `Auth set to 'None' (${nextStack.orm} has no Better Auth adapter)`,
-    });
-  }
-
   const normalizedAuth = normalizeCapabilitySelection(
     "auth",
     {
@@ -1567,6 +1548,16 @@ export const analyzeStackCompatibility = (
     changes.push({
       category: "auth",
       message: normalizedAuth.message ?? "Auth set to 'None'",
+    });
+  }
+
+  const betterAuthDatabaseIssue = getBetterAuthDatabaseIncompatibility(nextStack.auth, nextStack);
+  if (betterAuthDatabaseIssue) {
+    nextStack.auth = "none";
+    changed = true;
+    changes.push({
+      category: "auth",
+      message: `Auth set to 'None' (${betterAuthDatabaseIssue})`,
     });
   }
 
@@ -2254,6 +2245,18 @@ export const analyzeStackCompatibility = (
       changes.push({
         category: "pythonObservability",
         message: "Python observability set to 'None' (SigNoz request tracing is wired for FastAPI)",
+      });
+    }
+    const pythonLoggingIssue = getPythonLoggingIncompatibility(
+      nextStack.pythonLogging,
+      nextStack.pythonWebFramework,
+    );
+    if (pythonLoggingIssue) {
+      nextStack.pythonLogging = "none";
+      changed = true;
+      changes.push({
+        category: "pythonLogging",
+        message: `Python logging set to 'None' (${pythonLoggingIssue})`,
       });
     }
     if (nextStack.pythonWebFramework !== "django" && nextStack.pythonApi !== "none") {
@@ -3200,6 +3203,13 @@ export const getDisabledReason = (
   ) {
     return "SigNoz request tracing is currently wired for FastAPI";
   }
+  if (category === "pythonLogging" || category === "pythonWebFramework") {
+    const reason = getPythonLoggingIncompatibility(
+      category === "pythonLogging" ? optionId : currentStack.pythonLogging,
+      category === "pythonWebFramework" ? optionId : currentStack.pythonWebFramework,
+    );
+    if (reason) return reason;
+  }
   if (
     category === "integrations" &&
     optionId === "nango" &&
@@ -3632,24 +3642,17 @@ export const getDisabledReason = (
   // AUTH CONSTRAINTS
   // ============================================
   if (category === "auth") {
-    const isBetterAuthOption =
-      optionId === "better-auth" || optionId === "better-auth-organizations";
-    if (isBetterAuthOption && currentStack.database === "redis") {
-      return "Better Auth requires a SQL database (not Redis)";
-    }
-    const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-    if (isBetterAuthOption && ormsWithoutBetterAuth.includes(currentStack.orm)) {
-      return `Better Auth has no ${currentStack.orm} adapter`;
-    }
-    return getCapabilityDisabledReason(
-      "auth",
-      {
-        ecosystem: currentStack.ecosystem,
-        backend: currentStack.backend,
-        webFrontend: currentStack.webFrontend,
-        nativeFrontend: currentStack.nativeFrontend,
-      },
-      optionId as Auth,
+    return (
+      getCapabilityDisabledReason(
+        "auth",
+        {
+          ecosystem: currentStack.ecosystem,
+          backend: currentStack.backend,
+          webFrontend: currentStack.webFrontend,
+          nativeFrontend: currentStack.nativeFrontend,
+        },
+        optionId as Auth,
+      ) ?? getBetterAuthDatabaseIncompatibility(optionId, currentStack)
     );
   }
 
@@ -4983,6 +4986,14 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     currentEcosystem: "python",
     authoritative: true,
     candidateIdPrefix: "candidate:native",
+  },
+  pythonLogging: {
+    role: "logging",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
   },
   pythonCli: {
     role: "cli",

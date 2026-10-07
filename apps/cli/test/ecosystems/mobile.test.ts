@@ -85,13 +85,16 @@ describe("mobile native scaffolding", () => {
     expect(pkg.main).toBe("index.js");
     expect(pkg.dependencies).toMatchObject({
       "@react-navigation/native-stack": expect.stringMatching(/^\^7\./),
-      "@gluestack-ui/themed": "^1.1.73",
-      "react-native-mmkv": "^4.3.2",
-      "expo-notifications": "^56.0.18",
-      "expo-updates": "^56.0.19",
+      "@gluestack-ui/themed": "~1.1.73",
+      "@gluestack-style/react": "^1.0.57",
+      "react-native-svg": "15.15.4",
+      "react-native-mmkv": "~4.3.2",
+      "react-native-nitro-modules": "~0.36.5",
+      "expo-notifications": "~56.0.26",
+      "expo-updates": "~56.0.28",
     });
     expect(pkg.dependencies["expo-router"]).toBeUndefined();
-    expect(pkg.devDependencies["babel-preset-expo"]).toBe("^56.0.15");
+    expect(pkg.devDependencies["babel-preset-expo"]).toBe("~56.0.20");
     expect(pkg.scripts.test).toBe("jest");
 
     expect(appConfig.expo.plugins).not.toContain("expo-router");
@@ -107,6 +110,31 @@ describe("mobile native scaffolding", () => {
     expect(getFile(root, "apps/native/__tests__/mobile-ui-provider.test.tsx")).toContain(
       "@testing-library/react-native",
     );
+  });
+
+  test("keeps Convex Better Auth packages inside the Convex connector's peer range", async () => {
+    const result = await createVirtual({
+      projectName: "mobile-convex-auth",
+      frontend: ["native-uniwind"],
+      backend: "convex",
+      runtime: "none",
+      database: "none",
+      orm: "none",
+      api: "none",
+      auth: "better-auth",
+      mobileUI: "uniwind",
+      packageManager: "npm",
+    });
+
+    expect(result.success).toBe(true);
+    const root = result.tree!.root;
+    for (const packagePath of ["apps/native/package.json", "packages/backend/package.json"]) {
+      const { dependencies } = JSON.parse(getFile(root, packagePath));
+      // @convex-dev/better-auth 0.12 declares better-auth ">=1.6.11 <1.7.0" as a peer.
+      expect(Bun.semver.satisfies(dependencies["better-auth"], ">=1.6.11 <1.7.0")).toBe(true);
+      expect(dependencies["@better-auth/expo"]).toBe(dependencies["better-auth"]);
+      expect(dependencies["@better-auth/core"]).toBe(dependencies["better-auth"]);
+    }
   });
 
   test("keeps Expo Router as the default native navigation", async () => {
@@ -126,7 +154,9 @@ describe("mobile native scaffolding", () => {
     const appConfig = JSON.parse(getFile(root, "apps/native/app.json"));
 
     expect(pkg.main).toBe("expo-router/entry");
-    expect(pkg.dependencies["expo-router"]).toBe("^56.2.11");
+    expect(pkg.dependencies["expo-router"]).toBe("~56.2.21");
+    // expo-linking is a required expo-router peer even without the deep linking option.
+    expect(pkg.dependencies["expo-linking"]).toBe("~56.0.18");
     expect(appConfig.expo.plugins).toContain("expo-router");
   });
 

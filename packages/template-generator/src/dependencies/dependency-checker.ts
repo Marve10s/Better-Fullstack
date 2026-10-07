@@ -378,10 +378,12 @@ export function scanTemplateVersions(templatesDir: string): {
 
       if (SKIP_FIELDS.has(pkg)) continue;
 
-      if (pkg in dependencyVersionMap) {
-        const mapVersion =
-          getTemplatePinnedVersion(templateKey, pkg) ??
-          dependencyVersionMap[pkg as keyof typeof dependencyVersionMap];
+      const mapVersion =
+        getTemplatePinnedVersion(templateKey, pkg) ??
+        (pkg in dependencyVersionMap
+          ? dependencyVersionMap[pkg as keyof typeof dependencyVersionMap]
+          : undefined);
+      if (mapVersion !== undefined) {
         const mismatchKey = `${relPath}|${pkg}|${version}`;
         if (mapVersion !== version && !seenMismatches.has(mismatchKey)) {
           seenMismatches.add(mismatchKey);

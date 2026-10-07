@@ -1,6 +1,8 @@
 {{#if (includes elixirLibraries "rustler")}}
 defmodule {{elixirModuleName}}.Native.StringOps do
-  use Rustler, otp_app: :{{elixirAppName}}, crate: "string_ops"
+  use Rustler,
+    otp_app: :{{elixirAppName}},
+    crate: "string_ops"
 
   def reverse(_value), do: :erlang.nif_error(:nif_not_loaded)
 end

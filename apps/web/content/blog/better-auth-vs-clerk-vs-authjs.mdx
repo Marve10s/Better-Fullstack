@@ -26,7 +26,7 @@ keywords:
 
 Better Auth, Clerk, and Auth.js can all sign users into a Next.js application. They differ on a question that is expensive to reverse: who stores the user records, and who runs the code that issues sessions.
 
-Better Auth and Auth.js are libraries that run inside your application. In the database-backed setup the generated projects use, they write to your database; both also support stateless sessions that need no database. Clerk is a hosted user management service that your application calls. Start from that difference, then check framework support and maintenance status.
+Better Auth and Auth.js are libraries that run inside your application. In the generated projects, both write user records to your database; the Better Auth option also stores sessions there, while the Auth.js option keeps sessions in encrypted JWT cookies (JWE, Auth.js's default). Both libraries also support stateless sessions that need no database. Clerk is a hosted user management service that your application calls. Start from that difference, then check framework support and maintenance status.
 
 ## What you own
 
@@ -36,7 +36,7 @@ Better Auth and Auth.js are libraries that run inside your application. In the d
 
 [Auth.js](https://authjs.dev/getting-started) is an open source library that runs in your application and supports OAuth, magic links, credentials, and WebAuthn, with optional database adapters for Drizzle, Prisma, and others.
 
-The trade is concrete. With a library, you run the auth endpoints yourself. When users and sessions live in a database, as in the generated projects, you store and operate those tables too. With Clerk, those parts move to a vendor, and your app depends on Clerk's API keys and service for every sign-in.
+The trade is concrete. With a library, you run the auth endpoints yourself. When users live in your database, as in the generated Better Auth and Auth.js projects, you store and operate those tables too. With Clerk, those parts move to a vendor, and your app depends on Clerk's API keys and service for every sign-in.
 
 ## Maintenance status
 
@@ -86,7 +86,7 @@ bun create better-fullstack@latest my-app \
   --auth clerk
 ```
 
-Clerk generates `ClerkProvider` in the root layout, `clerkMiddleware` in `src/middleware.ts`, `SignInButton` and `UserButton` in the user menu, and a dashboard page that checks `userId` from `auth()`. The environment file expects `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`. No auth tables are added to the database schema. The generated tRPC context returns `session: null`, so connect Clerk's server helpers to the API context before relying on it for authorization.
+Clerk generates `ClerkProvider` in the root layout, `clerkMiddleware` in `src/middleware.ts`, `SignInButton` and `UserButton` in the user menu, and a dashboard page that checks `userId` from `auth()`. The environment file expects `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`. No auth tables are added to the database schema. The middleware also runs for API routes, and the generated tRPC context reads `userId` from Clerk's `auth()`, so `protectedProcedure` rejects calls without a signed-in user.
 
 ```bash
 bun create better-fullstack@latest my-app \
@@ -100,7 +100,7 @@ bun create better-fullstack@latest my-app \
   --auth nextauth
 ```
 
-The Auth.js option generates a project on `next-auth` 4 with `NextAuthOptions`, the `withAuth` middleware, and a `/login` page. It uses the Drizzle adapter for users, accounts, sessions, and verification tokens, with the JWT session strategy. GitHub and Google providers read their credentials from the environment. The credentials provider is a placeholder that returns `null`, and the sign-up form posts to `/api/auth/register`, which the project does not include, so email and password sign-in is yours to implement. As with Clerk, the generated tRPC context returns `session: null`.
+The Auth.js option generates a project on `next-auth` 5, pinned to an exact beta release, with a `NextAuth` configuration in `packages/auth` and a `/login` page. `src/proxy.ts` redirects signed-out page requests to `/login` and answers 401 for API routes that do not check auth themselves. The Drizzle adapter is configured for users, accounts, sessions, and verification tokens, but the JWT session strategy keeps sessions in an encrypted cookie, so the database holds users and OAuth accounts. GitHub and Google providers read their credentials from the environment. The credentials provider checks the email and password against a bcrypt hash in the users table, and the sign-up form posts to `/api/auth/register`, which validates the input and stores that hash. The generated tRPC context reads the session with `auth()`, so `protectedProcedure` rejects unauthenticated calls.
 
 These are generated projects. Configure real keys and callback URLs, then sign in end to end before depending on any of them.
 
@@ -112,7 +112,7 @@ These are generated projects. Configure real keys and callback URLs, then sign i
 | Hosted user management and prebuilt UI, vendor dependency is OK | Clerk                                          |
 | Existing Auth.js or NextAuth.js app that works                  | Keep Auth.js; track its security support       |
 | Separate API server such as Hono or Express                     | Better Auth, among these three                 |
-| Authorization enforced in the generated tRPC context            | Better Auth, or wire the session yourself      |
+| Sessions stored as rows in your own database                    | Better Auth                                    |
 
 ## Compare real generated stacks
 

@@ -1,46 +1,70 @@
 import Config
-
 {{#if (ne elixirWebFramework "none")}}
-config :{{elixirAppName}}, {{elixirModuleName}}Web.Endpoint,
-  http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "test-only-secret-key-base-placeholder-do-not-use-in-production-00000",
-{{#if (eq elixirTesting "wallaby")}}
-  server: true
-{{else}}
-  server: false
-{{/if}}
-{{/if}}
 
+config :{{elixirAppName}},
+       {{elixirModuleName}}Web.Endpoint,
+       http: [ip: {127, 0, 0, 1}, port: 4002],
+       secret_key_base: "test-only-secret-key-base-placeholder-do-not-use-in-production-00000",
 {{#if (eq elixirTesting "wallaby")}}
+       server: true
+{{else}}
+       server: false
+{{/if}}
+{{/if}}
+{{#if (eq elixirJobs "oban")}}
+
+config :{{elixirAppName}}, Oban, testing: :manual
+{{/if}}
+{{#if (eq elixirAuth "guardian")}}
+
+config :{{elixirAppName}},
+       {{elixirModuleName}}.Auth.Guardian,
+       secret_key: "test-only-guardian-secret-placeholder-do-not-use-in-production-000000"
+{{/if}}
+{{#if (eq elixirTesting "wallaby")}}
+
 config :wallaby,
   otp_app: :{{elixirAppName}},
   driver: Wallaby.Chrome,
   screenshot_on_failure: true
-
 {{/if}}
 {{#if (eq elixirOrm "ecto-sql")}}
-config :{{elixirAppName}}, {{elixirModuleName}}.Repo,
-  username: System.get_env("POSTGRES_USER", "postgres"),
-  password: System.get_env("POSTGRES_PASSWORD", "postgres"),
-  hostname: System.get_env("POSTGRES_HOST", "localhost"),
-  database: System.get_env("POSTGRES_TEST_DB", "{{elixirAppName}}_test#{System.get_env("MIX_TEST_PARTITION")}"),
-  pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: 10
+
+partition = System.get_env("MIX_TEST_PARTITION")
+database = "{{elixirAppName}}_test#{partition}"
+
+config :{{elixirAppName}},
+       {{elixirModuleName}}.Repo,
+       username: System.get_env("POSTGRES_USER", "postgres"),
+       password: System.get_env("POSTGRES_PASSWORD", "postgres"),
+       hostname: System.get_env("POSTGRES_HOST", "localhost"),
+       database: System.get_env("POSTGRES_TEST_DB", database),
+       pool: Ecto.Adapters.SQL.Sandbox,
+       pool_size: 10
 {{/if}}
 {{#if (eq elixirOrm "myxql")}}
-config :{{elixirAppName}}, {{elixirModuleName}}.Repo,
-  username: System.get_env("MYSQL_USER", "root"),
-  password: System.get_env("MYSQL_PASSWORD", "mysql"),
-  hostname: System.get_env("MYSQL_HOST", "localhost"),
-  database: System.get_env("MYSQL_TEST_DATABASE", "{{elixirAppName}}_test#{System.get_env("MIX_TEST_PARTITION")}"),
-  pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: 10
+
+partition = System.get_env("MIX_TEST_PARTITION")
+database = "{{elixirAppName}}_test#{partition}"
+
+config :{{elixirAppName}},
+       {{elixirModuleName}}.Repo,
+       username: System.get_env("MYSQL_USER", "root"),
+       password: System.get_env("MYSQL_PASSWORD", "mysql"),
+       hostname: System.get_env("MYSQL_HOST", "localhost"),
+       database: System.get_env("MYSQL_TEST_DATABASE", database),
+       pool: Ecto.Adapters.SQL.Sandbox,
+       pool_size: 10
 {{/if}}
 {{#if (eq elixirOrm "ecto_sqlite3")}}
-config :{{elixirAppName}}, {{elixirModuleName}}.Repo,
-  database: System.get_env("DATABASE_PATH", "{{elixirAppName}}_test.db"),
-  pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: 1
+
+database = "{{elixirAppName}}_test.db"
+
+config :{{elixirAppName}},
+       {{elixirModuleName}}.Repo,
+       database: System.get_env("DATABASE_PATH", database),
+       pool: Ecto.Adapters.SQL.Sandbox,
+       pool_size: 1
 {{/if}}
 
 config :logger, level: :warning

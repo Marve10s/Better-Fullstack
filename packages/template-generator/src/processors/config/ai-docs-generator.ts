@@ -308,6 +308,9 @@ function generateTechStackSection(config: ProjectConfig): string {
     if (config.pythonApi !== "none") lines.push(`- API Framework: ${config.pythonApi}`);
     if (config.pythonTaskQueue !== "none") lines.push(`- Task Queue: ${config.pythonTaskQueue}`);
     if (config.pythonQuality !== "none") lines.push(`- Code Quality: ${config.pythonQuality}`);
+    if (config.pythonLogging && config.pythonLogging !== "none") {
+      lines.push(`- Logging: ${config.pythonLogging}`);
+    }
   }
 
   if (config.ecosystem === "go") {
@@ -618,6 +621,9 @@ function generateCursorRules(config: ProjectConfig): string {
     if (config.pythonOrm !== "none") rules.push(`ORM: ${config.pythonOrm}`);
     if (config.pythonValidation !== "none") rules.push(`Validation: ${config.pythonValidation}`);
     if (config.pythonQuality !== "none") rules.push(`Code quality: ${config.pythonQuality}`);
+    if (config.pythonLogging && config.pythonLogging !== "none") {
+      rules.push(`Logging: ${config.pythonLogging}, configured in src/app/logging_config.py`);
+    }
   } else if (config.ecosystem === "go") {
     rules.push(`You are working on a Go project.`);
     if (config.goWebFramework !== "none") rules.push(`Web framework: ${config.goWebFramework}`);

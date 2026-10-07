@@ -1,7 +1,11 @@
 import {
   analyzeStackCompatibility,
   getAddonStackPartBinding,
+  getBetterAuthDatabaseIncompatibility,
   getJobQueueIncompatibility,
+  getPythonLoggingIncompatibility,
+  isToolingOverlayOnly,
+  validateStackParts,
   type CompatibilityInput,
   type ProjectConfig,
 } from "@/types";
@@ -45,8 +49,66 @@ export function getRequestedJobQueueRejection(
   return getJobQueueIncompatibility(requestedJobQueue, adjustedConfig);
 }
 
+/**
+ * Compatibility adjustments may reset Better Auth when another choice leaves it without an adapter,
+ * as the builder does. Better Auth requested by flag or tool input is rejected instead, with the
+ * shared reason.
+ */
+export function getRequestedBetterAuthRejection(
+  requestedAuth: ProjectConfig["auth"] | undefined,
+  adjustedConfig: Partial<ProjectConfig>,
+): string | null {
+  if (!requestedAuth || adjustedConfig.auth === requestedAuth) return null;
+  return getBetterAuthDatabaseIncompatibility(requestedAuth, adjustedConfig);
+}
+
+// Checks the Better Auth selection the generator will use: graph input is judged by its own auth,
+// database, and ORM parts rather than by stale flat fields.
+export function getBetterAuthSelectionIssue(config: Partial<ProjectConfig>): string | null {
+  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
+    const issue = validateStackParts(config.stackParts).issues.find(
+      (candidate) =>
+        candidate.role === "auth" &&
+        (candidate.toolId === "better-auth" || candidate.toolId === "better-auth-organizations"),
+    );
+    return issue?.message ?? null;
+  }
+  if ((config.ecosystem ?? "typescript") !== "typescript") return null;
+  return getBetterAuthDatabaseIncompatibility(config.auth, config);
+}
+
 function getProjectBackendFromCompatibility(backend: string): string {
   return backend.startsWith("self-") ? "self" : backend;
+}
+
+// Checks the selections the generator will use: in a graph each Python logging
+// part is checked against the backend that owns it, and wins over stale flat fields.
+export function getPythonLoggingSelectionIssue(config: Partial<ProjectConfig>) {
+  const parts = config.stackParts ?? [];
+  const usesGraph = parts.some(
+    (part) => part.role === "backend" && part.ecosystem === "python" && part.source !== "provided",
+  );
+  const selections = usesGraph
+    ? parts
+        .filter(
+          (part) =>
+            part.role === "logging" && part.ecosystem === "python" && part.source !== "provided",
+        )
+        .map((part) => ({
+          pythonLogging: part.toolId,
+          pythonWebFramework: parts.find((owner) => owner.id === part.ownerPartId)?.toolId,
+        }))
+    : config.ecosystem === "python"
+      ? [{ pythonLogging: config.pythonLogging, pythonWebFramework: config.pythonWebFramework }]
+      : [];
+  for (const selection of selections) {
+    const reason = getPythonLoggingIncompatibility(
+      selection.pythonLogging,
+      selection.pythonWebFramework,
+    );
+    if (reason) return { reason, selection };
+  }
+  return null;
 }
 
 export function hasSelectedTypeScriptBackendPart(config: Partial<ProjectConfig>): boolean {
@@ -193,6 +255,7 @@ export function buildCompatibilityInputFromConfig(
     pythonCaching: asString(config.pythonCaching),
     pythonRealtime: asString(config.pythonRealtime),
     pythonObservability: asString(config.pythonObservability),
+    pythonLogging: asString(config.pythonLogging),
     pythonCli: asStringArray(config.pythonCli),
     pythonCloudSdk: asString(config.pythonCloudSdk),
     pythonHttpClient: asString(config.pythonHttpClient),

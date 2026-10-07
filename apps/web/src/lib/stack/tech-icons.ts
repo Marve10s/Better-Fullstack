@@ -564,6 +564,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   mypy: { type: "si", slug: "python", hex: "3776AB" },
   "pytest-cov": { type: "si", slug: "pytest", hex: "0A9EDC" },
   "prometheus-client": { type: "si", slug: "prometheus", hex: "E6522C" },
+  loguru: { type: "si", slug: "python", hex: "3776AB" },
+  structlog: { type: "si", slug: "python", hex: "3776AB" },
   boto3: { type: "local", src: "/icon/aws-s3.svg" },
   requests: { type: "local", src: "/icon/requests.svg", needsInvert: "dark" },
   numpy: { type: "si", slug: "numpy", hex: "013243" },

@@ -163,6 +163,7 @@ const GETTING_STARTED_MD = `# Getting Started with Better-Fullstack MCP
    - pythonWebFramework: "fastapi"
    - pythonOrm: "sqlalchemy"
    - pythonObservability: "signoz" (optional)
+   - pythonLogging: "structlog" or "loguru" (optional)
    - email: "resend" (optional)
    - observability: "sentry" (optional)
 2. Tell the user to run: cd my-python-app && uv sync --extra dev

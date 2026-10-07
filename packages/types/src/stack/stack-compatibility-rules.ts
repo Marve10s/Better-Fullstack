@@ -355,6 +355,46 @@ export function getJobQueueIncompatibility(
   return null;
 }
 
+const BETTER_AUTH_UNSUPPORTED_TOOLS: Record<string, string> = {
+  redis: "Redis",
+  edgedb: "EdgeDB",
+  typeorm: "TypeORM",
+  sequelize: "Sequelize",
+  mikroorm: "MikroORM",
+};
+
+const BETTER_AUTH_DATABASE_LABELS: Record<string, string> = {
+  sqlite: "SQLite",
+  postgres: "PostgreSQL",
+  mysql: "MySQL",
+  mongodb: "MongoDB",
+};
+
+/**
+ * Shared reason for database and ORM pairs Better Auth has no adapter for. Better Auth cannot use
+ * a connection string, so a database without a Drizzle, Prisma, Kysely, or Mongoose adapter has
+ * no working configuration. Legacy compatibility, graph validation, CLI validation, MCP,
+ * createVirtual, and the builder all report this text. With `partial`, an undefined selection is
+ * still unanswered and is not judged, so prompts can offer only the choices that keep it valid.
+ */
+export function getBetterAuthDatabaseIncompatibility(
+  auth: string | undefined,
+  stack: { database?: string; orm?: string },
+  { partial = false } = {},
+): string | null {
+  if (auth !== "better-auth" && auth !== "better-auth-organizations") return null;
+  const database = stack.database ?? (partial ? undefined : "none");
+  const orm = stack.orm ?? (partial ? undefined : "none");
+  const unsupported =
+    BETTER_AUTH_UNSUPPORTED_TOOLS[database ?? ""] ?? BETTER_AUTH_UNSUPPORTED_TOOLS[orm ?? ""];
+  if (unsupported) return `Better Auth has no ${unsupported} adapter`;
+  const databaseLabel = BETTER_AUTH_DATABASE_LABELS[database ?? ""];
+  if (orm === "none" && databaseLabel) {
+    return `Better Auth needs a Drizzle, Prisma, Kysely, or Mongoose adapter for ${databaseLabel}`;
+  }
+  return null;
+}
+
 export function isExampleAIAllowed(backend?: Backend, frontends: Frontend[] = []) {
   const includesSolid = frontends.includes("solid");
   const includesSolidStart =

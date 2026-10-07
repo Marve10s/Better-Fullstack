@@ -2,7 +2,15 @@ import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "@/core/virtual-fs";
 
+import { processServerImageTemplates } from "@/template-handlers/core/backend";
 import { type TemplateData, processTemplatesFromPrefix } from "@/template-handlers/core/utils";
+
+const SERVER_IMAGE_DEPLOYS = new Set<ProjectConfig["serverDeploy"]>([
+  "docker",
+  "fly",
+  "railway",
+  "render",
+]);
 
 export async function processDeployTemplates(
   vfs: VirtualFileSystem,
@@ -52,6 +60,9 @@ export async function processDeployTemplates(
       "apps/server",
       config,
     );
+    if (SERVER_IMAGE_DEPLOYS.has(config.serverDeploy)) {
+      processServerImageTemplates(vfs, templates, config);
+    }
   }
 
   // Process Docker Compose for fullstack orchestration (when both web and server use Docker)

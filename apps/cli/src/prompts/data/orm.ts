@@ -1,9 +1,16 @@
-import type { Backend, Database, ORM, Runtime } from "@/types";
+import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 
 import { DEFAULT_CONFIG } from "@/constants";
 import { exitCancelled } from "@/presentation/errors";
-import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
+import {
+  getBetterAuthDatabaseIncompatibility,
+  type Auth,
+  type Backend,
+  type Database,
+  type ORM,
+  type Runtime,
+} from "@/types";
 
 const ormOptions = {
   prisma: {
@@ -49,6 +56,7 @@ type ORMPromptContext = {
   database?: Database;
   backend?: Backend;
   runtime?: Runtime;
+  auth?: Auth;
 };
 
 export function resolveORMPrompt(context: ORMPromptContext): PromptSingleResolution<ORM> {
@@ -79,7 +87,7 @@ export function resolveORMPrompt(context: ORMPromptContext): PromptSingleResolut
     };
   }
 
-  const options =
+  const options = (
     context.database === "mongodb"
       ? [ormOptions.prisma, ormOptions.mongoose]
       : [
@@ -89,7 +97,15 @@ export function resolveORMPrompt(context: ORMPromptContext): PromptSingleResolut
           ormOptions.kysely,
           ormOptions.mikroorm,
           ormOptions.sequelize,
-        ];
+        ]
+  ).filter(
+    (option) =>
+      !getBetterAuthDatabaseIncompatibility(
+        context.auth,
+        { database: context.database, orm: option.value },
+        { partial: true },
+      ),
+  );
 
   return {
     shouldPrompt: true,
@@ -110,8 +126,9 @@ export async function getORMChoice(
   database?: Database,
   backend?: Backend,
   runtime?: Runtime,
+  auth?: Auth,
 ) {
-  const resolution = resolveORMPrompt({ orm, hasDatabase, database, backend, runtime });
+  const resolution = resolveORMPrompt({ orm, hasDatabase, database, backend, runtime, auth });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

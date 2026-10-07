@@ -123,6 +123,7 @@ import {
   getPythonCachingChoice,
   getPythonRealtimeChoice,
   getPythonObservabilityChoice,
+  getPythonLoggingChoice,
   getPythonCliChoice,
   getPythonCloudSdkChoice,
   getPythonDataChoice,
@@ -560,7 +561,7 @@ export async function gatherMultiEcosystemConfig(
         : promptValue(await getRuntimeChoice(flags.runtime, backend, flags.jobQueue));
     if (backend !== "none") {
       database = promptValue(
-        await getDatabaseChoice(flags.database, backend, runtime, flags.jobQueue),
+        await getDatabaseChoice(flags.database, backend, runtime, flags.jobQueue, flags.auth),
       );
       dbSetup = promptValue(
         await getDBSetupChoice(database, flags.dbSetup, flags.orm, backend, runtime),
@@ -569,7 +570,7 @@ export async function gatherMultiEcosystemConfig(
     const orm =
       backend === "none" || database === "none"
         ? "none"
-        : promptValue(await getORMChoice(flags.orm, true, database, backend, runtime));
+        : promptValue(await getORMChoice(flags.orm, true, database, backend, runtime, flags.auth));
     const api =
       backend === "none"
         ? "none"
@@ -577,7 +578,9 @@ export async function gatherMultiEcosystemConfig(
     const auth =
       backend === "none"
         ? "none"
-        : promptValue(await getAuthChoice(flags.auth, backend, frontendList));
+        : promptValue(
+            await getAuthChoice(flags.auth, backend, frontendList, "typescript", { database, orm }),
+          );
     const payments =
       backend === "none"
         ? "none"
@@ -1053,6 +1056,12 @@ export async function gatherMultiEcosystemConfig(
             backendSections,
             () => getPythonObservabilityChoice(flags.pythonObservability),
           );
+    const pythonLogging =
+      pythonWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("python", "pythonLogging", configScope, backendSections, () =>
+            getPythonLoggingChoice(flags.pythonLogging, pythonWebFramework),
+          );
     const pythonCli =
       pythonWebFramework === "none"
         ? []
@@ -1122,6 +1131,7 @@ export async function gatherMultiEcosystemConfig(
       pythonCaching,
       pythonRealtime,
       pythonObservability,
+      pythonLogging,
       pythonCli,
       pythonCloudSdk,
       pythonHttpClient,
@@ -1147,6 +1157,7 @@ export async function gatherMultiEcosystemConfig(
     if (pythonObservability !== "none") {
       stackPartSpecs.push(`backend.observability:python:${pythonObservability}`);
     }
+    if (pythonLogging !== "none") stackPartSpecs.push(`backend.logging:python:${pythonLogging}`);
     for (const cli of pythonCli) {
       if (cli !== "none") stackPartSpecs.push(`backend.cli:python:${cli}`);
     }

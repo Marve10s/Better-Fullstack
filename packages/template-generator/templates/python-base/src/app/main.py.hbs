@@ -20,6 +20,17 @@ from dotenv import load_dotenv
 {{#if (eq pythonObservability "signoz")}}
 from app import otel as _otel  # noqa: F401 - importing activates SigNoz tracing
 {{/if}}
+{{#if (ne pythonLogging "none")}}
+{{#if (eq pythonWebFramework "flask")}}
+from app.logging_config import DevServerRequestHandler, RequestLoggingMiddleware, configure_logging
+{{else if (or (eq pythonWebFramework "fastapi") (eq pythonWebFramework "starlette") (eq pythonWebFramework "litestar"))}}
+from app.logging_config import RequestLoggingMiddleware, configure_logging
+{{else if (eq pythonWebFramework "aiohttp")}}
+from app.logging_config import configure_logging, request_logging_middleware
+{{else}}
+from app.logging_config import configure_logging
+{{/if}}
+{{/if}}
 
 {{#if (eq observability "sentry")}}
 from app.observability import init_sentry
@@ -201,6 +212,9 @@ DbSession = Annotated[Session, Depends(get_db)]
 {{/if}}
 
 load_dotenv()
+{{#if (ne pythonLogging "none")}}
+configure_logging()
+{{/if}}
 {{#if (eq observability "sentry")}}
 init_sentry()
 {{/if}}
@@ -249,6 +263,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+{{#if (ne pythonLogging "none")}}
+app.add_middleware(RequestLoggingMiddleware)
+{{/if}}
 {{#if (eq pythonObservability "signoz")}}
 FastAPIInstrumentor.instrument_app(app)
 {{/if}}
@@ -1104,6 +1121,9 @@ if __name__ == "__main__":
         host=os.getenv("HOST", "0.0.0.0"),
         port=int(os.getenv("PORT", "8000")),
         reload=True,
+{{#if (ne pythonLogging "none")}}
+        log_config=None,
+{{/if}}
     )
 {{/if}}
 {{#if (eq pythonWebFramework "django")}}
@@ -1139,6 +1159,9 @@ from app.ariadne_schema import schema as ariadne_schema
 {{/if}}
 
 load_dotenv()
+{{#if (ne pythonLogging "none")}}
+configure_logging()
+{{/if}}
 
 _cors_origin = os.getenv("CORS_ORIGIN")
 
@@ -1157,9 +1180,16 @@ if not settings.configured:
 {{/if}}
         ],
         MIDDLEWARE=[
+{{#if (ne pythonLogging "none")}}
+            "app.logging_config.request_logging_middleware",
+{{/if}}
             "corsheaders.middleware.CorsMiddleware",
             "django.middleware.common.CommonMiddleware",
         ],
+{{#if (ne pythonLogging "none")}}
+        # Logging is configured by app.logging_config, not Django's defaults.
+        LOGGING_CONFIG=None,
+{{/if}}
         CORS_ALLOW_ALL_ORIGINS=not _cors_origin,
         CORS_ALLOWED_ORIGINS=[_cors_origin] if _cors_origin else [],
     )
@@ -1293,6 +1323,9 @@ from app.metrics import render_metrics
 {{/if}}
 
 load_dotenv()
+{{#if (ne pythonLogging "none")}}
+configure_logging()
+{{/if}}
 
 {{#if (eq pythonValidation "pydantic")}}
 settings = get_settings()
@@ -1308,6 +1341,9 @@ app.add_url_rule("/graphql", view_func=GraphQLView.as_view("graphql_view", schem
 {{/if}}
 {{#if (eq pythonGraphql "ariadne")}}
 app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {"/graphql": GraphQL(ariadne_schema, debug=True)})
+{{/if}}
+{{#if (ne pythonLogging "none")}}
+app.wsgi_app = RequestLoggingMiddleware(app.wsgi_app)  # type: ignore[method-assign]
 {{/if}}
 
 
@@ -1363,6 +1399,9 @@ if __name__ == "__main__":
         host=os.getenv("HOST", "0.0.0.0"),
         port=int(os.getenv("PORT", "8000")),
         debug=os.getenv("DEBUG", "true").lower() == "true",
+{{#if (ne pythonLogging "none")}}
+        request_handler=DevServerRequestHandler,
+{{/if}}
     )
 {{/if}}
 {{#if (eq pythonWebFramework "litestar")}}
@@ -1456,7 +1495,17 @@ async def graphql(scope: Scope, receive: Receive, send: Send) -> None:
 app = Litestar(
     route_handlers=[index, health{{#if (eq pythonObservability "prometheus-client")}}, metrics{{/if}}{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, auth_token, auth_me{{/if}}{{#if (eq pythonGraphql "strawberry")}}, GraphQLController{{/if}}{{#if (eq pythonGraphql "ariadne")}}, graphql{{/if}}],
     cors_config=cors_config,
+{{#if (ne pythonLogging "none")}}
+    # `litestar run` lets Uvicorn configure its loggers after this module loads.
+    on_startup=[configure_logging],
+{{/if}}
 )
+{{#if (ne pythonLogging "none")}}
+# Wrap the whole app rather than its routes, so CORS preflights and 404s are logged too.
+app.asgi_handler = RequestLoggingMiddleware(app.asgi_handler)
+# Litestar configures logging while it builds the app; route its loggers afterwards.
+configure_logging()
+{{/if}}
 {{/if}}
 {{#if (eq pythonWebFramework "starlette")}}
 from starlette.applications import Starlette
@@ -1470,6 +1519,9 @@ from app.metrics import render_metrics
 {{/if}}
 
 load_dotenv()
+{{#if (ne pythonLogging "none")}}
+configure_logging()
+{{/if}}
 
 
 async def index(request: Request) -> JSONResponse:
@@ -1491,6 +1543,10 @@ async def metrics(request: Request) -> Response:
 
 
 middleware = [
+{{#if (ne pythonLogging "none")}}
+    # First in the list runs outermost, so CORS preflight replies are logged too.
+    Middleware(RequestLoggingMiddleware),
+{{/if}}
     Middleware(
         CORSMiddleware,
         allow_origins=[os.getenv("CORS_ORIGIN") or "*"],
@@ -1514,7 +1570,16 @@ app = Starlette(
 if __name__ == "__main__":
     import uvicorn
 
+{{#if (ne pythonLogging "none")}}
+    uvicorn.run(
+        app,
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "8000")),
+        log_config=None,
+    )
+{{else}}
     uvicorn.run(app, host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", "8000")))
+{{/if}}
 {{/if}}
 {{#if (eq pythonWebFramework "aiohttp")}}
 from aiohttp import web
@@ -1524,6 +1589,9 @@ from app.metrics import render_metrics
 {{/if}}
 
 load_dotenv()
+{{#if (ne pythonLogging "none")}}
+configure_logging()
+{{/if}}
 
 
 async def index(request: web.Request) -> web.Response:
@@ -1546,7 +1614,7 @@ async def metrics(request: web.Request) -> web.Response:
 
 def create_app() -> web.Application:
     """Build the aiohttp application and register routes."""
-    application = web.Application()
+    application = web.Application({{#if (ne pythonLogging "none")}}middlewares=[request_logging_middleware]{{/if}})
     application.router.add_get("/", index)
     application.router.add_get("/health", health)
 {{#if (eq pythonObservability "prometheus-client")}}
@@ -1580,6 +1648,9 @@ with st.expander("Next step"):
 {{/if}}
 {{#if (eq pythonWebFramework "none")}}
 load_dotenv()
+{{#if (ne pythonLogging "none")}}
+configure_logging()
+{{/if}}
 
 
 def main():

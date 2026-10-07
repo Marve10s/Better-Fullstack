@@ -117,11 +117,16 @@ services:
 {{#unless (eq backend "self")}}
 {{#unless (eq backend "none")}}
   server:
+{{#if (eq backend "encore")}}
+    # Build this image first from apps/server: encore build docker {{projectName}}-server
+    image: {{projectName}}-server
+{{else}}
     build:
       context: .
       dockerfile: apps/server/Dockerfile
     env_file:
       - apps/server/.env
+{{/if}}
 {{#if (includes addons "kong")}}
     expose:
       - "3000"

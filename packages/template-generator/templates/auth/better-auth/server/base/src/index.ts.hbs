@@ -353,7 +353,7 @@ export const auth = betterAuth({
 });
 {{/if}}
 
-{{#if (or (eq orm "kysely") (eq orm "mikroorm"))}}
+{{#if (eq orm "kysely")}}
 import { betterAuth } from "better-auth";
 {{#if (hasBetterAuthOrganizations auth)}}
 import { organization } from "better-auth/plugins";
@@ -366,22 +366,16 @@ import { polarClient } from "./lib/payments";
 {{#if (eq payments "creem")}}
 import { creem } from "@creem_io/better-auth";
 {{/if}}
-{{#if (eq orm "kysely")}}
 import { db } from "@{{projectName}}/db";
-{{/if}}
 
 export const auth = betterAuth({
 {{#if (and (ne database "none") (ne database "redis"))}}
-{{#if (eq orm "kysely")}}
 	database: {
 		db,
 {{#if (eq database "postgres")}}		type: "postgres",
 {{/if}}{{#if (eq database "sqlite")}}		type: "sqlite",
 {{/if}}{{#if (eq database "mysql")}}		type: "mysql",
 {{/if}}	},
-{{else}}
-	database: env.DATABASE_URL,
-{{/if}}
 {{/if}}
 	trustedOrigins: [
 		env.CORS_ORIGIN,
@@ -460,9 +454,6 @@ import { creem } from "@creem_io/better-auth";
 
 
 export const auth = betterAuth({
-{{#if (and (ne database "none") (ne database "redis"))}}
-	database: env.DATABASE_URL,
-{{/if}}
 	trustedOrigins: [
 		env.CORS_ORIGIN,
 {{#if (or (includes frontend "native-bare") (includes frontend "native-uniwind") (includes frontend "native-unistyles"))}}

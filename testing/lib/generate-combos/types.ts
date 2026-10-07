@@ -1,4 +1,5 @@
 import type { CLIInput, Ecosystem, ProjectConfig } from "@better-fullstack/types";
+import type { RuntimeCheck } from "@testing/lib/verify";
 
 export type InstallMode = "install" | "no-install";
 
@@ -165,6 +166,7 @@ export type ComboCandidate = {
   fingerprint: TemplateFingerprint;
   fingerprintKey: string;
   command: string;
+  runtimeChecks?: readonly RuntimeCheck[];
 };
 
 export type LedgerRowDoc = {

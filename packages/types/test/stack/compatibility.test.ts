@@ -12,6 +12,11 @@ import {
   getDisabledReason,
   isAnalyticsFrontendSupported,
 } from "@/stack/compatibility";
+import {
+  getPythonLoggingIncompatibility,
+  parseStackPartSpecs,
+  validateStackParts,
+} from "@/stack/stack-graph";
 import { DEFAULT_STACK_SELECTION } from "@/stack/stack-translation";
 
 describe("compatibility issue helpers", () => {
@@ -459,6 +464,61 @@ describe("compatibility issue helpers", () => {
     expect(getDisabledReason(unsupportedPython, "pythonObservability", "signoz")).toContain(
       "FastAPI",
     );
+  });
+
+  it("keeps Python logging off Streamlit with one shared reason", () => {
+    const streamlit = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "python" as const,
+      pythonWebFramework: "streamlit" as const,
+      pythonLogging: "loguru" as const,
+    };
+    const reason = getPythonLoggingIncompatibility("loguru", "streamlit");
+
+    expect(reason).toContain("Streamlit");
+    const analysis = analyzeStackCompatibility(streamlit);
+    expect(analysis.adjustedStack?.pythonLogging).toBe("none");
+    expect(analysis.changes).toContainEqual({
+      category: "pythonLogging",
+      message: `Python logging set to 'None' (${reason})`,
+    });
+    expect(getDisabledReason(streamlit, "pythonLogging", "structlog")).toBe(reason);
+    expect(getDisabledReason(streamlit, "pythonLogging", "none")).toBeNull();
+    expect(
+      getDisabledReason(
+        { ...streamlit, pythonWebFramework: "fastapi" },
+        "pythonWebFramework",
+        "streamlit",
+      ),
+    ).toBe(reason);
+
+    for (const framework of [
+      "fastapi",
+      "django",
+      "flask",
+      "litestar",
+      "starlette",
+      "aiohttp",
+      "none",
+    ]) {
+      const supported = { ...streamlit, pythonWebFramework: framework };
+      expect(getPythonLoggingIncompatibility("structlog", framework)).toBeNull();
+      expect(analyzeStackCompatibility(supported).adjustedStack?.pythonLogging ?? "loguru").toBe(
+        "loguru",
+      );
+      expect(getDisabledReason(supported, "pythonLogging", "loguru")).toBeNull();
+    }
+  });
+
+  it("checks each Python logging part against the backend that owns it", () => {
+    const reason = getPythonLoggingIncompatibility("loguru", "streamlit");
+    const issuesFor = (logging: string) =>
+      validateStackParts(
+        parseStackPartSpecs(["backend:python:fastapi:api", "backend:python:streamlit:ui", logging]),
+      ).issues.map((issue) => issue.message);
+
+    expect(issuesFor("ui.logging:python:loguru")).toContain(reason);
+    expect(issuesFor("api.logging:python:loguru")).not.toContain(reason);
   });
 
   it("returns structured API/frontend issues for React-only APIs", () => {

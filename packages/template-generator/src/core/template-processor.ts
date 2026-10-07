@@ -34,7 +34,9 @@ Handlebars.registerHelper(
     auth === "clerk" ||
     auth === "nextauth",
 );
-Handlebars.registerHelper("hasAiRouteAuth", (auth) => hasAiRouteAuth(auth));
+Handlebars.registerHelper("hasAiRouteAuth", (auth, backend, frontend) =>
+  hasAiRouteAuth({ auth, backend, frontend }),
+);
 Handlebars.registerHelper("hasAuthJsCredentials", (orm, database) =>
   hasAuthJsCredentials({ orm, database }),
 );

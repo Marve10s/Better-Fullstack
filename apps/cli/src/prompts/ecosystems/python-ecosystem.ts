@@ -7,6 +7,7 @@ import type {
   PythonCloudSdk,
   PythonData,
   PythonHttpClient,
+  PythonLogging,
   PythonMedia,
   PythonMessageQueue,
   PythonPackageManager,
@@ -22,6 +23,7 @@ import type {
   PythonWebFramework,
 } from "@/types";
 
+import { getPythonLoggingIncompatibility } from "@/types";
 import { exitCancelled } from "@/presentation/errors";
 import { isCancel, navigableMultiselect, navigableSelect } from "@/prompts/core/navigable";
 import {
@@ -608,6 +610,24 @@ const PYTHON_OBSERVABILITY_PROMPT_OPTIONS: PromptOption<PythonObservability>[] =
   },
 ];
 
+const PYTHON_LOGGING_PROMPT_OPTIONS: PromptOption<PythonLogging>[] = [
+  {
+    value: "loguru",
+    label: "Loguru",
+    hint: "Ready-to-use logger with stdlib interception and JSON serialization",
+  },
+  {
+    value: "structlog",
+    label: "structlog",
+    hint: "Structured key-value logging rendered through the standard library",
+  },
+  {
+    value: "none",
+    label: "None",
+    hint: "Keep the framework's default logging",
+  },
+];
+
 const PYTHON_CLI_PROMPT_OPTIONS: PromptOption<PythonCli>[] = [
   {
     value: "typer",
@@ -759,6 +779,41 @@ export async function getPythonObservabilityChoice(pythonObservability?: PythonO
     message: "Select Python observability",
     options: resolution.options,
     initialValue: resolution.initialValue as PythonObservability,
+  });
+
+  if (isCancel(response)) return exitCancelled("Operation cancelled");
+
+  return response;
+}
+
+export function resolvePythonLoggingPrompt(
+  pythonLogging?: PythonLogging,
+  pythonWebFramework?: PythonWebFramework,
+) {
+  const resolution = createStaticSinglePromptResolution(
+    PYTHON_LOGGING_PROMPT_OPTIONS,
+    "none",
+    pythonLogging,
+  );
+  if (pythonLogging !== undefined || !getPythonLoggingIncompatibility("loguru", pythonWebFramework)) {
+    return resolution;
+  }
+  return { ...resolution, shouldPrompt: false, autoValue: "none" as const };
+}
+
+export async function getPythonLoggingChoice(
+  pythonLogging?: PythonLogging,
+  pythonWebFramework?: PythonWebFramework,
+) {
+  const resolution = resolvePythonLoggingPrompt(pythonLogging, pythonWebFramework);
+  if (!resolution.shouldPrompt) {
+    return resolution.autoValue ?? "none";
+  }
+
+  const response = await navigableSelect<PythonLogging>({
+    message: "Select Python logging library",
+    options: resolution.options,
+    initialValue: resolution.initialValue as PythonLogging,
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

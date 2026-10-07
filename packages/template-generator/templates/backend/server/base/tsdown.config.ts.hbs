@@ -10,6 +10,8 @@ export default defineConfig({
     entry: './src/index.ts',
 {{/if}}
     format: 'esm',
+    // Always emit .mjs so start commands do not depend on tsdown's platform default.
+    fixedExtension: true,
     outDir: './dist',
     clean: true,
     noExternal: [/@{{projectName}}\/.*/]

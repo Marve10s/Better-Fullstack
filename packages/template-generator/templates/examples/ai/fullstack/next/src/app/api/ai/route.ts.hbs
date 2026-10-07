@@ -1,5 +1,5 @@
 {{#*inline "requireUser"}}
-{{#if (hasAiRouteAuth auth)}}
+{{#if (hasAiRouteAuth auth backend frontend)}}
 // No CORS headers are served, so a JSON request from another site needs a preflight that fails;
 // only non-JSON form posts reach this route cross-site, and they are rejected here.
 if (!/^application\/json\s*(;|$)/i.test(req.headers.get("content-type") ?? "")) {

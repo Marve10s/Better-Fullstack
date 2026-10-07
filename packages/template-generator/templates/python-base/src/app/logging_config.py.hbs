@@ -1,0 +1,499 @@
+{{#if (ne pythonLogging "none")}}
+"""Application logging with {{#if (eq pythonLogging "loguru")}}Loguru{{else}}structlog{{/if}}.
+
+`configure_logging()` runs at startup. LOG_LEVEL sets the level for every
+logger, including the web framework and server, and LOG_FORMAT picks the
+output: `json`, `console`, or `auto`, which writes JSON when
+APP_ENV=production and readable lines otherwise. Tracebacks never include
+local variable values, which can hold secrets.
+"""
+
+{{#if (eq pythonLogging "loguru")}}
+import inspect
+import json
+{{/if}}
+import logging
+{{#if (ne pythonValidation "pydantic")}}
+import os
+{{/if}}
+import sys
+{{#if (ne pythonWebFramework "none")}}
+import time
+{{/if}}
+{{#if (eq pythonLogging "loguru")}}
+import traceback
+{{/if}}
+{{#if (ne pythonWebFramework "none")}}
+import uuid
+from collections.abc import {{#if (or (eq pythonWebFramework "django") (eq pythonWebFramework "flask"))}}Callable, {{/if}}Generator{{#if (eq pythonWebFramework "flask")}}, Iterable{{/if}}
+from contextlib import contextmanager
+{{/if}}
+{{#if (eq pythonWebFramework "django")}}
+from typing import {{#if (eq pythonLogging "loguru")}}TYPE_CHECKING, {{/if}}Any
+{{else if (or (eq pythonLogging "loguru") (eq pythonWebFramework "flask"))}}
+from typing import TYPE_CHECKING
+{{/if}}
+
+{{#if (eq pythonLogging "structlog")}}
+import structlog
+{{/if}}
+{{#if (eq pythonWebFramework "aiohttp")}}
+from aiohttp import web
+from aiohttp.typedefs import Handler
+{{/if}}
+{{#if (eq pythonWebFramework "django")}}
+from django.utils.log import log_response
+{{/if}}
+{{#if (ne pythonValidation "pydantic")}}
+from dotenv import load_dotenv
+{{/if}}
+{{#if (eq pythonWebFramework "litestar")}}
+from litestar.enums import ScopeType
+from litestar.types import ASGIApp, Message, Receive, Scope, Send
+{{/if}}
+{{#if (eq pythonLogging "loguru")}}
+from loguru import logger
+{{/if}}
+{{#if (or (eq pythonObservability "opentelemetry") (eq pythonObservability "signoz"))}}
+from opentelemetry import trace
+{{/if}}
+{{#if (or (eq pythonWebFramework "fastapi") (eq pythonWebFramework "starlette"))}}
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
+{{/if}}
+{{#if (eq pythonLogging "structlog")}}
+{{#if (or (eq pythonObservability "opentelemetry") (eq pythonObservability "signoz"))}}
+from structlog.typing import EventDict, Processor, WrappedLogger
+{{else}}
+from structlog.typing import Processor
+{{/if}}
+{{/if}}
+{{#if (eq pythonWebFramework "flask")}}
+from werkzeug.serving import WSGIRequestHandler
+{{/if}}
+{{#if (eq pythonValidation "pydantic")}}
+
+from app.settings import get_settings
+{{/if}}
+{{#if (or (eq pythonLogging "loguru") (eq pythonWebFramework "flask"))}}
+
+if TYPE_CHECKING:
+{{#if (eq pythonWebFramework "flask")}}
+    from _typeshed import OptExcInfo
+    from _typeshed.wsgi import StartResponse, WSGIApplication, WSGIEnvironment
+{{/if}}
+{{#if (eq pythonLogging "loguru")}}
+    from loguru import Message as LogMessage
+    from loguru import Record
+{{/if}}
+{{/if}}
+
+{{#if (ne pythonWebFramework "none")}}
+REQUEST_ID_HEADER = "X-Request-ID"
+{{#if (or (eq pythonWebFramework "fastapi") (eq pythonWebFramework "starlette") (eq pythonWebFramework "litestar"))}}
+_ERROR_BODY = b"Internal Server Error"
+{{/if}}
+
+{{/if}}
+# Server access logs repeat the request line logged by the middleware below, and
+# watchfiles reports every reload scan.
+_QUIET_LOGGERS = (
+    "uvicorn.access",
+    "gunicorn.access",
+    "aiohttp.access",
+    "django.server",
+    "watchfiles.main",
+)
+{{#if (eq pythonLogging "structlog")}}
+
+logger: structlog.stdlib.BoundLogger = structlog.stdlib.get_logger("app")
+{{/if}}
+
+
+def _log_settings() -> tuple[str, bool]:
+    """Return the log level and whether to write JSON."""
+{{#if (eq pythonValidation "pydantic")}}
+    settings = get_settings()
+    level, log_format, app_env = settings.log_level, settings.log_format, settings.app_env
+{{else}}
+    load_dotenv()
+    level = os.getenv("LOG_LEVEL", "INFO")
+    log_format = os.getenv("LOG_FORMAT", "auto")
+    app_env = os.getenv("APP_ENV", "development")
+{{/if}}
+    use_json = log_format == "json" or (log_format == "auto" and app_env == "production")
+    return level.upper(), use_json
+
+
+def _route_stdlib_loggers() -> None:
+    """Send every existing standard library logger through the root handler at LOG_LEVEL."""
+    for existing in list(logging.root.manager.loggerDict.values()):
+        if isinstance(existing, logging.Logger):
+            existing.handlers.clear()
+            existing.propagate = True
+            existing.setLevel(logging.NOTSET)
+    quiet_level = max(logging.root.level, logging.WARNING)
+    for name in _QUIET_LOGGERS:
+        logging.getLogger(name).setLevel(quiet_level)
+
+
+def _write_stdout(text: str) -> None:
+    # Look up sys.stdout on every write: servers and test runners replace it.
+    sys.stdout.write(text)
+    sys.stdout.flush()
+{{#if (eq pythonLogging "loguru")}}
+
+
+class InterceptHandler(logging.Handler):
+    """Forward standard library records to Loguru."""
+
+    def emit(self, record: logging.LogRecord) -> None:
+        level: str | int
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        frame, depth = inspect.currentframe(), 0
+        while frame is not None and (depth == 0 or frame.f_code.co_filename == logging.__file__):
+            frame = frame.f_back
+            depth += 1
+
+        logger.bind(logger_name=record.name).opt(depth=depth, exception=record.exc_info).log(
+            level, record.getMessage()
+        )
+
+
+def _patch_record(record: "Record") -> None:
+    record["extra"].setdefault("logger_name", record["name"])
+{{#if (or (eq pythonObservability "opentelemetry") (eq pythonObservability "signoz"))}}
+    span_context = trace.get_current_span().get_span_context()
+    if span_context.is_valid:
+        record["extra"]["trace_id"] = format(span_context.trace_id, "032x")
+        record["extra"]["span_id"] = format(span_context.span_id, "016x")
+{{/if}}
+
+
+def _console_format(record: "Record") -> str:
+    template = (
+        "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | "
+        "<cyan>{extra[logger_name]}</cyan>"
+    )
+    if "request_id" in record["extra"]:
+        template += " [{extra[request_id]}]"
+    return template + " - <level>{message}</level>\n{exception}"
+
+
+def _json_sink(message: "LogMessage") -> None:
+    record = message.record
+    extra = dict(record["extra"])
+    payload: dict[str, object] = {
+        "timestamp": record["time"].isoformat(),
+        "level": record["level"].name,
+        "logger": extra.pop("logger_name", record["name"]),
+        "message": record["message"],
+        **extra,
+    }
+    exception = record["exception"]
+    if exception is not None:
+        payload["exception"] = "".join(
+            traceback.format_exception(exception.type, exception.value, exception.traceback)
+        )
+    _write_stdout(json.dumps(payload, default=str) + "\n")
+
+
+def configure_logging() -> None:
+    """Install Loguru as the single log output for the app, framework, and server."""
+    level, use_json = _log_settings()
+    logger.remove()
+    if use_json:
+        logger.add(_json_sink, level=level, backtrace=False, diagnose=False)
+    else:
+        logger.add(
+            _write_stdout,
+            level=level,
+            format=_console_format,
+            colorize=sys.stdout.isatty(),
+            diagnose=False,
+        )
+    logger.configure(patcher=_patch_record)
+    logging.basicConfig(handlers=[InterceptHandler(level)], level=level, force=True)
+    _route_stdlib_loggers()
+{{#if (ne pythonWebFramework "none")}}
+
+
+@contextmanager
+def request_context(request_id: str) -> Generator[None, None, None]:
+    """Attach the request id to every log line written inside the block."""
+    with logger.contextualize(request_id=request_id):
+        yield
+
+
+def _log_request(method: str, path: str, status_code: int, started: float) -> None:
+    duration_ms = round((time.perf_counter() - started) * 1000, 2)
+    logger.log(
+        "ERROR" if status_code >= 500 else "INFO",
+        "{method} {path} {status_code} ({duration_ms} ms)",
+        method=method,
+        path=path,
+        status_code=status_code,
+        duration_ms=duration_ms,
+    )
+{{/if}}
+{{else}}
+{{#if (or (eq pythonObservability "opentelemetry") (eq pythonObservability "signoz"))}}
+
+
+def _add_trace_context(_logger: WrappedLogger, _method: str, event_dict: EventDict) -> EventDict:
+    span_context = trace.get_current_span().get_span_context()
+    if span_context.is_valid:
+        event_dict["trace_id"] = format(span_context.trace_id, "032x")
+        event_dict["span_id"] = format(span_context.span_id, "016x")
+    return event_dict
+{{/if}}
+
+
+class _StdoutHandler(logging.Handler):
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            _write_stdout(self.format(record) + "\n")
+        except Exception:
+            self.handleError(record)
+
+
+def configure_logging() -> None:
+    """Render structlog and standard library records with one formatter."""
+    level, use_json = _log_settings()
+    shared_processors: list[Processor] = [
+        structlog.contextvars.merge_contextvars,
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.processors.TimeStamper(fmt="iso", utc=True),
+{{#if (or (eq pythonObservability "opentelemetry") (eq pythonObservability "signoz"))}}
+        _add_trace_context,
+{{/if}}
+    ]
+    structlog.configure(
+        processors=[*shared_processors, structlog.stdlib.ProcessorFormatter.wrap_for_formatter],
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )
+    # Tracebacks leave out local variables, which can hold secrets. The console
+    # renderer would otherwise use Rich or better-exceptions, which print them.
+    json_tracebacks = structlog.processors.ExceptionRenderer(
+        structlog.tracebacks.ExceptionDictTransformer(show_locals=False)
+    )
+    console = structlog.dev.ConsoleRenderer(
+        colors=sys.stdout.isatty(), exception_formatter=structlog.dev.plain_traceback
+    )
+    renderers: list[Processor] = (
+        [json_tracebacks, structlog.processors.JSONRenderer()] if use_json else [console]
+    )
+    handler = _StdoutHandler(level)
+    handler.setFormatter(
+        structlog.stdlib.ProcessorFormatter(
+            foreign_pre_chain=shared_processors,
+            processors=[structlog.stdlib.ProcessorFormatter.remove_processors_meta, *renderers],
+        )
+    )
+    root = logging.getLogger()
+    root.handlers = [handler]
+    root.setLevel(level)
+    _route_stdlib_loggers()
+{{#if (ne pythonWebFramework "none")}}
+
+
+@contextmanager
+def request_context(request_id: str) -> Generator[None, None, None]:
+    """Attach the request id to every log line written inside the block."""
+    with structlog.contextvars.bound_contextvars(request_id=request_id):
+        yield
+
+
+def _log_request(method: str, path: str, status_code: int, started: float) -> None:
+    duration_ms = round((time.perf_counter() - started) * 1000, 2)
+    logger.log(
+        logging.ERROR if status_code >= 500 else logging.INFO,
+        "request",
+        method=method,
+        path=path,
+        status_code=status_code,
+        duration_ms=duration_ms,
+    )
+{{/if}}
+{{/if}}
+{{#if (ne pythonWebFramework "none")}}
+
+
+def _request_id(incoming: str | None) -> str:
+    """Reuse a well-formed incoming request id, otherwise create one."""
+    if incoming and len(incoming) <= 128 and incoming.isascii() and incoming.isprintable():
+        return incoming
+    return uuid.uuid4().hex
+{{/if}}
+{{#if (or (eq pythonWebFramework "fastapi") (eq pythonWebFramework "starlette") (eq pythonWebFramework "litestar"))}}
+
+
+class RequestLoggingMiddleware:
+    """Log each HTTP request once and tag its log lines with a request id."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != {{#if (eq pythonWebFramework "litestar")}}ScopeType.HTTP{{else}}"http"{{/if}}:
+            await self.app(scope, receive, send)
+            return
+
+        headers = dict(scope["headers"])
+        request_id = _request_id(headers.get(b"x-request-id", b"").decode("latin-1"))
+        status_code = 500
+        response_started = False
+        started = time.perf_counter()
+
+        async def send_with_request_id(message: Message) -> None:
+            nonlocal status_code, response_started
+            if message["type"] == "http.response.start":
+                status_code = message["status"]
+                response_started = True
+                message["headers"] = [
+                    *message.get("headers", []),
+                    (b"x-request-id", request_id.encode("latin-1")),
+                ]
+            await send(message)
+
+        with request_context(request_id):
+            try:
+                await self.app(scope, receive, send_with_request_id)
+            except Exception:
+                # Handle the error here so its traceback carries the request id and
+                # the 500 response returns it; the server would do neither.
+                logger.exception("Unhandled error")
+                status_code = 500
+                if not response_started:
+                    await send_with_request_id(
+                        {
+                            "type": "http.response.start",
+                            "status": 500,
+                            "headers": [
+                                (b"content-type", b"text/plain; charset=utf-8"),
+                                (b"content-length", str(len(_ERROR_BODY)).encode()),
+                            ],
+                        }
+                    )
+                    await send_with_request_id(
+                        {"type": "http.response.body", "body": _ERROR_BODY, "more_body": False}
+                    )
+            finally:
+                _log_request(scope["method"], scope["path"], status_code, started)
+{{/if}}
+{{#if (eq pythonWebFramework "flask")}}
+
+
+class RequestLoggingMiddleware:
+    """WSGI middleware that logs each request once and tags its log lines with a request id."""
+
+    def __init__(self, app: "WSGIApplication") -> None:
+        self.app = app
+
+    def __call__(
+        self, environ: "WSGIEnvironment", start_response: "StartResponse"
+    ) -> Generator[bytes, None, None]:
+        # As a generator, the middleware keeps the request context open while the
+        # server sends the body, and logs the request when the server closes it.
+        request_id = _request_id(environ.get("HTTP_X_REQUEST_ID"))
+        status_code = 500
+        started = time.perf_counter()
+
+        def start_response_with_request_id(
+            status: str, headers: list[tuple[str, str]], exc_info: "OptExcInfo | None" = None
+        ) -> Callable[[bytes], object]:
+            nonlocal status_code
+            status_code = int(status.split(" ", 1)[0])
+            return start_response(status, [*headers, (REQUEST_ID_HEADER, request_id)], exc_info)
+
+        with request_context(request_id):
+            body: Iterable[bytes] = ()
+            try:
+                body = self.app(environ, start_response_with_request_id)
+                yield from body
+            except Exception:
+                # A body can fail after its status was sent; record the request as failed.
+                status_code = 500
+                raise
+            finally:
+                close = getattr(body, "close", None)
+                if close is not None:
+                    close()
+                _log_request(
+                    environ.get("REQUEST_METHOD", ""),
+                    environ.get("PATH_INFO", ""),
+                    status_code,
+                    started,
+                )
+
+
+class DevServerRequestHandler(WSGIRequestHandler):
+    """Flask development server handler that leaves request logging to the middleware."""
+
+    def log_request(self, code: int | str = "-", size: int | str = "-") -> None:
+        return None
+{{/if}}
+{{#if (eq pythonWebFramework "django")}}
+
+
+def request_logging_middleware(get_response: Callable[[Any], Any]) -> Callable[[Any], Any]:
+    """Django middleware that logs each request once and tags its log lines with a request id."""
+
+    def middleware(request: Any) -> Any:
+        request_id = _request_id(request.headers.get(REQUEST_ID_HEADER))
+        started = time.perf_counter()
+        with request_context(request_id):
+            response = get_response(request)
+            response[REQUEST_ID_HEADER] = request_id
+            if response.status_code >= 400:
+                # Django logs error responses after the middleware returns, without the
+                # request id; logging them here marks them so Django skips its copy.
+                log_response(
+                    "%s: %s",
+                    response.reason_phrase,
+                    request.path,
+                    response=response,
+                    request=request,
+                )
+            _log_request(request.method or "", request.path, response.status_code, started)
+        return response
+
+    return middleware
+{{/if}}
+{{#if (eq pythonWebFramework "aiohttp")}}
+
+
+@web.middleware
+async def request_logging_middleware(request: web.Request, handler: Handler) -> web.StreamResponse:
+    """Log each request once and tag its log lines with a request id."""
+    request_id = _request_id(request.headers.get(REQUEST_ID_HEADER))
+    status_code = 500
+    started = time.perf_counter()
+    with request_context(request_id):
+        try:
+            response = await handler(request)
+            status_code = response.status
+            if not response.prepared:
+                response.headers[REQUEST_ID_HEADER] = request_id
+            return response
+        except web.HTTPException as exc:
+            status_code = exc.status
+            exc.headers[REQUEST_ID_HEADER] = request_id
+            raise
+        except Exception:
+            # Handle the error here so its traceback carries the request id and
+            # the 500 response returns it; aiohttp would do neither.
+            logger.exception("Unhandled error")
+            return web.Response(
+                status=500, text="Internal Server Error", headers={REQUEST_ID_HEADER: request_id}
+            )
+        finally:
+            _log_request(request.method, request.path, status_code, started)
+{{/if}}
+{{/if}}

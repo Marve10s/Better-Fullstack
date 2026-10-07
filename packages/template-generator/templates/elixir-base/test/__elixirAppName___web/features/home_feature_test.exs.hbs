@@ -4,9 +4,11 @@ defmodule {{elixirModuleName}}Web.HomeFeatureTest do
 
   import Wallaby.Query, only: [css: 2]
 
+  @project_name "{{projectName}}"
+
   feature "home page renders", %{session: session} do
     session
     |> visit("/")
-    |> assert_has(css("h1", text: "{{projectName}}"))
+    |> assert_has(css("h1", text: @project_name))
   end
 end

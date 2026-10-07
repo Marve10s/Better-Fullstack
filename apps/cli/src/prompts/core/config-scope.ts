@@ -243,7 +243,7 @@ export const CONFIG_SCOPE_REGISTRY = {
       {
         id: "quality",
         label: "Quality, Testing & Observability",
-        promptKeys: ["pythonQuality", "pythonTesting", "pythonObservability"],
+        promptKeys: ["pythonQuality", "pythonTesting", "pythonObservability", "pythonLogging"],
       },
       {
         id: "runtime-tooling",
