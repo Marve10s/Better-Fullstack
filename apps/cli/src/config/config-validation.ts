@@ -29,6 +29,7 @@ import {
   buildCompatibilityInputFromConfig,
   getPythonLoggingSelectionIssue,
   hasSelectedTypeScriptBackendPart,
+  usesGenericOrm,
 } from "@/config/stack-compatibility";
 import { validatePeerDependencies } from "@/platform/peer-dependency-validator";
 import { isSilent } from "@/presentation/context";
@@ -152,7 +153,10 @@ function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string
     db === "sqlite" &&
     !hasEcosystemOrm;
 
-  const pairIssue = has("orm") && has("database") ? getDatabaseOrmIncompatibility(db, orm) : null;
+  const pairIssue =
+    has("orm") && has("database") && usesGenericOrm(cfg)
+      ? getDatabaseOrmIncompatibility(db, orm)
+      : null;
   if (pairIssue) {
     incompatibilityError({
       message: pairIssue,

@@ -102,7 +102,18 @@ export function getDatabaseOrmSelectionIssue(config: Partial<ProjectConfig>): st
     );
     return issue?.message ?? null;
   }
+  if (!usesGenericOrm(config)) return null;
   return getDatabaseOrmIncompatibility(config.database, config.orm);
+}
+
+// The generic orm field only drives TypeScript and React Native generation; other ecosystems keep
+// it as an inert default and choose their data layer through their own ORM field.
+export function usesGenericOrm(config: Pick<Partial<ProjectConfig>, "ecosystem">): boolean {
+  return (
+    config.ecosystem === undefined ||
+    config.ecosystem === "typescript" ||
+    config.ecosystem === "react-native"
+  );
 }
 
 function getProjectBackendFromCompatibility(backend: string): string {

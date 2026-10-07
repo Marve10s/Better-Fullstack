@@ -186,6 +186,35 @@ describe("database and ORM pairing", () => {
     expect(hasVirtualFile(postgres.tree!.root, "packages/db/src/index.ts")).toBe(true);
   });
 
+  test("native ecosystems ignore the inherited TypeScript ORM default", async () => {
+    const native = [
+      { ecosystem: "python", pythonWebFramework: "fastapi", pythonOrm: "pymongo" },
+      { ecosystem: "rust", rustWebFramework: "axum", rustOrm: "mongodb" },
+    ] as const;
+    for (const selection of native) {
+      const config = {
+        ...createCliDefaultProjectConfigBase(),
+        projectName: "native",
+        frontend: [],
+        backend: "none",
+        runtime: "none",
+        api: "none",
+        auth: "none",
+        addons: [],
+        database: "mongodb",
+        ...selection,
+      } as ProjectConfig;
+      const stackParts = legacyProjectConfigToStackParts(config);
+      const part = stackParts.map((candidate) => formatStackPartSpec(candidate, stackParts));
+
+      expect(config.orm, selection.ecosystem).toBe("drizzle");
+      expect((await createVirtual(config)).error, selection.ecosystem).toBeUndefined();
+      expect((await createVirtual({ stackParts })).error, selection.ecosystem).toBeUndefined();
+      expect(() => buildProjectConfig(config)).not.toThrow();
+      expect(() => buildProjectConfig({ part })).not.toThrow();
+    }
+  });
+
   test("valid pairs still generate", async () => {
     const results = await Promise.all(
       [
