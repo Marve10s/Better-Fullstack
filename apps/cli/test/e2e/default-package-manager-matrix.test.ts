@@ -10,6 +10,43 @@ const SMOKE_DIR = join(import.meta.dir, "..", "..", ".smoke-default-package-mana
 const CLI_BINARY_PATH = join(import.meta.dir, "..", "..", "dist", "cli.mjs");
 const CLEANUP_TIMEOUT_MS = 180_000;
 const INFERRED_TIMEOUT_MS = 180_000;
+const NATIVE_NPM_TIMEOUT_MS = 600_000;
+const NATIVE_CHECK_TIMEOUT_MS = 300_000;
+
+// Bun tolerates peer conflicts that fail a plain `npm install`, so the Expo SDK set needs an
+// npm proof of its own.
+const NATIVE_STACK_FLAGS = [
+  "--frontend",
+  "native-uniwind",
+  "--mobile-navigation",
+  "expo-router",
+  "--backend",
+  "hono",
+  "--runtime",
+  "node",
+  "--api",
+  "trpc",
+  "--database",
+  "none",
+  "--orm",
+  "none",
+  "--auth",
+  "none",
+  "--payments",
+  "none",
+  "--addons",
+  "none",
+  "--examples",
+  "none",
+  "--db-setup",
+  "none",
+  "--web-deploy",
+  "none",
+  "--server-deploy",
+  "none",
+  "--ai-docs",
+  "none",
+];
 
 type PackageManagerCase = {
   manager: "npm" | "pnpm" | "bun" | "yarn";
@@ -146,6 +183,41 @@ describe("Default package manager matrix", () => {
       );
     }
   });
+
+  it(
+    "installs a native Expo stack with plain npm and keeps it on the SDK dependency set",
+    async () => {
+      const projectDir = join(SMOKE_DIR, "native-npm");
+      const expectedFiles = ["bts.jsonc", "package-lock.json", "apps/native/package.json"];
+
+      const result = await scaffoldWithCLIBinary(
+        projectDir,
+        [...NATIVE_STACK_FLAGS, "--package-manager", "npm", "--install", "--no-git"],
+        { cliPath: CLI_BINARY_PATH, timeout: NATIVE_NPM_TIMEOUT_MS, expectedFiles },
+      );
+
+      assertScaffoldSucceeded(result, "Native npm scaffold failed", expectedFiles);
+      expect(result.stderr).not.toContain("Installation error");
+      expect(result.stdout).not.toContain("Failed to install dependencies");
+
+      const nativeDir = join(projectDir, "apps", "native");
+      for (const command of [
+        ["npm", "run", "check-types"],
+        ["npx", "expo", "install", "--check"],
+      ]) {
+        const check = Bun.spawnSync(command, {
+          cwd: nativeDir,
+          env: { ...process.env, CI: "1" },
+          timeout: NATIVE_CHECK_TIMEOUT_MS,
+        });
+        expect(
+          check.exitCode,
+          `${command.join(" ")}\n${check.stdout.toString()}${check.stderr.toString()}`,
+        ).toBe(0);
+      }
+    },
+    NATIVE_NPM_TIMEOUT_MS + 2 * NATIVE_CHECK_TIMEOUT_MS,
+  );
 
   describe("inferred user-agent defaults", () => {
     for (const testCase of INFERRED_CASES) {
