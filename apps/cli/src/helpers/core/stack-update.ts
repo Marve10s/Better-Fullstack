@@ -1391,47 +1391,6 @@ function parseYaml(content: string | undefined) {
   return document.errors.length === 0 && isPlainObject(value) ? { document, value } : null;
 }
 
-function applyResolvedVersionsToBaseline(
-  filePath: string,
-  generatedContent: string,
-  rewrittenContent: string,
-): string {
-  if (isPnpmWorkspacePath(filePath)) {
-    const generated = parseYaml(generatedContent);
-    const rewritten = parseYaml(rewrittenContent);
-    if (!generated || !rewritten) return generatedContent;
-    const generatedCatalog = isPlainObject(generated.value.catalog) ? generated.value.catalog : {};
-    const rewrittenCatalog = isPlainObject(rewritten.value.catalog) ? rewritten.value.catalog : {};
-    for (const name of Object.keys(generatedCatalog)) {
-      const resolved = rewrittenCatalog[name];
-      if (typeof resolved === "string") generated.document.setIn(["catalog", name], resolved);
-    }
-    return generated.document.toString();
-  }
-
-  const generated = parseJson(generatedContent);
-  const rewritten = parseJson(rewrittenContent);
-  if (!generated || !rewritten) return generatedContent;
-
-  const generatedWorkspaces = isPlainObject(generated.workspaces) ? generated.workspaces : {};
-  const rewrittenWorkspaces = isPlainObject(rewritten.workspaces) ? rewritten.workspaces : {};
-  const sections: Array<[unknown, unknown]> = [
-    [generated.dependencies, rewritten.dependencies],
-    [generated.devDependencies, rewritten.devDependencies],
-    [generatedWorkspaces.catalog, rewrittenWorkspaces.catalog],
-  ];
-
-  for (const [generatedSection, rewrittenSection] of sections) {
-    if (!isPlainObject(generatedSection) || !isPlainObject(rewrittenSection)) continue;
-    for (const name of Object.keys(generatedSection)) {
-      const resolved = rewrittenSection[name];
-      if (typeof resolved === "string") generatedSection[name] = resolved;
-    }
-  }
-
-  return stringifyJson(generated);
-}
-
 function diffJsonSection(
   current: JsonObject,
   previous: JsonObject,
@@ -2663,18 +2622,9 @@ export async function applyStackUpdate(
 
     await options.beforeManifestRefresh?.();
 
+    // Baselines record what the templates declare, as create does. Channel-resolved versions
+    // would read as template drift on the next update and be replaced with the template's.
     const structuredBaselines = collectStructuredBaselines(proposedTree);
-    for (const relativePath of versionChannelRewrites) {
-      const generatedBaseline = structuredBaselines[relativePath];
-      if (generatedBaseline === undefined) continue;
-      // oxlint-disable-next-line no-await-in-loop -- baseline must match each persisted rewrite
-      const rewritten = await fs.readFile(path.join(plan.projectDir, relativePath), "utf-8");
-      structuredBaselines[relativePath] = applyResolvedVersionsToBaseline(
-        relativePath,
-        generatedBaseline,
-        rewritten,
-      );
-    }
 
     let manifestWritten = false;
     await refreshScaffoldManifestFiles(

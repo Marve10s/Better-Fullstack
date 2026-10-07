@@ -4561,7 +4561,7 @@ describe("stack update planner", () => {
     expect(await pathExists(join(projectDir, "apps/docs/package.json"))).toBe(false);
   });
 
-  it("records channel-resolved generated content as the manifest baseline", async () => {
+  it("records generated content, not channel-resolved versions, as the manifest baseline", async () => {
     const root = await makeTempRoot("bfs-stack-update-channel-baseline-");
     const projectDir = join(root, "app");
     await scaffoldGeneratedProject(makeConfig(projectDir));
@@ -4629,7 +4629,8 @@ describe("stack update planner", () => {
     const serverBaseline = manifest?.baselines?.["apps/server/package.json"];
     expect(serverBaseline).toBeDefined();
     expect(serverBaseline).not.toContain("manifest-user-dep");
-    expect(serverBaseline).toContain("9.9.9");
+    expect(serverBaseline).toContain('"resend"');
+    expect(serverBaseline).not.toContain("9.9.9");
   });
 
   it("does not re-resolve a failed version-channel rewrite during apply", async () => {

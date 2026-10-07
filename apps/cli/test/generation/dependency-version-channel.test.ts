@@ -924,6 +924,33 @@ describe("version channel lifecycle round trips", () => {
       expect(result.success, result.success ? undefined : result.error).toBe(true);
       expect(await readCatalog(projectDir)).toEqual(catalog);
     }, 120_000);
+
+    it("keeps versions add moved to a newer release through a later update", async () => {
+      const { projectDir } = await createPnpmProject("version-channel-pnpm-add-update");
+      clearRegistryVersionCache();
+      mockRegistry({}, { tags: { latest: "100.0.0" }, versions: ["99.0.0", "100.0.0"] });
+
+      const added = await applyStackUpdate(
+        projectDir,
+        { stateManagement: "zustand" },
+        { operation: "add", applyVersionChannel: true },
+      );
+      expect(added.success, added.success ? undefined : added.error).toBe(true);
+      const catalog = await readCatalog(projectDir);
+      expect(catalog["@orpc/server"]).toBe("^100.0.0");
+      const webManifestPath = path.join(projectDir, "apps/web/package.json");
+      const webManifest = await fs.readFile(webManifestPath, "utf8");
+
+      const plan = await planScaffoldUpgrade(projectDir);
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      expect(plan.actionable).toEqual([]);
+
+      const result = await applyScaffoldUpgrade(projectDir);
+      expect(result.success, result.success ? undefined : result.error).toBe(true);
+      expect(await readCatalog(projectDir)).toEqual(catalog);
+      expect(await fs.readFile(webManifestPath, "utf8")).toBe(webManifest);
+    }, 120_000);
   });
 
   describe("template update adding @better-auth/core", () => {
