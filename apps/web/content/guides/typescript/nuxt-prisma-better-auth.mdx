@@ -140,7 +140,14 @@ createWorkspace: protectedProcedure
   }),
 ```
 
-Import `z` from `zod` and the Prisma client from the `db` workspace package. Run `npm run db:migrate` after changing the schema. Keep authorization checks in procedures; the `auth` middleware only improves navigation.
+Import `z` from `zod` and the Prisma client from the `db` workspace package. After changing the schema, create a migration and then regenerate Prisma Client. In Prisma 7, `migrate dev` no longer generates the client, so `prisma.workspace` does not exist until `db:generate` runs:
+
+```npm
+npm run db:migrate
+npm run db:generate
+```
+
+Keep authorization checks in procedures; the `auth` middleware only improves navigation.
 
 ## Compatibility notes
 
