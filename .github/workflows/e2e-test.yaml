@@ -159,6 +159,12 @@ jobs:
         with:
           node-version: "22"
 
+      # The pnpm preset (hono-node-prisma-docker) installs with pnpm on the host.
+      - name: Setup pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.20.0 --activate
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
