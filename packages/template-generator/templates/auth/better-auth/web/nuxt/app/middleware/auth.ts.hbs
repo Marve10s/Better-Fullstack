@@ -1,14 +1,22 @@
-export default defineNuxtRouteMiddleware(async (to, from) => {
-  if (import.meta.server) return;
+export default defineNuxtRouteMiddleware(async () => {
+{{#if (eq backend "self")}}
+  if (import.meta.server) {
+    const session = await useRequestFetch()("/api/auth/get-session");
 
-  const { $authClient } = useNuxtApp();
-  const session = $authClient.useSession();
-
-  if (session.value.isPending) {
+    if (!session) {
+      return navigateTo("/login");
+    }
     return;
   }
+{{else}}
+  // The session cookie belongs to the API server, so only the browser can send it.
+  if (import.meta.server) return;
+{{/if}}
 
-  if (!session.value.data) {
+  const { $authClient } = useNuxtApp();
+  const { data: session } = await $authClient.getSession();
+
+  if (!session) {
     return navigateTo("/login");
   }
 });

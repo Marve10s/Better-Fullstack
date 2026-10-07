@@ -1010,6 +1010,7 @@ describe("Virtual Generator Regressions", () => {
     const rpcRoute = readTextFromTree(result.tree!, "apps/web/server/api/rpc/[...rest].ts");
     const authClient = readTextFromTree(result.tree!, "apps/web/app/plugins/auth-client.ts");
     const orpcClient = readTextFromTree(result.tree!, "apps/web/app/plugins/orpc.ts");
+    const authMiddleware = readTextFromTree(result.tree!, "apps/web/app/middleware/auth.ts");
 
     expect(context).toContain("export async function createContext(req: Request)");
     expect(context).toContain("headers: req.headers,");
@@ -1022,6 +1023,9 @@ describe("Virtual Generator Regressions", () => {
     expect(authClient).not.toContain("serverUrl");
     expect(orpcClient).toContain("`${useRequestURL().origin}/api/rpc`");
     expect(orpcClient).not.toContain("serverUrl");
+    expect(authMiddleware).toContain('await useRequestFetch()("/api/auth/get-session")');
+    expect(authMiddleware).toContain("await $authClient.getSession()");
+    expect(authMiddleware).not.toContain("isPending");
     expect(context).not.toContain(
       "export async function createContext() {\n  return {\n    session: null",
     );
