@@ -20,6 +20,11 @@ Smoke presets intentionally use Bun installs. Package-manager correctness belong
 matrix, including Yarn inference and CI immutable/hardened installs. Preset groups in
 `testing/lib/presets.ts` are `pr-core`, `pr-broad`, and their `all` union.
 
+A preset can add `runtimeChecks`. `production-start` serves the built web app with its `serve`
+script and requests the listed routes. `docker-image` replaces the host install: it builds
+`apps/server/Dockerfile` from the project root, runs the image, and requests `/`. It needs a
+running Docker daemon, and `--strict` (as in `test:smoke:pr-core`) fails without one.
+
 ## Prompt-free execution
 
 - Use explicit stack flags without `--yes`; the default-path matrix tests `--yes` separately.
