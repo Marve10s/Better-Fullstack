@@ -129,6 +129,7 @@ fi
 `,
     );
     chmodSync(join(dir, "docker"), 0o755);
+    writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "docker-run-fails" }));
     const path = process.env.PATH;
     process.env.PATH = `${dir}:${path}`;
 
@@ -145,6 +146,55 @@ fi
       expect(container).toStartWith("bfs-smoke-docker-run-fails-");
       expect(calls).toContain(`rm --force ${container}`);
       expect(calls).toContain("image rm --force bfs-smoke-docker-run-fails");
+    } finally {
+      process.env.PATH = path;
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("runs install, build, and typecheck before the Docker image check", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "bfs-docker-steps-"));
+    const bin = join(dir, "bin");
+    const project = join(dir, "project");
+    mkdirSync(bin);
+    mkdirSync(project);
+    const log = join(dir, "calls.log");
+    for (const tool of ["pnpm", "docker"]) {
+      writeFileSync(
+        join(bin, tool),
+        `#!/bin/sh\necho "${tool} $*" >> "${log}"\n[ "${tool}" = pnpm ] || exit 1\n`,
+      );
+      chmodSync(join(bin, tool), 0o755);
+    }
+    writeFileSync(
+      join(project, "package.json"),
+      JSON.stringify({ scripts: { build: "echo built", "check-types": "echo typed" } }),
+    );
+    const path = process.env.PATH;
+    process.env.PATH = `${bin}:${path}`;
+
+    try {
+      const result = await verifyTypeScript("docker-steps", project, {
+        devCheck: true,
+        strict: true,
+        config: { ...makeBaseConfig("docker-steps", "typescript"), packageManager: "pnpm" },
+        runtimeChecks: [{ kind: "docker-image", env: {} }],
+      });
+
+      expect(result.steps.map((step) => step.step)).toEqual([
+        "install",
+        "dev-check",
+        "build",
+        "lint",
+        "typecheck",
+        "docker-build",
+      ]);
+      expect(result.steps.find((step) => step.step === "typecheck")?.stdout).toContain("typed");
+      expect(readFileSync(log, "utf-8").trim().split("\n")).toEqual([
+        "pnpm install --dangerously-allow-all-builds",
+        "docker info",
+      ]);
+      expect(result.overallSuccess).toBe(false);
     } finally {
       process.env.PATH = path;
       rmSync(dir, { recursive: true, force: true });
