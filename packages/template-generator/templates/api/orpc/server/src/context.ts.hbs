@@ -37,26 +37,21 @@ export async function createContext(_req: NextRequest) {
 {{/if}}
 
 {{else if (and (eq backend 'self') (includes frontend "nuxt"))}}
-import type { IncomingMessage } from "node:http";
 {{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-type CreateContextOptions = {
-  req: IncomingMessage;
-};
-
 {{#if (isBetterAuth auth)}}
-export async function createContext({ req }: CreateContextOptions) {
+export async function createContext(req: Request) {
   const session = await auth.api.getSession({
-    headers: req.headers as any,
+    headers: req.headers,
   });
   return {
     session,
   };
 }
 {{else}}
-export async function createContext(_opts: CreateContextOptions) {
+export async function createContext(_req: Request) {
   return {
     session: null,
   };

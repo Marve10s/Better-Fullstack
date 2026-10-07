@@ -985,7 +985,7 @@ describe("Virtual Generator Regressions", () => {
     expect(graphqlRoute).not.toContain('from "@/lib/auth"');
   });
 
-  it("wires Nuxt self-backend oRPC auth context from Nitro request headers", async () => {
+  it("mounts Better Auth and oRPC as same-origin Nitro routes in fullstack Nuxt", async () => {
     const result = await createVirtual({
       projectName: "nuxt-orpc-auth",
       frontend: ["nuxt"],
@@ -1006,12 +1006,22 @@ describe("Virtual Generator Regressions", () => {
 
     const context = readTextFromTree(result.tree!, "packages/api/src/context.ts");
     const router = readTextFromTree(result.tree!, "packages/api/src/routers/index.ts");
+    const authRoute = readTextFromTree(result.tree!, "apps/web/server/api/auth/[...all].ts");
+    const rpcRoute = readTextFromTree(result.tree!, "apps/web/server/api/rpc/[...rest].ts");
+    const authClient = readTextFromTree(result.tree!, "apps/web/app/plugins/auth-client.ts");
+    const orpcClient = readTextFromTree(result.tree!, "apps/web/app/plugins/orpc.ts");
 
-    expect(context).toContain('import type { IncomingMessage } from "node:http"');
-    expect(context).toContain("req: IncomingMessage");
-    expect(context).toContain("auth.api.getSession");
-    expect(context).toContain("headers: req.headers as any");
+    expect(context).toContain("export async function createContext(req: Request)");
+    expect(context).toContain("headers: req.headers,");
+    expect(context).not.toContain("as any");
     expect(router).toContain("privateData: protectedProcedure.handler");
+    expect(authRoute).toContain("auth.handler(toWebRequest(event))");
+    expect(rpcRoute).toContain('prefix: "/api/rpc"');
+    expect(rpcRoute).toContain("context: await createContext(request)");
+    expect(authClient).toContain("baseURL: useRequestURL().origin");
+    expect(authClient).not.toContain("serverUrl");
+    expect(orpcClient).toContain("`${useRequestURL().origin}/api/rpc`");
+    expect(orpcClient).not.toContain("serverUrl");
     expect(context).not.toContain(
       "export async function createContext() {\n  return {\n    session: null",
     );
