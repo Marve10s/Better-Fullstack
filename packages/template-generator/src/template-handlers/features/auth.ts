@@ -301,6 +301,15 @@ export async function processAuthTemplates(
       "apps/web",
       config,
     );
+    if (config.backend === "self") {
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        `auth/${authTemplateProvider}/fullstack/nuxt`,
+        "apps/web",
+        config,
+      );
+    }
   } else if (hasSvelteWeb) {
     processTemplatesFromPrefix(
       vfs,
