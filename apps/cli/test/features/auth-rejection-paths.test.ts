@@ -35,11 +35,15 @@ import {
   resolveFrontendPrompt,
   WEB_FRONTEND_PROMPT_OPTIONS,
 } from "@/prompts/architecture/frontend";
+import { gatherConfig } from "@/prompts/core/config-prompts";
 import { resolveDatabasePrompt } from "@/prompts/data/database";
 import { resolveORMPrompt } from "@/prompts/data/orm";
-import { getComposerAppFrontends } from "@/prompts/ecosystems/multi-ecosystem-composer";
+import {
+  gatherMultiEcosystemConfig,
+  getComposerAppFrontends,
+} from "@/prompts/ecosystems/multi-ecosystem-composer";
 import { resolveAuthPrompt } from "@/prompts/services/auth";
-import { processAndValidateFlags } from "@/validation";
+import { processAndValidateFlags, validateConfigCompatibility } from "@/validation";
 
 const CLI_ENTRY = resolve(import.meta.dir, "../../src/cli.ts");
 const NATIVE_BUN = resolve(homedir(), ".bun", "bin", "bun");
@@ -544,6 +548,35 @@ describe("prompt sequences never strand a requested auth", () => {
       await expect(
         getBackendFrameworkChoice(undefined, ["native-bare"], undefined, "nextauth"),
       ).rejects.toThrow(reason);
+    });
+  });
+
+  test("--auth clerk then another ecosystem is rejected instead of reset to none", async () => {
+    const reason = "Python stacks do not support auth integrations yet";
+    const project = ["auth-app", "/virtual/auth-app", "auth-app"] as const;
+    await runWithContextAsync({ silent: true }, async () => {
+      // Flag validation leaves `--auth clerk` open until the ecosystem is chosen.
+      const flags = processAndValidateFlags({ auth: "clerk" }, new Set(["auth"]), "auth-app");
+      expect(flags.auth).toBe("clerk");
+
+      // The ecosystem prompt answered Python.
+      await expect(gatherConfig({ ...flags, ecosystem: "python" }, ...project)).rejects.toThrow(
+        reason,
+      );
+
+      // The composer, answered with its defaults, chooses a Go backend that has no TypeScript auth.
+      await expect(gatherMultiEcosystemConfig(flags, ...project)).rejects.toThrow(
+        "No backend selected",
+      );
+
+      // Final validation judges the provider the user asked for, not the reset selection.
+      expect(() =>
+        validateConfigCompatibility(
+          { ...fullConfig({}), ecosystem: "python", backend: "none", auth: "none" },
+          new Set(["auth"]),
+          { auth: "clerk" },
+        ),
+      ).toThrow(reason);
     });
   });
 

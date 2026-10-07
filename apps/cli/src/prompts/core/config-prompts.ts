@@ -156,8 +156,9 @@ import type {
 } from "@/types";
 
 import { hasWebStyling, requiresChatSdkVercelAI } from "@/config/compatibility-rules";
+import { getRequestedAuthRejection } from "@/config/stack-compatibility";
 import { getUserPkgManager } from "@/platform/get-package-manager";
-import { exitCancelled } from "@/presentation/errors";
+import { exitCancelled, exitWithError } from "@/presentation/errors";
 import { getApiChoice } from "@/prompts/architecture/api";
 import { getBackendFrameworkChoice } from "@/prompts/architecture/backend";
 import { getFrontendChoice, getNativeFrontendChoice } from "@/prompts/architecture/frontend";
@@ -1007,6 +1008,12 @@ export async function gatherConfig(
       if (results.ecosystem === "go") {
         return getAuthChoice(flags.auth, undefined, undefined, "go");
       }
+      // These ecosystems generate no `--auth` provider, so a requested one is rejected, not reset.
+      const rejection = getRequestedAuthRejection(flags.auth, {
+        ecosystem: results.ecosystem,
+        auth: "none",
+      });
+      if (rejection) return exitWithError(rejection);
       return Promise.resolve("none" as Auth);
     },
     payments: ({ results }) => {

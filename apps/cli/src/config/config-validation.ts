@@ -29,6 +29,7 @@ import {
   buildCompatibilityInputFromConfig,
   getAuthSelectionIssue,
   getPythonLoggingSelectionIssue,
+  getRequestedAuthRejection,
   hasSelectedTypeScriptBackendPart,
 } from "@/config/stack-compatibility";
 import { validatePeerDependencies } from "@/platform/peer-dependency-validator";
@@ -442,12 +443,23 @@ function validateDatabaseSetup(config: Partial<ProjectConfig>, providedFlags: Se
 /**
  * Auth the user asked for by `--auth` or an auth `--part` is rejected with the shared reason. Only
  * a default the user never chose is reset, and the reset is reported as an adjustment would be.
+ * `requestedAuth` is the `--auth` value before prompts ran, so a prompt answer that reset it to
+ * none is judged by the provider the user asked for.
  */
 export function validateEcosystemAuthCompatibility(
   config: Partial<ProjectConfig>,
   providedFlags?: Set<string>,
-  { partial = false, partSpecs = [] as readonly string[] } = {},
+  {
+    partial = false,
+    partSpecs = [] as readonly string[],
+    requestedAuth = undefined as ProjectConfig["auth"] | undefined,
+  } = {},
 ) {
+  const requestedRejection = providedFlags?.has("auth")
+    ? getRequestedAuthRejection(requestedAuth, config)
+    : null;
+  if (requestedRejection) exitWithError(requestedRejection);
+
   const reason = getAuthSelectionIssue(config, { partial });
   if (!reason) return;
   if (!providedFlags) throw new Error(reason);
@@ -1657,7 +1669,11 @@ export function validateFullConfig(
   // data and API checks, so an auth rejection names its own reason.
   validateSelfBackendConstraints(config, providedFlags);
   validateConvexFrontendConstraints(config, providedFlags, options);
-  validateEcosystemAuthCompatibility(config, providedFlags, { partial, partSpecs: options.part });
+  validateEcosystemAuthCompatibility(config, providedFlags, {
+    partial,
+    partSpecs: options.part,
+    requestedAuth: options.auth,
+  });
   validateDatabaseOrmAuth(config, providedFlags);
   validateDatabaseSetup(config, providedFlags);
 

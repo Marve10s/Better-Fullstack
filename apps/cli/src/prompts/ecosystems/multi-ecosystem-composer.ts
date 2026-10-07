@@ -8,8 +8,9 @@ import type {
 } from "@/types";
 
 import { hasWebStyling } from "@/config/compatibility-rules";
+import { getRequestedAuthRejection } from "@/config/stack-compatibility";
 import { getDefaultConfig } from "@/constants";
-import { exitCancelled } from "@/presentation/errors";
+import { exitCancelled, exitWithError } from "@/presentation/errors";
 import { getApiChoice } from "@/prompts/architecture/api";
 import { getBackendFrameworkChoice } from "@/prompts/architecture/backend";
 import {
@@ -1623,7 +1624,7 @@ export async function gatherMultiEcosystemConfig(
   }
   const stackParts = parseStackPartSpecs(Array.from(new Set(stackPartSpecs)), "selected");
 
-  return {
+  const config: ProjectConfig = {
     ...baseConfig,
     ...flags,
     ...graphPartial,
@@ -1669,4 +1670,8 @@ export async function gatherMultiEcosystemConfig(
     install,
     stackParts,
   };
+  // Only a TypeScript backend generates `--auth`, so a requested provider is rejected, not reset.
+  const authRejection = getRequestedAuthRejection(flags.auth, config);
+  if (authRejection) return exitWithError(authRejection);
+  return config;
 }
