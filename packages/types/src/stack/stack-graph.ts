@@ -179,6 +179,7 @@ import {
 } from "@/config/schemas";
 import {
   getBetterAuthDatabaseIncompatibility,
+  getDatabaseOrmIncompatibility,
   getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
@@ -1669,6 +1670,22 @@ function createTypeScriptBackendCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: `${reason}.`,
+      });
+    }
+  }
+
+  if (part.role === "orm") {
+    const reason = getDatabaseOrmIncompatibility(
+      context.siblingToolIdsByRole?.database ?? context.primaryToolIdsByRole?.database,
+      part.toolId,
+    );
+    if (reason) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: reason,
       });
     }
   }
