@@ -10,9 +10,10 @@ import {
 import { createCustomConfig, expectError, runTRPCTest } from "@test/support/test-utils";
 import { hasVirtualFile } from "@test/support/virtual-tree-utils";
 import { afterAll, describe, expect, test } from "bun:test";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { existsSync } from "node:fs";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { homedir, tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 
 import { writeBtsConfig } from "@/config/bts-config";
 import { planStackUpdate } from "@/helpers/core/stack-update";
@@ -24,6 +25,10 @@ import { buildProjectConfig } from "@/operations/stack-helpers";
 import { resolveDatabasePrompt } from "@/prompts/data/database";
 import { resolveORMPrompt } from "@/prompts/data/orm";
 
+const CLI_ENTRY = resolve(import.meta.dir, "../../src/cli.ts");
+const NATIVE_BUN = resolve(homedir(), ".bun", "bin", "bun");
+const BUN_EXECUTABLE =
+  process.env.BFS_TEST_BUN_BIN || (existsSync(NATIVE_BUN) ? NATIVE_BUN : "bun");
 const TEMP_ROOTS: string[] = [];
 
 afterAll(async () => {
@@ -74,6 +79,23 @@ function graphParts(stack: (typeof STACKS)[keyof typeof STACKS], database: strin
     orm,
     auth: "none",
   } as ProjectConfig);
+}
+
+// Runs the CLI with a temporary HOME so history reads and writes never touch the user's store.
+async function runCli(args: string[], root: string) {
+  const child = Bun.spawn([BUN_EXECUTABLE, CLI_ENTRY, ...args, "--disable-analytics"], {
+    cwd: root,
+    env: { ...Bun.env, HOME: root, BFS_SKIP_BUILDER_PROMPT: "1", CI: "true" },
+    stdin: "ignore",
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const [exitCode, stdout, stderr] = await Promise.all([
+    child.exited,
+    new Response(child.stdout).text(),
+    new Response(child.stderr).text(),
+  ]);
+  return { exitCode, output: `${stdout}${stderr}` };
 }
 
 async function scaffoldProject(overrides: Partial<ProjectConfig>) {
@@ -212,6 +234,59 @@ describe("database and ORM pairing", () => {
       expect((await createVirtual({ stackParts })).error, selection.ecosystem).toBeUndefined();
       expect(() => buildProjectConfig(config)).not.toThrow();
       expect(() => buildProjectConfig({ part })).not.toThrow();
+    }
+  });
+
+  test("a replayed pair is rejected before compatibility repair", async () => {
+    const root = await mkdtemp(join(tmpdir(), "bfs-db-orm-replay-"));
+    TEMP_ROOTS.push(root);
+    const config = {
+      ...createCliDefaultProjectConfigBase(),
+      ...STACKS.standalone,
+      frontend: [...STACKS.standalone.frontend],
+      addons: [],
+      auth: "none",
+      projectName: "replayed",
+      projectDir: root,
+      relativePath: ".",
+      database: "mongodb",
+      orm: "kysely",
+    } as ProjectConfig;
+    await writeBtsConfig(config);
+    const historyDir = join(root, "Library", "Application Support", "better-fullstack");
+    await mkdir(historyDir, { recursive: true });
+    await writeFile(
+      join(historyDir, "history.json"),
+      JSON.stringify({
+        version: 1,
+        entries: [
+          {
+            id: "replayed",
+            projectName: "replayed",
+            projectDir: root,
+            createdAt: new Date(0).toISOString(),
+            stack: { ...config, frontend: config.frontend },
+            cliVersion: "0.0.0",
+            reproducibleCommand: "",
+            config: { ...config, version: "0.0.0", createdAt: new Date(0).toISOString() },
+          },
+        ],
+      }),
+    );
+
+    const configArgs = ["--config", join(root, "bts.jsonc")];
+    for (const args of [
+      configArgs,
+      ["--from-history", "1"],
+      [...configArgs, "--database", "mongodb", "--orm", "kysely", "--runtime", "workers"],
+    ]) {
+      const { exitCode, output } = await runCli(
+        ["create", "app", ...args, "--dry-run", "--no-install", "--no-git"],
+        root,
+      );
+      expect({ args, exitCode }).toEqual({ args, exitCode: 1 });
+      expect(output).toContain("Kysely does not support MongoDB");
+      expect(output).not.toContain("ORM set to");
     }
   });
 

@@ -80,14 +80,17 @@ export function getBetterAuthSelectionIssue(config: Partial<ProjectConfig>): str
 
 /**
  * Compatibility adjustments replace an ORM the database cannot use, as the builder does. An ORM
- * requested by flag or tool input is rejected instead, with the shared reason.
+ * requested by flag or replayed config is rejected instead, with the shared reason. A requested
+ * database is judged as requested, since adjustments may also replace it.
  */
 export function getRequestedOrmRejection(
-  requestedOrm: ProjectConfig["orm"] | undefined,
+  requested: Pick<Partial<ProjectConfig>, "database" | "orm">,
   adjustedConfig: Partial<ProjectConfig>,
 ): string | null {
-  if (!requestedOrm || adjustedConfig.orm === requestedOrm) return null;
-  return getDatabaseOrmIncompatibility(adjustedConfig.database, requestedOrm);
+  if (!requested.orm || !usesGenericOrm(adjustedConfig)) return null;
+  if (requested.database) return getDatabaseOrmIncompatibility(requested.database, requested.orm);
+  if (adjustedConfig.orm === requested.orm) return null;
+  return getDatabaseOrmIncompatibility(adjustedConfig.database, requested.orm);
 }
 
 // Checks the database and ORM pair the generator will use: graph input is judged by its own

@@ -343,8 +343,12 @@ function rejectAdjustedRequestedFlags(
   config: ProjectConfig,
   changes: Partial<ProjectConfig>,
   providedFlags: Set<string>,
+  configBase: Partial<CreateInput> | undefined,
 ) {
   const adjustedConfig = { ...config, ...changes };
+  // A database or ORM replayed from a saved config or history entry is the user's choice too.
+  const isRequested = (key: "database" | "orm") =>
+    providedFlags.has(key) || configBase?.[key] !== undefined;
   const rejection =
     (providedFlags.has("jobQueue")
       ? getRequestedJobQueueRejection(config.jobQueue, adjustedConfig)
@@ -352,7 +356,13 @@ function rejectAdjustedRequestedFlags(
     (providedFlags.has("auth")
       ? getRequestedBetterAuthRejection(config.auth, adjustedConfig)
       : null) ??
-    (providedFlags.has("orm") ? getRequestedOrmRejection(config.orm, adjustedConfig) : null);
+    getRequestedOrmRejection(
+      {
+        database: isRequested("database") ? config.database : undefined,
+        orm: isRequested("orm") ? config.orm : undefined,
+      },
+      adjustedConfig,
+    );
   if (rejection) exitWithError(rejection);
 }
 
@@ -789,7 +799,7 @@ export async function createProjectHandler(
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
-          rejectAdjustedRequestedFlags(config, changes, providedFlags);
+          rejectAdjustedRequestedFlags(config, changes, providedFlags, configBase);
           if (adjustments.length > 0) {
             config = { ...config, ...changes };
             cliInput = { ...cliInput, ...changes };
@@ -830,7 +840,7 @@ export async function createProjectHandler(
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
-          rejectAdjustedRequestedFlags(config, changes, providedFlags);
+          rejectAdjustedRequestedFlags(config, changes, providedFlags, configBase);
           if (adjustments.length > 0) {
             config = { ...config, ...changes };
             cliInput = { ...cliInput, ...changes };
