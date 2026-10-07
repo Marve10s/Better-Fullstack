@@ -211,7 +211,7 @@ const BACKEND_CONFIGS: TSConfig[] = BACKENDS.filter((b) => b !== "none" && b !==
 );
 
 /**
- * All database types with Drizzle ORM
+ * All database types with Drizzle ORM, except EdgeDB and Redis, which bring their own client
  */
 const DATABASE_CONFIGS: TSConfig[] = DATABASES.filter((d) => d !== "none" && d !== "mongodb").map(
   (database) => ({
@@ -221,7 +221,7 @@ const DATABASE_CONFIGS: TSConfig[] = DATABASES.filter((d) => d !== "none" && d !
     auth: "none",
     api: "trpc",
     database: database as Database,
-    orm: "drizzle",
+    orm: database === "edgedb" || database === "redis" ? "none" : "drizzle",
   }),
 );
 
