@@ -696,8 +696,14 @@ function validateBackendConstraints(
       );
     }
   }
+}
 
-  if (backend === "convex" && providedFlags.has("frontend") && options.frontend) {
+function validateConvexFrontendConstraints(
+  config: Partial<ProjectConfig>,
+  providedFlags: Set<string>,
+  options: CLIInput,
+) {
+  if (config.backend === "convex" && providedFlags.has("frontend") && options.frontend) {
     const incompatibleFrontends = options.frontend.filter((f) => ["solid", "astro"].includes(f));
     if (incompatibleFrontends.length > 0) {
       exitWithError(
@@ -1647,16 +1653,19 @@ export function validateFullConfig(
     }
   }
 
-  validateBackendConstraints(config, providedFlags, options);
+  // Auth is judged once the backend's runtime and frontends are known to suit it, and before the
+  // data and API checks, so an auth rejection names its own reason.
+  validateSelfBackendConstraints(config, providedFlags);
+  validateConvexFrontendConstraints(config, providedFlags, options);
   validateEcosystemAuthCompatibility(config, providedFlags, { partial, partSpecs: options.part });
   validateDatabaseOrmAuth(config, providedFlags);
   validateDatabaseSetup(config, providedFlags);
 
   validateConvexConstraints(config, providedFlags);
   validateBackendNoneConstraints(config, providedFlags);
-  validateSelfBackendConstraints(config, providedFlags);
   validateEncoreConstraints(config, providedFlags);
   validateAdonisJSConstraints(config, providedFlags);
+  validateBackendConstraints(config, providedFlags, options);
   validateEffectBackendConstraints(config);
 
   validateFrontendConstraints(config, providedFlags);
