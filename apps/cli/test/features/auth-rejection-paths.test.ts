@@ -7,6 +7,7 @@ import {
   formatStackPartSpec,
   getAuthIncompatibility,
   legacyProjectConfigToStackParts,
+  parseStackPartSpecs,
   type ProjectConfig,
 } from "@better-fullstack/types";
 import { createCustomConfig, runTRPCTest } from "@test/support/test-utils";
@@ -24,6 +25,7 @@ import { createVirtual } from "@/index";
 import { generateReproducibleCommand } from "@/lifecycle/generate-reproducible-command";
 import { recordScaffoldManifest } from "@/lifecycle/scaffold-manifest";
 import { checkCompatibilityOperation } from "@/operations/catalog";
+import { planProjectOperation } from "@/operations/project-create";
 import { buildProjectConfig } from "@/operations/stack-helpers";
 import { runWithContextAsync } from "@/presentation/context";
 import { getBackendFrameworkChoice, resolveBackendPrompt } from "@/prompts/architecture/backend";
@@ -392,6 +394,44 @@ describe("unsupported auth is rejected on every path with the shared reason", ()
     expect(exitCode).not.toBe(0);
     expect(output).toContain(reason);
     expect(output).not.toContain("Auth set to 'None'");
+  });
+
+  test("auth owned by the frontend or mobile app is judged by the backend it runs on", async () => {
+    const nextOnHono = [
+      "frontend:typescript:next",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "database:universal:sqlite",
+      "backend.orm:typescript:drizzle",
+    ];
+    const cases = [
+      {
+        part: [...nextOnHono, "frontend.auth:typescript:clerk"],
+        reason: REJECTED[0]!.reason,
+      },
+      {
+        part: [
+          ...nextOnHono,
+          "backend.auth:typescript:better-auth",
+          "frontend.auth:typescript:clerk",
+        ],
+        reason:
+          "Only one auth provider is generated per app, so 'clerk' cannot be selected alongside 'better-auth'",
+      },
+    ];
+    for (const { part, reason } of cases) {
+      await runWithContextAsync({ silent: true }, async () => {
+        expect(() =>
+          processAndValidateFlags({ part } as never, new Set(["part"]), "auth-app"),
+        ).toThrow(reason);
+      });
+      expect(await createVirtual({ stackParts: parseStackPartSpecs(part, "selected") })).toEqual({
+        success: false,
+        error: reason,
+      });
+      expect(() => buildProjectConfig({ part })).toThrow(reason);
+      await expect(planProjectOperation.invoke({ part })).rejects.toThrow(reason);
+    }
   });
 
   test("a stale flat auth next to a valid graph is accepted and the graph decides", async () => {

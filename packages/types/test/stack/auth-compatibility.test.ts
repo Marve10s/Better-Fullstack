@@ -5,7 +5,11 @@ import type { CompatibilityInput } from "@/stack/compatibility";
 import { getAuthIncompatibility } from "@/capabilities/capabilities";
 import { createCliDefaultProjectConfigBase } from "@/config/defaults";
 import { analyzeStackCompatibility, getDisabledReason } from "@/stack/compatibility";
-import { legacyProjectConfigToStackParts, validateStackParts } from "@/stack/stack-graph";
+import {
+  legacyProjectConfigToStackParts,
+  parseStackPartSpecs,
+  validateStackParts,
+} from "@/stack/stack-graph";
 import { DEFAULT_STACK_SELECTION } from "@/stack/stack-translation";
 
 type AuthCase = {
@@ -362,5 +366,75 @@ describe("auth compatibility has one reason per rule", () => {
     expect(getAuthIncompatibility("clerk", { frontend: ["next"] })).toBe(
       "Clerk needs Convex, fullstack Next.js, or fullstack TanStack Start",
     );
+  });
+
+  it("judges auth owned by a frontend or mobile app by the backend it is generated with", () => {
+    const authIssues = (specs: string[]) =>
+      validateStackParts(parseStackPartSpecs(specs, "selected"))
+        .issues.filter((issue) => issue.role === "auth")
+        .map((issue) => issue.message);
+    const nextOnHono = [
+      "frontend:typescript:next",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "database:universal:sqlite",
+      "backend.orm:typescript:drizzle",
+    ];
+    const clerkReason = "Clerk needs Convex, fullstack Next.js, or fullstack TanStack Start";
+
+    expect(authIssues([...nextOnHono, "frontend.auth:typescript:clerk"])).toEqual([clerkReason]);
+    expect(
+      authIssues([
+        "mobile:react-native:native-bare",
+        "backend:typescript:hono",
+        "backend.runtime:typescript:bun",
+        "mobile.auth:react-native:clerk",
+      ]),
+    ).toEqual([clerkReason]);
+    expect(authIssues(["frontend:typescript:next", "frontend.auth:typescript:clerk"])).toEqual([
+      "No backend selected",
+    ]);
+    expect(authIssues([...nextOnHono, "frontend.auth:typescript:better-auth"])).toEqual([]);
+  });
+
+  it("rejects two different auth providers for the same app", () => {
+    const authIssues = (specs: string[]) =>
+      validateStackParts(parseStackPartSpecs(specs, "selected"))
+        .issues.filter((issue) => issue.role === "auth")
+        .map((issue) => issue.message);
+    const nextOnHono = [
+      "frontend:typescript:next",
+      "mobile:react-native:native-bare",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "database:universal:sqlite",
+      "backend.orm:typescript:drizzle",
+    ];
+    const reason =
+      "Only one auth provider is generated per app, so 'clerk' cannot be selected alongside 'better-auth'";
+
+    expect(
+      authIssues([
+        ...nextOnHono,
+        "backend.auth:typescript:better-auth",
+        "frontend.auth:typescript:clerk",
+      ]),
+    ).toContain(reason);
+    expect(
+      authIssues([
+        ...nextOnHono,
+        "frontend.auth:typescript:better-auth",
+        "mobile.auth:react-native:clerk",
+      ]),
+    ).toContain(reason);
+    // The same provider on several owners is generated once.
+    expect(
+      authIssues([
+        ...nextOnHono,
+        "backend.auth:typescript:better-auth",
+        "frontend.auth:typescript:better-auth",
+        "mobile.auth:react-native:better-auth",
+      ]),
+    ).toEqual([]);
   });
 });

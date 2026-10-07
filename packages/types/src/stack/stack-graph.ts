@@ -1773,8 +1773,45 @@ function getAuthPartDataLayer(
   };
 }
 
-// A TypeScript auth part owned by a TypeScript backend is judged against the stack it is
-// generated into. Any other owner leaves the backend unanswered, so only the data rules can apply.
+// The auth parts generated into the TypeScript app, in the order its flat projection picks one:
+// backend, then web frontend, then mobile app.
+function getAppAuthParts(parts: readonly StackPart[]) {
+  const ownerOrder: StackPrimaryRole[] = ["backend", "frontend", "mobile"];
+  return ownerOrder.flatMap((ownerRole) => {
+    const owner = parts.find(
+      (candidate) =>
+        candidate.role === ownerRole &&
+        candidate.ecosystem === AUTH_SERVER_OWNER_ECOSYSTEMS[ownerRole] &&
+        !candidate.ownerPartId,
+    );
+    const auth = getSelectedScopedPart(parts, owner, "auth");
+    return auth && auth.ecosystem === owner?.ecosystem && !isNoneTool(auth.toolId) ? [auth] : [];
+  });
+}
+
+// The backend an auth part is generated with. Auth owned by a frontend or mobile app runs on the
+// TypeScript backend; with another ecosystem's backend only auth clients are generated, so the
+// backend stays unanswered.
+function getAuthPartBackend(
+  part: Pick<StackPart, "ecosystem">,
+  context: StackPartOptionContext,
+): string | undefined {
+  if (context.ownerRole === "backend") {
+    return context.ownerEcosystem === "typescript" ? context.ownerToolId : undefined;
+  }
+  if (!context.ownerRole || AUTH_SERVER_OWNER_ECOSYSTEMS[context.ownerRole] !== part.ecosystem) {
+    return undefined;
+  }
+  const backends = (context.parts ?? []).filter(
+    (candidate) =>
+      candidate.role === "backend" && !candidate.ownerPartId && candidate.source !== "provided",
+  );
+  if (backends.length === 0) return "none";
+  return backends.find((backend) => backend.ecosystem === "typescript")?.toolId;
+}
+
+// A TypeScript auth part is judged against the stack it is generated into. The generator wires one
+// provider per app, so a different provider on another owner of the same app is rejected.
 function createAuthPartIssue(
   part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
   context: StackPartOptionContext,
@@ -1783,7 +1820,14 @@ function createAuthPartIssue(
   const dataLayer = getAuthPartDataLayer(part, context);
   if (part.ecosystem !== "typescript" && dataLayer.database === undefined) return undefined;
 
-  const ownedByBackend = context.ownerRole === "backend" && context.ownerEcosystem === "typescript";
+  const appAuthParts = getAppAuthParts(context.parts ?? []);
+  const projectedAuth = appAuthParts[0];
+  const isAppAuth = appAuthParts.some((candidate) => candidate.id === part.id);
+  // The same provider on several owners is generated once and judged on the projected part.
+  if (isAppAuth && projectedAuth?.id !== part.id && projectedAuth?.toolId === part.toolId) {
+    return undefined;
+  }
+  const backend = getAuthPartBackend(part, context);
   const frontend = [
     context.primaryEcosystemsByRole?.frontend === "typescript"
       ? context.primaryToolIdsByRole?.frontend
@@ -1792,15 +1836,18 @@ function createAuthPartIssue(
       ? context.primaryToolIdsByRole?.mobile
       : undefined,
   ].filter((tool) => tool !== undefined);
-  const reason = getAuthIncompatibility(
-    part.toolId,
-    {
-      ecosystem: "typescript",
-      ...dataLayer,
-      ...(ownedByBackend ? { backend: context.ownerToolId, frontend } : {}),
-    },
-    { partial: !ownedByBackend },
-  );
+  const reason =
+    isAppAuth && projectedAuth && projectedAuth.toolId !== part.toolId
+      ? `Only one auth provider is generated per app, so '${part.toolId}' cannot be selected alongside '${projectedAuth.toolId}'`
+      : getAuthIncompatibility(
+          part.toolId,
+          {
+            ecosystem: "typescript",
+            ...dataLayer,
+            ...(backend === undefined ? {} : { backend, frontend }),
+          },
+          { partial: backend === undefined },
+        );
   if (!reason) return undefined;
   return createStackGraphIssue({
     code: "INCOMPATIBLE_GRAPH_SELECTION",
