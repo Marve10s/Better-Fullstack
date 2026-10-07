@@ -957,6 +957,42 @@ describe("version channel lifecycle round trips", () => {
       expect(updated.dotenv).not.toBe("^99.0.0");
     }, 120_000);
 
+    it("reports an aliased catalog for manual review instead of failing to plan", async () => {
+      const projectDir = await createProject("version-channel-pnpm-aliased-catalog", {
+        frontend: ["react-vite"],
+        packageManager: "pnpm",
+        versionChannel: "stable",
+      });
+      // The template moved zod past the release this project was generated with.
+      const olderZod = (content: string) => content.replace(/^( {2}zod: ).*$/m, "$1^4.0.0");
+      const manifest = (await readScaffoldManifest(projectDir))!;
+      manifest.baselines!["pnpm-workspace.yaml"] = olderZod(
+        manifest.baselines!["pnpm-workspace.yaml"]!,
+      );
+      await writeScaffoldManifest(projectDir, manifest);
+      const workspacePath = path.join(projectDir, "pnpm-workspace.yaml");
+      const aliased = `${olderZod(await fs.readFile(workspacePath, "utf8")).replace(
+        /^catalog:$/m,
+        "catalogEntries: &entries",
+      )}catalog: *entries\n`;
+      await fs.writeFile(workspacePath, aliased);
+      expect((await readCatalog(projectDir)).zod).toBe("^4.0.0");
+      const aliasBlocker = "catalog is a YAML alias or not a mapping; edit its entries by hand";
+
+      const upgrade = await planScaffoldUpgrade(projectDir);
+      expect(upgrade.success).toBe(true);
+      if (!upgrade.success) return;
+      const workspaceEntry = upgrade.files.find((file) => file.path === "pnpm-workspace.yaml");
+      expect(workspaceEntry?.category).toBe("conflict");
+      expect(workspaceEntry?.reason).toContain(aliasBlocker);
+
+      const add = await planStackUpdate(projectDir, { stateManagement: "zustand" });
+      expect(add.success).toBe(true);
+      if (!add.success) return;
+      expect(add.manualReviewBlockers).toContain(`pnpm-workspace.yaml: ${aliasBlocker}`);
+      expect(await fs.readFile(workspacePath, "utf8")).toBe(aliased);
+    }, 120_000);
+
     it("keeps versions add moved to a newer release through a later update", async () => {
       const { projectDir } = await createPnpmProject("version-channel-pnpm-add-update");
       clearRegistryVersionCache();

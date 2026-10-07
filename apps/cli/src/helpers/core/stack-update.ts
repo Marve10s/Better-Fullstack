@@ -22,7 +22,7 @@ import { writeSelectedFiles } from "@better-fullstack/template-generator/fs-writ
 import fs from "fs-extra";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { parseDocument } from "yaml";
+import { isMap, parseDocument } from "yaml";
 
 import {
   buildBtsConfigForPersistence,
@@ -1568,11 +1568,17 @@ export function mergePnpmWorkspace(
     familyVersions,
   );
   blockers.push(...catalog.blockers);
-  for (const name of catalog.removals) document.deleteIn(["catalog", name]);
-  for (const [name, version] of Object.entries(catalog.values)) {
-    document.setIn(["catalog", name], version);
-  }
   const changedNames = [...Object.keys(catalog.values), ...catalog.removals].sort();
+  const catalogNode = document.get("catalog");
+  // An aliased catalog cannot be edited in place, and editing its anchor would change every alias.
+  if (changedNames.length > 0 && catalogNode !== undefined && !isMap(catalogNode)) {
+    blockers.push("catalog is a YAML alias or not a mapping; edit its entries by hand");
+  } else {
+    for (const name of catalog.removals) document.deleteIn(["catalog", name]);
+    for (const [name, version] of Object.entries(catalog.values)) {
+      document.setIn(["catalog", name], version);
+    }
+  }
   const dependencyChanges: Record<string, Record<string, string>> = {};
   if (changedNames.length > 0) {
     summary.push(`catalog: ${changedNames.join(", ")}`);
