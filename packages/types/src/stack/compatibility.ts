@@ -48,6 +48,7 @@ import {
 
 export {
   BACKEND_UTILS_COMPATIBLE_BACKENDS,
+  getBetterAuthDatabaseIncompatibility,
   getJobQueueIncompatibility,
   hasGeneratedJobQueueRequirements,
   getUnsupportedWebDeployFrontend,

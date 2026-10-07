@@ -1733,6 +1733,84 @@ function createTypeScriptBackendCompatibilityIssue(
   return undefined;
 }
 
+const AUTH_SERVER_OWNER_ECOSYSTEMS: Partial<Record<StackPrimaryRole, StackPartEcosystem>> = {
+  backend: "typescript",
+  frontend: "typescript",
+  mobile: "react-native",
+};
+
+// Auth owned by a frontend or mobile app runs its Better Auth server on the TypeScript backend, so
+// it is judged by the data layer the flat projection takes from that backend. Without a TypeScript
+// backend only auth clients are generated and there is no adapter to judge.
+function getAuthPartDataLayer(
+  part: Pick<StackPart, "ecosystem">,
+  context: StackPartOptionContext,
+): { database?: string; orm?: string } {
+  if (!context.ownerRole || AUTH_SERVER_OWNER_ECOSYSTEMS[context.ownerRole] !== part.ecosystem) {
+    return {};
+  }
+  const parts = context.parts ?? [];
+  const backend =
+    context.ownerRole !== "backend"
+      ? parts.find(
+          (candidate) =>
+            candidate.role === "backend" &&
+            candidate.ecosystem === "typescript" &&
+            !candidate.ownerPartId,
+        )
+      : undefined;
+  if (context.ownerRole !== "backend" && !backend) return {};
+  return {
+    database:
+      context.siblingToolIdsByRole?.database ??
+      context.primaryToolIdsByRole?.database ??
+      getSelectedScopedPart(parts, backend, "database")?.toolId ??
+      "none",
+    orm:
+      context.siblingToolIdsByRole?.orm ??
+      getSelectedScopedPart(parts, backend, "orm")?.toolId ??
+      "none",
+  };
+}
+
+// A TypeScript auth part owned by a TypeScript backend is judged against the stack it is
+// generated into. Any other owner leaves the backend unanswered, so only the data rules can apply.
+function createAuthPartIssue(
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+  context: StackPartOptionContext,
+): StackGraphIssue | undefined {
+  if (part.role !== "auth") return undefined;
+  const dataLayer = getAuthPartDataLayer(part, context);
+  if (part.ecosystem !== "typescript" && dataLayer.database === undefined) return undefined;
+
+  const ownedByBackend = context.ownerRole === "backend" && context.ownerEcosystem === "typescript";
+  const frontend = [
+    context.primaryEcosystemsByRole?.frontend === "typescript"
+      ? context.primaryToolIdsByRole?.frontend
+      : undefined,
+    context.primaryEcosystemsByRole?.mobile === "react-native"
+      ? context.primaryToolIdsByRole?.mobile
+      : undefined,
+  ].filter((tool) => tool !== undefined);
+  const reason = getAuthIncompatibility(
+    part.toolId,
+    {
+      ecosystem: "typescript",
+      ...dataLayer,
+      ...(ownedByBackend ? { backend: context.ownerToolId, frontend } : {}),
+    },
+    { partial: !ownedByBackend },
+  );
+  if (!reason) return undefined;
+  return createStackGraphIssue({
+    code: "INCOMPATIBLE_GRAPH_SELECTION",
+    partId: part.id,
+    role: part.role,
+    toolId: part.toolId,
+    message: reason,
+  });
+}
+
 function createSharedBackendServiceCompatibilityIssue(
   part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
   context: StackPartOptionContext,
@@ -2717,30 +2795,6 @@ function createJavaCompatibilityIssue(
   return undefined;
 }
 
-// A TypeScript auth part owned by a TypeScript backend is judged against the stack it is
-// generated into. Any other owner leaves the backend unanswered, so only data rules apply.
-function getTypeScriptAuthPartIncompatibility(toolId: string, context: StackPartOptionContext) {
-  const ownedByBackend = context.ownerRole === "backend" && context.ownerEcosystem === "typescript";
-  const frontend = [
-    context.primaryEcosystemsByRole?.frontend === "typescript"
-      ? context.primaryToolIdsByRole?.frontend
-      : undefined,
-    context.primaryEcosystemsByRole?.mobile === "react-native"
-      ? context.primaryToolIdsByRole?.mobile
-      : undefined,
-  ].filter((tool) => tool !== undefined);
-  return getAuthIncompatibility(
-    toolId,
-    {
-      ecosystem: "typescript",
-      database: context.siblingToolIdsByRole?.database ?? context.primaryToolIdsByRole?.database,
-      orm: context.siblingToolIdsByRole?.orm,
-      ...(ownedByBackend ? { backend: context.ownerToolId, frontend } : {}),
-    },
-    { partial: !ownedByBackend },
-  );
-}
-
 export function getPythonLoggingIncompatibility(
   pythonLogging: string | undefined,
   pythonWebFramework: string | undefined,
@@ -2789,6 +2843,9 @@ function getStackPartCompatibilityIssue(
 
   const backendCompatibilityIssue = createTypeScriptBackendCompatibilityIssue(part, context);
   if (backendCompatibilityIssue) return backendCompatibilityIssue;
+
+  const authIssue = createAuthPartIssue(part, context);
+  if (authIssue) return authIssue;
 
   const sharedBackendServiceCompatibilityIssue = createSharedBackendServiceCompatibilityIssue(
     part,
@@ -2884,19 +2941,6 @@ function getStackPartCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: `'apollo-server' requires a React frontend and cannot be selected with the '${frontendTool}' frontend.`,
-      });
-    }
-  }
-
-  if (part.ecosystem === "typescript" && part.role === "auth") {
-    const reason = getTypeScriptAuthPartIncompatibility(part.toolId, context);
-    if (reason) {
-      return createStackGraphIssue({
-        code: "INCOMPATIBLE_GRAPH_SELECTION",
-        partId: part.id,
-        role: part.role,
-        toolId: part.toolId,
-        message: reason,
       });
     }
   }

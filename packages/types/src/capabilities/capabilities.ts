@@ -1,6 +1,7 @@
 import type { Auth, Ecosystem } from "@/config/types";
 
 import { AUTH_VALUES, BACKEND_VALUES, ECOSYSTEM_VALUES, FRONTEND_VALUES } from "@/config/schemas";
+import { getBetterAuthDatabaseIncompatibility } from "@/stack/stack-compatibility-rules";
 
 export type CapabilityName = "auth";
 
@@ -215,19 +216,8 @@ function getNextOnlyAuthLabel(
   }
 }
 
-const BETTER_AUTH_UNSUPPORTED_ORMS = new Set(["typeorm", "sequelize", "mikroorm"]);
-
 function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth): string | null {
   if (optionId === "none") return null;
-
-  if (optionId === "better-auth" || optionId === "better-auth-organizations") {
-    if (context.database === "redis") {
-      return "Better Auth requires a SQL database (not Redis)";
-    }
-    if (context.orm && BETTER_AUTH_UNSUPPORTED_ORMS.has(context.orm)) {
-      return `Better Auth has no ${context.orm} adapter`;
-    }
-  }
 
   const ecosystem = context.ecosystem ?? "typescript";
   const backend = context.backend;
@@ -387,18 +377,11 @@ function hasFrontendAnswer(stack: CapabilityStackContext): boolean {
   );
 }
 
-/**
- * Shared reason an auth provider cannot be generated for a stack. Compatibility analysis, graph
- * validation, CLI and MCP validation, prompts, and the builder all report this text.
- * With `partial`, an undefined ecosystem, backend, or frontend is still unanswered: the auth is
- * judged unsupported only when no answer to those questions could support it.
- */
-export function getAuthIncompatibility(
-  auth: string | undefined,
+function getAuthStackIncompatibility(
+  auth: Auth,
   stack: CapabilityStackContext,
-  { partial = false } = {},
+  partial: boolean,
 ): string | null {
-  if (!auth || !isAuth(auth)) return null;
   const reason = getAuthDisabledReason(stack, auth);
   if (!reason || !partial) return reason;
 
@@ -416,6 +399,25 @@ export function getAuthIncompatibility(
     ),
   );
   return canBeSupported ? null : reason;
+}
+
+/**
+ * Shared reason an auth provider cannot be generated for a stack: the provider's backend and
+ * frontend rules, then Better Auth's database and ORM adapter rule. Compatibility analysis, graph
+ * validation, CLI and MCP validation, prompts, and the builder all report this text.
+ * With `partial`, an undefined ecosystem, backend, frontend, database, or ORM is still unanswered:
+ * the auth is judged unsupported only when no answer to those questions could support it.
+ */
+export function getAuthIncompatibility(
+  auth: string | undefined,
+  stack: CapabilityStackContext,
+  { partial = false } = {},
+): string | null {
+  if (!auth || !isAuth(auth)) return null;
+  return (
+    getAuthStackIncompatibility(auth, stack, partial) ??
+    getBetterAuthDatabaseIncompatibility(auth, stack, { partial })
+  );
 }
 
 export function getCapabilityDefinitions<K extends CapabilityName>(

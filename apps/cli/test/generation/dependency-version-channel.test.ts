@@ -1,13 +1,17 @@
+import { MobileLibrariesSchema } from "@better-fullstack/types";
+import { readVirtualFileContent as getFile } from "@test/support/virtual-tree-utils";
 import { afterEach, describe, expect, it, mock } from "bun:test";
 import fs from "fs-extra";
 import os from "node:os";
 import path from "node:path";
 
+import { createVirtual } from "@/index";
 import {
   applyDependencyVersionChannel,
   collectPackageJsonPaths,
   compareVersions,
   parseVersion,
+  planDependencyVersionChannel,
   selectRegistryVersionForChannel,
 } from "@/lifecycle/dependency-version-channel";
 
@@ -629,4 +633,103 @@ describe("applyDependencyVersionChannel", () => {
     const packageJson = await fs.readJson(path.join(projectDir, "package.json"));
     expect(packageJson.dependencies.react).toBe("^18.0.0");
   });
+});
+
+/** A registry offering a newer major on latest and a newer prerelease on beta for every package. */
+function mockRegistryAheadOfEveryPackage() {
+  global.fetch = mock(async (input: string | URL | Request) => {
+    const packageName = decodeURIComponent(String(input).split("/").pop() ?? "");
+    const ahead = `${100 + packageName.length}.0.0`;
+    const beta = `${200 + packageName.length}.0.0-beta.1`;
+    return new Response(
+      JSON.stringify({
+        "dist-tags": { latest: ahead, beta },
+        versions: { [ahead]: {}, [beta]: {} },
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }) as unknown as typeof fetch;
+}
+
+describe("planDependencyVersionChannel for generated native apps", () => {
+  const nativeStacks = [
+    { frontend: "native-bare", mobileUI: "gluestack-ui", mobileNavigation: "expo-router" },
+    { frontend: "native-bare", mobileUI: "tamagui", mobileNavigation: "react-navigation" },
+    { frontend: "native-uniwind", mobileUI: "uniwind", mobileNavigation: "expo-router" },
+    { frontend: "native-unistyles", mobileUI: "unistyles", mobileNavigation: "expo-router" },
+  ] as const;
+
+  /** Generated native dependencies that no Expo or React Native release constrains. */
+  const uncoupledPackages = new Set([
+    "@tanstack/react-form",
+    "@tanstack/react-query",
+    "@types/node",
+    "ajv",
+    "dotenv",
+    "zod",
+  ]);
+
+  for (const stack of nativeStacks) {
+    it(`moves only uncoupled packages for ${stack.frontend} with ${stack.mobileUI} in every channel`, async () => {
+      const result = await createVirtual({
+        projectName: "native-channels",
+        ecosystem: "react-native",
+        frontend: [stack.frontend],
+        backend: "none",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        api: "none",
+        auth: "none",
+        mobileUI: stack.mobileUI,
+        mobileNavigation: stack.mobileNavigation,
+        mobileStorage: "mmkv",
+        mobileTesting: "react-native-testing-library",
+        mobilePush: "expo-notifications",
+        mobileOTA: "expo-updates",
+        mobileDeepLinking: "expo-linking",
+        mobileLibraries: MobileLibrariesSchema.options.filter((library) => library !== "none"),
+        packageManager: "npm",
+      });
+      expect(result.success).toBe(true);
+      const nativeContent = getFile(result.tree!.root, "apps/native/package.json");
+      const generated = JSON.parse(nativeContent) as {
+        dependencies: Record<string, string>;
+        devDependencies: Record<string, string>;
+      };
+      const declared: Record<string, string> = {
+        ...generated.dependencies,
+        ...generated.devDependencies,
+      };
+      const registryPackages = Object.keys(declared)
+        .filter((name) => /^[~^]?\d/.test(declared[name]!))
+        .sort();
+      const uncoupled = registryPackages.filter((name) => uncoupledPackages.has(name));
+      expect(registryPackages).toEqual(expect.arrayContaining(["babel-preset-expo", "typescript"]));
+      expect(uncoupled.length).toBeGreaterThan(0);
+
+      const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-native-"));
+      const nativePackageJsonPath = path.join(projectDir, "apps", "native", "package.json");
+      mockRegistryAheadOfEveryPackage();
+
+      for (const channel of ["stable", "latest", "beta"] as const) {
+        // oxlint-disable-next-line no-await-in-loop -- channels share one mocked registry
+        const rewrites = await planDependencyVersionChannel(
+          projectDir,
+          channel,
+          new Map([[nativePackageJsonPath, nativeContent]]),
+        );
+        const rewrite = rewrites.find(
+          ({ packageJsonPath }) => packageJsonPath === nativePackageJsonPath,
+        );
+        const planned = JSON.parse(rewrite?.content ?? nativeContent) as typeof generated;
+        const plannedVersions = { ...planned.dependencies, ...planned.devDependencies };
+        const moved = registryPackages.filter((name) => plannedVersions[name] !== declared[name]);
+        expect({ channel, moved }).toEqual({
+          channel,
+          moved: channel === "stable" ? [] : uncoupled,
+        });
+      }
+    });
+  }
 });

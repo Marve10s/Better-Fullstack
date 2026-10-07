@@ -125,7 +125,7 @@ const REJECTED: AuthCase[] = [
     frontend: ["tanstack-router"],
     database: "postgres",
     orm: "typeorm",
-    reason: "Better Auth has no typeorm adapter",
+    reason: "Better Auth has no TypeORM adapter",
   },
   {
     auth: "better-auth-organizations",
@@ -133,7 +133,7 @@ const REJECTED: AuthCase[] = [
     frontend: ["tanstack-router"],
     database: "postgres",
     orm: "mikroorm",
-    reason: "Better Auth has no mikroorm adapter",
+    reason: "Better Auth has no MikroORM adapter",
   },
   {
     auth: "better-auth",
@@ -141,7 +141,7 @@ const REJECTED: AuthCase[] = [
     frontend: ["tanstack-router"],
     database: "redis",
     orm: "none",
-    reason: "Better Auth requires a SQL database (not Redis)",
+    reason: "Better Auth has no Redis adapter",
   },
   {
     auth: "better-auth",
@@ -275,7 +275,7 @@ describe("auth compatibility has one reason per rule", () => {
       "Auth client integrations are not yet wired for standalone Vue or Vanilla Vite frontends",
     );
     expect(getAuthIncompatibility("better-auth", { orm: "sequelize" }, partial)).toBe(
-      "Better Auth has no sequelize adapter",
+      "Better Auth has no Sequelize adapter",
     );
     // A complete stack treats a missing backend as not supporting the provider.
     expect(getAuthIncompatibility("clerk", { frontend: ["next"] })).toBe(

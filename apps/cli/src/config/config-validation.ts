@@ -445,11 +445,12 @@ function validateDatabaseSetup(config: Partial<ProjectConfig>, providedFlags: Se
  */
 export function validateEcosystemAuthCompatibility(
   config: Partial<ProjectConfig>,
-  providedFlags: Set<string>,
+  providedFlags?: Set<string>,
   { partial = false, partSpecs = [] as readonly string[] } = {},
 ) {
   const reason = getAuthSelectionIssue(config, { partial });
   if (!reason) return;
+  if (!providedFlags) throw new Error(reason);
 
   const isRequested =
     providedFlags.has("auth") ||
@@ -1646,6 +1647,8 @@ export function validateFullConfig(
     }
   }
 
+  validateBackendConstraints(config, providedFlags, options);
+  validateEcosystemAuthCompatibility(config, providedFlags, { partial, partSpecs: options.part });
   validateDatabaseOrmAuth(config, providedFlags);
   validateDatabaseSetup(config, providedFlags);
 
@@ -1654,12 +1657,9 @@ export function validateFullConfig(
   validateSelfBackendConstraints(config, providedFlags);
   validateEncoreConstraints(config, providedFlags);
   validateAdonisJSConstraints(config, providedFlags);
-  validateBackendConstraints(config, providedFlags, options);
   validateEffectBackendConstraints(config);
 
   validateFrontendConstraints(config, providedFlags);
-  // Auth is judged against the backend and frontend once those are known to be valid.
-  validateEcosystemAuthCompatibility(config, providedFlags, { partial, partSpecs: options.part });
 
   validateApiConstraints(config, options);
   validatePythonApiConstraints(config);

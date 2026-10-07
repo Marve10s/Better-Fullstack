@@ -102,7 +102,7 @@ export function resolveORMPrompt(context: ORMPromptContext): PromptSingleResolut
     (option) =>
       !getAuthIncompatibility(
         context.auth,
-        { ecosystem: "typescript", orm: option.value },
+        { ecosystem: "typescript", database: context.database, orm: option.value },
         { partial: true },
       ),
   );

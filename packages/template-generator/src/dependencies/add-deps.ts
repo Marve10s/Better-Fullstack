@@ -22,12 +22,14 @@ export const dependencyVersionMap = {
   // account identity schema and cannot be admitted by the 1.6 template range.
   "better-auth": "1.6.22",
   "@better-auth/expo": "1.6.22",
+  // Required peer of @better-auth/expo; without it npm hoists a newer core beside better-auth's own.
+  "@better-auth/core": "1.6.22",
   // Runtime imports of @better-auth/expo's client - must exist in the
   // native app even when the corresponding mobile options are "none".
-  "expo-linking": "^56.0.14",
-  "expo-constants": "^56.0.18",
-  "expo-web-browser": "^56.0.5",
-  "expo-network": "^56.0.5",
+  "expo-linking": "~56.0.18",
+  "expo-constants": "~56.0.27",
+  "expo-web-browser": "~56.0.6",
+  "expo-network": "~56.0.5",
   "@better-auth/drizzle-adapter": "1.6.22",
   "@better-auth/prisma-adapter": "1.6.22",
   "@better-auth/mongo-adapter": "1.6.22",
@@ -667,10 +669,6 @@ export const dependencyVersionMap = {
   "@storybook/addon-interactions": "^8.6.18",
   "@storybook/test": "^8.6.18",
 
-  // React Native animation runtime
-  "react-native-reanimated": "^4.5.3",
-  "react-native-worklets": "^0.11.4",
-
   // React Native styling
   uniwind: "1.12.0",
 
@@ -681,7 +679,7 @@ export const dependencyVersionMap = {
   "@react-spring/native": "^10.1.2",
   "@formkit/auto-animate": "^0.9.0",
   "lottie-react": "^2.4.1",
-  "lottie-react-native": "^7.5.0",
+  "lottie-react-native": "~7.3.4",
 
   // Payments - Stripe
   stripe: "^22.6.2",

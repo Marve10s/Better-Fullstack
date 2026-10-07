@@ -6,6 +6,7 @@ import {
   getPythonLoggingIncompatibility,
   isToolingOverlayOnly,
   stackGraphToLegacyProjectConfigForEcosystem,
+  validateStackParts,
   type CompatibilityInput,
   type ProjectConfig,
 } from "@/types";
@@ -61,20 +62,34 @@ function getAuthStack(config: Partial<ProjectConfig>) {
 
 /**
  * Checks the auth selection the generator will use. A stack graph is projected the way the
- * generator projects it, so its auth part wins over a stale flat `auth` field. With `partial`,
+ * generator projects it, so its auth part wins over stale flat `auth`, `database`, and `orm`
+ * fields, and every auth part is also judged by the data layer its server runs on. With `partial`,
  * unanswered selections are left open for prompts to fill.
  */
 export function getAuthSelectionIssue(
   config: Partial<ProjectConfig>,
   { partial = false } = {},
 ): string | null {
-  const usesGraph = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
-  const selection = usesGraph
-    ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript")
-    : config;
-  return getAuthIncompatibility(selection.auth, getAuthStack(selection), {
-    partial: partial && !usesGraph,
-  });
+  if (!config.stackParts?.length || isToolingOverlayOnly(config.stackParts)) {
+    return getAuthIncompatibility(config.auth, getAuthStack(config), { partial });
+  }
+  const selection = stackGraphToLegacyProjectConfigForEcosystem(
+    config as ProjectConfig,
+    "typescript",
+  );
+  // Auth parts paired with another ecosystem's backend generate only auth clients.
+  const servesForeignBackend =
+    selection.backend === "none" &&
+    config.stackParts.some(
+      (part) => part.role === "backend" && part.ecosystem !== "typescript" && !part.ownerPartId,
+    );
+  return (
+    (servesForeignBackend
+      ? null
+      : getAuthIncompatibility(selection.auth, getAuthStack(selection))) ??
+    validateStackParts(config.stackParts).issues.find((issue) => issue.role === "auth")?.message ??
+    null
+  );
 }
 
 /**

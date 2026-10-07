@@ -115,7 +115,7 @@ const REJECTED: { stack: Stack; reason: string }[] = [
       database: "postgres",
       orm: "typeorm",
     },
-    reason: "Better Auth has no typeorm adapter",
+    reason: "Better Auth has no TypeORM adapter",
   },
   {
     stack: { auth: "better-auth", frontend: ["vue"], backend: "hono", runtime: "bun", ...SQLITE },
@@ -284,7 +284,7 @@ describe("unsupported auth is rejected on every path with the shared reason", ()
       { request: { auth: "passport" }, reason: REJECTED[6]!.reason },
       {
         request: { orm: "typeorm", database: "postgres", auth: "better-auth" },
-        reason: "Better Auth has no typeorm adapter",
+        reason: "Better Auth has no TypeORM adapter",
       },
     ] as const;
     for (const { request, reason } of requested) {
@@ -298,7 +298,7 @@ describe("unsupported auth is rejected on every path with the shared reason", ()
     if (!dependent.success) return;
     expect(dependent.proposedConfig.auth).toBe("none");
     expect(dependent.compatibilityAdjustments).toContain(
-      "auth: Auth set to 'None' (Better Auth has no typeorm adapter)",
+      "auth: Auth set to 'None' (Better Auth has no TypeORM adapter)",
     );
   });
 
