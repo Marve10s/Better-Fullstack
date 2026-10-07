@@ -4,9 +4,11 @@ import {
   createCliDefaultProjectConfigBase,
   formatStackPartSpec,
   legacyProjectConfigToStackParts,
+  parseStackPartSpecs,
   type ProjectConfig,
 } from "@better-fullstack/types";
 import { createCustomConfig, expectError, runTRPCTest } from "@test/support/test-utils";
+import { hasVirtualFile } from "@test/support/virtual-tree-utils";
 import { afterAll, describe, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -159,6 +161,29 @@ describe("database and ORM pairing", () => {
         expect(planProjectOperation.invoke(options)).rejects.toThrow(reason),
       ),
     );
+  });
+
+  test("graph input judges the ORM against the database generation uses", async () => {
+    const createWithDatabases = (standalone: string, owned: string) =>
+      createVirtual({
+        stackParts: parseStackPartSpecs([
+          "frontend:typescript:tanstack-router",
+          "backend:typescript:hono",
+          "backend.runtime:typescript:bun",
+          "backend.api:typescript:trpc",
+          `database:universal:${standalone}`,
+          `backend.database:universal:${owned}`,
+          "backend.orm:typescript:kysely",
+        ]),
+      });
+
+    expect(await createWithDatabases("mongodb", "postgres")).toEqual({
+      success: false,
+      error: "Kysely does not support MongoDB",
+    });
+    const postgres = await createWithDatabases("postgres", "mongodb");
+    expect(postgres.error).toBeUndefined();
+    expect(hasVirtualFile(postgres.tree!.root, "packages/db/src/index.ts")).toBe(true);
   });
 
   test("valid pairs still generate", async () => {

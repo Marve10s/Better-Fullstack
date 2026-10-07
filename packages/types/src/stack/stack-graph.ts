@@ -1676,7 +1676,10 @@ function createTypeScriptBackendCompatibilityIssue(
 
   if (part.role === "orm") {
     const reason = getDatabaseOrmIncompatibility(
-      context.siblingToolIdsByRole?.database ?? context.primaryToolIdsByRole?.database,
+      getDataLayerDatabase(
+        context.primaryToolIdsByRole?.database,
+        context.siblingToolIdsByRole?.database,
+      ),
       part.toolId,
     );
     if (reason) {
@@ -3902,6 +3905,12 @@ type GraphProjectionEcosystem = Exclude<
   "universal" | "kotlin" | "swift" | "dart"
 >;
 
+// Generation builds a backend's data layer against the standalone database when the graph has one
+// and otherwise against the database that backend owns; validation judges the same database.
+function getDataLayerDatabase<T>(standaloneDatabase: T | undefined, backendDatabase: T | undefined) {
+  return standaloneDatabase ?? backendDatabase;
+}
+
 function getSelectedPrimaryPart(parts: readonly StackPart[], role: StackPartRole) {
   return parts.find(
     (part) => part.role === role && !part.ownerPartId && part.source !== "provided",
@@ -4026,8 +4035,10 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   const mobile = parts.find(
     (part) => part.role === "mobile" && part.ecosystem === "react-native" && !part.ownerPartId,
   );
-  const database =
-    getSelectedPrimaryPart(parts, "database") ?? getSelectedScopedPart(parts, backend, "database");
+  const database = getDataLayerDatabase(
+    getSelectedPrimaryPart(parts, "database"),
+    getSelectedScopedPart(parts, backend, "database"),
+  );
   const orm = getSelectedScopedPart(parts, backend, "orm");
   const api = getSelectedScopedPart(parts, backend, "api");
   const auth =

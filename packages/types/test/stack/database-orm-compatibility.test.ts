@@ -12,6 +12,7 @@ import {
 import {
   legacyProjectConfigToStackParts,
   parseStackPartSpecs,
+  stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
 } from "@/stack/stack-graph";
 import { DEFAULT_STACK_SELECTION } from "@/stack/stack-translation";
@@ -156,6 +157,28 @@ describe("database and ORM pair compatibility", () => {
     expect(graphIssues("mongodb", "kysely")).toEqual([KYSELY]);
     expect(graphIssues("mongodb", "mongoose")).toEqual([]);
     expect(graphIssues("postgres", "kysely")).toEqual([]);
+  });
+
+  it("judges the ORM against the standalone database generation uses over a backend-owned one", () => {
+    for (const [standalone, owned, issues] of [
+      ["mongodb", "postgres", [KYSELY]],
+      ["postgres", "mongodb", []],
+    ] as const) {
+      const parts = parseStackPartSpecs([
+        "frontend:typescript:tanstack-router",
+        "backend:typescript:hono",
+        "backend.runtime:typescript:bun",
+        `database:universal:${standalone}`,
+        `backend.database:universal:${owned}`,
+        "backend.orm:typescript:kysely",
+      ]);
+      const projected = stackGraphToLegacyProjectConfigForEcosystem(
+        { ...createCliDefaultProjectConfigBase("bun"), projectName: "pair", stackParts: parts },
+        "typescript",
+      );
+      expect(projected.database).toBe(standalone);
+      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toEqual([...issues]);
+    }
   });
 
   it("keeps the ORM-free choice available for EdgeDB and Redis", () => {
