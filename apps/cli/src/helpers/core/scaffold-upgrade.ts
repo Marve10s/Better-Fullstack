@@ -28,7 +28,12 @@ import {
   PACKAGE_JSON_SECTIONS,
   treeToFileMap,
 } from "@/helpers/core/stack-update";
-import { collectDivergedFamilyVersions } from "@/lifecycle/dependency-version-channel";
+import {
+  collectDivergedFamilyVersions,
+  compareVersions,
+  isRegistrySemverSpec,
+  parsePnpmCatalog,
+} from "@/lifecycle/dependency-version-channel";
 import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
 import {
   getCurrentLifecycleVersions,
@@ -645,6 +650,32 @@ function summarize(
   };
 }
 
+/**
+ * Baseline for an untouched pnpm-workspace.yaml whose manifest predates recorded catalog
+ * baselines. Catalog entries a version channel moved past the templates take the template value,
+ * so the update keeps them instead of treating the channel's version as template output.
+ * Returns undefined when no entry moved, which leaves the file to hash classification.
+ */
+function deriveWorkspaceBaseline(diskContent: string, renderedContent: string | undefined) {
+  const disk = parsePnpmCatalog(diskContent);
+  const rendered = renderedContent === undefined ? null : parsePnpmCatalog(renderedContent);
+  if (!disk || !rendered) return undefined;
+
+  const moved = Object.entries(disk.catalog).flatMap(([name, version]) => {
+    const templateVersion = rendered.catalog[name];
+    return templateVersion !== undefined &&
+      isRegistrySemverSpec(version) &&
+      isRegistrySemverSpec(templateVersion) &&
+      compareVersions(version, templateVersion) > 0
+      ? [[name, templateVersion] as const]
+      : [];
+  });
+  for (const [name, templateVersion] of moved) {
+    disk.document.setIn(["catalog", name], templateVersion);
+  }
+  return moved.length > 0 ? disk.document.toString() : undefined;
+}
+
 export async function planScaffoldUpgrade(projectDirInput: string): Promise<UpgradeResult> {
   const projectDir = await canonicalProjectDir(projectDirInput);
   const configHashBefore = await readConfigHash(projectDir);
@@ -738,9 +769,12 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
       continue;
     }
 
-    const structuredBaseline = manifest?.baselines?.[filePath];
-    // Manifests from before workspace catalogs were recorded keep hash classification: the
-    // version channel never rewrote the catalog of those projects.
+    const structuredBaseline =
+      manifest?.baselines?.[filePath] ??
+      (isPnpmWorkspacePath(filePath) && diskHash === baseline[filePath]
+        ? deriveWorkspaceBaseline(diskBytes.toString("utf-8"), renderFiles.get(filePath)?.content)
+        : undefined);
+    // A workspace file with no recorded or derivable baseline keeps hash classification.
     if (
       isStructuredBaselinePath(filePath) &&
       (structuredBaseline !== undefined || !isPnpmWorkspacePath(filePath))

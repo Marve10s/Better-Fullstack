@@ -925,6 +925,38 @@ describe("version channel lifecycle round trips", () => {
       expect(await readCatalog(projectDir)).toEqual(catalog);
     }, 120_000);
 
+    it("keeps channel versions for a manifest recorded without a catalog baseline", async () => {
+      const { projectDir, catalog } = await createPnpmProject("version-channel-pnpm-legacy");
+      // Earlier manifests hashed the channel-rewritten catalog without recording its baseline.
+      // One entry left on an older template release must still take the template's version.
+      const workspacePath = path.join(projectDir, "pnpm-workspace.yaml");
+      const workspace = (await fs.readFile(workspacePath, "utf8")).replace(
+        "dotenv: ^99.0.0",
+        "dotenv: ^0.1.0",
+      );
+      await fs.writeFile(workspacePath, workspace);
+      const manifest = (await readScaffoldManifest(projectDir))!;
+      expect(manifest.baselines?.["pnpm-workspace.yaml"]).toBeDefined();
+      delete manifest.baselines?.["pnpm-workspace.yaml"];
+      manifest.hashes["pnpm-workspace.yaml"] = hashContent(Buffer.from(workspace));
+      await writeScaffoldManifest(projectDir, manifest);
+
+      const plan = await planScaffoldUpgrade(projectDir);
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      expect(plan.files.find((file) => file.path === "pnpm-workspace.yaml")?.category).toBe(
+        "merged",
+      );
+
+      const result = await applyScaffoldUpgrade(projectDir);
+      expect(result.success, result.success ? undefined : result.error).toBe(true);
+      const updated = await readCatalog(projectDir);
+      expect({ ...updated, dotenv: catalog.dotenv }).toEqual(catalog);
+      expect(updated.dotenv).toMatch(/^\^\d/);
+      expect(updated.dotenv).not.toBe("^0.1.0");
+      expect(updated.dotenv).not.toBe("^99.0.0");
+    }, 120_000);
+
     it("keeps versions add moved to a newer release through a later update", async () => {
       const { projectDir } = await createPnpmProject("version-channel-pnpm-add-update");
       clearRegistryVersionCache();

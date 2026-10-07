@@ -346,7 +346,7 @@ async function readPnpmCatalog(
   return parsed ? { workspacePath, ...parsed } : null;
 }
 
-function parsePnpmCatalog(content: string) {
+export function parsePnpmCatalog(content: string) {
   const document = parseDocument(content);
   const catalogNode = document.get("catalog");
   if (!isMap(catalogNode)) return null;
