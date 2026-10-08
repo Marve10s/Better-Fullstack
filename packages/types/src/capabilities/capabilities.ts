@@ -162,7 +162,6 @@ const CONVEX_CLERK_WEB = new Set([
 // handler. Next.js, TanStack Start, SvelteKit, SolidStart, and TanStack Start (Solid) mount it.
 const UNMOUNTED_BETTER_AUTH_FULLSTACK_LABELS: Record<string, string> = {
   astro: "Astro",
-  nuxt: "Nuxt",
   vinext: "Vinext",
 };
 

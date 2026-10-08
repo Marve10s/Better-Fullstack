@@ -187,13 +187,6 @@ const REJECTED: AuthCase[] = [
     reason: "Better Auth isn't available for the Encore backend yet",
   },
   {
-    auth: "better-auth",
-    backend: "self",
-    frontend: ["nuxt"],
-    ...SQLITE,
-    reason: "Better Auth isn't available for fullstack Nuxt yet",
-  },
-  {
     auth: "better-auth-organizations",
     backend: "self",
     frontend: ["astro"],
@@ -304,6 +297,7 @@ describe("auth compatibility has one reason per rule", () => {
       { auth: "clerk", ...CONVEX, frontend: ["native-bare"] },
       { auth: "better-auth", backend: "self", frontend: ["svelte", "native-bare"], ...SQLITE },
       { auth: "auth0", backend: "self", frontend: ["next"], ...SQLITE },
+      { auth: "better-auth", backend: "self", frontend: ["nuxt"], ...SQLITE },
     ];
 
     for (const testCase of accepted) expectAccepted(testCase);

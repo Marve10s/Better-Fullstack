@@ -158,10 +158,6 @@ const REJECTED: { stack: Stack; reason: string }[] = [
     reason: "Better Auth isn't available for the Encore backend yet",
   },
   {
-    stack: { auth: "better-auth", frontend: ["nuxt"], ...FULLSTACK },
-    reason: "Better Auth isn't available for fullstack Nuxt yet",
-  },
-  {
     stack: { auth: "better-auth-organizations", frontend: ["astro"], ...FULLSTACK },
     reason: "Better Auth isn't available for fullstack Astro yet",
   },
@@ -181,6 +177,7 @@ const ACCEPTED: Stack[] = [
     ...SQLITE,
   },
   { auth: "clerk", frontend: ["next"], ...FULLSTACK },
+  { auth: "better-auth", frontend: ["nuxt"], ...FULLSTACK },
   {
     auth: "passport",
     frontend: ["tanstack-router"],
