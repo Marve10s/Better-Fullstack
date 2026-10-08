@@ -401,9 +401,13 @@ describe("database and ORM pairing", () => {
           "Upstash setup requires Redis database. Please use '--database redis' or choose a different setup.",
       },
       {
-        input: { orm: "kysely", dbSetup: "mongodb-atlas" },
+        input: { database: "none", orm: "kysely", dbSetup: "mongodb-atlas" },
         reason:
           "Database setup requires a database. Please choose a database or set '--db-setup none'.",
+      },
+      {
+        input: { orm: "kysely", dbSetup: "mongodb-atlas" },
+        reason: "Kysely does not support MongoDB",
       },
     ];
     for (const { input, reason } of cases) {
@@ -432,6 +436,32 @@ describe("database and ORM pairing", () => {
       error: "MongoDB Atlas setup requires MongoDB.",
     });
     expect(() => buildProjectConfig({ part })).toThrow("MongoDB Atlas setup requires MongoDB.");
+  });
+
+  test("a provider with no database infers the database it hosts", async () => {
+    const cases = [
+      { input: { dbSetup: "turso", orm: "drizzle" }, database: "sqlite", orm: "drizzle" },
+      { input: { dbSetup: "neon" }, database: "postgres", orm: "drizzle" },
+      {
+        input: { dbSetup: "mongodb-atlas", orm: "mongoose" },
+        database: "mongodb",
+        orm: "mongoose",
+      },
+    ] as const;
+    for (const { input, database, orm } of cases) {
+      const options = {
+        projectName: "provider",
+        ...STACKS.standalone,
+        frontend: [...STACKS.standalone.frontend],
+        yes: true,
+        ...input,
+      };
+      const result = await createVirtual(options);
+      expect(result.error).toBeUndefined();
+      expect(hasVirtualFile(result.tree!.root, "packages/db/package.json")).toBe(true);
+      expect(buildProjectConfig(options)).toMatchObject({ database, orm, dbSetup: input.dbSetup });
+      await expect(planProjectOperation.invoke(options)).resolves.toBeDefined();
+    }
   });
 
   test("valid pairs still generate", async () => {

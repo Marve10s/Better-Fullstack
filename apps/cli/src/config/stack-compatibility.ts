@@ -11,6 +11,7 @@ import {
   type CompatibilityInput,
   type Database,
   type DatabaseSetup,
+  type ORM,
   type ProjectConfig,
   type Runtime,
 } from "@/types";
@@ -197,6 +198,23 @@ export function getRequestedDatabaseSetupRejection(
     dbSetup: requested.dbSetup,
     runtime: requested.runtime ?? adjustedConfig.runtime,
   });
+}
+
+const PROVIDER_DEFAULT_ORMS: Partial<Record<Database, ORM>> = {
+  mongodb: "prisma",
+  redis: "none",
+};
+
+export function getProviderDataLayer(
+  config: Pick<Partial<ProjectConfig>, "dbSetup" | "ecosystem" | "stackParts">,
+  requested: { database?: unknown; orm?: unknown },
+): Pick<Partial<ProjectConfig>, "database" | "orm"> {
+  if (requested.database !== undefined || !config.dbSetup) return {};
+  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) return {};
+  const database = DATABASE_SETUP_REQUIREMENTS[config.dbSetup].database;
+  if (!database) return {};
+  if (requested.orm !== undefined || !usesGenericOrm(config)) return { database };
+  return { database, orm: PROVIDER_DEFAULT_ORMS[database] ?? "drizzle" };
 }
 
 // Checks the data layer the generator will use: the database setup provider must host the

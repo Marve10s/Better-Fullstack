@@ -40,6 +40,7 @@ import {
   getCompatibilityBackend,
   getDatabaseOrmRequirementSelectionIssue,
   getDataLayerSelectionIssue,
+  getProviderDataLayer,
   getPythonLoggingSelectionIssue,
 } from "@/config/stack-compatibility";
 
@@ -616,6 +617,7 @@ export function buildProjectConfig(
     }
   }
 
+  Object.assign(config, getProviderDataLayer(config, input));
   applyEffectBackendDefaults(config, new Set(Object.keys(input)));
   validateMcpProjectConfigCompatibility(config);
 

@@ -256,6 +256,13 @@ export async function createVirtual(
     if (options.stackParts) {
       config.stackParts = options.stackParts;
     }
+    const {
+      getBetterAuthSelectionIssue,
+      getDatabaseOrmRequirementSelectionIssue,
+      getDataLayerSelectionIssue,
+      getProviderDataLayer,
+    } = await import("@/config/stack-compatibility");
+    Object.assign(config, getProviderDataLayer(config, options));
     applyEffectBackendDefaults(config, new Set(Object.keys(options)));
 
     const hasLegacyContainerAddon =
@@ -293,11 +300,6 @@ export async function createVirtual(
       );
     }
 
-    const {
-      getBetterAuthSelectionIssue,
-      getDatabaseOrmRequirementSelectionIssue,
-      getDataLayerSelectionIssue,
-    } = await import("@/config/stack-compatibility");
     const selectionIssue =
       getDataLayerSelectionIssue(config) ??
       getBetterAuthSelectionIssue(config) ??
