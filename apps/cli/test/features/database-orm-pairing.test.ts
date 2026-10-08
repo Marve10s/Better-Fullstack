@@ -441,4 +441,34 @@ describe("database and ORM pairing", () => {
       error: "Invalid stack update: Redis is a key-value store and does not require an ORM",
     });
   });
+
+  test("update planning judges the ORM against the database a graph project generates with", async () => {
+    const graphProject = (standalone: string, owned: string) =>
+      scaffoldProject({
+        stackParts: parseStackPartSpecs([
+          "frontend:typescript:tanstack-router",
+          "backend:typescript:hono",
+          "backend.runtime:typescript:bun",
+          "backend.api:typescript:trpc",
+          `database:universal:${standalone}`,
+          `backend.database:universal:${owned}`,
+          "backend.orm:typescript:prisma",
+        ]),
+      });
+
+    const postgresPlan = await planStackUpdate(await graphProject("postgres", "mongodb"), {
+      orm: "kysely",
+    });
+    expect(postgresPlan).toMatchObject({ success: true, compatibilityAdjustments: [] });
+    expect(postgresPlan.success && postgresPlan.stackPartSpecs).toContain(
+      "backend.orm:typescript:kysely",
+    );
+
+    expect(
+      await planStackUpdate(await graphProject("mongodb", "postgres"), { orm: "kysely" }),
+    ).toMatchObject({
+      success: false,
+      error: "Invalid stack update: Kysely does not support MongoDB",
+    });
+  });
 });

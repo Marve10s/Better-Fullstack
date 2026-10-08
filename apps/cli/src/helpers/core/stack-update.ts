@@ -65,11 +65,13 @@ import {
   getReplacedCodeQualityTools,
   getToolingCapability,
   getToolingCategory,
+  isToolingOverlayOnly,
   legacyProjectConfigToStackParts,
   mergeProjectConfigSettingsIntoStackParts,
   parseStackPartSpecs,
   requiresChatSdkVercelAI,
   STACK_PART_PROJECT_SETTING_KEYS,
+  stackGraphToLegacyProjectConfigForEcosystem,
   stackPartsToLegacyProjectConfigPartial,
   type BetterTStackConfig,
   type ProjectConfig,
@@ -310,6 +312,12 @@ export function configFromBtsConfig(
     git: false,
     install: false,
   } as ProjectConfig;
+}
+
+function withGeneratedDatabase(config: ProjectConfig): ProjectConfig {
+  if (!config.stackParts?.length || isToolingOverlayOnly(config.stackParts)) return config;
+  const { database } = stackGraphToLegacyProjectConfigForEcosystem(config, "typescript");
+  return { ...config, database };
 }
 
 function buildRequestedChanges(input: Record<string, unknown>): {
@@ -1764,7 +1772,9 @@ export async function planStackUpdate(
   const manifest = manifestResult.manifest;
 
   const projectName = await inferProjectName(projectDir);
-  const currentConfig = configFromBtsConfig(currentBtsConfig, projectDir, projectName);
+  const currentConfig = withGeneratedDatabase(
+    configFromBtsConfig(currentBtsConfig, projectDir, projectName),
+  );
   const {
     changes: requestedChanges,
     stackPartSpecs,
