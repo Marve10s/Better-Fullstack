@@ -356,12 +356,12 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     reason:
       "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
   },
-  "@better-auth/expo": {
+  "@better-auth/core": {
     pinnedVersion: "1.6.22",
     reason:
       "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
   },
-  "@better-auth/core": {
+  "@better-auth/expo": {
     pinnedVersion: "1.6.22",
     reason:
       "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
@@ -440,6 +440,41 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     reason: "The Vitest family is exact-pinned to the latest reviewed Yarn-compatible patch.",
   },
 };
+
+export type SynchronizedDependencyFamily = {
+  name: string;
+  packages: readonly string[];
+};
+
+/**
+ * Packages that must always resolve to one shared version. Version channels move a
+ * family together or leave it on its current release.
+ */
+export const SYNCHRONIZED_DEPENDENCY_FAMILIES: readonly SynchronizedDependencyFamily[] = [
+  {
+    name: "oRPC",
+    packages: [
+      "@orpc/server",
+      "@orpc/client",
+      "@orpc/openapi",
+      "@orpc/zod",
+      "@orpc/tanstack-query",
+    ],
+  },
+  {
+    // better-auth requires one exact @better-auth/core while the adapters and Expo plugin
+    // accept any newer core, so a split family installs two cores under npm.
+    name: "Better Auth",
+    packages: [
+      "better-auth",
+      "@better-auth/core",
+      "@better-auth/expo",
+      "@better-auth/drizzle-adapter",
+      "@better-auth/prisma-adapter",
+      "@better-auth/mongo-adapter",
+    ],
+  },
+];
 
 export function getPinnedDependencyVersion(packageName: string): string | undefined {
   return DEPENDENCY_UPDATE_POLICIES[packageName]?.pinnedVersion;

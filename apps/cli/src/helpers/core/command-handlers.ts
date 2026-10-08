@@ -18,7 +18,9 @@ import { resolveCreateConfigBase } from "@/config/config-source";
 import { displayConfig } from "@/config/display-config";
 import {
   getRequestedAuthRejection,
+  getRequestedDatabaseSetupRejection,
   getRequestedJobQueueRejection,
+  getRequestedOrmRejection,
   resolveCompatibilityAdjustments,
 } from "@/config/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "@/config/templates";
@@ -342,11 +344,34 @@ function rejectAdjustedRequestedFlags(
   config: ProjectConfig,
   changes: Partial<ProjectConfig>,
   providedFlags: Set<string>,
+  configBase: Partial<CreateInput> | undefined,
 ) {
-  const adjusted = { ...config, ...changes };
+  const adjustedConfig = { ...config, ...changes };
+  // A database or ORM replayed from a saved config or history entry is the user's choice too.
+  const isRequested = (key: "database" | "orm" | "dbSetup" | "runtime") =>
+    providedFlags.has(key) || configBase?.[key] !== undefined;
   const rejection =
-    (providedFlags.has("jobQueue") && getRequestedJobQueueRejection(config.jobQueue, adjusted)) ||
-    (providedFlags.has("auth") && getRequestedAuthRejection(config.auth, adjusted));
+    (providedFlags.has("jobQueue")
+      ? getRequestedJobQueueRejection(config.jobQueue, adjustedConfig)
+      : null) ??
+    (providedFlags.has("auth")
+      ? getRequestedAuthRejection(config.auth, adjustedConfig)
+      : null) ??
+    getRequestedDatabaseSetupRejection(
+      {
+        database: isRequested("database") ? config.database : undefined,
+        dbSetup: isRequested("dbSetup") ? config.dbSetup : undefined,
+        runtime: isRequested("runtime") ? config.runtime : undefined,
+      },
+      adjustedConfig,
+    ) ??
+    getRequestedOrmRejection(
+      {
+        database: isRequested("database") ? config.database : undefined,
+        orm: isRequested("orm") ? config.orm : undefined,
+      },
+      adjustedConfig,
+    );
   if (rejection) exitWithError(rejection);
 }
 
@@ -786,7 +811,7 @@ export async function createProjectHandler(
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
-          rejectAdjustedRequestedFlags(config, changes, providedFlags);
+          rejectAdjustedRequestedFlags(config, changes, providedFlags, configBase);
           if (adjustments.length > 0) {
             config = { ...config, ...changes };
             cliInput = { ...cliInput, ...changes };
@@ -827,7 +852,7 @@ export async function createProjectHandler(
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
-          rejectAdjustedRequestedFlags(config, changes, providedFlags);
+          rejectAdjustedRequestedFlags(config, changes, providedFlags, configBase);
           if (adjustments.length > 0) {
             config = { ...config, ...changes };
             cliInput = { ...cliInput, ...changes };

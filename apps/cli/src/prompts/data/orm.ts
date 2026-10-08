@@ -5,6 +5,7 @@ import { exitCancelled } from "@/presentation/errors";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
 import {
   getAuthIncompatibility,
+  getDatabaseOrmIncompatibility,
   type Auth,
   type Backend,
   type Database,
@@ -13,6 +14,11 @@ import {
 } from "@/types";
 
 const ormOptions = {
+  drizzle: {
+    value: "drizzle" as const,
+    label: "Drizzle",
+    hint: "Lightweight and performant TypeScript ORM",
+  },
   prisma: {
     value: "prisma" as const,
     label: "Prisma",
@@ -22,11 +28,6 @@ const ormOptions = {
     value: "mongoose" as const,
     label: "Mongoose",
     hint: "Elegant object modeling tool",
-  },
-  drizzle: {
-    value: "drizzle" as const,
-    label: "Drizzle",
-    hint: "Lightweight and performant TypeScript ORM",
   },
   typeorm: {
     value: "typeorm" as const,
@@ -69,15 +70,6 @@ export function resolveORMPrompt(context: ORMPromptContext): PromptSingleResolut
     };
   }
 
-  if (context.database === "edgedb" || context.database === "redis") {
-    return {
-      shouldPrompt: false,
-      mode: "single",
-      options: [],
-      autoValue: "none",
-    };
-  }
-
   if (context.orm !== undefined) {
     return {
       shouldPrompt: false,
@@ -87,25 +79,24 @@ export function resolveORMPrompt(context: ORMPromptContext): PromptSingleResolut
     };
   }
 
-  const options = (
-    context.database === "mongodb"
-      ? [ormOptions.prisma, ormOptions.mongoose]
-      : [
-          ormOptions.drizzle,
-          ormOptions.prisma,
-          ormOptions.typeorm,
-          ormOptions.kysely,
-          ormOptions.mikroorm,
-          ormOptions.sequelize,
-        ]
-  ).filter(
+  const options = Object.values(ormOptions).filter(
     (option) =>
+      !getDatabaseOrmIncompatibility(context.database, option.value) &&
       !getAuthIncompatibility(
         context.auth,
         { ecosystem: "typescript", database: context.database, orm: option.value },
         { partial: true },
       ),
   );
+  // EdgeDB and Redis bring their own client, so no ORM can pair with them.
+  if (options.length === 0) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
 
   return {
     shouldPrompt: true,

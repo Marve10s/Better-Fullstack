@@ -38,6 +38,9 @@ import { getEffectiveStack, getGraphSummary } from "@/config/graph-summary";
 import {
   getCompatibilityBackend,
   getAuthSelectionIssue,
+  getDatabaseOrmRequirementSelectionIssue,
+  getDataLayerSelectionIssue,
+  getProviderDataLayer,
   getPythonLoggingSelectionIssue,
 } from "@/config/stack-compatibility";
 
@@ -441,6 +444,7 @@ export function validateMcpProjectConfigCompatibility(
         | "backend"
         | "runtime"
         | "database"
+        | "dbSetup"
         | "jobQueue"
         | "webDeploy"
         | "stackParts"
@@ -457,8 +461,11 @@ export function validateMcpProjectConfigCompatibility(
   if (qualityIssue) throw new Error(qualityIssue);
   const pythonLoggingIssue = getPythonLoggingSelectionIssue(config);
   if (pythonLoggingIssue) throw new Error(pythonLoggingIssue.reason);
-  const authIssue = getAuthSelectionIssue(config);
-  if (authIssue) throw new Error(authIssue);
+  const selectionIssue =
+    getAuthSelectionIssue(config) ??
+    getDataLayerSelectionIssue(config) ??
+    getDatabaseOrmRequirementSelectionIssue(config);
+  if (selectionIssue) throw new Error(selectionIssue);
   if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
     const qualityIssues = validateStackParts(config.stackParts).issues.filter(
       (issue) => issue.role === "codeQuality" || issue.role === "jobQueue",
@@ -611,6 +618,7 @@ export function buildProjectConfig(
     }
   }
 
+  Object.assign(config, getProviderDataLayer(config, input));
   applyEffectBackendDefaults(config, new Set(Object.keys(input)));
   validateMcpProjectConfigCompatibility(config);
 

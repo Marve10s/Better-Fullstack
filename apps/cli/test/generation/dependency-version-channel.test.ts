@@ -1,26 +1,52 @@
 import { MobileLibrariesSchema } from "@better-fullstack/types";
+import { log } from "@clack/prompts";
+import { runTRPCTest, type TestConfig } from "@test/support/test-utils";
 import { readVirtualFileContent as getFile } from "@test/support/virtual-tree-utils";
-import { afterEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, afterEach, describe, expect, it, mock, spyOn } from "bun:test";
 import fs from "fs-extra";
 import os from "node:os";
 import path from "node:path";
+import { parse as parseYaml } from "yaml";
 
+import { applyScaffoldUpgrade, planScaffoldUpgrade } from "@/helpers/core/scaffold-upgrade";
+import { applyStackUpdate, planStackUpdate } from "@/helpers/core/stack-update";
 import { createVirtual } from "@/index";
 import {
   applyDependencyVersionChannel,
+  clearRegistryVersionCache,
   collectPackageJsonPaths,
   compareVersions,
   parseVersion,
   planDependencyVersionChannel,
   selectRegistryVersionForChannel,
 } from "@/lifecycle/dependency-version-channel";
+import {
+  hashContent,
+  readScaffoldManifest,
+  writeScaffoldManifest,
+} from "@/lifecycle/scaffold-manifest";
 
 const originalFetch = global.fetch;
 
 afterEach(() => {
   global.fetch = originalFetch;
+  clearRegistryVersionCache();
   mock.restore();
 });
+
+type RegistryFixture = Record<string, { tags: Record<string, string>; versions: string[] }>;
+
+function mockRegistry(registry: RegistryFixture, fallback?: RegistryFixture[string]) {
+  global.fetch = mock(async (input: string | URL | Request) => {
+    const packageInfo =
+      registry[decodeURIComponent(String(input).split("/").pop() ?? "")] ?? fallback;
+    if (!packageInfo) return new Response("{}", { status: 404 });
+    return Response.json({
+      "dist-tags": packageInfo.tags,
+      versions: Object.fromEntries(packageInfo.versions.map((version) => [version, {}])),
+    });
+  }) as unknown as typeof fetch;
+}
 
 describe("parseVersion", () => {
   it("parses standard semver", () => {
@@ -227,6 +253,18 @@ describe("selectRegistryVersionForChannel", () => {
     ).toBe("1.1.0-rc.1");
   });
 
+  it("treats any semver prerelease identifier as a prerelease", () => {
+    expect(
+      selectRegistryVersionForChannel(
+        {
+          "dist-tags": { latest: "1.7.8" },
+          versions: { "1.7.8": {}, "1.8.0-preview.1": {}, "1.8.0+build.5": {} },
+        },
+        "beta",
+      ),
+    ).toBe("1.8.0-preview.1");
+  });
+
   it("falls back to latest when no beta/prerelease exists", () => {
     expect(
       selectRegistryVersionForChannel(
@@ -384,6 +422,170 @@ describe("applyDependencyVersionChannel", () => {
     expect(packageJson.workspaces.catalog["@orpc/client"]).toBe("^1.14.6");
     expect(packageJson.dependencies["@orpc/tanstack-query"]).toBe("^1.14.6");
     expect(packageJson.dependencies.react).toBe("^19.3.0");
+  });
+
+  describe("Better Auth family", () => {
+    // The drizzle adapter's latest and beta tags lag one publish behind, and the mongo adapter
+    // cannot be fetched. better-auth requires one exact core, so any split installs two cores.
+    const registry: RegistryFixture = {
+      "better-auth": {
+        tags: { latest: "1.7.8", beta: "1.8.0-beta.3" },
+        versions: ["1.6.22", "1.7.7", "1.7.8", "1.8.0-beta.2", "1.8.0-beta.3"],
+      },
+      "@better-auth/core": {
+        tags: { latest: "1.7.8", beta: "1.8.0-beta.3" },
+        versions: ["1.6.22", "1.7.7", "1.7.8", "1.8.0-beta.2", "1.8.0-beta.3"],
+      },
+      "@better-auth/expo": {
+        tags: { latest: "1.7.8", beta: "1.8.0-beta.3" },
+        versions: ["1.6.22", "1.7.7", "1.7.8", "1.8.0-beta.2", "1.8.0-beta.3"],
+      },
+      "@better-auth/drizzle-adapter": {
+        tags: { latest: "1.7.7", beta: "1.8.0-beta.2" },
+        versions: ["1.6.22", "1.7.7", "1.8.0-beta.2"],
+      },
+    };
+
+    const writeProject = async (authDependencies: Record<string, string>) => {
+      const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-ba-"));
+      const manifests: Record<string, Record<string, string>> = {
+        "packages/auth": authDependencies,
+        "apps/web": { "better-auth": "1.6.22" },
+        "apps/native": {
+          "better-auth": "1.6.22",
+          "@better-auth/core": "1.6.22",
+          "@better-auth/expo": "1.6.22",
+        },
+      };
+      await fs.writeJson(path.join(projectDir, "package.json"), { name: "root" });
+      for (const [dir, dependencies] of Object.entries(manifests)) {
+        await fs.outputJson(path.join(projectDir, dir, "package.json"), {
+          name: dir,
+          dependencies,
+        });
+      }
+      return projectDir;
+    };
+
+    const readFamilyVersions = async (projectDir: string) => {
+      const versions = new Set<string>();
+      for (const packageJsonPath of await collectPackageJsonPaths(projectDir)) {
+        const { dependencies = {} } = (await fs.readJson(packageJsonPath)) as {
+          dependencies?: Record<string, string>;
+        };
+        for (const [name, version] of Object.entries(dependencies)) {
+          if (name === "better-auth" || name.startsWith("@better-auth/")) versions.add(version);
+        }
+      }
+      return [...versions].sort();
+    };
+
+    const generatedAuthDependencies = {
+      "better-auth": "1.6.22",
+      "@better-auth/core": "1.6.22",
+      "@better-auth/drizzle-adapter": "1.6.22",
+      "@better-auth/expo": "1.6.22",
+    };
+
+    for (const [channel, expected] of [
+      ["stable", "1.6.22"],
+      ["latest", "1.7.7"],
+      ["beta", "1.8.0-beta.2"],
+    ] as const) {
+      it(`moves every package to one ${channel} release`, async () => {
+        mockRegistry(registry);
+        const projectDir = await writeProject(generatedAuthDependencies);
+
+        await applyDependencyVersionChannel(projectDir, channel);
+
+        expect(await readFamilyVersions(projectDir)).toEqual([expected]);
+      });
+    }
+
+    it("moves pnpm catalog entries with the rest of the family", async () => {
+      mockRegistry(registry);
+      const projectDir = await writeProject({
+        ...generatedAuthDependencies,
+        "better-auth": "catalog:",
+      });
+      await fs.writeFile(
+        path.join(projectDir, "pnpm-workspace.yaml"),
+        "packages:\n  - apps/*\n  - packages/*\ncatalog:\n  better-auth: 1.6.22\n  zod: ^4.0.0\n",
+      );
+
+      await applyDependencyVersionChannel(projectDir, "latest");
+
+      expect(await readFamilyVersions(projectDir)).toEqual(["1.7.7", "catalog:"]);
+      expect(await fs.readFile(path.join(projectDir, "pnpm-workspace.yaml"), "utf8")).toBe(
+        "packages:\n  - apps/*\n  - packages/*\ncatalog:\n  better-auth: 1.7.7\n  zod: ^4.0.0\n",
+      );
+    });
+
+    // A release with a prerelease identifier the old filter did not know is not a stable release,
+    // whether it is published above the latest tags or tagged latest itself.
+    for (const latestTag of ["1.7.8", "1.8.0-preview.1"]) {
+      it(`never moves the latest channel to a preview release (latest tag ${latestTag})`, async () => {
+        const previewRelease = {
+          tags: { latest: latestTag },
+          versions: ["1.6.22", "1.7.8", "1.8.0-preview.1"],
+        };
+        mockRegistry({
+          "better-auth": previewRelease,
+          "@better-auth/core": previewRelease,
+          "@better-auth/expo": previewRelease,
+          "@better-auth/drizzle-adapter": previewRelease,
+        });
+        const projectDir = await writeProject(generatedAuthDependencies);
+
+        await applyDependencyVersionChannel(projectDir, "latest");
+
+        expect(await readFamilyVersions(projectDir)).toEqual(["1.7.8"]);
+      });
+    }
+
+    it("follows the latest tags rather than a newer untagged stable release", async () => {
+      mockRegistry(
+        Object.fromEntries(
+          Object.entries(registry).map(([name, info]) => [
+            name,
+            { ...info, versions: [...info.versions, "1.9.0"] },
+          ]),
+        ),
+      );
+      const projectDir = await writeProject(generatedAuthDependencies);
+
+      await applyDependencyVersionChannel(projectDir, "latest");
+
+      expect(await readFamilyVersions(projectDir)).toEqual(["1.7.7"]);
+    });
+
+    it("keeps an unevenly edited family together on the beta channel", async () => {
+      mockRegistry(registry);
+      const warn = spyOn(log, "warn");
+      const projectDir = await writeProject({
+        ...generatedAuthDependencies,
+        "better-auth": "1.8.0-beta.3",
+      });
+
+      await applyDependencyVersionChannel(projectDir, "beta");
+
+      expect(await readFamilyVersions(projectDir)).toEqual(["1.6.22", "1.8.0-beta.3"]);
+      expect(warn).toHaveBeenCalledWith(
+        "Keeping Better Auth packages on their current versions: better-auth is newer than the shared beta version 1.8.0-beta.2",
+      );
+    });
+
+    it("keeps the whole family when one package cannot be resolved", async () => {
+      mockRegistry(registry);
+      const projectDir = await writeProject({
+        ...generatedAuthDependencies,
+        "@better-auth/mongo-adapter": "1.6.22",
+      });
+
+      await applyDependencyVersionChannel(projectDir, "latest");
+
+      expect(await readFamilyVersions(projectDir)).toEqual(["1.6.22"]);
+    });
   });
 
   it("keeps compatibility-held packages installable on the latest channel", async () => {
@@ -632,6 +834,496 @@ describe("applyDependencyVersionChannel", () => {
 
     const packageJson = await fs.readJson(path.join(projectDir, "package.json"));
     expect(packageJson.dependencies.react).toBe("^18.0.0");
+  });
+});
+
+describe("version channel lifecycle round trips", () => {
+  // Every package resolves to one newer release, so each rewritten entry is easy to spot.
+  const newerRelease = { tags: { latest: "99.0.0" }, versions: ["99.0.0"] };
+  const projectDirs: string[] = [];
+
+  afterAll(async () => {
+    await Promise.all(projectDirs.map((projectDir) => fs.remove(projectDir)));
+  });
+
+  const createProject = async (projectName: string, config: Partial<TestConfig>) => {
+    const result = await runTRPCTest({
+      projectName,
+      backend: "hono",
+      runtime: "node",
+      api: "orpc",
+      database: "none",
+      orm: "none",
+      auth: "none",
+      examples: ["none"],
+      dbSetup: "none",
+      webDeploy: "none",
+      serverDeploy: "none",
+      versionChannel: "latest",
+      install: false,
+      ...config,
+    });
+    expect(result.success, result.error).toBe(true);
+    projectDirs.push(result.projectDir!);
+    return result.projectDir!;
+  };
+
+  const readCatalog = async (projectDir: string) =>
+    (
+      parseYaml(await fs.readFile(path.join(projectDir, "pnpm-workspace.yaml"), "utf8")) as {
+        catalog: Record<string, string>;
+      }
+    ).catalog;
+
+  describe("pnpm workspace catalog rewritten at creation", () => {
+    const createPnpmProject = async (projectName: string) => {
+      mockRegistry({}, newerRelease);
+      const projectDir = await createProject(projectName, {
+        frontend: ["react-vite"],
+        packageManager: "pnpm",
+      });
+      const catalog = await readCatalog(projectDir);
+      expect(catalog["@orpc/server"]).toBe("^99.0.0");
+      expect(catalog["@orpc/client"]).toBe("^99.0.0");
+      return { projectDir, catalog };
+    };
+
+    it("lets add plan and apply without treating the catalog as a local edit", async () => {
+      const { projectDir, catalog } = await createPnpmProject("version-channel-pnpm-add");
+
+      const plan = await planStackUpdate(
+        projectDir,
+        { stateManagement: "zustand" },
+        { includeVersionChannelPaths: true },
+      );
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      expect(plan.manualReviewBlockers).toEqual([]);
+
+      const result = await applyStackUpdate(
+        projectDir,
+        { stateManagement: "zustand" },
+        { operation: "add", applyVersionChannel: true },
+      );
+      expect(result.success, result.success ? undefined : result.error).toBe(true);
+      expect(await readCatalog(projectDir)).toEqual(catalog);
+    }, 120_000);
+
+    it("keeps the catalog on the channel versions through update plan and apply", async () => {
+      const { projectDir, catalog } = await createPnpmProject("version-channel-pnpm-update");
+
+      const plan = await planScaffoldUpgrade(projectDir);
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      expect(plan.files.find((file) => file.path === "pnpm-workspace.yaml")?.category).toBe(
+        "user-edited",
+      );
+      expect(plan.actionable).not.toContain("pnpm-workspace.yaml");
+
+      const result = await applyScaffoldUpgrade(projectDir);
+      expect(result.success, result.success ? undefined : result.error).toBe(true);
+      expect(await readCatalog(projectDir)).toEqual(catalog);
+    }, 120_000);
+
+    it("keeps channel versions for a manifest recorded without a catalog baseline", async () => {
+      const { projectDir, catalog } = await createPnpmProject("version-channel-pnpm-legacy");
+      // Earlier manifests hashed the channel-rewritten catalog without recording its baseline.
+      // One entry left on an older template release must still take the template's version.
+      const workspacePath = path.join(projectDir, "pnpm-workspace.yaml");
+      const workspace = (await fs.readFile(workspacePath, "utf8")).replace(
+        "dotenv: ^99.0.0",
+        "dotenv: ^0.1.0",
+      );
+      await fs.writeFile(workspacePath, workspace);
+      const manifest = (await readScaffoldManifest(projectDir))!;
+      expect(manifest.baselines?.["pnpm-workspace.yaml"]).toBeDefined();
+      delete manifest.baselines?.["pnpm-workspace.yaml"];
+      manifest.hashes["pnpm-workspace.yaml"] = hashContent(Buffer.from(workspace));
+      await writeScaffoldManifest(projectDir, manifest);
+
+      const plan = await planScaffoldUpgrade(projectDir);
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      expect(plan.files.find((file) => file.path === "pnpm-workspace.yaml")?.category).toBe(
+        "merged",
+      );
+
+      const result = await applyScaffoldUpgrade(projectDir);
+      expect(result.success, result.success ? undefined : result.error).toBe(true);
+      const updated = await readCatalog(projectDir);
+      expect({ ...updated, dotenv: catalog.dotenv }).toEqual(catalog);
+      expect(updated.dotenv).toMatch(/^\^\d/);
+      expect(updated.dotenv).not.toBe("^0.1.0");
+      expect(updated.dotenv).not.toBe("^99.0.0");
+    }, 120_000);
+
+    it("reports an aliased catalog for manual review instead of failing to plan", async () => {
+      const projectDir = await createProject("version-channel-pnpm-aliased-catalog", {
+        frontend: ["react-vite"],
+        packageManager: "pnpm",
+        versionChannel: "stable",
+      });
+      // The template moved zod past the release this project was generated with.
+      const olderZod = (content: string) => content.replace(/^( {2}zod: ).*$/m, "$1^4.0.0");
+      const manifest = (await readScaffoldManifest(projectDir))!;
+      manifest.baselines!["pnpm-workspace.yaml"] = olderZod(
+        manifest.baselines!["pnpm-workspace.yaml"]!,
+      );
+      await writeScaffoldManifest(projectDir, manifest);
+      const workspacePath = path.join(projectDir, "pnpm-workspace.yaml");
+      const aliased = `${olderZod(await fs.readFile(workspacePath, "utf8")).replace(
+        /^catalog:$/m,
+        "catalogEntries: &entries",
+      )}catalog: *entries\n`;
+      await fs.writeFile(workspacePath, aliased);
+      expect((await readCatalog(projectDir)).zod).toBe("^4.0.0");
+      const aliasBlocker = "catalog is a YAML alias or not a mapping; edit its entries by hand";
+
+      const upgrade = await planScaffoldUpgrade(projectDir);
+      expect(upgrade.success).toBe(true);
+      if (!upgrade.success) return;
+      const workspaceEntry = upgrade.files.find((file) => file.path === "pnpm-workspace.yaml");
+      expect(workspaceEntry?.category).toBe("conflict");
+      expect(workspaceEntry?.reason).toContain(aliasBlocker);
+
+      const add = await planStackUpdate(projectDir, { stateManagement: "zustand" });
+      expect(add.success).toBe(true);
+      if (!add.success) return;
+      expect(add.manualReviewBlockers).toContain(`pnpm-workspace.yaml: ${aliasBlocker}`);
+      expect(await fs.readFile(workspacePath, "utf8")).toBe(aliased);
+    }, 120_000);
+
+    it("keeps versions add moved to a newer release through a later update", async () => {
+      const { projectDir } = await createPnpmProject("version-channel-pnpm-add-update");
+      clearRegistryVersionCache();
+      mockRegistry({}, { tags: { latest: "100.0.0" }, versions: ["99.0.0", "100.0.0"] });
+
+      const added = await applyStackUpdate(
+        projectDir,
+        { stateManagement: "zustand" },
+        { operation: "add", applyVersionChannel: true },
+      );
+      expect(added.success, added.success ? undefined : added.error).toBe(true);
+      const catalog = await readCatalog(projectDir);
+      expect(catalog["@orpc/server"]).toBe("^100.0.0");
+      const webManifestPath = path.join(projectDir, "apps/web/package.json");
+      const webManifest = await fs.readFile(webManifestPath, "utf8");
+
+      const plan = await planScaffoldUpgrade(projectDir);
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      expect(plan.actionable).toEqual([]);
+
+      const result = await applyScaffoldUpgrade(projectDir);
+      expect(result.success, result.success ? undefined : result.error).toBe(true);
+      expect(await readCatalog(projectDir)).toEqual(catalog);
+      expect(await fs.readFile(webManifestPath, "utf8")).toBe(webManifest);
+    }, 120_000);
+  });
+
+  describe("template update adding @better-auth/core", () => {
+    const authStack: Partial<TestConfig> = {
+      frontend: ["tanstack-router"],
+      database: "sqlite",
+      orm: "drizzle",
+      auth: "better-auth",
+      packageManager: "npm",
+    };
+    const authManifestPath = "packages/auth/package.json";
+
+    // Projects generated before @better-auth/core was declared have neither the dependency nor
+    // its baseline entry; the template update is what adds it.
+    const simulateEarlierTemplate = async (projectDir: string, familyVersion?: string) => {
+      const rewrite = (content: string) => {
+        const manifest = JSON.parse(content) as { dependencies?: Record<string, string> };
+        const dependencies = manifest.dependencies ?? {};
+        delete dependencies["@better-auth/core"];
+        for (const name of Object.keys(dependencies)) {
+          if (familyVersion && (name === "better-auth" || name.startsWith("@better-auth/"))) {
+            dependencies[name] = familyVersion;
+          }
+        }
+        return `${JSON.stringify(manifest, null, 2)}\n`;
+      };
+      const manifest = (await readScaffoldManifest(projectDir))!;
+      for (const manifestPath of await collectPackageJsonPaths(projectDir)) {
+        const relativePath = path.relative(projectDir, manifestPath).split(path.sep).join("/");
+        const diskContent = rewrite(await fs.readFile(manifestPath, "utf8"));
+        await fs.writeFile(manifestPath, diskContent);
+        manifest.hashes[relativePath] = hashContent(Buffer.from(diskContent));
+        const baseline = manifest.baselines?.[relativePath];
+        if (baseline !== undefined) manifest.baselines![relativePath] = rewrite(baseline);
+      }
+      await writeScaffoldManifest(projectDir, manifest);
+    };
+
+    const updateAndReadAuthDependencies = async (projectDir: string, coreVersion: string) => {
+      const plan = await planScaffoldUpgrade(projectDir);
+      expect(plan.success).toBe(true);
+      if (!plan.success) return {};
+      expect(
+        plan.files.find((file) => file.path === authManifestPath)?.dependencyChanges,
+      ).toContainEqual(
+        expect.objectContaining({ name: "@better-auth/core", version: coreVersion }),
+      );
+
+      const result = await applyScaffoldUpgrade(projectDir);
+      expect(result.success, result.success ? undefined : result.error).toBe(true);
+      return (
+        (await fs.readJson(path.join(projectDir, authManifestPath))) as {
+          dependencies: Record<string, string>;
+        }
+      ).dependencies;
+    };
+
+    it("adds it at the release a family ahead of the template already uses", async () => {
+      const familyRelease = { tags: { latest: "1.7.7" }, versions: ["1.6.22", "1.7.7"] };
+      mockRegistry(
+        {
+          "better-auth": familyRelease,
+          "@better-auth/core": familyRelease,
+          "@better-auth/drizzle-adapter": familyRelease,
+        },
+        newerRelease,
+      );
+      const projectDir = await createProject("version-channel-family-ahead", authStack);
+      await simulateEarlierTemplate(projectDir);
+
+      expect(await updateAndReadAuthDependencies(projectDir, "1.7.7")).toMatchObject({
+        "better-auth": "1.7.7",
+        "@better-auth/core": "1.7.7",
+        "@better-auth/drizzle-adapter": "1.7.7",
+      });
+    }, 120_000);
+
+    it("adds it at the family release when members mix exact and range specs", async () => {
+      const projectDir = await createProject("version-channel-family-mixed-specs", {
+        ...authStack,
+        versionChannel: "stable",
+      });
+      await simulateEarlierTemplate(projectDir);
+      const memberSpecs: Record<string, string> = {
+        "better-auth": "1.7.7",
+        "@better-auth/drizzle-adapter": "^1.7.7",
+      };
+      for (const manifestPath of await collectPackageJsonPaths(projectDir)) {
+        const manifest = (await fs.readJson(manifestPath)) as {
+          dependencies?: Record<string, string>;
+        };
+        for (const name of Object.keys(manifest.dependencies ?? {})) {
+          const spec = memberSpecs[name];
+          if (spec) manifest.dependencies![name] = spec;
+        }
+        await fs.writeJson(manifestPath, manifest, { spaces: 2 });
+      }
+
+      expect(await updateAndReadAuthDependencies(projectDir, "1.7.7")).toMatchObject({
+        "better-auth": "1.7.7",
+        "@better-auth/core": "1.7.7",
+        "@better-auth/drizzle-adapter": "^1.7.7",
+      });
+    }, 120_000);
+
+    it("adds it at the template release when the family follows the template", async () => {
+      const projectDir = await createProject("version-channel-family-template", {
+        ...authStack,
+        versionChannel: "stable",
+      });
+      await simulateEarlierTemplate(projectDir, "1.6.20");
+
+      expect(await updateAndReadAuthDependencies(projectDir, "1.6.22")).toMatchObject({
+        "better-auth": "1.6.22",
+        "@better-auth/core": "1.6.22",
+        "@better-auth/drizzle-adapter": "1.6.22",
+      });
+    }, 120_000);
+  });
+
+  describe("Better Auth family with ambiguous provenance", () => {
+    const familyRelease = (latest: string) => ({
+      tags: { latest },
+      versions: ["1.6.22", "1.7.7"],
+    });
+    const mockFamilyLatest = (latest: string) => {
+      clearRegistryVersionCache();
+      mockRegistry(
+        {
+          "better-auth": familyRelease(latest),
+          "@better-auth/core": familyRelease(latest),
+          "@better-auth/drizzle-adapter": familyRelease(latest),
+        },
+        newerRelease,
+      );
+    };
+    const createAuthProject = (
+      projectName: string,
+      packageManager: TestConfig["packageManager"],
+      versionChannel: TestConfig["versionChannel"] = "stable",
+    ) =>
+      createProject(projectName, {
+        frontend: ["tanstack-router"],
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "better-auth",
+        packageManager,
+        versionChannel,
+      });
+
+    const familyMember = /^(\s*"?(?:better-auth|@better-auth\/[\w-]+)"?:\s*"?)[\d.]+/gm;
+    const setFamily = (content: string, version: string, members?: readonly string[]) =>
+      content.replace(familyMember, (match, key: string) =>
+        !members || members.some((name) => key.includes(`${name}"`) || key.includes(`${name}:`))
+          ? `${key}${version}`
+          : match,
+      );
+
+    const rewriteProject = async (
+      projectDir: string,
+      edit: (relativePath: string, content: string) => string,
+      editBaseline: (relativePath: string, content: string) => string = (_, content) => content,
+    ) => {
+      const manifest = (await readScaffoldManifest(projectDir))!;
+      const workspacePath = path.join(projectDir, "pnpm-workspace.yaml");
+      const filePaths = [...(await collectPackageJsonPaths(projectDir))];
+      if (await fs.pathExists(workspacePath)) filePaths.push(workspacePath);
+      for (const filePath of filePaths) {
+        const relativePath = path.relative(projectDir, filePath).split(path.sep).join("/");
+        const content = edit(relativePath, await fs.readFile(filePath, "utf8"));
+        await fs.writeFile(filePath, content);
+        manifest.hashes[relativePath] = hashContent(Buffer.from(content));
+        const baseline = manifest.baselines?.[relativePath];
+        if (baseline !== undefined) {
+          manifest.baselines![relativePath] = editBaseline(relativePath, baseline);
+        }
+      }
+      await writeScaffoldManifest(projectDir, manifest);
+    };
+
+    const readFamily = async (projectDir: string) => {
+      const versions: Record<string, string> = {};
+      const record = (scope: string, section: Record<string, string> = {}) => {
+        for (const [name, version] of Object.entries(section)) {
+          const isMember = name === "better-auth" || name.startsWith("@better-auth/");
+          if (isMember && /^[~^]?\d/.test(version)) {
+            versions[`${scope}:${name}`] = version;
+          }
+        }
+      };
+      for (const filePath of await collectPackageJsonPaths(projectDir)) {
+        const manifest = (await fs.readJson(filePath)) as { dependencies?: Record<string, string> };
+        record(path.relative(projectDir, filePath), manifest.dependencies);
+      }
+      if (await fs.pathExists(path.join(projectDir, "pnpm-workspace.yaml"))) {
+        record("catalog", await readCatalog(projectDir));
+      }
+      return versions;
+    };
+
+    const expectUpdateBlocksFamily = async (projectDir: string, blockedPath: string) => {
+      const before = await readFamily(projectDir);
+      const plan = await planScaffoldUpgrade(projectDir);
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      const entry = plan.files.find((file) => file.path === blockedPath);
+      expect(entry?.category).toBe("manual");
+      expect(entry?.reason).toContain("Better Auth");
+      expect(plan.lifecycle.blockers).toContain(`${blockedPath}: ${entry?.reason}`);
+      expect(
+        plan.files.flatMap((file) =>
+          (file.dependencyChanges ?? []).filter(
+            (change) => change.name === "better-auth" || change.name.startsWith("@better-auth/"),
+          ),
+        ),
+      ).toEqual([]);
+
+      const result = await applyScaffoldUpgrade(projectDir);
+      expect(result.success, result.success ? undefined : result.error).toBe(true);
+      expect(await readFamily(projectDir)).toEqual(before);
+      return entry?.reason;
+    };
+
+    it("blocks a legacy catalog family that the template would split", async () => {
+      const projectDir = await createAuthProject("family-legacy-catalog", "pnpm");
+      await rewriteProject(
+        projectDir,
+        (_, content) => setFamily(content, "1.7.7"),
+        (relativePath, content) =>
+          relativePath.endsWith("package.json") ? setFamily(content, "1.7.7") : content,
+      );
+      const manifest = (await readScaffoldManifest(projectDir))!;
+      delete manifest.baselines!["pnpm-workspace.yaml"];
+      await writeScaffoldManifest(projectDir, manifest);
+
+      await expectUpdateBlocksFamily(projectDir, "packages/auth/package.json");
+    }, 120_000);
+
+    it("blocks a template downgrade below channel-resolved baselines", async () => {
+      mockFamilyLatest("1.7.7");
+      const projectDir = await createAuthProject("family-channel-baselines", "pnpm", "latest");
+      expect((await readCatalog(projectDir))["better-auth"]).toBe("1.7.7");
+      await rewriteProject(
+        projectDir,
+        (_, content) => content,
+        (_, content) => setFamily(content, "1.7.7"),
+      );
+
+      await expectUpdateBlocksFamily(projectDir, "packages/auth/package.json");
+    }, 120_000);
+
+    for (const versionChannel of ["stable", "latest"] as const) {
+      it(`blocks adding core to a split family on ${versionChannel}`, async () => {
+        mockFamilyLatest("1.6.22");
+        const projectDir = await createAuthProject(
+          `family-split-core-${versionChannel}`,
+          "npm",
+          versionChannel,
+        );
+        const withoutCore = (content: string) =>
+          content.replace(/^\s*"@better-auth\/core": "[^"]*",?\n/m, "");
+        await rewriteProject(
+          projectDir,
+          (_, content) => setFamily(withoutCore(content), "1.7.7", ["better-auth"]),
+          (_, content) => withoutCore(content),
+        );
+        expect(await readFamily(projectDir)).toMatchObject({
+          [path.join("packages", "auth", "package.json:better-auth")]: "1.7.7",
+          [path.join("packages", "auth", "package.json:@better-auth/drizzle-adapter")]: "1.6.22",
+        });
+
+        const reason = await expectUpdateBlocksFamily(projectDir, "packages/auth/package.json");
+        expect(reason).toContain("better-auth 1.7.7");
+        expect(reason).toContain("@better-auth/drizzle-adapter 1.6.22");
+      }, 120_000);
+    }
+
+    it("keeps a family with aliased catalog members together during add", async () => {
+      mockFamilyLatest("1.6.22");
+      const projectDir = await createAuthProject("family-aliased-catalog", "pnpm", "latest");
+      await rewriteProject(projectDir, (relativePath, content) =>
+        relativePath === "pnpm-workspace.yaml"
+          ? `${content.replace(/^catalog:$/m, "catalogEntries: &deps")}catalog: *deps\n`
+          : content,
+      );
+      expect((await readCatalog(projectDir))["better-auth"]).toBe("1.6.22");
+      mockFamilyLatest("1.7.7");
+
+      const plan = await planStackUpdate(
+        projectDir,
+        { stateManagement: "zustand" },
+        { includeVersionChannelPaths: true },
+      );
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      expect(plan.manualReviewBlockers).toEqual([]);
+
+      const result = await applyStackUpdate(
+        projectDir,
+        { stateManagement: "zustand" },
+        { operation: "add", applyVersionChannel: true },
+      );
+      expect(result.success, result.success ? undefined : result.error).toBe(true);
+      expect(new Set(Object.values(await readFamily(projectDir)))).toEqual(new Set(["1.6.22"]));
+    }, 120_000);
   });
 });
 
