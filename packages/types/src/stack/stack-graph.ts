@@ -4068,7 +4068,6 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   const { frontend, mobile } = getProjectionAppOwners(parts, ecosystem);
   const databases = getProjectedDatabaseParts(parts, { backend, frontend, mobile });
   const database = getDataLayerDatabase(databases);
-  // Database setup keeps following the standalone or backend-owned database.
   const setupDatabase = databases.standalone ?? databases.backend;
   const orm = getSelectedScopedPart(parts, backend, "orm");
   const api = getSelectedScopedPart(parts, backend, "api");
