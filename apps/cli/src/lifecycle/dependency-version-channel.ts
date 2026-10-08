@@ -283,8 +283,20 @@ function applySynchronizedFamilyVersions(
   packageInfos: Map<string, NpmPackageInfo>,
   latestChannelHolds: ReadonlyMap<string, string>,
   channel: Exclude<VersionChannel, "stable">,
+  frozenPackages: ReadonlySet<string>,
 ): void {
   for (const family of families) {
+    const frozenPackage = family.packages.find((packageName) => frozenPackages.has(packageName));
+    if (frozenPackage) {
+      log.warn(
+        `Keeping ${family.name} packages on their current versions: ${frozenPackage} is in an aliased pnpm catalog that cannot be rewritten`,
+      );
+      for (const packageName of family.packages) {
+        resolvedVersions.delete(packageName);
+      }
+      continue;
+    }
+
     const selectedPackages = family.packages.filter((packageName) =>
       currentVersions.has(packageName),
     );
@@ -352,14 +364,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export function parsePnpmCatalog(content: string) {
   const document = parseDocument(content);
-  const catalogNode = document.get("catalog");
-  if (!isMap(catalogNode)) return null;
+  if (document.errors.length > 0) return null;
+  const parsed: unknown = document.toJS();
+  const catalogValue = isRecord(parsed) ? parsed.catalog : undefined;
+  if (!isRecord(catalogValue)) return null;
 
   const catalog: PackageJsonVersionSection = {};
-  for (const [name, version] of Object.entries(catalogNode.toJSON() as Record<string, unknown>)) {
+  for (const [name, version] of Object.entries(catalogValue)) {
     if (typeof version === "string") catalog[name] = version;
   }
-  return { document, catalog };
+  return { document, catalog, editable: isMap(document.get("catalog")) };
 }
 
 export async function collectPackageJsonPaths(projectDir: string): Promise<string[]> {
@@ -601,7 +615,10 @@ export async function planDependencyVersionChannel(
     const packageJson = await readPackageJson(packageJsonPath);
     for (const section of getVersionSections(packageJson)) recordCurrentVersions(section);
   }
-  if (pnpmCatalog) recordCurrentVersions(pnpmCatalog.catalog);
+  if (pnpmCatalog?.editable) recordCurrentVersions(pnpmCatalog.catalog);
+  const frozenPackages = new Set(
+    pnpmCatalog && !pnpmCatalog.editable ? Object.keys(pnpmCatalog.catalog) : [],
+  );
 
   const packageNames = [...currentVersions.keys()];
   if (packageNames.length === 0) return [];
@@ -670,6 +687,7 @@ export async function planDependencyVersionChannel(
     packageInfos,
     latestChannelHolds,
     channel,
+    frozenPackages,
   );
   const rewrites: DependencyVersionChannelRewrite[] = [];
 
@@ -714,7 +732,7 @@ export async function planDependencyVersionChannel(
     }
   }
 
-  if (pnpmCatalog) {
+  if (pnpmCatalog?.editable) {
     const { workspacePath, document, catalog } = pnpmCatalog;
     const changedPackages = rewriteSection(
       catalog,

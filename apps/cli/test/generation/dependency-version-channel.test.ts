@@ -1295,6 +1295,35 @@ describe("version channel lifecycle round trips", () => {
         expect(reason).toContain("@better-auth/drizzle-adapter 1.6.22");
       }, 120_000);
     }
+
+    it("keeps a family with aliased catalog members together during add", async () => {
+      mockFamilyLatest("1.6.22");
+      const projectDir = await createAuthProject("family-aliased-catalog", "pnpm", "latest");
+      await rewriteProject(projectDir, (relativePath, content) =>
+        relativePath === "pnpm-workspace.yaml"
+          ? `${content.replace(/^catalog:$/m, "catalogEntries: &deps")}catalog: *deps\n`
+          : content,
+      );
+      expect((await readCatalog(projectDir))["better-auth"]).toBe("1.6.22");
+      mockFamilyLatest("1.7.7");
+
+      const plan = await planStackUpdate(
+        projectDir,
+        { stateManagement: "zustand" },
+        { includeVersionChannelPaths: true },
+      );
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      expect(plan.manualReviewBlockers).toEqual([]);
+
+      const result = await applyStackUpdate(
+        projectDir,
+        { stateManagement: "zustand" },
+        { operation: "add", applyVersionChannel: true },
+      );
+      expect(result.success, result.success ? undefined : result.error).toBe(true);
+      expect(new Set(Object.values(await readFamily(projectDir)))).toEqual(new Set(["1.6.22"]));
+    }, 120_000);
   });
 });
 

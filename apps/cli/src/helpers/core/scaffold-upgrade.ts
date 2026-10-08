@@ -661,7 +661,7 @@ function summarize(
 function deriveWorkspaceBaseline(diskContent: string, renderedContent: string | undefined) {
   const disk = parsePnpmCatalog(diskContent);
   const rendered = renderedContent === undefined ? null : parsePnpmCatalog(renderedContent);
-  if (!disk || !rendered) return undefined;
+  if (!disk?.editable || !rendered) return undefined;
 
   const moved = Object.entries(disk.catalog).flatMap(([name, version]) => {
     const templateVersion = rendered.catalog[name];
