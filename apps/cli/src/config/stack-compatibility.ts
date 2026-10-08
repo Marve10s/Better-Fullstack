@@ -193,8 +193,9 @@ export function getDataLayerSelectionIssue(config: Partial<ProjectConfig>): stri
       issues.find((candidate) => candidate.role === "dbSetup") ??
       issues.find(
         (candidate) =>
-          candidate.role === "orm" &&
-          parts.find((part) => part.id === candidate.partId)?.ecosystem === "typescript",
+          candidate.role === "database" ||
+          (candidate.role === "orm" &&
+            parts.find((part) => part.id === candidate.partId)?.ecosystem === "typescript"),
       );
     return issue?.message ?? null;
   }

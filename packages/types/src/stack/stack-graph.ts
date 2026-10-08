@@ -4276,23 +4276,31 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
 
   // Judged on the whole graph rather than per option, so the builder can still offer an ORM
   // before a database is chosen.
-  for (const part of parts) {
-    if (part.role !== "orm" || part.ecosystem !== "typescript" || part.source === "provided") {
+  for (const backend of parts) {
+    if (
+      backend.role !== "backend" ||
+      backend.ecosystem !== "typescript" ||
+      backend.source === "provided" ||
+      backend.toolId === "none"
+    ) {
       continue;
     }
-    const backend = part.ownerPartId ? partsById.get(part.ownerPartId) : undefined;
-    if (backend?.role !== "backend") continue;
+    const orm = getSelectedScopedPart(parts, backend, "orm");
     const database = getDataLayerDatabase(
       getProjectedDatabaseParts(parts, { ...getProjectionAppOwners(parts, "typescript"), backend }),
     );
-    const message = getDatabaseOrmRequirementIssue(database?.toolId ?? "none", part.toolId);
-    if (message) {
+    const message = getDatabaseOrmRequirementIssue(
+      database?.toolId ?? "none",
+      orm?.toolId ?? "none",
+    );
+    const missingSidePart = orm ?? database;
+    if (message && missingSidePart) {
       issues.push(
         createStackGraphIssue({
           code: "INCOMPATIBLE_GRAPH_SELECTION",
-          partId: part.id,
-          role: part.role,
-          toolId: part.toolId,
+          partId: missingSidePart.id,
+          role: missingSidePart.role,
+          toolId: missingSidePart.toolId,
           message,
         }),
       );

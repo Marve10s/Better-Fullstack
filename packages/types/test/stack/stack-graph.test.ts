@@ -387,6 +387,7 @@ describe("stack graph", () => {
       "backend:typescript:hono",
       "backend.runtime:typescript:node",
       "backend.deploy:typescript:railway",
+      "backend.orm:typescript:drizzle",
       "database:universal:postgres",
       "database.dbSetup:universal:neon",
     ]);

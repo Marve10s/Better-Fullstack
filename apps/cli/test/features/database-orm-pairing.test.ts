@@ -323,6 +323,26 @@ describe("database and ORM pairing", () => {
     });
     expect(() => buildProjectConfig({ part })).toThrow("ORM selection requires a database");
 
+    const databaseWithoutOrm = parseStackPartSpecs([
+      "frontend:typescript:tanstack-router",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "database:universal:postgres",
+    ]);
+    const databasePart = databaseWithoutOrm.map((candidate) =>
+      formatStackPartSpec(candidate, databaseWithoutOrm),
+    );
+    expect(await createVirtual({ stackParts: databaseWithoutOrm })).toEqual({
+      success: false,
+      error: "Database selection requires an ORM",
+    });
+    expect(() => buildProjectConfig({ part: databasePart })).toThrow(
+      "Database selection requires an ORM",
+    );
+    await expect(planProjectOperation.invoke({ part: databasePart })).rejects.toThrow(
+      "Database selection requires an ORM",
+    );
+
     // Other ecosystems keep their own data layer rules and ignore the TypeScript requirement.
     const python = {
       ecosystem: "python",
