@@ -228,9 +228,8 @@ export function getDataLayerSelectionIssue(config: Partial<ProjectConfig>): stri
       issues.find((candidate) => candidate.role === "dbSetup") ??
       issues.find(
         (candidate) =>
-          candidate.role === "database" ||
-          (candidate.role === "orm" &&
-            parts.find((part) => part.id === candidate.partId)?.ecosystem === "typescript"),
+          candidate.role === "orm" &&
+          parts.find((part) => part.id === candidate.partId)?.ecosystem === "typescript",
       );
     return issue?.message ?? null;
   }
@@ -241,11 +240,18 @@ export function getDataLayerSelectionIssue(config: Partial<ProjectConfig>): stri
 }
 
 // Checks that a flat TypeScript data layer has both a database and an ORM, reported after Better
-// Auth as the CLI does. Graph input reports a missing database with its ORM part instead.
+// Auth as the CLI does. Graph input reports a missing database with its ORM part, and a missing
+// ORM with its database part.
 export function getDatabaseOrmRequirementSelectionIssue(
   config: Partial<ProjectConfig>,
 ): string | null {
-  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) return null;
+  const parts = config.stackParts ?? [];
+  if (parts.length && !isToolingOverlayOnly(parts)) {
+    const issue = validateStackParts(parts).issues.find(
+      (candidate) => candidate.role === "database",
+    );
+    return issue?.message ?? null;
+  }
   if (!usesGenericOrm(config)) return null;
   return getDatabaseOrmRequirementIssue(config.database, config.orm);
 }
