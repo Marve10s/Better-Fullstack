@@ -84,4 +84,24 @@ describe("preset groups", () => {
 
     expect(combo?.command).toContain("--elixir-caching nebulex");
   });
+
+  it("creates the native tRPC preset with its server and verifies it as React Native", () => {
+    const combo = getPresetCombos("pr-core").find(
+      (candidate) => candidate.name === "preset-native-uniwind-trpc",
+    );
+
+    expect(combo?.ecosystem).toBe("react-native");
+    for (const flag of [
+      "--ecosystem typescript",
+      "--frontend native-uniwind",
+      "--backend hono",
+      "--runtime bun",
+      "--database sqlite",
+      "--orm drizzle",
+      "--auth better-auth",
+      "--api trpc",
+    ]) {
+      expect(combo?.command).toContain(flag);
+    }
+  });
 });

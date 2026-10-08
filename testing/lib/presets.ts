@@ -1024,6 +1024,7 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
   "native-uniwind-trpc": {
     ecosystem: "react-native",
     overrides: {
+      ecosystem: "typescript",
       frontend: ["native-uniwind"],
       backend: "hono",
       runtime: "bun",
@@ -1033,12 +1034,12 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       api: "trpc",
       packageManager: "bun",
       mobileNavigation: "expo-router",
-      mobileUI: "none",
+      mobileUI: "uniwind",
       mobileStorage: "none",
       mobileTesting: "none",
       mobilePush: "none",
       mobileOTA: "none",
-      mobileDeepLinking: "none",
+      mobileDeepLinking: "expo-linking",
     },
   },
 };
