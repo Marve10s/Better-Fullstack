@@ -161,7 +161,7 @@ describe("completion command", () => {
     expect(result.exitCode).toBe(0);
   });
 
-  // CI runners ship bash but not zsh.
+  // The CI Test job installs zsh and fish; other machines may lack them.
   it.skipIf(!Bun.which("zsh"))("zsh script passes a syntax check", () => {
     const result = Bun.spawnSync(["zsh", "-n"], { stdin: Buffer.from(scripts.get("zsh") ?? "") });
     expect(result.stderr.toString()).toBe("");

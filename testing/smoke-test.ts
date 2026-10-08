@@ -518,6 +518,7 @@ for (const combo of combos) {
     doctorCliPath: scaffoldResult.result?.cliPath,
     outputDir: args.output,
     config: combo.config,
+    runtimeChecks: combo.runtimeChecks,
   });
   results.push(result);
 

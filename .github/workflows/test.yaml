@@ -117,6 +117,12 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
+      # The shell completion tests syntax-check the zsh and fish scripts only where those shells exist.
+      - name: Install Completion Shells
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends zsh fish
+
       - name: Run Turbo Tests
         run: bun run test
 

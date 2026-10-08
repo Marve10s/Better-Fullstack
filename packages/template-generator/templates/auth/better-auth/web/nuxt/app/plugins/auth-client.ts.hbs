@@ -10,10 +10,15 @@ import { creemClient } from "@creem_io/better-auth/client";
 {{/if}}
 
 export default defineNuxtPlugin(() => {
+{{#if (eq backend "self")}}
+  const authClient = createAuthClient({
+    baseURL: useRequestURL().origin,
+{{else}}
   const config = useRuntimeConfig();
 
   const authClient = createAuthClient({
     baseURL: config.public.serverUrl,
+{{/if}}
     {{#if (or (hasBetterAuthOrganizations auth) (eq payments "polar") (eq payments "creem"))}}
     plugins: [
       {{#if (hasBetterAuthOrganizations auth)}}
