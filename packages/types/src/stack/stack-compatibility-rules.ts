@@ -355,6 +355,54 @@ export function getJobQueueIncompatibility(
   return null;
 }
 
+const MONGODB_UNSUPPORTED_ORM_REASONS: Record<string, string> = {
+  drizzle: "Drizzle ORM does not support MongoDB",
+  typeorm: "TypeORM does not support MongoDB in Better Fullstack",
+  kysely: "Kysely does not support MongoDB",
+  mikroorm: "MikroORM does not support MongoDB in Better Fullstack",
+  sequelize: "Sequelize does not support MongoDB",
+};
+
+const ORMLESS_DATABASE_REASONS: Record<string, string> = {
+  edgedb: "EdgeDB has its own built-in query builder and does not require an ORM",
+  redis: "Redis is a key-value store and does not require an ORM",
+};
+
+/**
+ * Shared reason for a TypeScript database and ORM pair that cannot generate a working data layer.
+ * Legacy compatibility, graph validation, CLI validation, MCP, createVirtual, update planning,
+ * prompts, and the builder all report this text. Only a selected database with a selected ORM is
+ * judged: `none` or an unanswered side is a missing requirement, not an impossible pair.
+ */
+export function getDatabaseOrmIncompatibility(
+  database: string | undefined,
+  orm: string | undefined,
+): string | null {
+  if (!database || !orm || database === "none" || orm === "none") return null;
+  if (orm === "mongoose") {
+    return database === "mongodb" ? null : "Mongoose ORM requires MongoDB database";
+  }
+  if (database === "mongodb") return MONGODB_UNSUPPORTED_ORM_REASONS[orm] ?? null;
+  return ORMLESS_DATABASE_REASONS[database] ?? null;
+}
+
+/**
+ * Shared reason for a TypeScript data layer missing one side: an ORM without a database, or a
+ * database without an ORM unless the database brings its own client. An unanswered side is left
+ * open for prompts to fill.
+ */
+export function getDatabaseOrmRequirementIssue(
+  database: string | undefined,
+  orm: string | undefined,
+): string | null {
+  if (!database || !orm) return null;
+  if (orm !== "none" && database === "none") return "ORM selection requires a database";
+  if (orm === "none" && database !== "none" && !ORMLESS_DATABASE_REASONS[database]) {
+    return "Database selection requires an ORM";
+  }
+  return null;
+}
+
 const BETTER_AUTH_UNSUPPORTED_TOOLS: Record<string, string> = {
   redis: "Redis",
   edgedb: "EdgeDB",

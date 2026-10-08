@@ -22,6 +22,12 @@ export {
 import { hasGeneratedJobQueueRequirements, type ProjectConfig } from "@/types";
 
 import { applyEffectBackendDefaults } from "@/config/config-processing";
+import {
+  getAuthSelectionIssue,
+  getDatabaseOrmRequirementSelectionIssue,
+  getDataLayerSelectionIssue,
+  getProviderDataLayer,
+} from "@/config/stack-compatibility";
 
 // Re-export virtual filesystem types for programmatic usage
 export {
@@ -256,7 +262,11 @@ export async function createVirtual(
     if (options.stackParts) {
       config.stackParts = options.stackParts;
     }
+    Object.assign(config, getProviderDataLayer(config, options));
     applyEffectBackendDefaults(config, new Set(Object.keys(options)));
+
+    const authIssue = getAuthSelectionIssue(config);
+    if (authIssue) return { success: false, error: authIssue };
 
     const hasLegacyContainerAddon =
       !config.stackParts &&
@@ -293,9 +303,9 @@ export async function createVirtual(
       );
     }
 
-    const { getBetterAuthSelectionIssue } = await import("@/config/stack-compatibility");
-    const betterAuthIssue = getBetterAuthSelectionIssue(config);
-    if (betterAuthIssue) return { success: false, error: betterAuthIssue };
+    const dataLayerIssue =
+      getDataLayerSelectionIssue(config) ?? getDatabaseOrmRequirementSelectionIssue(config);
+    if (dataLayerIssue) return { success: false, error: dataLayerIssue };
 
     const { generateVirtualProject: generate, EMBEDDED_TEMPLATES } =
       await import("@better-fullstack/template-generator");

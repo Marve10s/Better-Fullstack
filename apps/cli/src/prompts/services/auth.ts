@@ -4,7 +4,7 @@ import type { Auth, Backend, Database, ORM } from "@/types";
 import { DEFAULT_CONFIG } from "@/constants";
 import { exitCancelled } from "@/presentation/errors";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
-import { getBetterAuthDatabaseIncompatibility, getSupportedCapabilityOptions } from "@/types";
+import { getAuthIncompatibility, getCapabilityDefinitions } from "@/types";
 
 type AuthPromptContext = {
   auth?: Auth;
@@ -31,19 +31,17 @@ export function resolveAuthPrompt(context: AuthPromptContext = {}): PromptSingle
     { value: "none" },
   ] as const satisfies ReadonlyArray<{ value: Auth }>;
 
-  const supportedOptions = getSupportedCapabilityOptions("auth", {
+  const stack = {
     ecosystem: context.ecosystem ?? "typescript",
     backend: context.backend,
     frontend: context.frontend,
-  });
+    database: context.database,
+    orm: context.orm,
+  };
+  const definitions = getCapabilityDefinitions("auth");
   const options = authOptionOrder.flatMap(({ value }) => {
-    const option = supportedOptions.find((candidate) => candidate.id === value);
-    const databaseIssue = getBetterAuthDatabaseIncompatibility(
-      value,
-      { database: context.database, orm: context.orm },
-      { partial: true },
-    );
-    return option && !databaseIssue
+    const option = definitions.find((candidate) => candidate.id === value);
+    return option && !getAuthIncompatibility(value, stack, { partial: true })
       ? [
           {
             value: option.id,

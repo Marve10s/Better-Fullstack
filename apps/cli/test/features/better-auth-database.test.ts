@@ -161,12 +161,12 @@ describe("Better Auth database adapters", () => {
 
         const graph = await createVirtual({ stackParts: graphSpecs(stack, database, orm) });
         expect(graph.success).toBe(false);
-        expect(graph.error).toBe(`${reason}.`);
+        expect(graph.error).toBe(reason);
 
         expect(() => buildProjectConfig({ ...options, auth })).toThrow(reason);
         const graphParts = graphSpecs(stack, database, orm);
         const specs = graphParts.map((part) => formatStackPartSpec(part, graphParts));
-        expect(() => buildProjectConfig({ part: specs })).toThrow(`${reason}.`);
+        expect(() => buildProjectConfig({ part: specs })).toThrow(reason);
 
         const builderInput = buildCompatibilityInputFromConfig({ ...options, auth });
         if (orm !== "none" || database === "edgedb" || database === "redis") {
@@ -359,7 +359,7 @@ describe("Better Auth database adapters", () => {
   const WEB_PARTS = ["frontend:typescript:next", ...HONO_PARTS];
 
   test("frontend- and mobile-owned Better Auth are judged like backend-owned Better Auth", async () => {
-    const reason = "Better Auth has no EdgeDB adapter.";
+    const reason = "Better Auth has no EdgeDB adapter";
     const owned = (owner: string) => [
       ...WEB_PARTS,
       "database:universal:edgedb",

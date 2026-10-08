@@ -1,13 +1,20 @@
 import {
   analyzeStackCompatibility,
   getAddonStackPartBinding,
-  getBetterAuthDatabaseIncompatibility,
+  getAuthIncompatibility,
+  getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getPythonLoggingIncompatibility,
   isToolingOverlayOnly,
+  stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
   type CompatibilityInput,
+  type Database,
+  type DatabaseSetup,
+  type ORM,
   type ProjectConfig,
+  type Runtime,
 } from "@/types";
 
 export function asString(value: unknown, fallback = "none"): string {
@@ -49,32 +56,241 @@ export function getRequestedJobQueueRejection(
   return getJobQueueIncompatibility(requestedJobQueue, adjustedConfig);
 }
 
+function getAuthStack(config: Partial<ProjectConfig>) {
+  return {
+    ecosystem: config.ecosystem && getCompatibilityEcosystem(config),
+    backend: config.backend,
+    frontend: config.frontend,
+    database: config.database,
+    orm: config.orm,
+  };
+}
+
 /**
- * Compatibility adjustments may reset Better Auth when another choice leaves it without an adapter,
- * as the builder does. Better Auth requested by flag or tool input is rejected instead, with the
- * shared reason.
+ * Checks the auth selection the generator will use. A stack graph is projected the way the
+ * generator projects it, so its auth part wins over stale flat `auth`, `database`, and `orm`
+ * fields, and every auth part is also judged by the data layer its server runs on. With `partial`,
+ * unanswered selections are left open for prompts to fill.
  */
-export function getRequestedBetterAuthRejection(
+export function getAuthSelectionIssue(
+  config: Partial<ProjectConfig>,
+  { partial = false } = {},
+): string | null {
+  if (!config.stackParts?.length || isToolingOverlayOnly(config.stackParts)) {
+    return getAuthIncompatibility(config.auth, getAuthStack(config), { partial });
+  }
+  const selection = stackGraphToLegacyProjectConfigForEcosystem(
+    config as ProjectConfig,
+    "typescript",
+  );
+  // Auth parts paired with another ecosystem's backend generate only auth clients.
+  const servesForeignBackend =
+    selection.backend === "none" &&
+    config.stackParts.some(
+      (part) => part.role === "backend" && part.ecosystem !== "typescript" && !part.ownerPartId,
+    );
+  return (
+    (servesForeignBackend
+      ? null
+      : getAuthIncompatibility(selection.auth, getAuthStack(selection))) ??
+    validateStackParts(config.stackParts).issues.find((issue) => issue.role === "auth")?.message ??
+    null
+  );
+}
+
+/**
+ * Compatibility adjustments may reset auth that another choice made unsupported, as the builder
+ * does. Auth the user requested by flag or tool input is rejected instead, with the shared reason.
+ */
+export function getRequestedAuthRejection(
   requestedAuth: ProjectConfig["auth"] | undefined,
   adjustedConfig: Partial<ProjectConfig>,
 ): string | null {
   if (!requestedAuth || adjustedConfig.auth === requestedAuth) return null;
-  return getBetterAuthDatabaseIncompatibility(requestedAuth, adjustedConfig);
+  return getAuthIncompatibility(requestedAuth, getAuthStack(adjustedConfig));
 }
 
-// Checks the Better Auth selection the generator will use: graph input is judged by its own auth,
-// database, and ORM parts rather than by stale flat fields.
-export function getBetterAuthSelectionIssue(config: Partial<ProjectConfig>): string | null {
-  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
-    const issue = validateStackParts(config.stackParts).issues.find(
-      (candidate) =>
-        candidate.role === "auth" &&
-        (candidate.toolId === "better-auth" || candidate.toolId === "better-auth-organizations"),
+/**
+ * Compatibility adjustments replace an ORM the database cannot use, as the builder does. An ORM
+ * requested by flag or replayed config is rejected instead, with the shared reason. A requested
+ * database is judged as requested, since adjustments may also replace it.
+ */
+export function getRequestedOrmRejection(
+  requested: Pick<Partial<ProjectConfig>, "database" | "orm">,
+  adjustedConfig: Partial<ProjectConfig>,
+): string | null {
+  if (!requested.orm || !usesGenericOrm(adjustedConfig)) return null;
+  if (requested.database) {
+    return (
+      getDatabaseOrmIncompatibility(requested.database, requested.orm) ??
+      getDatabaseOrmRequirementSelectionIssue({ ...adjustedConfig, ...requested })
+    );
+  }
+  if (adjustedConfig.orm === requested.orm) return null;
+  return getDatabaseOrmIncompatibility(adjustedConfig.database, requested.orm);
+}
+
+const DATABASE_SETUP_REQUIREMENTS: Record<
+  DatabaseSetup,
+  { database?: Database; runtime?: Runtime; errorMessage: string }
+> = {
+  turso: {
+    database: "sqlite",
+    errorMessage:
+      "Turso setup requires SQLite database. Please use '--database sqlite' or choose a different setup.",
+  },
+  neon: {
+    database: "postgres",
+    errorMessage:
+      "Neon setup requires PostgreSQL database. Please use '--database postgres' or choose a different setup.",
+  },
+  "prisma-postgres": {
+    database: "postgres",
+    errorMessage:
+      "Prisma PostgreSQL setup requires PostgreSQL database. Please use '--database postgres' or choose a different setup.",
+  },
+  planetscale: {
+    errorMessage:
+      "PlanetScale setup requires PostgreSQL or MySQL database. Please use '--database postgres' or '--database mysql' or choose a different setup.",
+  },
+  "mongodb-atlas": {
+    database: "mongodb",
+    errorMessage:
+      "MongoDB Atlas setup requires MongoDB database. Please use '--database mongodb' or choose a different setup.",
+  },
+  upstash: {
+    database: "redis",
+    errorMessage:
+      "Upstash setup requires Redis database. Please use '--database redis' or choose a different setup.",
+  },
+  supabase: {
+    database: "postgres",
+    errorMessage:
+      "Supabase setup requires PostgreSQL database. Please use '--database postgres' or choose a different setup.",
+  },
+  d1: {
+    database: "sqlite",
+    runtime: "workers",
+    errorMessage: "Cloudflare D1 setup requires SQLite database and Cloudflare Workers runtime.",
+  },
+  docker: {
+    errorMessage:
+      "In Better-Fullstack, Docker setup is currently not available with SQLite database or Cloudflare Workers runtime.",
+  },
+  none: { errorMessage: "" },
+};
+
+/**
+ * Shared reason a database setup provider cannot host the selected database or runtime. With
+ * `requireDatabase`, a provider with no database at all is rejected before its own requirement.
+ */
+export function getDatabaseSetupIssue(
+  config: Partial<ProjectConfig>,
+  { requireDatabase = true } = {},
+): string | null {
+  const { dbSetup, database, runtime } = config;
+  if (!dbSetup || dbSetup === "none") return null;
+
+  if (requireDatabase && database === "none") {
+    return "Database setup requires a database. Please choose a database or set '--db-setup none'.";
+  }
+
+  const validation = DATABASE_SETUP_REQUIREMENTS[dbSetup];
+  if (dbSetup === "planetscale") {
+    if (database !== "postgres" && database !== "mysql") return validation.errorMessage;
+  } else if (validation.database && database !== validation.database) {
+    return validation.errorMessage;
+  }
+
+  if (validation.runtime && runtime !== validation.runtime) return validation.errorMessage;
+
+  if (dbSetup === "docker") {
+    if (database === "sqlite") {
+      return "In Better-Fullstack, Docker setup is currently not available with SQLite database. SQLite is file-based and doesn't require Docker. Please use '--database postgres', '--database mysql', '--database mongodb', or choose a different setup.";
+    }
+    if (runtime === "workers") {
+      return "In Better-Fullstack, Docker setup is currently not available with Cloudflare Workers runtime. Workers runtime uses serverless databases (D1) and doesn't support local Docker containers. Please use '--db-setup d1' for SQLite or choose a different runtime.";
+    }
+  }
+  return null;
+}
+
+export function getRequestedDatabaseSetupRejection(
+  requested: Pick<Partial<ProjectConfig>, "database" | "dbSetup" | "runtime">,
+  adjustedConfig: Partial<ProjectConfig>,
+): string | null {
+  if (!requested.dbSetup || !requested.database) return null;
+  return getDatabaseSetupIssue({
+    database: requested.database,
+    dbSetup: requested.dbSetup,
+    runtime: requested.runtime ?? adjustedConfig.runtime,
+  });
+}
+
+const PROVIDER_DEFAULT_ORMS: Partial<Record<Database, ORM>> = {
+  mongodb: "prisma",
+  redis: "none",
+};
+
+export function getProviderDataLayer(
+  config: Pick<Partial<ProjectConfig>, "dbSetup" | "ecosystem" | "stackParts">,
+  requested: { database?: unknown; orm?: unknown },
+): Pick<Partial<ProjectConfig>, "database" | "orm"> {
+  if (requested.database !== undefined || !config.dbSetup) return {};
+  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) return {};
+  const database = DATABASE_SETUP_REQUIREMENTS[config.dbSetup].database;
+  if (!database) return {};
+  if (requested.orm !== undefined || !usesGenericOrm(config)) return { database };
+  return { database, orm: PROVIDER_DEFAULT_ORMS[database] ?? "drizzle" };
+}
+
+// Checks the data layer the generator will use: the database setup provider must host the
+// database before the database and ORM pair is judged. Graph input is judged by its own parts
+// rather than by stale flat fields.
+export function getDataLayerSelectionIssue(config: Partial<ProjectConfig>): string | null {
+  const parts = config.stackParts ?? [];
+  if (parts.length && !isToolingOverlayOnly(parts)) {
+    const issues = validateStackParts(parts).issues;
+    const issue =
+      issues.find((candidate) => candidate.role === "dbSetup") ??
+      issues.find(
+        (candidate) =>
+          candidate.role === "orm" &&
+          parts.find((part) => part.id === candidate.partId)?.ecosystem === "typescript",
+      );
+    return issue?.message ?? null;
+  }
+  return (
+    getDatabaseSetupIssue(config) ??
+    (usesGenericOrm(config) ? getDatabaseOrmIncompatibility(config.database, config.orm) : null)
+  );
+}
+
+// Checks that a flat TypeScript data layer has both a database and an ORM, reported after Better
+// Auth as the CLI does. Graph input reports a missing database with its ORM part, and a missing
+// ORM with its database part.
+export function getDatabaseOrmRequirementSelectionIssue(
+  config: Partial<ProjectConfig>,
+): string | null {
+  const parts = config.stackParts ?? [];
+  if (parts.length && !isToolingOverlayOnly(parts)) {
+    const issue = validateStackParts(parts).issues.find(
+      (candidate) => candidate.role === "database",
     );
     return issue?.message ?? null;
   }
-  if ((config.ecosystem ?? "typescript") !== "typescript") return null;
-  return getBetterAuthDatabaseIncompatibility(config.auth, config);
+  if (!usesGenericOrm(config)) return null;
+  return getDatabaseOrmRequirementIssue(config.database, config.orm);
+}
+
+// The generic orm field only drives TypeScript and React Native generation; other ecosystems keep
+// it as an inert default and choose their data layer through their own ORM field.
+export function usesGenericOrm(config: Pick<Partial<ProjectConfig>, "ecosystem">): boolean {
+  return (
+    config.ecosystem === undefined ||
+    config.ecosystem === "typescript" ||
+    config.ecosystem === "react-native"
+  );
 }
 
 function getProjectBackendFromCompatibility(backend: string): string {

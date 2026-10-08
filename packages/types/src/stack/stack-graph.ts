@@ -7,6 +7,7 @@ import type {
   StackPartSource,
 } from "@/config/types";
 
+import { getAuthIncompatibility } from "@/capabilities/capabilities";
 import {
   getCodeQualitySelectionIssue,
   getShadcnLintFrontendIssue,
@@ -178,7 +179,8 @@ import {
   WEB_DEPLOY_VALUES,
 } from "@/config/schemas";
 import {
-  getBetterAuthDatabaseIncompatibility,
+  getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
@@ -300,7 +302,6 @@ const TYPESCRIPT_APOLLO_SERVER_COMPATIBLE_FRONTENDS = new Set([
   "next",
   "vinext",
 ]);
-const BETTER_AUTH_UNSUPPORTED_ORM_TOOLS = new Set(["typeorm", "mikroorm", "sequelize"]);
 const ELIXIR_ECTO_REQUIRED_TOOLS = new Set(["absinthe"]);
 const ELIXIR_ECTO_SQL_REQUIRED_TOOLS = new Set(["oban"]);
 const ELIXIR_SQL_REPO_REQUIRED_TOOLS = new Set(["pow", "ex_machina", "phx-gen-auth"]);
@@ -1673,6 +1674,31 @@ function createTypeScriptBackendCompatibilityIssue(
     }
   }
 
+  if (part.role === "orm") {
+    const appDatabases = context.parts
+      ? getProjectedDatabaseParts(
+          context.parts,
+          getProjectionAppOwners(context.parts, "typescript"),
+        )
+      : undefined;
+    const database = getDataLayerDatabase({
+      standalone: context.primaryToolIdsByRole?.database,
+      mobile: appDatabases?.mobile?.toolId,
+      frontend: appDatabases?.frontend?.toolId,
+      backend: context.siblingToolIdsByRole?.database,
+    });
+    const reason = getDatabaseOrmIncompatibility(database, part.toolId);
+    if (reason) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: reason,
+      });
+    }
+  }
+
   if (part.role === "cms" && part.toolId === "payload") {
     const frontendTool = context.primaryToolIdsByRole?.frontend;
     if (frontendTool !== "next") {
@@ -1734,7 +1760,7 @@ function createTypeScriptBackendCompatibilityIssue(
   return undefined;
 }
 
-const BETTER_AUTH_OWNER_ECOSYSTEMS: Partial<Record<StackPrimaryRole, StackPartEcosystem>> = {
+const AUTH_SERVER_OWNER_ECOSYSTEMS: Partial<Record<StackPrimaryRole, StackPartEcosystem>> = {
   backend: "typescript",
   frontend: "typescript",
   mobile: "react-native",
@@ -1743,18 +1769,13 @@ const BETTER_AUTH_OWNER_ECOSYSTEMS: Partial<Record<StackPrimaryRole, StackPartEc
 // Auth owned by a frontend or mobile app runs its Better Auth server on the TypeScript backend, so
 // it is judged by the data layer the flat projection takes from that backend. Without a TypeScript
 // backend only auth clients are generated and there is no adapter to judge.
-function createBetterAuthDatabaseIssue(
-  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+function getAuthPartDataLayer(
+  part: Pick<StackPart, "ecosystem">,
   context: StackPartOptionContext,
-): StackGraphIssue | undefined {
-  if (
-    part.role !== "auth" ||
-    !context.ownerRole ||
-    BETTER_AUTH_OWNER_ECOSYSTEMS[context.ownerRole] !== part.ecosystem
-  ) {
-    return undefined;
+): { database?: string; orm?: string } {
+  if (!context.ownerRole || AUTH_SERVER_OWNER_ECOSYSTEMS[context.ownerRole] !== part.ecosystem) {
+    return {};
   }
-
   const parts = context.parts ?? [];
   const backend =
     context.ownerRole !== "backend"
@@ -1765,21 +1786,114 @@ function createBetterAuthDatabaseIssue(
             !candidate.ownerPartId,
         )
       : undefined;
-  if (context.ownerRole !== "backend" && !backend) return undefined;
-  const reason = getBetterAuthDatabaseIncompatibility(part.toolId, {
+  if (context.ownerRole !== "backend" && !backend) return {};
+  const appDatabases = getProjectedDatabaseParts(
+    parts,
+    getProjectionAppOwners(parts, "typescript"),
+  );
+  return {
     database:
-      context.siblingToolIdsByRole?.database ??
-      context.primaryToolIdsByRole?.database ??
-      getSelectedScopedPart(parts, backend, "database")?.toolId,
-    orm: context.siblingToolIdsByRole?.orm ?? getSelectedScopedPart(parts, backend, "orm")?.toolId,
+      getDataLayerDatabase({
+        standalone: context.primaryToolIdsByRole?.database,
+        mobile: appDatabases.mobile?.toolId,
+        frontend: appDatabases.frontend?.toolId,
+        backend:
+          context.ownerRole === "backend"
+            ? context.siblingToolIdsByRole?.database
+            : getSelectedScopedPart(parts, backend, "database")?.toolId,
+      }) ?? "none",
+    orm:
+      context.siblingToolIdsByRole?.orm ??
+      getSelectedScopedPart(parts, backend, "orm")?.toolId ??
+      "none",
+  };
+}
+
+// The auth parts generated into the TypeScript app, in the order its flat projection picks one:
+// backend, then web frontend, then mobile app.
+function getAppAuthParts(parts: readonly StackPart[]) {
+  const ownerOrder: StackPrimaryRole[] = ["backend", "frontend", "mobile"];
+  return ownerOrder.flatMap((ownerRole) => {
+    const owner = parts.find(
+      (candidate) =>
+        candidate.role === ownerRole &&
+        candidate.ecosystem === AUTH_SERVER_OWNER_ECOSYSTEMS[ownerRole] &&
+        !candidate.ownerPartId,
+    );
+    const auth = getSelectedScopedPart(parts, owner, "auth");
+    return auth && auth.ecosystem === owner?.ecosystem && !isNoneTool(auth.toolId) ? [auth] : [];
   });
+}
+
+// The backend an auth part is generated with. Auth owned by a frontend or mobile app runs on the
+// TypeScript backend; with another ecosystem's backend only auth clients are generated, so the
+// backend stays unanswered.
+function getAuthPartBackend(
+  part: Pick<StackPart, "ecosystem">,
+  context: StackPartOptionContext,
+): string | undefined {
+  if (context.ownerRole === "backend") {
+    return context.ownerEcosystem === "typescript" ? context.ownerToolId : undefined;
+  }
+  if (!context.ownerRole || AUTH_SERVER_OWNER_ECOSYSTEMS[context.ownerRole] !== part.ecosystem) {
+    return undefined;
+  }
+  const backends = (context.parts ?? []).filter(
+    (candidate) =>
+      candidate.role === "backend" && !candidate.ownerPartId && candidate.source !== "provided",
+  );
+  if (backends.length === 0) return "none";
+  return backends.find((backend) => backend.ecosystem === "typescript")?.toolId;
+}
+
+// A TypeScript auth part is judged against the stack it is generated into. The generator wires one
+// provider per app, so a different provider on another owner of the same app is rejected.
+function createAuthPartIssue(
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+  context: StackPartOptionContext,
+): StackGraphIssue | undefined {
+  if (part.role !== "auth") return undefined;
+  const appAuthParts = getAppAuthParts(context.parts ?? []);
+  const projectedAuth = appAuthParts[0];
+  const isAppAuth = appAuthParts.some((candidate) => candidate.id === part.id);
+  // The same provider on several owners is generated once and judged on the projected part.
+  if (isAppAuth && projectedAuth?.id !== part.id && projectedAuth?.toolId === part.toolId) {
+    return undefined;
+  }
+  const conflictingAuth =
+    isAppAuth && projectedAuth?.toolId !== part.toolId ? projectedAuth : undefined;
+  const dataLayer = getAuthPartDataLayer(part, context);
+  if (!conflictingAuth && part.ecosystem !== "typescript" && dataLayer.database === undefined) {
+    return undefined;
+  }
+  const backend = getAuthPartBackend(part, context);
+  const frontend = [
+    context.primaryEcosystemsByRole?.frontend === "typescript"
+      ? context.primaryToolIdsByRole?.frontend
+      : undefined,
+    context.primaryEcosystemsByRole?.mobile === "react-native"
+      ? context.primaryToolIdsByRole?.mobile
+      : undefined,
+  ].filter((tool) => tool !== undefined);
+  const reason = conflictingAuth
+    ? `Only one auth provider is generated per app, so '${part.toolId}' cannot be selected alongside '${conflictingAuth.toolId}'`
+    : getAuthIncompatibility(
+        part.toolId,
+        {
+          ecosystem: "typescript",
+          ...dataLayer,
+          frontend,
+          ...(backend === undefined ? {} : { backend }),
+        },
+        { partial: backend === undefined },
+      );
   if (!reason) return undefined;
   return createStackGraphIssue({
     code: "INCOMPATIBLE_GRAPH_SELECTION",
     partId: part.id,
     role: part.role,
     toolId: part.toolId,
-    message: `${reason}.`,
+    message: reason,
   });
 }
 
@@ -2816,8 +2930,8 @@ function getStackPartCompatibilityIssue(
   const backendCompatibilityIssue = createTypeScriptBackendCompatibilityIssue(part, context);
   if (backendCompatibilityIssue) return backendCompatibilityIssue;
 
-  const betterAuthDatabaseIssue = createBetterAuthDatabaseIssue(part, context);
-  if (betterAuthDatabaseIssue) return betterAuthDatabaseIssue;
+  const authIssue = createAuthPartIssue(part, context);
+  if (authIssue) return authIssue;
 
   const sharedBackendServiceCompatibilityIssue = createSharedBackendServiceCompatibilityIssue(
     part,
@@ -2913,34 +3027,6 @@ function getStackPartCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: `'apollo-server' requires a React frontend and cannot be selected with the '${frontendTool}' frontend.`,
-      });
-    }
-  }
-
-  if (
-    part.ecosystem === "typescript" &&
-    part.role === "auth" &&
-    (part.toolId === "better-auth" || part.toolId === "better-auth-organizations")
-  ) {
-    const databaseTool = context.primaryToolIdsByRole?.database;
-    if (databaseTool === "redis") {
-      return createStackGraphIssue({
-        code: "INCOMPATIBLE_GRAPH_SELECTION",
-        partId: part.id,
-        role: part.role,
-        toolId: part.toolId,
-        message: "'better-auth' cannot use Redis as the primary database.",
-      });
-    }
-
-    const ormTool = context.siblingToolIdsByRole?.orm;
-    if (ormTool && BETTER_AUTH_UNSUPPORTED_ORM_TOOLS.has(ormTool)) {
-      return createStackGraphIssue({
-        code: "INCOMPATIBLE_GRAPH_SELECTION",
-        partId: part.id,
-        role: part.role,
-        toolId: part.toolId,
-        message: `'better-auth' is not compatible with the '${ormTool}' ORM selection.`,
       });
     }
   }
@@ -3885,6 +3971,41 @@ type GraphProjectionEcosystem = Exclude<
   "universal" | "kotlin" | "swift" | "dart"
 >;
 
+// The TypeScript projection builds a backend's data layer on a standalone database, else on the
+// database the mobile app, the frontend, or the backend owns, in that order. Validation judges the
+// same database.
+function getDataLayerDatabase<T>(databases: {
+  standalone?: T;
+  mobile?: T;
+  frontend?: T;
+  backend?: T;
+}) {
+  return databases.standalone ?? databases.mobile ?? databases.frontend ?? databases.backend;
+}
+
+function getProjectionAppOwners(parts: readonly StackPart[], ecosystem: GraphProjectionEcosystem) {
+  return {
+    frontend: parts.find(
+      (part) => part.role === "frontend" && part.ecosystem === ecosystem && !part.ownerPartId,
+    ),
+    mobile: parts.find(
+      (part) => part.role === "mobile" && part.ecosystem === "react-native" && !part.ownerPartId,
+    ),
+  };
+}
+
+function getProjectedDatabaseParts(
+  parts: readonly StackPart[],
+  owners: { backend?: StackPart; frontend?: StackPart; mobile?: StackPart },
+) {
+  return {
+    standalone: getSelectedPrimaryPart(parts, "database"),
+    mobile: getSelectedScopedPart(parts, owners.mobile, "database"),
+    frontend: getSelectedScopedPart(parts, owners.frontend, "database"),
+    backend: getSelectedScopedPart(parts, owners.backend, "database"),
+  };
+}
+
 function getSelectedPrimaryPart(parts: readonly StackPart[], role: StackPartRole) {
   return parts.find(
     (part) => part.role === role && !part.ownerPartId && part.source !== "provided",
@@ -4003,14 +4124,10 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   const backend = parts.find(
     (part) => part.role === "backend" && part.ecosystem === ecosystem && !part.ownerPartId,
   );
-  const frontend = parts.find(
-    (part) => part.role === "frontend" && part.ecosystem === ecosystem && !part.ownerPartId,
-  );
-  const mobile = parts.find(
-    (part) => part.role === "mobile" && part.ecosystem === "react-native" && !part.ownerPartId,
-  );
-  const database =
-    getSelectedPrimaryPart(parts, "database") ?? getSelectedScopedPart(parts, backend, "database");
+  const { frontend, mobile } = getProjectionAppOwners(parts, ecosystem);
+  const databases = getProjectedDatabaseParts(parts, { backend, frontend, mobile });
+  const database = getDataLayerDatabase(databases);
+  const setupDatabase = databases.standalone ?? databases.backend;
   const orm = getSelectedScopedPart(parts, backend, "orm");
   const api = getSelectedScopedPart(parts, backend, "api");
   const auth =
@@ -4065,7 +4182,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
     projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
   }
 
-  const frontendScopedPartRoles = new Set<StackPartRole>(["auth"]);
+  const frontendScopedPartRoles = new Set<StackPartRole>(["auth", "database"]);
   for (const part of parts) {
     if (
       part.source === "provided" ||
@@ -4077,7 +4194,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
     projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
   }
 
-  const mobileScopedPartRoles = new Set<StackPartRole>(["auth", "payments"]);
+  const mobileScopedPartRoles = new Set<StackPartRole>(["auth", "payments", "database"]);
   for (const part of parts) {
     if (
       part.source === "provided" ||
@@ -4090,7 +4207,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   }
 
   for (const part of parts) {
-    if (part.source === "provided" || part.ownerPartId !== database?.id) {
+    if (part.source === "provided" || part.ownerPartId !== setupDatabase?.id) {
       continue;
     }
     projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
@@ -4212,6 +4329,39 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
       if (compatibilityIssue) {
         issues.push(compatibilityIssue);
       }
+    }
+  }
+
+  // Judged on the whole graph rather than per option, so the builder can still offer an ORM
+  // before a database is chosen.
+  for (const backend of parts) {
+    if (
+      backend.role !== "backend" ||
+      backend.ecosystem !== "typescript" ||
+      backend.source === "provided" ||
+      backend.toolId === "none"
+    ) {
+      continue;
+    }
+    const orm = getSelectedScopedPart(parts, backend, "orm");
+    const database = getDataLayerDatabase(
+      getProjectedDatabaseParts(parts, { ...getProjectionAppOwners(parts, "typescript"), backend }),
+    );
+    const message = getDatabaseOrmRequirementIssue(
+      database?.toolId ?? "none",
+      orm?.toolId ?? "none",
+    );
+    const missingSidePart = orm ?? database;
+    if (message && missingSidePart) {
+      issues.push(
+        createStackGraphIssue({
+          code: "INCOMPATIBLE_GRAPH_SELECTION",
+          partId: missingSidePart.id,
+          role: missingSidePart.role,
+          toolId: missingSidePart.toolId,
+          message,
+        }),
+      );
     }
   }
 

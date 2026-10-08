@@ -4,12 +4,14 @@ import { DEFAULT_CONFIG } from "@/constants";
 import { exitCancelled } from "@/presentation/errors";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
 import {
-  getBetterAuthDatabaseIncompatibility,
+  getAuthIncompatibility,
+  getDatabaseOrmIncompatibility,
   getJobQueueIncompatibility,
   type Auth,
   type Backend,
   type Database,
   type JobQueue,
+  type ORM,
   type Runtime,
 } from "@/types";
 
@@ -19,6 +21,7 @@ type DatabasePromptContext = {
   runtime?: Runtime;
   jobQueue?: JobQueue;
   auth?: Auth;
+  orm?: ORM;
 };
 
 export function resolveDatabasePrompt(
@@ -94,11 +97,12 @@ export function resolveDatabasePrompt(
         { database: option.value },
         { partial: true },
       ) &&
-      !getBetterAuthDatabaseIncompatibility(
+      !getAuthIncompatibility(
         context.auth,
-        { database: option.value },
+        { ecosystem: "typescript", database: option.value },
         { partial: true },
-      ),
+      ) &&
+      !getDatabaseOrmIncompatibility(option.value, context.orm),
   );
 
   return {
@@ -117,8 +121,9 @@ export async function getDatabaseChoice(
   runtime?: Runtime,
   jobQueue?: JobQueue,
   auth?: Auth,
+  orm?: ORM,
 ) {
-  const resolution = resolveDatabasePrompt({ database, backend, runtime, jobQueue, auth });
+  const resolution = resolveDatabasePrompt({ database, backend, runtime, jobQueue, auth, orm });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }
