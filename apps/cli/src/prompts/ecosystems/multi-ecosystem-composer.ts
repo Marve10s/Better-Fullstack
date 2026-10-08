@@ -1623,6 +1623,8 @@ export async function gatherMultiEcosystemConfig(
     stackPartSpecs.push(`${rolePath}:${binding.ecosystem}:${addon}`);
   }
   const stackParts = parseStackPartSpecs(Array.from(new Set(stackPartSpecs)), "selected");
+  const ecosystem = hasJavaScript ? "typescript" : (graphPartial.ecosystem ?? backendEcosystem);
+  const keepsGoBetterAuth = ecosystem === "go" && flags.auth === "go-better-auth";
 
   const config: ProjectConfig = {
     ...baseConfig,
@@ -1632,7 +1634,7 @@ export async function gatherMultiEcosystemConfig(
     projectName,
     projectDir,
     relativePath,
-    ecosystem: hasJavaScript ? "typescript" : (graphPartial.ecosystem ?? backendEcosystem),
+    ecosystem,
     frontend:
       frontendEcosystem === "typescript"
         ? nativeFrontend === "none"
@@ -1646,7 +1648,11 @@ export async function gatherMultiEcosystemConfig(
     database,
     orm: backendEcosystem === "typescript" ? (backendChoices.orm ?? "none") : "none",
     api: backendEcosystem === "typescript" ? (backendChoices.api ?? "none") : "none",
-    auth: backendEcosystem === "typescript" ? (backendChoices.auth ?? "none") : "none",
+    auth: keepsGoBetterAuth
+      ? "go-better-auth"
+      : backendEcosystem === "typescript"
+        ? (backendChoices.auth ?? "none")
+        : "none",
     rustFrontend: selectedRustFrontend,
     dotnetFrontend: selectedDotnetFrontend,
     kotlinMobile,
