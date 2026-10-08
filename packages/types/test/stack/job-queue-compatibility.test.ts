@@ -8,7 +8,11 @@ import {
   getDisabledReason,
   getJobQueueIncompatibility,
 } from "@/stack/compatibility";
-import { legacyProjectConfigToStackParts, validateStackParts } from "@/stack/stack-graph";
+import {
+  legacyProjectConfigToStackParts,
+  parseStackPartSpecs,
+  validateStackParts,
+} from "@/stack/stack-graph";
 import {
   DEFAULT_STACK_SELECTION,
   createStackSelectionSearchParams,
@@ -97,6 +101,23 @@ describe("generated job queue compatibility", () => {
         graphIssues({ ...stack, jobQueue }).filter((message) => message.includes("job")),
       ).toEqual([]);
     }
+  });
+
+  it("judges pg-boss by the standalone database generation uses over a backend-owned one", () => {
+    const graphMessages = (standalone: string, owned: string) =>
+      validateStackParts(
+        parseStackPartSpecs([
+          "backend:typescript:hono",
+          "backend.runtime:typescript:bun",
+          "backend.orm:typescript:prisma",
+          `database:universal:${standalone}`,
+          `backend.database:universal:${owned}`,
+          "backend.jobQueue:typescript:pg-boss",
+        ]),
+      ).issues.map((issue) => issue.message);
+
+    expect(graphMessages("mongodb", "postgres")).toContain("pg-boss requires PostgreSQL.");
+    expect(graphMessages("postgres", "mongodb")).toEqual([]);
   });
 
   it("judges only answered selections for partial input", () => {

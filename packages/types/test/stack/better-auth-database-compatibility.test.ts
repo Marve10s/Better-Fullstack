@@ -207,4 +207,18 @@ describe("Better Auth database compatibility", () => {
       partIssues([...backend, "database:universal:redis", "backend.database:universal:postgres"]),
     ).toContain("Better Auth has no Redis adapter");
   });
+
+  it("does not judge Better Auth by a frontend-owned database generation ignores", () => {
+    expect(
+      partIssues([
+        "frontend:typescript:next",
+        "backend:typescript:hono",
+        "backend.runtime:typescript:bun",
+        "frontend.database:universal:redis",
+        "frontend.auth:typescript:better-auth",
+      ]),
+    ).toEqual([
+      "A database owned by the frontend generates no data layer. Select a standalone database or one owned by the backend.",
+    ]);
+  });
 });
