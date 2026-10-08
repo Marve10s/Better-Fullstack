@@ -33,6 +33,43 @@ export const schemaOutputSchema = z.object({
   error: z.string().optional(),
 });
 
+export const catalogCategoryOutputSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  schemaCategory: z.string().nullable(),
+  selectionMode: z.enum(["single", "multiple"]),
+  flag: z.string().nullable(),
+  ecosystems: z.array(EcosystemSchema),
+  optionCount: z.number().int(),
+});
+
+export const catalogOptionOutputSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  aliases: z.array(z.string()),
+  flag: z.string().nullable(),
+});
+
+/** Categories when no category was requested, otherwise one category and its options. */
+export const catalogListOutputSchema = z.object({
+  ecosystem: EcosystemSchema.nullable(),
+  categories: z.array(catalogCategoryOutputSchema).optional(),
+  category: catalogCategoryOutputSchema.optional(),
+  options: z.array(catalogOptionOutputSchema).optional(),
+});
+
+export const catalogSearchOutputSchema = z.object({
+  query: z.string(),
+  ecosystem: EcosystemSchema.nullable(),
+  matches: z.array(
+    catalogOptionOutputSchema.extend({
+      category: z.string(),
+      categoryLabel: z.string(),
+      ecosystems: z.array(EcosystemSchema),
+    }),
+  ),
+});
+
 export const compatibilityCapabilityReferenceOutputSchema = z.object({
   id: z.string(),
   category: z.string(),

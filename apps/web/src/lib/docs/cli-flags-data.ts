@@ -129,6 +129,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "ai",
           "chat-sdk",
+          "tanstack-showcase",
           "none"
         ],
         "valueHint": null,
@@ -573,6 +574,9 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "trigger-dev",
           "inngest",
           "temporal",
+          "pg-boss",
+          "upstash-qstash",
+          "hatchet",
           "none"
         ],
         "valueHint": null,

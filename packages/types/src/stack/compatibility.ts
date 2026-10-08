@@ -34,6 +34,8 @@ import {
 } from "@/catalog/option-metadata";
 import { ANALYTICS_VALUES } from "@/config/schemas";
 import {
+  getBetterAuthDatabaseIncompatibility,
+  getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
   hasPWACompatibleFrontend,
   hasTanStackAICompatibleFrontend,
@@ -50,6 +52,9 @@ import {
 
 export {
   BACKEND_UTILS_COMPATIBLE_BACKENDS,
+  getBetterAuthDatabaseIncompatibility,
+  getJobQueueIncompatibility,
+  hasGeneratedJobQueueRequirements,
   getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
   hasPWACompatibleFrontend,
@@ -1526,29 +1531,6 @@ export const analyzeStackCompatibility = (
   // AUTH CONSTRAINTS
   // ============================================
 
-  // Redis is a key-value store without SQL support - better-auth requires SQL tables
-  const isBetterAuthSelection =
-    nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations";
-
-  if (isBetterAuthSelection && nextStack.database === "redis") {
-    nextStack.auth = "none";
-    changed = true;
-    changes.push({
-      category: "auth",
-      message: "Auth set to 'None' (Better Auth requires a SQL database, not Redis)",
-    });
-  }
-
-  const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-  if (isBetterAuthSelection && ormsWithoutBetterAuth.includes(nextStack.orm)) {
-    nextStack.auth = "none";
-    changed = true;
-    changes.push({
-      category: "auth",
-      message: `Auth set to 'None' (${nextStack.orm} has no Better Auth adapter)`,
-    });
-  }
-
   const normalizedAuth = normalizeCapabilitySelection(
     "auth",
     {
@@ -1566,6 +1548,16 @@ export const analyzeStackCompatibility = (
     changes.push({
       category: "auth",
       message: normalizedAuth.message ?? "Auth set to 'None'",
+    });
+  }
+
+  const betterAuthDatabaseIssue = getBetterAuthDatabaseIncompatibility(nextStack.auth, nextStack);
+  if (betterAuthDatabaseIssue) {
+    nextStack.auth = "none";
+    changed = true;
+    changes.push({
+      category: "auth",
+      message: `Auth set to 'None' (${betterAuthDatabaseIssue})`,
     });
   }
 
@@ -2728,6 +2720,19 @@ export const analyzeStackCompatibility = (
     });
   }
 
+  const jobQueueIssue =
+    nextStack.ecosystem === "typescript"
+      ? getJobQueueIncompatibility(nextStack.jobQueue, nextStack)
+      : null;
+  if (jobQueueIssue) {
+    nextStack.jobQueue = "none";
+    changed = true;
+    changes.push({
+      category: "jobQueue",
+      message: `Job queue set to 'None' (${jobQueueIssue})`,
+    });
+  }
+
   // Workspace shape: single-app (flat) only applies to a qualifying thin self
   // app; normalize back to monorepo for anything else so we never emit a broken
   // flat layout.
@@ -3637,24 +3642,17 @@ export const getDisabledReason = (
   // AUTH CONSTRAINTS
   // ============================================
   if (category === "auth") {
-    const isBetterAuthOption =
-      optionId === "better-auth" || optionId === "better-auth-organizations";
-    if (isBetterAuthOption && currentStack.database === "redis") {
-      return "Better Auth requires a SQL database (not Redis)";
-    }
-    const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-    if (isBetterAuthOption && ormsWithoutBetterAuth.includes(currentStack.orm)) {
-      return `Better Auth has no ${currentStack.orm} adapter`;
-    }
-    return getCapabilityDisabledReason(
-      "auth",
-      {
-        ecosystem: currentStack.ecosystem,
-        backend: currentStack.backend,
-        webFrontend: currentStack.webFrontend,
-        nativeFrontend: currentStack.nativeFrontend,
-      },
-      optionId as Auth,
+    return (
+      getCapabilityDisabledReason(
+        "auth",
+        {
+          ecosystem: currentStack.ecosystem,
+          backend: currentStack.backend,
+          webFrontend: currentStack.webFrontend,
+          nativeFrontend: currentStack.nativeFrontend,
+        },
+        optionId as Auth,
+      ) ?? getBetterAuthDatabaseIncompatibility(optionId, currentStack)
     );
   }
 
@@ -3770,6 +3768,11 @@ export const getDisabledReason = (
     if (currentStack.runtime === "workers" || usesCloudflareFullstackRuntime(currentStack)) {
       return "Nango's Node SDK is not available on Cloudflare Workers";
     }
+  }
+
+  if (category === "jobQueue" && currentStack.ecosystem === "typescript") {
+    const reason = getJobQueueIncompatibility(optionId, currentStack);
+    if (reason) return reason;
   }
 
   // ============================================

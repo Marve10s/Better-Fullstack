@@ -1795,6 +1795,42 @@ function buildServerVars(
       comment: "Temporal task queue name (defaults to project name if not set)",
     },
     {
+      key: "QSTASH_URL",
+      value: "https://qstash.upstash.io",
+      condition: jobQueue === "upstash-qstash",
+      comment: "QStash API URL (use http://127.0.0.1:8080 with the local QStash dev server)",
+    },
+    {
+      key: "QSTASH_TOKEN",
+      value: "",
+      condition: jobQueue === "upstash-qstash",
+      comment: "QStash token (from console.upstash.com/qstash)",
+    },
+    {
+      key: "QSTASH_CURRENT_SIGNING_KEY",
+      value: "",
+      condition: jobQueue === "upstash-qstash",
+      comment: "QStash current signing key, used to verify incoming job requests",
+    },
+    {
+      key: "QSTASH_NEXT_SIGNING_KEY",
+      value: "",
+      condition: jobQueue === "upstash-qstash",
+      comment: "QStash next signing key, used during key rotation",
+    },
+    {
+      key: "QSTASH_WEBHOOK_URL",
+      value: "http://localhost:3000/api/jobs/welcome-email",
+      condition: jobQueue === "upstash-qstash",
+      comment: "Public URL QStash calls for the welcome email job (use a tunnel in development)",
+    },
+    {
+      key: "HATCHET_CLIENT_TOKEN",
+      value: "",
+      condition: jobQueue === "hatchet",
+      comment: "Hatchet API token (from Hatchet Cloud or your self-hosted Hatchet dashboard)",
+    },
+    {
       key: "UPSTASH_REDIS_REST_URL",
       value: "https://your-upstash-redis.upstash.io",
       condition: caching === "upstash-redis" || rateLimit === "upstash-ratelimit",

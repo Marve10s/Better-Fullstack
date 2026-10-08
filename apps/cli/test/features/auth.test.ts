@@ -1,17 +1,28 @@
+import { dependencyVersionMap } from "@better-fullstack/template-generator";
 import { describe, expect, it } from "bun:test";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { parse as parseYaml } from "yaml";
 
 import type { Backend, Database, Frontend, ORM } from "@/types";
 
+import { collectPackageJsonPaths } from "@/lifecycle/dependency-version-channel";
 import {
   AUTH_PROVIDERS,
   createCustomConfig,
   expectError,
   expectSuccess,
+  PACKAGE_MANAGERS,
   runTRPCTest,
   type TestConfig,
 } from "@test/support/test-utils";
+
+// API route prefixes the generated Auth.js proxy lets through without a session.
+function readPublicApiRoutes(proxy: string) {
+  const list = proxy.match(/const publicApiRoutes = \[([\s\S]*?)\];/)?.[1] ?? "";
+  return [...list.matchAll(/"(\/api\/[^"]+)"/g)].map((match) => match[1]);
+}
 
 describe("Authentication Configurations", () => {
   describe("Better-Auth Provider", () => {
@@ -80,6 +91,80 @@ describe("Authentication Configurations", () => {
 
       expectSuccess(result);
     });
+
+    // Adapters and the Expo plugin peer on ^core, so npm installs the newest core next to the
+    // exact one better-auth needs unless each manifest declares core at the family version.
+    const betterAuthAdapterStacks = [
+      { orm: "drizzle", database: "sqlite", frontend: ["tanstack-router", "native-bare"] },
+      { orm: "prisma", database: "sqlite", frontend: ["tanstack-router"] },
+      { orm: "mongoose", database: "mongodb", frontend: ["tanstack-router"] },
+    ] as const;
+    for (const packageManager of PACKAGE_MANAGERS) {
+      for (const stack of betterAuthAdapterStacks) {
+        it(`declares one Better Auth core beside the ${stack.orm} adapter for ${packageManager}`, async () => {
+          const result = await runTRPCTest({
+            projectName: `better-auth-core-${stack.orm}-${packageManager}`,
+            auth: "better-auth",
+            backend: "hono",
+            runtime: "node",
+            database: stack.database,
+            orm: stack.orm,
+            api: "trpc",
+            frontend: [...stack.frontend],
+            addons: ["turborepo"],
+            examples: ["none"],
+            dbSetup: "none",
+            webDeploy: "none",
+            serverDeploy: "none",
+            packageManager,
+            install: false,
+          });
+          expectSuccess(result);
+          const projectDir = result.projectDir!;
+
+          // bun keeps shared versions in the root workspaces catalog, pnpm in pnpm-workspace.yaml.
+          const rootManifest = JSON.parse(
+            await readFile(join(projectDir, "package.json"), "utf8"),
+          ) as {
+            workspaces?: { catalog?: Record<string, string> };
+          };
+          const pnpmWorkspacePath = join(projectDir, "pnpm-workspace.yaml");
+          const catalog = existsSync(pnpmWorkspacePath)
+            ? ((
+                parseYaml(await readFile(pnpmWorkspacePath, "utf8")) as {
+                  catalog?: Record<string, string>;
+                }
+              ).catalog ?? {})
+            : (rootManifest.workspaces?.catalog ?? {});
+
+          const familyVersions = new Set<string>();
+          const corePeerManifests: string[] = [];
+          for (const manifestPath of await collectPackageJsonPaths(projectDir)) {
+            const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as {
+              dependencies?: Record<string, string>;
+            };
+            const familyDeps = Object.entries(manifest.dependencies ?? {})
+              .filter(([name]) => name === "better-auth" || name.startsWith("@better-auth/"))
+              .map(
+                ([name, version]) =>
+                  [name, version === "catalog:" ? catalog[name] : version] as const,
+              );
+            for (const [, version] of familyDeps) familyVersions.add(version ?? "missing");
+            if (
+              familyDeps.some(([name]) => name !== "@better-auth/core" && name !== "better-auth")
+            ) {
+              corePeerManifests.push(manifestPath);
+              expect(Object.fromEntries(familyDeps)["@better-auth/core"]).toBe(
+                dependencyVersionMap["better-auth"],
+              );
+            }
+          }
+
+          expect(corePeerManifests.length).toBe(stack.frontend.includes("native-bare") ? 2 : 1);
+          expect([...familyVersions]).toEqual([dependencyVersionMap["better-auth"]]);
+        });
+      }
+    }
 
     it("should work with better-auth + no database (non-convex)", async () => {
       const result = await runTRPCTest({
@@ -352,14 +437,62 @@ describe("Authentication Configurations", () => {
 
       expectSuccess(result);
       const projectDir = result.projectDir!;
-      const authOptions = await readFile(join(projectDir, "apps/web/src/lib/auth.ts"), "utf-8");
-      const middleware = await readFile(
-        join(projectDir, "apps/web/src/middleware.ts"),
-        "utf-8",
+      const read = (path: string) => readFile(join(projectDir, path), "utf-8");
+      const authConfig = await read("packages/auth/src/index.ts");
+      const proxy = await read("apps/web/src/proxy.ts");
+      const apiContext = await read("packages/api/src/context.ts");
+      const apiProcedures = await read("packages/api/src/index.ts");
+      const signUpForm = await read("apps/web/src/components/sign-up-form.tsx");
+      const registerRoute = await read("apps/web/src/app/api/auth/register/route.ts");
+      const users = await read("packages/auth/src/users.ts");
+      const userSchema = await read("packages/db/src/schema/auth.ts");
+      const rootPackageJson = await read("package.json");
+
+      expect(authConfig).toContain('strategy: "jwt"');
+      expect(authConfig).toContain("await verifyCredentials(email, password)");
+      expect(authConfig).not.toContain("authorized(");
+
+      // Only Auth.js and the per-procedure tRPC endpoint skip the proxy session check.
+      expect(readPublicApiRoutes(proxy)).toEqual(["/api/auth", "/api/trpc"]);
+      expect(proxy).toContain('NextResponse.json({ message: "Unauthorized" }, { status: 401 })');
+      expect(proxy).not.toContain("(?!api");
+
+      // bcrypt reads at most 72 bytes, so both registration and sign-in reject longer passwords.
+      expect(users).toContain("export const MAX_PASSWORD_BYTES = 72;");
+      expect(users).toContain("new TextEncoder().encode(password).length <= MAX_PASSWORD_BYTES");
+      expect(registerRoute).toContain(".refine(isPasswordWithinLimit,");
+      expect(users).toMatch(
+        /verifyCredentials[\s\S]*if \(!isPasswordWithinLimit\(password\)\)[\s\S]*findUserByEmail/,
       );
-      expect(authOptions).toContain('strategy: "jwt"');
-      expect(middleware).toContain("api/auth");
-      expect(middleware).not.toContain('"/(api|trpc)(.*)"');
+      expect(signUpForm).toContain(".refine(fitsBcryptLimit,");
+      expect(signUpForm).toContain("new TextEncoder().encode(password).length <= 72");
+
+      // Unknown emails and OAuth-only accounts still pay for one bcrypt comparison.
+      expect(users).toMatch(/const DUMMY_PASSWORD_HASH = "\$2b\$12\$[./A-Za-z0-9]{53}";/);
+      expect(users).toContain("const PASSWORD_HASH_COST = 12;");
+      expect(users).toContain("await compare(password, user?.password ?? DUMMY_PASSWORD_HASH)");
+
+      // A concurrent duplicate fails on the unique email column and maps to the same 409.
+      expect(users).toContain('current.code === "23505"');
+      expect(users).toMatch(/try \{\s*await db\.insert\(users\)/);
+      expect(users).not.toContain("if (await findUserByEmail(email))");
+      expect(userSchema).toContain('email: text("email").unique()');
+
+      expect(apiContext).toContain('import { auth } from "@nextauth-self-next-drizzle/auth"');
+      expect(apiContext).toContain("const session = await auth();");
+      expect(apiContext).not.toContain("session: null,");
+      expect(apiProcedures).toContain("export const protectedProcedure");
+
+      const registerPath = signUpForm.match(/fetch\("([^"]+)"/)?.[1];
+      expect(registerPath).toBe("/api/auth/register");
+      expect(existsSync(join(projectDir, `apps/web/src/app${registerPath}/route.ts`))).toBe(true);
+      expect(registerRoute).toContain("export async function POST");
+      expect(registerRoute).toContain("const created = await registerUser(parsed.data);");
+      expect(registerRoute).toContain("{ status: 409 }");
+      expect(users).toContain("const password = await hash(input.password, PASSWORD_HASH_COST);");
+      expect(users).toContain("db.insert(users).values({ name: input.name, email, password })");
+      expect(userSchema).toContain('password: text("password")');
+      expect(rootPackageJson).toContain('"next-auth": "5.0.0-beta.32"');
     });
 
     it("should work with nextauth + self backend + next + prisma", async () => {
@@ -381,6 +514,112 @@ describe("Authentication Configurations", () => {
       });
 
       expectSuccess(result);
+      const projectDir = result.projectDir!;
+      const users = await readFile(join(projectDir, "packages/auth/src/users.ts"), "utf-8");
+      const userModel = await readFile(
+        join(projectDir, "packages/db/prisma/schema/auth.prisma"),
+        "utf-8",
+      );
+      expect(users).toMatch(/try \{\s*await prisma\.user\.create/);
+      expect(users).toContain('current.code === "P2002"');
+      expect(userModel).toMatch(/password\s+String\?/);
+      expect(
+        await readFile(join(projectDir, "apps/web/src/app/api/auth/register/route.ts"), "utf-8"),
+      ).toContain("registerUser");
+    });
+
+    it("should wire nextauth sessions into the oRPC context", async () => {
+      const result = await runTRPCTest({
+        projectName: "nextauth-self-next-orpc",
+        auth: "nextauth",
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "orpc",
+        frontend: ["next"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const projectDir = result.projectDir!;
+      const apiContext = await readFile(join(projectDir, "packages/api/src/context.ts"), "utf-8");
+      const apiProcedures = await readFile(join(projectDir, "packages/api/src/index.ts"), "utf-8");
+      expect(apiContext).toContain('import { auth } from "@nextauth-self-next-orpc/auth"');
+      expect(apiContext).toContain("const session = await auth();");
+      expect(apiContext).not.toMatch(/return \{\s*\}/);
+      expect(apiProcedures).toContain("context.session?.user");
+
+      const proxy = await readFile(join(projectDir, "apps/web/src/proxy.ts"), "utf-8");
+      const users = await readFile(join(projectDir, "packages/auth/src/users.ts"), "utf-8");
+      expect(readPublicApiRoutes(proxy)).toEqual(["/api/auth", "/api/rpc"]);
+      expect(users).toContain('current.message.includes("UNIQUE constraint failed")');
+    });
+
+    it("should guard the nextauth AI route and leave chat webhooks public", async () => {
+      const result = await runTRPCTest({
+        projectName: "nextauth-self-next-ai",
+        auth: "nextauth",
+        backend: "self",
+        runtime: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        api: "trpc",
+        frontend: ["next"],
+        addons: ["turborepo"],
+        examples: ["ai", "chat-sdk"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const projectDir = result.projectDir!;
+      const proxy = await readFile(join(projectDir, "apps/web/src/proxy.ts"), "utf-8");
+      expect(existsSync(join(projectDir, "apps/web/src/app/api/ai/route.ts"))).toBe(true);
+      const webhookRoute = "apps/web/src/app/api/webhooks/[platform]/route.ts";
+      expect(existsSync(join(projectDir, webhookRoute))).toBe(true);
+      expect(readPublicApiRoutes(proxy)).toEqual(["/api/auth", "/api/trpc", "/api/webhooks"]);
+    });
+
+    it("should generate an OAuth-only nextauth setup without a database adapter", async () => {
+      const result = await runTRPCTest({
+        projectName: "nextauth-self-next-oauth-only",
+        auth: "nextauth",
+        backend: "self",
+        runtime: "none",
+        database: "none",
+        orm: "none",
+        api: "trpc",
+        frontend: ["next"],
+        addons: ["turborepo"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const projectDir = result.projectDir!;
+      const authConfig = await readFile(join(projectDir, "packages/auth/src/index.ts"), "utf-8");
+      const signInForm = await readFile(
+        join(projectDir, "apps/web/src/components/sign-in-form.tsx"),
+        "utf-8",
+      );
+      expect(authConfig).not.toContain("Credentials(");
+      expect(authConfig).not.toContain("adapter:");
+      expect(signInForm).not.toContain('signIn("credentials"');
+      expect(existsSync(join(projectDir, "apps/web/src/components/sign-up-form.tsx"))).toBe(false);
+      expect(existsSync(join(projectDir, "apps/web/src/app/api/auth/register/route.ts"))).toBe(
+        false,
+      );
     });
 
     it("should work with nextauth + self backend + next + sqlite", async () => {
@@ -1165,6 +1404,15 @@ describe("Authentication Configurations", () => {
       const webEnvSchema = await readFile(join(projectDir, "packages/env/src/web.ts"), "utf8");
       const webPackageJson = await readFile(join(projectDir, "apps/web/package.json"), "utf8");
 
+      const apiContext = await readFile(join(projectDir, "packages/api/src/context.ts"), "utf8");
+      const apiProcedures = await readFile(join(projectDir, "packages/api/src/index.ts"), "utf8");
+      const apiPackageJson = await readFile(join(projectDir, "packages/api/package.json"), "utf8");
+
+      expect(apiContext).toContain('import { auth } from "@clerk/nextjs/server"');
+      expect(apiContext).toContain("const { userId } = await auth();");
+      expect(apiContext).not.toContain("session: null,");
+      expect(apiProcedures).toContain("export const protectedProcedure");
+      expect(apiPackageJson).toContain("@clerk/nextjs");
       expect(middleware).toContain("clerkMiddleware");
       expect(dashboard).toContain('await auth()');
       expect(dashboard).toContain('redirect("/")');
@@ -1207,6 +1455,13 @@ describe("Authentication Configurations", () => {
       const webEnvSchema = await readFile(join(projectDir, "packages/env/src/web.ts"), "utf8");
       const webPackageJson = await readFile(join(projectDir, "apps/web/package.json"), "utf8");
 
+      const apiContext = await readFile(join(projectDir, "packages/api/src/context.ts"), "utf8");
+      const apiProcedures = await readFile(join(projectDir, "packages/api/src/index.ts"), "utf8");
+
+      expect(apiContext).toContain('import { auth } from "@clerk/tanstack-react-start/server"');
+      expect(apiContext).toContain("const { userId } = await auth();");
+      expect(apiContext).not.toMatch(/return \{\s*\}/);
+      expect(apiProcedures).toContain("context.session?.user");
       expect(startFile).toContain("clerkMiddleware()");
       expect(dashboard).toContain("@clerk/tanstack-react-start");
       expect(dashboard).toContain("createServerFn");
@@ -1648,6 +1903,8 @@ describe("Authentication Configurations", () => {
         }),
       );
       expectSuccess(result);
+      const users = await readFile(join(result.projectDir!, "packages/auth/src/users.ts"), "utf-8");
+      expect(users).toContain('current.code === "P2002"');
     });
 
     it("should scaffold NextAuth with Drizzle and MySQL", async () => {
@@ -1663,9 +1920,11 @@ describe("Authentication Configurations", () => {
         }),
       );
       expectSuccess(result);
+      const users = await readFile(join(result.projectDir!, "packages/auth/src/users.ts"), "utf-8");
+      expect(users).toContain('current.code === "ER_DUP_ENTRY"');
     });
 
-    it("TypeORM + better-auth should be auto-adjusted to none", async () => {
+    it("TypeORM + better-auth is rejected because Better Auth has no TypeORM adapter", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
           projectName: "typeorm-better-auth",
@@ -1676,11 +1935,10 @@ describe("Authentication Configurations", () => {
           runtime: "node",
         }),
       );
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Better Auth has no TypeORM adapter");
     });
 
-    it("Sequelize + better-auth should be auto-adjusted to none", async () => {
+    it("Sequelize + better-auth is rejected because Better Auth has no Sequelize adapter", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
           projectName: "sequelize-better-auth",
@@ -1691,11 +1949,10 @@ describe("Authentication Configurations", () => {
           runtime: "node",
         }),
       );
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Better Auth has no Sequelize adapter");
     });
 
-    it("MikroORM + better-auth should be auto-adjusted to none", async () => {
+    it("MikroORM + better-auth is rejected because Better Auth has no MikroORM adapter", async () => {
       const result = await runTRPCTest(
         createCustomConfig({
           projectName: "mikroorm-better-auth",
@@ -1705,8 +1962,7 @@ describe("Authentication Configurations", () => {
           auth: "better-auth",
         }),
       );
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Better Auth has no MikroORM adapter");
     });
 
     it("should scaffold Drizzle with Clerk", async () => {

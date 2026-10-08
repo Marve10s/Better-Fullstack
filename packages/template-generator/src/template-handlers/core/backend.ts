@@ -2,7 +2,11 @@ import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "@/core/virtual-fs";
 
-import { type TemplateData, processTemplatesFromPrefix } from "@/template-handlers/core/utils";
+import {
+  type TemplateData,
+  processSingleTemplate,
+  processTemplatesFromPrefix,
+} from "@/template-handlers/core/utils";
 
 export async function processBackendTemplates(
   vfs: VirtualFileSystem,
@@ -67,4 +71,23 @@ export async function processBackendTemplates(
     "apps/server",
     config,
   );
+}
+
+/**
+ * One server image for every container deploy target and the Docker Compose addon. It is built
+ * from the repository root because the server resolves workspace and catalog dependencies.
+ */
+export function processServerImageTemplates(
+  vfs: VirtualFileSystem,
+  templates: TemplateData,
+  config: ProjectConfig,
+): void {
+  processSingleTemplate(
+    vfs,
+    templates,
+    "backend/docker/Dockerfile",
+    "apps/server/Dockerfile",
+    config,
+  );
+  processSingleTemplate(vfs, templates, "backend/docker/.dockerignore", ".dockerignore", config);
 }

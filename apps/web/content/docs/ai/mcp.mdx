@@ -147,16 +147,18 @@ Call the live guidance and schema tools instead of trusting prose; the schema is
 
 ### Discovery and validation (read-only)
 
-| Tool                          | Purpose                                                                   |
-| ----------------------------- | ------------------------------------------------------------------------- |
-| `bfs_get_guidance`            | Current workflow rules, field semantics, and constraints. Call it first.  |
-| `bfs_get_schema`              | Valid options for one category or all, optionally scoped to an ecosystem. |
-| `bfs_list_presets`            | Curated presets with IDs, option choices, and a stack for each variant.   |
-| `bfs_list_starter_tracks`     | Canonical editable tracks with exact Stack Parts, filters, and evidence.  |
-| `bfs_recommend_stack`         | Deterministic recommendation from a natural-language brief.               |
-| `bfs_check_compatibility`     | Adjusted selections, changes, and remaining issues for a proposed stack.  |
-| `bfs_get_capability_evidence` | Receipt-backed evidence, maturity, freshness, owners, and limitations.    |
-| `bfs_get_project_context`     | Bounded project roles, evidence, versions, recipes, and safe actions.     |
+| Tool                          | Purpose                                                                    |
+| ----------------------------- | -------------------------------------------------------------------------- |
+| `bfs_get_guidance`            | Current workflow rules, field semantics, and constraints. Call it first.   |
+| `bfs_get_schema`              | Valid options for one category or all, optionally scoped to an ecosystem.  |
+| `bfs_list_options`            | Categories, or one category's options with labels, aliases, and CLI flags. |
+| `bfs_search_options`          | Options matching an ID, label, or alias across categories and ecosystems.  |
+| `bfs_list_presets`            | Curated presets with IDs, option choices, and a stack for each variant.    |
+| `bfs_list_starter_tracks`     | Canonical editable tracks with exact Stack Parts, filters, and evidence.   |
+| `bfs_recommend_stack`         | Deterministic recommendation from a natural-language brief.                |
+| `bfs_check_compatibility`     | Adjusted selections, changes, and remaining issues for a proposed stack.   |
+| `bfs_get_capability_evidence` | Receipt-backed evidence, maturity, freshness, owners, and limitations.     |
+| `bfs_get_project_context`     | Bounded project roles, evidence, versions, recipes, and safe actions.      |
 
 ### New projects
 

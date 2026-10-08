@@ -368,6 +368,13 @@ export const server = await Worker("server", {
     POLAR_ACCESS_TOKEN: alchemy.secret.env.POLAR_ACCESS_TOKEN!,
     POLAR_SUCCESS_URL: alchemy.env.POLAR_SUCCESS_URL!,
     {{/if}}
+    {{#if (eq jobQueue "upstash-qstash")}}
+    QSTASH_URL: alchemy.env.QSTASH_URL ?? "https://qstash.upstash.io",
+    QSTASH_TOKEN: alchemy.secret.env.QSTASH_TOKEN!,
+    QSTASH_CURRENT_SIGNING_KEY: alchemy.secret.env.QSTASH_CURRENT_SIGNING_KEY!,
+    QSTASH_NEXT_SIGNING_KEY: alchemy.secret.env.QSTASH_NEXT_SIGNING_KEY!,
+    QSTASH_WEBHOOK_URL: alchemy.env.QSTASH_WEBHOOK_URL!,
+    {{/if}}
     {{#if (eq dbSetup "turso")}}
     DATABASE_AUTH_TOKEN: alchemy.secret.env.DATABASE_AUTH_TOKEN!,
     {{/if}}

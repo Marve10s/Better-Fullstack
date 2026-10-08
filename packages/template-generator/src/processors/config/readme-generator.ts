@@ -13,6 +13,8 @@ import {
   hasWebFrontend,
 } from "@/graph/graph-backend";
 import { getGraphProjectTasks } from "@/graph/graph-project";
+import { hasAiExampleEndpoint, hasAiRouteAuth } from "@/platform/ai-example";
+import { hasAuthJsCredentials } from "@/platform/auth-js";
 
 const JAVA_GROUP_ID = "com.example";
 const JAVA_RESERVED_WORDS = new Set([
@@ -516,6 +518,8 @@ ${
   - \`CLERK_SECRET_KEY\`
 - Clerk middleware and a protected \`/dashboard\` route are already generated`
       : ""
+  }${backend === "self" && auth === "nextauth" ? generateAuthJsSetup(options, webPort) : ""}${
+    auth === "passport" ? generatePassportSetup() : ""
   }
 
 Then, run the development server:
@@ -549,18 +553,20 @@ The analytics component is already mounted and requires no environment variables
 `
     : ""
 }
+${generateJobQueueSection(options, packageManagerRunCmd)}
 ${ai === "ai-cli" ? `\n${generateAICLISection(packageManagerRunCmd, packageManager)}\n` : ""}
 ${
   examples.includes("chat-sdk")
     ? `\n${generateChatSdkExampleSection(options, packageManagerRunCmd, webPort, ai)}\n`
     : ""
-}
+}${generateAIExampleSection(options)}
   ${
     addons.includes("pwa") && (frontend.includes("react-router") || frontend.includes("react-vite"))
       ? "\n## PWA Support with React Router v7\n\nThere is a known compatibility issue between VitePWA and React Router v7.\nSee: https://github.com/vite-pwa/vite-plugin-pwa/issues/809\n"
       : ""
   }
 ${generateDeploymentCommands(packageManagerRunCmd, webDeploy, serverDeploy)}
+${generateServerImageSection(projectName, serverDeploy, backend, addons)}
 ${generateGitHooksSection(packageManagerRunCmd, addons)}
 
 ## Project Structure
@@ -573,6 +579,67 @@ ${generateProjectStructure(projectName, frontend, backend, addons, isConvex, api
 
 ${generateScriptsList(packageManagerRunCmd, database, orm, hasWeb, hasNative, addons, backend, dbSetup)}
 `;
+}
+
+function generateJobQueueSection(options: ProjectConfig, packageManagerRunCmd: string): string {
+  const run = (script: string) => `cd apps/server && ${packageManagerRunCmd} ${script}`;
+  const productionWorker = `
+In production, \`build\` also compiles the worker to \`apps/server/dist/jobs/worker.mjs\`; start it with \`${run("jobs:worker:start")}\`.${
+    options.addons.includes("docker-compose")
+      ? " Docker Compose runs it from the server image as the `worker` service."
+      : ""
+  }
+`;
+
+  if (options.jobQueue === "pg-boss") {
+    return `
+## Background jobs (pg-boss)
+
+Jobs are stored in your PostgreSQL database through \`DATABASE_URL\`; pg-boss creates its own \`pgboss\` schema on first start. The example \`welcome-email\` queue lives in \`apps/server/src/jobs/queue.ts\`, and \`enqueueWelcomeEmail()\` is the producer to call from your routes.
+
+Run the worker as a separate long-running process next to the server, then enqueue a test job:
+
+\`\`\`bash
+${run("jobs:worker")}
+${run("jobs:enqueue")}
+\`\`\`
+${productionWorker}`;
+  }
+
+  if (options.jobQueue === "hatchet") {
+    return `
+## Background jobs (Hatchet)
+
+Create a Hatchet Cloud tenant or run Hatchet yourself, then set \`HATCHET_CLIENT_TOKEN\` in \`apps/server/.env\`. For a local Hatchet engine without TLS, also set \`HATCHET_CLIENT_TLS_STRATEGY=none\`. The example \`welcome-email\` task lives in \`apps/server/src/jobs/hatchet.ts\`, and \`enqueueWelcomeEmail()\` is the producer to call from your routes.
+
+Run the worker as a separate long-running process next to the server, then enqueue a test run:
+
+\`\`\`bash
+${run("jobs:worker")}
+${run("jobs:enqueue")}
+\`\`\`
+${productionWorker}`;
+  }
+
+  if (options.jobQueue === "upstash-qstash") {
+    return `
+## Background jobs (Upstash QStash)
+
+QStash delivers each job as a signed HTTP request to \`POST /api/jobs/welcome-email\` on the server, which verifies the signature before running the job. Set \`QSTASH_TOKEN\`, \`QSTASH_CURRENT_SIGNING_KEY\`, and \`QSTASH_NEXT_SIGNING_KEY\` from the [Upstash console](https://console.upstash.com/qstash), and set \`QSTASH_WEBHOOK_URL\` to the public URL of that route. QStash cannot reach \`localhost\`, so use a tunnel in development or the local QStash dev server (\`npx @upstash/qstash-cli dev\`) with \`QSTASH_URL=http://127.0.0.1:8080\` and the keys it prints.
+
+\`publishWelcomeEmail()\` in \`apps/server/src/jobs/qstash.ts\` is the producer to call from your routes.${
+      options.runtime === "workers"
+        ? ""
+        : ` With the server running, publish a test job:
+
+\`\`\`bash
+${run("jobs:enqueue")}
+\`\`\``
+    }
+`;
+  }
+
+  return "";
 }
 
 function generateAICLISection(
@@ -632,6 +699,22 @@ Use \`--model\` to override the default model for a single command:
 \`\`\`bash
 ${runPrefix} ai:text -- --model openai/gpt-5.5 "write a concise PR summary"
 \`\`\``;
+}
+
+function generateAIExampleSection(options: ProjectConfig): string {
+  if (!hasAiExampleEndpoint(options)) return "";
+
+  return hasAiRouteAuth(options)
+    ? `
+## AI Chat Example
+
+The AI chat endpoint requires a signed-in user and rejects signed-out requests before calling the model provider.
+${options.auth === "passport" ? `\n${PASSPORT_SAME_SITE_NOTE}\n` : ""}`
+    : `
+## AI Chat Example
+
+The AI chat endpoint is unauthenticated, so anyone who can reach it spends your model provider quota; protect it before deploying.
+`;
 }
 
 function generateChatSdkExampleSection(
@@ -790,6 +873,31 @@ function generateStackDescription(
   }
 
   return parts.length > 0 ? `${parts.join(", ")}, and more` : "";
+}
+
+function generateAuthJsSetup(config: ProjectConfig, webPort: string): string {
+  const signInSetup = hasAuthJsCredentials(config)
+    ? `- Email and password sign-up posts to \`/api/auth/register\`, which stores a bcrypt hash in the users table. Push the database schema before signing up.
+- Passwords are limited to 72 bytes, the most bcrypt reads. Sign-in takes the same time whether or not an account exists, but registration answers 409 for an email that is already registered, so anyone can check whether an email has an account. Hiding that requires an email verification flow.`
+    : `- Email and password sign-in is not generated because Auth.js has no database adapter here for the selected ORM and database. Configure at least one OAuth provider before signing in.`;
+
+  return `
+## Auth.js Authentication Setup
+
+- \`AUTH_SECRET\` is generated in \`apps/web/.env\`. Use a new value in production (\`npx auth secret\`).
+- OAuth: create GitHub or Google OAuth apps with the callback URL \`http://localhost:${webPort}/api/auth/callback/<provider>\`, then set \`AUTH_GITHUB_ID\`, \`AUTH_GITHUB_SECRET\`, \`AUTH_GOOGLE_ID\`, and \`AUTH_GOOGLE_SECRET\` in \`apps/web/.env\`.
+${signInSetup}
+- \`apps/web/src/proxy.ts\` redirects signed-out page requests to \`/login\` and answers 401 for API routes that do not check auth themselves. Its \`publicApiRoutes\` list names the routes that do; API procedures read the session from \`packages/auth\`.`;
+}
+
+const PASSPORT_SAME_SITE_NOTE =
+  "The Passport session cookie is `SameSite=Lax`, so the browser sends it to the API only when the web app and the API are on the same site, such as `app.example.com` and `api.example.com` (`localhost` on different ports also counts). If they are on different sites, serve the API from the web app's domain or proxy it there; setting the cookie to `sameSite: \"none\"` with `secure: true` in `apps/server/src/index.ts` also works but lets every site send it.";
+
+function generatePassportSetup(): string {
+  return `
+## Passport Authentication Setup
+
+${PASSPORT_SAME_SITE_NOTE}`;
 }
 
 function generateRunningInstructions(
@@ -1035,7 +1143,7 @@ function generateFeaturesList(
     const authNames: Record<string, string> = {
       "better-auth": "Better Auth",
       clerk: "Clerk",
-      nextauth: "NextAuth.js",
+      nextauth: "Auth.js",
       "supabase-auth": "Supabase Auth",
       auth0: "Auth0",
       "stack-auth": "Stack Auth",
@@ -1201,6 +1309,52 @@ function generateScriptsList(
   }
 
   return scripts;
+}
+
+const SERVER_IMAGE_DEPLOY_STEPS: Partial<Record<ProjectConfig["serverDeploy"], string>> = {
+  docker: "Run `docker compose up --build` from the repository root.",
+  fly: "Run `fly deploy --config apps/server/fly.toml` from the repository root.",
+  railway:
+    "Keep the Railway service root directory at the repository root and set its config file path to `/apps/server/railway.toml`.",
+  render:
+    "Connect the repository as a Render Blueprint; `render.yaml` builds from the repository root.",
+};
+
+function generateServerImageSection(
+  projectName: string,
+  serverDeploy: ProjectConfig["serverDeploy"],
+  backend: ProjectConfig["backend"],
+  addons: ProjectConfig["addons"],
+): string {
+  // Encore allows no server deploy target; the Compose addon runs the image Encore builds.
+  if (backend === "encore") {
+    if (!addons.includes("docker-compose")) return "";
+
+    return `## Server deployment
+
+Encore builds the server image itself. From \`apps/server\`:
+
+\`\`\`bash
+encore build docker ${projectName}-server
+\`\`\`
+
+Then run \`docker compose up\` from the repository root; the \`server\` service uses that image.
+`;
+  }
+
+  const step = SERVER_IMAGE_DEPLOY_STEPS[serverDeploy];
+  if (!step || backend === "self" || backend === "none") return "";
+
+  return `## Server deployment
+
+\`apps/server/Dockerfile\` builds the server image from the repository root, because the server depends on workspace packages:
+
+\`\`\`bash
+docker build -f apps/server/Dockerfile .
+\`\`\`
+
+${step}
+`;
 }
 
 function generateDeploymentCommands(

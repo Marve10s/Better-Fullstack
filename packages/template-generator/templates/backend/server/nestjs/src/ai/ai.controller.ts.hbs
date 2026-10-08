@@ -1,7 +1,20 @@
 {{#if (includes examples "ai")}}
 import { Controller, Post, Req, Res } from "@nestjs/common";
+{{#if (isBetterAuth auth)}}
+import { auth } from "@{{projectName}}/auth";
+import { env } from "@{{projectName}}/env/server";
+import { fromNodeHeaders } from "better-auth/node";
+{{/if}}
 import { AiService } from "./ai.service";
 import type { Request, Response } from "express";
+{{#if (isBetterAuth auth)}}
+
+// The AI route trusts the session cookie, so accept JSON only, and only from the configured web
+// origin or with no Origin (native apps, servers), to stop cross-site posts that skip preflight.
+function isTrustedAiRequest(origin: string | undefined, contentType: string | undefined) {
+	return (!origin || origin === env.CORS_ORIGIN) && /^application\/json\s*(;|$)/i.test(contentType ?? "");
+}
+{{/if}}
 
 @Controller("ai")
 export class AiController {
@@ -9,6 +22,18 @@ export class AiController {
 
 	@Post()
 	async chat(@Req() req: Request, @Res() res: Response) {
+{{#if (isBetterAuth auth)}}
+		if (!isTrustedAiRequest(req.get("origin"), req.get("content-type"))) {
+			res.status(403).json({ message: "Forbidden" });
+			return;
+		}
+		const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
+		if (!session) {
+			res.status(401).json({ message: "Unauthorized" });
+			return;
+		}
+
+{{/if}}
 		return this.aiService.streamChat(req, res);
 	}
 }

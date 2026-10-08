@@ -3321,7 +3321,7 @@ describe("stack update planner", () => {
         ],
         assertions: [
           { path: "apps/server/mix.exs", content: ":guardian" },
-          { path: "apps/server/config/config.exs", content: "config :app, App.Auth.Guardian" },
+          { path: "apps/server/config/config.exs", content: "config :app,\n       App.Auth.Guardian" },
           { path: "apps/server/lib/app/auth/guardian.ex", content: "use Guardian, otp_app: :app" },
           {
             path: "apps/server/lib/app_web/controllers/token_controller.ex",
@@ -3788,7 +3788,7 @@ describe("stack update planner", () => {
     await expectFileContains(join(projectDir, "apps/server/lib/app/application.ex"), "App.Cache");
     await expectFileContains(
       join(projectDir, "apps/server/config/config.exs"),
-      "config :app, App.Cache",
+      "config :app,\n       App.Cache",
     );
   });
 
@@ -3826,7 +3826,7 @@ describe("stack update planner", () => {
         ],
         assertions: [
           { path: "apps/server/mix.exs", content: ":prom_ex" },
-          { path: "apps/server/config/config.exs", content: "config :app, App.PromEx" },
+          { path: "apps/server/config/config.exs", content: "config :app,\n       App.PromEx" },
           { path: "apps/server/lib/app/application.ex", content: "App.PromEx" },
           { path: "apps/server/lib/app_web/endpoint.ex", content: "PromEx.Plug" },
           { path: "apps/server/lib/app/prom_ex.ex", content: "use PromEx, otp_app: :app" },
@@ -4561,7 +4561,7 @@ describe("stack update planner", () => {
     expect(await pathExists(join(projectDir, "apps/docs/package.json"))).toBe(false);
   });
 
-  it("records channel-resolved generated content as the manifest baseline", async () => {
+  it("records generated content, not channel-resolved versions, as the manifest baseline", async () => {
     const root = await makeTempRoot("bfs-stack-update-channel-baseline-");
     const projectDir = join(root, "app");
     await scaffoldGeneratedProject(makeConfig(projectDir));
@@ -4629,7 +4629,8 @@ describe("stack update planner", () => {
     const serverBaseline = manifest?.baselines?.["apps/server/package.json"];
     expect(serverBaseline).toBeDefined();
     expect(serverBaseline).not.toContain("manifest-user-dep");
-    expect(serverBaseline).toContain("9.9.9");
+    expect(serverBaseline).toContain('"resend"');
+    expect(serverBaseline).not.toContain("9.9.9");
   });
 
   it("does not re-resolve a failed version-channel rewrite during apply", async () => {

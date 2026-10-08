@@ -1,7 +1,7 @@
 defmodule {{elixirModuleName}}Web.ItemLive.Index do
   use {{elixirModuleName}}Web, :live_view
-
 {{#if (ne elixirOrm "none")}}
+
   alias {{elixirModuleName}}.Catalog
 {{/if}}
 
@@ -9,7 +9,7 @@ defmodule {{elixirModuleName}}Web.ItemLive.Index do
   def mount(_params, _session, socket) do
     socket =
       socket
-      |> assign(:form, to_form(%{"name" => "", "description" => ""}))
+      |> assign(:form, empty_form())
 {{#if (ne elixirOrm "none")}}
       |> stream(:items, Catalog.list_items())
 {{else}}
@@ -22,36 +22,50 @@ defmodule {{elixirModuleName}}Web.ItemLive.Index do
   end
 
   @impl true
-  def handle_event("create", %{"name" => name, "description" => description}, socket) do
+  def handle_event("create", %{"item" => item_params}, socket) do
 {{#if (ne elixirOrm "none")}}
-    case Catalog.create_item(%{"name" => name, "description" => description}) do
+    case Catalog.create_item(item_params) do
       {:ok, item} ->
-        {:noreply, stream_insert(socket, :items, item)}
+        {:noreply, socket |> stream_insert(:items, item) |> assign(:form, empty_form())}
 
       {:error, changeset} ->
-        {:noreply, assign(socket, :form, to_form(changeset))}
+        {:noreply, assign(socket, :form, to_form(changeset, as: "item"))}
     end
 {{else}}
     item = %{
       id: System.unique_integer([:positive]),
-      name: name,
-      description: description
+      name: item_params["name"],
+      description: item_params["description"]
     }
 
-    {:noreply, stream_insert(socket, :items, item)}
+    {:noreply, socket |> stream_insert(:items, item) |> assign(:form, empty_form())}
 {{/if}}
   end
+
+  defp empty_form, do: to_form(%{"name" => "", "description" => ""}, as: "item")
 
   @impl true
   def render(assigns) do
     ~H"""
     <main style="font-family: system-ui; max-width: 760px; margin: 4rem auto;">
       <h1>Items</h1>
-      <form phx-submit="create" style="display: grid; gap: .75rem; margin-bottom: 2rem;">
-        <input name="name" placeholder="Name" />
-        <input name="description" placeholder="Description" />
+      <.form
+        for={@form}
+        id="item-form"
+        phx-submit="create"
+        style="display: grid; gap: .75rem; margin-bottom: 2rem;"
+      >
+        <input name={@form[:name].name} value={@form[:name].value} placeholder="Name" />
+        <p :for={message <- error_messages(@form[:name])} style="color: #b91c1c; margin: 0;">
+          Name {message}
+        </p>
+        <input
+          name={@form[:description].name}
+          value={@form[:description].value}
+          placeholder="Description"
+        />
         <button>Create</button>
-      </form>
+      </.form>
       <ul id="items" phx-update="stream">
         <%= for {id, item} <- @streams.items do %>
           <li id={id}>
@@ -61,5 +75,13 @@ defmodule {{elixirModuleName}}Web.ItemLive.Index do
       </ul>
     </main>
     """
+  end
+
+  defp error_messages(field) do
+    Enum.map(field.errors, fn {message, opts} ->
+      Enum.reduce(opts, message, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", fn _ -> to_string(value) end)
+      end)
+    end)
   end
 end

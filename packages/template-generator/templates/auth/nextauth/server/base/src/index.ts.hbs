@@ -1,0 +1,80 @@
+import NextAuth, { type NextAuthResult } from "next-auth";
+import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
+{{#if (hasAuthJsCredentials orm database)}}
+import Credentials from "next-auth/providers/credentials";
+{{#if (eq orm "drizzle")}}
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { db } from "@{{projectName}}/db";
+import * as schema from "@{{projectName}}/db/schema/auth";
+{{/if}}
+{{#if (eq orm "prisma")}}
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import prisma from "@{{projectName}}/db";
+{{/if}}
+
+import { verifyCredentials } from "./users";
+{{/if}}
+
+const nextAuth = NextAuth({
+{{#if (hasAuthJsCredentials orm database)}}
+{{#if (eq orm "drizzle")}}
+  adapter: DrizzleAdapter(db, {
+    usersTable: schema.users,
+    accountsTable: schema.accounts,
+    sessionsTable: schema.sessions,
+    verificationTokensTable: schema.verificationTokens,
+  }),
+{{/if}}
+{{#if (eq orm "prisma")}}
+  adapter: PrismaAdapter(prisma),
+{{/if}}
+{{/if}}
+  session: {
+{{#if (hasAuthJsCredentials orm database)}}
+    // Credentials sign-in requires JWT sessions; the adapter still stores users and OAuth accounts.
+{{/if}}
+    strategy: "jwt",
+  },
+  providers: [
+    // Read from AUTH_GITHUB_ID/AUTH_GITHUB_SECRET and AUTH_GOOGLE_ID/AUTH_GOOGLE_SECRET
+    GitHub,
+    Google,
+{{#if (hasAuthJsCredentials orm database)}}
+    Credentials({
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        const { email, password } = credentials;
+        if (typeof email !== "string" || typeof password !== "string") {
+          return null;
+        }
+
+        const user = await verifyCredentials(email, password);
+        if (!user) {
+          return null;
+        }
+
+        return { id: user.id, name: user.name, email: user.email, image: user.image };
+      },
+    }),
+{{/if}}
+  ],
+  pages: {
+    signIn: "/login",
+  },
+  callbacks: {
+    session({ session, token }) {
+      if (token.sub) {
+        session.user.id = token.sub;
+      }
+      return session;
+    },
+  },
+});
+
+// Explicit types keep this workspace package's declarations portable.
+export const handlers: NextAuthResult["handlers"] = nextAuth.handlers;
+export const auth: NextAuthResult["auth"] = nextAuth.auth;

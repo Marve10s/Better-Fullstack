@@ -21,6 +21,9 @@ import { apiReference } from "@scalar/express-api-reference";
 import { executeApolloRequest } from "@{{projectName}}/api";
 {{/if}}
 import cors from "cors";
+{{#if (eq jobQueue "upstash-qstash")}}
+import { processWelcomeEmailJob, WELCOME_EMAIL_PATH } from "./jobs/qstash";
+{{/if}}
 import express{{#if (or (eq api "apollo-server") (and (eq api "openapi") (isBetterAuth auth)))}}, { type Request }{{/if}} from "express";
 {{#if (eq realtime "ws")}}
 import { createServer } from "node:http";
@@ -32,7 +35,7 @@ import { google } from "@ai-sdk/google";
 {{/if}}
 {{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
-import { toNodeHandler } from "better-auth/node";
+import { {{#if (includes examples "ai")}}fromNodeHeaders, {{/if}}toNodeHandler } from "better-auth/node";
 {{/if}}
 {{#if (eq auth "passport")}}
 import { passport } from "@{{projectName}}/auth";
@@ -131,6 +134,17 @@ app.use(async (req, res, next) => {
 });
 {{/if}}
 
+{{#if (eq jobQueue "upstash-qstash")}}
+// QStash signs the raw body, so this route reads it as text before express.json().
+app.post(WELCOME_EMAIL_PATH, express.text({ type: "*/*" }), async (req, res) => {
+	const result = await processWelcomeEmailJob({
+		signature: req.header("upstash-signature"),
+		body: typeof req.body === "string" ? req.body : "",
+	});
+	res.status(result.status).json(result.body);
+});
+
+{{/if}}
 app.use(express.json());
 {{#if (eq api "apollo-server")}}
 function expressHeadersToWebHeaders(headers: Request["headers"]) {
@@ -215,8 +229,36 @@ app.use("/docs", apiReference({ spec: { url: "/openapi.json" } }));
 
 {{/if}}
 
+{{#if (and (includes examples "ai") (or (isBetterAuth auth) (eq auth "passport")))}}
+// The AI route trusts the session cookie, so accept JSON only, and only from the configured web
+// origin or with no Origin (native apps, servers), to stop cross-site posts that skip preflight.
+function isTrustedAiRequest(origin: string | undefined, contentType: string | undefined) {
+	return (!origin || origin === env.CORS_ORIGIN) && /^application\/json\s*(;|$)/i.test(contentType ?? "");
+}
+
+{{/if}}
 {{#if (includes examples "ai")}}
 app.post("/ai", async (req, res) => {
+{{#if (or (isBetterAuth auth) (eq auth "passport"))}}
+	if (!isTrustedAiRequest(req.get("origin"), req.get("content-type"))) {
+		res.status(403).json({ message: "Forbidden" });
+		return;
+	}
+{{/if}}
+{{#if (isBetterAuth auth)}}
+	const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
+	if (!session) {
+		res.status(401).json({ message: "Unauthorized" });
+		return;
+	}
+
+{{else if (eq auth "passport")}}
+	if (!req.isAuthenticated()) {
+		res.status(401).json({ message: "Unauthorized" });
+		return;
+	}
+
+{{/if}}
 	const { messages = [] } = (req.body || {}) as { messages: UIMessage[] };
 	const model = google("gemini-2.5-flash");
 	const result = streamText({

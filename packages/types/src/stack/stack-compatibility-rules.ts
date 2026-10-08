@@ -1,4 +1,12 @@
-import type { Backend, CSSFramework, Frontend, Runtime, UILibrary, WebDeploy } from "@/config/types";
+import type {
+  Backend,
+  CSSFramework,
+  Frontend,
+  JobQueue,
+  Runtime,
+  UILibrary,
+  WebDeploy,
+} from "@/config/types";
 
 const WEB_FRAMEWORKS: readonly Frontend[] = [
   "tanstack-router",
@@ -305,6 +313,86 @@ export function isBackendUtilsCompatibleBackend(backend: string | undefined): bo
   return (
     backend !== undefined && (BACKEND_UTILS_COMPATIBLE_BACKENDS as readonly string[]).includes(backend)
   );
+}
+
+const GENERATED_JOB_QUEUE_BACKENDS = new Set(["hono", "express", "fastify", "elysia"]);
+
+const GENERATED_JOB_QUEUE_REQUIREMENTS: Partial<
+  Record<JobQueue, { label: string; workerProcess: boolean; postgres: boolean }>
+> = {
+  "pg-boss": { label: "pg-boss", workerProcess: true, postgres: true },
+  hatchet: { label: "Hatchet", workerProcess: true, postgres: false },
+  "upstash-qstash": { label: "Upstash QStash", workerProcess: false, postgres: false },
+};
+
+export function hasGeneratedJobQueueRequirements(jobQueue: string | undefined): boolean {
+  return GENERATED_JOB_QUEUE_REQUIREMENTS[jobQueue as JobQueue] !== undefined;
+}
+
+/**
+ * Shared reason for job queues whose generated worker or receiver only exists for some stacks.
+ * Legacy compatibility, graph validation, CLI validation, and the builder all report this text.
+ * With `partial`, an undefined selection is still unanswered and is not judged, so prompts can
+ * offer only the choices that keep the job queue valid.
+ */
+export function getJobQueueIncompatibility(
+  jobQueue: string | undefined,
+  stack: { backend?: string; runtime?: string; database?: string },
+  { partial = false } = {},
+): string | null {
+  const requirements = GENERATED_JOB_QUEUE_REQUIREMENTS[jobQueue as JobQueue];
+  if (!requirements) return null;
+  const isUnanswered = (value: string | undefined) => partial && value === undefined;
+  if (!isUnanswered(stack.backend) && !GENERATED_JOB_QUEUE_BACKENDS.has(stack.backend ?? "")) {
+    return `${requirements.label} is generated for Hono, Express, Fastify, and Elysia backends`;
+  }
+  if (requirements.workerProcess && stack.runtime === "workers") {
+    return `${requirements.label} needs a long-running Node.js or Bun worker process, not Cloudflare Workers`;
+  }
+  if (requirements.postgres && !isUnanswered(stack.database) && stack.database !== "postgres") {
+    return `${requirements.label} requires PostgreSQL`;
+  }
+  return null;
+}
+
+const BETTER_AUTH_UNSUPPORTED_TOOLS: Record<string, string> = {
+  redis: "Redis",
+  edgedb: "EdgeDB",
+  typeorm: "TypeORM",
+  sequelize: "Sequelize",
+  mikroorm: "MikroORM",
+};
+
+const BETTER_AUTH_DATABASE_LABELS: Record<string, string> = {
+  sqlite: "SQLite",
+  postgres: "PostgreSQL",
+  mysql: "MySQL",
+  mongodb: "MongoDB",
+};
+
+/**
+ * Shared reason for database and ORM pairs Better Auth has no adapter for. Better Auth cannot use
+ * a connection string, so a database without a Drizzle, Prisma, Kysely, or Mongoose adapter has
+ * no working configuration. Legacy compatibility, graph validation, CLI validation, MCP,
+ * createVirtual, and the builder all report this text. With `partial`, an undefined selection is
+ * still unanswered and is not judged, so prompts can offer only the choices that keep it valid.
+ */
+export function getBetterAuthDatabaseIncompatibility(
+  auth: string | undefined,
+  stack: { database?: string; orm?: string },
+  { partial = false } = {},
+): string | null {
+  if (auth !== "better-auth" && auth !== "better-auth-organizations") return null;
+  const database = stack.database ?? (partial ? undefined : "none");
+  const orm = stack.orm ?? (partial ? undefined : "none");
+  const unsupported =
+    BETTER_AUTH_UNSUPPORTED_TOOLS[database ?? ""] ?? BETTER_AUTH_UNSUPPORTED_TOOLS[orm ?? ""];
+  if (unsupported) return `Better Auth has no ${unsupported} adapter`;
+  const databaseLabel = BETTER_AUTH_DATABASE_LABELS[database ?? ""];
+  if (orm === "none" && databaseLabel) {
+    return `Better Auth needs a Drizzle, Prisma, Kysely, or Mongoose adapter for ${databaseLabel}`;
+  }
+  return null;
 }
 
 export function isExampleAIAllowed(backend?: Backend, frontends: Frontend[] = []) {

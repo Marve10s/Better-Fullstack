@@ -12,6 +12,7 @@ import {
   TbBuildingStore as Store,
   TbCoffee as Coffee,
   TbDeviceMobile as Mobile,
+  TbDroplet as Droplet,
   TbPackage as Package,
   TbRobot as Robot,
   TbSparkles as Sparkles,
@@ -35,6 +36,7 @@ const CATEGORY_ORDER = [
   "Go",
   "Java",
   ".NET",
+  "Elixir",
   "AI Tools",
 ] as const;
 
@@ -47,6 +49,7 @@ const CATEGORY_ICONS: Record<string, IconType> = {
   Go: Golang,
   Java: Coffee,
   ".NET": CSharp,
+  Elixir: Droplet,
   "AI Tools": Sparkles,
 };
 

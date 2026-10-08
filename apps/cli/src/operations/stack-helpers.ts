@@ -16,6 +16,7 @@ import {
   formatStackPartSpec,
   getCategoryOrderForEcosystem,
   getCodeQualitySelectionIssue,
+  getJobQueueIncompatibility,
   getReplacedCodeQualityTools,
   getToolingCapability,
   getToolingCategory,
@@ -35,6 +36,7 @@ import { getStarterTrackRecommendation } from "@/commands/stack/starter-tracks";
 import { applyEffectBackendDefaults } from "@/config/config-processing";
 import { getEffectiveStack, getGraphSummary } from "@/config/graph-summary";
 import {
+  getBetterAuthSelectionIssue,
   getCompatibilityBackend,
   getPythonLoggingSelectionIssue,
 } from "@/config/stack-compatibility";
@@ -111,6 +113,12 @@ function getMcpSchemaOptionValues(key: string): string[] {
       ),
     ),
   ];
+}
+
+/** The category name `bfs_get_schema` accepts for a catalog category, or null when it has none. */
+export function getMcpSchemaCategory(category: OptionCategory): string | null {
+  const key = MCP_LEGACY_CATEGORY_KEYS[category]?.[0] ?? category;
+  return getMcpSchemaOptionValues(key).length > 0 ? key : null;
 }
 
 export function getMcpCategoryKeysForEcosystem(ecosystem: OptionCategoryEcosystem): string[] {
@@ -432,11 +440,15 @@ export function validateMcpProjectConfigCompatibility(
         ProjectConfig,
         | "backend"
         | "runtime"
+        | "database"
+        | "jobQueue"
         | "webDeploy"
         | "stackParts"
         | "addons"
         | "pythonWebFramework"
         | "pythonLogging"
+        | "auth"
+        | "orm"
       >
     >,
 ): void {
@@ -444,12 +456,17 @@ export function validateMcpProjectConfigCompatibility(
   if (qualityIssue) throw new Error(qualityIssue);
   const pythonLoggingIssue = getPythonLoggingSelectionIssue(config);
   if (pythonLoggingIssue) throw new Error(pythonLoggingIssue.reason);
+  const betterAuthIssue = getBetterAuthSelectionIssue(config);
+  if (betterAuthIssue) throw new Error(betterAuthIssue);
   if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
     const qualityIssues = validateStackParts(config.stackParts).issues.filter(
-      (issue) => issue.role === "codeQuality",
+      (issue) => issue.role === "codeQuality" || issue.role === "jobQueue",
     );
     if (qualityIssues.length)
       throw new Error(qualityIssues.map((issue) => issue.message).join("\n"));
+  } else if (config.ecosystem === "typescript") {
+    const jobQueueIssue = getJobQueueIncompatibility(config.jobQueue, config);
+    if (jobQueueIssue) throw new Error(jobQueueIssue);
   }
   if (config.integrations !== "nango") return;
 

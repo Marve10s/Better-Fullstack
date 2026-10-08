@@ -47,8 +47,8 @@ defmodule {{elixirModuleName}}.Catalog do
 {{/if}}
 {{/if}}
   end
-
 {{#if (eq elixirOrm "ecto")}}
+
   defp build_item(attrs) do
     %Item{}
     |> Item.changeset(attrs)

@@ -1,7 +1,7 @@
 ---
 title: Nuxt with Prisma and Better Auth
 description: Create a Nuxt fullstack app with PostgreSQL, Prisma, Better Auth, oRPC, Tailwind CSS, and a generated Better Fullstack project structure.
-updated: 2026-05-12
+updated: 2026-10-07
 category: TypeScript
 tags:
   - nuxt
@@ -16,90 +16,144 @@ keywords:
   - nuxt orpc starter
 ---
 
-Use this stack when you want a Vue/Nuxt fullstack app with relational data, authentication, and typed API contracts.
+Use this stack when you want a Vue/Nuxt fullstack app with relational data, email and password sign-in, and typed API contracts, all served by one Nuxt server.
 
 ```npm
 npm create better-fullstack@latest my-nuxt-app -- \
   --ecosystem typescript \
   --frontend nuxt \
   --backend self \
+  --runtime none \
   --database postgres \
   --orm prisma \
   --auth better-auth \
   --api orpc \
-  --css-framework tailwind \
+  --css-framework tailwind
 ```
 
 ## What this creates
 
-- A Nuxt app in fullstack mode.
-- PostgreSQL and Prisma.
-- Better Auth.
-- oRPC for typed API contracts.
-- Tailwind CSS.
+- A Nuxt app in `apps/web` that serves the pages, the Better Auth endpoints, and the oRPC API from the same origin.
+- PostgreSQL through Prisma, with the Better Auth tables already in the schema.
+- Better Auth with email and password sign-in, a login page, and a protected dashboard.
+- oRPC procedures with TanStack Query helpers for Vue.
+- Tailwind CSS and Nuxt UI.
 - A reproducible `bts.jsonc` stack configuration.
 
 ## Generated shape
 
-This stack keeps the application inside Nuxt's fullstack model. Prisma owns database schema and migrations, Better Auth owns authentication behavior, and oRPC gives typed contracts without assuming a React frontend.
-
-Representative shape:
-
 ```txt
 my-nuxt-app/
   bts.jsonc
-  app/
-  server/
-  prisma/
-    schema.prisma
+  apps/web/
+    .env
+    nuxt.config.ts
+    app/
+      pages/            # index.vue, login.vue, dashboard.vue
+      components/       # SignInForm.vue, SignUpForm.vue, UserMenu.vue
+      middleware/auth.ts
+      plugins/          # auth-client.ts, orpc.ts, vue-query.ts
+    server/api/
+      auth/[...all].ts  # Better Auth handler
+      rpc/[...rest].ts  # oRPC handler and OpenAPI reference
+  packages/
+    api/src/            # context.ts, index.ts, routers/index.ts
+    auth/src/index.ts   # betterAuth() with the Prisma adapter
+    db/
+      prisma.config.ts
+      prisma/schema/    # schema.prisma, auth.prisma
+    env/src/            # server.ts, web.ts
 ```
 
-Treat this as a representative layout. The important boundary is that server-only database and auth code stays in Nuxt server modules or API handlers, while Vue components call typed server contracts.
+The Nuxt server routes are thin. `server/api/auth/[...all].ts` passes each request to `auth.handler` from `packages/auth`, and `server/api/rpc/[...rest].ts` runs the router from `packages/api`. The oRPC context reads the Better Auth session from the request cookies, so procedures can check the signed-in user.
 
-## Example Prisma model
+## Routes
 
-A small product model can start like this:
+| Route | Purpose |
+| --- | --- |
+| `/login` | Sign-in and sign-up forms. |
+| `/dashboard` | Protected page that calls `privateData`. The `auth` middleware sends signed-out users to `/login`. |
+| `/api/auth/*` | Better Auth endpoints, such as `sign-up/email`, `sign-in/email`, `get-session`, and `sign-out`. |
+| `/api/rpc/healthCheck` | Public oRPC procedure that returns `"OK"`. |
+| `/api/rpc/privateData` | Protected oRPC procedure. It returns `401 UNAUTHORIZED` without a session cookie. |
+| `/api/rpc/api-reference` | OpenAPI reference for the router. |
+
+The auth client and the oRPC client use the page's own origin, so the app needs no public server URL.
+
+## Environment
+
+The generator writes `apps/web/.env`:
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string used by Prisma and the app. |
+| `BETTER_AUTH_SECRET` | Generated random secret, at least 32 characters. |
+| `BETTER_AUTH_URL` | Public URL of the app, `http://localhost:3001` locally. |
+| `CORS_ORIGIN` | Origin Better Auth trusts for sign-in requests, `http://localhost:3001` locally. |
+
+## Run it locally
+
+Point `DATABASE_URL` at your PostgreSQL database. From the project root, create the first migration and start the dev server on port 3001:
+
+```npm
+npm run db:migrate
+npm run dev
+```
+
+`db:migrate` runs `prisma migrate dev`, which asks for a migration name and writes it to `packages/db/prisma/migrations`. Open `http://localhost:3001/login` to create an account.
+
+To run the production build, build it and start the Nitro server from `apps/web`. Nuxt does not load `.env` in production, so pass it explicitly and keep the port that `BETTER_AUTH_URL` and `CORS_ORIGIN` name:
+
+```npm
+npm run build
+```
+
+```bash
+cd apps/web
+PORT=3001 node --env-file=.env .output/server/index.mjs
+```
+
+## Add a model and a procedure
+
+Add product models to `packages/db/prisma/schema/schema.prisma` and leave `auth.prisma` to Better Auth. Reference users by identifier:
 
 ```prisma
 model Workspace {
-  id        String   @id
+  id        String   @id @default(cuid())
   name      String
   ownerId   String
   createdAt DateTime @default(now())
+
+  @@index([ownerId])
 }
 ```
 
-Keep Better Auth's required models aligned with the adapter documentation and separate from application-specific tables. Product tables should reference auth users by identifier rather than duplicating login data.
-
-## Example oRPC contract shape
-
-Use oRPC to describe validated server operations for the Nuxt app:
+Then add a procedure to `appRouter` in `packages/api/src/routers/index.ts`. `protectedProcedure` rejects requests without a session, and `context.session.user` holds the signed-in user:
 
 ```ts
-import { z } from "zod";
-
-export const createWorkspaceInput = z.object({
-  name: z.string().min(2),
-});
-
-export async function createWorkspace(rawInput: unknown, userId: string) {
-  const input = createWorkspaceInput.parse(rawInput);
-
-  return {
-    id: crypto.randomUUID(),
-    name: input.name,
-    ownerId: userId,
-  };
-}
+createWorkspace: protectedProcedure
+  .input(z.object({ name: z.string().min(2) }))
+  .handler(({ input, context }) => {
+    return prisma.workspace.create({
+      data: { name: input.name, ownerId: context.session.user.id },
+    });
+  }),
 ```
 
-Place authorization checks in the server implementation, not only in Vue components. Client-side guards improve UX but do not protect data.
+Import `z` from `zod` and the Prisma client from the `db` workspace package. After changing the schema, create a migration and then regenerate Prisma Client. In Prisma 7, `migrate dev` no longer generates the client, so `prisma.workspace` does not exist until `db:generate` runs:
+
+```npm
+npm run db:migrate
+npm run db:generate
+```
+
+Keep authorization checks in procedures; the `auth` middleware only improves navigation.
 
 ## Compatibility notes
 
-Nuxt uses oRPC in Better Fullstack for typed contracts. tRPC is reserved for React-based TypeScript frontends, so this guide intentionally uses `--api orpc`.
+Nuxt uses oRPC in Better Fullstack for typed contracts. The CLI rejects tRPC, ts-rest, and garph with Nuxt because they require a React-based frontend, so this guide uses `--api orpc`.
 
-`--backend self` is the correct Nuxt fullstack choice. If you want a separately deployed API server, use a backend option such as Hono in a stack that supports that pairing.
+`--backend self` with `--runtime none` is the Nuxt fullstack choice. If you want a separately deployed API server, use a backend option such as Hono in a stack that supports that pairing.
 
 ## When to choose it
 
@@ -107,16 +161,16 @@ Choose Nuxt when your team prefers Vue, wants server-capable routing, and needs 
 
 ## Deployment notes
 
-Set the PostgreSQL connection string, Better Auth secrets, and public app URL in the deployment environment. Run Prisma migrations before deploying code that depends on new schema.
+Set `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and `CORS_ORIGIN` in the deployment environment. `BETTER_AUTH_URL` and `CORS_ORIGIN` must be the deployed origin. Apply migrations with `prisma migrate deploy` before starting code that depends on new schema.
 
 For serverless platforms, review how your Prisma client is generated and how database connections are pooled. Managed PostgreSQL providers often document the safest connection string for serverless runtimes.
 
 ## Troubleshooting
 
-- If Prisma Client types are stale, regenerate the client after changing `schema.prisma`.
-- If oRPC calls fail only in production, verify the server route base URL and deployment adapter behavior.
-- If auth redirects loop, check trusted origins, cookies, and the app URL used by Better Auth.
-- If migrations point at the wrong database, inspect the environment variable used by both local commands and deployed runtime.
+- If sign-in returns `403` with `INVALID_ORIGIN`, set `CORS_ORIGIN` to the exact origin in the browser address bar, including the port.
+- If the production server listens on port 3000, set `PORT`. Nitro ignores the dev server port in `nuxt.config.ts`.
+- If Prisma Client types are stale, run `npm run db:generate` after changing the schema.
+- If migrations point at the wrong database, check `DATABASE_URL` in `apps/web/.env`. Prisma reads that file through `packages/db/prisma.config.ts`.
 
 ## Comparison notes
 

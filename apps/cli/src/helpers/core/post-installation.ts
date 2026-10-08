@@ -172,6 +172,7 @@ export async function displayPostInstallInstructions(
   const revenueCatInstructions =
     config.payments === "revenuecat" ? getRevenueCatInstructions(backend, packageManager) : "";
   const paymentSetupInstructions = getPaymentSetupInstructions(config.payments, backend);
+  const jobQueueInstructions = getJobQueueInstructions(config.jobQueue, runtime, packageManager);
   const alchemyDeployInstructions = getAlchemyDeployInstructions(
     runCmd,
     webDeploy,
@@ -321,6 +322,7 @@ export async function displayPostInstallInstructions(
   if (polarInstructions) output += `\n${polarInstructions.trim()}\n`;
   if (revenueCatInstructions) output += `\n${revenueCatInstructions.trim()}\n`;
   if (paymentSetupInstructions) output += `\n${paymentSetupInstructions.trim()}\n`;
+  if (jobQueueInstructions) output += `\n${jobQueueInstructions.trim()}\n`;
 
   if (noOrmWarning) output += `\n${noOrmWarning.trim()}\n`;
   if (bunWebNativeWarning) output += `\n${bunWebNativeWarning.trim()}\n`;
@@ -397,6 +399,41 @@ function getGitleaksInstructions(runCmd: string, hasPackageScript = true, gitEna
     `${pc.cyan("•")} Install the Gitleaks binary: ${pc.underline("https://github.com/gitleaks/gitleaks#installing")}\n` +
     `${pc.cyan("•")} Scan Git history: ${scanCommand}\n`
   );
+}
+
+function getJobQueueInstructions(
+  jobQueue: ProjectConfig["jobQueue"],
+  runtime: ProjectConfig["runtime"],
+  packageManager: ProjectConfig["packageManager"],
+) {
+  const serverRun = `cd apps/server && ${packageManager} run`;
+  if (jobQueue === "pg-boss") {
+    return (
+      `${pc.bold("pg-boss background jobs:")}\n` +
+      `${pc.cyan("•")} Jobs are stored in the PostgreSQL database from DATABASE_URL\n` +
+      `${pc.cyan("•")} Start the worker: ${pc.white(`${serverRun} jobs:worker`)}\n` +
+      `${pc.cyan("•")} Enqueue a test job: ${pc.white(`${serverRun} jobs:enqueue`)}\n`
+    );
+  }
+  if (jobQueue === "hatchet") {
+    return (
+      `${pc.bold("Hatchet background jobs:")}\n` +
+      `${pc.cyan("•")} Set HATCHET_CLIENT_TOKEN in apps/server/.env (${pc.underline("https://cloud.onhatchet.run")})\n` +
+      `${pc.cyan("•")} Start the worker: ${pc.white(`${serverRun} jobs:worker`)}\n` +
+      `${pc.cyan("•")} Enqueue a test run: ${pc.white(`${serverRun} jobs:enqueue`)}\n`
+    );
+  }
+  if (jobQueue === "upstash-qstash") {
+    return (
+      `${pc.bold("Upstash QStash background jobs:")}\n` +
+      `${pc.cyan("•")} Set the QSTASH_* keys in your server env (${pc.underline("https://console.upstash.com/qstash")})\n` +
+      `${pc.cyan("•")} Point QSTASH_WEBHOOK_URL at the public URL of POST /api/jobs/welcome-email\n` +
+      (runtime === "workers"
+        ? ""
+        : `${pc.cyan("•")} Publish a test job: ${pc.white(`${serverRun} jobs:enqueue`)}\n`)
+    );
+  }
+  return "";
 }
 
 function getSigNozInstructions(envFile: string) {

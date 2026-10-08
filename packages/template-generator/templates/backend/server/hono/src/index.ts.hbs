@@ -39,6 +39,9 @@ import { createContext as createGraphQLContext } from "@{{projectName}}/api/cont
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 import { Hono } from "hono";
+{{#if (eq jobQueue "upstash-qstash")}}
+import { handleWelcomeEmailJob, WELCOME_EMAIL_PATH } from "./jobs/qstash";
+{{/if}}
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 {{#if (and (includes examples "chat-sdk") (eq runtime "node"))}}
@@ -223,8 +226,26 @@ openApiApp.get("/docs", apiReference({ spec: { url: "/openapi.json" } }));
 app.route("/", openApiApp);
 {{/if}}
 
+{{#if (and (includes examples "ai") (isBetterAuth auth))}}
+// The AI route trusts the session cookie, so accept JSON only, and only from the configured web
+// origin or with no Origin (native apps, servers), to stop cross-site posts that skip preflight.
+function isTrustedAiRequest(origin: string | undefined, contentType: string | undefined) {
+	return (!origin || origin === env.CORS_ORIGIN) && /^application\/json\s*(;|$)/i.test(contentType ?? "");
+}
+
+{{/if}}
 {{#if (and (includes examples "ai") (or (eq runtime "bun") (eq runtime "node")))}}
 app.post("/ai", async (c) => {
+{{#if (isBetterAuth auth)}}
+	if (!isTrustedAiRequest(c.req.header("origin"), c.req.header("content-type"))) {
+		return c.json({ message: "Forbidden" }, 403);
+	}
+	const session = await auth.api.getSession({ headers: c.req.raw.headers });
+	if (!session) {
+		return c.json({ message: "Unauthorized" }, 401);
+	}
+
+{{/if}}
 	const body = await c.req.json();
 	const uiMessages = body.messages || [];
 	const model = google("gemini-2.5-flash");
@@ -239,6 +260,16 @@ app.post("/ai", async (c) => {
 
 {{#if (and (includes examples "ai") (eq runtime "workers"))}}
 app.post("/ai", async (c) => {
+{{#if (isBetterAuth auth)}}
+	if (!isTrustedAiRequest(c.req.header("origin"), c.req.header("content-type"))) {
+		return c.json({ message: "Forbidden" }, 403);
+	}
+	const session = await auth.api.getSession({ headers: c.req.raw.headers });
+	if (!session) {
+		return c.json({ message: "Unauthorized" }, 401);
+	}
+
+{{/if}}
 	const body = await c.req.json();
 	const uiMessages = body.messages || [];
 	const google = createGoogleGenerativeAI({
@@ -254,6 +285,10 @@ app.post("/ai", async (c) => {
 });
 {{/if}}
 
+{{#if (eq jobQueue "upstash-qstash")}}
+app.post(WELCOME_EMAIL_PATH, (c) => handleWelcomeEmailJob(c.req.raw));
+
+{{/if}}
 {{#if (and (includes examples "chat-sdk") (eq runtime "node"))}}
 app.post("/api/webhooks/github", async (c) => {
 	const handler = chatSdkBot.webhooks.github;

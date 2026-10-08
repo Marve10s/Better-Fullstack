@@ -1,0 +1,38 @@
+import { env } from "@{{projectName}}/env/server";
+import { PgBoss } from "pg-boss";
+
+/**
+ * pg-boss stores jobs in your PostgreSQL database (in its own `pgboss` schema,
+ * created and migrated on start).
+ * @see https://pgboss.io
+ */
+export const WELCOME_EMAIL_QUEUE = "welcome-email";
+
+export type WelcomeEmailJob = {
+	userId: string;
+	email: string;
+};
+
+export const boss = new PgBoss(env.DATABASE_URL);
+
+boss.on("error", (error) => {
+	console.error("[pg-boss]", error);
+});
+
+let ready: Promise<PgBoss> | undefined;
+
+export function startBoss() {
+	ready ??= boss.start().then(async (instance) => {
+		await instance.createQueue(WELCOME_EMAIL_QUEUE);
+		return instance;
+	});
+	return ready;
+}
+
+/**
+ * Producer: call this from a route or service to enqueue the example job.
+ */
+export async function enqueueWelcomeEmail(job: WelcomeEmailJob) {
+	const instance = await startBoss();
+	return instance.send(WELCOME_EMAIL_QUEUE, job, { retryLimit: 3, retryBackoff: true });
+}

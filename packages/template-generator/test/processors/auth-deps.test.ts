@@ -128,24 +128,28 @@ describe("processAuthDeps", () => {
     ]);
   });
 
-  it("adds NextAuth and the configured ORM adapter for Next.js", () => {
-    const vfs = createSeededVFS(["apps/web/package.json"]);
+  it("adds NextAuth to the web app and the ORM adapter to the auth package for Next.js", () => {
+    const vfs = createSeededVFS(["apps/web/package.json", "packages/auth/package.json"]);
 
     processAuthDeps(
       vfs,
       makeConfig({
         auth: "nextauth",
         orm: "prisma",
+        database: "postgres",
         frontend: ["next"],
       }),
     );
 
     expectIncludesAll(getDeps(vfs, "apps/web/package.json").deps, [
       "next-auth",
-      "@auth/core",
       "@tanstack/react-form",
       "zod",
+    ]);
+    expectIncludesAll(getDeps(vfs, "packages/auth/package.json").deps, [
+      "next-auth",
       "@auth/prisma-adapter",
+      "bcryptjs",
     ]);
   });
 

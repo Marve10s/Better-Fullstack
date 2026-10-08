@@ -178,6 +178,8 @@ import {
   WEB_DEPLOY_VALUES,
 } from "@/config/schemas";
 import {
+  getBetterAuthDatabaseIncompatibility,
+  getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
   hasPWACompatibleFrontend,
@@ -1654,6 +1656,23 @@ function createTypeScriptBackendCompatibilityIssue(
     }
   }
 
+  if (part.role === "jobQueue" && part.ecosystem === "typescript") {
+    const reason = getJobQueueIncompatibility(part.toolId, {
+      backend: context.ownerToolId,
+      runtime: context.siblingToolIdsByRole?.runtime,
+      database: context.siblingToolIdsByRole?.database ?? context.primaryToolIdsByRole?.database,
+    });
+    if (reason) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `${reason}.`,
+      });
+    }
+  }
+
   if (part.role === "cms" && part.toolId === "payload") {
     const frontendTool = context.primaryToolIdsByRole?.frontend;
     if (frontendTool !== "next") {
@@ -1713,6 +1732,55 @@ function createTypeScriptBackendCompatibilityIssue(
   }
 
   return undefined;
+}
+
+const BETTER_AUTH_OWNER_ECOSYSTEMS: Partial<Record<StackPrimaryRole, StackPartEcosystem>> = {
+  backend: "typescript",
+  frontend: "typescript",
+  mobile: "react-native",
+};
+
+// Auth owned by a frontend or mobile app runs its Better Auth server on the TypeScript backend, so
+// it is judged by the data layer the flat projection takes from that backend. Without a TypeScript
+// backend only auth clients are generated and there is no adapter to judge.
+function createBetterAuthDatabaseIssue(
+  part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem">,
+  context: StackPartOptionContext,
+): StackGraphIssue | undefined {
+  if (
+    part.role !== "auth" ||
+    !context.ownerRole ||
+    BETTER_AUTH_OWNER_ECOSYSTEMS[context.ownerRole] !== part.ecosystem
+  ) {
+    return undefined;
+  }
+
+  const parts = context.parts ?? [];
+  const backend =
+    context.ownerRole !== "backend"
+      ? parts.find(
+          (candidate) =>
+            candidate.role === "backend" &&
+            candidate.ecosystem === "typescript" &&
+            !candidate.ownerPartId,
+        )
+      : undefined;
+  if (context.ownerRole !== "backend" && !backend) return undefined;
+  const reason = getBetterAuthDatabaseIncompatibility(part.toolId, {
+    database:
+      context.siblingToolIdsByRole?.database ??
+      context.primaryToolIdsByRole?.database ??
+      getSelectedScopedPart(parts, backend, "database")?.toolId,
+    orm: context.siblingToolIdsByRole?.orm ?? getSelectedScopedPart(parts, backend, "orm")?.toolId,
+  });
+  if (!reason) return undefined;
+  return createStackGraphIssue({
+    code: "INCOMPATIBLE_GRAPH_SELECTION",
+    partId: part.id,
+    role: part.role,
+    toolId: part.toolId,
+    message: `${reason}.`,
+  });
 }
 
 function createSharedBackendServiceCompatibilityIssue(
@@ -2747,6 +2815,9 @@ function getStackPartCompatibilityIssue(
 
   const backendCompatibilityIssue = createTypeScriptBackendCompatibilityIssue(part, context);
   if (backendCompatibilityIssue) return backendCompatibilityIssue;
+
+  const betterAuthDatabaseIssue = createBetterAuthDatabaseIssue(part, context);
+  if (betterAuthDatabaseIssue) return betterAuthDatabaseIssue;
 
   const sharedBackendServiceCompatibilityIssue = createSharedBackendServiceCompatibilityIssue(
     part,

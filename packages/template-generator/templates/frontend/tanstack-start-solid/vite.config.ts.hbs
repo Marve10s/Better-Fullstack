@@ -19,6 +19,16 @@ export default defineConfig({
   server: {
     port: 3001,
   },
+  environments: {
+    ssr: {
+      build: {
+        // Rolldown can split the server bundle into chunks that import each other; keep module
+        // evaluation in source order so top-level createMiddleware/createServerFn calls never
+        // run before @tanstack/solid-start has initialized.
+        rolldownOptions: { output: { strictExecutionOrder: true } },
+      },
+    },
+  },
 {{#if (isBetterAuth auth)}}
   ssr: {
     noExternal: ["better-auth"],

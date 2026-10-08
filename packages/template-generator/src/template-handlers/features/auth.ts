@@ -150,7 +150,10 @@ export async function processAuthTemplates(
     config.frontend.includes("next")
   ) {
     const nextFramework = "next";
-    // Process fullstack templates (auth config and API route)
+    // Auth.js config lives in packages/auth so the API context can call auth()
+    processTemplatesFromPrefix(vfs, templates, "auth/nextauth/server/base", "packages/auth", config);
+
+    // Process fullstack templates (route handlers and proxy)
     processTemplatesFromPrefix(vfs, templates, `auth/nextauth/fullstack/${nextFramework}`, "apps/web", config);
 
     // Process web templates (components and client utilities)
@@ -298,6 +301,15 @@ export async function processAuthTemplates(
       "apps/web",
       config,
     );
+    if (config.backend === "self") {
+      processTemplatesFromPrefix(
+        vfs,
+        templates,
+        `auth/${authTemplateProvider}/fullstack/nuxt`,
+        "apps/web",
+        config,
+      );
+    }
   } else if (hasSvelteWeb) {
     processTemplatesFromPrefix(
       vfs,

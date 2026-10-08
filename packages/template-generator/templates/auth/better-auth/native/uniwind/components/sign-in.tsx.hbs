@@ -7,7 +7,7 @@ import { queryClient } from "@/utils/orpc";
 {{/if}}
 import { useState } from "react";
 import { Text, View } from "react-native";
-import { Button, ErrorView, Spinner, Surface, TextField } from "heroui-native";
+import { Button, FieldError, Input, Label, Spinner, Surface, TextField } from "heroui-native";
 
 function SignIn() {
 const [email, setEmail] = useState("");
@@ -50,14 +50,14 @@ const [error, setError] = useState<string | null>(null);
   <Surface variant="secondary" className="p-4 rounded-lg">
     <Text className="text-foreground font-medium mb-4">Sign In</Text>
 
-    <ErrorView isInvalid={!!error} className="mb-3">
+    <FieldError isInvalid={!!error} className="mb-3">
       {error}
-    </ErrorView>
+    </FieldError>
 
     <View className="gap-3">
       <TextField>
-        <TextField.Label>Email</TextField.Label>
-        <TextField.Input
+        <Label>Email</Label>
+        <Input
           value={email}
           onChangeText={setEmail}
           placeholder="email@example.com"
@@ -67,8 +67,8 @@ const [error, setError] = useState<string | null>(null);
       </TextField>
 
       <TextField>
-        <TextField.Label>Password</TextField.Label>
-        <TextField.Input
+        <Label>Password</Label>
+        <Input
           value={password}
           onChangeText={setPassword}
           placeholder="••••••••"

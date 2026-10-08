@@ -1,14 +1,24 @@
-import type { Backend, Database, Runtime } from "@/types";
+import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 
 import { DEFAULT_CONFIG } from "@/constants";
 import { exitCancelled } from "@/presentation/errors";
-import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
+import {
+  getBetterAuthDatabaseIncompatibility,
+  getJobQueueIncompatibility,
+  type Auth,
+  type Backend,
+  type Database,
+  type JobQueue,
+  type Runtime,
+} from "@/types";
 
 type DatabasePromptContext = {
   database?: Database;
   backend?: Backend;
   runtime?: Runtime;
+  jobQueue?: JobQueue;
+  auth?: Auth;
 };
 
 export function resolveDatabasePrompt(
@@ -77,16 +87,38 @@ export function resolveDatabasePrompt(
     });
   }
 
+  const options = databaseOptions.filter(
+    (option) =>
+      !getJobQueueIncompatibility(
+        context.jobQueue,
+        { database: option.value },
+        { partial: true },
+      ) &&
+      !getBetterAuthDatabaseIncompatibility(
+        context.auth,
+        { database: option.value },
+        { partial: true },
+      ),
+  );
+
   return {
     shouldPrompt: true,
     mode: "single",
-    options: databaseOptions,
-    initialValue: DEFAULT_CONFIG.database,
+    options,
+    initialValue: options.some((option) => option.value === DEFAULT_CONFIG.database)
+      ? DEFAULT_CONFIG.database
+      : options[0]?.value,
   };
 }
 
-export async function getDatabaseChoice(database?: Database, backend?: Backend, runtime?: Runtime) {
-  const resolution = resolveDatabasePrompt({ database, backend, runtime });
+export async function getDatabaseChoice(
+  database?: Database,
+  backend?: Backend,
+  runtime?: Runtime,
+  jobQueue?: JobQueue,
+  auth?: Auth,
+) {
+  const resolution = resolveDatabasePrompt({ database, backend, runtime, jobQueue, auth });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

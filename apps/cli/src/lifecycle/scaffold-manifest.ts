@@ -99,9 +99,13 @@ function emptyChanges(): LifecycleChangeSummary {
   return { added: 0, patched: 0, merged: 0, removed: 0, manual: 0 };
 }
 
+export function isPnpmWorkspacePath(relPath: string): boolean {
+  return path.basename(relPath) === "pnpm-workspace.yaml";
+}
+
 export function isStructuredBaselinePath(relPath: string): boolean {
   const name = path.basename(relPath);
-  return name === "package.json" || name.endsWith(".env.example");
+  return name === "package.json" || name.endsWith(".env.example") || isPnpmWorkspacePath(relPath);
 }
 
 const BINARY_FILE_MARKER = "[Binary file]";

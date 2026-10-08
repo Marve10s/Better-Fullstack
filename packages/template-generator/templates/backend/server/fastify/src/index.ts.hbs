@@ -1,6 +1,9 @@
 import { env } from "@{{projectName}}/env/server";
 import Fastify{{#if (eq api "apollo-server")}}, { type FastifyRequest }{{/if}} from "fastify";
 import fastifyCors from "@fastify/cors";
+{{#if (eq jobQueue "upstash-qstash")}}
+import { processWelcomeEmailJob, WELCOME_EMAIL_PATH } from "./jobs/qstash";
+{{/if}}
 {{#if (eq api "openapi")}}
 import swagger, { type FastifyDynamicSwaggerOptions } from "@fastify/swagger";
 import apiReference from "@scalar/fastify-api-reference";
@@ -40,7 +43,7 @@ import { google } from "@ai-sdk/google";
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
 
-{{#if (and (eq api "openapi") (isBetterAuth auth))}}
+{{#if (and (isBetterAuth auth) (or (eq api "openapi") (includes examples "ai")))}}
 function nodeHeadersToHeaders(headers: Record<string, string | string[] | undefined>) {
 	const webHeaders = new Headers();
 	for (const [key, value] of Object.entries(headers)) {
@@ -285,7 +288,30 @@ interface AiRequestBody {
 	messages: UIMessage[];
 }
 
-fastify.post('/ai', async function (request) {
+{{#if (isBetterAuth auth)}}
+// The AI route trusts the session cookie, so accept JSON only, and only from the configured web
+// origin or with no Origin (native apps, servers), to stop cross-site posts that skip preflight.
+function isTrustedAiRequest(origin: string | undefined, contentType: string | undefined) {
+	return (!origin || origin === env.CORS_ORIGIN) && /^application\/json\s*(;|$)/i.test(contentType ?? "");
+}
+
+{{/if}}
+fastify.post('/ai', {{#if (isBetterAuth auth)}}{
+	onRequest: async (request, reply) => {
+		if (!isTrustedAiRequest(request.headers.origin, request.headers["content-type"])) {
+			return reply.status(403).send({ message: "Forbidden" });
+		}
+	},
+}, {{/if}}async function (request{{#if (isBetterAuth auth)}}, reply{{/if}}) {
+{{#if (isBetterAuth auth)}}
+	const session = await auth.api.getSession({
+		headers: nodeHeadersToHeaders(request.headers),
+	});
+	if (!session) {
+		return reply.status(401).send({ message: "Unauthorized" });
+	}
+
+{{/if}}
 	const { messages } = request.body as AiRequestBody;
 	const model = google('gemini-2.5-flash');
 	const result = streamText({
@@ -297,6 +323,25 @@ fastify.post('/ai', async function (request) {
 });
 {{/if}}
 
+{{#if (eq jobQueue "upstash-qstash")}}
+fastify.register(async (jobsApp) => {
+	// QStash signs the raw body, so keep it as a string for verification.
+	jobsApp.removeAllContentTypeParsers();
+	jobsApp.addContentTypeParser("*", { parseAs: "string" }, (_request, body, done) => {
+		done(null, body);
+	});
+
+	jobsApp.post(WELCOME_EMAIL_PATH, async (request, reply) => {
+		const signature = request.headers["upstash-signature"];
+		const result = await processWelcomeEmailJob({
+			signature: typeof signature === "string" ? signature : undefined,
+			body: typeof request.body === "string" ? request.body : "",
+		});
+		reply.status(result.status).send(result.body);
+	});
+});
+
+{{/if}}
 fastify.get('/', async () => {
 	return 'OK';
 });

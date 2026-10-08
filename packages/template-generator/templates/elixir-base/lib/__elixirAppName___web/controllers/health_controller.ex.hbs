@@ -11,6 +11,9 @@ defmodule {{elixirModuleName}}Web.HealthController do
 
     conn
     |> put_resp_header("access-control-allow-origin", cors_origin)
-    |> json(%{status: "ok", app: "{{projectName}}"})
+    |> json(%{
+      status: "ok",
+      app: "{{projectName}}"
+    })
   end
 end

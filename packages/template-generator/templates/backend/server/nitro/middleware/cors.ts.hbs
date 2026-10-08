@@ -1,0 +1,13 @@
+{{#if (isBetterAuth auth)}}
+import { env } from "@{{projectName}}/env/server";
+
+// Credentialed requests need the exact web origin; browsers reject a wildcard with credentials.
+export default defineEventHandler((event) => {
+	handleCors(event, {
+		origin: [env.CORS_ORIGIN],
+		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+		allowHeaders: ["Content-Type", "Authorization"{{#if (eq botProtection "turnstile")}}, "X-Turnstile-Token"{{/if}}],
+		credentials: true,
+	});
+});
+{{/if}}

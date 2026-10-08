@@ -134,6 +134,32 @@ describe("Virtual Generator Regressions", () => {
     );
   });
 
+  it.each([
+    { frontend: "tanstack-start", webDeploy: "none" },
+    { frontend: "tanstack-start", webDeploy: "cloudflare" },
+    { frontend: "tanstack-start-solid", webDeploy: "none" },
+  ] as const)(
+    "keeps $frontend server chunks in source evaluation order ($webDeploy deploy)",
+    async ({ frontend, webDeploy }) => {
+      const result = await createVirtual({
+        projectName: `${frontend}-ssr-order`,
+        frontend: [frontend],
+        backend: "self",
+        runtime: "none",
+        api: "none",
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "better-auth",
+        webDeploy,
+      });
+
+      expect(result.success).toBe(true);
+      expect(readTextFromTree(result.tree!, "apps/web/vite.config.ts")).toMatch(
+        /environments: \{\s*ssr: \{\s*build: \{[^}]*rolldownOptions: \{ output: \{ strictExecutionOrder: true \} \}/,
+      );
+    },
+  );
+
   it("does not leak Mocha smoke tests into Playwright projects", async () => {
     const result = await createVirtual({
       projectName: "playwright-only",
@@ -959,7 +985,7 @@ describe("Virtual Generator Regressions", () => {
     expect(graphqlRoute).not.toContain('from "@/lib/auth"');
   });
 
-  it("wires Nuxt self-backend oRPC auth context from Nitro request headers", async () => {
+  it("mounts Better Auth and oRPC as same-origin Nitro routes in fullstack Nuxt", async () => {
     const result = await createVirtual({
       projectName: "nuxt-orpc-auth",
       frontend: ["nuxt"],
@@ -980,12 +1006,26 @@ describe("Virtual Generator Regressions", () => {
 
     const context = readTextFromTree(result.tree!, "packages/api/src/context.ts");
     const router = readTextFromTree(result.tree!, "packages/api/src/routers/index.ts");
+    const authRoute = readTextFromTree(result.tree!, "apps/web/server/api/auth/[...all].ts");
+    const rpcRoute = readTextFromTree(result.tree!, "apps/web/server/api/rpc/[...rest].ts");
+    const authClient = readTextFromTree(result.tree!, "apps/web/app/plugins/auth-client.ts");
+    const orpcClient = readTextFromTree(result.tree!, "apps/web/app/plugins/orpc.ts");
+    const authMiddleware = readTextFromTree(result.tree!, "apps/web/app/middleware/auth.ts");
 
-    expect(context).toContain('import type { IncomingMessage } from "node:http"');
-    expect(context).toContain("req: IncomingMessage");
-    expect(context).toContain("auth.api.getSession");
-    expect(context).toContain("headers: req.headers as any");
+    expect(context).toContain("export async function createContext(req: Request)");
+    expect(context).toContain("headers: req.headers,");
+    expect(context).not.toContain("as any");
     expect(router).toContain("privateData: protectedProcedure.handler");
+    expect(authRoute).toContain("auth.handler(toWebRequest(event))");
+    expect(rpcRoute).toContain('prefix: "/api/rpc"');
+    expect(rpcRoute).toContain("context: await createContext(request)");
+    expect(authClient).toContain("baseURL: useRequestURL().origin");
+    expect(authClient).not.toContain("serverUrl");
+    expect(orpcClient).toContain("`${useRequestURL().origin}/api/rpc`");
+    expect(orpcClient).not.toContain("serverUrl");
+    expect(authMiddleware).toContain('await useRequestFetch()("/api/auth/get-session")');
+    expect(authMiddleware).toContain("await $authClient.getSession()");
+    expect(authMiddleware).not.toContain("isPending");
     expect(context).not.toContain(
       "export async function createContext() {\n  return {\n    session: null",
     );

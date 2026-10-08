@@ -442,6 +442,9 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "trigger-dev": { type: "local", src: "/icon/trigger-dev.svg" },
   inngest: { type: "local", src: "/icon/inngest.svg" },
   temporal: { type: "local", src: "/icon/temporal.svg" },
+  "pg-boss": { type: "si", slug: "postgresql", hex: "4169E1" },
+  "upstash-qstash": { type: "si", slug: "upstash", hex: "00E9A3" },
+  hatchet: { type: "local", src: "/icon/hatchet.svg" },
 
   // ─── Effect ────────────────────────────────────────────────────────────────
   effect: { type: "local", src: "/icon/effect.svg", needsInvert: "dark" }, // currentColor

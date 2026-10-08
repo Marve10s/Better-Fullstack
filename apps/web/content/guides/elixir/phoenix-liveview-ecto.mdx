@@ -1,0 +1,195 @@
+---
+title: Phoenix LiveView with Ecto and PostgreSQL
+description: Create a Phoenix LiveView app with Ecto SQL, PostgreSQL, LiveView streams, ExUnit, Credo, and a release Dockerfile using Better Fullstack.
+translationStatus: pending
+updated: 2026-10-06
+category: Elixir
+tags:
+  - phoenix
+  - liveview
+  - ecto
+  - postgres
+keywords:
+  - phoenix liveview starter
+  - phoenix ecto postgres starter
+  - create phoenix liveview app
+  - elixir liveview boilerplate
+  - liveview streams example
+---
+
+Use this stack when the server should own page state and rendering, and the data lives in PostgreSQL through Ecto.
+
+```npm
+npm create better-fullstack@latest my-liveview-app -- \
+  --ecosystem elixir \
+  --elixir-web-framework phoenix-live-view \
+  --elixir-orm ecto-sql \
+  --elixir-auth none \
+  --elixir-api none \
+  --elixir-realtime live-view-streams \
+  --elixir-jobs none \
+  --elixir-validation ecto-changesets \
+  --elixir-testing ex_unit \
+  --elixir-quality credo \
+  --elixir-deploy docker
+```
+
+## What this creates
+
+- A Phoenix 1.7 application with `phoenix_live_view` and the LiveView socket mounted at `/live`.
+- Ecto SQL with Postgrex, a `Repo`, and an `items` migration.
+- An `ItemLive.Index` LiveView at `/items` that renders items through LiveView streams and creates items from a `phx-submit` form.
+- A root layout that loads the Phoenix and LiveView JavaScript clients from the installed Hex packages and connects a `LiveSocket`.
+- A JSON health endpoint at `/api/health`.
+- ExUnit with a `ConnCase` support module, Credo, and a multi-stage `Dockerfile` that builds a Mix release.
+
+## Generated shape
+
+Module names come from the project name: `my-liveview-app` becomes the `:my_liveview_app` OTP app, `MyLiveviewApp`, and `MyLiveviewAppWeb`.
+
+```txt
+my-liveview-app/
+├── mix.exs
+├── Dockerfile
+├── .env.example
+├── config/
+│   ├── config.exs
+│   ├── dev.exs
+│   ├── prod.exs
+│   ├── runtime.exs
+│   └── test.exs
+├── lib/
+│   ├── my_liveview_app/
+│   │   ├── application.ex
+│   │   ├── catalog.ex
+│   │   ├── catalog/item.ex
+│   │   └── repo.ex
+│   └── my_liveview_app_web/
+│       ├── endpoint.ex
+│       ├── router.ex
+│       ├── components/layouts/root.html.heex
+│       ├── controllers/
+│       └── live/item_live/index.ex
+├── priv/repo/
+│   ├── migrations/20260101000000_create_items.exs
+│   └── seeds.exs
+└── test/
+    ├── support/conn_case.ex
+    └── my_liveview_app_web/controllers/health_controller_test.exs
+```
+
+## Prerequisites
+
+- Elixir 1.16 or newer with a matching Erlang/OTP release. The generated `Dockerfile` builds on Elixir 1.16.3 and OTP 26.
+- A local PostgreSQL server. `config/dev.exs` reads `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, and `POSTGRES_DB`, with `postgres`/`postgres` on `localhost` as defaults.
+
+## Run and verify
+
+```bash
+cd my-liveview-app
+mix deps.get
+mix ecto.setup
+mix phx.server
+```
+
+`mix ecto.setup` is a generated alias that creates the database, runs migrations, and runs `priv/repo/seeds.exs`, which inserts one sample item. The server listens on port 4000 unless `PORT` is set. `GET /api/health` returns `{"status":"ok"}` with the app name, and LiveDashboard is available at `/dev/dashboard` in development.
+
+```bash
+mix test
+```
+
+The `test` alias creates and migrates the test database before running ExUnit, so PostgreSQL must be reachable for the test run too.
+
+## Use the form on /items
+
+Open `http://localhost:4000/items`. The page lists the seed item, and the browser connects to the LiveView socket at `/live`. Submitting the form with a name sends the `create` event to `handle_event/3`, which inserts the item and appends it to the list without a page reload. A name shorter than two characters keeps the view connected and shows `Name should be at least 2 character(s)` under the field, with the typed values still in the inputs.
+
+The scaffold has no `assets/` directory or JavaScript build step. The endpoint serves `phoenix.min.js` and `phoenix_live_view.min.js` straight from the `phoenix` and `phoenix_live_view` packages, and an inline script in `components/layouts/root.html.heex` starts the `LiveSocket`. Add an asset pipeline, such as the `esbuild` Hex package, when you need your own hooks or bundled JavaScript.
+
+## Representative snippets
+
+The LiveView mounts with a stream and inserts new rows without re-rendering the list:
+
+```elixir
+def mount(_params, _session, socket) do
+  socket =
+    socket
+    |> assign(:form, empty_form())
+    |> stream(:items, Catalog.list_items())
+
+  {:ok, socket}
+end
+
+def handle_event("create", %{"item" => item_params}, socket) do
+  case Catalog.create_item(item_params) do
+    {:ok, item} ->
+      {:noreply, socket |> stream_insert(:items, item) |> assign(:form, empty_form())}
+
+    {:error, changeset} ->
+      {:noreply, assign(socket, :form, to_form(changeset, as: "item"))}
+  end
+end
+```
+
+`to_form/2` accepts the changeset because the scaffold depends on `phoenix_ecto`. The template renders each message from `@form[:name].errors` below the name input.
+
+Validation lives in the Ecto changeset, so the same rules apply to every caller of `Catalog.create_item/1`:
+
+```elixir
+def changeset(item, attrs) do
+  item
+  |> cast(attrs, [:name, :description])
+  |> validate_required([:name])
+  |> validate_length(:name, min: 2, max: 120)
+end
+```
+
+## When to choose it
+
+Choose LiveView when most of the UI is forms, lists, and dashboards that benefit from server-rendered state, and you would rather not maintain a separate JavaScript frontend and API contract.
+
+Choose the [Phoenix GraphQL guide](/guides/elixir/phoenix-absinthe-graphql/) or the [Phoenix and Oban guide](/guides/elixir/phoenix-oban-jobs/) when another client consumes the backend over HTTP.
+
+## Compatibility notes
+
+- With `--elixir-web-framework phoenix-live-view` and `--elixir-api none`, the realtime choice is `live-view-streams`.
+- `--elixir-jobs oban` requires `--elixir-orm ecto-sql`; the CLI rejects Oban with any other database layer.
+- The Elixir database comes from `--elixir-orm`. `ecto-sql` uses Postgrex and PostgreSQL; `myxql` and `ecto_sqlite3` select MySQL and SQLite instead.
+
+## Deployment notes
+
+The `Dockerfile` runs `mix release` with `MIX_ENV=prod` and starts the result with `bin/my_liveview_app start`. Run the same build locally with:
+
+```bash
+MIX_ENV=prod mix deps.get --only prod
+MIX_ENV=prod mix release
+```
+
+`config/runtime.exs` sets the production values when the release boots:
+
+| Variable          | Required | Purpose                                                                   |
+| ----------------- | -------- | ------------------------------------------------------------------------- |
+| `SECRET_KEY_BASE` | Yes      | Signs sessions and LiveView tokens. The release stops at boot without it. |
+| `DATABASE_URL`    | Yes      | The only production database setting. Without it, every query fails.      |
+| `PHX_HOST`        | No       | Host used in generated URLs. Defaults to `example.com`.                   |
+| `PORT`            | No       | HTTP port. Defaults to `4000`.                                            |
+| `POOL_SIZE`       | No       | Ecto pool size. Defaults to `10`.                                         |
+| `ECTO_SSL`        | No       | Set to `true` to connect to PostgreSQL over SSL.                          |
+
+The scaffold does not generate a release migration module, so `mix ecto.migrate` is not available inside the release. Add a `Release.migrate/0` function, or run migrations from a build step that has Mix, before routing traffic.
+
+## Troubleshooting
+
+| Symptom                                                 | Check                                                                                                                                              |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Name should be at least 2 character(s)` under the form | The item changeset requires a name of 2 to 120 characters. The view stays connected and keeps the typed values; correct the name and submit again. |
+| `mix ecto.setup` cannot connect                         | Confirm PostgreSQL is running and the `POSTGRES_*` variables match your server.                                                                    |
+| Release exits with `SECRET_KEY_BASE is missing`         | Generate one with `mix phx.gen.secret` and set it in the runtime environment.                                                                      |
+| Release queries fail with `missing the :database key`   | Set `DATABASE_URL`; production has no other database configuration.                                                                                |
+| `relation "items" does not exist` in production         | Migrations do not run at release start; apply them before deploying.                                                                               |
+
+## Next steps
+
+- Open the [Stack Builder](/new?eco=elixir&ewf=phoenix-live-view&eorm=ecto-sql&eauth=none&eapi=none&ert=live-view-streams&ejob=none&eval=ecto-changesets&etest=ex_unit&eq=credo&edeploy=docker).
+- Read the [Elixir ecosystem docs](/docs/ecosystems/#elixir).
+- Review the [CLI create reference](/docs/cli/create/).

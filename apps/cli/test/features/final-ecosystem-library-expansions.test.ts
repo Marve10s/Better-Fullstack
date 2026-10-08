@@ -139,8 +139,11 @@ describe("final ecosystem library expansions", () => {
 
         expect(result.success).toBe(true);
         const packageJson = JSON.parse(getFile(result.tree!.root, "apps/native/package.json"));
-        expect(packageJson.dependencies["expo-background-task"]).toBe("~56.0.22");
-        expect(packageJson.dependencies["expo-task-manager"]).toBe("~56.0.22");
+        // Both come from the Expo SDK set, so they share one version and move together.
+        expect(packageJson.dependencies["expo-background-task"]).toMatch(/^~56\./);
+        expect(packageJson.dependencies["expo-task-manager"]).toBe(
+          packageJson.dependencies["expo-background-task"],
+        );
       }),
     );
   });

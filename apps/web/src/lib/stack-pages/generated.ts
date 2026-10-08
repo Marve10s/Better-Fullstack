@@ -11,7 +11,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Next.js + Drizzle + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, Fullstack Next.js, PostgreSQL, Drizzle, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, PostgreSQL, Drizzle, tRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -325,7 +325,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-clerk",
     ],
     guideUrl: "/guides/typescript/nextjs-drizzle-better-auth",
-    contentHash: "cd91e8e7f5afc17f9fe4439ce480eace25f6d7083e117f3f61dd0fc8c72a43e4",
+    contentHash: "bb2936cbdf28835327555afe4cd3068e3f2e51b3e11f30ffb36af0fdf98604a2",
     updated: "2026-07-17",
   },
   {
@@ -337,7 +337,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Next.js + Prisma + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, Fullstack Next.js, PostgreSQL, Prisma, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, PostgreSQL, Prisma, tRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -661,7 +661,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
       "nextjs-postgres-prisma-nextauth",
     ],
-    contentHash: "cd0675c18b55a85abe8bef86beaf7abed52979d090bb6c86b79df3db686b230e",
+    contentHash: "67ac0c828838f9ece8e3f651bc3357d2ccda49da23ebfcb3af0f977d90fc0348",
     updated: "2026-07-17",
   },
   {
@@ -993,7 +993,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "TanStack Start + Drizzle + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, Fullstack TanStack Start, SQLite, Drizzle, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, SQLite, Drizzle, tRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -1306,7 +1306,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-resend",
     ],
     guideUrl: "/guides/typescript/create-tanstack-start-project",
-    contentHash: "f37eac09ab682e17064bac98af669fbe6a140716cc34a04d8882772013a31e45",
+    contentHash: "cfad2214f322daa3304453028695c350a089a38dc834bdf521d80ba99c4e128f",
     updated: "2026-07-17",
   },
   {
@@ -2598,7 +2598,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Nuxt + Prisma + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Nuxt, Fullstack Nuxt, PostgreSQL, Prisma, oRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Nuxt, PostgreSQL, Prisma, oRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -2913,7 +2913,7 @@ export const GENERATED_STACK_PAGES = [
       "solidstart-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/nuxt-prisma-better-auth",
-    contentHash: "791ef3b48d7c5dd3e20a1ed90f9bbb3fabfb9ebbe43e7d27eddafb9c109f4105",
+    contentHash: "550613f73796a2da5173bbcb2adf0b9d0db38961692393bc6ab973584ab338a1",
     updated: "2026-07-17",
   },
   {
@@ -3255,7 +3255,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "SolidStart + oRPC + Drizzle Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Solid Start, Fullstack SolidStart, SQLite, Drizzle, oRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Solid Start, SQLite, Drizzle, oRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -3568,7 +3568,7 @@ export const GENERATED_STACK_PAGES = [
       "react-router-hono-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/solidstart-orpc-drizzle",
-    contentHash: "d56bbda1782459d2600dc661a3c937f6eb74916ca159756d9d37f1fefdcc59d2",
+    contentHash: "9da1cabee27ce502e84f4e92c3d5aca90c6101adf1a2648dc8c6a09c4497593e",
     updated: "2026-07-17",
   },
   {
@@ -4762,7 +4762,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "TanStack Start + PostgreSQL + Drizzle + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, Fullstack TanStack Start, PostgreSQL, Drizzle, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, PostgreSQL, Drizzle, tRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -5076,7 +5076,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/tanstack-start-postgres-drizzle",
-    contentHash: "3ebe026cf622f24bf1a40ad8c947dd394a97315921b7efc0a09318843254aecb",
+    contentHash: "a7e5c43ba30ee222263747f727c2e178a07a2d27c763d497776ed89c8d599a44",
     updated: "2026-07-30",
   },
   {
@@ -5088,7 +5088,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "TanStack Start + SQLite + Prisma + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, Fullstack TanStack Start, SQLite, Prisma, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, SQLite, Prisma, tRPC, Better-Auth, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -5401,7 +5401,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-better-auth",
       "nextjs-prisma-better-auth",
     ],
-    contentHash: "677a8c7e9a1f79f27243c4ecf1525e74e0d1495d6c7384961d28754609bf923a",
+    contentHash: "bb7d346671a757b845794545bf013021a44c47d05bb99047a8a421655ba73ece",
     updated: "2026-07-30",
   },
   {
@@ -5413,7 +5413,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "TanStack Start + PostgreSQL + Drizzle + Resend Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, Fullstack TanStack Start, PostgreSQL, Drizzle, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, PostgreSQL, Drizzle, tRPC, Better-Auth, and Resend.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -5646,6 +5646,14 @@ export const GENERATED_STACK_PAGES = [
         ownership: "Scoped to the backend",
       },
       {
+        role: "Email",
+        category: "email",
+        id: "resend",
+        label: "Resend",
+        description: "Modern email API for developers",
+        ownership: "Scoped to the backend",
+      },
+      {
         role: "CSS",
         category: "cssFramework",
         id: "tailwind",
@@ -5670,6 +5678,7 @@ export const GENERATED_STACK_PAGES = [
         "Drizzle is scoped to the backend.",
         "tRPC is scoped to the backend.",
         "Better-Auth is scoped to the backend.",
+        "Resend is scoped to the backend.",
         "Tailwind CSS is scoped to Tanstack Start.",
         "shadcn/ui is scoped to Tanstack Start.",
         "Tailwind CSS and shadcn/ui are selected together.",
@@ -5728,7 +5737,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/tanstack-start-resend",
-    contentHash: "2b8191cea8c9da43f7037cf001d781f63a70c9394f55c24b7214b50ecf0cfe03",
+    contentHash: "b311446f045cd1efe473e7f4250bcb871a5512ac96c3ccd6dbbf70d9a4d19c65",
     updated: "2026-07-30",
   },
   {
@@ -5740,7 +5749,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "TanStack Start + PostgreSQL + Drizzle + Clerk Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, Fullstack TanStack Start, PostgreSQL, Drizzle, tRPC, and Clerk.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Tanstack Start, PostgreSQL, Drizzle, tRPC, Clerk, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -6054,7 +6063,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-drizzle-clerk",
       "tanstack-start-postgres-drizzle-resend",
     ],
-    contentHash: "2dbe8dbc469c1d5c66fe0af266942ac3038cb1323ff18c61816b1748c835775e",
+    contentHash: "c26468f76ea265d554a65f8ee64f503cf81f384507086db96944f94c59f52daf",
     updated: "2026-07-30",
   },
   {
@@ -7359,7 +7368,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Next.js + PostgreSQL + Drizzle + Clerk Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, Fullstack Next.js, PostgreSQL, Drizzle, tRPC, and Clerk.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, PostgreSQL, Drizzle, tRPC, Clerk, and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -7673,7 +7682,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-clerk",
       "nextjs-drizzle-resend-better-auth",
     ],
-    contentHash: "cb6ad2b2fc4c7b3cca52ed1c140ae3598990fd377976bf2eb5436f922b0d600a",
+    contentHash: "18b44d0294c32d042594b738222e692401a3d80ce46c3020c3182f3eb27d0089",
     updated: "2026-07-30",
   },
   {
@@ -7685,7 +7694,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Next.js + Prisma + Stripe + Better Auth SaaS Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, Fullstack Next.js, PostgreSQL, Prisma, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, PostgreSQL, Prisma, tRPC, Better-Auth, and Stripe.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -7918,6 +7927,14 @@ export const GENERATED_STACK_PAGES = [
         ownership: "Scoped to the backend",
       },
       {
+        role: "Payments",
+        category: "payments",
+        id: "stripe",
+        label: "Stripe",
+        description: "Industry standard payment processing",
+        ownership: "Scoped to the backend",
+      },
+      {
         role: "CSS",
         category: "cssFramework",
         id: "tailwind",
@@ -7942,6 +7959,7 @@ export const GENERATED_STACK_PAGES = [
         "Prisma is scoped to the backend.",
         "tRPC is scoped to the backend.",
         "Better-Auth is scoped to the backend.",
+        "Stripe is scoped to the backend.",
         "Tailwind CSS is scoped to Next.js.",
         "shadcn/ui is scoped to Next.js.",
         "Tailwind CSS and shadcn/ui are selected together.",
@@ -8001,7 +8019,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-postgres-prisma-nextauth",
     ],
     guideUrl: "/guides/typescript/nextjs-prisma-better-auth",
-    contentHash: "bbc9a103489e85c71c03b1228ca7b5a38e90f71636ca68b42ac0185abdd38bc6",
+    contentHash: "4a13ac17abe205f62078df751b57a4513ce65129643e030e0dd5acfe532eb8cf",
     updated: "2026-07-30",
   },
   {
@@ -8013,7 +8031,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Next.js + Drizzle + Resend + Better Auth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, Fullstack Next.js, PostgreSQL, Drizzle, tRPC, and Better-Auth.",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, PostgreSQL, Drizzle, tRPC, Better-Auth, and Resend.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -8246,6 +8264,14 @@ export const GENERATED_STACK_PAGES = [
         ownership: "Scoped to the backend",
       },
       {
+        role: "Email",
+        category: "email",
+        id: "resend",
+        label: "Resend",
+        description: "Modern email API for developers",
+        ownership: "Scoped to the backend",
+      },
+      {
         role: "CSS",
         category: "cssFramework",
         id: "tailwind",
@@ -8270,6 +8296,7 @@ export const GENERATED_STACK_PAGES = [
         "Drizzle is scoped to the backend.",
         "tRPC is scoped to the backend.",
         "Better-Auth is scoped to the backend.",
+        "Resend is scoped to the backend.",
         "Tailwind CSS is scoped to Next.js.",
         "shadcn/ui is scoped to Next.js.",
         "Tailwind CSS and shadcn/ui are selected together.",
@@ -8328,7 +8355,7 @@ export const GENERATED_STACK_PAGES = [
       "tanstack-start-postgres-drizzle-better-auth",
     ],
     guideUrl: "/guides/typescript/nextjs-drizzle-better-auth",
-    contentHash: "b92a2a207da625b1b870bb744b8c4b3e55367b90b29c9f04a601c873e9fd7650",
+    contentHash: "9f51b2c1405fd47117dc1ca618b0e0c7798f952cb49caecdeb9af794944c43fe",
     updated: "2026-07-30",
   },
   {
@@ -8340,7 +8367,7 @@ export const GENERATED_STACK_PAGES = [
     ecosystem: "typescript",
     title: "Next.js + PostgreSQL + Prisma + NextAuth Starter",
     description:
-      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, Fullstack Next.js, PostgreSQL, Prisma, tRPC, and Auth.js (NextAuth).",
+      "Better Fullstack scaffolds this compatibility-checked framework-owned server stack with Next.js, PostgreSQL, Prisma, tRPC, Auth.js (NextAuth), and Tailwind CSS.",
     selection: {
       stackMode: "solo",
       stackPartSpecs: [],
@@ -8614,8 +8641,8 @@ export const GENERATED_STACK_PAGES = [
       { key: "au", value: "nextauth" },
     ],
     output: {
-      fileCount: 66,
-      directoryCount: 26,
+      fileCount: 71,
+      directoryCount: 29,
       layout: "workspace",
       topLevelEntries: [
         ".gitignore",
@@ -8634,10 +8661,10 @@ export const GENERATED_STACK_PAGES = [
         "apps/web/package.json",
         "package.json",
         "packages/api/package.json",
+        "packages/auth/package.json",
         "packages/config/package.json",
         "packages/db/package.json",
         "packages/env/package.json",
-        "apps/web/.env",
       ],
     },
     compatibility: {
@@ -8655,7 +8682,7 @@ export const GENERATED_STACK_PAGES = [
       "nextjs-prisma-stripe-better-auth",
       "nextjs-drizzle-better-auth",
     ],
-    contentHash: "15dacea49c21c0a5458332aece496264c980f55a3ea752650532e717d7471648",
+    contentHash: "b54ff84cc74082472e4e3d362bdc856b738564c8048df09e4c91c8031ffcb697",
     updated: "2026-07-30",
   },
   {

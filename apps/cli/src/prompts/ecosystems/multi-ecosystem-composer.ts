@@ -552,11 +552,17 @@ export async function gatherMultiEcosystemConfig(
   let dbSetup: ProjectConfig["dbSetup"] = "none";
 
   if (backendEcosystem === "typescript") {
-    const backend = promptValue(await getBackendFrameworkChoice(flags.backend, frontendList));
+    const backend = promptValue(
+      await getBackendFrameworkChoice(flags.backend, frontendList, flags.jobQueue),
+    );
     const runtime =
-      backend === "none" ? "none" : promptValue(await getRuntimeChoice(flags.runtime, backend));
+      backend === "none"
+        ? "none"
+        : promptValue(await getRuntimeChoice(flags.runtime, backend, flags.jobQueue));
     if (backend !== "none") {
-      database = promptValue(await getDatabaseChoice(flags.database, backend, runtime));
+      database = promptValue(
+        await getDatabaseChoice(flags.database, backend, runtime, flags.jobQueue, flags.auth),
+      );
       dbSetup = promptValue(
         await getDBSetupChoice(database, flags.dbSetup, flags.orm, backend, runtime),
       );
@@ -564,7 +570,7 @@ export async function gatherMultiEcosystemConfig(
     const orm =
       backend === "none" || database === "none"
         ? "none"
-        : promptValue(await getORMChoice(flags.orm, true, database, backend, runtime));
+        : promptValue(await getORMChoice(flags.orm, true, database, backend, runtime, flags.auth));
     const api =
       backend === "none"
         ? "none"
@@ -572,7 +578,9 @@ export async function gatherMultiEcosystemConfig(
     const auth =
       backend === "none"
         ? "none"
-        : promptValue(await getAuthChoice(flags.auth, backend, frontendList));
+        : promptValue(
+            await getAuthChoice(flags.auth, backend, frontendList, "typescript", { database, orm }),
+          );
     const payments =
       backend === "none"
         ? "none"
@@ -619,7 +627,7 @@ export async function gatherMultiEcosystemConfig(
       backend === "none"
         ? "none"
         : await scopedPromptValue("typescript", "jobQueue", configScope, backendSections, () =>
-            getJobQueueChoice(flags.jobQueue, backend),
+            getJobQueueChoice(flags.jobQueue, backend, runtime, database),
           );
     const caching =
       backend === "none"

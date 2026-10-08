@@ -1,7 +1,10 @@
 {{#if (and (eq backend 'self') (includes frontend "next"))}}
 import type { NextRequest } from "next/server";
-{{#if (isBetterAuth auth)}}
+{{#if (or (isBetterAuth auth) (eq auth "nextauth"))}}
 import { auth } from "@{{projectName}}/auth";
+{{/if}}
+{{#if (eq auth "clerk")}}
+import { auth } from "@clerk/nextjs/server";
 {{/if}}
 
 {{#if (isBetterAuth auth)}}
@@ -11,6 +14,20 @@ export async function createContext(req: NextRequest) {
   });
   return {
     session,
+  };
+}
+{{else if (eq auth "nextauth")}}
+export async function createContext(_req: NextRequest) {
+  const session = await auth();
+  return {
+    session: session?.user ? session : null,
+  };
+}
+{{else if (eq auth "clerk")}}
+export async function createContext(_req: NextRequest) {
+  const { userId } = await auth();
+  return {
+    session: userId ? { user: { id: userId } } : null,
   };
 }
 {{else}}
@@ -26,6 +43,9 @@ export async function createContext(_req: NextRequest) {
 {{#if (isBetterAuth auth)}}
 import { auth } from "@{{projectName}}/auth";
 {{/if}}
+{{#if (eq auth "clerk")}}
+import { auth } from "@clerk/tanstack-react-start/server";
+{{/if}}
 
 {{#if (isBetterAuth auth)}}
 export async function createContext({ req }: { req: Request }) {
@@ -34,6 +54,13 @@ export async function createContext({ req }: { req: Request }) {
 	});
 	return {
 		session,
+	};
+}
+{{else if (eq auth "clerk")}}
+export async function createContext(_opts: { req: Request }) {
+	const { userId } = await auth();
+	return {
+		session: userId ? { user: { id: userId } } : null,
 	};
 }
 {{else}}

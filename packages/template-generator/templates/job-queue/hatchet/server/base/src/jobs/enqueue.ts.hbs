@@ -1,0 +1,5 @@
+import { enqueueWelcomeEmail } from "./hatchet";
+
+const runId = await enqueueWelcomeEmail({ userId: "user_123", email: "user@example.com" });
+console.log(`[hatchet] Enqueued welcome email run ${runId}`);
+process.exit(0);

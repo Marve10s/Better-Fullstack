@@ -16,7 +16,11 @@ import type {
 
 import { resolveCreateConfigBase } from "@/config/config-source";
 import { displayConfig } from "@/config/display-config";
-import { resolveCompatibilityAdjustments } from "@/config/stack-compatibility";
+import {
+  getRequestedBetterAuthRejection,
+  getRequestedJobQueueRejection,
+  resolveCompatibilityAdjustments,
+} from "@/config/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "@/config/templates";
 import { BUILDER_URL, getDefaultConfig } from "@/constants";
 import { CreateCommandOptionsSchema } from "@/create-command-input";
@@ -332,6 +336,22 @@ function reportCompatibilityAdjustments(adjustments: string[]) {
   for (const adjustment of adjustments) {
     log.message(pc.yellow(`  ${adjustment}`));
   }
+}
+
+function rejectAdjustedRequestedFlags(
+  config: ProjectConfig,
+  changes: Partial<ProjectConfig>,
+  providedFlags: Set<string>,
+) {
+  const adjustedConfig = { ...config, ...changes };
+  const rejection =
+    (providedFlags.has("jobQueue")
+      ? getRequestedJobQueueRejection(config.jobQueue, adjustedConfig)
+      : null) ??
+    (providedFlags.has("auth")
+      ? getRequestedBetterAuthRejection(config.auth, adjustedConfig)
+      : null);
+  if (rejection) exitWithError(rejection);
 }
 
 function shouldPromptForVersionChannel(
@@ -767,6 +787,7 @@ export async function createProjectHandler(
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
+          rejectAdjustedRequestedFlags(config, changes, providedFlags);
           if (adjustments.length > 0) {
             config = { ...config, ...changes };
             cliInput = { ...cliInput, ...changes };
@@ -807,6 +828,7 @@ export async function createProjectHandler(
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
+          rejectAdjustedRequestedFlags(config, changes, providedFlags);
           if (adjustments.length > 0) {
             config = { ...config, ...changes };
             cliInput = { ...cliInput, ...changes };

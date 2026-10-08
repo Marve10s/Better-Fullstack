@@ -16,7 +16,7 @@ import { createRouterClient, os } from "@orpc/server";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import pc from "picocolors";
-import { createCli } from "trpc-cli";
+import { createCli, parseRouter } from "trpc-cli";
 import z from "zod";
 
 import type { AddResult } from "@/helpers/core/add-handler";
@@ -968,6 +968,7 @@ export const router = os.router({
       process.stdout.write(
         renderCompletionScript(shell, {
           program: createBtsCli().toJSON(),
+          procedures: parseRouter({ router }),
           defaultCommand: getDefaultCommandName(),
           hiddenFlags: [HIDDEN_LEGACY_OPTION],
         }),
@@ -1275,6 +1276,47 @@ export const router = os.router({
       log.message(`  ${result.rationale}`);
       for (const constraint of result.constraints) log.message(`  ${constraint}`);
       log.message(`\nReview, then scaffold with:\n${result.reproducibleCommand}`);
+    }),
+  list: os
+    .meta({
+      description:
+        "List option categories, or the options in one category with the flag that selects each one",
+    })
+    .input(
+      z.tuple([
+        z
+          .string()
+          .optional()
+          .describe("Category ID such as orm or goAuth; omit to list categories"),
+        z.object({
+          ecosystem: EcosystemSchema.optional().describe(
+            "Only include this ecosystem's categories",
+          ),
+          json: z.boolean().optional().default(false).describe("Output the result as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input: [category, options] }) => {
+      const { listCommand } = await import("@/commands/stack/options.js");
+      listCommand({ category, ...options });
+    }),
+  search: os
+    .meta({
+      description:
+        "Find options by ID, label, or alias across every category and ecosystem, with the flag that selects each one",
+    })
+    .input(
+      z.tuple([
+        z.string().trim().min(1).describe("Text to match, such as drizzle or sveltekit"),
+        z.object({
+          ecosystem: EcosystemSchema.optional().describe("Only search this ecosystem's categories"),
+          json: z.boolean().optional().default(false).describe("Output the result as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input: [query, options] }) => {
+      const { searchCommand } = await import("@/commands/stack/options.js");
+      searchCommand({ query, ...options });
     }),
 });
 

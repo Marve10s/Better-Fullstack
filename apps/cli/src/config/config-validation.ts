@@ -42,6 +42,8 @@ import {
   formatStackGraphIssue,
   getDisabledReason,
   getCodeQualitySelectionIssue,
+  getBetterAuthDatabaseIncompatibility,
+  getJobQueueIncompatibility,
   getShadcnLintFrontendIssue,
   hasVitePlusWorkspaceRoot,
   hasSignozSupportedGoServerTarget,
@@ -80,6 +82,20 @@ function validateIntegrationsConstraints(config: Partial<ProjectConfig>) {
     "nango",
   );
 
+  if (reason) throw new Error(reason);
+}
+
+function validateJobQueueConstraints(config: Partial<ProjectConfig>, partial = false) {
+  // The graph is authoritative: a stale flat jobQueue must not decide what gets generated.
+  const usesGraph = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+  const selection = usesGraph
+    ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript")
+    : config;
+  if ((selection.ecosystem ?? "typescript") !== "typescript") return;
+
+  const reason = getJobQueueIncompatibility(selection.jobQueue, selection, {
+    partial: partial && !usesGraph,
+  });
   if (reason) throw new Error(reason);
 }
 
@@ -426,27 +442,28 @@ function validateDatabaseSetup(config: Partial<ProjectConfig>, providedFlags: Se
 export function validateEcosystemAuthCompatibility(
   config: Partial<ProjectConfig>,
   providedFlags?: Set<string>,
+  partial = false,
 ) {
+  // The graph is authoritative: stale flat auth, database, and ORM must not decide what gets
+  // generated, so graph input is judged by its own projection before any flat field is read.
+  const usesGraph = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+  if (usesGraph) {
+    const selection = stackGraphToLegacyProjectConfigForEcosystem(
+      config as ProjectConfig,
+      "typescript",
+    );
+    // Without a TypeScript backend only auth clients are generated, so no adapter is needed.
+    const reason =
+      selection.backend === "none"
+        ? null
+        : getBetterAuthDatabaseIncompatibility(selection.auth, selection);
+    if (reason && providedFlags) exitWithError(reason);
+    if (reason) throw new Error(reason);
+  }
+
   const auth = config.auth;
 
   if (!auth || auth === "none") {
-    return;
-  }
-
-  const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-  if (
-    (auth === "better-auth" || auth === "better-auth-organizations") &&
-    config.orm &&
-    ormsWithoutBetterAuth.includes(config.orm)
-  ) {
-    config.auth = "none";
-    if (providedFlags?.has("auth") && !isSilent()) {
-      consola.warn(
-        pc.yellow(
-          `Unsupported auth selection '${auth}' with ${config.orm}: no Better Auth adapter exists. Falling back to '--auth none'.`,
-        ),
-      );
-    }
     return;
   }
 
@@ -460,19 +477,27 @@ export function validateEcosystemAuthCompatibility(
     auth,
   );
 
-  if (!normalized.normalized || normalized.value === auth) {
+  if (normalized.normalized && normalized.value !== auth) {
+    config.auth = normalized.value;
+
+    if (providedFlags?.has("auth") && normalized.reason && !isSilent()) {
+      consola.warn(
+        pc.yellow(
+          `Unsupported auth selection '${auth}' for the current stack: ${normalized.reason}. Falling back to '--auth ${normalized.value}'.`,
+        ),
+      );
+    }
     return;
   }
 
-  config.auth = normalized.value;
-
-  if (providedFlags?.has("auth") && normalized.reason && !isSilent()) {
-    consola.warn(
-      pc.yellow(
-        `Unsupported auth selection '${auth}' for the current stack: ${normalized.reason}. Falling back to '--auth ${normalized.value}'.`,
-      ),
-    );
-  }
+  if (usesGraph || (config.ecosystem ?? "typescript") !== "typescript") return;
+  const reason = getBetterAuthDatabaseIncompatibility(auth, config, { partial });
+  if (!reason) return;
+  // Better Auth that was asked for is rejected; a default one gives way to the database choice.
+  if (!providedFlags) throw new Error(reason);
+  if (providedFlags.has("auth")) exitWithError(reason);
+  config.auth = "none";
+  if (!isSilent()) consola.warn(pc.yellow(`Auth set to 'None' (${reason})`));
 }
 
 function validateConvexConstraints(config: Partial<ProjectConfig>, providedFlags: Set<string>) {
@@ -1654,7 +1679,7 @@ export function validateFullConfig(
     }
   }
 
-  validateEcosystemAuthCompatibility(config, providedFlags);
+  validateEcosystemAuthCompatibility(config, providedFlags, partial);
   validateDatabaseOrmAuth(config, providedFlags);
   validateDatabaseSetup(config, providedFlags);
 
@@ -1685,6 +1710,7 @@ export function validateFullConfig(
   validateScopedLibraryFlags(config);
   validateI18nConstraints(config);
   validateIntegrationsConstraints(config);
+  validateJobQueueConstraints(config, partial);
 
   const hasGraphBackend = config.stackParts?.some(
     (part) =>
@@ -1837,6 +1863,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     }
 
     validateIntegrationsConstraints(config);
+    validateJobQueueConstraints(config);
     validateContainerAddonConstraints(config);
     validateEcosystemAuthCompatibility(config);
     validateDatabaseOrmAuth(config);

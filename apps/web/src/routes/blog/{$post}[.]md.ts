@@ -11,15 +11,11 @@ export const Route = createFileRoute("/blog/{$post}.md")({
   server: {
     handlers: {
       GET: async ({ params }) => {
-        const { rawBlogPosts } = await import("virtual:blog-raw");
-        const source = rawBlogPosts[params.post];
-        if (!source) return new Response("Not found", { status: 404 });
-        return new Response(source, {
-          headers: {
-            "content-type": "text/markdown; charset=utf-8",
-            "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
-          },
-        });
+        const [{ rawBlogPosts }, { markdownResponse }] = await Promise.all([
+          import("virtual:blog-raw"),
+          import("@/lib/content/markdown-response"),
+        ]);
+        return markdownResponse(rawBlogPosts[params.post], `/blog/${params.post}`);
       },
     },
   },

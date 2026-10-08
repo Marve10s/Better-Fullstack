@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import z from "zod";
 
 import {
   COMPLETION_BINARIES,
@@ -26,7 +27,28 @@ const COMMAND_LIST_LINE: Record<CompletionShell, (line: string) => boolean> = {
   powershell: (line) => line.trimStart().startsWith("$commands = @("),
 };
 
-const tokensOf = (line: string | undefined) => (line ?? "").split(/[\s'"(),=@|]+/);
+const tokensOf = (line: string | undefined) => (line ?? "").split(/[\s'"(),=@|;]+/);
+
+function enumOptions(schema: z.ZodType): string[] {
+  if (schema instanceof z.ZodOptional || schema instanceof z.ZodDefault) {
+    return enumOptions(schema.unwrap());
+  }
+  return schema instanceof z.ZodEnum ? schema.options.map(String) : [];
+}
+
+// Read straight from the zod input schemas, independent of how the CLI converts them.
+const positionalEnums = Object.entries(router).flatMap(([command, procedure]) => {
+  const input = procedure["~orpc"].inputSchema;
+  if (!(input instanceof z.ZodTuple)) return [];
+  return input.def.items.flatMap((item, position) => {
+    const values = enumOptions(item);
+    return values.length > 0 ? [{ command, position, values }] : [];
+  });
+});
+
+function positionalValues(command: string) {
+  return positionalEnums.find((positional) => positional.command === command)?.values ?? [];
+}
 
 function lineFor(script: string, predicate: (line: string) => boolean) {
   return script.split("\n").find(predicate);
@@ -117,13 +139,29 @@ describe("completion command", () => {
     }
   });
 
+  it.each(COMPLETION_SHELLS)("%s offers every positional enum in the router", (shell) => {
+    expect(positionalEnums.map((positional) => positional.command)).toEqual(
+      expect.arrayContaining(["completion", "telemetry", "recovery"]),
+    );
+    const lines = (scripts.get(shell) ?? "").split("\n").map(tokensOf);
+    for (const { command, position, values } of positionalEnums) {
+      const line = lines.find(
+        (tokens) =>
+          tokens.includes(command) &&
+          tokens.includes(String(position)) &&
+          values.every((value) => tokens.includes(value)),
+      );
+      expect(line, `${command} position ${position}`).toBeDefined();
+    }
+  });
+
   it("bash script passes a syntax check", () => {
     const result = Bun.spawnSync(["bash", "-n"], { stdin: Buffer.from(scripts.get("bash") ?? "") });
     expect(result.stderr.toString()).toBe("");
     expect(result.exitCode).toBe(0);
   });
 
-  // CI runners ship bash but not zsh.
+  // The CI Test job installs zsh and fish; other machines may lack them.
   it.skipIf(!Bun.which("zsh"))("zsh script passes a syntax check", () => {
     const result = Bun.spawnSync(["zsh", "-n"], { stdin: Buffer.from(scripts.get("zsh") ?? "") });
     expect(result.stderr.toString()).toBe("");
@@ -147,7 +185,7 @@ describe("completion command", () => {
     expect(result.exitCode).toBe(0);
   });
 
-  it("bash completes flag values after the flag and flags after a dash", () => {
+  it("bash completes flag values, positional values, and flags after a dash", () => {
     const probe = `${scripts.get("bash")}
 complete_words() {
   COMP_WORDS=("$@"); COMP_CWORD=$(( $# - 1 )); COMPREPLY=()
@@ -158,12 +196,22 @@ complete_words create-bfs --database ''
 complete_words create-better-fullstack create my-app --dat
 complete_words create-bfs create my-app --database =
 complete_words create-bfs create my-app --database = post
+complete_words create-bfs completion ''
+complete_words create-bfs recovery --project-dir ./app ''
+complete_words create-bfs recovery show ''
+complete_words create-bfs recovery --json false ''
 `;
     const result = Bun.spawnSync(["bash", "-c", probe]);
-    const [databaseValues, flags, attachedValues, attachedPrefix] = result.stdout
-      .toString()
-      .trim()
-      .split("\n");
+    const [
+      databaseValues,
+      flags,
+      attachedValues,
+      attachedPrefix,
+      shells,
+      recoveryActions,
+      afterAction,
+      afterSwitchValue,
+    ] = result.stdout.toString().trim().split("\n");
     expect(databaseValues?.split(" ")).toEqual(getCategoryCliValues("database"));
     expect(flags?.split(" ")).toContain("--database");
     expect(flags?.split(" ").every((flag) => flag.startsWith("--dat"))).toBe(true);
@@ -172,5 +220,12 @@ complete_words create-bfs create my-app --database = post
     expect(attachedPrefix?.split(" ")).toEqual(
       getCategoryCliValues("database").filter((value) => value.startsWith("post")),
     );
+    expect(shells?.split(" ")).toEqual([...COMPLETION_SHELLS]);
+    // The value of --project-dir is not a positional, so the action is still the first one.
+    expect(recoveryActions?.split(" ")).toEqual(positionalValues("recovery"));
+    // The transaction ID that follows the action has no fixed values, so flags are offered.
+    expect(afterAction?.split(" ")).toContain("--project-dir");
+    // An explicit boolean after a switch is consumed by the parser, not a positional.
+    expect(afterSwitchValue?.split(" ")).toEqual(positionalValues("recovery"));
   });
 });

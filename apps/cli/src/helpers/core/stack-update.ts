@@ -22,6 +22,7 @@ import { writeSelectedFiles } from "@better-fullstack/template-generator/fs-writ
 import fs from "fs-extra";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { isMap, parseDocument } from "yaml";
 
 import {
   buildBtsConfigForPersistence,
@@ -36,13 +37,20 @@ import {
   buildCompatibilityInputFromConfig,
   compatibilityChangesToProjectConfig,
   getCompatibilityBackend,
+  getRequestedBetterAuthRejection,
+  getRequestedJobQueueRejection,
   hasSelectedTypeScriptBackendPart,
 } from "@/config/stack-compatibility";
 import { getDefaultConfig } from "@/constants";
 import { CreateCommandOptionsSchema } from "@/create-command-input";
 import {
   applyDependencyVersionChannel,
+  applyVersionPrefix,
+  collectDivergedFamilyVersions,
+  findFamilyConflicts,
+  isRegistrySemverSpec,
   planDependencyVersionChannel,
+  readDependencyManifests,
   type DependencyVersionChannelRewrite,
 } from "@/lifecycle/dependency-version-channel";
 import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
@@ -50,6 +58,8 @@ import {
   collectStructuredBaselines,
   getCurrentLifecycleVersions,
   hashContent,
+  isPnpmWorkspacePath,
+  isStructuredBaselinePath,
   readScaffoldManifestResult,
   refreshScaffoldManifestFiles,
   SCAFFOLD_MANIFEST_FILE,
@@ -1377,31 +1387,11 @@ function isPlainObject(value: unknown): value is JsonObject {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
-function applyResolvedVersionsToBaseline(
-  generatedContent: string,
-  rewrittenContent: string,
-): string {
-  const generated = parseJson(generatedContent);
-  const rewritten = parseJson(rewrittenContent);
-  if (!generated || !rewritten) return generatedContent;
-
-  const generatedWorkspaces = isPlainObject(generated.workspaces) ? generated.workspaces : {};
-  const rewrittenWorkspaces = isPlainObject(rewritten.workspaces) ? rewritten.workspaces : {};
-  const sections: Array<[unknown, unknown]> = [
-    [generated.dependencies, rewritten.dependencies],
-    [generated.devDependencies, rewritten.devDependencies],
-    [generatedWorkspaces.catalog, rewrittenWorkspaces.catalog],
-  ];
-
-  for (const [generatedSection, rewrittenSection] of sections) {
-    if (!isPlainObject(generatedSection) || !isPlainObject(rewrittenSection)) continue;
-    for (const name of Object.keys(generatedSection)) {
-      const resolved = rewrittenSection[name];
-      if (typeof resolved === "string") generatedSection[name] = resolved;
-    }
-  }
-
-  return stringifyJson(generated);
+function parseYaml(content: string | undefined) {
+  if (content === undefined) return null;
+  const document = parseDocument(content);
+  const value: unknown = document.toJS();
+  return document.errors.length === 0 && isPlainObject(value) ? { document, value } : null;
 }
 
 function diffJsonSection(
@@ -1410,6 +1400,7 @@ function diffJsonSection(
   proposed: JsonObject,
   section: string,
   allowRemovals: boolean,
+  familyVersions: ReadonlyMap<string, string>,
 ): { values: Record<string, string>; removals: string[]; blockers: string[] } {
   const previousSection = isPlainObject(previous[section]) ? previous[section] : {};
   const proposedSection = isPlainObject(proposed[section]) ? proposed[section] : {};
@@ -1429,7 +1420,15 @@ function diffJsonSection(
       blockers.push(`${section}.${name}`);
       continue;
     }
-    values[name] = String(proposedValue);
+    // A new member of a family the project moved off the generated release joins that release.
+    const familyVersion = familyVersions.get(name);
+    values[name] =
+      previousSection[name] === undefined &&
+      section !== "scripts" &&
+      familyVersion !== undefined &&
+      isRegistrySemverSpec(String(proposedValue))
+        ? applyVersionPrefix(String(proposedValue), familyVersion)
+        : String(proposedValue);
   }
 
   if (allowRemovals) {
@@ -1451,6 +1450,7 @@ export function mergePackageJson(
   previousContent: string | undefined,
   proposedContent: string,
   allowRemovals = false,
+  familyVersions: ReadonlyMap<string, string> = new Map(),
 ): {
   content?: string;
   summary: string[];
@@ -1477,7 +1477,14 @@ export function mergePackageJson(
   const scriptChanges: string[] = [];
 
   for (const section of PACKAGE_JSON_SECTIONS) {
-    const diff = diffJsonSection(existing, previous, proposed, section, allowRemovals);
+    const diff = diffJsonSection(
+      existing,
+      previous,
+      proposed,
+      section,
+      allowRemovals,
+      familyVersions,
+    );
     blockers.push(...diff.blockers);
     if (Object.keys(diff.values).length === 0 && diff.removals.length === 0) continue;
 
@@ -1507,6 +1514,87 @@ export function mergePackageJson(
     blockers,
     dependencyChanges,
     scriptChanges,
+  };
+}
+
+/**
+ * Three-way merge of pnpm-workspace.yaml. Catalog entries merge like package.json
+ * dependencies; other top-level settings take the template value only when untouched locally.
+ */
+export function mergePnpmWorkspace(
+  existingContent: string,
+  previousContent: string | undefined,
+  proposedContent: string,
+  allowRemovals = false,
+  familyVersions: ReadonlyMap<string, string> = new Map(),
+): {
+  content?: string;
+  summary: string[];
+  blockers: string[];
+  dependencyChanges: Record<string, Record<string, string>>;
+} {
+  const existing = parseYaml(existingContent);
+  const previous = parseYaml(previousContent);
+  const proposed = parseYaml(proposedContent);
+  if (!existing || !previous || !proposed) {
+    return {
+      summary: [],
+      blockers: ["pnpm-workspace.yaml is not valid YAML or has no generated baseline"],
+      dependencyChanges: {},
+    };
+  }
+
+  const { document } = existing;
+  const summary: string[] = [];
+  const blockers: string[] = [];
+  const settings: string[] = [];
+  for (const key of new Set([...Object.keys(previous.value), ...Object.keys(proposed.value)])) {
+    if (key === "catalog") continue;
+    if (stableJson(previous.value[key]) === stableJson(proposed.value[key])) continue;
+    if (stableJson(existing.value[key]) !== stableJson(previous.value[key])) {
+      blockers.push(key);
+      continue;
+    }
+    if (key in proposed.value) document.set(key, proposed.value[key]);
+    else document.delete(key);
+    settings.push(key);
+  }
+  if (settings.length > 0) summary.push(`settings: ${settings.sort().join(", ")}`);
+
+  const catalog = diffJsonSection(
+    existing.value,
+    previous.value,
+    proposed.value,
+    "catalog",
+    allowRemovals,
+    familyVersions,
+  );
+  blockers.push(...catalog.blockers);
+  const changedNames = [...Object.keys(catalog.values), ...catalog.removals].sort();
+  const catalogNode = document.get("catalog");
+  // An aliased catalog cannot be edited in place, and editing its anchor would change every alias.
+  if (changedNames.length > 0 && catalogNode !== undefined && !isMap(catalogNode)) {
+    blockers.push("catalog is a YAML alias or not a mapping; edit its entries by hand");
+  } else {
+    for (const name of catalog.removals) document.deleteIn(["catalog", name]);
+    for (const [name, version] of Object.entries(catalog.values)) {
+      document.setIn(["catalog", name], version);
+    }
+  }
+  const dependencyChanges: Record<string, Record<string, string>> = {};
+  if (changedNames.length > 0) {
+    summary.push(`catalog: ${changedNames.join(", ")}`);
+    dependencyChanges.catalog = {
+      ...catalog.values,
+      ...Object.fromEntries(catalog.removals.map((name) => [name, "removed"])),
+    };
+  }
+
+  return {
+    content: blockers.length === 0 && summary.length > 0 ? document.toString() : undefined,
+    summary,
+    blockers,
+    dependencyChanges,
   };
 }
 
@@ -1848,6 +1936,12 @@ export async function planStackUpdate(
       proposedConfig = adjustedConfig;
     }
   }
+  const requestedRejection =
+    getRequestedJobQueueRejection(requestedChanges.jobQueue, proposedConfig) ??
+    getRequestedBetterAuthRejection(requestedChanges.auth, proposedConfig);
+  if (requestedRejection) {
+    return { success: false, projectDir, error: `Invalid stack update: ${requestedRejection}` };
+  }
   try {
     validateConfigForProgrammaticUse(proposedConfig);
   } catch (error) {
@@ -1897,6 +1991,14 @@ export async function planStackUpdate(
   const currentGeneratedFiles = treeToFileMap(currentTree);
   const proposedGeneratedFiles = treeToFileMap(proposedTree);
 
+  const familyVersions = await collectDivergedFamilyVersions(projectDir, {
+    ...Object.fromEntries(
+      [...currentGeneratedFiles]
+        .filter(([filePath]) => isStructuredBaselinePath(filePath))
+        .map(([filePath, file]) => [filePath, file.content]),
+    ),
+    ...manifest.baselines,
+  });
   const operations: StackUpdateOperation[] = [];
   const filesToAdd: string[] = [];
   const filesToPatch: string[] = [];
@@ -2010,6 +2112,7 @@ export async function planStackUpdate(
         initializedOxlintBaseline ?? recordedBaseline ?? previousContent,
         proposedContent,
         removeObsoleteGeneratedArtifacts,
+        familyVersions,
       );
       for (const blocker of merged.blockers) {
         manualReviewBlockers.push(`${filePath}: ${blocker}`);
@@ -2028,6 +2131,33 @@ export async function planStackUpdate(
         }
         if (merged.scriptChanges.length > 0) {
           scriptChanges[filePath] = merged.scriptChanges;
+        }
+      }
+      continue;
+    }
+
+    if (isPnpmWorkspacePath(filePath)) {
+      const merged = mergePnpmWorkspace(
+        existingContent,
+        recordedBaseline ?? previousContent,
+        proposedContent,
+        removeObsoleteGeneratedArtifacts,
+        familyVersions,
+      );
+      for (const blocker of merged.blockers) {
+        manualReviewBlockers.push(`${filePath}: ${blocker}`);
+      }
+      if (merged.content) {
+        filesToPatch.push(filePath);
+        operations.push({
+          kind: "merge",
+          path: filePath,
+          writeMode: "content",
+          content: merged.content,
+          summary: merged.summary,
+        });
+        for (const [section, values] of Object.entries(merged.dependencyChanges)) {
+          dependencyChanges[`${filePath}:${section}`] = values;
         }
       }
       continue;
@@ -2152,7 +2282,9 @@ export async function planStackUpdate(
   const uniqueFilesToRemove = [...new Set(filesToRemove)].sort();
   const projectedPackageJsonContents = new Map<string, string | null>();
   for (const operation of operations) {
-    if (!operation.path.endsWith("package.json")) continue;
+    if (!operation.path.endsWith("package.json") && operation.path !== "pnpm-workspace.yaml") {
+      continue;
+    }
     const packageJsonPath = path.join(projectDir, operation.path);
     if (operation.writeMode === "remove") {
       projectedPackageJsonContents.set(packageJsonPath, null);
@@ -2177,6 +2309,21 @@ export async function planStackUpdate(
       rewrite.sha256,
     ]),
   );
+  const manifestsBefore = await readDependencyManifests(projectDir);
+  const manifestsAfter = new Map(manifestsBefore);
+  for (const [manifestPath, content] of [
+    ...projectedPackageJsonContents,
+    ...plannedVersionChannelRewrites.map(
+      (rewrite) => [rewrite.packageJsonPath, rewrite.content] as const,
+    ),
+  ]) {
+    const relativePath = toPosixPath(path.relative(projectDir, manifestPath));
+    if (content === null) manifestsAfter.delete(relativePath);
+    else manifestsAfter.set(relativePath, content);
+  }
+  for (const conflict of await findFamilyConflicts(manifestsBefore, manifestsAfter)) {
+    manualReviewBlockers.push(`${conflict.paths.join(", ")}: ${conflict.reason}`);
+  }
   let preimages: Record<string, { sha256: string | null; mode: number | null }>;
   try {
     preimages = await collectPlanPreimages(projectDir, [
@@ -2499,17 +2646,9 @@ export async function applyStackUpdate(
 
     await options.beforeManifestRefresh?.();
 
+    // Baselines record what the templates declare, as create does. Channel-resolved versions
+    // would read as template drift on the next update and be replaced with the template's.
     const structuredBaselines = collectStructuredBaselines(proposedTree);
-    for (const relativePath of versionChannelRewrites) {
-      const generatedBaseline = structuredBaselines[relativePath];
-      if (generatedBaseline === undefined) continue;
-      // oxlint-disable-next-line no-await-in-loop -- baseline must match each persisted rewrite
-      const rewritten = await fs.readFile(path.join(plan.projectDir, relativePath), "utf-8");
-      structuredBaselines[relativePath] = applyResolvedVersionsToBaseline(
-        generatedBaseline,
-        rewritten,
-      );
-    }
 
     let manifestWritten = false;
     await refreshScaffoldManifestFiles(

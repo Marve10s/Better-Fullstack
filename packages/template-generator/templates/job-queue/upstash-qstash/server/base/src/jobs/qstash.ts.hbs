@@ -1,0 +1,87 @@
+import { env } from "@{{projectName}}/env/server";
+import { Client, Receiver } from "@upstash/qstash";
+
+/**
+ * QStash pushes each job to a public HTTP route on this server and signs the
+ * request. The route below verifies that signature before running the job.
+ * @see https://upstash.com/docs/qstash
+ */
+export const WELCOME_EMAIL_PATH = "/api/jobs/welcome-email";
+
+export type WelcomeEmailJob = {
+	userId: string;
+	email: string;
+};
+
+type JobResult = {
+	status: number;
+	body: Record<string, unknown>;
+};
+
+function isWelcomeEmailJob(value: unknown): value is WelcomeEmailJob {
+	if (typeof value !== "object" || value === null) return false;
+	const { userId, email } = value as Record<string, unknown>;
+	return typeof userId === "string" && typeof email === "string";
+}
+
+function parseJson(body: string): unknown {
+	try {
+		return JSON.parse(body);
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * Producer: call this from a route or service to enqueue the example job.
+ */
+export async function publishWelcomeEmail(job: WelcomeEmailJob) {
+	const client = new Client({ token: env.QSTASH_TOKEN, baseUrl: env.QSTASH_URL });
+	const { messageId } = await client.publishJSON({
+		url: env.QSTASH_WEBHOOK_URL,
+		body: job,
+		retries: 3,
+	});
+	return messageId;
+}
+
+/**
+ * Handler: verifies the QStash signature against the raw body, then runs the job.
+ */
+export async function processWelcomeEmailJob(request: {
+	signature: string | null | undefined;
+	body: string;
+}): Promise<JobResult> {
+	if (!request.signature) {
+		return { status: 401, body: { error: "Missing Upstash-Signature header" } };
+	}
+
+	const receiver = new Receiver({
+		currentSigningKey: env.QSTASH_CURRENT_SIGNING_KEY,
+		nextSigningKey: env.QSTASH_NEXT_SIGNING_KEY,
+	});
+	const verified = await receiver
+		.verify({ signature: request.signature, body: request.body, url: env.QSTASH_WEBHOOK_URL })
+		.catch(() => false);
+	if (!verified) {
+		return { status: 401, body: { error: "Invalid QStash signature" } };
+	}
+
+	const job = parseJson(request.body);
+	if (!isWelcomeEmailJob(job)) {
+		// QStash does not retry 4xx responses other than 429.
+		return { status: 400, body: { error: "Invalid welcome email payload" } };
+	}
+
+	// Replace this log with your email provider call.
+	console.log(`[qstash] Sent welcome email to ${job.email}`);
+	return { status: 200, body: { delivered: true, userId: job.userId } };
+}
+
+export async function handleWelcomeEmailJob(request: Request): Promise<Response> {
+	const result = await processWelcomeEmailJob({
+		signature: request.headers.get("upstash-signature"),
+		body: await request.text(),
+	});
+	return Response.json(result.body, { status: result.status });
+}

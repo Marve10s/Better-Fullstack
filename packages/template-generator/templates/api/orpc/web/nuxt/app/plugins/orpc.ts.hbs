@@ -5,12 +5,16 @@ import { RPCLink } from '@orpc/client/fetch'
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
 export default defineNuxtPlugin(() => {
+{{#if (eq backend "self")}}
+  const rpcUrl = `${useRequestURL().origin}/api/rpc`;
+{{else}}
   const config = useRuntimeConfig();
   const rpcUrl = `${config.public.serverUrl}/rpc`;
+{{/if}}
 
   const rpcLink = new RPCLink({
     url: rpcUrl,
-    {{#if (isBetterAuth auth)}}
+    {{#if (and (isBetterAuth auth) (ne backend "self"))}}
     fetch(url, options) {
         return fetch(url, {
         ...options,

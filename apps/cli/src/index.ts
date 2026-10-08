@@ -19,7 +19,7 @@ export {
   recovery,
 } from "@/run";
 
-import type { ProjectConfig } from "@/types";
+import { hasGeneratedJobQueueRequirements, type ProjectConfig } from "@/types";
 
 import { applyEffectBackendDefaults } from "@/config/config-processing";
 
@@ -263,6 +263,13 @@ export async function createVirtual(
       (config.addons ?? []).some(
         (addon) => addon === "docker-compose" || addon === "devcontainer" || addon === "kong",
       );
+    // Graph input generates from its own job queue part, so check it alongside the flat field.
+    const jobQueueSelections = [
+      config.jobQueue,
+      ...(config.stackParts ?? [])
+        .filter((part) => part.role === "jobQueue")
+        .map((part) => part.toolId),
+    ];
     // Graph input generates from its own logging parts, so check them alongside the flat field.
     const pythonLoggingSelections = [
       config.pythonLogging,
@@ -273,6 +280,7 @@ export async function createVirtual(
     if (
       config.integrations === "nango" ||
       config.payments !== "none" ||
+      jobQueueSelections.some(hasGeneratedJobQueueRequirements) ||
       pythonLoggingSelections.some((selection) => selection && selection !== "none") ||
       hasLegacyContainerAddon
     ) {
@@ -284,6 +292,10 @@ export async function createVirtual(
         validateConfigForProgrammaticUse(config),
       );
     }
+
+    const { getBetterAuthSelectionIssue } = await import("@/config/stack-compatibility");
+    const betterAuthIssue = getBetterAuthSelectionIssue(config);
+    if (betterAuthIssue) return { success: false, error: betterAuthIssue };
 
     const { generateVirtualProject: generate, EMBEDDED_TEMPLATES } =
       await import("@better-fullstack/template-generator");
