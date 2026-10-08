@@ -30,7 +30,18 @@ export function processJobQueueDeps(vfs: VirtualFileSystem, config: ProjectConfi
       });
     }
     addJobQueueScripts(vfs, serverPath, config);
+    addJobQueueEngines(vfs, serverPath, config);
   }
+}
+
+const PG_BOSS_MIN_NODE = ">=22.12.0";
+
+function addJobQueueEngines(vfs: VirtualFileSystem, serverPath: string, config: ProjectConfig) {
+  if (config.jobQueue !== "pg-boss" || config.runtime !== "node") return;
+
+  const pkgJson = vfs.readJson<PackageJson>(serverPath);
+  if (!pkgJson) return;
+  vfs.writeJson(serverPath, { ...pkgJson, engines: { node: PG_BOSS_MIN_NODE } });
 }
 
 function getJobQueueDeps(jobQueue: ProjectConfig["jobQueue"]): AvailableDependencies[] {
