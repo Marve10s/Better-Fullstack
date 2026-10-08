@@ -81,11 +81,23 @@ function graphParts(stack: (typeof STACKS)[keyof typeof STACKS], database: strin
   } as ProjectConfig);
 }
 
-// Runs the CLI with a temporary HOME so history reads and writes never touch the user's store.
+function historyStoreDir(root: string) {
+  return process.platform === "darwin"
+    ? join(root, "Library", "Application Support", "better-fullstack")
+    : join(root, ".local", "share", "better-fullstack");
+}
+
 async function runCli(args: string[], root: string) {
   const child = Bun.spawn([BUN_EXECUTABLE, CLI_ENTRY, ...args, "--disable-analytics"], {
     cwd: root,
-    env: { ...Bun.env, HOME: root, BFS_SKIP_BUILDER_PROMPT: "1", CI: "true" },
+    env: {
+      ...Bun.env,
+      HOME: root,
+      XDG_CONFIG_HOME: join(root, ".config"),
+      XDG_DATA_HOME: join(root, ".local", "share"),
+      BFS_SKIP_BUILDER_PROMPT: "1",
+      CI: "true",
+    },
     stdin: "ignore",
     stdout: "pipe",
     stderr: "pipe",
@@ -113,7 +125,7 @@ async function writeReplayedConfig(selection: Partial<ProjectConfig>) {
     ...selection,
   } as ProjectConfig;
   await writeBtsConfig(config);
-  const historyDir = join(root, "Library", "Application Support", "better-fullstack");
+  const historyDir = historyStoreDir(root);
   await mkdir(historyDir, { recursive: true });
   await writeFile(
     join(historyDir, "history.json"),
