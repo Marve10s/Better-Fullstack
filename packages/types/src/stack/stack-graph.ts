@@ -1817,14 +1817,17 @@ function createAuthPartIssue(
   context: StackPartOptionContext,
 ): StackGraphIssue | undefined {
   if (part.role !== "auth") return undefined;
-  const dataLayer = getAuthPartDataLayer(part, context);
-  if (part.ecosystem !== "typescript" && dataLayer.database === undefined) return undefined;
-
   const appAuthParts = getAppAuthParts(context.parts ?? []);
   const projectedAuth = appAuthParts[0];
   const isAppAuth = appAuthParts.some((candidate) => candidate.id === part.id);
   // The same provider on several owners is generated once and judged on the projected part.
   if (isAppAuth && projectedAuth?.id !== part.id && projectedAuth?.toolId === part.toolId) {
+    return undefined;
+  }
+  const conflictingAuth =
+    isAppAuth && projectedAuth?.toolId !== part.toolId ? projectedAuth : undefined;
+  const dataLayer = getAuthPartDataLayer(part, context);
+  if (!conflictingAuth && part.ecosystem !== "typescript" && dataLayer.database === undefined) {
     return undefined;
   }
   const backend = getAuthPartBackend(part, context);
@@ -1836,18 +1839,18 @@ function createAuthPartIssue(
       ? context.primaryToolIdsByRole?.mobile
       : undefined,
   ].filter((tool) => tool !== undefined);
-  const reason =
-    isAppAuth && projectedAuth && projectedAuth.toolId !== part.toolId
-      ? `Only one auth provider is generated per app, so '${part.toolId}' cannot be selected alongside '${projectedAuth.toolId}'`
-      : getAuthIncompatibility(
-          part.toolId,
-          {
-            ecosystem: "typescript",
-            ...dataLayer,
-            ...(backend === undefined ? {} : { backend, frontend }),
-          },
-          { partial: backend === undefined },
-        );
+  const reason = conflictingAuth
+    ? `Only one auth provider is generated per app, so '${part.toolId}' cannot be selected alongside '${conflictingAuth.toolId}'`
+    : getAuthIncompatibility(
+        part.toolId,
+        {
+          ecosystem: "typescript",
+          ...dataLayer,
+          frontend,
+          ...(backend === undefined ? {} : { backend }),
+        },
+        { partial: backend === undefined },
+      );
   if (!reason) return undefined;
   return createStackGraphIssue({
     code: "INCOMPATIBLE_GRAPH_SELECTION",

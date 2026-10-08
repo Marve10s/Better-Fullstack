@@ -391,6 +391,30 @@ describe("auth compatibility has one reason per rule", () => {
     expect(authIssues([...nextOnHono, "frontend.auth:typescript:better-auth"])).toEqual([]);
   });
 
+  it("still judges the frontend when the backend belongs to another ecosystem", () => {
+    const authIssues = (specs: string[]) =>
+      validateStackParts(parseStackPartSpecs(specs, "selected"))
+        .issues.filter((issue) => issue.role === "auth")
+        .map((issue) => issue.message);
+
+    expect(
+      authIssues([
+        "backend:go:chi",
+        "frontend:typescript:vue",
+        "frontend.auth:typescript:better-auth",
+      ]),
+    ).toEqual([
+      "Auth client integrations are not yet wired for standalone Vue or Vanilla Vite frontends",
+    ]);
+    expect(
+      authIssues([
+        "backend:go:chi",
+        "frontend:typescript:svelte",
+        "frontend.auth:typescript:better-auth",
+      ]),
+    ).toEqual([]);
+  });
+
   it("rejects two different auth providers for the same app", () => {
     const authIssues = (specs: string[]) =>
       validateStackParts(parseStackPartSpecs(specs, "selected"))
@@ -421,6 +445,15 @@ describe("auth compatibility has one reason per rule", () => {
         "mobile.auth:react-native:clerk",
       ]),
     ).toContain(reason);
+    expect(
+      authIssues([
+        "backend:go:chi",
+        "frontend:typescript:next",
+        "mobile:react-native:native-bare",
+        "frontend.auth:typescript:better-auth",
+        "mobile.auth:react-native:clerk",
+      ]),
+    ).toEqual([reason]);
     // The same provider on several owners is generated once.
     expect(
       authIssues([
