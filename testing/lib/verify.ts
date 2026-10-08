@@ -410,8 +410,7 @@ async function runDockerContainer(
 
 /**
  * Build the generated server image from the project root, as its Dockerfile documents, then
- * run it and request the health route. The image installs and builds with the project's own
- * package manager, so this replaces the host install and build.
+ * run it and request the health route.
  */
 async function runDockerImageCheck(
   comboName: string,
@@ -459,33 +458,32 @@ export async function verifyTypeScript(
 ): Promise<VerifyResult> {
   const steps: StepResult[] = [];
 
-  const dockerImage = options?.runtimeChecks?.find((check) => check.kind === "docker-image");
-  if (dockerImage) {
-    steps.push(
-      ...(await runDockerImageCheck(
-        comboName,
-        projectDir,
-        dockerImage.env,
-        Boolean(options?.strict),
-      )),
-    );
-    return wrapResult("typescript", comboName, projectDir, steps);
-  }
-
   // Convex projects require `convex codegen` before build/typecheck can work
   const isConvex = existsSync(join(projectDir, "packages", "backend", "convex"));
 
+  // Bun cannot resolve pnpm `catalog:` versions, so pnpm projects install with pnpm. Their root
+  // scripts call `pnpm -r`, so the steps below still run through `bun run`. The flag matches the
+  // generated Dockerfile: pnpm 10+ skips dependency build scripts such as Prisma's otherwise.
+  const pnpm = options?.config?.packageManager === "pnpm";
   steps.push(
     await runWithRegistryPropagationRetry(() =>
-      runStep("install", "bun", ["install"], projectDir, {
-        timeoutMs: getTypeScriptInstallTimeoutMs(options?.config),
-      }),
+      runStep(
+        "install",
+        pnpm ? "pnpm" : "bun",
+        pnpm ? ["install", "--dangerously-allow-all-builds"] : ["install"],
+        projectDir,
+        { timeoutMs: getTypeScriptInstallTimeoutMs(options?.config) },
+      ),
     ),
   );
   if (!steps.at(-1)!.success) return wrapResult("typescript", comboName, projectDir, steps);
 
   if (options?.devCheck && options?.config) {
-    if (options.routeCheck) {
+    if (options.config.frontend.every((frontend) => frontend === "none")) {
+      // The dev check validates a web page on the web port. A server-only project has neither;
+      // its docker-image check proves the server answers instead.
+      steps.push(skippedStep("dev-check"));
+    } else if (options.routeCheck) {
       // Start server, run dev-check validation, then route-check, then stop
       const isDbDep = isDbDependentProject(options.config);
       try {
@@ -581,6 +579,22 @@ export async function verifyTypeScript(
     } else {
       steps.push(templateFailure("doctor", "Missing CLI path for generated project doctor check"));
     }
+  }
+
+  // The image build does not type-check, so it runs after the host steps, and only when they
+  // pass: a failed host step already fails the preset, and the image build takes minutes.
+  const dockerImage = options?.runtimeChecks?.find((check) => check.kind === "docker-image");
+  if (dockerImage) {
+    steps.push(
+      ...(steps.every((step) => step.success || step.skipped || step.advisory)
+        ? await runDockerImageCheck(
+            comboName,
+            projectDir,
+            dockerImage.env,
+            Boolean(options?.strict),
+          )
+        : [skippedStep("docker-build")]),
+    );
   }
 
   return wrapResult("typescript", comboName, projectDir, steps);

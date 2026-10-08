@@ -83,6 +83,8 @@ export const env = createEnv({
 		NEXT_PUBLIC_WORKOS_REDIRECT_URI: process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI,
 {{/if}}
 	},
+{{else if (includes frontend "nuxt")}}
+	client: {},
 {{else}}
 	clientPrefix: "VITE_",
 	client: {
