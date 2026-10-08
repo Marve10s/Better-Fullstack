@@ -181,25 +181,48 @@ describe("database and ORM pair compatibility", () => {
     }
   });
 
-  it("judges the ORM against a mobile-owned database when generation uses it", () => {
-    for (const [database, orm, issues] of [
-      ["mongodb", "kysely", [KYSELY]],
-      ["sqlite", "drizzle", []],
+  it("does not judge the ORM against an app-owned database generation ignores", () => {
+    for (const [owner, label] of [
+      ["mobile", "mobile app"],
+      ["frontend", "frontend"],
     ] as const) {
       const parts = parseStackPartSpecs([
+        "frontend:typescript:tanstack-router",
         "backend:typescript:hono",
         "backend.runtime:typescript:bun",
         "mobile:react-native:native-bare",
-        `mobile.database:universal:${database}`,
-        `backend.orm:typescript:${orm}`,
+        `${owner}.database:universal:mongodb`,
+        "backend.orm:typescript:kysely",
       ]);
       const projected = stackGraphToLegacyProjectConfigForEcosystem(
         { ...createCliDefaultProjectConfigBase("bun"), projectName: "pair", stackParts: parts },
         "typescript",
       );
-      expect(projected.database).toBe(database);
-      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toEqual([...issues]);
+      expect(projected.database).toBe("none");
+      expect(validateStackParts(parts).issues.map((issue) => issue.message)).toEqual([
+        "ORM selection requires a database",
+        `A database owned by the ${label} generates no data layer. Select a standalone database or one owned by the backend.`,
+      ]);
     }
+  });
+
+  it("projects the backend-owned database and its setup over a mobile-owned one", () => {
+    const parts = parseStackPartSpecs([
+      "backend:typescript:hono:api",
+      "api.runtime:typescript:bun",
+      "api.database:universal:postgres:api-db",
+      "api-db.dbSetup:universal:neon",
+      "api.orm:typescript:drizzle",
+      "mobile:react-native:native-bare",
+      "mobile.database:universal:sqlite",
+    ]);
+    const projected = stackGraphToLegacyProjectConfigForEcosystem(
+      { ...createCliDefaultProjectConfigBase("bun"), projectName: "pair", stackParts: parts },
+      "typescript",
+    );
+    expect(projected.database).toBe("postgres");
+    expect(projected.dbSetup).toBe("neon");
+    expect(validateStackParts(parts).issues).toEqual([]);
   });
 
   it("requires a database for a backend-owned ORM in the graph", () => {

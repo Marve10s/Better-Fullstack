@@ -1661,7 +1661,10 @@ function createTypeScriptBackendCompatibilityIssue(
     const reason = getJobQueueIncompatibility(part.toolId, {
       backend: context.ownerToolId,
       runtime: context.siblingToolIdsByRole?.runtime,
-      database: context.siblingToolIdsByRole?.database ?? context.primaryToolIdsByRole?.database,
+      database: getDataLayerDatabase({
+        standalone: context.primaryToolIdsByRole?.database,
+        backend: context.siblingToolIdsByRole?.database,
+      }),
     });
     if (reason) {
       return createStackGraphIssue({
@@ -1675,16 +1678,8 @@ function createTypeScriptBackendCompatibilityIssue(
   }
 
   if (part.role === "orm") {
-    const appDatabases = context.parts
-      ? getProjectedDatabaseParts(
-          context.parts,
-          getProjectionAppOwners(context.parts, "typescript"),
-        )
-      : undefined;
     const database = getDataLayerDatabase({
       standalone: context.primaryToolIdsByRole?.database,
-      mobile: appDatabases?.mobile?.toolId,
-      frontend: appDatabases?.frontend?.toolId,
       backend: context.siblingToolIdsByRole?.database,
     });
     const reason = getDatabaseOrmIncompatibility(database, part.toolId);
@@ -1787,16 +1782,10 @@ function getAuthPartDataLayer(
         )
       : undefined;
   if (context.ownerRole !== "backend" && !backend) return {};
-  const appDatabases = getProjectedDatabaseParts(
-    parts,
-    getProjectionAppOwners(parts, "typescript"),
-  );
   return {
     database:
       getDataLayerDatabase({
         standalone: context.primaryToolIdsByRole?.database,
-        mobile: appDatabases.mobile?.toolId,
-        frontend: appDatabases.frontend?.toolId,
         backend:
           context.ownerRole === "backend"
             ? context.siblingToolIdsByRole?.database
@@ -3971,16 +3960,8 @@ type GraphProjectionEcosystem = Exclude<
   "universal" | "kotlin" | "swift" | "dart"
 >;
 
-// The TypeScript projection builds a backend's data layer on a standalone database, else on the
-// database the mobile app, the frontend, or the backend owns, in that order. Validation judges the
-// same database.
-function getDataLayerDatabase<T>(databases: {
-  standalone?: T;
-  mobile?: T;
-  frontend?: T;
-  backend?: T;
-}) {
-  return databases.standalone ?? databases.mobile ?? databases.frontend ?? databases.backend;
+function getDataLayerDatabase<T>(databases: { standalone?: T; backend?: T }) {
+  return databases.standalone ?? databases.backend;
 }
 
 function getProjectionAppOwners(parts: readonly StackPart[], ecosystem: GraphProjectionEcosystem) {
@@ -3994,16 +3975,11 @@ function getProjectionAppOwners(parts: readonly StackPart[], ecosystem: GraphPro
   };
 }
 
-function getProjectedDatabaseParts(
-  parts: readonly StackPart[],
-  owners: { backend?: StackPart; frontend?: StackPart; mobile?: StackPart },
-) {
-  return {
+function getDataLayerDatabasePart(parts: readonly StackPart[], backend: StackPart | undefined) {
+  return getDataLayerDatabase({
     standalone: getSelectedPrimaryPart(parts, "database"),
-    mobile: getSelectedScopedPart(parts, owners.mobile, "database"),
-    frontend: getSelectedScopedPart(parts, owners.frontend, "database"),
-    backend: getSelectedScopedPart(parts, owners.backend, "database"),
-  };
+    backend: getSelectedScopedPart(parts, backend, "database"),
+  });
 }
 
 function getSelectedPrimaryPart(parts: readonly StackPart[], role: StackPartRole) {
@@ -4125,9 +4101,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
     (part) => part.role === "backend" && part.ecosystem === ecosystem && !part.ownerPartId,
   );
   const { frontend, mobile } = getProjectionAppOwners(parts, ecosystem);
-  const databases = getProjectedDatabaseParts(parts, { backend, frontend, mobile });
-  const database = getDataLayerDatabase(databases);
-  const setupDatabase = databases.standalone ?? databases.backend;
+  const database = getDataLayerDatabasePart(parts, backend);
   const orm = getSelectedScopedPart(parts, backend, "orm");
   const api = getSelectedScopedPart(parts, backend, "api");
   const auth =
@@ -4207,7 +4181,7 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
   }
 
   for (const part of parts) {
-    if (part.source === "provided" || part.ownerPartId !== setupDatabase?.id) {
+    if (part.source === "provided" || part.ownerPartId !== database?.id) {
       continue;
     }
     projectLegacyCategoryFromPart(projected, part, ecosystem, parts);
@@ -4344,9 +4318,7 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
       continue;
     }
     const orm = getSelectedScopedPart(parts, backend, "orm");
-    const database = getDataLayerDatabase(
-      getProjectedDatabaseParts(parts, { ...getProjectionAppOwners(parts, "typescript"), backend }),
-    );
+    const database = getDataLayerDatabasePart(parts, backend);
     const message = getDatabaseOrmRequirementIssue(
       database?.toolId ?? "none",
       orm?.toolId ?? "none",
@@ -4363,6 +4335,28 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
         }),
       );
     }
+  }
+
+  const selectedDatabases = parts.filter(
+    (part) => part.role === "database" && part.source !== "provided" && !isNoneTool(part.toolId),
+  );
+  const getDatabaseOwnerRole = (part: StackPart) =>
+    part.ownerPartId ? partsById.get(part.ownerPartId)?.role : undefined;
+  const hasDataLayerDatabase = selectedDatabases.some(
+    (part) => !part.ownerPartId || getDatabaseOwnerRole(part) === "backend",
+  );
+  for (const part of selectedDatabases) {
+    const ownerRole = getDatabaseOwnerRole(part);
+    if (hasDataLayerDatabase || (ownerRole !== "frontend" && ownerRole !== "mobile")) continue;
+    issues.push(
+      createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `A database owned by the ${ownerRole === "mobile" ? "mobile app" : "frontend"} generates no data layer. Select a standalone database or one owned by the backend.`,
+      }),
+    );
   }
 
   const byScope = new Map<string, StackPart[]>();

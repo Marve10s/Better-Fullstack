@@ -4949,6 +4949,7 @@ describe("stack update planner", () => {
         stackParts: parseStackPartSpecs([
           "backend:typescript:hono:api",
           "mobile:react-native:native-bare:mobile",
+          "database:universal:sqlite:main-db",
           "api.database:universal:sqlite:api-db",
           "mobile.database:universal:sqlite:mobile-db",
         ]),
