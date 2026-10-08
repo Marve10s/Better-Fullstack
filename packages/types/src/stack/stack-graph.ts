@@ -4342,8 +4342,11 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
   );
   const getDatabaseOwnerRole = (part: StackPart) =>
     part.ownerPartId ? partsById.get(part.ownerPartId)?.role : undefined;
+  const dataLayerBackend = parts.find(
+    (part) => part.role === "backend" && part.ecosystem === "typescript" && !part.ownerPartId,
+  );
   const dataLayerDatabase =
-    selectedDatabases.find((part) => !part.ownerPartId) ??
+    getDataLayerDatabasePart(parts, dataLayerBackend) ??
     selectedDatabases.find((part) => getDatabaseOwnerRole(part) === "backend");
   const dataLayerDatabaseOwner = dataLayerDatabase?.ownerPartId
     ? partsById.get(dataLayerDatabase.ownerPartId)

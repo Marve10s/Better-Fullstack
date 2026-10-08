@@ -227,6 +227,22 @@ describe("database and ORM pair compatibility", () => {
     ]);
   });
 
+  it("names the TypeScript backend's database when another backend owns a database too", () => {
+    const parts = parseStackPartSpecs([
+      "backend:go:gin:admin",
+      "admin.database:universal:mongodb:admin-db",
+      "backend:typescript:hono:api",
+      "api.runtime:typescript:bun",
+      "api.database:universal:postgres:api-db",
+      "api.orm:typescript:drizzle",
+      "mobile:react-native:native-bare",
+      "mobile.database:universal:sqlite",
+    ]);
+    expect(validateStackParts(parts).issues.map((issue) => issue.message)).toContain(
+      "A database owned by the mobile app would be ignored because the data layer uses the postgres database owned by the hono backend. Remove the mobile app database.",
+    );
+  });
+
   it("rejects an app-owned database next to the standalone database generation uses", () => {
     for (const [owner, label] of [
       ["mobile", "mobile app"],
