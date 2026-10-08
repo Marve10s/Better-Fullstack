@@ -18,6 +18,7 @@ import { resolveCreateConfigBase } from "@/config/config-source";
 import { displayConfig } from "@/config/display-config";
 import {
   getRequestedBetterAuthRejection,
+  getRequestedDatabaseSetupRejection,
   getRequestedJobQueueRejection,
   getRequestedOrmRejection,
   resolveCompatibilityAdjustments,
@@ -347,7 +348,7 @@ function rejectAdjustedRequestedFlags(
 ) {
   const adjustedConfig = { ...config, ...changes };
   // A database or ORM replayed from a saved config or history entry is the user's choice too.
-  const isRequested = (key: "database" | "orm") =>
+  const isRequested = (key: "database" | "orm" | "dbSetup" | "runtime") =>
     providedFlags.has(key) || configBase?.[key] !== undefined;
   const rejection =
     (providedFlags.has("jobQueue")
@@ -356,6 +357,14 @@ function rejectAdjustedRequestedFlags(
     (providedFlags.has("auth")
       ? getRequestedBetterAuthRejection(config.auth, adjustedConfig)
       : null) ??
+    getRequestedDatabaseSetupRejection(
+      {
+        database: isRequested("database") ? config.database : undefined,
+        dbSetup: isRequested("dbSetup") ? config.dbSetup : undefined,
+        runtime: isRequested("runtime") ? config.runtime : undefined,
+      },
+      adjustedConfig,
+    ) ??
     getRequestedOrmRejection(
       {
         database: isRequested("database") ? config.database : undefined,

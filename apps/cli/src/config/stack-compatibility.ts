@@ -92,7 +92,12 @@ export function getRequestedOrmRejection(
   adjustedConfig: Partial<ProjectConfig>,
 ): string | null {
   if (!requested.orm || !usesGenericOrm(adjustedConfig)) return null;
-  if (requested.database) return getDatabaseOrmIncompatibility(requested.database, requested.orm);
+  if (requested.database) {
+    return (
+      getDatabaseOrmIncompatibility(requested.database, requested.orm) ??
+      getDatabaseOrmRequirementSelectionIssue({ ...adjustedConfig, ...requested })
+    );
+  }
   if (adjustedConfig.orm === requested.orm) return null;
   return getDatabaseOrmIncompatibility(adjustedConfig.database, requested.orm);
 }
@@ -180,6 +185,18 @@ export function getDatabaseSetupIssue(
     }
   }
   return null;
+}
+
+export function getRequestedDatabaseSetupRejection(
+  requested: Pick<Partial<ProjectConfig>, "database" | "dbSetup" | "runtime">,
+  adjustedConfig: Partial<ProjectConfig>,
+): string | null {
+  if (!requested.dbSetup || !requested.database) return null;
+  return getDatabaseSetupIssue({
+    database: requested.database,
+    dbSetup: requested.dbSetup,
+    runtime: requested.runtime ?? adjustedConfig.runtime,
+  });
 }
 
 // Checks the data layer the generator will use: the database setup provider must host the

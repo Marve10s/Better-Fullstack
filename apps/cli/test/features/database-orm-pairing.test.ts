@@ -98,6 +98,44 @@ async function runCli(args: string[], root: string) {
   return { exitCode, output: `${stdout}${stderr}` };
 }
 
+async function writeReplayedConfig(selection: Partial<ProjectConfig>) {
+  const root = await mkdtemp(join(tmpdir(), "bfs-db-orm-replay-"));
+  TEMP_ROOTS.push(root);
+  const config = {
+    ...createCliDefaultProjectConfigBase(),
+    ...STACKS.standalone,
+    frontend: [...STACKS.standalone.frontend],
+    addons: [],
+    auth: "none",
+    projectName: "replayed",
+    projectDir: root,
+    relativePath: ".",
+    ...selection,
+  } as ProjectConfig;
+  await writeBtsConfig(config);
+  const historyDir = join(root, "Library", "Application Support", "better-fullstack");
+  await mkdir(historyDir, { recursive: true });
+  await writeFile(
+    join(historyDir, "history.json"),
+    JSON.stringify({
+      version: 1,
+      entries: [
+        {
+          id: "replayed",
+          projectName: "replayed",
+          projectDir: root,
+          createdAt: new Date(0).toISOString(),
+          stack: { ...config, frontend: config.frontend },
+          cliVersion: "0.0.0",
+          reproducibleCommand: "",
+          config: { ...config, version: "0.0.0", createdAt: new Date(0).toISOString() },
+        },
+      ],
+    }),
+  );
+  return root;
+}
+
 async function scaffoldProject(overrides: Partial<ProjectConfig>) {
   const root = await mkdtemp(join(tmpdir(), "bfs-db-orm-"));
   TEMP_ROOTS.push(root);
@@ -238,42 +276,7 @@ describe("database and ORM pairing", () => {
   });
 
   test("a replayed pair is rejected before compatibility repair", async () => {
-    const root = await mkdtemp(join(tmpdir(), "bfs-db-orm-replay-"));
-    TEMP_ROOTS.push(root);
-    const config = {
-      ...createCliDefaultProjectConfigBase(),
-      ...STACKS.standalone,
-      frontend: [...STACKS.standalone.frontend],
-      addons: [],
-      auth: "none",
-      projectName: "replayed",
-      projectDir: root,
-      relativePath: ".",
-      database: "mongodb",
-      orm: "kysely",
-    } as ProjectConfig;
-    await writeBtsConfig(config);
-    const historyDir = join(root, "Library", "Application Support", "better-fullstack");
-    await mkdir(historyDir, { recursive: true });
-    await writeFile(
-      join(historyDir, "history.json"),
-      JSON.stringify({
-        version: 1,
-        entries: [
-          {
-            id: "replayed",
-            projectName: "replayed",
-            projectDir: root,
-            createdAt: new Date(0).toISOString(),
-            stack: { ...config, frontend: config.frontend },
-            cliVersion: "0.0.0",
-            reproducibleCommand: "",
-            config: { ...config, version: "0.0.0", createdAt: new Date(0).toISOString() },
-          },
-        ],
-      }),
-    );
-
+    const root = await writeReplayedConfig({ database: "mongodb", orm: "kysely" });
     const configArgs = ["--config", join(root, "bts.jsonc")];
     for (const args of [
       configArgs,
@@ -287,6 +290,39 @@ describe("database and ORM pairing", () => {
       expect({ args, exitCode }).toEqual({ args, exitCode: 1 });
       expect(output).toContain("Kysely does not support MongoDB");
       expect(output).not.toContain("ORM set to");
+    }
+  });
+
+  test("a replayed selection missing a side or hosted by the wrong provider is rejected before repair", async () => {
+    const cases = [
+      {
+        selection: { database: "none", orm: "mongoose" },
+        reason: "ORM selection requires a database",
+      },
+      {
+        selection: { database: "postgres", orm: "none" },
+        reason: "Database selection requires an ORM",
+      },
+      {
+        selection: { database: "sqlite", orm: "kysely", dbSetup: "mongodb-atlas" },
+        reason:
+          "MongoDB Atlas setup requires MongoDB database. Please use '--database mongodb' or choose a different setup.",
+      },
+    ] as const;
+    for (const { selection, reason } of cases) {
+      const root = await writeReplayedConfig(selection);
+      for (const args of [
+        ["--config", join(root, "bts.jsonc")],
+        ["--from-history", "1"],
+      ]) {
+        const { exitCode, output } = await runCli(
+          ["create", "app", ...args, "--dry-run", "--no-install", "--no-git"],
+          root,
+        );
+        expect({ selection, args, exitCode }).toEqual({ selection, args, exitCode: 1 });
+        expect(output).toContain(reason);
+        expect(output).not.toContain(" set to ");
+      }
     }
   });
 
