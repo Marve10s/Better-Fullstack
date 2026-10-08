@@ -115,7 +115,7 @@ function basename(relativePath: string): string {
 
 function isStructuredBaselinePath(relativePath: string): boolean {
   const name = basename(relativePath);
-  return name === "package.json" || name.endsWith(".env.example");
+  return name === "package.json" || name.endsWith(".env.example") || name === "pnpm-workspace.yaml";
 }
 
 const SHA256_INITIAL_STATE = [

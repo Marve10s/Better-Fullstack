@@ -21,9 +21,10 @@ export const dependencyVersionMap = {
   // Exact-pin the reviewed Better Auth family. Version 1.7 changes the required
   // account identity schema and cannot be admitted by the 1.6 template range.
   "better-auth": "1.6.22",
-  "@better-auth/expo": "1.6.22",
-  // Required peer of @better-auth/expo; without it npm hoists a newer core beside better-auth's own.
+  // The adapters and Expo plugin only peer on ^core, so npm otherwise installs the
+  // newest core beside the exact one better-auth requires.
   "@better-auth/core": "1.6.22",
+  "@better-auth/expo": "1.6.22",
   // Runtime imports of @better-auth/expo's client - must exist in the
   // native app even when the corresponding mobile options are "none".
   "expo-linking": "~56.0.18",

@@ -33,6 +33,8 @@ post-processing. Rebuild affected producers before testing built consumers. Foll
 - Root generated `check-types` commands need `--if-present` where some apps lack that script.
 - Better Auth's generated Kysely overrides live in `src/post-process/package-configs.ts` under the
   generator. Verify affected auth recipes before changing them.
+- Better Auth packages, including `@better-auth/core`, form one synchronized family in the
+  dependency update policy. Move them together; npm installs a second core when they split.
 - Existing-project updates compare against the formatted create-time scaffold baseline. Keep
   raw-template fixtures explicit so formatter changes do not masquerade as user edits.
 
