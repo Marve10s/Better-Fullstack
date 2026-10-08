@@ -1138,6 +1138,164 @@ describe("version channel lifecycle round trips", () => {
       });
     }, 120_000);
   });
+
+  describe("Better Auth family with ambiguous provenance", () => {
+    const familyRelease = (latest: string) => ({
+      tags: { latest },
+      versions: ["1.6.22", "1.7.7"],
+    });
+    const mockFamilyLatest = (latest: string) => {
+      clearRegistryVersionCache();
+      mockRegistry(
+        {
+          "better-auth": familyRelease(latest),
+          "@better-auth/core": familyRelease(latest),
+          "@better-auth/drizzle-adapter": familyRelease(latest),
+        },
+        newerRelease,
+      );
+    };
+    const createAuthProject = (
+      projectName: string,
+      packageManager: TestConfig["packageManager"],
+      versionChannel: TestConfig["versionChannel"] = "stable",
+    ) =>
+      createProject(projectName, {
+        frontend: ["tanstack-router"],
+        database: "sqlite",
+        orm: "drizzle",
+        auth: "better-auth",
+        packageManager,
+        versionChannel,
+      });
+
+    const familyMember = /^(\s*"?(?:better-auth|@better-auth\/[\w-]+)"?:\s*"?)[\d.]+/gm;
+    const setFamily = (content: string, version: string, members?: readonly string[]) =>
+      content.replace(familyMember, (match, key: string) =>
+        !members || members.some((name) => key.includes(`${name}"`) || key.includes(`${name}:`))
+          ? `${key}${version}`
+          : match,
+      );
+
+    const rewriteProject = async (
+      projectDir: string,
+      edit: (relativePath: string, content: string) => string,
+      editBaseline: (relativePath: string, content: string) => string = (_, content) => content,
+    ) => {
+      const manifest = (await readScaffoldManifest(projectDir))!;
+      const workspacePath = path.join(projectDir, "pnpm-workspace.yaml");
+      const filePaths = [...(await collectPackageJsonPaths(projectDir))];
+      if (await fs.pathExists(workspacePath)) filePaths.push(workspacePath);
+      for (const filePath of filePaths) {
+        const relativePath = path.relative(projectDir, filePath).split(path.sep).join("/");
+        const content = edit(relativePath, await fs.readFile(filePath, "utf8"));
+        await fs.writeFile(filePath, content);
+        manifest.hashes[relativePath] = hashContent(Buffer.from(content));
+        const baseline = manifest.baselines?.[relativePath];
+        if (baseline !== undefined) {
+          manifest.baselines![relativePath] = editBaseline(relativePath, baseline);
+        }
+      }
+      await writeScaffoldManifest(projectDir, manifest);
+    };
+
+    const readFamily = async (projectDir: string) => {
+      const versions: Record<string, string> = {};
+      const record = (scope: string, section: Record<string, string> = {}) => {
+        for (const [name, version] of Object.entries(section)) {
+          const isMember = name === "better-auth" || name.startsWith("@better-auth/");
+          if (isMember && /^[~^]?\d/.test(version)) {
+            versions[`${scope}:${name}`] = version;
+          }
+        }
+      };
+      for (const filePath of await collectPackageJsonPaths(projectDir)) {
+        const manifest = (await fs.readJson(filePath)) as { dependencies?: Record<string, string> };
+        record(path.relative(projectDir, filePath), manifest.dependencies);
+      }
+      if (await fs.pathExists(path.join(projectDir, "pnpm-workspace.yaml"))) {
+        record("catalog", await readCatalog(projectDir));
+      }
+      return versions;
+    };
+
+    const expectUpdateBlocksFamily = async (projectDir: string, blockedPath: string) => {
+      const before = await readFamily(projectDir);
+      const plan = await planScaffoldUpgrade(projectDir);
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      const entry = plan.files.find((file) => file.path === blockedPath);
+      expect(entry?.category).toBe("manual");
+      expect(entry?.reason).toContain("Better Auth");
+      expect(plan.lifecycle.blockers).toContain(`${blockedPath}: ${entry?.reason}`);
+      expect(
+        plan.files.flatMap((file) =>
+          (file.dependencyChanges ?? []).filter(
+            (change) => change.name === "better-auth" || change.name.startsWith("@better-auth/"),
+          ),
+        ),
+      ).toEqual([]);
+
+      const result = await applyScaffoldUpgrade(projectDir);
+      expect(result.success, result.success ? undefined : result.error).toBe(true);
+      expect(await readFamily(projectDir)).toEqual(before);
+      return entry?.reason;
+    };
+
+    it("blocks a legacy catalog family that the template would split", async () => {
+      const projectDir = await createAuthProject("family-legacy-catalog", "pnpm");
+      await rewriteProject(
+        projectDir,
+        (_, content) => setFamily(content, "1.7.7"),
+        (relativePath, content) =>
+          relativePath.endsWith("package.json") ? setFamily(content, "1.7.7") : content,
+      );
+      const manifest = (await readScaffoldManifest(projectDir))!;
+      delete manifest.baselines!["pnpm-workspace.yaml"];
+      await writeScaffoldManifest(projectDir, manifest);
+
+      await expectUpdateBlocksFamily(projectDir, "packages/auth/package.json");
+    }, 120_000);
+
+    it("blocks a template downgrade below channel-resolved baselines", async () => {
+      mockFamilyLatest("1.7.7");
+      const projectDir = await createAuthProject("family-channel-baselines", "pnpm", "latest");
+      expect((await readCatalog(projectDir))["better-auth"]).toBe("1.7.7");
+      await rewriteProject(
+        projectDir,
+        (_, content) => content,
+        (_, content) => setFamily(content, "1.7.7"),
+      );
+
+      await expectUpdateBlocksFamily(projectDir, "packages/auth/package.json");
+    }, 120_000);
+
+    for (const versionChannel of ["stable", "latest"] as const) {
+      it(`blocks adding core to a split family on ${versionChannel}`, async () => {
+        mockFamilyLatest("1.6.22");
+        const projectDir = await createAuthProject(
+          `family-split-core-${versionChannel}`,
+          "npm",
+          versionChannel,
+        );
+        const withoutCore = (content: string) =>
+          content.replace(/^\s*"@better-auth\/core": "[^"]*",?\n/m, "");
+        await rewriteProject(
+          projectDir,
+          (_, content) => setFamily(withoutCore(content), "1.7.7", ["better-auth"]),
+          (_, content) => withoutCore(content),
+        );
+        expect(await readFamily(projectDir)).toMatchObject({
+          [path.join("packages", "auth", "package.json:better-auth")]: "1.7.7",
+          [path.join("packages", "auth", "package.json:@better-auth/drizzle-adapter")]: "1.6.22",
+        });
+
+        const reason = await expectUpdateBlocksFamily(projectDir, "packages/auth/package.json");
+        expect(reason).toContain("better-auth 1.7.7");
+        expect(reason).toContain("@better-auth/drizzle-adapter 1.6.22");
+      }, 120_000);
+    }
+  });
 });
 
 /** A registry offering a newer major on latest and a newer prerelease on beta for every package. */

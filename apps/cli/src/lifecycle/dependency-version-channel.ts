@@ -346,6 +346,10 @@ async function readPnpmCatalog(
   return parsed ? { workspacePath, ...parsed } : null;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
 export function parsePnpmCatalog(content: string) {
   const document = parseDocument(content);
   const catalogNode = document.get("catalog");
@@ -390,6 +394,34 @@ export async function collectPackageJsonPaths(projectDir: string): Promise<strin
   return results.sort();
 }
 
+function readDeclaredReleases(filePath: string, content: string): Map<string, Set<string>> {
+  const releases = new Map<string, Set<string>>();
+  const recordVersions = (section: PackageJsonVersionSection) => {
+    for (const [name, version] of Object.entries(section)) {
+      if (typeof version !== "string" || !isRegistrySemverSpec(version)) continue;
+      const release = version.slice(getVersionPrefix(version).length);
+      releases.set(name, (releases.get(name) ?? new Set()).add(release));
+    }
+  };
+
+  const fileName = path.basename(filePath);
+  if (fileName === PNPM_WORKSPACE_FILE) {
+    const catalog = parsePnpmCatalog(content)?.catalog;
+    if (catalog) recordVersions(catalog);
+    return releases;
+  }
+  if (fileName !== "package.json") return releases;
+  let packageJson: unknown;
+  try {
+    packageJson = JSON.parse(content);
+  } catch {
+    return releases;
+  }
+  if (!isRecord(packageJson)) return releases;
+  for (const section of getVersionSections(packageJson)) recordVersions(section);
+  return releases;
+}
+
 /**
  * The one release each family declares across package manifests and the pnpm catalog, without
  * its range prefix: `1.7.7` and `^1.7.7` declare the same release.
@@ -399,31 +431,9 @@ function collectFamilyVersions(
   files: ReadonlyMap<string, string>,
 ): Map<string, string> {
   const declaredVersions = new Map<string, Set<string>>();
-  const recordVersions = (section: PackageJsonVersionSection) => {
-    for (const [name, version] of Object.entries(section)) {
-      if (typeof version !== "string" || !isRegistrySemverSpec(version)) continue;
-      const release = version.slice(getVersionPrefix(version).length);
-      declaredVersions.set(name, (declaredVersions.get(name) ?? new Set()).add(release));
-    }
-  };
-
   for (const [filePath, content] of files) {
-    const fileName = path.basename(filePath);
-    if (fileName === PNPM_WORKSPACE_FILE) {
-      const catalog = parsePnpmCatalog(content)?.catalog;
-      if (catalog) recordVersions(catalog);
-      continue;
-    }
-    if (fileName !== "package.json") continue;
-    let packageJson: unknown;
-    try {
-      packageJson = JSON.parse(content);
-    } catch {
-      continue;
-    }
-    if (!packageJson || typeof packageJson !== "object" || Array.isArray(packageJson)) continue;
-    for (const section of getVersionSections(packageJson as Record<string, unknown>)) {
-      recordVersions(section);
+    for (const [name, releases] of readDeclaredReleases(filePath, content)) {
+      declaredVersions.set(name, new Set([...(declaredVersions.get(name) ?? []), ...releases]));
     }
   }
 
@@ -439,6 +449,22 @@ function collectFamilyVersions(
   return familyVersions;
 }
 
+export async function readDependencyManifests(projectDir: string): Promise<Map<string, string>> {
+  const files = new Map<string, string>();
+  await Promise.all(
+    [
+      ...(await collectPackageJsonPaths(projectDir)),
+      path.join(projectDir, PNPM_WORKSPACE_FILE),
+    ].map(async (filePath) => {
+      const content = await fs.readFile(filePath, "utf-8").catch(() => null);
+      if (content !== null) {
+        files.set(path.relative(projectDir, filePath).split(path.sep).join("/"), content);
+      }
+    }),
+  );
+  return files;
+}
+
 /**
  * Families the project moved off the release its generated baseline declares, keyed by every
  * member package. A package the template adds to one of these families joins the project's
@@ -449,18 +475,10 @@ export async function collectDivergedFamilyVersions(
   baselineContents: Readonly<Record<string, string>>,
 ): Promise<Map<string, string>> {
   const { SYNCHRONIZED_DEPENDENCY_FAMILIES } = await import("@better-fullstack/template-generator");
-  const projectFiles = new Map<string, string>();
-  await Promise.all(
-    [
-      ...(await collectPackageJsonPaths(projectDir)),
-      path.join(projectDir, PNPM_WORKSPACE_FILE),
-    ].map(async (filePath) => {
-      const content = await fs.readFile(filePath, "utf-8").catch(() => null);
-      if (content !== null) projectFiles.set(filePath, content);
-    }),
+  const projectVersions = collectFamilyVersions(
+    SYNCHRONIZED_DEPENDENCY_FAMILIES,
+    await readDependencyManifests(projectDir),
   );
-
-  const projectVersions = collectFamilyVersions(SYNCHRONIZED_DEPENDENCY_FAMILIES, projectFiles);
   const baselineVersions = collectFamilyVersions(
     SYNCHRONIZED_DEPENDENCY_FAMILIES,
     new Map(Object.entries(baselineContents)),
@@ -470,6 +488,72 @@ export async function collectDivergedFamilyVersions(
       ([packageName, version]) => baselineVersions.get(packageName) !== version,
     ),
   );
+}
+
+export type DependencyFamilyConflict = { paths: string[]; reason: string };
+
+type DeclaredReleasesByFile = ReadonlyMap<string, ReadonlyMap<string, ReadonlySet<string>>>;
+
+function readDeclaredReleasesByFile(files: ReadonlyMap<string, string>): DeclaredReleasesByFile {
+  return new Map(
+    [...files].map(([filePath, content]) => [filePath, readDeclaredReleases(filePath, content)]),
+  );
+}
+
+function releasesOf(files: DeclaredReleasesByFile, filePath: string, packageName: string) {
+  return [...(files.get(filePath)?.get(packageName) ?? [])].sort(compareVersions);
+}
+
+export async function findFamilyConflicts(
+  before: ReadonlyMap<string, string>,
+  after: ReadonlyMap<string, string>,
+): Promise<DependencyFamilyConflict[]> {
+  const { SYNCHRONIZED_DEPENDENCY_FAMILIES } = await import("@better-fullstack/template-generator");
+  const beforeReleases = readDeclaredReleasesByFile(before);
+  const afterReleases = readDeclaredReleasesByFile(after);
+  const filePaths = [...new Set([...before.keys(), ...after.keys()])].sort();
+
+  const conflicts: DependencyFamilyConflict[] = [];
+  for (const family of SYNCHRONIZED_DEPENDENCY_FAMILIES) {
+    const paths = filePaths.filter((filePath) =>
+      family.packages.some(
+        (packageName) =>
+          releasesOf(beforeReleases, filePath, packageName).join() !==
+          releasesOf(afterReleases, filePath, packageName).join(),
+      ),
+    );
+    if (paths.length === 0) continue;
+
+    const memberReleases = family.packages.flatMap((packageName) =>
+      [
+        ...new Set(
+          filePaths.flatMap((filePath) => releasesOf(afterReleases, filePath, packageName)),
+        ),
+      ].map((release) => ({ packageName, release })),
+    );
+    const lowered = paths.flatMap((filePath) =>
+      family.packages.flatMap((packageName) => {
+        const previous = releasesOf(beforeReleases, filePath, packageName);
+        return releasesOf(afterReleases, filePath, packageName)
+          .filter((release) => previous.some((current) => compareVersions(release, current) < 0))
+          .map((release) => `${packageName} ${previous.join(", ")} to ${release}`);
+      }),
+    );
+
+    if (new Set(memberReleases.map(({ release }) => release)).size > 1) {
+      const members = memberReleases.map(({ packageName, release }) => `${packageName} ${release}`);
+      conflicts.push({
+        paths,
+        reason: `${family.name} packages would mix releases (${members.join(", ")}); align them on one release by hand`,
+      });
+    } else if (lowered.length > 0) {
+      conflicts.push({
+        paths,
+        reason: `${family.name} packages would move to an older release (${lowered.join("; ")}); the recorded baseline may come from a version channel, so align them by hand`,
+      });
+    }
+  }
+  return conflicts;
 }
 
 export async function planDependencyVersionChannel(

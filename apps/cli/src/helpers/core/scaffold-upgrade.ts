@@ -31,8 +31,10 @@ import {
 import {
   collectDivergedFamilyVersions,
   compareVersions,
+  findFamilyConflicts,
   isRegistrySemverSpec,
   parsePnpmCatalog,
+  readDependencyManifests,
 } from "@/lifecycle/dependency-version-channel";
 import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
 import {
@@ -837,6 +839,21 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
       category: "conflict",
       reason: "both the template and your local copy changed",
     });
+  }
+
+  const manifestsBefore = await readDependencyManifests(projectDir);
+  const manifestsAfter = new Map(manifestsBefore);
+  for (const file of files) {
+    if (file.mergedContent !== undefined && isStructuredBaselinePath(file.path)) {
+      manifestsAfter.set(file.path, file.mergedContent);
+    }
+  }
+  for (const conflict of await findFamilyConflicts(manifestsBefore, manifestsAfter)) {
+    for (const [index, file] of files.entries()) {
+      if (conflict.paths.includes(file.path)) {
+        files[index] = { path: file.path, category: "manual", reason: conflict.reason };
+      }
+    }
   }
 
   const renderPathSet = new Set(renderPaths);

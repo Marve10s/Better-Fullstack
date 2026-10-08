@@ -47,8 +47,10 @@ import {
   applyDependencyVersionChannel,
   applyVersionPrefix,
   collectDivergedFamilyVersions,
+  findFamilyConflicts,
   isRegistrySemverSpec,
   planDependencyVersionChannel,
+  readDependencyManifests,
   type DependencyVersionChannelRewrite,
 } from "@/lifecycle/dependency-version-channel";
 import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
@@ -2307,6 +2309,21 @@ export async function planStackUpdate(
       rewrite.sha256,
     ]),
   );
+  const manifestsBefore = await readDependencyManifests(projectDir);
+  const manifestsAfter = new Map(manifestsBefore);
+  for (const [manifestPath, content] of [
+    ...projectedPackageJsonContents,
+    ...plannedVersionChannelRewrites.map(
+      (rewrite) => [rewrite.packageJsonPath, rewrite.content] as const,
+    ),
+  ]) {
+    const relativePath = toPosixPath(path.relative(projectDir, manifestPath));
+    if (content === null) manifestsAfter.delete(relativePath);
+    else manifestsAfter.set(relativePath, content);
+  }
+  for (const conflict of await findFamilyConflicts(manifestsBefore, manifestsAfter)) {
+    manualReviewBlockers.push(`${conflict.paths.join(", ")}: ${conflict.reason}`);
+  }
   let preimages: Record<string, { sha256: string | null; mode: number | null }>;
   try {
     preimages = await collectPlanPreimages(projectDir, [
