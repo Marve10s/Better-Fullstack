@@ -3,7 +3,7 @@ import {
   hasVirtualFile as hasFile,
   readVirtualFileContent,
 } from "@test/support/virtual-tree-utils";
-import { afterEach, describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -13,6 +13,8 @@ import { createVirtual } from "@/index";
 import { createProjectOperation, planProjectOperation } from "@/operations/project-create";
 import { buildProjectConfig } from "@/operations/stack-helpers";
 import { runWithContext } from "@/presentation/context";
+import * as navigable from "@/prompts/core/navigable";
+import { gatherMultiEcosystemConfig } from "@/prompts/ecosystems/multi-ecosystem-composer";
 import { resolvePythonLoggingPrompt } from "@/prompts/ecosystems/python-ecosystem";
 import { getPythonLoggingIncompatibility, parseStackPartSpecs } from "@/types";
 
@@ -480,5 +482,36 @@ describe("Python logging", () => {
     expect(streamlitPrompt.autoValue).toBe("none");
     expect(resolvePythonLoggingPrompt("loguru", "streamlit").autoValue).toBe("loguru");
     expect(resolvePythonLoggingPrompt(undefined, "fastapi").shouldPrompt).toBe(true);
+  });
+
+  it("rejects an explicit logging choice in a multi-ecosystem project without a Python service", async () => {
+    const select = navigable.navigableSelect;
+    const backendPrompt = spyOn(navigable, "navigableSelect").mockImplementation(async (opts) =>
+      opts.message === "Select backend ecosystem" ? "python" : select(opts),
+    );
+    const compose = (flags: Parameters<typeof gatherMultiEcosystemConfig>[0]) =>
+      runWithContext({ silent: true }, () =>
+        gatherMultiEcosystemConfig(
+          flags,
+          "python-logging",
+          "/tmp/python-logging",
+          "python-logging",
+        ),
+      );
+
+    try {
+      await expect(
+        compose({ pythonWebFramework: "none", pythonLogging: "loguru" }),
+      ).rejects.toThrow("--python-logging loguru needs a Python web framework");
+      expect(
+        (await compose({ pythonWebFramework: "none", pythonLogging: "none" })).pythonLogging,
+      ).toBe("none");
+      expect(
+        (await compose({ pythonWebFramework: "fastapi", pythonLogging: "structlog" }))
+          .pythonLogging,
+      ).toBe("structlog");
+    } finally {
+      backendPrompt.mockRestore();
+    }
   });
 });

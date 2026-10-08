@@ -9,7 +9,7 @@ import type {
 
 import { hasWebStyling } from "@/config/compatibility-rules";
 import { getDefaultConfig } from "@/constants";
-import { exitCancelled } from "@/presentation/errors";
+import { exitCancelled, exitWithError } from "@/presentation/errors";
 import { getApiChoice } from "@/prompts/architecture/api";
 import { getBackendFrameworkChoice } from "@/prompts/architecture/backend";
 import {
@@ -1063,6 +1063,11 @@ export async function gatherMultiEcosystemConfig(
             backendSections,
             () => getPythonObservabilityChoice(flags.pythonObservability),
           );
+    if (pythonWebFramework === "none" && flags.pythonLogging && flags.pythonLogging !== "none") {
+      exitWithError(
+        `--python-logging ${flags.pythonLogging} needs a Python web framework in a multi-ecosystem project. Choose one with --python-web-framework or remove --python-logging.`,
+      );
+    }
     const pythonLogging =
       pythonWebFramework === "none"
         ? "none"
