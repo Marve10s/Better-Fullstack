@@ -903,7 +903,7 @@ export async function gatherConfig(
   const shouldPromptForScope = !hasStackPromptFlags(flags);
   const promptEntries = {
     // Ecosystem choice first
-    ecosystem: () => getEcosystemChoice(flags.ecosystem),
+    ecosystem: () => getEcosystemChoice(flags.ecosystem, flags.auth),
     configScope: () => (shouldPromptForScope ? getConfigScopeChoice() : Promise.resolve("full")),
     configSections: ({ results }) => {
       if (!shouldPromptForScope || results.configScope !== "custom") {
