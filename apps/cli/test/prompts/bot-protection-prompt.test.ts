@@ -72,6 +72,7 @@ describe("bot protection prompt", () => {
   });
 
   it("rejects Vinext for BotID during programmatic validation", () => {
+    // BotID needs Better Auth, which fullstack Vinext does not mount, so that reason comes first.
     expect(() =>
       runWithContext({ silent: true }, () =>
         validateConfigForProgrammaticUse({
@@ -83,7 +84,7 @@ describe("bot protection prompt", () => {
           botProtection: "botid",
         }),
       ),
-    ).toThrow("Vercel BotID is only available for Next.js frontends");
+    ).toThrow("Better Auth isn't available for fullstack Vinext yet");
   });
 
   it("rejects a non-self backend for BotID during programmatic validation", () => {

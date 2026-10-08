@@ -4,7 +4,7 @@ import { DEFAULT_CONFIG } from "@/constants";
 import { exitCancelled } from "@/presentation/errors";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
 import {
-  getBetterAuthDatabaseIncompatibility,
+  getAuthIncompatibility,
   getDatabaseOrmIncompatibility,
   getJobQueueIncompatibility,
   type Auth,
@@ -97,9 +97,9 @@ export function resolveDatabasePrompt(
         { database: option.value },
         { partial: true },
       ) &&
-      !getBetterAuthDatabaseIncompatibility(
+      !getAuthIncompatibility(
         context.auth,
-        { database: option.value },
+        { ecosystem: "typescript", database: option.value },
         { partial: true },
       ) &&
       !getDatabaseOrmIncompatibility(option.value, context.orm),

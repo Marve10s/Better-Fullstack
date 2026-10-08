@@ -36,8 +36,8 @@ import { getStarterTrackRecommendation } from "@/commands/stack/starter-tracks";
 import { applyEffectBackendDefaults } from "@/config/config-processing";
 import { getEffectiveStack, getGraphSummary } from "@/config/graph-summary";
 import {
-  getBetterAuthSelectionIssue,
   getCompatibilityBackend,
+  getAuthSelectionIssue,
   getDatabaseOrmRequirementSelectionIssue,
   getDataLayerSelectionIssue,
   getProviderDataLayer,
@@ -452,6 +452,7 @@ export function validateMcpProjectConfigCompatibility(
         | "pythonWebFramework"
         | "pythonLogging"
         | "auth"
+        | "frontend"
         | "orm"
       >
     >,
@@ -461,8 +462,8 @@ export function validateMcpProjectConfigCompatibility(
   const pythonLoggingIssue = getPythonLoggingSelectionIssue(config);
   if (pythonLoggingIssue) throw new Error(pythonLoggingIssue.reason);
   const selectionIssue =
+    getAuthSelectionIssue(config) ??
     getDataLayerSelectionIssue(config) ??
-    getBetterAuthSelectionIssue(config) ??
     getDatabaseOrmRequirementSelectionIssue(config);
   if (selectionIssue) throw new Error(selectionIssue);
   if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {

@@ -1,12 +1,13 @@
 import {
   analyzeStackCompatibility,
   getAddonStackPartBinding,
-  getBetterAuthDatabaseIncompatibility,
+  getAuthIncompatibility,
   getDatabaseOrmIncompatibility,
   getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getPythonLoggingIncompatibility,
   isToolingOverlayOnly,
+  stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
   type CompatibilityInput,
   type Database,
@@ -55,32 +56,58 @@ export function getRequestedJobQueueRejection(
   return getJobQueueIncompatibility(requestedJobQueue, adjustedConfig);
 }
 
+function getAuthStack(config: Partial<ProjectConfig>) {
+  return {
+    ecosystem: config.ecosystem && getCompatibilityEcosystem(config),
+    backend: config.backend,
+    frontend: config.frontend,
+    database: config.database,
+    orm: config.orm,
+  };
+}
+
 /**
- * Compatibility adjustments may reset Better Auth when another choice leaves it without an adapter,
- * as the builder does. Better Auth requested by flag or tool input is rejected instead, with the
- * shared reason.
+ * Checks the auth selection the generator will use. A stack graph is projected the way the
+ * generator projects it, so its auth part wins over stale flat `auth`, `database`, and `orm`
+ * fields, and every auth part is also judged by the data layer its server runs on. With `partial`,
+ * unanswered selections are left open for prompts to fill.
  */
-export function getRequestedBetterAuthRejection(
+export function getAuthSelectionIssue(
+  config: Partial<ProjectConfig>,
+  { partial = false } = {},
+): string | null {
+  if (!config.stackParts?.length || isToolingOverlayOnly(config.stackParts)) {
+    return getAuthIncompatibility(config.auth, getAuthStack(config), { partial });
+  }
+  const selection = stackGraphToLegacyProjectConfigForEcosystem(
+    config as ProjectConfig,
+    "typescript",
+  );
+  // Auth parts paired with another ecosystem's backend generate only auth clients.
+  const servesForeignBackend =
+    selection.backend === "none" &&
+    config.stackParts.some(
+      (part) => part.role === "backend" && part.ecosystem !== "typescript" && !part.ownerPartId,
+    );
+  return (
+    (servesForeignBackend
+      ? null
+      : getAuthIncompatibility(selection.auth, getAuthStack(selection))) ??
+    validateStackParts(config.stackParts).issues.find((issue) => issue.role === "auth")?.message ??
+    null
+  );
+}
+
+/**
+ * Compatibility adjustments may reset auth that another choice made unsupported, as the builder
+ * does. Auth the user requested by flag or tool input is rejected instead, with the shared reason.
+ */
+export function getRequestedAuthRejection(
   requestedAuth: ProjectConfig["auth"] | undefined,
   adjustedConfig: Partial<ProjectConfig>,
 ): string | null {
   if (!requestedAuth || adjustedConfig.auth === requestedAuth) return null;
-  return getBetterAuthDatabaseIncompatibility(requestedAuth, adjustedConfig);
-}
-
-// Checks the Better Auth selection the generator will use: graph input is judged by its own auth,
-// database, and ORM parts rather than by stale flat fields.
-export function getBetterAuthSelectionIssue(config: Partial<ProjectConfig>): string | null {
-  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
-    const issue = validateStackParts(config.stackParts).issues.find(
-      (candidate) =>
-        candidate.role === "auth" &&
-        (candidate.toolId === "better-auth" || candidate.toolId === "better-auth-organizations"),
-    );
-    return issue?.message ?? null;
-  }
-  if ((config.ecosystem ?? "typescript") !== "typescript") return null;
-  return getBetterAuthDatabaseIncompatibility(config.auth, config);
+  return getAuthIncompatibility(requestedAuth, getAuthStack(adjustedConfig));
 }
 
 /**

@@ -156,8 +156,9 @@ import type {
 } from "@/types";
 
 import { hasWebStyling, requiresChatSdkVercelAI } from "@/config/compatibility-rules";
+import { getRequestedAuthRejection } from "@/config/stack-compatibility";
 import { getUserPkgManager } from "@/platform/get-package-manager";
-import { exitCancelled } from "@/presentation/errors";
+import { exitCancelled, exitWithError } from "@/presentation/errors";
 import { getApiChoice } from "@/prompts/architecture/api";
 import { getBackendFrameworkChoice } from "@/prompts/architecture/backend";
 import { getFrontendChoice, getNativeFrontendChoice } from "@/prompts/architecture/frontend";
@@ -734,7 +735,12 @@ function getPromptResolutionValue(
   const frontends = results.frontend ?? flags.frontend;
   const contextByKey: Record<string, Record<string, unknown>> = {
     frontend: { frontend: flags.frontend, backend: flags.backend, auth: flags.auth },
-    backend: { backendFramework: flags.backend, frontends, jobQueue: flags.jobQueue },
+    backend: {
+      backendFramework: flags.backend,
+      frontends,
+      jobQueue: flags.jobQueue,
+      auth: flags.auth,
+    },
     runtime: { runtime: flags.runtime, backend: results.backend, jobQueue: flags.jobQueue },
     database: {
       database: flags.database,
@@ -898,7 +904,7 @@ export async function gatherConfig(
   const shouldPromptForScope = !hasStackPromptFlags(flags);
   const promptEntries = {
     // Ecosystem choice first
-    ecosystem: () => getEcosystemChoice(flags.ecosystem),
+    ecosystem: () => getEcosystemChoice(flags.ecosystem, flags.auth),
     configScope: () => (shouldPromptForScope ? getConfigScopeChoice() : Promise.resolve("full")),
     configSections: ({ results }) => {
       if (!shouldPromptForScope || results.configScope !== "custom") {
@@ -953,7 +959,7 @@ export async function gatherConfig(
     },
     backend: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Backend);
-      return getBackendFrameworkChoice(flags.backend, results.frontend, flags.jobQueue);
+      return getBackendFrameworkChoice(flags.backend, results.frontend, flags.jobQueue, flags.auth);
     },
     runtime: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Runtime);
@@ -1004,6 +1010,12 @@ export async function gatherConfig(
       if (results.ecosystem === "go") {
         return getAuthChoice(flags.auth, undefined, undefined, "go");
       }
+      // These ecosystems generate no `--auth` provider, so a requested one is rejected, not reset.
+      const rejection = getRequestedAuthRejection(flags.auth, {
+        ecosystem: results.ecosystem,
+        auth: "none",
+      });
+      if (rejection) return exitWithError(rejection);
       return Promise.resolve("none" as Auth);
     },
     payments: ({ results }) => {

@@ -37,7 +37,7 @@ import {
   buildCompatibilityInputFromConfig,
   compatibilityChangesToProjectConfig,
   getCompatibilityBackend,
-  getRequestedBetterAuthRejection,
+  getRequestedAuthRejection,
   getRequestedJobQueueRejection,
   hasSelectedTypeScriptBackendPart,
 } from "@/config/stack-compatibility";
@@ -1953,12 +1953,12 @@ export async function planStackUpdate(
       proposedConfig = adjustedConfig;
     }
   }
-  const requestedRejection =
-    dataLayerRejection ??
+  const requestRejection =
     getRequestedJobQueueRejection(requestedChanges.jobQueue, proposedConfig) ??
-    getRequestedBetterAuthRejection(requestedChanges.auth, proposedConfig);
-  if (requestedRejection) {
-    return { success: false, projectDir, error: `Invalid stack update: ${requestedRejection}` };
+    getRequestedAuthRejection(requestedChanges.auth, proposedConfig) ??
+    dataLayerRejection;
+  if (requestRejection) {
+    return { success: false, projectDir, error: `Invalid stack update: ${requestRejection}` };
   }
   try {
     validateConfigForProgrammaticUse(proposedConfig);

@@ -8,6 +8,7 @@ import type {
 } from "@/types";
 
 import { hasWebStyling } from "@/config/compatibility-rules";
+import { getRequestedAuthRejection } from "@/config/stack-compatibility";
 import { getDefaultConfig } from "@/constants";
 import { exitCancelled, exitWithError } from "@/presentation/errors";
 import { getApiChoice } from "@/prompts/architecture/api";
@@ -186,6 +187,18 @@ export type BackendEcosystem = Extract<
 >;
 export type FrontendEcosystem = "typescript" | "rust" | "dotnet";
 export type MobileEcosystem = "none" | "react-native" | "kotlin" | "swift" | "dart";
+
+/**
+ * The TypeScript web and React Native apps the composed stack generates. Backend and auth choices
+ * must account for both, so a mobile app neither hides a supported backend nor admits an
+ * unsupported one.
+ */
+export function getComposerAppFrontends(
+  webFrontend: Frontend,
+  nativeFrontend: Frontend,
+): Frontend[] {
+  return [webFrontend, nativeFrontend].filter((frontend) => frontend !== "none");
+}
 
 export async function getCompositionModeChoice(): Promise<CompositionMode> {
   const response = await navigableSelect<CompositionMode>({
@@ -458,6 +471,7 @@ export async function gatherMultiEcosystemConfig(
       : "none";
   const swiftMobile = mobileEcosystem === "swift" ? "swiftui" : "none";
   const dartMobile = mobileEcosystem === "dart" ? "flutter" : "none";
+  const appFrontends = getComposerAppFrontends(frontend, nativeFrontend);
   const kotlinMobileLibraries =
     kotlinMobile !== "none" ? await selectKotlinMobileLibraries(flags.kotlinMobileLibraries) : [];
   const uiLibrary = hasWebStyling(frontendList)
@@ -553,7 +567,7 @@ export async function gatherMultiEcosystemConfig(
 
   if (backendEcosystem === "typescript") {
     const backend = promptValue(
-      await getBackendFrameworkChoice(flags.backend, frontendList, flags.jobQueue),
+      await getBackendFrameworkChoice(flags.backend, appFrontends, flags.jobQueue, flags.auth),
     );
     const runtime =
       backend === "none"
@@ -586,7 +600,10 @@ export async function gatherMultiEcosystemConfig(
       backend === "none"
         ? "none"
         : promptValue(
-            await getAuthChoice(flags.auth, backend, frontendList, "typescript", { database, orm }),
+            await getAuthChoice(flags.auth, backend, appFrontends, "typescript", {
+              database,
+              orm,
+            }),
           );
     const payments =
       backend === "none"
@@ -1618,8 +1635,10 @@ export async function gatherMultiEcosystemConfig(
     stackPartSpecs.push(`${rolePath}:${binding.ecosystem}:${addon}`);
   }
   const stackParts = parseStackPartSpecs(Array.from(new Set(stackPartSpecs)), "selected");
+  const ecosystem = hasJavaScript ? "typescript" : (graphPartial.ecosystem ?? backendEcosystem);
+  const keepsGoBetterAuth = ecosystem === "go" && flags.auth === "go-better-auth";
 
-  return {
+  const config: ProjectConfig = {
     ...baseConfig,
     ...flags,
     ...graphPartial,
@@ -1627,7 +1646,7 @@ export async function gatherMultiEcosystemConfig(
     projectName,
     projectDir,
     relativePath,
-    ecosystem: hasJavaScript ? "typescript" : (graphPartial.ecosystem ?? backendEcosystem),
+    ecosystem,
     frontend:
       frontendEcosystem === "typescript"
         ? nativeFrontend === "none"
@@ -1641,7 +1660,11 @@ export async function gatherMultiEcosystemConfig(
     database,
     orm: backendEcosystem === "typescript" ? (backendChoices.orm ?? "none") : "none",
     api: backendEcosystem === "typescript" ? (backendChoices.api ?? "none") : "none",
-    auth: backendEcosystem === "typescript" ? (backendChoices.auth ?? "none") : "none",
+    auth: keepsGoBetterAuth
+      ? "go-better-auth"
+      : backendEcosystem === "typescript"
+        ? (backendChoices.auth ?? "none")
+        : "none",
     rustFrontend: selectedRustFrontend,
     dotnetFrontend: selectedDotnetFrontend,
     kotlinMobile,
@@ -1665,4 +1688,8 @@ export async function gatherMultiEcosystemConfig(
     install,
     stackParts,
   };
+  // Only a TypeScript backend generates `--auth`, so a requested provider is rejected, not reset.
+  const authRejection = getRequestedAuthRejection(flags.auth, config);
+  if (authRejection) return exitWithError(authRejection);
+  return config;
 }

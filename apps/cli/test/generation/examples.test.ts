@@ -2,6 +2,7 @@ import { hasAiExampleEndpoint, hasAiRouteAuth } from "@better-fullstack/template
 import {
   AuthSchema,
   BackendSchema,
+  getAuthIncompatibility,
   legacyProjectConfigToStackParts,
   type ProjectConfig,
 } from "@better-fullstack/types";
@@ -1011,7 +1012,12 @@ describe("Example Configurations", () => {
       const pairs = arrangements.flatMap(([backend, frontend]) =>
         hasAiExampleEndpoint({ backend, frontend, examples: ["ai"] })
           ? AuthSchema.options
-              .filter((auth) => hasAiRouteAuth({ auth, backend, frontend }))
+              .filter(
+                (auth) =>
+                  hasAiRouteAuth({ auth, backend, frontend }) &&
+                  getAuthIncompatibility(auth, { ecosystem: "typescript", backend, frontend }) ===
+                    null,
+              )
               .map((auth) => ({ backend, frontend, auth }))
           : [],
       );
@@ -1033,22 +1039,35 @@ describe("Example Configurations", () => {
       }
     });
 
-    it("leaves a standalone server endpoint open and says so when its auth option has no server lookup", async () => {
+    it("rejects standalone server auth that has no server lookup instead of leaving it open", async () => {
+      for (const backend of BackendSchema.options.filter(
+        (backend) => backend !== "self" && backend !== "convex",
+      )) {
+        const frontend: ProjectConfig["frontend"] = ["tanstack-router"];
+        if (!hasAiExampleEndpoint({ backend, frontend, examples: ["ai"] })) continue;
+        for (const auth of AuthSchema.options.filter((auth) => auth !== "none")) {
+          const supported =
+            getAuthIncompatibility(auth, { ecosystem: "typescript", backend, frontend }) === null;
+          if (!supported) continue;
+          expect({ backend, auth, protected: hasAiRouteAuth({ auth, backend, frontend }) }).toEqual({
+            backend,
+            auth,
+            protected: true,
+          });
+        }
+      }
+
       const config = {
         ...virtualConfig("hono", ["tanstack-router"]),
         auth: "clerk",
         examples: ["ai"],
       } satisfies Partial<ProjectConfig>;
-      for (const input of [config, { ...config, stackParts: legacyProjectConfigToStackParts(config, "selected") }]) {
-        const files = await generateVirtualAIProject(input);
-        const route = files.get(serverIndex) ?? "";
-        const readme = files.get("README.md") ?? "";
-
-        expect(route).toContain('app.post("/ai"');
-        expect(route).not.toContain("401");
-        expect(files.get("apps/web/src/routes/ai.tsx")).not.toContain(SIGN_IN_MESSAGE);
-        expect(readme).not.toContain(PROTECTED_README);
-        if (!input.stackParts) expect(readme).toContain(UNAUTHENTICATED_README);
+      const graphOnly = { stackParts: legacyProjectConfigToStackParts(config, "selected") };
+      for (const input of [config, graphOnly]) {
+        expect(await createVirtual(input)).toEqual({
+          success: false,
+          error: "Clerk needs Convex, fullstack Next.js, or fullstack TanStack Start",
+        });
       }
     });
   });

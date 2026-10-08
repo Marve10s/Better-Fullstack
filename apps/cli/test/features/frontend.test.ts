@@ -808,9 +808,9 @@ describe("Frontend Configurations", () => {
   });
 
   describe("Frontend Compatibility with Auth", () => {
-    const authNormalizedFrontends = ["nuxt", "svelte"] as const;
-    for (const frontend of authNormalizedFrontends) {
-      it(`should normalize ${frontend} with Clerk + Convex to no auth`, async () => {
+    const authRejectedFrontends = ["nuxt", "svelte"] as const;
+    for (const frontend of authRejectedFrontends) {
+      it(`should reject ${frontend} with Clerk + Convex with the shared reason`, async () => {
         const result = await runTRPCTest({
           projectName: `${frontend}-clerk-convex-fail`,
           frontend: [frontend],
@@ -827,8 +827,10 @@ describe("Frontend Configurations", () => {
           serverDeploy: "none",
         });
 
-        expectSuccess(result);
-        expect(result.result?.projectConfig.auth).toBe("none");
+        expectError(
+          result,
+          "Clerk with Convex requires React Router, React + Vite, TanStack Router, TanStack Start, Next.js, or React Native",
+        );
       });
     }
 

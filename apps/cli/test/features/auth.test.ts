@@ -643,7 +643,7 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("should normalize nextauth + non-self backend to no auth", async () => {
+    it("should reject nextauth + non-self backend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "nextauth-non-self-fail",
         auth: "nextauth",
@@ -660,11 +660,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Auth.js (NextAuth) needs fullstack Next.js");
     });
 
-    it("should normalize nextauth + non-next frontend to no auth", async () => {
+    it("should reject nextauth + non-next frontend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "nextauth-non-next-fail",
         auth: "nextauth",
@@ -681,11 +680,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Auth.js (NextAuth) needs the Next.js frontend");
     });
 
-    it("should normalize nextauth + tanstack-router frontend to no auth", async () => {
+    it("should reject nextauth + tanstack-router frontend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "nextauth-tanstack-router-fail",
         auth: "nextauth",
@@ -702,11 +700,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Auth.js (NextAuth) needs fullstack Next.js");
     });
 
-    it("should normalize nextauth + react-vite frontend to no auth", async () => {
+    it("should reject nextauth + react-vite frontend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "nextauth-react-vite-fail",
         auth: "nextauth",
@@ -723,11 +720,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Auth.js (NextAuth) needs fullstack Next.js");
     });
 
-    it("should normalize nextauth + convex backend to no auth", async () => {
+    it("should reject nextauth + convex backend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "nextauth-convex-fail",
         auth: "nextauth",
@@ -744,8 +740,7 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Auth.js (NextAuth) needs fullstack Next.js");
     });
   });
 
@@ -771,7 +766,7 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("should work with stack-auth + self backend + vinext", async () => {
+    it("should reject stack-auth + self backend + vinext", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-self-vinext",
         auth: "stack-auth",
@@ -789,7 +784,7 @@ describe("Authentication Configurations", () => {
         install: false,
       });
 
-      expectSuccess(result);
+      expectError(result, "Stack Auth needs the Next.js frontend");
     });
 
     it("should work with stack-auth + self backend + next + prisma", async () => {
@@ -813,7 +808,7 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("should work with stack-auth + self backend + vinext + prisma", async () => {
+    it("should reject stack-auth + self backend + vinext + prisma", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-self-vinext-prisma",
         auth: "stack-auth",
@@ -831,7 +826,7 @@ describe("Authentication Configurations", () => {
         install: false,
       });
 
-      expectSuccess(result);
+      expectError(result, "Stack Auth needs the Next.js frontend");
     });
 
     it("should work with stack-auth + self backend + next + sqlite", async () => {
@@ -855,7 +850,7 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("should work with stack-auth + self backend + vinext + sqlite", async () => {
+    it("should reject stack-auth + self backend + vinext + sqlite", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-self-vinext-sqlite",
         auth: "stack-auth",
@@ -873,10 +868,10 @@ describe("Authentication Configurations", () => {
         install: false,
       });
 
-      expectSuccess(result);
+      expectError(result, "Stack Auth needs the Next.js frontend");
     });
 
-    it("should normalize stack-auth + non-self backend to no auth", async () => {
+    it("should reject stack-auth + non-self backend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-non-self-fail",
         auth: "stack-auth",
@@ -893,11 +888,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Stack Auth needs fullstack Next.js");
     });
 
-    it("should normalize stack-auth + non-next frontend to no auth", async () => {
+    it("should reject stack-auth + non-next frontend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-non-next-fail",
         auth: "stack-auth",
@@ -914,11 +908,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Stack Auth needs the Next.js frontend");
     });
 
-    it("should normalize stack-auth + tanstack-router frontend to no auth", async () => {
+    it("should reject stack-auth + tanstack-router frontend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-tanstack-router-fail",
         auth: "stack-auth",
@@ -935,11 +928,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Stack Auth needs fullstack Next.js");
     });
 
-    it("should normalize stack-auth + react-vite frontend to no auth", async () => {
+    it("should reject stack-auth + react-vite frontend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-react-vite-fail",
         auth: "stack-auth",
@@ -956,11 +948,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Stack Auth needs fullstack Next.js");
     });
 
-    it("should normalize stack-auth + convex backend to no auth", async () => {
+    it("should reject stack-auth + convex backend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "stack-auth-convex-fail",
         auth: "stack-auth",
@@ -977,8 +968,7 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Stack Auth needs fullstack Next.js");
     });
   });
 
@@ -1046,7 +1036,7 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("should normalize supabase-auth + non-self backend to no auth", async () => {
+    it("should reject supabase-auth + non-self backend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "supabase-auth-non-self-fail",
         auth: "supabase-auth",
@@ -1063,8 +1053,7 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Supabase Auth needs fullstack Next.js or fullstack TanStack Start");
     });
 
     it("should work with supabase-auth + self backend + tanstack-start", async () => {
@@ -1095,7 +1084,7 @@ describe("Authentication Configurations", () => {
       expect(serverClient).toContain("if (headers)");
     });
 
-    it("should normalize supabase-auth + tanstack-router frontend to no auth", async () => {
+    it("should reject supabase-auth + tanstack-router frontend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "supabase-auth-tanstack-router-fail",
         auth: "supabase-auth",
@@ -1112,11 +1101,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Supabase Auth needs fullstack Next.js or fullstack TanStack Start");
     });
 
-    it("should normalize supabase-auth + react-vite frontend to no auth", async () => {
+    it("should reject supabase-auth + react-vite frontend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "supabase-auth-react-vite-fail",
         auth: "supabase-auth",
@@ -1133,11 +1121,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Supabase Auth needs fullstack Next.js or fullstack TanStack Start");
     });
 
-    it("should normalize supabase-auth + convex backend to no auth", async () => {
+    it("should reject supabase-auth + convex backend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "supabase-auth-convex-fail",
         auth: "supabase-auth",
@@ -1154,8 +1141,7 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Supabase Auth needs fullstack Next.js or fullstack TanStack Start");
     });
   });
 
@@ -1223,7 +1209,7 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("should normalize auth0 + non-self backend to no auth", async () => {
+    it("should reject auth0 + non-self backend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "auth0-non-self-fail",
         auth: "auth0",
@@ -1240,11 +1226,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Auth0 needs fullstack Next.js");
     });
 
-    it("should normalize auth0 + non-next frontend to no auth", async () => {
+    it("should reject auth0 + non-next frontend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "auth0-non-next-fail",
         auth: "auth0",
@@ -1261,11 +1246,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Auth0 needs the Next.js frontend");
     });
 
-    it("should normalize auth0 + tanstack-router frontend to no auth", async () => {
+    it("should reject auth0 + tanstack-router frontend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "auth0-tanstack-router-fail",
         auth: "auth0",
@@ -1282,11 +1266,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Auth0 needs fullstack Next.js");
     });
 
-    it("should normalize auth0 + react-vite frontend to no auth", async () => {
+    it("should reject auth0 + react-vite frontend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "auth0-react-vite-fail",
         auth: "auth0",
@@ -1303,11 +1286,10 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Auth0 needs fullstack Next.js");
     });
 
-    it("should normalize auth0 + convex backend to no auth", async () => {
+    it("should reject auth0 + convex backend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "auth0-convex-fail",
         auth: "auth0",
@@ -1324,8 +1306,7 @@ describe("Authentication Configurations", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Auth0 needs fullstack Next.js");
     });
   });
 
@@ -1474,7 +1455,7 @@ describe("Authentication Configurations", () => {
       expect(webPackageJson).toContain("\"srvx\"");
     });
 
-    it("should normalize clerk + unsupported standalone backend to no auth", async () => {
+    it("should reject clerk + unsupported standalone backend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "clerk-hono-fail",
         auth: "clerk",
@@ -1491,11 +1472,10 @@ describe("Authentication Configurations", () => {
         frontend: ["tanstack-router"],
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Clerk needs Convex, fullstack Next.js, or fullstack TanStack Start");
     });
 
-    it("should normalize clerk + self backend + astro to no auth", async () => {
+    it("should reject clerk + self backend + astro with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "clerk-self-astro-fail",
         auth: "clerk",
@@ -1513,11 +1493,10 @@ describe("Authentication Configurations", () => {
         addons: ["turborepo"],
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Clerk isn't available for fullstack Astro yet");
     });
 
-    it("should normalize clerk + self backend + nuxt to no auth", async () => {
+    it("should reject clerk + self backend + nuxt with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "clerk-self-nuxt-fail",
         auth: "clerk",
@@ -1534,11 +1513,10 @@ describe("Authentication Configurations", () => {
         addons: ["turborepo"],
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(result, "Clerk isn't available for fullstack Nuxt yet");
     });
 
-    it("should normalize clerk + self backend + next + native companion to no auth", async () => {
+    it("should reject clerk + self backend + next + native companion with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "clerk-self-next-native-fail",
         auth: "clerk",
@@ -1555,8 +1533,10 @@ describe("Authentication Configurations", () => {
         addons: ["turborepo"],
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(
+        result,
+        "Clerk with a fullstack backend needs a web-only Next.js or TanStack Start project (no mobile app)",
+      );
     });
 
     const compatibleFrontends = [
@@ -1593,10 +1573,10 @@ describe("Authentication Configurations", () => {
       });
     }
 
-    const authNormalizedFrontends = ["nuxt", "svelte"];
+    const authRejectedFrontends = ["nuxt", "svelte"];
 
-    for (const frontend of authNormalizedFrontends) {
-      it(`should normalize clerk + ${frontend} to no auth`, async () => {
+    for (const frontend of authRejectedFrontends) {
+      it(`should reject clerk + ${frontend} with the shared reason`, async () => {
         const result = await runTRPCTest({
           projectName: `clerk-${frontend}-fail`,
           auth: "clerk",
@@ -1613,8 +1593,10 @@ describe("Authentication Configurations", () => {
           serverDeploy: "none",
         });
 
-        expectSuccess(result);
-        expect(result.result?.projectConfig.auth).toBe("none");
+        expectError(
+          result,
+          "Clerk with Convex requires React Router, React + Vite, TanStack Router, TanStack Start, Next.js, or React Native",
+        );
       });
     }
 
@@ -1827,6 +1809,19 @@ describe("Authentication Configurations", () => {
           config.orm = "drizzle";
           config.api = "trpc";
           config.frontend = ["next"];
+        } else if (auth === "workos" || auth === "kinde") {
+          config.backend = "self";
+          config.runtime = "none";
+          config.database = "postgres";
+          config.orm = "drizzle";
+          config.api = "trpc";
+          config.frontend = ["next"];
+        } else if (auth === "passport") {
+          config.backend = "express";
+          config.runtime = "node";
+          config.database = "sqlite";
+          config.orm = "drizzle";
+          config.api = "trpc";
         } else if (auth === "better-auth") {
           config.backend = "hono";
           config.runtime = "bun";
@@ -2232,11 +2227,11 @@ describe("Authentication Configurations", () => {
       expectSuccess(result);
     });
 
-    it("should normalize go-better-auth to none on TypeScript stacks", async () => {
+    it("should reject go-better-auth on TypeScript stacks", async () => {
       const result = await runTRPCTest({
         projectName: "go-auth-ts-reject",
         ecosystem: "typescript",
-        auth: "go-better-auth" as any,
+        auth: "go-better-auth",
         backend: "hono",
         runtime: "bun",
         database: "sqlite",
@@ -2251,7 +2246,7 @@ describe("Authentication Configurations", () => {
         install: false,
       });
 
-      expectSuccess(result);
+      expectError(result, "GoBetterAuth is available only for Go stacks");
     });
 
     it("should handle auth constraints with workers runtime", async () => {

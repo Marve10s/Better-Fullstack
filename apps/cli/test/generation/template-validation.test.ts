@@ -244,13 +244,24 @@ const ORM_CONFIGS: TSConfig[] = ORMS.filter(
 /**
  * All auth providers
  */
-const AUTH_CONFIGS: TSConfig[] = AUTHS.map((auth) => {
-  if (auth === "clerk") {
+// Each provider is validated on a stack that generates it; GoBetterAuth belongs to Go stacks.
+const FULLSTACK_NEXT_AUTHS = new Set<Auth>([
+  "clerk",
+  "nextauth",
+  "stack-auth",
+  "supabase-auth",
+  "auth0",
+  "workos",
+  "kinde",
+]);
+
+const AUTH_CONFIGS: TSConfig[] = AUTHS.filter((auth) => auth !== "go-better-auth").map((auth) => {
+  if (FULLSTACK_NEXT_AUTHS.has(auth)) {
     return {
-      name: "auth-clerk-self-next",
+      name: `auth-${auth}-self-next`,
       frontend: ["next"] as Frontend[],
       backend: "self" as Backend,
-      auth: "clerk" as Auth,
+      auth: auth as Auth,
       api: "trpc" as API,
       database: "sqlite" as Database,
       orm: "drizzle" as ORM,
@@ -260,7 +271,7 @@ const AUTH_CONFIGS: TSConfig[] = AUTHS.map((auth) => {
   return {
     name: `auth-${auth}`,
     frontend: ["tanstack-router"] as Frontend[],
-    backend: "hono",
+    backend: auth === "passport" ? "express" : "hono",
     auth: auth as Auth,
     api: "trpc",
     database: auth === "none" ? "none" : "sqlite",

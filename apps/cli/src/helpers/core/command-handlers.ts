@@ -17,7 +17,7 @@ import type {
 import { resolveCreateConfigBase } from "@/config/config-source";
 import { displayConfig } from "@/config/display-config";
 import {
-  getRequestedBetterAuthRejection,
+  getRequestedAuthRejection,
   getRequestedDatabaseSetupRejection,
   getRequestedJobQueueRejection,
   getRequestedOrmRejection,
@@ -355,7 +355,7 @@ function rejectAdjustedRequestedFlags(
       ? getRequestedJobQueueRejection(config.jobQueue, adjustedConfig)
       : null) ??
     (providedFlags.has("auth")
-      ? getRequestedBetterAuthRejection(config.auth, adjustedConfig)
+      ? getRequestedAuthRejection(config.auth, adjustedConfig)
       : null) ??
     getRequestedDatabaseSetupRejection(
       {
@@ -496,6 +496,9 @@ export async function createProjectHandler(
       };
       failureConfig = originalInput;
       const providedFlags = getProvidedFlags(explicitInput);
+      // Auth replayed from a saved config or history entry is the user's choice, so an
+      // unsupported provider is rejected rather than reset like an unrequested default.
+      if (configBase?.auth !== undefined) providedFlags.add("auth");
 
       // Input-only, so it runs before any directory is resolved, cleared, or
       // created. A rejected shape must never cost the user their files.

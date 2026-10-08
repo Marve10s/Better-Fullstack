@@ -16,10 +16,7 @@ import type {
   UILibrary,
 } from "@/config/types";
 
-import {
-  getCapabilityDisabledReason,
-  normalizeCapabilitySelection,
-} from "@/capabilities/capabilities";
+import { getAuthIncompatibility, normalizeCapabilitySelection } from "@/capabilities/capabilities";
 import {
   getCodeQualitySelectionIssue,
   getShadcnLintFrontendIssue,
@@ -34,7 +31,6 @@ import {
 } from "@/catalog/option-metadata";
 import { ANALYTICS_VALUES } from "@/config/schemas";
 import {
-  getBetterAuthDatabaseIncompatibility,
   getDatabaseOrmIncompatibility,
   getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
@@ -1160,12 +1156,16 @@ export const analyzeStackCompatibility = (
         });
       }
     }
-    if (!["better-auth", "none"].includes(nextStack.auth)) {
+    const solidAuthReason =
+      nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations"
+        ? null
+        : getAuthIncompatibility(nextStack.auth, nextStack);
+    if (solidAuthReason) {
       nextStack.auth = "better-auth";
       changed = true;
       changes.push({
         category: "auth",
-        message: "Auth set to 'Better Auth' (the only provider for TanStack Start (Solid) yet)",
+        message: `Auth set to 'Better Auth' (${solidAuthReason})`,
       });
     }
     const examples = nextStack.examples.filter((example) =>
@@ -1558,6 +1558,8 @@ export const analyzeStackCompatibility = (
       backend: nextStack.backend,
       webFrontend: nextStack.webFrontend,
       nativeFrontend: nextStack.nativeFrontend,
+      database: nextStack.database,
+      orm: nextStack.orm,
     },
     nextStack.auth as Auth,
   );
@@ -1568,16 +1570,6 @@ export const analyzeStackCompatibility = (
     changes.push({
       category: "auth",
       message: normalizedAuth.message ?? "Auth set to 'None'",
-    });
-  }
-
-  const betterAuthDatabaseIssue = getBetterAuthDatabaseIncompatibility(nextStack.auth, nextStack);
-  if (betterAuthDatabaseIssue) {
-    nextStack.auth = "none";
-    changed = true;
-    changes.push({
-      category: "auth",
-      message: `Auth set to 'None' (${betterAuthDatabaseIssue})`,
     });
   }
 
@@ -3657,18 +3649,7 @@ export const getDisabledReason = (
   // AUTH CONSTRAINTS
   // ============================================
   if (category === "auth") {
-    return (
-      getCapabilityDisabledReason(
-        "auth",
-        {
-          ecosystem: currentStack.ecosystem,
-          backend: currentStack.backend,
-          webFrontend: currentStack.webFrontend,
-          nativeFrontend: currentStack.nativeFrontend,
-        },
-        optionId as Auth,
-      ) ?? getBetterAuthDatabaseIncompatibility(optionId, currentStack)
-    );
+    return getAuthIncompatibility(optionId, currentStack);
   }
 
   // ============================================
@@ -5853,21 +5834,14 @@ export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backe
   if (frontend === "redwood" && backend && backend !== "none") return false;
   if (frontend === "fresh" && backend && backend !== "none") return false;
 
-  if (auth && auth !== "none") {
-    return (
-      getCapabilityDisabledReason(
-        "auth",
-        {
-          ecosystem: "typescript",
-          backend,
-          webFrontend: [frontend],
-        },
-        auth as Auth,
-      ) === null
-    );
-  }
-
-  return true;
+  // An unanswered backend may still be one that supports the auth.
+  return (
+    getAuthIncompatibility(
+      auth,
+      { ecosystem: "typescript", backend, webFrontend: [frontend] },
+      { partial: true },
+    ) === null
+  );
 }
 
 export function requiresChatSdkVercelAIForSelection(

@@ -27,8 +27,10 @@ import {
 } from "@/config/compatibility-rules";
 import {
   buildCompatibilityInputFromConfig,
+  getAuthSelectionIssue,
   getDatabaseSetupIssue,
   getPythonLoggingSelectionIssue,
+  getRequestedAuthRejection,
   hasSelectedTypeScriptBackendPart,
   usesGenericOrm,
 } from "@/config/stack-compatibility";
@@ -44,7 +46,6 @@ import {
   formatStackGraphIssue,
   getDisabledReason,
   getCodeQualitySelectionIssue,
-  getBetterAuthDatabaseIncompatibility,
   getDatabaseOrmIncompatibility,
   getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
@@ -55,7 +56,7 @@ import {
   isSignozSupportedPythonWebFramework,
   isToolingOverlayOnly,
   isTurnstileWebFrontend,
-  normalizeCapabilitySelection,
+  parseStackPartSpecs,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
 } from "@/types";
@@ -267,64 +268,43 @@ function validateDatabaseSetup(config: Partial<ProjectConfig>, providedFlags: Se
   if (issue) exitWithError(issue);
 }
 
+/**
+ * Auth the user asked for by `--auth` or an auth `--part` is rejected with the shared reason. Only
+ * a default the user never chose is reset, and the reset is reported as an adjustment would be.
+ * `requestedAuth` is the `--auth` value before prompts ran, so a prompt answer that reset it to
+ * none is judged by the provider the user asked for.
+ */
 export function validateEcosystemAuthCompatibility(
   config: Partial<ProjectConfig>,
   providedFlags?: Set<string>,
-  partial = false,
+  {
+    partial = false,
+    partSpecs = [] as readonly string[],
+    requestedAuth = undefined as ProjectConfig["auth"] | undefined,
+  } = {},
 ) {
-  // The graph is authoritative: stale flat auth, database, and ORM must not decide what gets
-  // generated, so graph input is judged by its own projection before any flat field is read.
-  const usesGraph = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
-  if (usesGraph) {
-    const selection = stackGraphToLegacyProjectConfigForEcosystem(
-      config as ProjectConfig,
-      "typescript",
-    );
-    // Without a TypeScript backend only auth clients are generated, so no adapter is needed.
-    const reason =
-      selection.backend === "none"
-        ? null
-        : getBetterAuthDatabaseIncompatibility(selection.auth, selection);
-    if (reason && providedFlags) exitWithError(reason);
-    if (reason) throw new Error(reason);
-  }
+  const requestedRejection = providedFlags?.has("auth")
+    ? getRequestedAuthRejection(requestedAuth, config)
+    : null;
+  if (requestedRejection) exitWithError(requestedRejection);
 
-  const auth = config.auth;
-
-  if (!auth || auth === "none") {
-    return;
-  }
-
-  const normalized = normalizeCapabilitySelection(
-    "auth",
-    {
-      ecosystem: config.ecosystem,
-      backend: config.backend,
-      frontend: config.frontend,
-    },
-    auth,
-  );
-
-  if (normalized.normalized && normalized.value !== auth) {
-    config.auth = normalized.value;
-
-    if (providedFlags?.has("auth") && normalized.reason && !isSilent()) {
-      consola.warn(
-        pc.yellow(
-          `Unsupported auth selection '${auth}' for the current stack: ${normalized.reason}. Falling back to '--auth ${normalized.value}'.`,
-        ),
-      );
-    }
-    return;
-  }
-
-  if (usesGraph || (config.ecosystem ?? "typescript") !== "typescript") return;
-  const reason = getBetterAuthDatabaseIncompatibility(auth, config, { partial });
+  const reason = getAuthSelectionIssue(config, { partial });
   if (!reason) return;
-  // Better Auth that was asked for is rejected; a default one gives way to the database choice.
   if (!providedFlags) throw new Error(reason);
-  if (providedFlags.has("auth")) exitWithError(reason);
+
+  const isRequested =
+    providedFlags.has("auth") ||
+    parseStackPartSpecs([...partSpecs], "selected").some((part) => part.role === "auth");
+  if (isRequested) exitWithError(reason);
+
   config.auth = "none";
+  if (config.stackParts) {
+    config.stackParts = config.stackParts.filter(
+      (part) =>
+        part.role !== "auth" ||
+        (part.ecosystem !== "typescript" && part.ecosystem !== "react-native"),
+    );
+  }
   if (!isSilent()) consola.warn(pc.yellow(`Auth set to 'None' (${reason})`));
 }
 
@@ -556,8 +536,14 @@ function validateBackendConstraints(
       );
     }
   }
+}
 
-  if (backend === "convex" && providedFlags.has("frontend") && options.frontend) {
+function validateConvexFrontendConstraints(
+  config: Partial<ProjectConfig>,
+  providedFlags: Set<string>,
+  options: CLIInput,
+) {
+  if (config.backend === "convex" && providedFlags.has("frontend") && options.frontend) {
     const incompatibleFrontends = options.frontend.filter((f) => ["solid", "astro"].includes(f));
     if (incompatibleFrontends.length > 0) {
       exitWithError(
@@ -1507,13 +1493,20 @@ export function validateFullConfig(
     }
   }
 
-  validateEcosystemAuthCompatibility(config, providedFlags, partial);
+  // Auth is judged once the backend's runtime and frontends are known to suit it, and before the
+  // data and API checks, so an auth rejection names its own reason.
+  validateSelfBackendConstraints(config, providedFlags);
+  validateConvexFrontendConstraints(config, providedFlags, options);
+  validateEcosystemAuthCompatibility(config, providedFlags, {
+    partial,
+    partSpecs: options.part,
+    requestedAuth: options.auth,
+  });
   validateDatabaseOrmAuth(config, providedFlags);
   validateDatabaseSetup(config, providedFlags);
 
   validateConvexConstraints(config, providedFlags);
   validateBackendNoneConstraints(config, providedFlags);
-  validateSelfBackendConstraints(config, providedFlags);
   validateEncoreConstraints(config, providedFlags);
   validateAdonisJSConstraints(config, providedFlags);
   validateBackendConstraints(config, providedFlags, options);
@@ -1693,7 +1686,8 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateIntegrationsConstraints(config);
     validateJobQueueConstraints(config);
     validateContainerAddonConstraints(config);
-    validateEcosystemAuthCompatibility(config);
+    const authIssue = getAuthSelectionIssue(config);
+    if (authIssue) throw new Error(authIssue);
     validateDatabaseOrmAuth(config);
     validateEffectBackendConstraints(config);
 
