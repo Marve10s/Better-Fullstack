@@ -275,6 +275,7 @@ exports[`Template Snapshots File Structure Snapshots file structure: nuxt-standa
   "apps/web/nuxt.config.ts",
   "apps/web/package.json",
   "apps/web/public/robots.txt",
+  "apps/web/server/api/rpc/[...rest].ts",
   "apps/web/server/tsconfig.json",
   "apps/web/tsconfig.json",
   "bunfig.toml",
@@ -4944,7 +4945,7 @@ export * from "./task";
 
 exports[`Template Snapshots Key File Content Snapshots key files: nuxt-standalone 1`] = `
 {
-  "fileCount": 45,
+  "fileCount": 46,
   "files": [
     {
       "content": "[exists]",
@@ -4987,8 +4988,7 @@ import { RPCLink } from '@orpc/client/fetch'
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
 export default defineNuxtPlugin(() => {
-  const config = useRuntimeConfig();
-  const rpcUrl = \`\${config.public.serverUrl}/rpc\`;
+  const rpcUrl = \`\${useRequestURL().origin}/api/rpc\`;
 
   const rpcLink = new RPCLink({
     url: rpcUrl,
@@ -5086,6 +5086,10 @@ export default defineNuxtConfig({
     {
       "content": "[exists]",
       "path": "apps/web/public/robots.txt",
+    },
+    {
+      "content": "[exists]",
+      "path": "apps/web/server/api/rpc/[...rest].ts",
     },
     {
       "content": 
