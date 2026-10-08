@@ -633,6 +633,12 @@ export async function verifyReactNative(
   );
   if (!steps.at(-1)!.success) return wrapResult("react-native", comboName, projectDir, steps);
 
+  const serverDir = join(projectDir, "apps", "server");
+  if (existsSync(serverDir)) {
+    steps.push(await runStep("server-typecheck", "bun", ["run", "check-types"], serverDir));
+    if (!steps.at(-1)!.success) return wrapResult("react-native", comboName, projectDir, steps);
+  }
+
   // Metro/Babel bundle. Call `expo export` DIRECTLY rather than `bun run build`:
   // the native package has a `prebuild` lifecycle script (`expo prebuild`) that
   // `bun run build` would trigger first, and that runs CocoaPods - macOS-only, so
