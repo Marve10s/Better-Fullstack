@@ -4342,19 +4342,28 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
   );
   const getDatabaseOwnerRole = (part: StackPart) =>
     part.ownerPartId ? partsById.get(part.ownerPartId)?.role : undefined;
-  const hasDataLayerDatabase = selectedDatabases.some(
-    (part) => !part.ownerPartId || getDatabaseOwnerRole(part) === "backend",
-  );
+  const dataLayerDatabase =
+    selectedDatabases.find((part) => !part.ownerPartId) ??
+    selectedDatabases.find((part) => getDatabaseOwnerRole(part) === "backend");
+  const dataLayerDatabaseOwner = dataLayerDatabase?.ownerPartId
+    ? partsById.get(dataLayerDatabase.ownerPartId)
+    : undefined;
+  const dataLayerDatabaseName = dataLayerDatabaseOwner
+    ? `${dataLayerDatabase?.toolId} database owned by the ${dataLayerDatabaseOwner.toolId} backend`
+    : `standalone ${dataLayerDatabase?.toolId} database`;
   for (const part of selectedDatabases) {
     const ownerRole = getDatabaseOwnerRole(part);
-    if (hasDataLayerDatabase || (ownerRole !== "frontend" && ownerRole !== "mobile")) continue;
+    if (ownerRole !== "frontend" && ownerRole !== "mobile") continue;
+    const owner = ownerRole === "mobile" ? "mobile app" : "frontend";
     issues.push(
       createStackGraphIssue({
         code: "INCOMPATIBLE_GRAPH_SELECTION",
         partId: part.id,
         role: part.role,
         toolId: part.toolId,
-        message: `A database owned by the ${ownerRole === "mobile" ? "mobile app" : "frontend"} generates no data layer. Select a standalone database or one owned by the backend.`,
+        message: dataLayerDatabase
+          ? `A database owned by the ${owner} would be ignored because the data layer uses the ${dataLayerDatabaseName}. Remove the ${owner} database.`
+          : `A database owned by the ${owner} generates no data layer. Select a standalone database or one owned by the backend.`,
       }),
     );
   }

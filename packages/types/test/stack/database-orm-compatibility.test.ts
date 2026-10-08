@@ -206,7 +206,7 @@ describe("database and ORM pair compatibility", () => {
     }
   });
 
-  it("projects the backend-owned database and its setup over a mobile-owned one", () => {
+  it("projects the backend-owned database and its setup and rejects the ignored mobile-owned one", () => {
     const parts = parseStackPartSpecs([
       "backend:typescript:hono:api",
       "api.runtime:typescript:bun",
@@ -222,7 +222,34 @@ describe("database and ORM pair compatibility", () => {
     );
     expect(projected.database).toBe("postgres");
     expect(projected.dbSetup).toBe("neon");
-    expect(validateStackParts(parts).issues).toEqual([]);
+    expect(validateStackParts(parts).issues.map((issue) => issue.message)).toEqual([
+      "A database owned by the mobile app would be ignored because the data layer uses the postgres database owned by the hono backend. Remove the mobile app database.",
+    ]);
+  });
+
+  it("rejects an app-owned database next to the standalone database generation uses", () => {
+    for (const [owner, label] of [
+      ["mobile", "mobile app"],
+      ["frontend", "frontend"],
+    ] as const) {
+      const parts = parseStackPartSpecs([
+        "frontend:typescript:tanstack-router",
+        "backend:typescript:hono",
+        "backend.runtime:typescript:bun",
+        "backend.orm:typescript:drizzle",
+        "mobile:react-native:native-bare",
+        "database:universal:postgres",
+        "database.dbSetup:universal:neon",
+        `${owner}.database:universal:sqlite`,
+      ]);
+      expect(validateStackParts(parts).issues).toEqual([
+        expect.objectContaining({
+          role: "database",
+          toolId: "sqlite",
+          message: `A database owned by the ${label} would be ignored because the data layer uses the standalone postgres database. Remove the ${label} database.`,
+        }),
+      ]);
+    }
   });
 
   it("requires a database for a backend-owned ORM in the graph", () => {
