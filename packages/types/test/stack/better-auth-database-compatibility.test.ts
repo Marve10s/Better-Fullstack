@@ -190,4 +190,21 @@ describe("Better Auth database compatibility", () => {
       ]),
     ).toEqual([]);
   });
+
+  it("judges backend Better Auth by the standalone database generation uses over a backend-owned one", () => {
+    const backend = [
+      "frontend:typescript:tanstack-router",
+      "backend:typescript:hono",
+      "backend.runtime:typescript:bun",
+      "backend.orm:typescript:drizzle",
+      "backend.auth:typescript:better-auth",
+    ];
+
+    expect(
+      partIssues([...backend, "database:universal:postgres", "backend.database:universal:redis"]),
+    ).toEqual([]);
+    expect(
+      partIssues([...backend, "database:universal:redis", "backend.database:universal:postgres"]),
+    ).toContain("Better Auth has no Redis adapter");
+  });
 });

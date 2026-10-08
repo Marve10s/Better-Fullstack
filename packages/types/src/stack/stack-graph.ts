@@ -1787,12 +1787,21 @@ function getAuthPartDataLayer(
         )
       : undefined;
   if (context.ownerRole !== "backend" && !backend) return {};
+  const appDatabases = getProjectedDatabaseParts(
+    parts,
+    getProjectionAppOwners(parts, "typescript"),
+  );
   return {
     database:
-      context.siblingToolIdsByRole?.database ??
-      context.primaryToolIdsByRole?.database ??
-      getSelectedScopedPart(parts, backend, "database")?.toolId ??
-      "none",
+      getDataLayerDatabase({
+        standalone: context.primaryToolIdsByRole?.database,
+        mobile: appDatabases.mobile?.toolId,
+        frontend: appDatabases.frontend?.toolId,
+        backend:
+          context.ownerRole === "backend"
+            ? context.siblingToolIdsByRole?.database
+            : getSelectedScopedPart(parts, backend, "database")?.toolId,
+      }) ?? "none",
     orm:
       context.siblingToolIdsByRole?.orm ??
       getSelectedScopedPart(parts, backend, "orm")?.toolId ??
