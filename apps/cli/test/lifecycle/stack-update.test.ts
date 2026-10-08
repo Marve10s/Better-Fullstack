@@ -4948,10 +4948,10 @@ describe("stack update planner", () => {
       makeConfig(projectDir, {
         stackParts: parseStackPartSpecs([
           "backend:typescript:hono:api",
-          "mobile:react-native:native-bare:mobile",
+          "backend:go:gin:admin",
           "database:universal:sqlite:main-db",
           "api.database:universal:sqlite:api-db",
-          "mobile.database:universal:sqlite:mobile-db",
+          "admin.database:universal:sqlite:admin-db",
         ]),
         ecosystem: "typescript",
         database: "sqlite",
@@ -4964,8 +4964,8 @@ describe("stack update planner", () => {
     expect(plan.proposedConfig.stackParts?.some((part) => part.id === "api-db")).toBe(false);
     expect(plan.proposedConfig.stackParts).toContainEqual(
       expect.objectContaining({
-        id: "mobile-db",
-        ownerPartId: "mobile",
+        id: "admin-db",
+        ownerPartId: "admin",
         role: "database",
         toolId: "sqlite",
       }),
