@@ -490,6 +490,8 @@ async def request_logging_middleware(request: web.Request, handler: Handler) -> 
             # Handle the error here so its traceback carries the request id and
             # the 500 response returns it; aiohttp would do neither.
             logger.exception("Unhandled error")
+            if request.writer.output_size:
+                raise
             return web.Response(
                 status=500, text="Internal Server Error", headers={REQUEST_ID_HEADER: request_id}
             )

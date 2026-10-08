@@ -242,6 +242,19 @@ describe("Python logging", () => {
     }
   });
 
+  it("lets aiohttp close a streamed response that fails instead of appending a 500", async () => {
+    for (const pythonLogging of ["loguru", "structlog"] as const) {
+      const [loggingModule] = await generatedFiles(
+        { pythonWebFramework: "aiohttp", pythonLogging },
+        "src/app/logging_config.py",
+      );
+      const handled = loggingModule.slice(loggingModule.indexOf("except Exception:"));
+      expect(handled).toContain(
+        "if request.writer.output_size:\n                raise\n            return web.Response(",
+      );
+    }
+  });
+
   it("keeps the Flask request context open until the response body is closed", async () => {
     const [loggingModule] = await generatedFiles(
       { pythonWebFramework: "flask", pythonLogging: "loguru" },
