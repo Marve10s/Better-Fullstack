@@ -35,6 +35,8 @@ import {
 import { ANALYTICS_VALUES } from "@/config/schemas";
 import {
   getBetterAuthDatabaseIncompatibility,
+  getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
   hasPWACompatibleFrontend,
@@ -53,6 +55,8 @@ import {
 export {
   BACKEND_UTILS_COMPATIBLE_BACKENDS,
   getBetterAuthDatabaseIncompatibility,
+  getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   hasGeneratedJobQueueRequirements,
   getUnsupportedWebDeployFrontend,
@@ -771,6 +775,18 @@ export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
 const usesCloudflareFullstackRuntime = (stack: CompatibilityInput): boolean =>
   stack.webDeploy === "cloudflare" && FULLSTACK_SELF_BACKENDS.has(stack.backend);
 
+// The ORM that replaces one the database cannot use: Prisma for MongoDB, none for databases with
+// their own client, and Drizzle for SQL databases.
+const DATABASE_ORM_REPLACEMENTS: Record<string, { orm: string; label: string }> = {
+  mongodb: { orm: "prisma", label: "Prisma" },
+  edgedb: { orm: "none", label: "None" },
+  redis: { orm: "none", label: "None" },
+};
+const SQL_ORM_REPLACEMENT = { orm: "drizzle", label: "Drizzle" };
+
+const getReplacementOrm = (database: string) =>
+  DATABASE_ORM_REPLACEMENTS[database] ?? SQL_ORM_REPLACEMENT;
+
 export const analyzeStackCompatibility = (
   stack: CompatibilityInput,
   options: { normalizeCodeQualityProfiles?: boolean } = {},
@@ -1294,9 +1310,21 @@ export const analyzeStackCompatibility = (
       }
     }
 
+    // An impossible pair keeps the database and replaces the ORM, reporting the shared reason.
+    const databaseOrmIssue = getDatabaseOrmIncompatibility(nextStack.database, nextStack.orm);
+    if (databaseOrmIssue) {
+      const replacement = getReplacementOrm(nextStack.database);
+      nextStack.orm = replacement.orm;
+      changed = true;
+      changes.push({
+        category: "database",
+        message: `ORM set to '${replacement.label}' (${databaseOrmIssue})`,
+      });
+    }
+
     // MongoDB requires Prisma or Mongoose
     if (nextStack.database === "mongodb") {
-      if (nextStack.orm !== "prisma" && nextStack.orm !== "mongoose") {
+      if (nextStack.orm === "none") {
         nextStack.orm = "prisma";
         changed = true;
         changes.push({
@@ -1327,14 +1355,6 @@ export const analyzeStackCompatibility = (
         changes.push({
           category: "database",
           message: "ORM set to 'Drizzle' (required for database)",
-        });
-      }
-      if (nextStack.orm === "mongoose") {
-        nextStack.orm = "drizzle";
-        changed = true;
-        changes.push({
-          category: "database",
-          message: "ORM set to 'Drizzle' (Mongoose only works with MongoDB)",
         });
       }
     }
@@ -3492,17 +3512,12 @@ export const getDisabledReason = (
       if (currentStack.runtime === "workers") {
         return "Mongoose requires MongoDB, and Better-Fullstack currently doesn't support MongoDB with Workers runtime";
       }
-      // Only block if a non-MongoDB database is EXPLICITLY selected
-      if (currentStack.database !== "none" && currentStack.database !== "mongodb") {
-        return "Mongoose only works with MongoDB";
-      }
-      // Allow when database is "none" - system will auto-select MongoDB
     }
-    if (optionId === "drizzle" && currentStack.database === "mongodb") {
-      return "Drizzle does not support MongoDB";
-    }
-    if (optionId === "none" && currentStack.database !== "none") {
-      return "Database requires an ORM";
+    const databaseOrmIssue = getDatabaseOrmIncompatibility(currentStack.database, optionId);
+    if (databaseOrmIssue) return databaseOrmIssue;
+    if (optionId === "none") {
+      const requirementIssue = getDatabaseOrmRequirementIssue(currentStack.database, optionId);
+      if (requirementIssue) return requirementIssue;
     }
   }
 

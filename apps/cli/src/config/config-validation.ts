@@ -1,7 +1,7 @@
 import consola from "consola";
 import pc from "picocolors";
 
-import type { CLIInput, Database, DatabaseSetup, Frontend, ProjectConfig, Runtime } from "@/types";
+import type { CLIInput, Frontend, ProjectConfig } from "@/types";
 
 import {
   ensureSingleWebAndNative,
@@ -27,8 +27,10 @@ import {
 } from "@/config/compatibility-rules";
 import {
   buildCompatibilityInputFromConfig,
+  getDatabaseSetupIssue,
   getPythonLoggingSelectionIssue,
   hasSelectedTypeScriptBackendPart,
+  usesGenericOrm,
 } from "@/config/stack-compatibility";
 import { validatePeerDependencies } from "@/platform/peer-dependency-validator";
 import { isSilent } from "@/presentation/context";
@@ -43,6 +45,8 @@ import {
   getDisabledReason,
   getCodeQualitySelectionIssue,
   getBetterAuthDatabaseIncompatibility,
+  getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getShadcnLintFrontendIssue,
   hasVitePlusWorkspaceRoot,
@@ -151,103 +155,41 @@ function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string
     db === "sqlite" &&
     !hasEcosystemOrm;
 
-  if (has("orm") && has("database") && orm === "mongoose" && db !== "mongodb") {
+  const pairIssue =
+    has("orm") && has("database") && usesGenericOrm(cfg)
+      ? getDatabaseOrmIncompatibility(db, orm)
+      : null;
+  if (pairIssue) {
     incompatibilityError({
-      message: "Mongoose ORM requires MongoDB database.",
-      provided: { orm: "mongoose", database: db || "none" },
-      suggestions: ["Use --database mongodb", "Choose a different ORM (drizzle, prisma)"],
+      message: pairIssue,
+      provided: { database: db ?? "none", orm: orm ?? "none" },
+      suggestions:
+        orm === "mongoose"
+          ? ["Use --database mongodb", "Choose a different ORM (drizzle, prisma)"]
+          : db === "mongodb"
+            ? [
+                "Use --orm mongoose or --orm prisma for MongoDB",
+                "Choose a different database (postgres, sqlite, mysql)",
+              ]
+            : [
+                `Use --orm none with ${db === "edgedb" ? "EdgeDB" : "Redis"}`,
+                "Choose a different database if you want to use an ORM",
+              ],
     });
   }
 
-  if (has("orm") && has("database") && orm === "drizzle" && db === "mongodb") {
-    incompatibilityError({
-      message: "Drizzle ORM does not support MongoDB.",
-      provided: { orm: "drizzle", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "typeorm" && db === "mongodb") {
-    incompatibilityError({
-      message: "TypeORM does not support MongoDB in Better Fullstack.",
-      provided: { orm: "typeorm", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "kysely" && db === "mongodb") {
-    incompatibilityError({
-      message: "Kysely does not support MongoDB.",
-      provided: { orm: "kysely", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "mikroorm" && db === "mongodb") {
-    incompatibilityError({
-      message: "MikroORM does not support MongoDB in Better Fullstack.",
-      provided: { orm: "mikroorm", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "sequelize" && db === "mongodb") {
-    incompatibilityError({
-      message: "Sequelize does not support MongoDB.",
-      provided: { orm: "sequelize", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
+  const requirementIssue =
+    has("orm") && has("database") ? getDatabaseOrmRequirementIssue(db, orm) : null;
   if (
-    has("database") &&
-    has("orm") &&
-    db === "mongodb" &&
-    orm &&
-    orm !== "mongoose" &&
-    orm !== "prisma" &&
-    orm !== "none"
-  ) {
-    incompatibilityError({
-      message:
-        "In Better-Fullstack, MongoDB is currently supported only with Mongoose or Prisma ORM.",
-      provided: { database: "mongodb", orm },
-      suggestions: ["Use --orm mongoose", "Use --orm prisma"],
-    });
-  }
-
-  // EdgeDB has its own built-in query builder, no separate ORM needed
-  // Redis is a key-value store and doesn't use traditional ORMs
-  if (
-    has("database") &&
-    has("orm") &&
-    db &&
-    db !== "none" &&
-    db !== "edgedb" &&
-    db !== "redis" &&
+    requirementIssue &&
     orm === "none" &&
     !hasGraphOrm &&
     !hasEcosystemOrm &&
     !isNonTypeScriptSqliteDefault
   ) {
     missingRequirementError({
-      message: "Database selection requires an ORM.",
-      provided: { database: db, orm: "none" },
+      message: requirementIssue,
+      provided: { database: db ?? "none", orm: "none" },
       suggestions: [
         "Use --orm drizzle (recommended)",
         "Use --orm prisma",
@@ -256,34 +198,10 @@ function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string
     });
   }
 
-  // EdgeDB should not have an ORM (it has its own query builder)
-  if (has("database") && has("orm") && db === "edgedb" && orm && orm !== "none") {
-    incompatibilityError({
-      message: "EdgeDB has its own built-in query builder and does not require an ORM.",
-      provided: { database: "edgedb", orm },
-      suggestions: [
-        "Use --orm none with EdgeDB",
-        "Choose a different database if you want to use an ORM",
-      ],
-    });
-  }
-
-  // Redis should not have an ORM (it's a key-value store with its own client)
-  if (has("database") && has("orm") && db === "redis" && orm && orm !== "none") {
-    incompatibilityError({
-      message: "Redis is a key-value store and does not require an ORM.",
-      provided: { database: "redis", orm },
-      suggestions: [
-        "Use --orm none with Redis",
-        "Choose a different database if you want to use an ORM",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm && orm !== "none" && db === "none") {
+  if (requirementIssue && orm !== "none") {
     missingRequirementError({
-      message: "ORM selection requires a database.",
-      provided: { orm, database: "none" },
+      message: requirementIssue,
+      provided: { orm: orm ?? "none", database: "none" },
       suggestions: [
         "Use --database postgres",
         "Use --database sqlite",
@@ -343,100 +261,10 @@ function getEcosystemBackend(cfg: Partial<ProjectConfig>) {
 }
 
 function validateDatabaseSetup(config: Partial<ProjectConfig>, providedFlags: Set<string>) {
-  const { dbSetup, database, runtime } = config;
-
-  if (
-    providedFlags.has("dbSetup") &&
-    providedFlags.has("database") &&
-    dbSetup &&
-    dbSetup !== "none" &&
-    database === "none"
-  ) {
-    exitWithError(
-      "Database setup requires a database. Please choose a database or set '--db-setup none'.",
-    );
-  }
-
-  const setupValidations: Record<
-    DatabaseSetup,
-    { database?: Database; runtime?: Runtime; errorMessage: string }
-  > = {
-    turso: {
-      database: "sqlite",
-      errorMessage:
-        "Turso setup requires SQLite database. Please use '--database sqlite' or choose a different setup.",
-    },
-    neon: {
-      database: "postgres",
-      errorMessage:
-        "Neon setup requires PostgreSQL database. Please use '--database postgres' or choose a different setup.",
-    },
-    "prisma-postgres": {
-      database: "postgres",
-      errorMessage:
-        "Prisma PostgreSQL setup requires PostgreSQL database. Please use '--database postgres' or choose a different setup.",
-    },
-    planetscale: {
-      errorMessage:
-        "PlanetScale setup requires PostgreSQL or MySQL database. Please use '--database postgres' or '--database mysql' or choose a different setup.",
-    },
-    "mongodb-atlas": {
-      database: "mongodb",
-      errorMessage:
-        "MongoDB Atlas setup requires MongoDB database. Please use '--database mongodb' or choose a different setup.",
-    },
-    upstash: {
-      database: "redis",
-      errorMessage:
-        "Upstash setup requires Redis database. Please use '--database redis' or choose a different setup.",
-    },
-    supabase: {
-      database: "postgres",
-      errorMessage:
-        "Supabase setup requires PostgreSQL database. Please use '--database postgres' or choose a different setup.",
-    },
-    d1: {
-      database: "sqlite",
-      runtime: "workers",
-      errorMessage: "Cloudflare D1 setup requires SQLite database and Cloudflare Workers runtime.",
-    },
-    docker: {
-      errorMessage:
-        "In Better-Fullstack, Docker setup is currently not available with SQLite database or Cloudflare Workers runtime.",
-    },
-    none: { errorMessage: "" },
-  };
-
-  if (dbSetup && dbSetup !== "none") {
-    const validation = setupValidations[dbSetup];
-
-    if (dbSetup === "planetscale") {
-      if (database !== "postgres" && database !== "mysql") {
-        exitWithError(validation.errorMessage);
-      }
-    } else {
-      if (validation.database && database !== validation.database) {
-        exitWithError(validation.errorMessage);
-      }
-    }
-
-    if (validation.runtime && runtime !== validation.runtime) {
-      exitWithError(validation.errorMessage);
-    }
-
-    if (dbSetup === "docker") {
-      if (database === "sqlite") {
-        exitWithError(
-          "In Better-Fullstack, Docker setup is currently not available with SQLite database. SQLite is file-based and doesn't require Docker. Please use '--database postgres', '--database mysql', '--database mongodb', or choose a different setup.",
-        );
-      }
-      if (runtime === "workers") {
-        exitWithError(
-          "In Better-Fullstack, Docker setup is currently not available with Cloudflare Workers runtime. Workers runtime uses serverless databases (D1) and doesn't support local Docker containers. Please use '--db-setup d1' for SQLite or choose a different runtime.",
-        );
-      }
-    }
-  }
+  const issue = getDatabaseSetupIssue(config, {
+    requireDatabase: providedFlags.has("dbSetup") && providedFlags.has("database"),
+  });
+  if (issue) exitWithError(issue);
 }
 
 export function validateEcosystemAuthCompatibility(

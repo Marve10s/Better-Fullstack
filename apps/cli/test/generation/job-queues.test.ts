@@ -82,6 +82,7 @@ const GRAPH_REJECTED = [
     specs: [
       "backend:typescript:hono",
       "backend.runtime:typescript:bun",
+      "backend.orm:typescript:drizzle",
       "database:universal:sqlite",
       "backend.jobQueue:typescript:pg-boss",
     ],
@@ -339,6 +340,7 @@ describe("generated job queues", () => {
           "frontend:typescript:tanstack-router",
           "backend:typescript:hono",
           "backend.runtime:typescript:bun",
+          "backend.orm:typescript:drizzle",
           "database:universal:sqlite",
           "backend.jobQueue:typescript:pg-boss",
         ],

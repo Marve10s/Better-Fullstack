@@ -742,6 +742,7 @@ function getPromptResolutionValue(
       runtime: results.runtime,
       jobQueue: flags.jobQueue,
       auth: flags.auth,
+      orm: flags.orm,
     },
     orm: {
       orm: flags.orm,
@@ -967,6 +968,7 @@ export async function gatherConfig(
         results.runtime,
         flags.jobQueue,
         flags.auth,
+        flags.orm,
       );
     },
     orm: ({ results }) => {

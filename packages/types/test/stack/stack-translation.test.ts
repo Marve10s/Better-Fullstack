@@ -690,6 +690,7 @@ describe("stack selection translation", () => {
       stackPartSpecs: [
         "frontend:typescript:next",
         "backend:typescript:hono",
+        "backend.orm:typescript:drizzle",
         "database:universal:postgres",
       ],
       runtime: "node",

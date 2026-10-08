@@ -256,6 +256,13 @@ export async function createVirtual(
     if (options.stackParts) {
       config.stackParts = options.stackParts;
     }
+    const {
+      getBetterAuthSelectionIssue,
+      getDatabaseOrmRequirementSelectionIssue,
+      getDataLayerSelectionIssue,
+      getProviderDataLayer,
+    } = await import("@/config/stack-compatibility");
+    Object.assign(config, getProviderDataLayer(config, options));
     applyEffectBackendDefaults(config, new Set(Object.keys(options)));
 
     const hasLegacyContainerAddon =
@@ -293,9 +300,11 @@ export async function createVirtual(
       );
     }
 
-    const { getBetterAuthSelectionIssue } = await import("@/config/stack-compatibility");
-    const betterAuthIssue = getBetterAuthSelectionIssue(config);
-    if (betterAuthIssue) return { success: false, error: betterAuthIssue };
+    const selectionIssue =
+      getDataLayerSelectionIssue(config) ??
+      getBetterAuthSelectionIssue(config) ??
+      getDatabaseOrmRequirementSelectionIssue(config);
+    if (selectionIssue) return { success: false, error: selectionIssue };
 
     const { generateVirtualProject: generate, EMBEDDED_TEMPLATES } =
       await import("@better-fullstack/template-generator");
