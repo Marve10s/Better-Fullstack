@@ -1,0 +1,175 @@
+---
+title: Angular with Hono and Drizzle
+description: Create an Angular frontend with a separate Hono API on Bun, Drizzle, PostgreSQL, and Tailwind CSS in one Better Fullstack Turborepo workspace.
+translationStatus: pending
+updated: 2026-10-09
+category: TypeScript
+tags:
+  - angular
+  - hono
+  - drizzle
+  - postgres
+keywords:
+  - angular hono starter
+  - angular fullstack starter
+  - angular drizzle postgres
+  - angular api backend
+  - create angular fullstack app
+---
+
+Use this stack when the frontend team works in Angular and the API should be a small Hono service with a typed PostgreSQL layer, both in one repository.
+
+```npm
+npm create better-fullstack@latest my-angular-app -- \
+  --ecosystem typescript \
+  --frontend angular \
+  --backend hono \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth none \
+  --api none \
+  --css-framework tailwind \
+  --ui-library none
+```
+
+Angular calls the API with its own `HttpClient`, so the command sets `--api none`. The CLI rejects tRPC, oRPC, and the other API layers with Angular.
+
+## What this creates
+
+- An Angular app in `apps/web` with standalone components, the Angular router, a header component, and a home page, served by `ng serve` on port 3001.
+- A Hono server in `apps/server` on Bun with request logging, CORS for the web origin, and a `GET /` route that returns `OK`.
+- Drizzle on PostgreSQL in `packages/db`, with `example` and `task` tables and task query helpers in `packages/db/src/tasks.ts`.
+- Tailwind CSS through PostCSS in the Angular app.
+- A Turborepo workspace and a reproducible `bts.jsonc` stack configuration.
+
+## Generated shape
+
+```txt
+my-angular-app/
+  bts.jsonc
+  turbo.json
+  apps/
+    server/
+      .env
+      src/index.ts
+    web/
+      angular.json
+      postcss.config.mjs
+      src/
+        main.ts
+        styles.css
+        app/
+          app.component.ts
+          app.config.ts
+          app.routes.ts
+          components/header.component.ts
+          pages/home/home.component.ts
+  packages/
+    db/
+      drizzle.config.ts
+      src/
+        index.ts
+        schema/
+          example.ts
+          task.ts
+        tasks.ts
+    env/src/server.ts
+```
+
+The two apps share no code. The server imports the database package; the Angular app is a client of the server over HTTP.
+
+## Run it locally
+
+Install Bun first: the server's `dev` script runs `bun run --hot src/index.ts`. Point `DATABASE_URL` in `apps/server/.env` at a PostgreSQL database, then push the schema and start both apps:
+
+```npm
+npm install
+npm run db:push
+npm run dev
+```
+
+Open `http://localhost:3001` for the Angular app. The Hono server answers on `http://localhost:3000`. `npm run dev:web` and `npm run dev:server` start one app at a time.
+
+## Environment
+
+| File | Variable | Purpose |
+| --- | --- | --- |
+| `apps/server/.env` | `DATABASE_URL` | PostgreSQL connection string, read by the server and by Drizzle Kit. |
+| `apps/server/.env` | `CORS_ORIGIN` | Origin the Hono CORS middleware allows, `http://localhost:3001` locally. |
+| `apps/web/.env` | `VITE_SERVER_URL` | Written by the generator, but the Angular app does not read it. |
+
+Angular CLI does not load `.env` files. Keep the API URL in an Angular environment file or a provider, as in the service below.
+
+## Add an API route and call it from Angular
+
+The task helpers exist, but the server does not expose them yet. In `apps/server/src/index.ts`, add the imports at the top of the file and the routes before `export default app`. The server package already depends on the database package and Zod:
+
+```ts
+import { createTask, listTasks } from "@my-angular-app/db/tasks";
+import { z } from "zod";
+
+const newTask = z.object({ title: z.string().trim().min(1) });
+
+app.get("/tasks", async (c) => c.json(await listTasks()));
+
+app.post("/tasks", async (c) => {
+  const parsed = newTask.safeParse(await c.req.json());
+  if (!parsed.success) return c.json({ error: "Invalid task" }, 400);
+  return c.json(await createTask(parsed.data.title), 201);
+});
+```
+
+The generated `app.config.ts` registers only the router. Add `provideHttpClient()` from `@angular/common/http` to its `providers`, then create a service in the Angular app:
+
+```ts
+import { HttpClient } from "@angular/common/http";
+import { Injectable, inject } from "@angular/core";
+
+export type Task = { id: number; title: string; completed: boolean };
+
+@Injectable({ providedIn: "root" })
+export class TaskService {
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = "http://localhost:3000";
+
+  list() {
+    return this.http.get<Task[]>(`${this.apiUrl}/tasks`);
+  }
+
+  create(title: string) {
+    return this.http.post<Task>(`${this.apiUrl}/tasks`, { title });
+  }
+}
+```
+
+Inject `TaskService` in a component and subscribe to `list()`, or convert it to a signal with `toSignal` from `@angular/core/rxjs-interop`.
+
+## Compatibility notes
+
+- `--api none` is required with Angular. The Angular frontend uses `HttpClient` against plain HTTP routes instead of a typed RPC layer.
+- The CLI accepts `--auth better-auth` with this stack. It mounts Better Auth on the Hono server and adds a `packages/auth` package and auth tables, but the Angular app gets no auth client or sign-in pages, so this guide uses `--auth none`.
+- The CLI rejects `--backend self` with Angular, because the fullstack backend only supports frameworks with server routes. Use a separate backend such as Hono.
+
+## Deployment notes
+
+Build both apps with `npm run build`. `ng build` uses Angular's application builder and writes to `apps/web/dist/web`; serve its `browser` folder from a static host. The server build runs tsdown into `apps/server/dist`; start it with `bun run dist/index.mjs` and set `DATABASE_URL` and `CORS_ORIGIN` to the production values. `CORS_ORIGIN` must be the exact origin of the deployed Angular app.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| `NullInjectorError` for `HttpClient` | Add `provideHttpClient()` to `apps/web/src/app/app.config.ts`. |
+| Browser requests fail CORS checks | `CORS_ORIGIN` must match the Angular origin exactly, including the port. |
+| Task routes fail with a missing table error | Run `npm run db:push` against the database in `DATABASE_URL`. |
+| The API URL from `apps/web/.env` is ignored | Angular CLI does not read `.env`; set the URL in Angular code or environment files. |
+
+## Comparison notes
+
+Choose this stack when Angular conventions matter and the API can stay small. Compare [SvelteKit with Hono and Drizzle](/guides/typescript/sveltekit-hono-drizzle/) for the same backend with a Svelte frontend, or [Hono with tRPC and Drizzle](/guides/typescript/hono-trpc-drizzle/) for typed RPC with a React frontend.
+
+## Next steps
+
+- Open the [Stack Builder with Angular selected](/new?eco=typescript&fe-w=angular&be=hono&rt=bun&db=postgres&orm=drizzle&api=none).
+- Read the [self backend versus separate API decision guide](/blog/self-backend-vs-separate-api/).
+- Review the [CLI create reference](/docs/cli/create/).

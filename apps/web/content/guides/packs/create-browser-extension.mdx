@@ -1,0 +1,122 @@
+---
+title: Create a Browser Extension
+description: Create a WXT and React browser extension next to a web app and a Hono tRPC API on Bun with Drizzle and SQLite in one Better Fullstack workspace.
+translationStatus: pending
+updated: 2026-10-09
+category: Packs
+tags:
+  - browser-extension
+  - wxt
+  - hono
+  - trpc
+keywords:
+  - create browser extension
+  - wxt react starter
+  - chrome extension starter
+  - browser extension with backend
+  - wxt monorepo
+---
+
+Use the Browser Extension pack when an extension and a web app should share one backend: the extension lives in its own workspace app, and the API and database sit beside it.
+
+## Generate the extension starter
+
+```npm
+npm create better-fullstack@latest my-extension -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend hono \
+  --runtime bun \
+  --database sqlite \
+  --orm drizzle \
+  --auth none \
+  --api trpc \
+  --addons wxt turborepo \
+  --css-framework tailwind \
+  --ui-library shadcn-ui
+```
+
+## What the pack includes
+
+- A WXT extension in `apps/extension` built from WXT's React starter shape, with a popup, a background script, and a content script.
+- A TanStack Router web app in `apps/web` with a tRPC client.
+- A Hono server on Bun in `apps/server` that mounts tRPC at `/trpc` and returns `OK` from `GET /`.
+- A tRPC router with `healthCheck` and public `tasks` procedures for listing, creating, completing, and removing tasks.
+- Drizzle on SQLite through libSQL, with `DATABASE_URL` pointing at `local.db` in the project root.
+- A Turborepo workspace, so one command starts the server, the web app, and the extension.
+
+## Generated shape
+
+```txt
+my-extension/
+  apps/
+    extension/
+      wxt.config.ts
+      entrypoints/
+        background.ts
+        content.ts
+        popup/
+          App.tsx
+          main.tsx
+          index.html
+    server/
+      .env
+      src/index.ts
+    web/
+  packages/
+    api/src/routers/index.ts
+    db/src/
+      schema/task.ts
+      tasks.ts
+```
+
+The content script matches `*://*.google.com/*` and logs a message, and the background script logs the extension ID. Both are placeholders to replace.
+
+## Run it locally
+
+```npm
+npm install
+npm run db:push
+npm run dev
+```
+
+`npm run dev` runs `turbo dev`, which starts the server on port 3000, the web app on port 5173, and `wxt --port 5555` for the extension in Chrome development mode. Installing dependencies also runs `wxt prepare` in the extension app.
+
+The command lists `turborepo` next to `wxt` on purpose. Passing `--addons` replaces the default addon set, and without Turborepo the npm root `dev` script runs `npm run dev --workspaces`, which starts workspaces one after another.
+
+From `apps/extension`, `npm run dev:firefox` targets Firefox, `npm run build` writes a production build, and `npm run zip` packages it for a store upload.
+
+## Call the API from the extension
+
+The extension does not call the API yet. Grant host permission for the API origin in `apps/extension/wxt.config.ts`:
+
+```ts
+import { defineConfig } from "wxt";
+
+export default defineConfig({
+  modules: ["@wxt-dev/module-react"],
+  manifest: {
+    host_permissions: ["http://localhost:3000/*"],
+  },
+});
+```
+
+Then fetch from the popup or the background script:
+
+```ts
+const response = await fetch("http://localhost:3000/");
+const status = await response.text();
+```
+
+For typed calls, add `@trpc/client` and the `@my-extension/api` workspace package to the extension's dependencies and create a client with `httpBatchLink` pointed at `http://localhost:3000/trpc`, the same way `apps/web/src/utils/trpc.ts` does.
+
+## First things to customize
+
+1. Replace the content script's `matches` pattern with the sites the extension should run on.
+2. Add auth before the `tasks` procedures hold user data. They are public procedures in this pack because the command uses `--auth none`.
+3. Move the API URL into WXT config or an environment value per build, and list the production API origin in `host_permissions`.
+4. Keep secrets on the server. Anything bundled into the extension can be read by its users.
+
+## When this is the right pack
+
+Choose this pack when the extension is one client of a product that also has a web app and an API. If the extension needs no backend, run the same command with `--backend none --runtime none --database none --orm none --api none` and keep only the extension and web apps. For the API side, read [Hono with tRPC and Drizzle](/guides/typescript/hono-trpc-drizzle/).
