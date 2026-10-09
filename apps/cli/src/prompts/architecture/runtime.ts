@@ -3,7 +3,14 @@ import type { PromptOption, PromptSingleResolution } from "@/prompts/core/prompt
 import { DEFAULT_CONFIG } from "@/constants";
 import { exitCancelled } from "@/presentation/errors";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
-import { getJobQueueIncompatibility, type Backend, type JobQueue, type Runtime } from "@/types";
+import {
+  getJobQueueIncompatibility,
+  getVectorDbIncompatibility,
+  type Backend,
+  type JobQueue,
+  type Runtime,
+  type VectorDb,
+} from "@/types";
 
 const RUNTIME_PROMPT_OPTIONS: PromptOption<Runtime>[] = [
   {
@@ -27,6 +34,7 @@ type RuntimePromptContext = {
   runtime?: Runtime;
   backend?: Backend;
   jobQueue?: JobQueue;
+  vectorDb?: VectorDb;
 };
 
 export function resolveRuntimePrompt(
@@ -44,7 +52,8 @@ export function resolveRuntimePrompt(
   const options = RUNTIME_PROMPT_OPTIONS.filter(
     (option) =>
       (option.value !== "workers" || context.backend === "hono") &&
-      !getJobQueueIncompatibility(context.jobQueue, { runtime: option.value }, { partial: true }),
+      !getJobQueueIncompatibility(context.jobQueue, { runtime: option.value }, { partial: true }) &&
+      !getVectorDbIncompatibility(context.vectorDb, { runtime: option.value }, { partial: true }),
   );
 
   return context.runtime !== undefined
@@ -62,8 +71,13 @@ export function resolveRuntimePrompt(
       };
 }
 
-export async function getRuntimeChoice(runtime?: Runtime, backend?: Backend, jobQueue?: JobQueue) {
-  const resolution = resolveRuntimePrompt({ runtime, backend, jobQueue });
+export async function getRuntimeChoice(
+  runtime?: Runtime,
+  backend?: Backend,
+  jobQueue?: JobQueue,
+  vectorDb?: VectorDb,
+) {
+  const resolution = resolveRuntimePrompt({ runtime, backend, jobQueue, vectorDb });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

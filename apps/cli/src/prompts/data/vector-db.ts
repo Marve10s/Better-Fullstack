@@ -1,4 +1,11 @@
-import type { Backend, Ecosystem, VectorDb } from "@/types";
+import {
+  getVectorDbIncompatibility,
+  type Backend,
+  type Ecosystem,
+  type Runtime,
+  type VectorDb,
+  type WebDeploy,
+} from "@/types";
 
 import { exitCancelled } from "@/presentation/errors";
 import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
@@ -26,16 +33,41 @@ const VECTOR_DB_PROMPT_OPTIONS = [
     hint: "Fully managed serverless vector database",
   },
   {
+    value: "weaviate" as const,
+    label: "Weaviate",
+    hint: "Open-source vector database, self-hosted or Weaviate Cloud",
+  },
+  {
+    value: "upstash-vector" as const,
+    label: "Upstash Vector",
+    hint: "Serverless HTTP vector database, works on edge runtimes",
+  },
+  {
+    value: "turbopuffer" as const,
+    label: "turbopuffer",
+    hint: "Serverless vector and full-text search on object storage",
+  },
+  {
+    value: "lancedb" as const,
+    label: "LanceDB",
+    hint: "Embedded vector database stored in local files (Node.js or Bun)",
+  },
+  {
     value: "none" as const,
     label: "None",
     hint: "Skip vector database setup",
   },
 ];
 
-type VectorDbPromptContext = {
-  vectorDb?: VectorDb;
+type VectorDbPromptStack = {
   backend?: Backend;
   ecosystem?: Ecosystem;
+  runtime?: Runtime;
+  webDeploy?: WebDeploy;
+};
+
+type VectorDbPromptContext = VectorDbPromptStack & {
+  vectorDb?: VectorDb;
 };
 
 /**
@@ -63,27 +95,27 @@ export function resolveVectorDbPrompt(
     return skip();
   }
 
+  const options = VECTOR_DB_PROMPT_OPTIONS.filter(
+    (option) => !getVectorDbIncompatibility(option.value, context, { partial: true }),
+  );
+
   return context.vectorDb !== undefined
     ? {
         shouldPrompt: false,
         mode: "single",
-        options: VECTOR_DB_PROMPT_OPTIONS,
+        options,
         autoValue: context.vectorDb,
       }
     : {
         shouldPrompt: true,
         mode: "single",
-        options: VECTOR_DB_PROMPT_OPTIONS,
+        options,
         initialValue: "none",
       };
 }
 
-export async function getVectorDbChoice(
-  vectorDb?: VectorDb,
-  backend?: Backend,
-  ecosystem?: Ecosystem,
-) {
-  const resolution = resolveVectorDbPrompt({ vectorDb, backend, ecosystem });
+export async function getVectorDbChoice(vectorDb?: VectorDb, stack: VectorDbPromptStack = {}) {
+  const resolution = resolveVectorDbPrompt({ vectorDb, ...stack });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

@@ -1,0 +1,84 @@
+import weaviate, { generateUuid5, type WeaviateClient } from "weaviate-client";
+
+const WEAVIATE_URL = process.env.WEAVIATE_URL ?? "http://localhost:8080";
+const WEAVIATE_API_KEY = process.env.WEAVIATE_API_KEY;
+const DEFAULT_COLLECTION = "Embeddings";
+
+let clientPromise: Promise<WeaviateClient> | undefined;
+
+function connect(): Promise<WeaviateClient> {
+  if (WEAVIATE_API_KEY) {
+    return weaviate.connectToWeaviateCloud(WEAVIATE_URL, {
+      authCredentials: new weaviate.ApiKey(WEAVIATE_API_KEY),
+    });
+  }
+  const url = new URL(WEAVIATE_URL);
+  return weaviate.connectToLocal({
+    host: url.hostname,
+    port: Number(url.port || 8080),
+  });
+}
+
+export function getVectorClient(): Promise<WeaviateClient> {
+  clientPromise ??= connect();
+  return clientPromise;
+}
+
+export interface VectorRecord {
+  id: string;
+  vector: number[];
+  properties?: Record<string, string | number | boolean>;
+}
+
+export async function ensureCollection(name: string = DEFAULT_COLLECTION): Promise<void> {
+  const client = await getVectorClient();
+  if (await client.collections.exists(name)) return;
+  await client.collections.create({
+    name,
+    vectorizers: weaviate.configure.vectors.selfProvided(),
+  });
+}
+
+export async function upsertVectors(
+  records: VectorRecord[],
+  collectionName: string = DEFAULT_COLLECTION,
+): Promise<void> {
+  await ensureCollection(collectionName);
+  const client = await getVectorClient();
+  const result = await client.collections.get(collectionName).data.insertMany(
+    records.map((record) => ({
+      id: generateUuid5(record.id),
+      properties: { ...record.properties, recordId: record.id },
+      vectors: record.vector,
+    })),
+  );
+  if (result.hasErrors) {
+    throw new Error(`Weaviate rejected ${Object.keys(result.errors).length} vector(s)`);
+  }
+}
+
+export async function queryVectors(
+  vector: number[],
+  limit = 5,
+  collectionName: string = DEFAULT_COLLECTION,
+) {
+  const client = await getVectorClient();
+  const result = await client.collections.get(collectionName).query.nearVector(vector, {
+    limit,
+    returnMetadata: ["distance"],
+  });
+  return result.objects.map((object) => ({
+    id: String(object.properties.recordId),
+    distance: object.metadata?.distance,
+    properties: object.properties,
+  }));
+}
+
+export async function deleteVectors(
+  ids: string[],
+  collectionName: string = DEFAULT_COLLECTION,
+): Promise<void> {
+  const client = await getVectorClient();
+  const collection = client.collections.get(collectionName);
+  await Promise.all(ids.map((id) => collection.data.deleteById(generateUuid5(id))));
+}

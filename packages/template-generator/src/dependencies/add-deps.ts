@@ -892,6 +892,10 @@ export const dependencyVersionMap = {
 
   // Vector DB - Pinecone
   "@pinecone-database/pinecone": "^8.2.0",
+  "weaviate-client": "^3.15.0",
+  "@upstash/vector": "^1.2.3",
+  "@turbopuffer/turbopuffer": "^2.10.0",
+  "@lancedb/lancedb": "^0.40.0",
 
   // EdgeDB
   edgedb: "^2.0.1",

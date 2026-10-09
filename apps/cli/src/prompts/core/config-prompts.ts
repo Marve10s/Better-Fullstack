@@ -740,8 +740,14 @@ function getPromptResolutionValue(
       frontends,
       jobQueue: flags.jobQueue,
       auth: flags.auth,
+      vectorDb: flags.vectorDb,
     },
-    runtime: { runtime: flags.runtime, backend: results.backend, jobQueue: flags.jobQueue },
+    runtime: {
+      runtime: flags.runtime,
+      backend: results.backend,
+      jobQueue: flags.jobQueue,
+      vectorDb: flags.vectorDb,
+    },
     database: {
       database: flags.database,
       backend: results.backend,
@@ -818,7 +824,13 @@ function getPromptResolutionValue(
       webDeploy: results.webDeploy,
     },
     cms: { cms: flags.cms, backend: results.backend },
-    vectorDb: { vectorDb: flags.vectorDb, backend: results.backend, ecosystem: results.ecosystem },
+    vectorDb: {
+      vectorDb: flags.vectorDb,
+      backend: results.backend,
+      ecosystem: results.ecosystem,
+      runtime: results.runtime,
+      webDeploy: results.webDeploy,
+    },
     fileStorage: { fileStorage: flags.fileStorage, backend: results.backend },
   };
   const selectedValue = flags[key as keyof ProjectConfig];
@@ -959,11 +971,17 @@ export async function gatherConfig(
     },
     backend: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Backend);
-      return getBackendFrameworkChoice(flags.backend, results.frontend, flags.jobQueue, flags.auth);
+      return getBackendFrameworkChoice(
+        flags.backend,
+        results.frontend,
+        flags.jobQueue,
+        flags.auth,
+        flags.vectorDb,
+      );
     },
     runtime: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Runtime);
-      return getRuntimeChoice(flags.runtime, results.backend, flags.jobQueue);
+      return getRuntimeChoice(flags.runtime, results.backend, flags.jobQueue, flags.vectorDb);
     },
     database: ({ results }) => {
       const database = resolveDatabaseFlagForEcosystem(results.ecosystem, flags.database);
@@ -1257,7 +1275,12 @@ export async function gatherConfig(
       if (results.ecosystem !== "typescript") {
         return Promise.resolve("none" as VectorDb);
       }
-      return getVectorDbChoice(flags.vectorDb, results.backend, results.ecosystem);
+      return getVectorDbChoice(flags.vectorDb, {
+        backend: results.backend,
+        ecosystem: results.ecosystem,
+        runtime: results.runtime,
+        webDeploy: results.webDeploy,
+      });
     },
     fileStorage: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as FileStorage);

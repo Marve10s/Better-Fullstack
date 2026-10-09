@@ -1321,6 +1321,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     qdrant: "Qdrant",
     chroma: "Chroma",
     pinecone: "Pinecone",
+    weaviate: "Weaviate",
+    "upstash-vector": "Upstash Vector",
+    turbopuffer: "turbopuffer",
+    lancedb: "LanceDB",
   },
   fileStorage: {
     s3: "AWS S3",

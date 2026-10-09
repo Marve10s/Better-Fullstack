@@ -21,6 +21,7 @@ import {
   getRequestedDatabaseSetupRejection,
   getRequestedJobQueueRejection,
   getRequestedOrmRejection,
+  getRequestedVectorDbRejection,
   resolveCompatibilityAdjustments,
 } from "@/config/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "@/config/templates";
@@ -353,6 +354,9 @@ function rejectAdjustedRequestedFlags(
   const rejection =
     (providedFlags.has("jobQueue")
       ? getRequestedJobQueueRejection(config.jobQueue, adjustedConfig)
+      : null) ??
+    (providedFlags.has("vectorDb")
+      ? getRequestedVectorDbRejection(config.vectorDb, adjustedConfig)
       : null) ??
     (providedFlags.has("auth")
       ? getRequestedAuthRejection(config.auth, adjustedConfig)
