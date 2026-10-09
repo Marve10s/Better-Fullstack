@@ -17,10 +17,10 @@ import { getPublishedStackPages, getStackPage } from "@/lib/stack-pages/source";
 describe("programmatic stack pages", () => {
   const pages = getPublishedStackPages();
 
-  it("publishes 30 unique, compatibility-checked combinations", () => {
-    expect(pages).toHaveLength(30);
-    expect(new Set(pages.map((page) => page.slug)).size).toBe(30);
-    expect(new Set(pages.map((page) => page.contentHash)).size).toBe(30);
+  it("publishes 58 unique, compatibility-checked combinations", () => {
+    expect(pages).toHaveLength(58);
+    expect(new Set(pages.map((page) => page.slug)).size).toBe(58);
+    expect(new Set(pages.map((page) => page.contentHash)).size).toBe(58);
 
     for (const page of pages) {
       expect(page.status).toBe("published");
@@ -71,6 +71,32 @@ describe("programmatic stack pages", () => {
     }
   });
 
+  it("covers Java, .NET, Elixir, and React Native stacks", () => {
+    const ecosystems = new Set(pages.map((page) => page.ecosystem));
+    for (const ecosystem of ["java", "dotnet", "elixir"]) expect(ecosystems).toContain(ecosystem);
+
+    for (const slug of ["expo-hono-trpc-drizzle-better-auth", "expo-convex"]) {
+      const page = getStackPage(slug);
+      expect(page?.canonicalParts).toContainEqual(
+        expect.objectContaining({ category: "nativeFrontend", ownership: "Primary mobile app" }),
+      );
+      expect(page?.architecture.facts).toContain(
+        "The frontend and backend are separate primary stack parts.",
+      );
+    }
+  });
+
+  it("describes server-rendered Blazor and LiveView apps as having a browser UI", () => {
+    for (const slug of ["dotnet-blazor-efcore-identity-sqlite", "elixir-phoenix-liveview-ecto"]) {
+      const page = getStackPage(slug);
+      expect(page?.architecture.shape).toBe("server-rendered-app");
+      expect(page?.architecture.facts).toContain(
+        "The backend framework renders the browser UI on the server.",
+      );
+      expect(page?.description).not.toContain("backend service");
+    }
+  });
+
   it("keeps copied commands faithful to the selected database", () => {
     for (const page of pages.filter((candidate) => candidate.ecosystem !== "typescript")) {
       expect(page.command).toContain(`--database ${page.selection.database}`);
@@ -108,8 +134,12 @@ describe("programmatic stack pages", () => {
     expect(page.compatibility.graphIssueCount).toBe(0);
   });
 
-  it("renders substantive TypeScript and Rust HTML without client execution", () => {
-    for (const slug of ["nextjs-hono-drizzle-better-auth", "rust-axum-leptos-seaorm"]) {
+  it("renders substantive TypeScript, Rust, and Elixir HTML without client execution", () => {
+    for (const slug of [
+      "nextjs-hono-drizzle-better-auth",
+      "rust-axum-leptos-seaorm",
+      "elixir-phoenix-liveview-ecto",
+    ]) {
       const page = getStackPage(slug);
       expect(page).toBeDefined();
       if (!page) continue;

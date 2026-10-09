@@ -7,6 +7,7 @@ const SHAPE_COPY: Record<GeneratedStackPage["architecture"]["shape"], string> = 
   "single-app": "one frontend framework owns the UI and server boundary",
   "split-app": "the frontend and backend are generated as separate primary parts",
   "backend-service": "the generated project is centered on a backend service",
+  "server-rendered-app": "one server framework renders the browser UI and owns the backend",
   "rust-fullstack": "Rust owns both the browser frontend and backend",
 };
 
@@ -17,6 +18,8 @@ const CHOOSE_COPY: Record<GeneratedStackPage["architecture"]["shape"], string> =
     "Choose this shape when the browser frontend and API server should remain separate generated parts.",
   "backend-service":
     "Choose this shape when the generated project should expose backend functionality without a browser frontend.",
+  "server-rendered-app":
+    "Choose this shape when one server framework should render the browser UI without a separate frontend app.",
   "rust-fullstack":
     "Choose this shape when both the browser frontend and server should be represented by Rust stack parts.",
 };
