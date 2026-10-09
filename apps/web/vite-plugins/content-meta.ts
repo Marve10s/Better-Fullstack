@@ -29,6 +29,8 @@ const DOCS_RAW_ID = "virtual:docs-raw";
 const RESOLVED_DOCS_RAW_ID = "\0" + DOCS_RAW_ID;
 const GUIDES_RAW_ID = "virtual:guides-raw";
 const RESOLVED_GUIDES_RAW_ID = "\0" + GUIDES_RAW_ID;
+const CHANGELOG_RAW_ID = "virtual:changelog-raw";
+const RESOLVED_CHANGELOG_RAW_ID = "\0" + CHANGELOG_RAW_ID;
 const LOCALIZED_CONTENT_ID = "virtual:localized-content";
 const RESOLVED_LOCALIZED_CONTENT_ID = "\0" + LOCALIZED_CONTENT_ID;
 const LOCALIZED_MDX_BUNDLE_PREFIX = "virtual:localized-content-mdx-bundle/";
@@ -63,6 +65,7 @@ function rawImporterName(locale: LocalizedContentLocale): string {
 }
 
 type ContentSubdir = "docs" | "guides" | "blog";
+type MetaSubdir = ContentSubdir | "changelog";
 
 type MetaEntry = {
   filePath: string;
@@ -76,7 +79,7 @@ type LocalizedJsonEntry = {
   frontmatter?: Record<string, unknown>;
   body?: string;
 };
-type LocalizedJsonBundle = Partial<Record<ContentSubdir, Record<string, LocalizedJsonEntry>>>;
+type LocalizedJsonBundle = Partial<Record<MetaSubdir, Record<string, LocalizedJsonEntry>>>;
 type LocalizedJsonBundles = Partial<Record<LocalizedContentLocale, LocalizedJsonBundle>>;
 
 function extractFrontmatter(source: string): Record<string, unknown> {
@@ -236,7 +239,7 @@ export function contentMetaPlugin(): Plugin {
   let rootDir = "";
 
   function buildMeta(
-    contentSubdir: ContentSubdir,
+    contentSubdir: MetaSubdir,
     globPrefix: string,
     bundles: LocalizedJsonBundles,
   ): MetaBuild {
@@ -368,7 +371,7 @@ export function contentMetaPlugin(): Plugin {
   }
 
   function buildRawContentModule(
-    contentSubdir: ContentSubdir,
+    contentSubdir: MetaSubdir,
     exportName: string,
     addWatchFile: (file: string) => void,
   ): string {
@@ -427,6 +430,7 @@ export function contentMetaPlugin(): Plugin {
       if (id === BLOG_RAW_ID) return RESOLVED_BLOG_RAW_ID;
       if (id === DOCS_RAW_ID) return RESOLVED_DOCS_RAW_ID;
       if (id === GUIDES_RAW_ID) return RESOLVED_GUIDES_RAW_ID;
+      if (id === CHANGELOG_RAW_ID) return RESOLVED_CHANGELOG_RAW_ID;
       if (id === LOCALIZED_CONTENT_ID) return RESOLVED_LOCALIZED_CONTENT_ID;
       if (id.startsWith(LOCALIZED_MDX_BUNDLE_PREFIX)) {
         return id;
@@ -448,6 +452,11 @@ export function contentMetaPlugin(): Plugin {
       }
       if (id === RESOLVED_GUIDES_RAW_ID) {
         return buildRawContentModule("guides", "rawGuidePages", (file) => this.addWatchFile(file));
+      }
+      if (id === RESOLVED_CHANGELOG_RAW_ID) {
+        return buildRawContentModule("changelog", "rawChangelogPages", (file) =>
+          this.addWatchFile(file),
+        );
       }
 
       const { bundles, watchFiles: localizedWatchFiles } = readLocalizedBundles(rootDir);
@@ -488,13 +497,20 @@ export function contentMetaPlugin(): Plugin {
       const docs = buildMeta("docs", "/content/docs/", bundles);
       const guides = buildMeta("guides", "/content/guides/", bundles);
       const blog = buildMeta("blog", "/content/blog/", bundles);
-      for (const entry of [...docs.entries, ...guides.entries, ...blog.entries]) {
+      const changelog = buildMeta("changelog", "/content/changelog/", bundles);
+      for (const entry of [
+        ...docs.entries,
+        ...guides.entries,
+        ...blog.entries,
+        ...changelog.entries,
+      ]) {
         this.addWatchFile(path.join(rootDir, entry.filePath.slice(1)));
       }
       for (const filePath of [
         ...docs.watchFiles,
         ...guides.watchFiles,
         ...blog.watchFiles,
+        ...changelog.watchFiles,
         ...localizedWatchFiles,
       ]) {
         this.addWatchFile(filePath);
@@ -502,7 +518,8 @@ export function contentMetaPlugin(): Plugin {
       return (
         `export const docsMeta = ${serializeModuleValue(docs.entries)};\n` +
         `export const guidesMeta = ${serializeModuleValue(guides.entries)};\n` +
-        `export const blogMeta = ${serializeModuleValue(blog.entries)};\n`
+        `export const blogMeta = ${serializeModuleValue(blog.entries)};\n` +
+        `export const changelogMeta = ${serializeModuleValue(changelog.entries)};\n`
       );
     },
     handleHotUpdate(ctx) {
@@ -513,6 +530,7 @@ export function contentMetaPlugin(): Plugin {
         RESOLVED_BLOG_RAW_ID,
         RESOLVED_DOCS_RAW_ID,
         RESOLVED_GUIDES_RAW_ID,
+        RESOLVED_CHANGELOG_RAW_ID,
       ]) {
         const mod = ctx.server.moduleGraph.getModuleById(id);
         if (mod) ctx.server.moduleGraph.invalidateModule(mod);

@@ -58,6 +58,10 @@ Additional focused release-facing checks:
 - Release artifacts use the versions already recorded in each package manifest. The workflow
   checks the release commit version against the CLI manifest; it does not choose or bump versions.
   `scripts/release/release-state.ts` owns artifact identity, preflight, publication, and recovery.
+- The public `/changelog` page renders the checked-in `apps/web/content/changelog/index.mdx`, generated
+  from the GitHub Releases API. After the release workflow creates a GitHub release, run
+  `bun run --cwd apps/web changelog:sync` and commit the regenerated file. The site never fetches
+  GitHub at request or build time.
 - Keep Bun pinned for deterministic release verification, but prefer the Node/npm publish path for actual package publishing. Treat publish-tooling changes in `.github/workflows/release.yaml` as release-sensitive.
 - See `preview-publishing-security.md` before changing preview workflow permissions, artifacts, secrets, or environments.
 

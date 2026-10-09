@@ -1,4 +1,5 @@
 import { getAllBlogPosts } from "@/lib/blog/source";
+import { changelogPage } from "@/lib/changelog/source";
 import { getAllPages } from "@/lib/docs/source";
 import { getAllGuidePages } from "@/lib/guides/source";
 import { generateSitemapXmlFromEntries, getSitemapEntriesFromPages } from "@/lib/seo/sitemap-core";
@@ -13,6 +14,7 @@ export function generateSitemapXml() {
         slug: post.slug,
         frontmatter: { updated: post.frontmatter.date },
       })),
+      changelogPages: [changelogPage],
       stackPages: getPublishedStackPageSummaries(),
     }),
   );

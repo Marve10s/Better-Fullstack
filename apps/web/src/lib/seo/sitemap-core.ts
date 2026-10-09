@@ -61,11 +61,13 @@ export function getSitemapEntriesFromPages({
   docsPages,
   guidePages,
   blogPages = [],
+  changelogPages = [],
   stackPages = [],
 }: {
   docsPages: SitemapContentPage[];
   guidePages: SitemapContentPage[];
   blogPages?: SitemapContentPage[];
+  changelogPages?: SitemapContentPage[];
   stackPages?: SitemapStackPage[];
 }): SitemapEntry[] {
   const docsEntries = docsPages.map((page): SitemapEntry => {
@@ -98,6 +100,15 @@ export function getSitemapEntriesFromPages({
     ),
   ];
 
+  const changelogEntries = changelogPages.map(
+    (page): SitemapEntry => ({
+      path: "/changelog",
+      changefreq: "weekly",
+      lastmod: page.frontmatter.updated,
+      priority: 0.6,
+    }),
+  );
+
   const stackEntries = stackPages.map(
     (page): SitemapEntry => ({
       path: `/stack/${page.slug}`,
@@ -113,6 +124,7 @@ export function getSitemapEntriesFromPages({
     ...docsEntries,
     ...guideEntries,
     ...blogEntries,
+    ...changelogEntries,
     ...stackEntries,
   ]) {
     entriesByUrl.set(canonicalUrl(entry.path), entry);
