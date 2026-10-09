@@ -2880,6 +2880,42 @@ export function getPythonLoggingIncompatibility(
     : null;
 }
 
+const GO_MIGRATION_DATABASES = new Set(["sqlite", "postgres", "mysql"]);
+const GO_BACKGROUND_JOB_WEB_FRAMEWORKS = new Set(["gin", "echo", "fiber", "chi", "stdlib"]);
+const GO_BACKGROUND_JOB_LABELS: Partial<Record<string, string>> = {
+  river: "River",
+  gocron: "gocron",
+};
+
+export function getGoMigrationsIncompatibility(
+  goMigrations: string | undefined,
+  selection: { database?: string; goOrm?: string },
+): string | null {
+  if (!goMigrations || goMigrations === "none") return null;
+  if (!GO_MIGRATION_DATABASES.has(selection.database ?? "none")) {
+    return "Go migrations require SQLite, PostgreSQL, or MySQL";
+  }
+  if (goMigrations === "atlas" && selection.goOrm === "sqlc" && selection.database !== "postgres") {
+    return "Atlas loads the sqlc schema, which is PostgreSQL-only";
+  }
+  return null;
+}
+
+export function getGoMessageQueueIncompatibility(
+  goMessageQueue: string | undefined,
+  selection: { database?: string; goWebFramework?: string },
+): string | null {
+  const label = goMessageQueue ? GO_BACKGROUND_JOB_LABELS[goMessageQueue] : undefined;
+  if (!label) return null;
+  if (goMessageQueue === "river" && selection.database !== "postgres") {
+    return "River requires PostgreSQL";
+  }
+  if (!GO_BACKGROUND_JOB_WEB_FRAMEWORKS.has(selection.goWebFramework ?? "none")) {
+    return `${label} is wired for Gin, Echo, Fiber, Chi, and net/http servers`;
+  }
+  return null;
+}
+
 function getStackPartCompatibilityIssue(
   part: Pick<StackPart, "id" | "role" | "toolId" | "ecosystem"> &
     Partial<Pick<StackPart, "source">>,
@@ -2940,15 +2976,23 @@ function getStackPartCompatibilityIssue(
   const javaCompatibilityIssue = createJavaCompatibilityIssue(part, context);
   if (javaCompatibilityIssue) return javaCompatibilityIssue;
 
-  if (part.ecosystem === "go" && part.role === "migrations" && part.toolId === "golang-migrate") {
-    const databaseTool = context.primaryToolIdsByRole?.database ?? "none";
-    if (!["sqlite", "postgres", "mysql"].includes(databaseTool)) {
+  if (part.ecosystem === "go" && (part.role === "migrations" || part.role === "jobQueue")) {
+    const selection = {
+      database: context.primaryToolIdsByRole?.database ?? "none",
+      goOrm: context.siblingToolIdsByRole?.orm,
+      goWebFramework: context.ownerToolId,
+    };
+    const message =
+      part.role === "migrations"
+        ? getGoMigrationsIncompatibility(part.toolId, selection)
+        : getGoMessageQueueIncompatibility(part.toolId, selection);
+    if (message) {
       return createStackGraphIssue({
         code: "INCOMPATIBLE_GRAPH_SELECTION",
         partId: part.id,
         role: part.role,
         toolId: part.toolId,
-        message: "Go migrations require SQLite, PostgreSQL, or MySQL",
+        message,
       });
     }
   }

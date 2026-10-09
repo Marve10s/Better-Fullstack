@@ -2439,6 +2439,12 @@ function generateGoReadmeContent(config: ProjectConfig): string {
     goScripts += `\n- \`go run github.com/bufbuild/buf/cmd/buf generate\`: Generate protobuf code`;
   if (goMigrations === "golang-migrate")
     goScripts += `\n- \`migrate -path migrations -database "$DATABASE_URL" up\`: Run migrations`;
+  if (goMigrations === "goose")
+    goScripts += `\n- \`go run ./cmd/migrate up\`: Apply goose migrations (also \`status\`, \`down\`)`;
+  if (goMigrations === "atlas")
+    goScripts += `\n- \`atlas schema apply --env local\`: Apply the declared schema to \`ATLAS_DATABASE_URL\``;
+  if (goMessageQueue === "river")
+    goScripts += `\n- \`go run github.com/riverqueue/river/cmd/river@v0.49.0 migrate-up --database-url "$DATABASE_URL"\`: Run River's migration without starting the server`;
 
   let authSetup = "";
   if (auth === "go-better-auth") {

@@ -1,0 +1,113 @@
+{{#if (eq goMessageQueue "river")}}
+package jobs
+
+import (
+	"context"
+	"encoding/json"
+	"log"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/rivermigrate"
+)
+
+type WelcomeEmailArgs struct {
+	Email string `json:"email"`
+}
+
+func (WelcomeEmailArgs) Kind() string { return "welcome_email" }
+
+type WelcomeEmailWorker struct {
+	river.WorkerDefaults[WelcomeEmailArgs]
+}
+
+func (w *WelcomeEmailWorker) Work(ctx context.Context, job *river.Job[WelcomeEmailArgs]) error {
+	log.Printf("river: sending welcome email to %s", job.Args.Email)
+	return nil
+}
+
+type Runner struct {
+	pool   *pgxpool.Pool
+	client *river.Client[pgx.Tx]
+}
+
+func Start() (*Runner, error) {
+	ctx := context.Background()
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		databaseURL = "postgres://user:password@localhost:5432/dbname?sslmode=disable"
+	}
+
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		return nil, err
+	}
+
+	driver := riverpgxv5.New(pool)
+	migrator, err := rivermigrate.New(driver, nil)
+	if err != nil {
+		pool.Close()
+		return nil, err
+	}
+	if _, err := migrator.Migrate(ctx, rivermigrate.DirectionUp, nil); err != nil {
+		pool.Close()
+		return nil, err
+	}
+
+	workers := river.NewWorkers()
+	river.AddWorker(workers, &WelcomeEmailWorker{})
+
+	client, err := river.NewClient(driver, &river.Config{
+		Queues: map[string]river.QueueConfig{
+			river.QueueDefault: {MaxWorkers: 10},
+		},
+		Workers: workers,
+	})
+	if err != nil {
+		pool.Close()
+		return nil, err
+	}
+	if err := client.Start(ctx); err != nil {
+		pool.Close()
+		return nil, err
+	}
+
+	return &Runner{pool: pool, client: client}, nil
+}
+
+func (r *Runner) Stop() {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := r.client.Stop(ctx); err != nil {
+		log.Printf("river: stop failed: %v", err)
+	}
+	r.pool.Close()
+}
+
+func (r *Runner) EnqueueWelcomeEmail(w http.ResponseWriter, req *http.Request) {
+	var args WelcomeEmailArgs
+	if err := json.NewDecoder(req.Body).Decode(&args); err != nil || args.Email == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"error": "email is required"})
+		return
+	}
+
+	result, err := r.client.Insert(req.Context(), args, nil)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]any{"error": err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusAccepted, map[string]any{"jobId": result.Job.ID, "kind": result.Job.Kind})
+}
+
+func writeJSON(w http.ResponseWriter, status int, payload map[string]any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(payload)
+}
+{{/if}}

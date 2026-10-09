@@ -1,0 +1,28 @@
+{{#if (and (eq goMigrations "atlas") (eq goOrm "gorm"))}}
+package main
+
+import (
+	"fmt"
+	"io"
+	"os"
+
+	"ariga.io/atlas-provider-gorm/gormschema"
+
+	"{{projectName}}/internal/models"
+)
+
+func main() {
+{{#if (eq database "postgres")}}
+	statements, err := gormschema.New("postgres").Load(&models.User{}, &models.Post{})
+{{else if (eq database "mysql")}}
+	statements, err := gormschema.New("mysql").Load(&models.User{}, &models.Post{})
+{{else}}
+	statements, err := gormschema.New("sqlite").Load(&models.User{}, &models.Post{})
+{{/if}}
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to load GORM schema: %v\n", err)
+		os.Exit(1)
+	}
+	_, _ = io.WriteString(os.Stdout, statements)
+}
+{{/if}}

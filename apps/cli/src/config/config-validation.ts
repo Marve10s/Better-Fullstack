@@ -51,6 +51,8 @@ import {
   getJobQueueIncompatibility,
   getShadcnLintFrontendIssue,
   hasVitePlusWorkspaceRoot,
+  getGoMessageQueueIncompatibility,
+  getGoMigrationsIncompatibility,
   hasSignozSupportedGoServerTarget,
   isBotIdWebFrontend,
   isSignozSupportedPythonWebFramework,
@@ -1409,6 +1411,36 @@ export function validateGoExpansionConstraints(config: Partial<ProjectConfig>) {
         "Use --go-api grpc-go",
         "Set --go-observability none",
       ],
+    });
+  }
+
+  const messageQueueReason = getGoMessageQueueIncompatibility(goConfig.goMessageQueue, goConfig);
+  if (messageQueueReason) {
+    incompatibilityError({
+      message: `${messageQueueReason}.`,
+      provided: {
+        "go-message-queue": goConfig.goMessageQueue ?? "none",
+        "go-web-framework": goConfig.goWebFramework ?? "none",
+        database: goConfig.database ?? "none",
+      },
+      suggestions: [
+        "Use --go-web-framework gin, echo, fiber, chi, or stdlib",
+        ...(goConfig.goMessageQueue === "river" ? ["Use --database postgres"] : []),
+        "Set --go-message-queue none",
+      ],
+    });
+  }
+
+  const migrationsReason = getGoMigrationsIncompatibility(goConfig.goMigrations, goConfig);
+  if (migrationsReason) {
+    incompatibilityError({
+      message: `${migrationsReason}.`,
+      provided: {
+        "go-migrations": goConfig.goMigrations ?? "none",
+        "go-orm": goConfig.goOrm ?? "none",
+        database: goConfig.database ?? "none",
+      },
+      suggestions: ["Use --database postgres", "Set --go-migrations none"],
     });
   }
 }

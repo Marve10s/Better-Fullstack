@@ -41,6 +41,7 @@ import {
   getDatabaseOrmRequirementSelectionIssue,
   getDataLayerSelectionIssue,
   getProviderDataLayer,
+  getGoJobAndMigrationSelectionIssue,
   getPythonLoggingSelectionIssue,
 } from "@/config/stack-compatibility";
 
@@ -461,6 +462,8 @@ export function validateMcpProjectConfigCompatibility(
   if (qualityIssue) throw new Error(qualityIssue);
   const pythonLoggingIssue = getPythonLoggingSelectionIssue(config);
   if (pythonLoggingIssue) throw new Error(pythonLoggingIssue.reason);
+  const goJobAndMigrationIssue = getGoJobAndMigrationSelectionIssue(config);
+  if (goJobAndMigrationIssue) throw new Error(goJobAndMigrationIssue);
   const selectionIssue =
     getAuthSelectionIssue(config) ??
     getDataLayerSelectionIssue(config) ??

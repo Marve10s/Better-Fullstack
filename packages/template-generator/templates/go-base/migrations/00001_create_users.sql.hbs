@@ -1,0 +1,36 @@
+{{#if (eq goMigrations "goose")}}
+-- +goose Up
+{{#if (eq database "postgres")}}
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT uni_users_email UNIQUE (email)
+);
+{{/if}}
+{{#if (eq database "mysql")}}
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uni_users_email UNIQUE (email)
+);
+{{/if}}
+{{#if (eq database "sqlite")}}
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uni_users_email UNIQUE (email)
+);
+{{/if}}
+
+-- +goose Down
+DROP TABLE IF EXISTS users;
+{{/if}}

@@ -1526,7 +1526,10 @@ export async function gatherConfig(
     },
     goMessageQueue: ({ results }) => {
       if (results.ecosystem !== "go") return Promise.resolve("none" as GoMessageQueue);
-      return getGoMessageQueueChoice(flags.goMessageQueue);
+      return getGoMessageQueueChoice(flags.goMessageQueue, {
+        database: results.database,
+        goWebFramework: results.goWebFramework,
+      });
     },
     goCaching: ({ results }) => {
       if (results.ecosystem !== "go") return Promise.resolve("none" as GoCaching);
@@ -1556,7 +1559,10 @@ export async function gatherConfig(
       ) {
         return Promise.resolve("none" as GoMigrations);
       }
-      return getGoMigrationsChoice(flags.goMigrations);
+      return getGoMigrationsChoice(flags.goMigrations, {
+        database: results.database,
+        goOrm: results.goOrm,
+      });
     },
     goTemplating: ({ results }) => {
       if (results.ecosystem !== "go") return Promise.resolve("none" as GoTemplating);

@@ -807,7 +807,7 @@ export const GoRealtimeSchema = z
   .describe("Go realtime/WebSocket library");
 
 export const GoMessageQueueSchema = z
-  .enum(["nats", "watermill", "kafka-go", "asynq", "none"])
+  .enum(["nats", "watermill", "kafka-go", "asynq", "river", "gocron", "none"])
   .describe("Go message queue/eventing library");
 
 export const GoCachingSchema = z
@@ -829,7 +829,7 @@ export const GoQualitySchema = z
   .describe("Go code quality tooling");
 
 export const GoMigrationsSchema = z
-  .enum(["golang-migrate", "none"])
+  .enum(["golang-migrate", "goose", "atlas", "none"])
   .describe("Go database migration tooling");
 
 export const GoTemplatingSchema = z.enum(["templ", "none"]).describe("Go templating library");
