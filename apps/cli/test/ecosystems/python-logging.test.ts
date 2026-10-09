@@ -20,6 +20,7 @@ import { resolvePythonLoggingPrompt } from "@/prompts/ecosystems/python-ecosyste
 import { getPythonLoggingIncompatibility, parseStackPartSpecs } from "@/types";
 
 const STREAMLIT_REASON = getPythonLoggingIncompatibility("loguru", "streamlit") ?? "";
+const pythonExecutable = Bun.which("python3") ?? Bun.which("python");
 
 const FRAMEWORK_WIRING = [
   ["fastapi", ["app.add_middleware(RequestLoggingMiddleware)", "log_config=None"]],
@@ -243,18 +244,20 @@ describe("Python logging", () => {
     }
   });
 
-  it("propagates ASGI streaming failures and logs the status already sent", async () => {
-    for (const pythonWebFramework of ["fastapi", "starlette", "litestar"] as const) {
-      for (const pythonLogging of ["loguru", "structlog"] as const) {
-        const [loggingModule] = await generatedFiles(
-          { pythonWebFramework, pythonLogging },
-          "src/app/logging_config.py",
-        );
-        const proof = spawnSync(
-          "python3",
-          [
-            "-c",
-            `
+  it.skipIf(!pythonExecutable)(
+    "propagates ASGI streaming failures and logs the status already sent",
+    async () => {
+      for (const pythonWebFramework of ["fastapi", "starlette", "litestar"] as const) {
+        for (const pythonLogging of ["loguru", "structlog"] as const) {
+          const [loggingModule] = await generatedFiles(
+            { pythonWebFramework, pythonLogging },
+            "src/app/logging_config.py",
+          );
+          const proof = spawnSync(
+            pythonExecutable!,
+            [
+              "-c",
+              `
 from __future__ import annotations
 import ast
 import asyncio
@@ -305,14 +308,15 @@ async def verify(started):
 asyncio.run(verify(True))
 asyncio.run(verify(False))
 `,
-          ],
-          { input: loggingModule, encoding: "utf8" },
-        );
-        expect(proof.stderr).toBe("");
-        expect(proof.status).toBe(0);
+            ],
+            { input: loggingModule, encoding: "utf8" },
+          );
+          expect(proof.stderr).toBe("");
+          expect(proof.status).toBe(0);
+        }
       }
-    }
-  });
+    },
+  );
 
   it("lets aiohttp close a streamed response that fails instead of appending a 500", async () => {
     for (const pythonLogging of ["loguru", "structlog"] as const) {
