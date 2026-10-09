@@ -1,0 +1,158 @@
+---
+title: Explain an Option
+description: See what one option requires and excludes, which options exclude it, and whether it fits a stack you describe, with the shared compatibility reason for each rule.
+translationStatus: pending
+updated: 2026-10-09
+---
+
+`explain` answers questions such as "what does drizzle need and what does it rule out" and "why
+can't I pair better-auth with typeorm" before you run `create`. It is read-only, needs no project
+directory, and sends no telemetry.
+
+## Explain one option
+
+Pass an option ID or one of its legacy IDs:
+
+```bash
+npx create-better-fullstack@latest explain drizzle
+```
+
+```text
+●  Drizzle (drizzle), ORM (orm), --orm drizzle
+│
+│  Ecosystems: typescript
+│  Legacy ids: -
+│  Evidence: listed (declared runtime-verified, stable). A golden runtime recipe exists, but no current matching receipt proves it.
+│
+│  Requires
+│  category  reason
+│  backend   No backend selected
+│
+│  Excludes: none found
+│
+│  Excluded by
+│  option            reason
+│  backend:convex    Convex has built-in data access
+│  database:mongodb  Drizzle ORM does not support MongoDB
+│  database:edgedb   EdgeDB has its own built-in query builder and does not require an ORM
+│  database:redis    Redis is a key-value store and does not require an ORM
+│
+◆  drizzle fits the default typescript stack.
+│
+│  Compatible orm alternatives: prisma, kysely
+```
+
+The output has these parts:
+
+- The option's label, category, flag, ecosystems, and legacy IDs, from the same catalog as
+  [`list` and `search`](/docs/cli/options/).
+- The evidence level from the capability inventory, as the `evidence` command reports it.
+- **Requires**: categories that cannot be `none` when this option is selected.
+- **Excludes**: options this option makes unavailable.
+- **Excluded by**: options that make this option unavailable.
+- Whether the option fits the evaluated stack, and the other options in its category that fit it.
+
+Every reason is the text the builder, `compatibility`, and `bfs_check_compatibility` show for the
+same rule.
+
+When an ID exists in several categories, such as `sentry` or `none`, prefix it with its category:
+`explain observability:sentry`. An unknown ID exits with status 1 and suggests matching IDs when
+`search` finds any. `--ecosystem <id>` picks the ecosystem for options whose category several
+ecosystems share.
+
+## Evaluate against a stack
+
+`--with` takes other selections, written the same way as the option. They replace the matching
+choices in the builder's default stack for the ecosystem (TanStack Router, Hono, Bun, SQLite,
+Drizzle, and Better Auth for TypeScript). Choices you did not name are adjusted to stay compatible
+with yours, as the builder does:
+
+```bash
+npx create-better-fullstack@latest explain better-auth --with typeorm postgres
+```
+
+```text
+▲  better-auth does not fit the default typescript stack with orm:typeorm, database:postgres:
+│    Better Auth has no TypeORM adapter
+│
+│  Compatible auth alternatives: none
+```
+
+A failing reason is an issue the compatibility check behind `bfs_check_compatibility` reports for
+the stack with this option and does not report without it. `create` with the same choices rejects
+the example above with the same reason. An alternative is listed only when the compatibility check
+reports no new issue for it on that stack. The exit
+status is 0 whether or not the option fits.
+
+## How rules are found
+
+The rules live in the shared compatibility checks rather than in a table. `explain` finds them by
+changing one selection at a time on the evaluated stack and recording which changes make an option
+unavailable. This has limits, and every result lists them under `limitations`:
+
+- A rule that applies only when two or more other selections change together is not listed. Use
+  `--with` to set the other selections.
+- When the option does not fit the evaluated stack, options that would also exclude it are not
+  listed.
+- Categories selected only through `--part` Stack Part bindings, such as `workspaceRunner`, are
+  not varied.
+- `create` also rejects some explicit flag combinations with its own messages, such as
+  `--database` next to Convex. Those checks are not part of the shared rules and are not listed.
+
+## JSON output
+
+`--json` writes only the JSON document to stdout, so it is safe to pipe into `jq`. Errors go to
+stderr with a non-zero exit code.
+
+```json
+{
+  "schemaVersion": 1,
+  "option": {
+    "id": "better-auth",
+    "label": "Better-Auth",
+    "aliases": [],
+    "flag": "--auth better-auth",
+    "category": "auth",
+    "categoryLabel": "Auth",
+    "ecosystems": ["typescript", "react-native", "go"]
+  },
+  "ecosystem": "typescript",
+  "with": [{ "id": "typeorm", "category": "orm", "...": "..." }],
+  "evidence": {
+    "level": "listed",
+    "declaredLevel": "runtime-verified",
+    "maturity": "stable",
+    "freshness": "unverified",
+    "limitation": "A golden runtime recipe exists, but no current matching receipt proves it."
+  },
+  "requires": [],
+  "excludes": [],
+  "excludedBy": [],
+  "evaluation": {
+    "allowed": false,
+    "failures": [
+      {
+        "category": "auth",
+        "optionId": "better-auth",
+        "reason": "Better Auth has no TypeORM adapter"
+      }
+    ],
+    "alternatives": []
+  },
+  "limitations": ["..."]
+}
+```
+
+| Field                     | Meaning                                                                                 |
+| ------------------------- | --------------------------------------------------------------------------------------- |
+| `option`, `with`          | Catalog entries in the shape `search` returns.                                          |
+| `ecosystem`               | The ecosystem the stack was built for.                                                  |
+| `evidence`                | The inventory record for this option in that ecosystem, or `null` when it has none.     |
+| `requires`                | Categories that cannot be `none`, with the reason.                                      |
+| `excludes`, `excludedBy`  | Options with their category, label, and the reason.                                     |
+| `evaluation.failures`     | New compatibility issues on the stack. `category` and `optionId` name the rejected one. |
+| `evaluation.alternatives` | Other options in the same category that add no issue, in the shape `list` returns.      |
+| `limitations`             | What this result could not check.                                                       |
+
+AI agents get the same data from the [`bfs_explain_option`](/docs/ai/mcp/) MCP tool, which takes
+`option`, an optional `with` array, and an optional `ecosystem`.
