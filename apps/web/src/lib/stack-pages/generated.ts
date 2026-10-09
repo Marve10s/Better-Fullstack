@@ -2871,8 +2871,8 @@ export const GENERATED_STACK_PAGES = [
       { key: "api", value: "orpc" },
     ],
     output: {
-      fileCount: 55,
-      directoryCount: 25,
+      fileCount: 57,
+      directoryCount: 28,
       layout: "workspace",
       topLevelEntries: [
         ".gitignore",
@@ -2913,7 +2913,7 @@ export const GENERATED_STACK_PAGES = [
       "solidstart-orpc-drizzle",
     ],
     guideUrl: "/guides/typescript/nuxt-prisma-better-auth",
-    contentHash: "550613f73796a2da5173bbcb2adf0b9d0db38961692393bc6ab973584ab338a1",
+    contentHash: "3feb2ada9cecc3c0de64f0a942f97f5434b4f387fee9e86c0db43c02b33b703c",
     updated: "2026-07-17",
   },
   {
