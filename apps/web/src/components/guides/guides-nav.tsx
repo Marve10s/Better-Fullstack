@@ -11,10 +11,13 @@ import {
   TbBrandTypescript as TypeScript,
   TbBuildingStore as Store,
   TbCoffee as Coffee,
+  TbDeviceDesktop as Desktop,
   TbDeviceMobile as Mobile,
   TbDroplet as Droplet,
   TbPackage as Package,
+  TbPuzzle as Puzzle,
   TbRobot as Robot,
+  TbShoppingCart as ShoppingCart,
   TbSparkles as Sparkles,
   TbTool as Tool,
 } from "react-icons/tb";
@@ -61,6 +64,9 @@ const PACK_ICONS: Record<string, IconType> = {
   "create-rust-backend": Rust,
   "create-mobile-app": Mobile,
   "create-internal-tool": Tool,
+  "create-ecommerce-store": ShoppingCart,
+  "create-browser-extension": Puzzle,
+  "create-desktop-app": Desktop,
 };
 
 export type GuideCategory = {

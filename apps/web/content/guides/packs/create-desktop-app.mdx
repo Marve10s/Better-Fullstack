@@ -1,0 +1,117 @@
+---
+title: Create a Desktop App
+description: Create an Electron desktop app around a TanStack Router web frontend with Tailwind CSS, shadcn/ui, and electron-builder packaging using Better Fullstack.
+translationStatus: pending
+updated: 2026-10-09
+category: Packs
+tags:
+  - desktop
+  - electron
+  - tanstack-router
+  - react
+keywords:
+  - create desktop app
+  - electron react starter
+  - electron vite starter
+  - electron tanstack router
+  - web app to desktop app
+---
+
+Use the Desktop App pack when a React web frontend should also ship as a desktop app, with one codebase for the browser and the Electron window.
+
+## Generate the desktop starter
+
+```npm
+npm create better-fullstack@latest my-desktop-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend none \
+  --runtime none \
+  --database none \
+  --orm none \
+  --auth none \
+  --api none \
+  --addons electron \
+  --css-framework tailwind \
+  --ui-library shadcn-ui
+```
+
+## What the pack includes
+
+- A TanStack Router app in `apps/web` built with Vite, with Tailwind CSS, shadcn/ui components, and a theme toggle.
+- An Electron main process in `apps/web/electron/main.mjs` that opens a 1200 by 800 window with context isolation on and Node integration off.
+- A preload script in `apps/web/electron/preload.mjs` that calls `contextBridge.exposeInMainWorld` to expose `window.desktop.platform`.
+- An `electron-builder.yml` that packages `dist` and `electron` into `apps/web/release`.
+- A Vite config with `base: "./"`, so the built app loads from the file system inside Electron.
+
+## Generated shape
+
+```txt
+my-desktop-app/
+  apps/web/
+    electron-builder.yml
+    electron/
+      main.mjs
+      preload.mjs
+    src/
+      main.tsx
+      routes/
+        __root.tsx
+        index.tsx
+    vite.config.ts
+  packages/
+    config/
+    env/
+```
+
+## Run it locally
+
+Install dependencies, then start the desktop app from `apps/web`:
+
+```npm
+npm install
+```
+
+```bash
+cd apps/web
+npm run desktop:dev
+```
+
+`desktop:dev` runs the Vite dev server and, once `http://localhost:5173` answers, starts Electron with `ELECTRON_RENDERER_URL` set to that address, so the window loads the dev server. Without that variable, the main process loads `dist/index.html`. `npm run dev` in `apps/web` still runs the plain web app in a browser.
+
+To package the app, run `npm run desktop:build` from `apps/web`. It runs `vite build` and then `electron-builder`, which writes installers to `apps/web/release`.
+
+## First things to customize
+
+Read the preload API from React with a typed global:
+
+```tsx
+declare global {
+  interface Window {
+    desktop?: { platform: string };
+  }
+}
+
+export function PlatformBadge() {
+  const platform = window.desktop?.platform ?? "web";
+  return <span>{platform}</span>;
+}
+```
+
+`window.desktop` is undefined in a normal browser, so the same component works in both targets.
+
+Then:
+
+1. Set `appId` and `productName` in `electron-builder.yml`, and add icons and platform targets before shipping.
+2. Add features to the preload script with `contextBridge.exposeInMainWorld` and `ipcRenderer`, and handle them in the main process. Keep Node APIs out of the renderer.
+3. If the app needs shared data, generate a separate backend such as Hono and call it over HTTP from the renderer.
+
+## Compatibility notes
+
+- The CLI accepts `--addons electron` only with the `tanstack-router`, `react-vite`, `vanilla-vite`, `vue`, and `solid` frontends.
+- The preload is an ES module. Electron documents that ESM preload scripts need an unsandboxed renderer, and the generated window does not set `sandbox`, so Electron's default applies. If `window.desktop` is undefined in the window, set `sandbox: false` in `webPreferences` or convert the preload to CommonJS.
+- `--addons tauri` is the alternative for a Rust-based desktop shell and supports more frontends. Its generated `tauri.conf.json` lists icon files under `src-tauri/icons` that the generator does not write, so create them with `tauri icon` before the first build.
+
+## When this is the right pack
+
+Choose this pack when the desktop app is a wrapper around a web UI that also runs in the browser. For a native mobile target instead, read the [Mobile App pack](/guides/packs/create-mobile-app/), and see the [CLI create reference](/docs/cli/create/) for every flag.

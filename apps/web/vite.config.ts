@@ -146,6 +146,10 @@ export default defineConfig({
             if (raw) {
               return `assets/localized-content-raw-${raw[1]}-[hash].js`;
             }
+            const content = /\/content\/(docs|guides|blog)\/.*\.mdx(?:\?|$)/.exec(id);
+            if (content) {
+              return `assets/content-${content[1]}-[name]-[hash].js`;
+            }
           }
           return "assets/[name]-[hash].js";
         },
