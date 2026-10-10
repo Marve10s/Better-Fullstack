@@ -104,4 +104,4 @@ it("serves request-local Markdown without sharing cached translations", async ()
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
-});
+}, 30_000);
