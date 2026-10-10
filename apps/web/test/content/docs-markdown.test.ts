@@ -1,4 +1,5 @@
 import { contentMetaPlugin } from "@vite-plugins/content-meta";
+import { mdxContentPlugin } from "@vite-plugins/mdx-content";
 import { expect, it } from "bun:test";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -17,6 +18,7 @@ it("serves request-local Markdown without sharing cached translations", async ()
     resolve: { alias: { "@": path.join(webRoot, "src") } },
     plugins: [
       contentMetaPlugin(),
+      mdxContentPlugin({}),
       {
         name: "docs-markdown-test",
         resolveId(id) {
@@ -82,7 +84,9 @@ it("serves request-local Markdown without sharing cached translations", async ()
       minify: false,
       rollupOptions: {
         input: entryId,
-        external: (id) => id.startsWith("virtual:localized-content-mdx-bundle/"),
+        external: (id) =>
+          id.startsWith("virtual:localized-content-mdx-bundle/") ||
+          id.startsWith("virtual:localized-content-mdx/"),
         output: { inlineDynamicImports: true },
       },
     },
