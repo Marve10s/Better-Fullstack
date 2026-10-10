@@ -162,7 +162,7 @@ describe("mobile native scaffolding", () => {
     expect(findFile(root, "apps/native/navigation/native-navigation.tsx")).toBeUndefined();
   });
 
-  test("initializes Unistyles before Expo Router starts", async () => {
+  test("initializes Unistyles before Expo Router with compatible Nitro Modules", async () => {
     const result = await createVirtual({
       projectName: "mobile-unistyles",
       ecosystem: "react-native",
@@ -191,6 +191,9 @@ describe("mobile native scaffolding", () => {
     expect(index.indexOf("import './unistyles'")).toBeLessThan(index.indexOf("expo-router/entry"));
     expect(appConfig.expo.ios.bundleIdentifier).toBe("com.betterfullstack.mobile.unistyles");
     expect(appConfig.expo.android.package).toBe("com.betterfullstack.mobile.unistyles");
+    const dependencies = pkg.dependencies as Record<string, string>;
+    const nitroFloor = dependencies["react-native-nitro-modules"].replace(/^[~^]/, "");
+    expect(Bun.semver.satisfies(nitroFloor, ">=0.37.1")).toBe(true);
   });
 
   test("omits deep-linking wiring when React Navigation selects no deep linking", async () => {
