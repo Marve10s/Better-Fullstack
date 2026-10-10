@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { gotoAppPage } from "@test/e2e/test-helpers";
 import deContent from "@web-root/content/i18n/de.json" with { type: "json" };
 import de from "@web-root/messages/de.json" with { type: "json" };
+import ja from "@web-root/messages/ja.json" with { type: "json" };
 
 import type { PublicVerificationReport } from "@/lib/docs/release-verification";
 
@@ -52,6 +53,19 @@ test("ArrowDown follows the visible full-text search result order", async ({ pag
   await expect(results.nth(1)).toHaveClass(/(?:^|\s)bg-\[var\(--docs-panel\)\](?:\s|$)/);
   await input.press("ArrowDown");
   await expect(results.nth(2)).toHaveClass(/(?:^|\s)bg-\[var\(--docs-panel\)\](?:\s|$)/);
+});
+
+test("Japanese search finds words within translated documentation", async ({
+  page,
+  context,
+  baseURL,
+}) => {
+  await context.addCookies([{ name: "BFS_LOCALE", value: "ja", url: baseURL! }]);
+  await gotoAppPage(page, "/docs/cli/create");
+  await page.getByRole("button", { name: ja.docsSearch, exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("textbox").fill("選択肢");
+  await expect(dialog.getByRole("button").filter({ hasText: "選択肢" }).first()).toBeVisible();
 });
 
 test("an earlier clipboard write cannot close a reopened palette", async ({ page }) => {
@@ -121,14 +135,16 @@ for (const [slug, path] of [
     const markdownLink = page.getByRole("link", { name: de.docsActionsViewMarkdown, exact: true });
     const url = await markdownLink.getAttribute("href");
     expect(url).toBe(`/docs${slug}.md`);
-    const response = await context.request.get(url!);
+    const response = await context.request.get(url!, { headers: { Accept: "text/html" } });
     expect(response.status()).toBe(200);
     expect(response.headers()["content-language"]).toBe("de");
     expect(response.headers()["cache-control"]).toContain("no-store");
     const localizedMarkdown = await response.text();
     expect(localizedMarkdown).toContain(deContent.docs[path].body);
 
-    const english = await context.request.get(url!, { headers: { Cookie: "BFS_LOCALE=en" } });
+    const english = await context.request.get(url!, {
+      headers: { Accept: "text/html", Cookie: "BFS_LOCALE=en" },
+    });
     expect(english.headers()["content-language"]).toBe("en");
     expect(await english.text()).not.toBe(localizedMarkdown);
   });

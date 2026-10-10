@@ -157,8 +157,11 @@ function readLocalizedBundles(rootDir: string): {
   return { bundles, watchFiles };
 }
 
-function localizedEntryToMdxSource(entry: LocalizedJsonEntry): string {
-  const frontmatter = entry.frontmatter ?? {};
+function localizedEntryToMdxSource(
+  entry: LocalizedJsonEntry,
+  canonicalFrontmatter: Record<string, unknown> = {},
+): string {
+  const frontmatter = { ...canonicalFrontmatter, ...entry.frontmatter };
   const body = entry.body ?? "";
   return `---\n${stringifyYaml(frontmatter).trim()}\n---\n\n${body}`;
 }
@@ -323,6 +326,7 @@ export function contentMetaPlugin(): Plugin {
   function buildLocalizedRawModule(
     bundles: LocalizedJsonBundles,
     locale: LocalizedContentLocale,
+    addWatchFile: (file: string) => void,
   ): string {
     const bundle = bundles[locale];
     const entriesOut: string[] = [];
@@ -335,8 +339,12 @@ export function contentMetaPlugin(): Plugin {
       )) {
         if (!entry.body) continue;
         const key = localizedLoaderKey(locale, "docs", relativePath);
+        const canonicalFile = path.join(rootDir, "content", "docs", relativePath);
+        if (!fs.existsSync(canonicalFile)) continue;
+        addWatchFile(canonicalFile);
+        const canonicalFrontmatter = extractFrontmatter(fs.readFileSync(canonicalFile, "utf8"));
         entriesOut.push(
-          `${serializeModuleValue(key)}: ${serializeModuleValue(localizedEntryToMdxSource(entry))}`,
+          `${serializeModuleValue(key)}: ${serializeModuleValue(localizedEntryToMdxSource(entry, canonicalFrontmatter))}`,
         );
       }
     }
@@ -481,7 +489,9 @@ export function contentMetaPlugin(): Plugin {
           return undefined;
         }
         for (const filePath of localizedWatchFiles) this.addWatchFile(filePath);
-        return buildLocalizedRawModule(bundles, locale as LocalizedContentLocale);
+        return buildLocalizedRawModule(bundles, locale as LocalizedContentLocale, (file) =>
+          this.addWatchFile(file),
+        );
       }
 
       if (id !== RESOLVED_ID) return undefined;

@@ -13,6 +13,7 @@ it("serves request-local Markdown without sharing cached translations", async ()
     configFile: false,
     root: webRoot,
     logLevel: "silent",
+    ssr: { noExternal: ["yaml"] },
     resolve: { alias: { "@": path.join(webRoot, "src") } },
     plugins: [
       contentMetaPlugin(),
@@ -26,6 +27,9 @@ it("serves request-local Markdown without sharing cached translations", async ()
           return `
             import { docsMarkdownResponse } from "/src/lib/docs/markdown.server.ts";
             import { paraglideMiddleware } from "/src/paraglide/server.js";
+            import { docsMeta } from "virtual:content-meta";
+            import { localizedDocsRawMdxLoaders } from "virtual:localized-content";
+            import { parse } from "yaml";
             const cases = [
               ["ai/mcp", "de", "MCP-Server"],
               ["ai/mcp", "en", "MCP Server"],
@@ -49,6 +53,17 @@ it("serves request-local Markdown without sharing cached translations", async ()
                 }
                 if (locale === "de" && slug === "ai/mcp" && !source.includes("Mit einem Befehl verbinden")) {
                   throw new Error("German Markdown returned the English body");
+                }
+                const filePath = "/content/docs/" + (slug === "" ? "index" : slug === "cli" ? "cli/index" : slug) + ".mdx";
+                const canonical = docsMeta.find(page => page.filePath === filePath).frontmatter;
+                const frontmatter = parse(source.split("---")[1]);
+                for (const key of ["updated", "layout"]) {
+                  if (frontmatter[key] !== canonical[key]) {
+                    throw new Error("Localized Markdown lost canonical " + key + " for " + slug);
+                  }
+                }
+                if (locale !== "en" && source !== await localizedDocsRawMdxLoaders[locale + ":" + filePath]()) {
+                  throw new Error("Markdown response differs from Copy MD source");
                 }
               }));
               for (const slug of ["not-a-doc", "toString"]) {
