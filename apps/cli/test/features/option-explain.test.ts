@@ -179,8 +179,34 @@ describe("explain command", () => {
     expect(checked).toEqual(alternatives.map((orm) => ({ orm, hasIssues: false })));
   });
 
+  it("reports a shared rule that the stack-wide check does not cover", async () => {
+    const result = await explain([
+      "pythonServer:gunicorn",
+      "--with",
+      "pythonWebFramework:streamlit",
+    ]);
+
+    expect(result.evaluation.allowed).toBe(false);
+    expect(result.evaluation.failures).toContainEqual({
+      category: "pythonServer",
+      optionId: "gunicorn",
+      reason: "Gunicorn requires a WSGI, ASGI, or aiohttp application",
+    });
+    expect(result.evaluation.alternatives.map((alternative) => alternative.id)).not.toContain(
+      "gunicorn",
+    );
+  });
+
   it.each([
     [["explain", "drizle"], 'Unknown option "drizle"'],
+    [
+      ["explain", "dataClient:apollo-client"],
+      "dataClient:apollo-client is selected through a Stack Part binding, which explain cannot evaluate",
+    ],
+    [
+      ["explain", "drizzle", "--with", "dataClient:apollo-client"],
+      "dataClient:apollo-client is selected through a Stack Part binding",
+    ],
     [["explain", "dri"], "Did you mean orm:drizzle"],
     [["explain", "sentry"], "Prefix it with its category: observability:sentry"],
     [["explain", "drizzle", "--with", "nope:postgres"], 'Unknown option category "nope"'],

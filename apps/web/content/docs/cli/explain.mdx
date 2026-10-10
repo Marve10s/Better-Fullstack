@@ -94,8 +94,10 @@ unavailable. This has limits, and every result lists them under `limitations`:
   `--with` to set the other selections.
 - When the option does not fit the evaluated stack, options that would also exclude it are not
   listed.
-- Categories selected only through `--part` Stack Part bindings, such as `workspaceRunner`, are
-  not varied.
+- Categories selected only through `--part` Stack Part bindings, such as `workspaceRunner` or
+  `dataClient`, are not varied. `explain` rejects an option or `--with` selection from one of
+  those categories instead of reporting a fit it cannot check; use `create --dry-run` with
+  `--part` for them.
 - `create` also rejects some explicit flag combinations with its own messages, such as
   `--database` next to Convex. Those checks are not part of the shared rules and are not listed.
 

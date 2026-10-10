@@ -194,6 +194,11 @@ const issueKey = (issue: CompatibilityIssue) =>
 function resolveSelections(values: readonly string[], ecosystem: OptionCategoryEcosystem) {
   const selections = values.map((value) => resolveCatalogOption(value, ecosystem));
   for (const [index, { category, id }] of selections.entries()) {
+    if (!STACK_KEY_BY_CATEGORY.has(category)) {
+      throw new Error(
+        `${category}:${id} is selected through a Stack Part binding and cannot be applied with --with.`,
+      );
+    }
     const other = selections
       .slice(0, index)
       .find((earlier) => earlier.category === category && earlier.id !== id);
@@ -212,6 +217,11 @@ export function explainOption(input: {
   ecosystem?: OptionCategoryEcosystem;
 }): ExplainResult {
   const option = resolveCatalogOption(input.option, input.ecosystem);
+  if (!STACK_KEY_BY_CATEGORY.has(option.category)) {
+    throw new Error(
+      `${option.category}:${option.id} is selected through a Stack Part binding, which explain cannot evaluate. Use \`create --dry-run\` with \`--part\` to check it.`,
+    );
+  }
   const ecosystem = input.ecosystem ?? option.ecosystems[0];
   if (!ecosystem) {
     throw new Error(`Option category "${option.category}" is not part of any ecosystem.`);
@@ -241,14 +251,20 @@ export function explainOption(input: {
   }
 
   const known = new Set(evaluateCompatibility(withoutOption).issues.map(issueKey));
-  const failuresFor = (optionId: string) =>
-    evaluateCompatibility(select(stack, option.category, optionId))
+  const failuresFor = (optionId: string) => {
+    const failures = evaluateCompatibility(select(stack, option.category, optionId))
       .issues.filter((issue) => !known.has(issueKey(issue)))
       .map((issue) => ({
         category: issue.category ?? null,
         optionId: issue.optionId ?? null,
         reason: issue.message,
       }));
+    const disabled = getDisabledReason(stack, option.category, optionId);
+    if (disabled && !failures.some((failure) => failure.reason === disabled)) {
+      failures.push({ category: option.category, optionId, reason: disabled });
+    }
+    return failures;
+  };
   const failures = failuresFor(option.id);
   const alternatives = OPTION_CATEGORY_METADATA[option.category].options
     .filter(({ id }) => id !== option.id && id !== "none" && failuresFor(id).length === 0)
@@ -272,7 +288,7 @@ export function explainOption(input: {
       ...(rejectedOnStack ? [REJECTED_LIMITATION] : []),
       ...(unvaried.length > 0
         ? [
-            `Categories selected only through Stack Part bindings are not varied: ${unvaried.join(", ")}.`,
+            `Categories selected only through Stack Part bindings are not varied, explained, or accepted by --with: ${unvaried.join(", ")}.`,
           ]
         : []),
       CREATE_CHECKS_LIMITATION,
