@@ -642,6 +642,7 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
     overrides: {
       goWebFramework: "go-zero",
       goOrm: "sqlx",
+      database: "postgres",
       goApi: "grpc-gateway",
       goAuth: "oauth2",
       goTesting: ["testcontainers", "ginkgo-gomega", "mockery"],

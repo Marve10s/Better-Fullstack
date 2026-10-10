@@ -76,6 +76,8 @@ import {
   JAVA_TESTING_LIBRARIES_VALUES,
   JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
+  getGoMessageQueueIncompatibility,
+  getGoMigrationsIncompatibility,
   getJobQueueIncompatibility,
   LOGGING_VALUES,
   MOBILE_DEEP_LINKING_VALUES,
@@ -520,26 +522,34 @@ function makePythonDraft(args: GeneratorArgs): CandidateDraft {
 }
 
 function makeGoDraft(args: GeneratorArgs): CandidateDraft {
+  const common = createCommonOptions("go", args);
+  const goWebFramework = sampleScalar(GO_WEB_FRAMEWORK_VALUES, 0.18);
+  const goOrm = sampleScalar(GO_ORM_VALUES, 0.15);
+  const goSelection = { database: common.database, goOrm, goWebFramework };
+  const goMessageQueue = sampleScalar(GO_MESSAGE_QUEUE_VALUES, 0.5);
+  const goMigrations = sampleScalar(GO_MIGRATIONS_VALUES, 0.5);
   return {
     ecosystem: "go",
     options: {
-      ...createCommonOptions("go", args),
+      ...common,
       auth: sampleScalar(["go-better-auth", "none"] as const, 0.5),
-      goWebFramework: sampleScalar(GO_WEB_FRAMEWORK_VALUES, 0.18),
-      goOrm: sampleScalar(GO_ORM_VALUES, 0.15),
+      goWebFramework,
+      goOrm,
       goApi: sampleScalar(GO_API_VALUES, 0.35),
       goCli: sampleScalar(GO_CLI_VALUES, 0.35),
       goLogging: sampleScalar(GO_LOGGING_VALUES, 0.35),
       goAuth: sampleScalar(GO_AUTH_VALUES, 0.35),
       goTesting: sampleArray(GO_TESTING_VALUES, 0.3, 2, "goTesting"),
       goRealtime: sampleScalar(GO_REALTIME_VALUES, 0.5),
-      goMessageQueue: sampleScalar(GO_MESSAGE_QUEUE_VALUES, 0.5),
+      goMessageQueue: getGoMessageQueueIncompatibility(goMessageQueue, goSelection)
+        ? "none"
+        : goMessageQueue,
       goCaching: sampleScalar(GO_CACHING_VALUES, 0.5),
       goConfig: sampleScalar(GO_CONFIG_VALUES, 0.5),
       goObservability: sampleScalar(GO_OBSERVABILITY_VALUES, 0.5),
       goValidation: sampleScalar(GO_VALIDATION_VALUES, 0.5),
       goQuality: sampleScalar(GO_QUALITY_VALUES, 0.5),
-      goMigrations: sampleScalar(GO_MIGRATIONS_VALUES, 0.5),
+      goMigrations: getGoMigrationsIncompatibility(goMigrations, goSelection) ? "none" : goMigrations,
       goTemplating: sampleScalar(GO_TEMPLATING_VALUES, 0.5),
       goProtoTooling: sampleScalar(GO_PROTO_TOOLING_VALUES, 0.5),
       goDI: sampleScalar(GO_DI_VALUES, 0.5),

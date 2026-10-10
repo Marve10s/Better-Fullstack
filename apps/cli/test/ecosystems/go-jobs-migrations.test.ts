@@ -61,6 +61,8 @@ describe("Go background jobs", () => {
       expect(river).toContain("river.AddWorker(workers, &WelcomeEmailWorker{})");
       expect(river).toContain("migrator.Migrate(ctx, rivermigrate.DirectionUp, nil)");
       expect(river).toContain("r.client.Insert(req.Context(), args, nil)");
+      expect(river).toContain("req.Body = http.MaxBytesReader(w, req.Body, maxEnqueueBodyBytes)");
+      expect(river).toContain("len(args.Email) > maxEmailLength");
       expect(goMod).toContain("github.com/riverqueue/river v0.49.0");
       expect(goMod).toContain("github.com/riverqueue/river/riverdriver/riverpgxv5 v0.49.0");
       expect(goMod).toContain("go 1.26.0");
@@ -136,6 +138,12 @@ describe("Go migrations", () => {
       expect(migration).toContain("-- +goose Down");
       expect(migration).toContain(sql);
       expect(migration).toContain("CONSTRAINT uni_users_email UNIQUE (email)");
+      expect(migration).toContain(
+        "CONSTRAINT fk_posts_author FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE",
+      );
+      expect(migration.indexOf("DROP TABLE IF EXISTS posts;")).toBeLessThan(
+        migration.indexOf("DROP TABLE IF EXISTS users;"),
+      );
       expect(embed).toContain("//go:embed *.sql");
       expect(goMod).toContain("github.com/pressly/goose/v3 v3.28.0");
     }

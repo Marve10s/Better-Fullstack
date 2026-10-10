@@ -257,6 +257,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
 
   const goFlags: Array<[string, string | readonly string[]]> = [
     ["auth", config.auth],
+    ["database", config.database],
     ["go-web-framework", config.goWebFramework],
     ["go-orm", config.goOrm],
     ["go-api", config.goApi],

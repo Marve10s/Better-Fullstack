@@ -4,6 +4,7 @@ package jobs
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -89,10 +90,24 @@ func (r *Runner) Stop() {
 	r.pool.Close()
 }
 
+const maxEnqueueBodyBytes = 4 << 10
+
+const maxEmailLength = 254
+
 func (r *Runner) EnqueueWelcomeEmail(w http.ResponseWriter, req *http.Request) {
+	req.Body = http.MaxBytesReader(w, req.Body, maxEnqueueBodyBytes)
 	var args WelcomeEmailArgs
-	if err := json.NewDecoder(req.Body).Decode(&args); err != nil || args.Email == "" {
+	if err := json.NewDecoder(req.Body).Decode(&args); err != nil {
+		var tooLarge *http.MaxBytesError
+		if errors.As(err, &tooLarge) {
+			writeJSON(w, http.StatusRequestEntityTooLarge, map[string]any{"error": "request body is too large"})
+			return
+		}
 		writeJSON(w, http.StatusBadRequest, map[string]any{"error": "email is required"})
+		return
+	}
+	if args.Email == "" || len(args.Email) > maxEmailLength {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"error": "email is required and must be at most 254 characters"})
 		return
 	}
 
