@@ -27,7 +27,7 @@ async function loadVectorModule(
   );
   const exports: unknown = runInNewContext(
     `${executable}\n({ upsertVectors, getVectorClient: typeof getVectorClient === "undefined" ? undefined : getVectorClient });`,
-    { ...bindings, process, URL, Error },
+    { ...bindings, process: { env: {} }, URL, Error },
   );
   return exports as VectorModule;
 }
