@@ -120,6 +120,42 @@ test("quickstart copy labels follow the selected locale", async ({ page, context
   await expect(quickstart.getByRole("button", { name: "Copy code", exact: true })).toHaveCount(0);
 });
 
+test("CLI flag descriptions and controls follow the selected locale", async ({
+  page,
+  context,
+  baseURL,
+}) => {
+  await context.addCookies([{ name: "BFS_LOCALE", value: "de", url: baseURL! }]);
+  await gotoAppPage(page, "/docs/cli/create");
+  await expect(
+    page.getByRole("columnheader", { name: de.docsCliAcceptedValues, exact: true }).first(),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("columnheader", { name: "Accepted values", exact: true }),
+  ).toHaveCount(0);
+  const ecosystemRow = page
+    .getByRole("row")
+    .filter({ has: page.getByText("--ecosystem", { exact: true }) });
+  await expect(ecosystemRow).toContainText(de.docsCliSummaryCommonEcosystem);
+  await expect(ecosystemRow.getByText("typescript", { exact: true }).first()).toBeVisible();
+  await expect(ecosystemRow.getByText("rust", { exact: true })).toBeVisible();
+  const frontendRows = page
+    .getByRole("row")
+    .filter({ has: page.getByText("--frontend", { exact: true }) });
+  await expect(
+    frontendRows.filter({ hasText: de.docsCliSummaryTypescriptStackFrontend }),
+  ).toHaveCount(1);
+  await expect(frontendRows.filter({ hasText: de.docsCliSummaryReactNativeFrontend })).toHaveCount(
+    1,
+  );
+  await expect(
+    page.getByRole("tablist", { name: de.docsPackageManager, exact: true }).first(),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: de.docsCopyCode, exact: true }).first(),
+  ).toBeVisible();
+});
+
 for (const [slug, path] of [
   ["/ai/mcp", "ai/mcp.mdx"],
   ["/cli", "cli/index.mdx"],
