@@ -197,6 +197,19 @@ describe("explain command", () => {
     );
   });
 
+  it("judges the candidate on the stack it would produce, not the stack it replaces", async () => {
+    const result = await explain([
+      "observability:none",
+      "--with",
+      "observability:signoz",
+      "backend:self-next",
+      "webDeploy:cloudflare",
+    ]);
+
+    expect(result.evaluation.failures).toEqual([]);
+    expect(result.evaluation.allowed).toBe(true);
+  });
+
   it.each([
     [["explain", "drizle"], 'Unknown option "drizle"'],
     [

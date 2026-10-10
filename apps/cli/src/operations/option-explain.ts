@@ -252,14 +252,15 @@ export function explainOption(input: {
 
   const known = new Set(evaluateCompatibility(withoutOption).issues.map(issueKey));
   const failuresFor = (optionId: string) => {
-    const failures = evaluateCompatibility(select(stack, option.category, optionId))
+    const candidate = select(stack, option.category, optionId);
+    const failures = evaluateCompatibility(candidate)
       .issues.filter((issue) => !known.has(issueKey(issue)))
       .map((issue) => ({
         category: issue.category ?? null,
         optionId: issue.optionId ?? null,
         reason: issue.message,
       }));
-    const disabled = getDisabledReason(stack, option.category, optionId);
+    const disabled = getDisabledReason(candidate, option.category, optionId);
     if (disabled && !failures.some((failure) => failure.reason === disabled)) {
       failures.push({ category: option.category, optionId, reason: disabled });
     }
