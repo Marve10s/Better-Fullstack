@@ -474,6 +474,10 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   qdrant: { type: "si", slug: "qdrant", hex: "DC244C" },
   chroma: { type: "local", src: "/icon/chroma.svg" },
   pinecone: { type: "local", src: "/icon/pinecone.svg" },
+  weaviate: { type: "local", src: "/icon/weaviate.png" },
+  "upstash-vector": { type: "si", slug: "upstash", hex: "00E9A3" },
+  turbopuffer: { type: "local", src: "/icon/turbopuffer.png" },
+  lancedb: { type: "local", src: "/icon/lancedb.png" },
 
   // ─── File Storage ──────────────────────────────────────────────────────────
   s3: { type: "local", src: "/icon/aws-s3.svg" },

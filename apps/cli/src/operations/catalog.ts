@@ -143,7 +143,7 @@ function getGuidance() {
       search:
         "String. TypeScript supports multiple providers; Rust, Python, Go, and Java currently support meilisearch or none.",
       vectorDb:
-        "String. TypeScript-only vector database for AI embeddings: pgvector, qdrant, chroma, pinecone, or none. Each provider is a standalone service (pgvector connects to a dedicated Postgres+pgvector instance via PGVECTOR_DATABASE_URL). Requires a standalone backend (not convex/none).",
+        "String. TypeScript-only vector database for AI embeddings: pgvector, qdrant, chroma, pinecone, weaviate, upstash-vector, turbopuffer, lancedb, or none. Each provider except LanceDB is a standalone service (pgvector connects to a dedicated Postgres+pgvector instance via PGVECTOR_DATABASE_URL). Requires a standalone backend (not convex/none). Weaviate needs the Node.js or Bun runtime (not Cloudflare Workers). LanceDB is embedded and needs a standalone server on the Node.js or Bun runtime.",
     },
     ambiguityRules: [
       "If the user request leaves major stack choices unspecified, ASK the user before proceeding. Do not guess.",

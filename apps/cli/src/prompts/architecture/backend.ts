@@ -6,10 +6,12 @@ import { isCancel, navigableSelect } from "@/prompts/core/navigable";
 import {
   getAuthIncompatibility,
   getJobQueueIncompatibility,
+  getVectorDbIncompatibility,
   type Auth,
   type Backend,
   type Frontend,
   type JobQueue,
+  type VectorDb,
 } from "@/types";
 
 // Frontends with built-in server capabilities for backend="self"
@@ -97,6 +99,7 @@ type BackendPromptContext = {
   frontends?: Frontend[];
   jobQueue?: JobQueue;
   auth?: Auth;
+  vectorDb?: VectorDb;
 };
 
 export function resolveBackendPrompt(
@@ -127,6 +130,7 @@ export function resolveBackendPrompt(
     (option) =>
       availableValues.has(option.value) &&
       !getJobQueueIncompatibility(context.jobQueue, { backend: option.value }, { partial: true }) &&
+      !getVectorDbIncompatibility(context.vectorDb, { backend: option.value }, { partial: true }) &&
       !getAuthIncompatibility(
         context.auth,
         { ecosystem: "typescript", backend: option.value, frontend: context.frontends },
@@ -159,8 +163,15 @@ export async function getBackendFrameworkChoice(
   frontends?: Frontend[],
   jobQueue?: JobQueue,
   auth?: Auth,
+  vectorDb?: VectorDb,
 ) {
-  const resolution = resolveBackendPrompt({ backendFramework, frontends, jobQueue, auth });
+  const resolution = resolveBackendPrompt({
+    backendFramework,
+    frontends,
+    jobQueue,
+    auth,
+    vectorDb,
+  });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

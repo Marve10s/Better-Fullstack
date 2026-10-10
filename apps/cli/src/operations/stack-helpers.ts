@@ -21,6 +21,7 @@ import {
   getToolingCapability,
   getToolingCategory,
   getToolingSelectionOptions,
+  getVectorDbIncompatibility,
   isToolingOverlayOnly,
   legacyProjectConfigToStackParts,
   mergeProjectConfigSettingsIntoStackParts,
@@ -447,6 +448,7 @@ export function validateMcpProjectConfigCompatibility(
         | "database"
         | "dbSetup"
         | "jobQueue"
+        | "vectorDb"
         | "webDeploy"
         | "stackParts"
         | "addons"
@@ -471,13 +473,16 @@ export function validateMcpProjectConfigCompatibility(
   if (selectionIssue) throw new Error(selectionIssue);
   if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
     const qualityIssues = validateStackParts(config.stackParts).issues.filter(
-      (issue) => issue.role === "codeQuality" || issue.role === "jobQueue",
+      (issue) =>
+        issue.role === "codeQuality" || issue.role === "jobQueue" || issue.role === "vectorDb",
     );
     if (qualityIssues.length)
       throw new Error(qualityIssues.map((issue) => issue.message).join("\n"));
   } else if (config.ecosystem === "typescript") {
-    const jobQueueIssue = getJobQueueIncompatibility(config.jobQueue, config);
-    if (jobQueueIssue) throw new Error(jobQueueIssue);
+    const serviceIssue =
+      getJobQueueIncompatibility(config.jobQueue, config) ??
+      getVectorDbIncompatibility(config.vectorDb, config);
+    if (serviceIssue) throw new Error(serviceIssue);
   }
   if (config.integrations !== "nango") return;
 

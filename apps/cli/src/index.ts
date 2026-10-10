@@ -19,7 +19,11 @@ export {
   recovery,
 } from "@/run";
 
-import { hasGeneratedJobQueueRequirements, type ProjectConfig } from "@/types";
+import {
+  hasGeneratedJobQueueRequirements,
+  hasVectorDbRuntimeRequirements,
+  type ProjectConfig,
+} from "@/types";
 
 import { applyEffectBackendDefaults } from "@/config/config-processing";
 import {
@@ -281,6 +285,12 @@ export async function createVirtual(
         .map((part) => part.toolId),
     ];
     // Graph input generates from its own logging parts, so check them alongside the flat field.
+    const vectorDbSelections = [
+      config.vectorDb,
+      ...(config.stackParts ?? [])
+        .filter((part) => part.role === "vectorDb")
+        .map((part) => part.toolId),
+    ];
     const pythonLoggingSelections = [
       config.pythonLogging,
       ...(config.stackParts ?? [])
@@ -301,6 +311,7 @@ export async function createVirtual(
       config.integrations === "nango" ||
       config.payments !== "none" ||
       jobQueueSelections.some(hasGeneratedJobQueueRequirements) ||
+      vectorDbSelections.some(hasVectorDbRuntimeRequirements) ||
       pythonLoggingSelections.some((selection) => selection && selection !== "none") ||
       goJobAndMigrationSelections.some((selection) =>
         ["river", "gocron", "goose", "atlas"].includes(selection ?? "none"),

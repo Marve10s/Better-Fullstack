@@ -5,6 +5,7 @@ import type {
   JobQueue,
   Runtime,
   UILibrary,
+  VectorDb,
   WebDeploy,
 } from "@/config/types";
 
@@ -351,6 +352,37 @@ export function getJobQueueIncompatibility(
   }
   if (requirements.postgres && !isUnanswered(stack.database) && stack.database !== "postgres") {
     return `${requirements.label} requires PostgreSQL`;
+  }
+  return null;
+}
+
+const VECTOR_DB_RUNTIME_REASONS: Partial<Record<VectorDb, string>> = {
+  weaviate: "Weaviate's TypeScript client uses gRPC and needs the Node.js or Bun runtime, not Cloudflare Workers",
+  lancedb: "LanceDB is an embedded native database and needs a standalone Node.js or Bun server",
+};
+
+export function hasVectorDbRuntimeRequirements(vectorDb: string | undefined): boolean {
+  return VECTOR_DB_RUNTIME_REASONS[vectorDb as VectorDb] !== undefined;
+}
+
+const isFullstackSelfBackend = (backend: string | undefined) =>
+  backend === "self" || (backend?.startsWith("self-") ?? false);
+
+export function getVectorDbIncompatibility(
+  vectorDb: string | undefined,
+  stack: { backend?: string; runtime?: string; webDeploy?: string },
+  { partial = false } = {},
+): string | null {
+  const reason = VECTOR_DB_RUNTIME_REASONS[vectorDb as VectorDb];
+  if (!reason || stack.backend === "convex" || stack.backend === "none") return null;
+  const isUnanswered = (value: string | undefined) => partial && value === undefined;
+  if (stack.runtime === "workers") return reason;
+  if (vectorDb === "weaviate") {
+    return isFullstackSelfBackend(stack.backend) && stack.webDeploy === "cloudflare" ? reason : null;
+  }
+  if (isFullstackSelfBackend(stack.backend)) return reason;
+  if (!isUnanswered(stack.runtime) && stack.runtime !== "node" && stack.runtime !== "bun") {
+    return reason;
   }
   return null;
 }

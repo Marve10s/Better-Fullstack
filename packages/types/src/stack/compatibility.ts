@@ -35,6 +35,7 @@ import {
   getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
+  getVectorDbIncompatibility,
   hasPWACompatibleFrontend,
   hasTanStackAICompatibleFrontend,
   hasTauriCompatibleFrontend,
@@ -58,7 +59,9 @@ export {
   getJobQueueIncompatibility,
   hasGeneratedJobQueueRequirements,
   getUnsupportedWebDeployFrontend,
+  getVectorDbIncompatibility,
   hasDockerComposeCompatibleFrontend,
+  hasVectorDbRuntimeRequirements,
   hasPWACompatibleFrontend,
   hasTanStackAICompatibleFrontend,
   hasTauriCompatibleFrontend,
@@ -2765,6 +2768,19 @@ export const analyzeStackCompatibility = (
     changes.push({
       category: "jobQueue",
       message: `Job queue set to 'None' (${jobQueueIssue})`,
+    });
+  }
+
+  const vectorDbIssue =
+    nextStack.ecosystem === "typescript"
+      ? getVectorDbIncompatibility(nextStack.vectorDb, nextStack)
+      : null;
+  if (vectorDbIssue) {
+    nextStack.vectorDb = "none";
+    changed = true;
+    changes.push({
+      category: "vectorDb",
+      message: `Vector database set to 'None' (${vectorDbIssue})`,
     });
   }
 

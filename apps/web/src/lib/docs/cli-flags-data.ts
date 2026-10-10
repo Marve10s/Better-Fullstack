@@ -726,6 +726,10 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "qdrant",
           "chroma",
           "pinecone",
+          "weaviate",
+          "upstash-vector",
+          "turbopuffer",
+          "lancedb",
           "none"
         ],
         "valueHint": null,

@@ -1,0 +1,54 @@
+import * as lancedb from "@lancedb/lancedb";
+
+const LANCEDB_URI = process.env.LANCEDB_URI ?? "./.lancedb";
+const DEFAULT_TABLE = "embeddings";
+
+let connectionPromise: Promise<lancedb.Connection> | undefined;
+
+export function getVectorClient(): Promise<lancedb.Connection> {
+  connectionPromise ??= lancedb.connect(LANCEDB_URI).catch((error: unknown) => {
+    connectionPromise = undefined;
+    throw error;
+  });
+  return connectionPromise;
+}
+
+export interface VectorRecord {
+  id: string;
+  vector: number[];
+  text?: string;
+}
+
+export async function upsertVectors(
+  records: VectorRecord[],
+  tableName: string = DEFAULT_TABLE,
+): Promise<void> {
+  const db = await getVectorClient();
+  const rows = records.map((record) => ({
+    id: record.id,
+    vector: record.vector,
+    text: record.text ?? "",
+  }));
+  const table = await db.createTable(tableName, rows, { existOk: true });
+  await table.mergeInsert("id").whenMatchedUpdateAll().whenNotMatchedInsertAll().execute(rows);
+}
+
+export async function queryVectors(
+  vector: number[],
+  limit = 5,
+  tableName: string = DEFAULT_TABLE,
+) {
+  const db = await getVectorClient();
+  const table = await db.openTable(tableName);
+  return table.vectorSearch(vector).distanceType("cosine").limit(limit).toArray();
+}
+
+export async function deleteVectors(
+  ids: string[],
+  tableName: string = DEFAULT_TABLE,
+): Promise<void> {
+  const db = await getVectorClient();
+  const table = await db.openTable(tableName);
+  const idList = ids.map((id) => `'${id.replaceAll("'", "''")}'`).join(", ");
+  await table.delete(`id IN (${idList})`);
+}

@@ -50,6 +50,7 @@ import {
   getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getShadcnLintFrontendIssue,
+  getVectorDbIncompatibility,
   hasVitePlusWorkspaceRoot,
   getGoMessageQueueIncompatibility,
   getGoMigrationsIncompatibility,
@@ -101,6 +102,19 @@ function validateJobQueueConstraints(config: Partial<ProjectConfig>, partial = f
   if ((selection.ecosystem ?? "typescript") !== "typescript") return;
 
   const reason = getJobQueueIncompatibility(selection.jobQueue, selection, {
+    partial: partial && !usesGraph,
+  });
+  if (reason) throw new Error(reason);
+}
+
+function validateVectorDbConstraints(config: Partial<ProjectConfig>, partial = false) {
+  const usesGraph = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+  const selection = usesGraph
+    ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript")
+    : config;
+  if ((selection.ecosystem ?? "typescript") !== "typescript") return;
+
+  const reason = getVectorDbIncompatibility(selection.vectorDb, selection, {
     partial: partial && !usesGraph,
   });
   if (reason) throw new Error(reason);
@@ -1564,6 +1578,7 @@ export function validateFullConfig(
   validateI18nConstraints(config);
   validateIntegrationsConstraints(config);
   validateJobQueueConstraints(config, partial);
+  validateVectorDbConstraints(config, partial);
 
   const hasGraphBackend = config.stackParts?.some(
     (part) =>
@@ -1717,6 +1732,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
 
     validateIntegrationsConstraints(config);
     validateJobQueueConstraints(config);
+    validateVectorDbConstraints(config);
     validateContainerAddonConstraints(config);
     const authIssue = getAuthSelectionIssue(config);
     if (authIssue) throw new Error(authIssue);

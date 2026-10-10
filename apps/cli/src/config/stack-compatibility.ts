@@ -8,6 +8,7 @@ import {
   getGoMigrationsIncompatibility,
   getJobQueueIncompatibility,
   getPythonLoggingIncompatibility,
+  getVectorDbIncompatibility,
   isToolingOverlayOnly,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
@@ -56,6 +57,14 @@ export function getRequestedJobQueueRejection(
 ): string | null {
   if (!requestedJobQueue || adjustedConfig.jobQueue === requestedJobQueue) return null;
   return getJobQueueIncompatibility(requestedJobQueue, adjustedConfig);
+}
+
+export function getRequestedVectorDbRejection(
+  requestedVectorDb: ProjectConfig["vectorDb"] | undefined,
+  adjustedConfig: Partial<ProjectConfig>,
+): string | null {
+  if (!requestedVectorDb || adjustedConfig.vectorDb === requestedVectorDb) return null;
+  return getVectorDbIncompatibility(requestedVectorDb, adjustedConfig);
 }
 
 function getAuthStack(config: Partial<ProjectConfig>) {

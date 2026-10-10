@@ -1,0 +1,48 @@
+import Turbopuffer from "@turbopuffer/turbopuffer";
+
+export const vectorClient = new Turbopuffer({
+  apiKey: process.env.TURBOPUFFER_API_KEY!,
+  region: process.env.TURBOPUFFER_REGION,
+});
+
+const DEFAULT_NAMESPACE = "embeddings";
+
+export interface VectorRecord {
+  id: string;
+  vector: number[];
+  attributes?: Record<string, string | number | boolean>;
+}
+
+export async function upsertVectors(
+  records: VectorRecord[],
+  namespace: string = DEFAULT_NAMESPACE,
+): Promise<void> {
+  await vectorClient.namespace(namespace).write({
+    upsert_rows: records.map((record) => ({
+      ...record.attributes,
+      id: record.id,
+      vector: record.vector,
+    })),
+    distance_metric: "cosine_distance",
+  });
+}
+
+export async function queryVectors(
+  vector: number[],
+  topK = 5,
+  namespace: string = DEFAULT_NAMESPACE,
+) {
+  const result = await vectorClient.namespace(namespace).query({
+    rank_by: ["vector", "ANN", vector],
+    top_k: topK,
+    include_attributes: true,
+  });
+  return result.rows ?? [];
+}
+
+export async function deleteVectors(
+  ids: string[],
+  namespace: string = DEFAULT_NAMESPACE,
+): Promise<void> {
+  await vectorClient.namespace(namespace).write({ deletes: ids });
+}

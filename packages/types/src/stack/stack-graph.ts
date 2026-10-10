@@ -183,6 +183,7 @@ import {
   getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
+  getVectorDbIncompatibility,
   hasDockerComposeCompatibleFrontend,
   hasPWACompatibleFrontend,
   hasTanStackAICompatibleFrontend,
@@ -1653,6 +1654,24 @@ function createTypeScriptBackendCompatibilityIssue(
         role: part.role,
         toolId: part.toolId,
         message: "Nango's Node SDK is not available on Cloudflare Workers.",
+      });
+    }
+  }
+
+  if (part.role === "vectorDb" && part.ecosystem === "typescript") {
+    const deployTools = context.selectedToolIdsByRoleList?.deploy ?? [];
+    const reason = getVectorDbIncompatibility(part.toolId, {
+      backend: context.ownerToolId,
+      runtime: context.siblingToolIdsByRole?.runtime,
+      webDeploy: deployTools.includes("cloudflare") ? "cloudflare" : undefined,
+    });
+    if (reason) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: `${reason}.`,
       });
     }
   }

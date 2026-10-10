@@ -553,7 +553,7 @@ The analytics component is already mounted and requires no environment variables
 `
     : ""
 }
-${generateJobQueueSection(options, packageManagerRunCmd)}
+${generateJobQueueSection(options, packageManagerRunCmd)}${generateVectorDbSection(options)}
 ${ai === "ai-cli" ? `\n${generateAICLISection(packageManagerRunCmd, packageManager)}\n` : ""}
 ${
   examples.includes("chat-sdk")
@@ -636,6 +636,51 @@ QStash delivers each job as a signed HTTP request to \`POST /api/jobs/welcome-em
 ${run("jobs:enqueue")}
 \`\`\``
     }
+`;
+  }
+
+  return "";
+}
+
+function generateVectorDbSection(options: ProjectConfig): string {
+  const appDir = options.backend === "self" ? "apps/web" : "apps/server";
+  const helpers = `\`upsertVectors()\`, \`queryVectors()\`, and \`deleteVectors()\` in \`${appDir}/src/lib/vector.ts\` are the example upsert, similarity query, and delete to call from your routes.`;
+
+  if (options.vectorDb === "weaviate") {
+    return `
+## Vector database (Weaviate)
+
+Run Weaviate locally with Docker, which serves HTTP on port 8080 and gRPC on port 50051:
+
+\`\`\`bash
+docker run -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.39.10
+\`\`\`
+
+\`WEAVIATE_URL\` in \`${appDir}/.env\` points at that instance. To use Weaviate Cloud instead, set \`WEAVIATE_URL\` to your cluster URL and \`WEAVIATE_API_KEY\` to its API key. ${helpers} The \`Embeddings\` collection is created on first upsert with self-provided vectors.
+`;
+  }
+
+  if (options.vectorDb === "upstash-vector") {
+    return `
+## Vector database (Upstash Vector)
+
+Create an index in the [Upstash console](https://console.upstash.com/vector) with the dimension and similarity function of your embedding model, then set \`UPSTASH_VECTOR_REST_URL\` and \`UPSTASH_VECTOR_REST_TOKEN\` in \`${appDir}/.env\`. ${helpers}
+`;
+  }
+
+  if (options.vectorDb === "turbopuffer") {
+    return `
+## Vector database (turbopuffer)
+
+Create an API key in the [turbopuffer dashboard](https://turbopuffer.com/dashboard), then set \`TURBOPUFFER_API_KEY\` and \`TURBOPUFFER_REGION\` in \`${appDir}/.env\`. The \`embeddings\` namespace is created on first write with cosine distance. ${helpers}
+`;
+  }
+
+  if (options.vectorDb === "lancedb") {
+    return `
+## Vector database (LanceDB)
+
+LanceDB runs embedded in the server process and stores tables under \`LANCEDB_URI\` (default \`./.lancedb\` relative to \`${appDir}\`, ignored by git). No separate service is needed in development. In production, point \`LANCEDB_URI\` at a persistent volume or an object store URI such as \`s3://bucket/path\`. ${helpers} The \`embeddings\` table is created on first upsert.
 `;
   }
 
