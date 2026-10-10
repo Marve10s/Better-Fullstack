@@ -47,6 +47,9 @@ import (
 	"github.com/gofiber/adaptor/v2"
 {{/if}}
 	"github.com/gofiber/fiber/v2"
+{{#if (eq goMessageQueue "river")}}
+	fiberadaptor "github.com/gofiber/fiber/v2/middleware/adaptor"
+{{/if}}
 	fibercors "github.com/gofiber/fiber/v2/middleware/cors"
 	fiberlogger "github.com/gofiber/fiber/v2/middleware/logger"
 	fiberrecover "github.com/gofiber/fiber/v2/middleware/recover"
@@ -71,7 +74,7 @@ import (
 {{#if (and (eq goApi "grpc-go") (eq goObservability "signoz"))}}
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 {{/if}}
-{{#if (or (eq auth "go-better-auth") (ne goAuth "none") (eq goOrm "gorm") (eq goOrm "sqlc") (eq goOrm "ent") (eq goOrm "bun") (eq goOrm "sqlx") (eq observability "sentry") (eq goObservability "signoz") (eq goApi "grpc-go"))}}
+{{#if (or (eq auth "go-better-auth") (ne goAuth "none") (eq goOrm "gorm") (eq goOrm "sqlc") (eq goOrm "ent") (eq goOrm "bun") (eq goOrm "sqlx") (eq observability "sentry") (eq goObservability "signoz") (eq goApi "grpc-go") (eq goMessageQueue "river") (eq goMessageQueue "gocron"))}}
 
 {{/if}}
 {{#if (or (eq auth "go-better-auth") (ne goAuth "none"))}}
@@ -85,6 +88,9 @@ import (
 {{/if}}
 {{#if (and (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (or (or (or (eq goOrm "gorm") (eq goOrm "sqlc")) (eq goOrm "ent")) (eq goOrm "bun")))}}
 	"{{projectName}}/internal/handlers"
+{{/if}}
+{{#if (or (eq goMessageQueue "river") (eq goMessageQueue "gocron"))}}
+	"{{projectName}}/internal/jobs"
 {{/if}}
 {{#if (or (eq observability "sentry") (eq goObservability "signoz"))}}
 	appobservability "{{projectName}}/internal/observability"
@@ -392,6 +398,27 @@ func main() {
 	defer database.Close()
 	_ = db
 {{/if}}
+{{#if (or (eq goMessageQueue "river") (eq goMessageQueue "gocron"))}}
+
+	jobRunner, err := jobs.Start()
+	if err != nil {
+{{#if (eq goLogging "zap")}}
+		logger.Fatal("Failed to start background jobs", zap.Error(err))
+{{else if (eq goLogging "zerolog")}}
+		logger.Fatal().Err(err).Msg("Failed to start background jobs")
+{{else if (eq goLogging "slog")}}
+		logger.Error("Failed to start background jobs", "error", err)
+		os.Exit(1)
+{{else}}
+		panic("Failed to start background jobs: " + err.Error())
+{{/if}}
+	}
+{{#if (and (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (or (eq goWebFramework "fiber") (eq goWebFramework "chi"))) (ne goObservability "signoz"))}}
+	jobs.StopOnSignal(jobRunner)
+{{else}}
+	defer jobRunner.Stop()
+{{/if}}
+{{/if}}
 {{#if (or (or (or (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (eq goWebFramework "fiber")) (or (eq goWebFramework "chi") (eq goWebFramework "stdlib"))) (eq goApi "grpc-go")) (and (eq auth "go-better-auth") (eq goWebFramework "none")))}}
 
 	// Get host from environment
@@ -559,6 +586,10 @@ func main() {
 	api.GET("/posts", handlers.GetPosts)
 	api.POST("/posts", handlers.CreatePost)
 {{/if}}
+{{#if (eq goMessageQueue "river")}}
+
+	r.POST("/api/jobs/welcome-email", gin.WrapF(jobRunner.EnqueueWelcomeEmail))
+{{/if}}
 
 	// Start server
 {{#if (eq goObservability "signoz")}}
@@ -650,6 +681,10 @@ func main() {
 	e.DELETE("/api/users/:id", handlers.DeleteUser)
 	e.GET("/api/posts", handlers.GetPosts)
 	e.POST("/api/posts", handlers.CreatePost)
+{{/if}}
+{{#if (eq goMessageQueue "river")}}
+
+	e.POST("/api/jobs/welcome-email", echo.WrapHandler(http.HandlerFunc(jobRunner.EnqueueWelcomeEmail)))
 {{/if}}
 
 	// Start server
@@ -761,6 +796,10 @@ func main() {
 	app.Get("/api/posts", handlers.GetPosts)
 	app.Post("/api/posts", handlers.CreatePost)
 {{/if}}
+{{#if (eq goMessageQueue "river")}}
+
+	app.Post("/api/jobs/welcome-email", fiberadaptor.HTTPHandlerFunc(jobRunner.EnqueueWelcomeEmail))
+{{/if}}
 
 	// Start server
 {{#if (eq goObservability "signoz")}}
@@ -865,6 +904,10 @@ func main() {
 	r.Get("/api/posts", handlers.GetPosts)
 	r.Post("/api/posts", handlers.CreatePost)
 {{/if}}
+{{#if (eq goMessageQueue "river")}}
+
+	r.Post("/api/jobs/welcome-email", jobRunner.EnqueueWelcomeEmail)
+{{/if}}
 
 	// Start server
 {{#if (eq goObservability "signoz")}}
@@ -947,6 +990,10 @@ func main() {
 	mux.HandleFunc("DELETE /api/users/{id}", handlers.DeleteUser)
 	mux.HandleFunc("GET /api/posts", handlers.GetPosts)
 	mux.HandleFunc("POST /api/posts", handlers.CreatePost)
+{{/if}}
+{{#if (eq goMessageQueue "river")}}
+
+	mux.HandleFunc("POST /api/jobs/welcome-email", jobRunner.EnqueueWelcomeEmail)
 {{/if}}
 
 	// CORS: pinned to CORS_ORIGIN when set, permissive otherwise.

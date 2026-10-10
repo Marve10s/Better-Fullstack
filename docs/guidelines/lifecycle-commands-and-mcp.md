@@ -88,6 +88,7 @@ MCP is a transport for the product model, not a separate product.
 - Manual-review blockers, migration steps, install commands, and changed files remain structured.
 - When adding a CLI lifecycle feature, update or explicitly rule out the corresponding MCP surface.
 - `--shape` is deliberately CLI-only. It seeds the interactive flow with a language/platform question, and MCP paths are prompt-free and already pass a complete stack, so there is nothing for a shape to decide.
+- `completion` is deliberately CLI-only. It prints a shell script for interactive terminals and derives its commands, flags, and values from the router, so agents get the same facts from the schema tools.
 
 ## Non-Interactive Behavior
 

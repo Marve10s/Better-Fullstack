@@ -48,7 +48,7 @@ Some flags are global because they live in one project config, but not every fla
 
 ## TypeScript
 
-The broadest ecosystem: web apps, APIs, workers, desktop shells, browser extensions, docs sites, and service integrations. Needs Node.js 20+.
+The broadest ecosystem: web apps, APIs, workers, desktop shells, browser extensions, docs sites, and service integrations. Needs Node.js 22.18 or later on the 22 line, or 24.11 or later. Generated servers build with tsdown, which sets that floor, and pg-boss on its own needs 22.12 or later.
 
 ```npm
 npm create better-fullstack@latest my-app -- \
@@ -178,7 +178,7 @@ npm create better-fullstack@latest my-phoenix-app -- \
   --no-install
 ```
 
-A few schema-level choices stay intentionally rejected until templates exist (`ecto`, `ueberauth`, `guardian`, `nimble-options`, `nebulex`, `opentelemetry`, `prom_ex`, `mox`, `bypass`, `wallaby`, `fly`, `gigalixir`). The CLI surfaces those as unsupported-tool messages instead of generating partial Phoenix code.
+Oban and `phx-gen-auth` require `ecto-sql` with PostgreSQL. Pow and ExMachina require an Ecto SQL repository (`ecto-sql`, `myxql`, or `ecto_sqlite3`), and Absinthe needs an Ecto layer. Auth, APIs, realtime, Gettext, Wallaby, and the HTTP server adapters require Phoenix. Every deploy target generates files: `docker`, `mix-release`, `fly`, and `gigalixir` add a release `Dockerfile`, `fly` also adds `fly.toml`, and `gigalixir` adds a `Procfile`.
 
 ## .NET
 

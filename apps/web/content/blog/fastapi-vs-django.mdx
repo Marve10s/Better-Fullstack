@@ -1,0 +1,117 @@
+---
+title: "FastAPI vs Django for a Python backend"
+description: "Choose FastAPI or Django by what the framework owns, the async model, library fit, and deployment, with the Better Fullstack command and generated output for each."
+date: 2026-10-06
+authors:
+  - Ibrahim Elkamali
+image: /search-media/stack-decisions-1200x630.png
+video: /search-media/stack-decisions-1200x630.mp4
+translationStatus: pending
+tags:
+  - fastapi
+  - django
+  - python
+  - backend
+keywords:
+  - fastapi vs django
+  - django vs fastapi
+  - python backend framework comparison
+  - fastapi or django for api
+  - python api starter
+---
+
+![Stack decision map: choose an ecosystem, generate, inspect, and keep the code](/search-media/stack-decisions-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/stack-decisions-1200x630.png" src="/search-media/stack-decisions-1200x630.mp4"></video>
+
+FastAPI and Django both serve HTTP from Python, but they start from opposite ends. FastAPI is a framework for [building APIs based on standard Python type hints](https://fastapi.tiangolo.com/), built on Starlette for the web parts and Pydantic for the data parts. Django is a full web framework that ships its own [ORM, migrations, automatic admin, URL routing, and templates](https://docs.djangoproject.com/en/stable/intro/overview/).
+
+The useful question is how much of the application you want the framework to own.
+
+## What the framework owns
+
+With **FastAPI**, the framework owns routing, request validation through Pydantic models, and the OpenAPI description, which it serves as interactive docs at `/docs` and `/redoc`. The database layer, migrations, authentication, and any back-office screens are separate choices you make and wire together.
+
+With **Django**, the framework owns much more. Models describe the database layout in Python, `makemigrations` and `migrate` manage schema changes, and registering a model with `admin.site.register` gives authenticated users an admin site to add, change, and delete records. A JSON API usually adds a library on top, such as [Django REST framework](https://www.django-rest-framework.org/), which describes itself as "a powerful and flexible toolkit for building Web APIs."
+
+That difference shapes the rest of the comparison. A team that wants the database, admin, and auth to follow one set of conventions gets that from Django. A team that wants to assemble those pieces, or does not need them, carries less with FastAPI.
+
+## Concurrency and runtime model
+
+FastAPI runs on ASGI. A path operation can be `async def` or plain `def`. FastAPI's [async guide](https://fastapi.tiangolo.com/async/) explains that a plain `def` function runs in an external threadpool, and it advises plain `def` when the code calls a library that does not support `await`, which it notes is "currently the case for most database libraries." The same guide notes that a blocking call made directly inside `async def` would block the server.
+
+Django supports [async views](https://docs.djangoproject.com/en/stable/topics/async/), but the deployment decides what you get from them. Under WSGI, async views run in a one-off event loop and do not get the benefits of an async stack. Under ASGI they do. The ORM has `a`-prefixed async variants of query methods, and the current docs state that transactions do not yet work in async mode; that code is wrapped with `sync_to_async()`.
+
+If the service is mostly long-lived connections or many concurrent outbound calls, check whether every library on that path supports async before choosing either framework.
+
+## Ecosystem and library fit
+
+FastAPI uses Pydantic models directly as request and response types. Code that already describes its data with Pydantic, or a service that sits beside other Python code and needs a thin HTTP layer, fits that model.
+
+Django's admin works by registering Django models, so it depends on the Django ORM. If a plan depends on the admin or on packages built around Django models, the ORM is part of the decision, not an implementation detail.
+
+## Deployment constraints
+
+FastAPI applications run under an ASGI server; the `fastapi run` command uses Uvicorn. Django can be deployed with WSGI or ASGI. Django's own [`runserver` documentation](https://docs.djangoproject.com/en/stable/ref/django-admin/) is explicit: "DO NOT USE THIS SERVER IN A PRODUCTION SETTING." Plan the production server before the first deploy with either framework.
+
+## What Better Fullstack generates
+
+The two commands below generate a Python project with each framework:
+
+```bash
+bun create better-fullstack@latest my-api \
+  --ecosystem python \
+  --python-web-framework fastapi \
+  --database postgres \
+  --python-orm sqlalchemy \
+  --python-validation pydantic \
+  --python-quality ruff
+```
+
+```bash
+bun create better-fullstack@latest my-api \
+  --ecosystem python \
+  --python-web-framework django \
+  --python-orm none \
+  --python-api django-rest-framework \
+  --python-server gunicorn \
+  --python-quality ruff
+```
+
+Add `--dry-run` to preview either project without writing files. Both use `uv` with a `pyproject.toml`, put the application in `src/app`, and include pytest tests for the root and health routes. The generated code differs in these places:
+
+| Concern          | FastAPI command                                                         | Django command                                                                  |
+| ---------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Application      | `FastAPI` app in `src/app/main.py`                                      | `settings.configure()` and the URL patterns in one module, `src/app/main.py`    |
+| Routes           | root, health, and CRUD routes for users and posts                       | root, health, and a DRF `api/status` view                                       |
+| Data layer       | SQLAlchemy models, `crud.py`, and Alembic configuration                 | none                                                                            |
+| Validation       | Pydantic schemas used by the routes                                     | Pydantic schemas in `schemas.py`, not used by any view                          |
+| Run command      | `uv run uvicorn app.main:app --reload`                                  | `uv run python -m app.main` (Django's development server)                       |
+| Production entry | Uvicorn without `--reload`, or add `--python-server gunicorn`           | `application = get_wsgi_application()` for `uv run gunicorn app.main:application` |
+
+The Django option is deliberately small and leaves out Django's data and admin layers. The generated module configures settings in code instead of a Django project layout: there is no `manage.py`, no `DATABASES` setting, no models, and no admin. `INSTALLED_APPS` lists only `contenttypes`, `auth`, `corsheaders`, and `rest_framework`. Adding Django models, migrations, and the admin is work you do after generation. The command sets `--python-orm none` because with `--python-orm sqlalchemy` the SQLAlchemy modules are generated but no Django view uses them. `--python-api django-ninja` is the other API option, and the CLI accepts both API options only with Django.
+
+The FastAPI option is more complete, with limits worth knowing before you build on it:
+
+- The CRUD routes are declared `async def` but call a synchronous SQLAlchemy `Session`. Following FastAPI's guidance above means changing them to plain `def` or moving to an async session.
+- Tables are created by `create_all()` at startup. Alembic is configured, but no migration file exists until you generate one.
+- `database.py` reads `DATABASE_URL` from the process environment and otherwise connects to `postgres:postgres@localhost:5432` with a database named after the project. It is imported before `main.py` calls `load_dotenv()`, so a value only in `.env` does not reach the engine; export `DATABASE_URL` in the environment instead. `--database postgres` is what adds the `psycopg[binary]` driver and that default URL; without it, the fallback is a local SQLite file.
+
+These are generated projects, not runtime-verified deployments. Install, run the tests, and exercise one real endpoint against your target database before committing to either.
+
+## Decision table
+
+| If this is the stronger constraint                              | Start with                                  |
+| --------------------------------------------------------------- | ------------------------------------------- |
+| Django admin, Django auth, and Django models as the foundation  | Django, and plan to add the project layout  |
+| An API whose contract is Pydantic models and OpenAPI            | FastAPI                                     |
+| Many async I/O calls per request                                | Either; verify every library on that path   |
+| A generated starter with CRUD routes and a database layer       | FastAPI                                     |
+| Existing Django apps or packages the team depends on            | Django                                      |
+
+## Compare real generated stacks
+
+- [FastAPI + PostgreSQL + SQLAlchemy](/stack/python-fastapi-postgres-sqlalchemy)
+- [Django + PostgreSQL + Django REST Framework](/stack/python-django-postgres-rest-framework)
+
+The [FastAPI PostgreSQL SQLAlchemy guide](/guides/python/fastapi-postgres-sqlalchemy/) and the [Django REST API guide](/guides/python/django-rest-api/) walk through each project in more detail.

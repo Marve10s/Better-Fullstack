@@ -76,6 +76,9 @@ import {
   JAVA_TESTING_LIBRARIES_VALUES,
   JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
+  getGoMessageQueueIncompatibility,
+  getGoMigrationsIncompatibility,
+  getJobQueueIncompatibility,
   LOGGING_VALUES,
   MOBILE_DEEP_LINKING_VALUES,
   MOBILE_LIBRARIES_VALUES,
@@ -98,6 +101,7 @@ import {
   PYTHON_CACHING_VALUES,
   PYTHON_REALTIME_VALUES,
   PYTHON_OBSERVABILITY_VALUES,
+  PYTHON_LOGGING_VALUES,
   PYTHON_CLI_VALUES,
   PYTHON_CLOUD_SDK_VALUES,
   PYTHON_DATA_VALUES,
@@ -360,7 +364,16 @@ function makeTypeScriptDraft(args: GeneratorArgs): CandidateDraft {
       testing: sampleScalar(TESTING_VALUES, 0.35, "testing"),
       ai: sampleScalar(AI_VALUES, 0.78, "ai"),
       realtime: backend === "none" ? "none" : sampleScalar(REALTIME_VALUES, 0.84, "realtime"),
-      jobQueue: backend === "none" ? "none" : sampleScalar(JOB_QUEUE_VALUES, 0.88, "jobQueue"),
+      jobQueue:
+        backend === "none"
+          ? "none"
+          : sampleScalar(
+              JOB_QUEUE_VALUES.filter(
+                (value) => !getJobQueueIncompatibility(value, { backend, runtime, database }),
+              ),
+              0.88,
+              "jobQueue",
+            ),
       animation: sampleScalar(ANIMATION_VALUES, 0.74, "animation"),
       cssFramework,
       uiLibrary,
@@ -491,6 +504,7 @@ function makePythonDraft(args: GeneratorArgs): CandidateDraft {
       pythonCaching: sampleScalar(PYTHON_CACHING_VALUES, 0.5),
       pythonRealtime: sampleScalar(PYTHON_REALTIME_VALUES, 0.5),
       pythonObservability: sampleScalar(PYTHON_OBSERVABILITY_VALUES, 0.5),
+      pythonLogging: sampleScalar(PYTHON_LOGGING_VALUES, 0.5),
       pythonCli: sampleArray(PYTHON_CLI_VALUES, 0.4, 2, "pythonCli"),
       pythonCloudSdk: sampleScalar(PYTHON_CLOUD_SDK_VALUES, 0.55),
       pythonHttpClient: sampleScalar(PYTHON_HTTP_CLIENT_VALUES, 0.55),
@@ -508,26 +522,35 @@ function makePythonDraft(args: GeneratorArgs): CandidateDraft {
 }
 
 function makeGoDraft(args: GeneratorArgs): CandidateDraft {
+  const database = sampleScalar(["sqlite", "postgres", "mysql", "none"] as const, 0.4, "database");
+  const goWebFramework = sampleScalar(GO_WEB_FRAMEWORK_VALUES, 0.18);
+  const goOrm = sampleScalar(GO_ORM_VALUES, 0.15);
+  const goSelection = { database, goOrm, goWebFramework };
+  const goMessageQueue = sampleScalar(GO_MESSAGE_QUEUE_VALUES, 0.5);
+  const goMigrations = sampleScalar(GO_MIGRATIONS_VALUES, 0.5);
   return {
     ecosystem: "go",
     options: {
       ...createCommonOptions("go", args),
       auth: sampleScalar(["go-better-auth", "none"] as const, 0.5),
-      goWebFramework: sampleScalar(GO_WEB_FRAMEWORK_VALUES, 0.18),
-      goOrm: sampleScalar(GO_ORM_VALUES, 0.15),
+      database,
+      goWebFramework,
+      goOrm,
       goApi: sampleScalar(GO_API_VALUES, 0.35),
       goCli: sampleScalar(GO_CLI_VALUES, 0.35),
       goLogging: sampleScalar(GO_LOGGING_VALUES, 0.35),
       goAuth: sampleScalar(GO_AUTH_VALUES, 0.35),
       goTesting: sampleArray(GO_TESTING_VALUES, 0.3, 2, "goTesting"),
       goRealtime: sampleScalar(GO_REALTIME_VALUES, 0.5),
-      goMessageQueue: sampleScalar(GO_MESSAGE_QUEUE_VALUES, 0.5),
+      goMessageQueue: getGoMessageQueueIncompatibility(goMessageQueue, goSelection)
+        ? "none"
+        : goMessageQueue,
       goCaching: sampleScalar(GO_CACHING_VALUES, 0.5),
       goConfig: sampleScalar(GO_CONFIG_VALUES, 0.5),
       goObservability: sampleScalar(GO_OBSERVABILITY_VALUES, 0.5),
       goValidation: sampleScalar(GO_VALIDATION_VALUES, 0.5),
       goQuality: sampleScalar(GO_QUALITY_VALUES, 0.5),
-      goMigrations: sampleScalar(GO_MIGRATIONS_VALUES, 0.5),
+      goMigrations: getGoMigrationsIncompatibility(goMigrations, goSelection) ? "none" : goMigrations,
       goTemplating: sampleScalar(GO_TEMPLATING_VALUES, 0.5),
       goProtoTooling: sampleScalar(GO_PROTO_TOOLING_VALUES, 0.5),
       goDI: sampleScalar(GO_DI_VALUES, 0.5),
@@ -789,6 +812,7 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     pythonCaching: "none",
     pythonRealtime: "none",
     pythonObservability: "none",
+    pythonLogging: "none",
     pythonCli: [],
     pythonCloudSdk: "none",
     pythonHttpClient: "none",

@@ -1,5 +1,5 @@
 {{#if (eq api "orpc")}}
-import { {{#if (isBetterAuth auth)}}protectedProcedure, {{/if}}publicProcedure } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
+import { {{#if (hasApiSession auth)}}protectedProcedure, {{/if}}publicProcedure } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
 import type { RouterClient } from "@orpc/server";
 
 // <better-fullstack:recipe-imports sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855>
@@ -13,7 +13,7 @@ export const appRouter = {
   healthCheck: publicProcedure.handler(() => {
     return "OK";
   }),
-  {{#if (isBetterAuth auth)}}
+  {{#if (hasApiSession auth)}}
   privateData: protectedProcedure.handler(({ context }) => {
     return {
       message: "This is private",
@@ -26,7 +26,7 @@ export type AppRouter = typeof appRouter;
 export type AppRouterClient = RouterClient<typeof appRouter>;
 {{else if (eq api "trpc")}}
 import {
-  {{#if (isBetterAuth auth)}}protectedProcedure, {{/if}}publicProcedure,
+  {{#if (hasApiSession auth)}}protectedProcedure, {{/if}}publicProcedure,
   router,
 } from "../index{{#if (eq backend "adonisjs")}}.js{{/if}}";
 {{#if (and (eq orm "drizzle") (or (isBetterAuth auth) (eq auth "none")))}}
@@ -80,7 +80,7 @@ export const appRouter = router({
     {{/if}}
   }),
   {{/if}}
-  {{#if (isBetterAuth auth)}}
+  {{#if (hasApiSession auth)}}
   privateData: protectedProcedure.query(({ ctx }) => {
     return {
       message: "This is private",

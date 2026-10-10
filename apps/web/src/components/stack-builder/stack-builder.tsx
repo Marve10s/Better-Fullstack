@@ -922,6 +922,7 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "pythonCaching",
     "pythonRealtime",
     "pythonObservability",
+    "pythonLogging",
     "pythonCli",
     "pythonCloudSdk",
     "pythonHttpClient",

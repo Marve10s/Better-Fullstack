@@ -16,9 +16,17 @@ This file owns scaffold execution, published-package validation, and runtime-pro
 | `bun run test:recipe-runtime` | Generated persistent resource CRUD and ownership checks. |
 | `bun run test:published-package -- --specifier <tag-or-version>` | Already-published npm package through the installed-package smoke harness. |
 
-Smoke presets intentionally use Bun installs. Package-manager correctness belongs in its dedicated
-matrix, including Yarn inference and CI immutable/hardened installs. Preset groups in
+Smoke presets use Bun installs except as noted below. Package-manager correctness belongs in its
+dedicated matrix, including Yarn inference and CI immutable/hardened installs. Preset groups in
 `testing/lib/presets.ts` are `pr-core`, `pr-broad`, and their `all` union.
+
+A preset can add `runtimeChecks`. `production-start` serves the built web app with its `serve`
+script and requests the listed routes. `docker-image` runs after the usual install, build, and
+type check pass: it builds `apps/server/Dockerfile` from the project root, runs the image, and
+requests `/`. It needs a running Docker daemon, and `--strict` (as in `test:smoke:pr-core`) fails
+without one. A preset with `packageManager: "pnpm"` installs with pnpm, since Bun cannot resolve
+pnpm `catalog:` versions, so pnpm must be on `PATH`; its scripts still run through `bun run`.
+`--dev-check` loads a web page, so it is skipped for a project without a web frontend.
 
 ## Prompt-free execution
 

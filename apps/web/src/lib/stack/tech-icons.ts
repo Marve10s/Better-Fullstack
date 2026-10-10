@@ -410,7 +410,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   turborepo: { type: "si", slug: "turborepo", hex: "EF4444" },
   "vite-plus": {
     type: "local",
-    src: "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/logo.svg",
+    src: "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/docs/public/favicon.svg",
   },
   tauri: { type: "si", slug: "tauri", hex: "FFC131" },
   storybook: { type: "si", slug: "storybook", hex: "FF4785" },
@@ -442,6 +442,9 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   "trigger-dev": { type: "local", src: "/icon/trigger-dev.svg" },
   inngest: { type: "local", src: "/icon/inngest.svg" },
   temporal: { type: "local", src: "/icon/temporal.svg" },
+  "pg-boss": { type: "si", slug: "postgresql", hex: "4169E1" },
+  "upstash-qstash": { type: "si", slug: "upstash", hex: "00E9A3" },
+  hatchet: { type: "local", src: "/icon/hatchet.svg" },
 
   // ─── Effect ────────────────────────────────────────────────────────────────
   effect: { type: "local", src: "/icon/effect.svg", needsInvert: "dark" }, // currentColor
@@ -561,6 +564,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   mypy: { type: "si", slug: "python", hex: "3776AB" },
   "pytest-cov": { type: "si", slug: "pytest", hex: "0A9EDC" },
   "prometheus-client": { type: "si", slug: "prometheus", hex: "E6522C" },
+  loguru: { type: "si", slug: "python", hex: "3776AB" },
+  structlog: { type: "si", slug: "python", hex: "3776AB" },
   boto3: { type: "local", src: "/icon/aws-s3.svg" },
   requests: { type: "local", src: "/icon/requests.svg", needsInvert: "dark" },
   numpy: { type: "si", slug: "numpy", hex: "013243" },
@@ -594,9 +599,13 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   prometheus: { type: "si", slug: "prometheus", hex: "E6522C" },
   "kafka-go": { type: "si", slug: "apachekafka", hex: "231F20" },
   asynq: { type: "si", slug: "redis", hex: "DC382D" },
+  river: { type: "si", slug: "postgresql", hex: "4169E1" },
+  gocron: { type: "si", slug: "go", hex: "00ADD8" },
   validator: { type: "si", slug: "go", hex: "00ADD8" },
   "golangci-lint": { type: "si", slug: "go", hex: "00ADD8" },
   "golang-migrate": { type: "si", slug: "go", hex: "00ADD8" },
+  goose: { type: "si", slug: "go", hex: "00ADD8" },
+  atlas: { type: "si", slug: "go", hex: "00ADD8" },
   templ: { type: "si", slug: "go", hex: "00ADD8" },
   fx: { type: "si", slug: "uber", hex: "000000" },
 

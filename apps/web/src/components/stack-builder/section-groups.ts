@@ -212,7 +212,11 @@ const PYTHON_SECTIONS: readonly BuilderSectionDef[] = [
     "pythonTesting",
     "pythonValidation",
   ]),
-  section("observability", "Observability & Analytics", ["pythonObservability", "observability"]),
+  section("observability", "Observability & Analytics", [
+    "pythonLogging",
+    "pythonObservability",
+    "observability",
+  ]),
   section("coreTooling", "Core & Tooling", [
     "pythonCli",
     "pythonCloudSdk",

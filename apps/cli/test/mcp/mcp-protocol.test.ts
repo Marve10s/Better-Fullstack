@@ -22,6 +22,8 @@ import {
 } from "@/commands/stack/starter-tracks";
 import { buildBtsConfigForPersistence, readBtsConfig, writeBtsConfig } from "@/config/bts-config";
 import { recordScaffoldManifest } from "@/lifecycle/scaffold-manifest";
+import { listCatalogOptions, searchCatalogOptions } from "@/operations/option-catalog";
+import { explainOption } from "@/operations/option-explain";
 import { getProjectContext } from "@/project/project-context";
 
 const clients: Client[] = [];
@@ -301,6 +303,60 @@ describe.each(["legacy", "modern"] as const)("Better Fullstack MCP %s protocol s
     expect(presets.isError, JSON.stringify(presets.content)).not.toBe(true);
     expect(presets.content?.[0]).toMatchObject({ type: "text" });
     await expect(client.readResource({ uri: "docs://missing" })).rejects.toThrow();
+  });
+
+  it("lists and searches the option catalog with the CLI lookup results", async () => {
+    const client = await connectClient(mode);
+    const listed = await callTool(client, {
+      name: "bfs_list_options",
+      arguments: { category: "goAuth", ecosystem: "go" },
+    });
+    const searched = await callTool(client, {
+      name: "bfs_search_options",
+      arguments: { query: "sveltekit" },
+    });
+    const unknown = await callTool(client, {
+      name: "bfs_list_options",
+      arguments: { category: "not-a-category" },
+    });
+
+    expect(listed.isError, JSON.stringify(listed.content)).not.toBe(true);
+    expect(listed.structuredContent).toEqual(
+      listCatalogOptions({ category: "goAuth", ecosystem: "go" }),
+    );
+    expect(searched.isError, JSON.stringify(searched.content)).not.toBe(true);
+    expect(searched.structuredContent).toEqual(searchCatalogOptions({ query: "sveltekit" }));
+    expect(unknown.isError).toBe(true);
+    expect(unknown.content?.[0]).toMatchObject({
+      type: "text",
+      text: expect.stringContaining('Unknown option category "not-a-category"'),
+    });
+  });
+
+  it("explains an option with the CLI explanation and rejects an unknown option", async () => {
+    const client = await connectClient(mode);
+    const explained = await callTool(client, {
+      name: "bfs_explain_option",
+      arguments: { option: "better-auth", with: ["typeorm", "postgres"] },
+    });
+    const unknown = await callTool(client, {
+      name: "bfs_explain_option",
+      arguments: { option: "drizle" },
+    });
+
+    expect(explained.isError, JSON.stringify(explained.content)).not.toBe(true);
+    expect(explained.structuredContent).toEqual(
+      explainOption({ option: "better-auth", with: ["typeorm", "postgres"] }),
+    );
+    expect(explained.structuredContent?.evaluation).toMatchObject({
+      allowed: false,
+      failures: [expect.objectContaining({ reason: "Better Auth has no TypeORM adapter" })],
+    });
+    expect(unknown.isError).toBe(true);
+    expect(unknown.content?.[0]).toMatchObject({
+      type: "text",
+      text: expect.stringContaining('Unknown option "drizle"'),
+    });
   });
 
   it.each(["typescript", "react-native", "rust", "go", "python", "java", "dotnet", "elixir"])(

@@ -181,6 +181,9 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     if (config.pythonQuality && config.pythonQuality !== "none") {
       configDisplay.push(`${pc.blue("Python Quality:")} ${String(config.pythonQuality)}`);
     }
+    if (config.pythonLogging && config.pythonLogging !== "none") {
+      configDisplay.push(`${pc.blue("Python Logging:")} ${String(config.pythonLogging)}`);
+    }
   }
 
   if (graphBackendPart?.ecosystem === "java") {

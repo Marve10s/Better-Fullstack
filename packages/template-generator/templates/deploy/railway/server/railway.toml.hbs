@@ -1,13 +1,15 @@
 # Railway configuration for {{projectName}} server
 # See https://docs.railway.app/reference/config-as-code for all options
+#
+# Keep the service root directory at the repository root and set the config file
+# path to /apps/server/railway.toml. The image runs the server with its own CMD.
 
 [build]
 builder = "dockerfile"
-dockerfilePath = "Dockerfile"
+dockerfilePath = "apps/server/Dockerfile"
 
 [deploy]
-startCommand = "{{#if (eq packageManager "bun")}}bun run dist/index.js{{else}}node dist/index.js{{/if}}"
-healthcheckPath = "/health"
+healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3

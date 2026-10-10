@@ -1,11 +1,24 @@
-import type { Backend, Database, ORM, Runtime } from "@/types";
+import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 
 import { DEFAULT_CONFIG } from "@/constants";
 import { exitCancelled } from "@/presentation/errors";
-import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
+import {
+  getAuthIncompatibility,
+  getDatabaseOrmIncompatibility,
+  type Auth,
+  type Backend,
+  type Database,
+  type ORM,
+  type Runtime,
+} from "@/types";
 
 const ormOptions = {
+  drizzle: {
+    value: "drizzle" as const,
+    label: "Drizzle",
+    hint: "Lightweight and performant TypeScript ORM",
+  },
   prisma: {
     value: "prisma" as const,
     label: "Prisma",
@@ -15,11 +28,6 @@ const ormOptions = {
     value: "mongoose" as const,
     label: "Mongoose",
     hint: "Elegant object modeling tool",
-  },
-  drizzle: {
-    value: "drizzle" as const,
-    label: "Drizzle",
-    hint: "Lightweight and performant TypeScript ORM",
   },
   typeorm: {
     value: "typeorm" as const,
@@ -49,19 +57,11 @@ type ORMPromptContext = {
   database?: Database;
   backend?: Backend;
   runtime?: Runtime;
+  auth?: Auth;
 };
 
 export function resolveORMPrompt(context: ORMPromptContext): PromptSingleResolution<ORM> {
   if (context.backend === "convex" || !context.hasDatabase) {
-    return {
-      shouldPrompt: false,
-      mode: "single",
-      options: [],
-      autoValue: "none",
-    };
-  }
-
-  if (context.database === "edgedb" || context.database === "redis") {
     return {
       shouldPrompt: false,
       mode: "single",
@@ -79,17 +79,24 @@ export function resolveORMPrompt(context: ORMPromptContext): PromptSingleResolut
     };
   }
 
-  const options =
-    context.database === "mongodb"
-      ? [ormOptions.prisma, ormOptions.mongoose]
-      : [
-          ormOptions.drizzle,
-          ormOptions.prisma,
-          ormOptions.typeorm,
-          ormOptions.kysely,
-          ormOptions.mikroorm,
-          ormOptions.sequelize,
-        ];
+  const options = Object.values(ormOptions).filter(
+    (option) =>
+      !getDatabaseOrmIncompatibility(context.database, option.value) &&
+      !getAuthIncompatibility(
+        context.auth,
+        { ecosystem: "typescript", database: context.database, orm: option.value },
+        { partial: true },
+      ),
+  );
+  // EdgeDB and Redis bring their own client, so no ORM can pair with them.
+  if (options.length === 0) {
+    return {
+      shouldPrompt: false,
+      mode: "single",
+      options: [],
+      autoValue: "none",
+    };
+  }
 
   return {
     shouldPrompt: true,
@@ -110,8 +117,9 @@ export async function getORMChoice(
   database?: Database,
   backend?: Backend,
   runtime?: Runtime,
+  auth?: Auth,
 ) {
-  const resolution = resolveORMPrompt({ orm, hasDatabase, database, backend, runtime });
+  const resolution = resolveORMPrompt({ orm, hasDatabase, database, backend, runtime, auth });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

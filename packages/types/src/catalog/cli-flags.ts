@@ -1,9 +1,9 @@
-import { createCliDefaultProjectConfigBase } from "@/config/defaults";
 import {
   getCategoryCliValues,
   type OptionCategory,
   type OptionCategoryEcosystem,
 } from "@/catalog/option-metadata";
+import { createCliDefaultProjectConfigBase } from "@/config/defaults";
 import {
   DIRECTORY_CONFLICT_VALUES,
   ECOSYSTEM_VALUES,
@@ -377,7 +377,7 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
       {
         flag: "effect",
         summary: "Effect capability level.",
-        source: { kind: "category", category: "effect" },
+        source: { kind: "categories", categories: ["effect", "backendLibraries"] },
         configKey: "effect",
       },
       {
@@ -761,6 +761,12 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         summary: "Python observability.",
         source: { kind: "category", category: "pythonObservability" },
         configKey: "pythonObservability",
+      },
+      {
+        flag: "python-logging",
+        summary: "Python logging.",
+        source: { kind: "category", category: "pythonLogging" },
+        configKey: "pythonLogging",
       },
       {
         flag: "python-cli",

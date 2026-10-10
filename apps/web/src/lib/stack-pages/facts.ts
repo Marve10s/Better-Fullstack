@@ -22,13 +22,17 @@ import { TECH_OPTIONS } from "@/lib/stack/constant";
 const CORE_KEYS_BY_ECOSYSTEM: Record<string, StackSelectionKey[]> = {
   typescript: [
     "webFrontend",
+    "nativeFrontend",
     "astroIntegration",
     "backend",
     "runtime",
     "database",
+    "dbSetup",
     "orm",
     "api",
     "auth",
+    "payments",
+    "email",
     "cssFramework",
     "uiLibrary",
     "codeQuality",
@@ -43,17 +47,54 @@ const CORE_KEYS_BY_ECOSYSTEM: Record<string, StackSelectionKey[]> = {
   ],
   python: ["pythonWebFramework", "database", "pythonOrm", "pythonValidation", "pythonQuality"],
   go: ["goWebFramework", "database", "goOrm", "goLogging"],
+  java: [
+    "javaWebFramework",
+    "javaLanguage",
+    "database",
+    "javaOrm",
+    "javaAuth",
+    "javaApi",
+    "javaBuildTool",
+    "javaTestingLibraries",
+    "javaLibraries",
+  ],
+  dotnet: [
+    "dotnetWebFramework",
+    "database",
+    "dotnetOrm",
+    "dotnetAuth",
+    "dotnetApi",
+    "dotnetRealtime",
+    "dotnetJobQueue",
+    "dotnetObservability",
+    "dotnetTesting",
+  ],
+  elixir: [
+    "elixirWebFramework",
+    "database",
+    "elixirOrm",
+    "elixirAuth",
+    "elixirApi",
+    "elixirRealtime",
+    "elixirJobs",
+    "elixirEmail",
+    "elixirTesting",
+  ],
 };
 
 const ROLE_LABELS: Partial<Record<OptionCategory, string>> = {
   webFrontend: "Frontend",
+  nativeFrontend: "Mobile frontend",
   astroIntegration: "Frontend integration",
   backend: "Backend",
   runtime: "Runtime",
   database: "Database",
+  dbSetup: "Database hosting",
   orm: "ORM",
   api: "API",
   auth: "Authentication",
+  payments: "Payments",
+  email: "Email",
   cssFramework: "CSS",
   uiLibrary: "UI library",
   codeQuality: "Code quality",
@@ -69,6 +110,30 @@ const ROLE_LABELS: Partial<Record<OptionCategory, string>> = {
   goWebFramework: "Backend",
   goOrm: "ORM",
   goLogging: "Logging",
+  javaWebFramework: "Backend",
+  javaLanguage: "Language",
+  javaBuildTool: "Build tool",
+  javaOrm: "ORM",
+  javaAuth: "Authentication",
+  javaApi: "API",
+  javaTestingLibraries: "Testing",
+  javaLibraries: "Libraries",
+  dotnetWebFramework: "Backend",
+  dotnetOrm: "Data access",
+  dotnetAuth: "Authentication",
+  dotnetApi: "API",
+  dotnetRealtime: "Realtime",
+  dotnetJobQueue: "Background jobs",
+  dotnetObservability: "Observability",
+  dotnetTesting: "Testing",
+  elixirWebFramework: "Backend",
+  elixirOrm: "ORM",
+  elixirAuth: "Authentication",
+  elixirApi: "API",
+  elixirRealtime: "Realtime",
+  elixirJobs: "Background jobs",
+  elixirEmail: "Email",
+  elixirTesting: "Testing",
 };
 
 function categoryForKey(key: StackSelectionKey): OptionCategory | undefined {
@@ -85,6 +150,7 @@ function ownershipForPart(part: StackPart | undefined, parts: readonly StackPart
   if (!part) return "Project-wide";
   if (!part.ownerPartId) {
     if (part.role === "frontend") return "Primary frontend";
+    if (part.role === "mobile") return "Primary mobile app";
     if (part.role === "backend") return "Primary backend";
     return part.ecosystem === "universal" ? "Project-wide" : `${part.ecosystem} stack`;
   }
@@ -136,13 +202,23 @@ export function deriveCanonicalParts(
   return result;
 }
 
+function rendersServerUi(selection: StackSelectionState): boolean {
+  return (
+    (selection.ecosystem === "dotnet" && selection.dotnetWebFramework === "aspnet-blazor") ||
+    (selection.ecosystem === "elixir" && selection.elixirWebFramework === "phoenix-live-view")
+  );
+}
+
 export function deriveArchitecture(
   selection: StackSelectionState,
   canonicalParts: readonly GeneratedStackPart[],
   graphParts: readonly StackPart[],
 ): GeneratedStackPage["architecture"] {
   const primaryFrontends = graphParts.filter(
-    (part) => part.role === "frontend" && !part.ownerPartId && part.source !== "provided",
+    (part) =>
+      (part.role === "frontend" || part.role === "mobile") &&
+      !part.ownerPartId &&
+      part.source !== "provided",
   );
   const primaryBackends = graphParts.filter(
     (part) => part.role === "backend" && !part.ownerPartId && part.source !== "provided",
@@ -153,6 +229,8 @@ export function deriveArchitecture(
     facts.push("The generated stack has Rust frontend and backend primary parts.");
   } else if (primaryFrontends.length && primaryBackends.length) {
     facts.push("The frontend and backend are separate primary stack parts.");
+  } else if (primaryBackends.length && rendersServerUi(selection)) {
+    facts.push("The backend framework renders the browser UI on the server.");
   } else if (primaryBackends.length) {
     facts.push("The generated stack is centered on a backend service with no browser frontend.");
   }
@@ -187,11 +265,13 @@ export function deriveArchitecture(
   const shape: GeneratedStackPage["architecture"]["shape"] =
     selection.ecosystem === "rust" && selection.rustFrontend !== "none"
       ? "rust-fullstack"
-      : selection.ecosystem !== "typescript" && selection.ecosystem !== "react-native"
-        ? "backend-service"
-        : selection.backend.startsWith("self-")
-          ? "single-app"
-          : "split-app";
+      : rendersServerUi(selection)
+        ? "server-rendered-app"
+        : selection.ecosystem !== "typescript" && selection.ecosystem !== "react-native"
+          ? "backend-service"
+          : selection.backend.startsWith("self-")
+            ? "single-app"
+            : "split-app";
 
   return { shape, facts: [...new Set(facts)] };
 }
@@ -238,6 +318,8 @@ export function architectureLabel(shape: GeneratedStackPage["architecture"]["sha
       return "separate frontend and backend stack";
     case "backend-service":
       return "backend service";
+    case "server-rendered-app":
+      return "server-rendered web app";
     case "rust-fullstack":
       return "Rust frontend and backend stack";
   }

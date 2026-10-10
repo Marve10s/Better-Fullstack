@@ -24,13 +24,23 @@ import {
   generateTree,
   mergeEnvExample,
   mergePackageJson,
+  mergePnpmWorkspace,
   PACKAGE_JSON_SECTIONS,
   treeToFileMap,
 } from "@/helpers/core/stack-update";
+import {
+  collectDivergedFamilyVersions,
+  compareVersions,
+  findFamilyConflicts,
+  isRegistrySemverSpec,
+  parsePnpmCatalog,
+  readDependencyManifests,
+} from "@/lifecycle/dependency-version-channel";
 import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
 import {
   getCurrentLifecycleVersions,
   hashContent,
+  isPnpmWorkspacePath,
   isStructuredBaselinePath,
   readScaffoldManifest,
   readScaffoldManifestResult,
@@ -446,6 +456,7 @@ function classifyStructuredMerge(
   existingContent: string,
   proposedContent: string | undefined,
   baselineContent: string | undefined,
+  familyVersions: ReadonlyMap<string, string>,
 ): UpgradeFileEntry {
   if (proposedContent === undefined || proposedContent === BINARY_FILE_MARKER) {
     return { path: filePath, category: "manual", reason: "no comparable template render" };
@@ -460,8 +471,45 @@ function classifyStructuredMerge(
     };
   }
 
+  if (isPnpmWorkspacePath(filePath)) {
+    const merged = mergePnpmWorkspace(
+      existingContent,
+      baselineContent,
+      proposedContent,
+      false,
+      familyVersions,
+    );
+    if (merged.blockers.length > 0) {
+      return {
+        path: filePath,
+        category: "conflict",
+        reason: `template and local copy both changed: ${merged.blockers.join(", ")}`,
+      };
+    }
+    if (merged.content) {
+      return {
+        path: filePath,
+        category: "merged",
+        reason: merged.summary.join("; "),
+        mergedContent: merged.content,
+        dependencyChanges: lifecycleDependencyChanges(filePath, merged.dependencyChanges),
+      };
+    }
+    return {
+      path: filePath,
+      category: "user-edited",
+      reason: "template workspace catalog unchanged - local changes kept",
+    };
+  }
+
   if (path.basename(filePath) === "package.json") {
-    const merged = mergePackageJson(existingContent, baselineContent, proposedContent);
+    const merged = mergePackageJson(
+      existingContent,
+      baselineContent,
+      proposedContent,
+      false,
+      familyVersions,
+    );
     if (merged.blockers.length > 0) {
       return {
         path: filePath,
@@ -604,6 +652,32 @@ function summarize(
   };
 }
 
+/**
+ * Baseline for an untouched pnpm-workspace.yaml whose manifest predates recorded catalog
+ * baselines. Catalog entries a version channel moved past the templates take the template value,
+ * so the update keeps them instead of treating the channel's version as template output.
+ * Returns undefined when no entry moved, which leaves the file to hash classification.
+ */
+function deriveWorkspaceBaseline(diskContent: string, renderedContent: string | undefined) {
+  const disk = parsePnpmCatalog(diskContent);
+  const rendered = renderedContent === undefined ? null : parsePnpmCatalog(renderedContent);
+  if (!disk?.editable || !rendered) return undefined;
+
+  const moved = Object.entries(disk.catalog).flatMap(([name, version]) => {
+    const templateVersion = rendered.catalog[name];
+    return templateVersion !== undefined &&
+      isRegistrySemverSpec(version) &&
+      isRegistrySemverSpec(templateVersion) &&
+      compareVersions(version, templateVersion) > 0
+      ? [[name, templateVersion] as const]
+      : [];
+  });
+  for (const [name, templateVersion] of moved) {
+    disk.document.setIn(["catalog", name], templateVersion);
+  }
+  return moved.length > 0 ? disk.document.toString() : undefined;
+}
+
 export async function planScaffoldUpgrade(projectDirInput: string): Promise<UpgradeResult> {
   const projectDir = await canonicalProjectDir(projectDirInput);
   const configHashBefore = await readConfigHash(projectDir);
@@ -623,6 +697,7 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
   const baseline = manifest?.hashes ?? {};
   const hasBaseline = manifest !== null;
 
+  const familyVersions = await collectDivergedFamilyVersions(projectDir, manifest?.baselines ?? {});
   const files: UpgradeFileEntry[] = [];
   const renderPaths = [...renderHashes.keys()].sort();
   const legacyDotnetLayoutMigration = isLegacyDotnetRootLayoutMigration(
@@ -696,13 +771,23 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
       continue;
     }
 
-    if (isStructuredBaselinePath(filePath)) {
+    const structuredBaseline =
+      manifest?.baselines?.[filePath] ??
+      (isPnpmWorkspacePath(filePath) && diskHash === baseline[filePath]
+        ? deriveWorkspaceBaseline(diskBytes.toString("utf-8"), renderFiles.get(filePath)?.content)
+        : undefined);
+    // A workspace file with no recorded or derivable baseline keeps hash classification.
+    if (
+      isStructuredBaselinePath(filePath) &&
+      (structuredBaseline !== undefined || !isPnpmWorkspacePath(filePath))
+    ) {
       files.push(
         classifyStructuredMerge(
           filePath,
           diskBytes.toString("utf-8"),
           renderFiles.get(filePath)?.content,
-          manifest?.baselines?.[filePath],
+          structuredBaseline,
+          familyVersions,
         ),
       );
       continue;
@@ -754,6 +839,21 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
       category: "conflict",
       reason: "both the template and your local copy changed",
     });
+  }
+
+  const manifestsBefore = await readDependencyManifests(projectDir);
+  const manifestsAfter = new Map(manifestsBefore);
+  for (const file of files) {
+    if (file.mergedContent !== undefined && isStructuredBaselinePath(file.path)) {
+      manifestsAfter.set(file.path, file.mergedContent);
+    }
+  }
+  for (const conflict of await findFamilyConflicts(manifestsBefore, manifestsAfter)) {
+    for (const [index, file] of files.entries()) {
+      if (conflict.paths.includes(file.path)) {
+        files[index] = { path: file.path, category: "manual", reason: conflict.reason };
+      }
+    }
   }
 
   const renderPathSet = new Set(renderPaths);

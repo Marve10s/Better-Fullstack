@@ -7,6 +7,16 @@
 	const chat = new Chat({
 		transport: new DefaultChatTransport({
 			api: `${PUBLIC_SERVER_URL}/ai`,
+{{#if (hasAiRouteAuth auth backend frontend)}}
+			credentials: "include",
+			fetch: async (url, init) => {
+				const response = await fetch(url, init);
+				if (response.status === 401) {
+					throw new Error("Sign in to use the AI chat.");
+				}
+				return response;
+			},
+{{/if}}
 		}),
 	});
 
@@ -62,6 +72,11 @@
 				</div>
 			</div>
 		{/each}
+{{#if (hasAiRouteAuth auth backend frontend)}}
+		{#if chat.error}
+			<p class="text-center text-sm text-red-500">{chat.error.message}</p>
+		{/if}
+{{/if}}
 		<div bind:this={messagesEndElement}></div>
 	</div>
 

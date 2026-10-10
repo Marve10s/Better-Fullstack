@@ -16,7 +16,7 @@ import { createRouterClient, os } from "@orpc/server";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import pc from "picocolors";
-import { createCli } from "trpc-cli";
+import { createCli, parseRouter } from "trpc-cli";
 import z from "zod";
 
 import type { AddResult } from "@/helpers/core/add-handler";
@@ -27,6 +27,7 @@ import {
   getStarterTrackRecommendation,
   getStarterTracksResult,
 } from "@/commands/stack/starter-tracks";
+import { COMPLETION_SHELLS, renderCompletionScript } from "@/commands/system/completion";
 import { historyHandler } from "@/commands/system/history";
 import { INSTALL_AGENT_INPUT_IDS, type InstallReceipt } from "@/commands/system/install-core";
 import { telemetryHandler } from "@/commands/system/telemetry";
@@ -956,6 +957,23 @@ export const router = os.router({
       log.message("MCP server is started via the 'mcp' subcommand intercepted in cli.ts.");
       log.message("Run: create-better-fullstack mcp");
     }),
+  completion: os
+    .meta({ description: "Print a shell completion script for bash, zsh, fish, or PowerShell" })
+    .input(
+      z.tuple([
+        z.enum(COMPLETION_SHELLS).describe("Shell to complete: bash, zsh, fish, or powershell"),
+      ]),
+    )
+    .handler(async ({ input: [shell] }) => {
+      process.stdout.write(
+        renderCompletionScript(shell, {
+          program: createBtsCli().toJSON(),
+          procedures: parseRouter({ router }),
+          defaultCommand: getDefaultCommandName(),
+          hiddenFlags: [HIDDEN_LEGACY_OPTION],
+        }),
+      );
+    }),
   doctor: os
     .meta({
       description:
@@ -1259,9 +1277,84 @@ export const router = os.router({
       for (const constraint of result.constraints) log.message(`  ${constraint}`);
       log.message(`\nReview, then scaffold with:\n${result.reproducibleCommand}`);
     }),
+  list: os
+    .meta({
+      description:
+        "List option categories, or the options in one category with the flag that selects each one",
+    })
+    .input(
+      z.tuple([
+        z
+          .string()
+          .optional()
+          .describe("Category ID such as orm or goAuth; omit to list categories"),
+        z.object({
+          ecosystem: EcosystemSchema.optional().describe(
+            "Only include this ecosystem's categories",
+          ),
+          json: z.boolean().optional().default(false).describe("Output the result as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input: [category, options] }) => {
+      const { listCommand } = await import("@/commands/stack/options.js");
+      listCommand({ category, ...options });
+    }),
+  search: os
+    .meta({
+      description:
+        "Find options by ID, label, or alias across every category and ecosystem, with the flag that selects each one",
+    })
+    .input(
+      z.tuple([
+        z.string().trim().min(1).describe("Text to match, such as drizzle or sveltekit"),
+        z.object({
+          ecosystem: EcosystemSchema.optional().describe("Only search this ecosystem's categories"),
+          json: z.boolean().optional().default(false).describe("Output the result as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input: [query, options] }) => {
+      const { searchCommand } = await import("@/commands/stack/options.js");
+      searchCommand({ query, ...options });
+    }),
+  explain: os
+    .meta({
+      description:
+        "Explain an option: its flag, aliases, evidence, what it requires and excludes, and whether it fits a stack built from --with",
+    })
+    .input(
+      z.tuple([
+        z.string().trim().min(1).describe("Option ID or alias, or category:id such as orm:drizzle"),
+        z.object({
+          with: z
+            .array(z.string().trim().min(1))
+            .optional()
+            .describe("Other selections to evaluate against, as option IDs or category:id"),
+          ecosystem: EcosystemSchema.optional().describe("Ecosystem to evaluate the option in"),
+          json: z.boolean().optional().default(false).describe("Output the result as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input: [option, options] }) => {
+      const { explainCommand } = await import("@/commands/stack/options.js");
+      explainCommand({ option, ...options });
+    }),
 });
 
 const caller = createRouterClient(router, { context: {} });
+
+const HIDDEN_LEGACY_OPTION = "--addons";
+
+function getDefaultCommandName() {
+  const [name] =
+    Object.entries(router).find(([, procedure]) => {
+      const { meta } = procedure["~orpc"];
+      return "default" in meta && meta.default === true;
+    }) ?? [];
+  if (!name) throw new CLIError("The CLI router has no default command.");
+  return name;
+}
 
 export function createBtsCli() {
   const cli = createCli({
@@ -1279,10 +1372,10 @@ export function createBtsCli() {
       }) => void;
     };
     const visit = (command: CommandNode) => {
-      command.options?.find((option) => option.long === "--addons")?.hideHelp?.();
+      command.options?.find((option) => option.long === HIDDEN_LEGACY_OPTION)?.hideHelp?.();
       command.configureHelp?.({
         visibleOptions: (target) =>
-          (target.options ?? []).filter((option) => option.long !== "--addons"),
+          (target.options ?? []).filter((option) => option.long !== HIDDEN_LEGACY_OPTION),
       });
       command.commands?.forEach(visit);
     };

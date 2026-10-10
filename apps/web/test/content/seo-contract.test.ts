@@ -2,12 +2,14 @@ import { OPTION_CATEGORY_METADATA } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
 import { blogPostHead } from "@/lib/blog/seo";
+import { COMPETITOR_COMPARISONS } from "@/lib/builder/compare-tools";
 import {
   generateDocsLlmsTxt,
   generateLlmsFullTxt,
   generateLlmsTxt,
   generateMarkdownSitemap,
 } from "@/lib/content/llms";
+import { markdownResponse } from "@/lib/content/markdown-response";
 import { docsPageHead } from "@/lib/docs/seo";
 import { guidePageHead } from "@/lib/guides/seo";
 import { OPTION_COUNT_LABEL } from "@/lib/project/project-stats";
@@ -53,6 +55,29 @@ describe("SEO contracts", () => {
     });
   });
 
+  it("never redirects a published docs, guide, or blog page away", async () => {
+    const config = (await Bun.file("vercel.json").json()) as {
+      redirects?: Array<{ source: string; destination: string }>;
+    };
+    const publishedPaths = new Set<string>();
+    for await (const file of new Bun.Glob("content/{docs,guides,blog}/**/*.mdx").scan()) {
+      const segments = file
+        .replace(/\.mdx$/, "")
+        .split("/")
+        .slice(1);
+      if (segments.at(-1)?.includes(".")) continue;
+      if (segments.at(-1) === "index") segments.pop();
+      publishedPaths.add(`/${segments.join("/")}`);
+    }
+
+    expect(publishedPaths).toContain("/docs/cli/create");
+    expect(
+      config.redirects?.filter((redirect) =>
+        publishedPaths.has(redirect.source.replace(/\.md$/, "")),
+      ),
+    ).toEqual([]);
+  });
+
   it("includes product pages and excludes retired benchmark pages from the dynamic sitemap", () => {
     const entries = getSitemapEntriesFromPages({
       docsPages: [
@@ -86,6 +111,9 @@ describe("SEO contracts", () => {
     expect(paths).toContain("/stack/nextjs-hono-drizzle-better-auth");
     expect(paths).not.toContain("/analytics");
     expect(paths).not.toContain("/telemetry");
+    for (const comparison of COMPETITOR_COMPARISONS) {
+      expect(xml).toContain(canonicalUrl(`/compare/${comparison.slug}`));
+    }
     expect(xml).toContain(canonicalUrl("/docs/cli/create"));
     expect(xml).toContain(canonicalUrl("/guides/typescript/create-tanstack-start-project"));
     expect(xml).toContain(canonicalUrl("/stack/nextjs-hono-drizzle-better-auth"));
@@ -295,6 +323,9 @@ describe("SEO contracts", () => {
     expect(llms).toContain("https://better-fullstack.dev/docs/ai/mcp");
     expect(llms).toContain("## Stack Templates");
     expect(llms).toContain("https://better-fullstack.dev/stack/nextjs-hono-drizzle-better-auth");
+    for (const comparison of COMPETITOR_COMPARISONS) {
+      expect(llms).toContain(canonicalUrl(`/compare/${comparison.slug}`));
+    }
   });
 
   it("generates scoped, full-corpus, and semantic Markdown indexes", () => {
@@ -349,6 +380,9 @@ describe("SEO contracts", () => {
     expect(sitemap).toContain("/docs/cli/update.md");
     expect(sitemap).toContain("/guides/typescript/example.md");
     expect(sitemap).toContain("/llms-full.txt");
+    for (const comparison of COMPETITOR_COMPARISONS) {
+      expect(sitemap).toContain(canonicalUrl(`/compare/${comparison.slug}`));
+    }
   });
 
   it("uses existing manifest icon paths", async () => {
@@ -383,6 +417,23 @@ describe("SEO contracts", () => {
     expect(faviconSvg).toContain("#0E0E10");
     expect(faviconSvg).toContain("#F2EEEE");
     expect(faviconSvg).toContain("#C6E853");
+  });
+
+  it("points Markdown source copies at their canonical HTML page", () => {
+    const response = markdownResponse("# Create", "/docs/cli/create");
+
+    expect(response.headers.get("link")).toBe(
+      `<${canonicalUrl("/docs/cli/create")}>; rel="canonical"`,
+    );
+    expect(markdownResponse(undefined, "/docs/missing").status).toBe(404);
+  });
+
+  it("keeps the shared builder view out of search indexes", async () => {
+    const { Route } = await import("@/routes/stack");
+    const head = await Route.options.head?.({} as never);
+
+    expect(head?.meta).toContainEqual({ name: "robots", content: NOINDEX_ROBOTS });
+    expect(head?.meta).toContainEqual({ name: "googlebot", content: NOINDEX_ROBOTS });
   });
 
   it("keeps non-content API responses out of search indexes", async () => {

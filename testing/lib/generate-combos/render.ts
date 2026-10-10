@@ -244,6 +244,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["python-caching", config.pythonCaching],
     ["python-realtime", config.pythonRealtime],
     ["python-observability", config.pythonObservability],
+    ["python-logging", config.pythonLogging],
     ["python-cli", withExplicitNone(config.pythonCli)],
     ["python-cloud-sdk", config.pythonCloudSdk],
     ["python-http-client", config.pythonHttpClient],
@@ -256,6 +257,7 @@ export function buildCommand(name: string, config: ProjectConfig): string {
 
   const goFlags: Array<[string, string | readonly string[]]> = [
     ["auth", config.auth],
+    ["database", config.database],
     ["go-web-framework", config.goWebFramework],
     ["go-orm", config.goOrm],
     ["go-api", config.goApi],

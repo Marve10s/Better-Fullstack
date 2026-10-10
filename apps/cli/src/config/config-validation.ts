@@ -1,7 +1,7 @@
 import consola from "consola";
 import pc from "picocolors";
 
-import type { CLIInput, Database, DatabaseSetup, Frontend, ProjectConfig, Runtime } from "@/types";
+import type { CLIInput, Frontend, ProjectConfig } from "@/types";
 
 import {
   ensureSingleWebAndNative,
@@ -27,7 +27,12 @@ import {
 } from "@/config/compatibility-rules";
 import {
   buildCompatibilityInputFromConfig,
+  getAuthSelectionIssue,
+  getDatabaseSetupIssue,
+  getPythonLoggingSelectionIssue,
+  getRequestedAuthRejection,
   hasSelectedTypeScriptBackendPart,
+  usesGenericOrm,
 } from "@/config/stack-compatibility";
 import { validatePeerDependencies } from "@/platform/peer-dependency-validator";
 import { isSilent } from "@/presentation/context";
@@ -41,14 +46,19 @@ import {
   formatStackGraphIssue,
   getDisabledReason,
   getCodeQualitySelectionIssue,
+  getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
+  getJobQueueIncompatibility,
   getShadcnLintFrontendIssue,
   hasVitePlusWorkspaceRoot,
+  getGoMessageQueueIncompatibility,
+  getGoMigrationsIncompatibility,
   hasSignozSupportedGoServerTarget,
   isBotIdWebFrontend,
   isSignozSupportedPythonWebFramework,
   isToolingOverlayOnly,
   isTurnstileWebFrontend,
-  normalizeCapabilitySelection,
+  parseStackPartSpecs,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
 } from "@/types";
@@ -79,6 +89,20 @@ function validateIntegrationsConstraints(config: Partial<ProjectConfig>) {
     "nango",
   );
 
+  if (reason) throw new Error(reason);
+}
+
+function validateJobQueueConstraints(config: Partial<ProjectConfig>, partial = false) {
+  // The graph is authoritative: a stale flat jobQueue must not decide what gets generated.
+  const usesGraph = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+  const selection = usesGraph
+    ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript")
+    : config;
+  if ((selection.ecosystem ?? "typescript") !== "typescript") return;
+
+  const reason = getJobQueueIncompatibility(selection.jobQueue, selection, {
+    partial: partial && !usesGraph,
+  });
   if (reason) throw new Error(reason);
 }
 
@@ -134,103 +158,41 @@ function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string
     db === "sqlite" &&
     !hasEcosystemOrm;
 
-  if (has("orm") && has("database") && orm === "mongoose" && db !== "mongodb") {
+  const pairIssue =
+    has("orm") && has("database") && usesGenericOrm(cfg)
+      ? getDatabaseOrmIncompatibility(db, orm)
+      : null;
+  if (pairIssue) {
     incompatibilityError({
-      message: "Mongoose ORM requires MongoDB database.",
-      provided: { orm: "mongoose", database: db || "none" },
-      suggestions: ["Use --database mongodb", "Choose a different ORM (drizzle, prisma)"],
+      message: pairIssue,
+      provided: { database: db ?? "none", orm: orm ?? "none" },
+      suggestions:
+        orm === "mongoose"
+          ? ["Use --database mongodb", "Choose a different ORM (drizzle, prisma)"]
+          : db === "mongodb"
+            ? [
+                "Use --orm mongoose or --orm prisma for MongoDB",
+                "Choose a different database (postgres, sqlite, mysql)",
+              ]
+            : [
+                `Use --orm none with ${db === "edgedb" ? "EdgeDB" : "Redis"}`,
+                "Choose a different database if you want to use an ORM",
+              ],
     });
   }
 
-  if (has("orm") && has("database") && orm === "drizzle" && db === "mongodb") {
-    incompatibilityError({
-      message: "Drizzle ORM does not support MongoDB.",
-      provided: { orm: "drizzle", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "typeorm" && db === "mongodb") {
-    incompatibilityError({
-      message: "TypeORM does not support MongoDB in Better Fullstack.",
-      provided: { orm: "typeorm", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "kysely" && db === "mongodb") {
-    incompatibilityError({
-      message: "Kysely does not support MongoDB.",
-      provided: { orm: "kysely", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "mikroorm" && db === "mongodb") {
-    incompatibilityError({
-      message: "MikroORM does not support MongoDB in Better Fullstack.",
-      provided: { orm: "mikroorm", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm === "sequelize" && db === "mongodb") {
-    incompatibilityError({
-      message: "Sequelize does not support MongoDB.",
-      provided: { orm: "sequelize", database: "mongodb" },
-      suggestions: [
-        "Use --orm mongoose or --orm prisma for MongoDB",
-        "Choose a different database (postgres, sqlite, mysql)",
-      ],
-    });
-  }
-
+  const requirementIssue =
+    has("orm") && has("database") ? getDatabaseOrmRequirementIssue(db, orm) : null;
   if (
-    has("database") &&
-    has("orm") &&
-    db === "mongodb" &&
-    orm &&
-    orm !== "mongoose" &&
-    orm !== "prisma" &&
-    orm !== "none"
-  ) {
-    incompatibilityError({
-      message:
-        "In Better-Fullstack, MongoDB is currently supported only with Mongoose or Prisma ORM.",
-      provided: { database: "mongodb", orm },
-      suggestions: ["Use --orm mongoose", "Use --orm prisma"],
-    });
-  }
-
-  // EdgeDB has its own built-in query builder, no separate ORM needed
-  // Redis is a key-value store and doesn't use traditional ORMs
-  if (
-    has("database") &&
-    has("orm") &&
-    db &&
-    db !== "none" &&
-    db !== "edgedb" &&
-    db !== "redis" &&
+    requirementIssue &&
     orm === "none" &&
     !hasGraphOrm &&
     !hasEcosystemOrm &&
     !isNonTypeScriptSqliteDefault
   ) {
     missingRequirementError({
-      message: "Database selection requires an ORM.",
-      provided: { database: db, orm: "none" },
+      message: requirementIssue,
+      provided: { database: db ?? "none", orm: "none" },
       suggestions: [
         "Use --orm drizzle (recommended)",
         "Use --orm prisma",
@@ -239,34 +201,10 @@ function validateDatabaseOrmAuth(cfg: Partial<ProjectConfig>, flags?: Set<string
     });
   }
 
-  // EdgeDB should not have an ORM (it has its own query builder)
-  if (has("database") && has("orm") && db === "edgedb" && orm && orm !== "none") {
-    incompatibilityError({
-      message: "EdgeDB has its own built-in query builder and does not require an ORM.",
-      provided: { database: "edgedb", orm },
-      suggestions: [
-        "Use --orm none with EdgeDB",
-        "Choose a different database if you want to use an ORM",
-      ],
-    });
-  }
-
-  // Redis should not have an ORM (it's a key-value store with its own client)
-  if (has("database") && has("orm") && db === "redis" && orm && orm !== "none") {
-    incompatibilityError({
-      message: "Redis is a key-value store and does not require an ORM.",
-      provided: { database: "redis", orm },
-      suggestions: [
-        "Use --orm none with Redis",
-        "Choose a different database if you want to use an ORM",
-      ],
-    });
-  }
-
-  if (has("orm") && has("database") && orm && orm !== "none" && db === "none") {
+  if (requirementIssue && orm !== "none") {
     missingRequirementError({
-      message: "ORM selection requires a database.",
-      provided: { orm, database: "none" },
+      message: requirementIssue,
+      provided: { orm: orm ?? "none", database: "none" },
       suggestions: [
         "Use --database postgres",
         "Use --database sqlite",
@@ -326,152 +264,50 @@ function getEcosystemBackend(cfg: Partial<ProjectConfig>) {
 }
 
 function validateDatabaseSetup(config: Partial<ProjectConfig>, providedFlags: Set<string>) {
-  const { dbSetup, database, runtime } = config;
-
-  if (
-    providedFlags.has("dbSetup") &&
-    providedFlags.has("database") &&
-    dbSetup &&
-    dbSetup !== "none" &&
-    database === "none"
-  ) {
-    exitWithError(
-      "Database setup requires a database. Please choose a database or set '--db-setup none'.",
-    );
-  }
-
-  const setupValidations: Record<
-    DatabaseSetup,
-    { database?: Database; runtime?: Runtime; errorMessage: string }
-  > = {
-    turso: {
-      database: "sqlite",
-      errorMessage:
-        "Turso setup requires SQLite database. Please use '--database sqlite' or choose a different setup.",
-    },
-    neon: {
-      database: "postgres",
-      errorMessage:
-        "Neon setup requires PostgreSQL database. Please use '--database postgres' or choose a different setup.",
-    },
-    "prisma-postgres": {
-      database: "postgres",
-      errorMessage:
-        "Prisma PostgreSQL setup requires PostgreSQL database. Please use '--database postgres' or choose a different setup.",
-    },
-    planetscale: {
-      errorMessage:
-        "PlanetScale setup requires PostgreSQL or MySQL database. Please use '--database postgres' or '--database mysql' or choose a different setup.",
-    },
-    "mongodb-atlas": {
-      database: "mongodb",
-      errorMessage:
-        "MongoDB Atlas setup requires MongoDB database. Please use '--database mongodb' or choose a different setup.",
-    },
-    upstash: {
-      database: "redis",
-      errorMessage:
-        "Upstash setup requires Redis database. Please use '--database redis' or choose a different setup.",
-    },
-    supabase: {
-      database: "postgres",
-      errorMessage:
-        "Supabase setup requires PostgreSQL database. Please use '--database postgres' or choose a different setup.",
-    },
-    d1: {
-      database: "sqlite",
-      runtime: "workers",
-      errorMessage: "Cloudflare D1 setup requires SQLite database and Cloudflare Workers runtime.",
-    },
-    docker: {
-      errorMessage:
-        "In Better-Fullstack, Docker setup is currently not available with SQLite database or Cloudflare Workers runtime.",
-    },
-    none: { errorMessage: "" },
-  };
-
-  if (dbSetup && dbSetup !== "none") {
-    const validation = setupValidations[dbSetup];
-
-    if (dbSetup === "planetscale") {
-      if (database !== "postgres" && database !== "mysql") {
-        exitWithError(validation.errorMessage);
-      }
-    } else {
-      if (validation.database && database !== validation.database) {
-        exitWithError(validation.errorMessage);
-      }
-    }
-
-    if (validation.runtime && runtime !== validation.runtime) {
-      exitWithError(validation.errorMessage);
-    }
-
-    if (dbSetup === "docker") {
-      if (database === "sqlite") {
-        exitWithError(
-          "In Better-Fullstack, Docker setup is currently not available with SQLite database. SQLite is file-based and doesn't require Docker. Please use '--database postgres', '--database mysql', '--database mongodb', or choose a different setup.",
-        );
-      }
-      if (runtime === "workers") {
-        exitWithError(
-          "In Better-Fullstack, Docker setup is currently not available with Cloudflare Workers runtime. Workers runtime uses serverless databases (D1) and doesn't support local Docker containers. Please use '--db-setup d1' for SQLite or choose a different runtime.",
-        );
-      }
-    }
-  }
+  const issue = getDatabaseSetupIssue(config, {
+    requireDatabase: providedFlags.has("dbSetup") && providedFlags.has("database"),
+  });
+  if (issue) exitWithError(issue);
 }
 
+/**
+ * Auth the user asked for by `--auth` or an auth `--part` is rejected with the shared reason. Only
+ * a default the user never chose is reset, and the reset is reported as an adjustment would be.
+ * `requestedAuth` is the `--auth` value before prompts ran, so a prompt answer that reset it to
+ * none is judged by the provider the user asked for.
+ */
 export function validateEcosystemAuthCompatibility(
   config: Partial<ProjectConfig>,
   providedFlags?: Set<string>,
+  {
+    partial = false,
+    partSpecs = [] as readonly string[],
+    requestedAuth = undefined as ProjectConfig["auth"] | undefined,
+  } = {},
 ) {
-  const auth = config.auth;
+  const requestedRejection = providedFlags?.has("auth")
+    ? getRequestedAuthRejection(requestedAuth, config)
+    : null;
+  if (requestedRejection) exitWithError(requestedRejection);
 
-  if (!auth || auth === "none") {
-    return;
-  }
+  const reason = getAuthSelectionIssue(config, { partial });
+  if (!reason) return;
+  if (!providedFlags) throw new Error(reason);
 
-  const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-  if (
-    (auth === "better-auth" || auth === "better-auth-organizations") &&
-    config.orm &&
-    ormsWithoutBetterAuth.includes(config.orm)
-  ) {
-    config.auth = "none";
-    if (providedFlags?.has("auth") && !isSilent()) {
-      consola.warn(
-        pc.yellow(
-          `Unsupported auth selection '${auth}' with ${config.orm}: no Better Auth adapter exists. Falling back to '--auth none'.`,
-        ),
-      );
-    }
-    return;
-  }
+  const isRequested =
+    providedFlags.has("auth") ||
+    parseStackPartSpecs([...partSpecs], "selected").some((part) => part.role === "auth");
+  if (isRequested) exitWithError(reason);
 
-  const normalized = normalizeCapabilitySelection(
-    "auth",
-    {
-      ecosystem: config.ecosystem,
-      backend: config.backend,
-      frontend: config.frontend,
-    },
-    auth,
-  );
-
-  if (!normalized.normalized || normalized.value === auth) {
-    return;
-  }
-
-  config.auth = normalized.value;
-
-  if (providedFlags?.has("auth") && normalized.reason && !isSilent()) {
-    consola.warn(
-      pc.yellow(
-        `Unsupported auth selection '${auth}' for the current stack: ${normalized.reason}. Falling back to '--auth ${normalized.value}'.`,
-      ),
+  config.auth = "none";
+  if (config.stackParts) {
+    config.stackParts = config.stackParts.filter(
+      (part) =>
+        part.role !== "auth" ||
+        (part.ecosystem !== "typescript" && part.ecosystem !== "react-native"),
     );
   }
+  if (!isSilent()) consola.warn(pc.yellow(`Auth set to 'None' (${reason})`));
 }
 
 function validateConvexConstraints(config: Partial<ProjectConfig>, providedFlags: Set<string>) {
@@ -702,8 +538,14 @@ function validateBackendConstraints(
       );
     }
   }
+}
 
-  if (backend === "convex" && providedFlags.has("frontend") && options.frontend) {
+function validateConvexFrontendConstraints(
+  config: Partial<ProjectConfig>,
+  providedFlags: Set<string>,
+  options: CLIInput,
+) {
+  if (config.backend === "convex" && providedFlags.has("frontend") && options.frontend) {
     const incompatibleFrontends = options.frontend.filter((f) => ["solid", "astro"].includes(f));
     if (incompatibleFrontends.length > 0) {
       exitWithError(
@@ -1388,6 +1230,23 @@ export function validatePythonApiConstraints(config: Partial<ProjectConfig>) {
   }
 }
 
+export function validatePythonLoggingConstraints(config: Partial<ProjectConfig>) {
+  const issue = getPythonLoggingSelectionIssue(config);
+  if (!issue) return;
+
+  incompatibilityError({
+    message: `${issue.reason}.`,
+    provided: {
+      "python-web-framework": issue.selection.pythonWebFramework ?? "none",
+      "python-logging": issue.selection.pythonLogging ?? "none",
+    },
+    suggestions: [
+      "Use FastAPI, Django, Flask, Litestar, Starlette, aiohttp, or no web framework",
+      "Set --python-logging none",
+    ],
+  });
+}
+
 export function validatePythonExpansionConstraints(config: Partial<ProjectConfig>) {
   const pythonConfig =
     config.ecosystem === "python"
@@ -1554,6 +1413,36 @@ export function validateGoExpansionConstraints(config: Partial<ProjectConfig>) {
       ],
     });
   }
+
+  const messageQueueReason = getGoMessageQueueIncompatibility(goConfig.goMessageQueue, goConfig);
+  if (messageQueueReason) {
+    incompatibilityError({
+      message: `${messageQueueReason}.`,
+      provided: {
+        "go-message-queue": goConfig.goMessageQueue ?? "none",
+        "go-web-framework": goConfig.goWebFramework ?? "none",
+        database: goConfig.database ?? "none",
+      },
+      suggestions: [
+        "Use --go-web-framework gin, echo, fiber, chi, or stdlib",
+        ...(goConfig.goMessageQueue === "river" ? ["Use --database postgres"] : []),
+        "Set --go-message-queue none",
+      ],
+    });
+  }
+
+  const migrationsReason = getGoMigrationsIncompatibility(goConfig.goMigrations, goConfig);
+  if (migrationsReason) {
+    incompatibilityError({
+      message: `${migrationsReason}.`,
+      provided: {
+        "go-migrations": goConfig.goMigrations ?? "none",
+        "go-orm": goConfig.goOrm ?? "none",
+        database: goConfig.database ?? "none",
+      },
+      suggestions: ["Use --database postgres", "Set --go-migrations none"],
+    });
+  }
 }
 
 function validateI18nConstraints(config: Partial<ProjectConfig>) {
@@ -1636,13 +1525,20 @@ export function validateFullConfig(
     }
   }
 
-  validateEcosystemAuthCompatibility(config, providedFlags);
+  // Auth is judged once the backend's runtime and frontends are known to suit it, and before the
+  // data and API checks, so an auth rejection names its own reason.
+  validateSelfBackendConstraints(config, providedFlags);
+  validateConvexFrontendConstraints(config, providedFlags, options);
+  validateEcosystemAuthCompatibility(config, providedFlags, {
+    partial,
+    partSpecs: options.part,
+    requestedAuth: options.auth,
+  });
   validateDatabaseOrmAuth(config, providedFlags);
   validateDatabaseSetup(config, providedFlags);
 
   validateConvexConstraints(config, providedFlags);
   validateBackendNoneConstraints(config, providedFlags);
-  validateSelfBackendConstraints(config, providedFlags);
   validateEncoreConstraints(config, providedFlags);
   validateAdonisJSConstraints(config, providedFlags);
   validateBackendConstraints(config, providedFlags, options);
@@ -1653,6 +1549,7 @@ export function validateFullConfig(
   validateApiConstraints(config, options);
   validatePythonApiConstraints(config);
   validatePythonExpansionConstraints(config);
+  validatePythonLoggingConstraints(config);
   validateGoExpansionConstraints(config);
   validateRustExpansionCompatibility(config);
   validateEmailConstraints(config);
@@ -1666,6 +1563,7 @@ export function validateFullConfig(
   validateScopedLibraryFlags(config);
   validateI18nConstraints(config);
   validateIntegrationsConstraints(config);
+  validateJobQueueConstraints(config, partial);
 
   const hasGraphBackend = config.stackParts?.some(
     (part) =>
@@ -1818,8 +1716,10 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     }
 
     validateIntegrationsConstraints(config);
+    validateJobQueueConstraints(config);
     validateContainerAddonConstraints(config);
-    validateEcosystemAuthCompatibility(config);
+    const authIssue = getAuthSelectionIssue(config);
+    if (authIssue) throw new Error(authIssue);
     validateDatabaseOrmAuth(config);
     validateEffectBackendConstraints(config);
 
@@ -1830,6 +1730,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateApiFrontendCompatibility(config.api, config.frontend, config.astroIntegration);
     validatePythonApiConstraints(config);
     validatePythonExpansionConstraints(config);
+    validatePythonLoggingConstraints(config);
     validateGoExpansionConstraints(config);
     validateEmailConstraints(config);
     validateObservabilityConstraints(config);

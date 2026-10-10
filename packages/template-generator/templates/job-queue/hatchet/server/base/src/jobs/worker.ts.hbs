@@ -1,0 +1,11 @@
+import { hatchet, welcomeEmail } from "./hatchet";
+
+/**
+ * Long-running worker process. Start it next to the server with `jobs:worker`.
+ */
+const worker = await hatchet.worker("{{projectName}}-worker", {
+	workflows: [welcomeEmail],
+	slots: 10,
+});
+
+await worker.start();

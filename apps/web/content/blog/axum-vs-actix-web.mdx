@@ -1,0 +1,109 @@
+---
+title: "Axum vs Actix Web for a Rust API"
+description: "Choose Axum or Actix Web by runtime model, shared state, middleware ecosystem, and deployment, with the Better Fullstack command and generated output for each."
+date: 2026-10-06
+authors:
+  - Ibrahim Elkamali
+image: /search-media/stack-decisions-1200x630.png
+video: /search-media/stack-decisions-1200x630.mp4
+translationStatus: pending
+tags:
+  - axum
+  - actix-web
+  - rust
+  - backend
+keywords:
+  - axum vs actix web
+  - actix web vs axum
+  - rust web framework comparison
+  - rust api starter
+  - axum actix sqlx
+---
+
+![Stack decision map: choose an ecosystem, generate, inspect, and keep the code](/search-media/stack-decisions-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/stack-decisions-1200x630.png" src="/search-media/stack-decisions-1200x630.mp4"></video>
+
+Axum and Actix Web are both async Rust web frameworks, both parse requests with typed extractors, and both run on Tokio-based runtimes. The differences that matter in practice are how each one schedules work, how application state reaches handlers, and which middleware ecosystem it plugs into.
+
+## What each framework owns
+
+**Axum** keeps its own surface small. Its [documentation](https://docs.rs/axum/latest/axum/) lists routing with a macro-free API, extractors, a simple error handling model, and minimal response boilerplate. It does not have its own middleware system; it uses `tower::Service`, which in its words means Axum "gets timeouts, tracing, compression, authorization, and more, for free" from the tower and tower-http ecosystem.
+
+**Actix Web** comes with a larger first-party ecosystem. Its [crate documentation](https://docs.rs/actix-web/latest/actix_web/) lists HTTP/1.x and HTTP/2, streaming and pipelining, client and server WebSockets, and middlewares such as Logger, Session, and CORS. Several of these live in companion crates, not in `actix-web` itself: sessions in [`actix-session`](https://actix.rs/docs/middleware/#user-sessions), CORS in `actix-cors`, and the current WebSocket API in [`actix-ws`](https://actix.rs/docs/websockets/). [Extractors](https://actix.rs/docs/extractors/) provide "type-safe request information access" through `impl FromRequest`, and [middleware](https://actix.rs/docs/middleware/) implements Actix Web's own `Service` and `Transform` traits.
+
+## Concurrency and runtime model
+
+Axum states that it is "designed to work with tokio and hyper," and that runtime and transport independence is not a goal. A typical Axum binary starts with `#[tokio::main]`, which by [Tokio's documentation](https://docs.rs/tokio/latest/tokio/attr.main.html) uses the multi-threaded runtime with one worker thread per CPU by default.
+
+Actix Web uses a worker model. Its [server documentation](https://actix.rs/docs/server/) describes `HttpServer` starting several HTTP workers, each with its own application instance. The [`workers` API documentation](https://docs.rs/actix-web/latest/actix_web/struct.HttpServer.html#method.workers) gives the default count as the value of `std::thread::available_parallelism()`, which can differ from the number of physical cores. Two consequences follow:
+
+- A handler that blocks its thread stops that worker from processing new requests. Blocking work belongs off the request path in either framework.
+- [Application state](https://actix.rs/docs/application/) initialized inside the closure passed to `HttpServer::new` is local to each worker. State shared by every worker, such as a database pool, is created outside the closure and moved in; `web::Data` uses `Arc` internally.
+
+In Axum, shared state is attached to the router with `with_state` and read with the `State` extractor.
+
+## Ecosystem and library fit
+
+If the libraries you plan to use are tower layers or services (rate limiting, timeouts, tracing, auth middleware written for tower), Axum uses them directly. Actix Web middleware implements different traits, so tower middleware does not plug in without an adapter; the Actix ecosystem has its own crates for common needs, such as `actix-cors`.
+
+Both work with the same database crates. `sqlx`, SeaORM, and Diesel do not depend on the web framework.
+
+## Deployment constraints
+
+Both compile to a native server binary. Deployment constraints come from the target platform, the database, and TLS termination rather than from the framework choice.
+
+## What Better Fullstack generates
+
+The two commands below differ only in `--rust-web-framework`:
+
+```bash
+bun create better-fullstack@latest my-api \
+  --ecosystem rust \
+  --rust-web-framework axum \
+  --database postgres \
+  --rust-orm sqlx
+```
+
+```bash
+bun create better-fullstack@latest my-api \
+  --ecosystem rust \
+  --rust-web-framework actix-web \
+  --database postgres \
+  --rust-orm sqlx
+```
+
+Add `--dry-run` to preview either project without writing files. Both create a Cargo workspace with one crate, `crates/server`, on the stable toolchain with `rustfmt` and `clippy`. Both use the default `tracing` logging and `anyhow` with `thiserror` for errors, create one `PgPool` with up to five connections at startup, and expose a single `GET /health` route that reports whether a connection can be acquired. The server entry in `crates/server/src/main.rs` is where they differ:
+
+| Concern         | Axum                                           | Actix Web                                                        |
+| --------------- | ---------------------------------------------- | ---------------------------------------------------------------- |
+| Entry macro     | `#[tokio::main]`                               | `#[actix_web::main]`                                             |
+| Shared pool     | `AppState` passed with `.with_state(state)`    | `web::Data::new(AppState)` built before `HttpServer::new`, added to each worker's `App` with `.app_data(state.clone())` |
+| Handler state   | `State<AppState>` extractor                    | `web::Data<AppState>` extractor                                  |
+| CORS            | `CorsLayer` from `tower-http`                  | `Cors` from `actix-cors`                                         |
+| Server start    | `axum::serve` on a Tokio `TcpListener`         | `HttpServer::new(...).bind(...).run()`                           |
+
+The generated output is a starting point with clear limits:
+
+- `/health` is the only route. There are no queries, models, migrations, or tests in either project.
+- The server reads `DATABASE_URL` at startup and panics if it is unset. `.env.example` lists the variables; copy it to `.env`, which `dotenvy` loads.
+- Some options are Axum-only. `--rust-auth tower-sessions` is rejected with Actix Web because the generated session middleware is wired for Axum.
+
+These are generated projects, not runtime-verified deployments. Run `cargo build` and `cargo test` and exercise a real query before committing to either.
+
+## Decision table
+
+| If this is the stronger constraint                         | Start with                           |
+| ---------------------------------------------------------- | ------------------------------------ |
+| Reusing tower or tower-http middleware                     | Axum                                 |
+| `tower-sessions` from the Better Fullstack options         | Axum                                 |
+| First-party crates for WebSockets, sessions, and CORS      | Actix Web                            |
+| Existing Actix Web services and team experience            | Actix Web                            |
+| Only database access and JSON routes                       | Either; the one the team knows       |
+
+## Related guides
+
+- [Axum + PostgreSQL + SeaORM guide](/guides/rust/axum-postgres-seaorm/)
+- [Rust backend pack](/guides/packs/create-rust-backend/)
+
+For a Go or Python service instead, read [Gin vs Echo vs Fiber](/blog/gin-vs-echo-vs-fiber/) or [FastAPI vs Django](/blog/fastapi-vs-django/).

@@ -1,0 +1,125 @@
+---
+title: "Gin vs Echo vs Fiber for a Go API"
+description: "Choose Gin, Echo, or Fiber by HTTP foundation, request context rules, middleware fit, and major-version status, with the Better Fullstack command for each."
+date: 2026-10-06
+authors:
+  - Ibrahim Elkamali
+image: /search-media/stack-decisions-1200x630.png
+video: /search-media/stack-decisions-1200x630.mp4
+translationStatus: pending
+tags:
+  - gin
+  - echo
+  - fiber
+  - go
+  - backend
+keywords:
+  - gin vs echo vs fiber
+  - gin vs fiber
+  - echo vs gin
+  - go web framework comparison
+  - go api starter
+---
+
+![Stack decision map: choose an ecosystem, generate, inspect, and keep the code](/search-media/stack-decisions-1200x630.png)
+
+<video controls muted playsInline preload="metadata" poster="/search-media/stack-decisions-1200x630.png" src="/search-media/stack-decisions-1200x630.mp4"></video>
+
+Gin, Echo, and Fiber all give Go a router, middleware, and helpers for binding and rendering JSON. The decision rarely comes down to routing syntax. It comes down to which HTTP engine sits underneath, what that means for the libraries you can reuse, and which major version you would be starting on.
+
+## HTTP foundation
+
+Gin and Echo build on Go's standard `net/http`. Gin's `Engine` has a `ServeHTTP` method that "conforms to the http.Handler interface," and `Run` starts a standard `http.Server` ([source](https://github.com/gin-gonic/gin/blob/master/gin.go)). Echo's `ServeHTTP` likewise "implements `http.Handler` interface" ([v4 source](https://github.com/labstack/echo/blob/v4/echo.go)). Both therefore inherit the standard library's connection model: `http.Server.Serve` creates [a new service goroutine for each connection](https://pkg.go.dev/net/http#Server.Serve).
+
+Fiber is different. It describes itself as an [Express-inspired web framework built on top of Fasthttp](https://docs.gofiber.io/), and the [fasthttp README](https://github.com/valyala/fasthttp) states plainly that its API "is incompatible with net/http." Fiber v2's README says "Fiber is not compatible with net/http interfaces" and names gqlgen and go-swagger as examples of what that excludes ([Fiber v2 README](https://github.com/gofiber/fiber/blob/v2/.github/README.md)). [Fiber v3's README](https://github.com/gofiber/fiber) says its router accepts existing `net/http` handlers directly and points to the adaptor middleware for converting handlers and middleware in both directions.
+
+## Request context rules
+
+Fiber reuses request objects to avoid allocations. Its documentation warns that values returned from `fiber.Ctx` "are not immutable by default and will be reused across requests": use them only inside the handler, copy anything you need to keep, or enable the `Immutable` setting. Fasthttp itself forbids holding references to the request context after the handler returns.
+
+Gin and Echo hand you a context wrapped around the standard `*http.Request`. Both also take that context from a pool and return it when the handler finishes, so a goroutine that outlives the request must not keep the framework context. Gin's documentation says to [pass a copy made with `c.Copy()`](https://gin-gonic.com/en/docs/middleware/goroutines-inside-a-middleware/) to goroutines; with Echo, read what you need from the context before starting the goroutine.
+
+## Middleware and library fit
+
+Any library that ships a `net/http` handler or middleware (auth servers, metrics exporters, OpenAPI tooling) fits Gin and Echo with a thin wrapper: Gin has `gin.WrapH` and `gin.WrapF`, and Echo has `echo.WrapHandler` and `echo.WrapMiddleware`. With Fiber, the same library goes through an adaptor, so check every `net/http` dependency you plan to use.
+
+Each framework also has its own middleware set. Gin's [documentation](https://gin-gonic.com/en/docs/introduction/) lists middleware support, panic recovery, JSON validation, route grouping, error management, and built-in JSON, XML, and HTML rendering. Fiber ships built-in middleware and officially maintained contrib packages. Echo describes itself as [a minimalist Go web framework](https://echo.labstack.com/guide/quickstart/).
+
+## Major-version status
+
+This is the criterion most likely to affect a new project, and it is where the generated code needs a decision from you:
+
+- **Gin** v1.12.0 was released on 2026-02-28 ([releases](https://github.com/gin-gonic/gin/releases)).
+- **Echo** v5.0.0 was released on 2026-01-18. Its [release notes](https://github.com/labstack/echo/releases/tag/v5.0.0) describe major breaking changes, including `Context` becoming a struct, so handlers take `*echo.Context`, and state that v4 is supported with security updates and bug fixes until 2026-12-31.
+- **Fiber** v3.0.0 was released on 2026-02-02, with a migration tool (`fiber migrate --to v3`) linked from the [release notes](https://github.com/gofiber/fiber/releases/tag/v3.0.0). The v2 line still receives patch releases; v2.52.15 was released on 2026-08-12.
+
+## What Better Fullstack generates
+
+The three commands below differ only in `--go-web-framework`:
+
+```bash
+bun create better-fullstack@latest my-api \
+  --ecosystem go \
+  --go-web-framework gin \
+  --database postgres \
+  --go-orm gorm \
+  --go-logging zap \
+  --auth none
+```
+
+```bash
+bun create better-fullstack@latest my-api \
+  --ecosystem go \
+  --go-web-framework echo \
+  --database postgres \
+  --go-orm gorm \
+  --go-logging zap \
+  --auth none
+```
+
+```bash
+bun create better-fullstack@latest my-api \
+  --ecosystem go \
+  --go-web-framework fiber \
+  --database postgres \
+  --go-orm gorm \
+  --go-logging zap \
+  --auth none
+```
+
+Add `--dry-run` to preview any of them without writing files. All three share the same layout and data layer: `cmd/server/main.go`, plus `internal/database`, `internal/models`, and `internal/handlers`. GORM auto-migrates `User` and `Post` models at startup, and the handlers expose list, get, create, update, and delete routes under `/api/users` and `/api/posts`. `godotenv` loads `.env`, and zap handles logging. The framework-specific code sits in `main.go` and the handler signatures:
+
+| Concern          | Gin                                     | Echo                                          | Fiber                                        |
+| ---------------- | --------------------------------------- | --------------------------------------------- | -------------------------------------------- |
+| Pinned module    | `github.com/gin-gonic/gin v1.12.0`      | `github.com/labstack/echo/v4 v4.15.1`         | `github.com/gofiber/fiber/v2 v2.52.6`        |
+| Router           | `gin.Default()` (Logger and Recovery)   | `echo.New()` with Logger and Recover middleware | `fiber.New()` with logger and recover middleware |
+| CORS             | hand-written middleware                 | `middleware.CORSWithConfig`                   | Fiber's `cors` middleware                    |
+| Handler          | `func(c *gin.Context)`                  | `func(c echo.Context) error`                  | `func(c *fiber.Ctx) error`                   |
+| Server start     | `r.Run(addr)`                           | `e.Start(addr)`                               | `app.Listen(addr)`                           |
+
+The generated projects have limits to plan for:
+
+- Echo and Fiber are generated on their previous major versions, v4 and v2. Moving to Echo v5 or Fiber v3 is a code migration, not a version bump, and Echo v4's announced support window ends on 2026-12-31.
+- When `DATABASE_URL` is empty, the database package opens a local SQLite file, `app.db`. It uses the PostgreSQL driver only when the URL starts with `postgres`. `.env.example` contains a PostgreSQL URL to copy into `.env`.
+- Handlers reach the database through a package-level `*gorm.DB`, and no `_test.go` files are generated.
+
+If you leave out `--auth none`, the Go default adds `go-better-auth`, which is mounted as a standard `net/http` handler: Gin wraps it with `gin.WrapH`, Echo with `echo.WrapHandler`, and Fiber with `adaptor.HTTPHandler` from `gofiber/adaptor`. That is the `net/http` difference from above, showing up in generated code.
+
+These are generated projects, not runtime-verified deployments. Run `go build ./...` and exercise the routes against your database before committing to one.
+
+## Decision table
+
+| If this is the stronger constraint                          | Start with                                         |
+| ----------------------------------------------------------- | -------------------------------------------------- |
+| Many `net/http` libraries and middleware to reuse           | Gin or Echo                                        |
+| Generated code on a current major version today             | Gin                                                |
+| Echo's API, starting a long-lived service                   | Echo, with a planned move to v5                    |
+| Express-style API on fasthttp, with its context rules       | Fiber, with a planned move to v3                   |
+| Existing services on one framework                          | That one                                           |
+
+## Compare real generated stacks
+
+- [Go + Gin + PostgreSQL + GORM](/stack/go-gin-postgres-gorm)
+- [Go + Echo + PostgreSQL + SQLC](/stack/go-echo-postgres-sqlc)
+
+The [Gin PostgreSQL GORM guide](/guides/go/gin-postgres-gorm/) and [Echo SQLC guide](/guides/go/echo-sqlc-api/) cover each stack in more depth. For a Rust service instead, read [Axum vs Actix Web](/blog/axum-vs-actix-web/).

@@ -152,6 +152,7 @@ const CASES: RoundtripCase[] = [
       ...DEFAULT_STACK,
       ecosystem: "go",
       projectName: "roundtrip-go",
+      auth: "none",
       goAuth: "casbin",
       aiDocs: [],
       git: "false",

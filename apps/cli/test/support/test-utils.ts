@@ -82,6 +82,7 @@ function createTestCoreDefaults(): Partial<CreateInput> {
     pythonCaching: SHARED_TEST_DEFAULTS.pythonCaching,
     pythonRealtime: SHARED_TEST_DEFAULTS.pythonRealtime,
     pythonObservability: SHARED_TEST_DEFAULTS.pythonObservability,
+    pythonLogging: SHARED_TEST_DEFAULTS.pythonLogging,
     pythonCli: [...SHARED_TEST_DEFAULTS.pythonCli],
     pythonCloudSdk: SHARED_TEST_DEFAULTS.pythonCloudSdk,
     pythonHttpClient: SHARED_TEST_DEFAULTS.pythonHttpClient,

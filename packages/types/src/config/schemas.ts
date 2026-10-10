@@ -433,7 +433,16 @@ export const RealtimeSchema = z
   .describe("Real-time/WebSocket solution");
 
 export const JobQueueSchema = z
-  .enum(["bullmq", "trigger-dev", "inngest", "temporal", "none"])
+  .enum([
+    "bullmq",
+    "trigger-dev",
+    "inngest",
+    "temporal",
+    "pg-boss",
+    "upstash-qstash",
+    "hatchet",
+    "none",
+  ])
   .describe("Job queue/background worker solution");
 
 export const CMSSchema = z
@@ -736,6 +745,10 @@ export const PythonObservabilitySchema = z
   .enum(["opentelemetry", "signoz", "prometheus-client", "none"])
   .describe("Python observability/tracing library");
 
+export const PythonLoggingSchema = z
+  .enum(["loguru", "structlog", "none"])
+  .describe("Python logging library");
+
 export const PythonCliSchema = z
   .enum(["typer", "click", "rich", "none"])
   .describe("Python CLI tooling libraries");
@@ -794,7 +807,7 @@ export const GoRealtimeSchema = z
   .describe("Go realtime/WebSocket library");
 
 export const GoMessageQueueSchema = z
-  .enum(["nats", "watermill", "kafka-go", "asynq", "none"])
+  .enum(["nats", "watermill", "kafka-go", "asynq", "river", "gocron", "none"])
   .describe("Go message queue/eventing library");
 
 export const GoCachingSchema = z
@@ -816,7 +829,7 @@ export const GoQualitySchema = z
   .describe("Go code quality tooling");
 
 export const GoMigrationsSchema = z
-  .enum(["golang-migrate", "none"])
+  .enum(["golang-migrate", "goose", "atlas", "none"])
   .describe("Go database migration tooling");
 
 export const GoTemplatingSchema = z.enum(["templ", "none"]).describe("Go templating library");
@@ -1307,6 +1320,7 @@ export const CreateInputSchema = z.object({
   pythonCaching: PythonCachingSchema.optional(),
   pythonRealtime: PythonRealtimeSchema.optional(),
   pythonObservability: PythonObservabilitySchema.optional(),
+  pythonLogging: PythonLoggingSchema.optional(),
   pythonCli: z.array(PythonCliSchema).optional(),
   pythonCloudSdk: PythonCloudSdkSchema.optional(),
   pythonHttpClient: PythonHttpClientSchema.optional(),
@@ -1507,6 +1521,7 @@ export const ProjectConfigSchema = z.object({
   pythonCaching: PythonCachingSchema,
   pythonRealtime: PythonRealtimeSchema,
   pythonObservability: PythonObservabilitySchema,
+  pythonLogging: PythonLoggingSchema,
   pythonCli: z.array(PythonCliSchema),
   pythonCloudSdk: PythonCloudSdkSchema,
   pythonHttpClient: PythonHttpClientSchema,
@@ -1693,6 +1708,7 @@ export const BetterTStackConfigSchema = z.object({
   pythonCaching: PythonCachingSchema,
   pythonRealtime: PythonRealtimeSchema,
   pythonObservability: PythonObservabilitySchema,
+  pythonLogging: PythonLoggingSchema,
   pythonCli: z.array(PythonCliSchema),
   pythonCloudSdk: PythonCloudSdkSchema,
   pythonHttpClient: PythonHttpClientSchema,
@@ -1892,6 +1908,7 @@ export const PYTHON_TESTING_VALUES = PythonTestingSchema.options;
 export const PYTHON_CACHING_VALUES = PythonCachingSchema.options;
 export const PYTHON_REALTIME_VALUES = PythonRealtimeSchema.options;
 export const PYTHON_OBSERVABILITY_VALUES = PythonObservabilitySchema.options;
+export const PYTHON_LOGGING_VALUES = PythonLoggingSchema.options;
 export const PYTHON_CLI_VALUES = PythonCliSchema.options;
 export const PYTHON_CLOUD_SDK_VALUES = PythonCloudSdkSchema.options;
 export const PYTHON_HTTP_CLIENT_VALUES = PythonHttpClientSchema.options;

@@ -214,6 +214,9 @@ export default function AIPage() {
     try {
       const response = await fetch({{#if (eq backend "self")}}"/api/ai"{{else}}`${env.NEXT_PUBLIC_SERVER_URL}/ai`{{/if}}, {
         method: "POST",
+{{#if (and (hasAiRouteAuth auth backend frontend) (ne backend "self"))}}
+        credentials: "include",
+{{/if}}
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [...messages, userMessage].map((m) => ({
@@ -223,6 +226,15 @@ export default function AIPage() {
         }),
       });
 
+{{#if (hasAiRouteAuth auth backend frontend)}}
+      if (response.status === 401) {
+        setMessages((prev) => [
+          ...prev,
+          { id: (Date.now() + 1).toString(), role: "assistant", content: "Sign in to use the AI chat." },
+        ]);
+        return;
+      }
+{{/if}}
       if (!response.ok) throw new Error("Failed to send message");
 
       const reader = response.body?.getReader();
@@ -406,6 +418,9 @@ export default function AIPage() {
     try {
       const response = await fetch({{#if (eq backend "self")}}"/api/ai"{{else}}`${env.NEXT_PUBLIC_SERVER_URL}/ai`{{/if}}, {
         method: "POST",
+{{#if (and (hasAiRouteAuth auth backend frontend) (ne backend "self"))}}
+        credentials: "include",
+{{/if}}
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [...messages, userMessage].map((m) => ({
@@ -415,6 +430,15 @@ export default function AIPage() {
         }),
       });
 
+{{#if (hasAiRouteAuth auth backend frontend)}}
+      if (response.status === 401) {
+        setMessages((prev) => [
+          ...prev,
+          { id: (Date.now() + 1).toString(), role: "assistant", content: "Sign in to use the AI chat." },
+        ]);
+        return;
+      }
+{{/if}}
       if (!response.ok) throw new Error("Failed to send message");
 
       const reader = response.body?.getReader();
@@ -610,9 +634,21 @@ function MessageBubble({
 
 export default function AIPage() {
   const [input, setInput] = useState("");
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status{{#if (hasAiRouteAuth auth backend frontend)}}, error{{/if}} } = useChat({
     transport: new DefaultChatTransport({
       api: {{#if (eq backend "self")}}"/api/ai"{{else}}`${env.NEXT_PUBLIC_SERVER_URL}/ai`{{/if}},
+{{#if (hasAiRouteAuth auth backend frontend)}}
+{{#unless (eq backend "self")}}
+      credentials: "include",
+{{/unless}}
+      fetch: async (url, init) => {
+        const response = await fetch(url, init);
+        if (response.status === 401) {
+          throw new Error("Sign in to use the AI chat.");
+        }
+        return response;
+      },
+{{/if}}
     }),
   });
   const isBusy = status === "submitted" || status === "streaming";
@@ -647,6 +683,9 @@ export default function AIPage() {
             />
           ))
         )}
+{{#if (hasAiRouteAuth auth backend frontend)}}
+        {error && <p className="text-center text-sm text-destructive">{error.message}</p>}
+{{/if}}
         <div ref={messagesEndRef} />
       </div>
 

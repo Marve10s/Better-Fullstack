@@ -2,12 +2,15 @@ import type { ProjectOperation } from "@/operations/operation";
 
 import {
   checkCompatibilityOperation,
+  explainOptionOperation,
   getCapabilityEvidenceOperation,
   getGuidanceOperation,
   getSchemaOperation,
+  listOptionsOperation,
   listPresetsOperation,
   listStarterTracksOperation,
   recommendStackOperation,
+  searchOptionsOperation,
 } from "@/operations/catalog";
 import { createProjectOperation, planProjectOperation } from "@/operations/project-create";
 import {
@@ -51,6 +54,9 @@ export * from "@/operations/operation";
 export const allOperations: readonly ProjectOperation[] = [
   getGuidanceOperation,
   getSchemaOperation,
+  listOptionsOperation,
+  searchOptionsOperation,
+  explainOptionOperation,
   listPresetsOperation,
   listStarterTracksOperation,
   recommendStackOperation,

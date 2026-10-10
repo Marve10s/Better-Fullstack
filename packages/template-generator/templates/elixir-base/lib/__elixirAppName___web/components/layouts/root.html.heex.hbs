@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
     <title>{{projectName}}</title>
+{{#if (eq elixirWebFramework "phoenix-live-view")}}
+    <script defer src={~p"/assets/phoenix/phoenix.min.js"}>
+    </script>
+    <script defer src={~p"/assets/phoenix_live_view/phoenix_live_view.min.js"}>
+    </script>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
+        window.liveSocket = new LiveView.LiveSocket("/live", Phoenix.Socket, {
+          params: { _csrf_token: csrfToken }
+        });
+        window.liveSocket.connect();
+      });
+    </script>
+{{/if}}
   </head>
   <body>
     {@inner_content}

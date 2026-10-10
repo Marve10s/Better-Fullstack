@@ -8,8 +8,9 @@ import type {
 } from "@/types";
 
 import { hasWebStyling } from "@/config/compatibility-rules";
+import { getRequestedAuthRejection } from "@/config/stack-compatibility";
 import { getDefaultConfig } from "@/constants";
-import { exitCancelled } from "@/presentation/errors";
+import { exitCancelled, exitWithError } from "@/presentation/errors";
 import { getApiChoice } from "@/prompts/architecture/api";
 import { getBackendFrameworkChoice } from "@/prompts/architecture/backend";
 import {
@@ -123,6 +124,7 @@ import {
   getPythonCachingChoice,
   getPythonRealtimeChoice,
   getPythonObservabilityChoice,
+  getPythonLoggingChoice,
   getPythonCliChoice,
   getPythonCloudSdkChoice,
   getPythonDataChoice,
@@ -185,6 +187,18 @@ export type BackendEcosystem = Extract<
 >;
 export type FrontendEcosystem = "typescript" | "rust" | "dotnet";
 export type MobileEcosystem = "none" | "react-native" | "kotlin" | "swift" | "dart";
+
+/**
+ * The TypeScript web and React Native apps the composed stack generates. Backend and auth choices
+ * must account for both, so a mobile app neither hides a supported backend nor admits an
+ * unsupported one.
+ */
+export function getComposerAppFrontends(
+  webFrontend: Frontend,
+  nativeFrontend: Frontend,
+): Frontend[] {
+  return [webFrontend, nativeFrontend].filter((frontend) => frontend !== "none");
+}
 
 export async function getCompositionModeChoice(): Promise<CompositionMode> {
   const response = await navigableSelect<CompositionMode>({
@@ -457,6 +471,7 @@ export async function gatherMultiEcosystemConfig(
       : "none";
   const swiftMobile = mobileEcosystem === "swift" ? "swiftui" : "none";
   const dartMobile = mobileEcosystem === "dart" ? "flutter" : "none";
+  const appFrontends = getComposerAppFrontends(frontend, nativeFrontend);
   const kotlinMobileLibraries =
     kotlinMobile !== "none" ? await selectKotlinMobileLibraries(flags.kotlinMobileLibraries) : [];
   const uiLibrary = hasWebStyling(frontendList)
@@ -551,11 +566,24 @@ export async function gatherMultiEcosystemConfig(
   let dbSetup: ProjectConfig["dbSetup"] = "none";
 
   if (backendEcosystem === "typescript") {
-    const backend = promptValue(await getBackendFrameworkChoice(flags.backend, frontendList));
+    const backend = promptValue(
+      await getBackendFrameworkChoice(flags.backend, appFrontends, flags.jobQueue, flags.auth),
+    );
     const runtime =
-      backend === "none" ? "none" : promptValue(await getRuntimeChoice(flags.runtime, backend));
+      backend === "none"
+        ? "none"
+        : promptValue(await getRuntimeChoice(flags.runtime, backend, flags.jobQueue));
     if (backend !== "none") {
-      database = promptValue(await getDatabaseChoice(flags.database, backend, runtime));
+      database = promptValue(
+        await getDatabaseChoice(
+          flags.database,
+          backend,
+          runtime,
+          flags.jobQueue,
+          flags.auth,
+          flags.orm,
+        ),
+      );
       dbSetup = promptValue(
         await getDBSetupChoice(database, flags.dbSetup, flags.orm, backend, runtime),
       );
@@ -563,7 +591,7 @@ export async function gatherMultiEcosystemConfig(
     const orm =
       backend === "none" || database === "none"
         ? "none"
-        : promptValue(await getORMChoice(flags.orm, true, database, backend, runtime));
+        : promptValue(await getORMChoice(flags.orm, true, database, backend, runtime, flags.auth));
     const api =
       backend === "none"
         ? "none"
@@ -571,7 +599,12 @@ export async function gatherMultiEcosystemConfig(
     const auth =
       backend === "none"
         ? "none"
-        : promptValue(await getAuthChoice(flags.auth, backend, frontendList));
+        : promptValue(
+            await getAuthChoice(flags.auth, backend, appFrontends, "typescript", {
+              database,
+              orm,
+            }),
+          );
     const payments =
       backend === "none"
         ? "none"
@@ -618,7 +651,7 @@ export async function gatherMultiEcosystemConfig(
       backend === "none"
         ? "none"
         : await scopedPromptValue("typescript", "jobQueue", configScope, backendSections, () =>
-            getJobQueueChoice(flags.jobQueue, backend),
+            getJobQueueChoice(flags.jobQueue, backend, runtime, database),
           );
     const caching =
       backend === "none"
@@ -771,7 +804,7 @@ export async function gatherMultiEcosystemConfig(
       goWebFramework === "none"
         ? "none"
         : await scopedPromptValue("go", "goMessageQueue", configScope, backendSections, () =>
-            getGoMessageQueueChoice(flags.goMessageQueue),
+            getGoMessageQueueChoice(flags.goMessageQueue, { database, goWebFramework }),
           );
     const goCaching =
       goWebFramework === "none"
@@ -807,7 +840,7 @@ export async function gatherMultiEcosystemConfig(
       goWebFramework === "none" || !["sqlite", "postgres", "mysql"].includes(database)
         ? "none"
         : await scopedPromptValue("go", "goMigrations", configScope, backendSections, () =>
-            getGoMigrationsChoice(flags.goMigrations),
+            getGoMigrationsChoice(flags.goMigrations, { database, goOrm }),
           );
     const goTemplating =
       goWebFramework === "none"
@@ -1047,6 +1080,17 @@ export async function gatherMultiEcosystemConfig(
             backendSections,
             () => getPythonObservabilityChoice(flags.pythonObservability),
           );
+    if (pythonWebFramework === "none" && flags.pythonLogging && flags.pythonLogging !== "none") {
+      exitWithError(
+        `--python-logging ${flags.pythonLogging} needs a Python web framework in a multi-ecosystem project. Choose one with --python-web-framework or remove --python-logging.`,
+      );
+    }
+    const pythonLogging =
+      pythonWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("python", "pythonLogging", configScope, backendSections, () =>
+            getPythonLoggingChoice(flags.pythonLogging, pythonWebFramework),
+          );
     const pythonCli =
       pythonWebFramework === "none"
         ? []
@@ -1116,6 +1160,7 @@ export async function gatherMultiEcosystemConfig(
       pythonCaching,
       pythonRealtime,
       pythonObservability,
+      pythonLogging,
       pythonCli,
       pythonCloudSdk,
       pythonHttpClient,
@@ -1141,6 +1186,7 @@ export async function gatherMultiEcosystemConfig(
     if (pythonObservability !== "none") {
       stackPartSpecs.push(`backend.observability:python:${pythonObservability}`);
     }
+    if (pythonLogging !== "none") stackPartSpecs.push(`backend.logging:python:${pythonLogging}`);
     for (const cli of pythonCli) {
       if (cli !== "none") stackPartSpecs.push(`backend.cli:python:${cli}`);
     }
@@ -1589,8 +1635,10 @@ export async function gatherMultiEcosystemConfig(
     stackPartSpecs.push(`${rolePath}:${binding.ecosystem}:${addon}`);
   }
   const stackParts = parseStackPartSpecs(Array.from(new Set(stackPartSpecs)), "selected");
+  const ecosystem = hasJavaScript ? "typescript" : (graphPartial.ecosystem ?? backendEcosystem);
+  const keepsGoBetterAuth = ecosystem === "go" && flags.auth === "go-better-auth";
 
-  return {
+  const config: ProjectConfig = {
     ...baseConfig,
     ...flags,
     ...graphPartial,
@@ -1598,7 +1646,7 @@ export async function gatherMultiEcosystemConfig(
     projectName,
     projectDir,
     relativePath,
-    ecosystem: hasJavaScript ? "typescript" : (graphPartial.ecosystem ?? backendEcosystem),
+    ecosystem,
     frontend:
       frontendEcosystem === "typescript"
         ? nativeFrontend === "none"
@@ -1612,7 +1660,11 @@ export async function gatherMultiEcosystemConfig(
     database,
     orm: backendEcosystem === "typescript" ? (backendChoices.orm ?? "none") : "none",
     api: backendEcosystem === "typescript" ? (backendChoices.api ?? "none") : "none",
-    auth: backendEcosystem === "typescript" ? (backendChoices.auth ?? "none") : "none",
+    auth: keepsGoBetterAuth
+      ? "go-better-auth"
+      : backendEcosystem === "typescript"
+        ? (backendChoices.auth ?? "none")
+        : "none",
     rustFrontend: selectedRustFrontend,
     dotnetFrontend: selectedDotnetFrontend,
     kotlinMobile,
@@ -1636,4 +1688,8 @@ export async function gatherMultiEcosystemConfig(
     install,
     stackParts,
   };
+  // Only a TypeScript backend generates `--auth`, so a requested provider is rejected, not reset.
+  const authRejection = getRequestedAuthRejection(flags.auth, config);
+  if (authRejection) return exitWithError(authRejection);
+  return config;
 }

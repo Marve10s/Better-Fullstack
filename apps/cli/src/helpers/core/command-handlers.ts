@@ -16,7 +16,13 @@ import type {
 
 import { resolveCreateConfigBase } from "@/config/config-source";
 import { displayConfig } from "@/config/display-config";
-import { resolveCompatibilityAdjustments } from "@/config/stack-compatibility";
+import {
+  getRequestedAuthRejection,
+  getRequestedDatabaseSetupRejection,
+  getRequestedJobQueueRejection,
+  getRequestedOrmRejection,
+  resolveCompatibilityAdjustments,
+} from "@/config/stack-compatibility";
 import { getTemplateConfig, getTemplateDescription } from "@/config/templates";
 import { BUILDER_URL, getDefaultConfig } from "@/constants";
 import { CreateCommandOptionsSchema } from "@/create-command-input";
@@ -334,6 +340,41 @@ function reportCompatibilityAdjustments(adjustments: string[]) {
   }
 }
 
+function rejectAdjustedRequestedFlags(
+  config: ProjectConfig,
+  changes: Partial<ProjectConfig>,
+  providedFlags: Set<string>,
+  configBase: Partial<CreateInput> | undefined,
+) {
+  const adjustedConfig = { ...config, ...changes };
+  // A database or ORM replayed from a saved config or history entry is the user's choice too.
+  const isRequested = (key: "database" | "orm" | "dbSetup" | "runtime") =>
+    providedFlags.has(key) || configBase?.[key] !== undefined;
+  const rejection =
+    (providedFlags.has("jobQueue")
+      ? getRequestedJobQueueRejection(config.jobQueue, adjustedConfig)
+      : null) ??
+    (providedFlags.has("auth")
+      ? getRequestedAuthRejection(config.auth, adjustedConfig)
+      : null) ??
+    getRequestedDatabaseSetupRejection(
+      {
+        database: isRequested("database") ? config.database : undefined,
+        dbSetup: isRequested("dbSetup") ? config.dbSetup : undefined,
+        runtime: isRequested("runtime") ? config.runtime : undefined,
+      },
+      adjustedConfig,
+    ) ??
+    getRequestedOrmRejection(
+      {
+        database: isRequested("database") ? config.database : undefined,
+        orm: isRequested("orm") ? config.orm : undefined,
+      },
+      adjustedConfig,
+    );
+  if (rejection) exitWithError(rejection);
+}
+
 function shouldPromptForVersionChannel(
   input: CreateInput & { projectName?: string },
   hasConfigBase: boolean,
@@ -455,6 +496,9 @@ export async function createProjectHandler(
       };
       failureConfig = originalInput;
       const providedFlags = getProvidedFlags(explicitInput);
+      // Auth replayed from a saved config or history entry is the user's choice, so an
+      // unsupported provider is rejected rather than reset like an unrequested default.
+      if (configBase?.auth !== undefined) providedFlags.add("auth");
 
       // Input-only, so it runs before any directory is resolved, cleared, or
       // created. A rejected shape must never cost the user their files.
@@ -600,6 +644,7 @@ export async function createProjectHandler(
               pythonCaching: "none",
               pythonRealtime: "none",
               pythonObservability: "none",
+              pythonLogging: "none",
               pythonCli: [],
               pythonCloudSdk: "none",
               pythonHttpClient: "none",
@@ -766,6 +811,7 @@ export async function createProjectHandler(
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
+          rejectAdjustedRequestedFlags(config, changes, providedFlags, configBase);
           if (adjustments.length > 0) {
             config = { ...config, ...changes };
             cliInput = { ...cliInput, ...changes };
@@ -806,6 +852,7 @@ export async function createProjectHandler(
 
         if (!cliInput.yolo && !isSilent()) {
           const { changes, adjustments } = resolveCompatibilityAdjustments(config);
+          rejectAdjustedRequestedFlags(config, changes, providedFlags, configBase);
           if (adjustments.length > 0) {
             config = { ...config, ...changes };
             cliInput = { ...cliInput, ...changes };

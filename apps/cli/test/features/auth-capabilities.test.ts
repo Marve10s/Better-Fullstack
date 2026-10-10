@@ -1,8 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import consola from "consola";
 
 import type { CompatibilityInput, ProjectConfig } from "@/types";
 
+import { validateEcosystemAuthCompatibility } from "@/config/config-validation";
+import { runWithContextAsync } from "@/presentation/context";
 import {
   analyzeStackCompatibility,
   getCapabilityDefinitions,
@@ -10,7 +11,6 @@ import {
   getSupportedCapabilityOptions,
   normalizeCapabilitySelection,
 } from "@/types";
-import { validateEcosystemAuthCompatibility } from "@/config/config-validation";
 
 function createTypeScriptStack(overrides: Partial<CompatibilityInput> = {}): CompatibilityInput {
   return {
@@ -291,32 +291,33 @@ describe("Auth capability matrix", () => {
     }
   });
 
-  it("warns and normalizes explicit unsupported auth flags in CLI validation", () => {
+  it("rejects explicit unsupported auth flags in CLI validation with the shared reason", async () => {
     const config: Partial<ProjectConfig> = {
       ecosystem: "typescript",
       backend: "self",
       frontend: ["tanstack-start"],
       auth: "nextauth",
     };
-    const warnings: string[] = [];
-    const mutableConsola = consola as typeof consola & {
-      warn: (...args: unknown[]) => void;
+
+    await runWithContextAsync({ silent: true }, async () => {
+      expect(() => validateEcosystemAuthCompatibility(config, new Set(["auth"]))).toThrow(
+        "Auth.js (NextAuth) needs the Next.js frontend",
+      );
+    });
+    expect(config.auth).toBe("nextauth");
+  });
+
+  it("resets only a default auth the user did not choose", async () => {
+    const config: Partial<ProjectConfig> = {
+      ecosystem: "typescript",
+      backend: "self",
+      frontend: ["tanstack-start"],
+      auth: "nextauth",
     };
-    const originalWarn = mutableConsola.warn;
 
-    mutableConsola.warn = (...args: unknown[]) => {
-      warnings.push(args.map((arg) => String(arg)).join(" "));
-    };
-
-    try {
-      validateEcosystemAuthCompatibility(config, new Set(["auth"]));
-    } finally {
-      mutableConsola.warn = originalWarn;
-    }
-
+    await runWithContextAsync({ silent: true }, async () => {
+      validateEcosystemAuthCompatibility(config, new Set(["frontend", "backend"]));
+    });
     expect(config.auth).toBe("none");
-    expect(
-      warnings.some((warning) => warning.includes("Unsupported auth selection 'nextauth'")),
-    ).toBe(true);
   });
 });

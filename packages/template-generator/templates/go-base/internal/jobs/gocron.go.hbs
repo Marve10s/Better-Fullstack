@@ -1,0 +1,42 @@
+{{#if (eq goMessageQueue "gocron")}}
+package jobs
+
+import (
+	"log"
+	"time"
+
+	"github.com/go-co-op/gocron/v2"
+)
+
+type Runner struct {
+	scheduler gocron.Scheduler
+}
+
+func Start() (*Runner, error) {
+	scheduler, err := gocron.NewScheduler()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = scheduler.NewJob(
+		gocron.DurationJob(time.Minute),
+		gocron.NewTask(func() {
+			log.Printf("gocron: heartbeat at %s", time.Now().Format(time.RFC3339))
+		}),
+		gocron.WithName("heartbeat"),
+	)
+	if err != nil {
+		_ = scheduler.Shutdown()
+		return nil, err
+	}
+
+	scheduler.Start()
+	return &Runner{scheduler: scheduler}, nil
+}
+
+func (r *Runner) Stop() {
+	if err := r.scheduler.Shutdown(); err != nil {
+		log.Printf("gocron: shutdown failed: %v", err)
+	}
+}
+{{/if}}

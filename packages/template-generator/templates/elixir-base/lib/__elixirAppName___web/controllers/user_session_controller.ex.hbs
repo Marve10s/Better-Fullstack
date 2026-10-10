@@ -3,6 +3,9 @@ defmodule {{elixirModuleName}}Web.UserSessionController do
 
   alias {{elixirModuleName}}.Accounts
 
+  plug :require_json_body when action in [:register, :login]
+  plug :require_json_body, :allow_missing when action in [:logout]
+
   def register(conn, %{"user" => user_params}) do
     case Accounts.create_user(user_params) do
       {:ok, user} ->
@@ -38,6 +41,32 @@ defmodule {{elixirModuleName}}Web.UserSessionController do
     conn
     |> configure_session(drop: true)
     |> json(%{data: %{ok: true}})
+  end
+
+  # These actions write or clear the session cookie. Cross-site HTML forms can
+  # only send urlencoded, multipart, or text/plain bodies, so requiring JSON
+  # stops another site from logging a visitor in or out (login CSRF).
+  # Logout may also omit Content-Type: a form always sends one, a cross-origin
+  # DELETE needs a CORS preflight, and _method is only read from a parsed body.
+  # Register and login stay JSON-only because a cross-site POST without a body
+  # could still carry credentials in the query string.
+  defp require_json_body(conn, opts) do
+    case get_req_header(conn, "content-type") do
+      [] when opts == :allow_missing -> conn
+      [content_type | _] -> if json_content_type?(content_type), do: conn, else: reject_body(conn)
+      [] -> reject_body(conn)
+    end
+  end
+
+  defp json_content_type?(content_type) do
+    match?({:ok, "application", "json", _params}, Plug.Conn.Utils.content_type(content_type))
+  end
+
+  defp reject_body(conn) do
+    conn
+    |> put_status(:unsupported_media_type)
+    |> json(%{errors: %{content_type: ["must be application/json"]}})
+    |> halt()
   end
 
   defp user_json(user) do

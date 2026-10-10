@@ -1,3 +1,63 @@
+{{#*inline "requireUser"}}
+{{#if (hasAiRouteAuth auth backend frontend)}}
+// No CORS headers are served, so a JSON request from another site needs a preflight that fails;
+// only non-JSON form posts reach this route cross-site, and they are rejected here.
+if (!/^application\/json\s*(;|$)/i.test(req.headers.get("content-type") ?? "")) {
+	return Response.json({ message: "Expected a JSON request" }, { status: 415 });
+}
+{{/if}}
+{{#if (isBetterAuth auth)}}
+const session = await auth.api.getSession({ headers: req.headers });
+if (!session) {
+	return Response.json({ message: "Unauthorized" }, { status: 401 });
+}
+
+{{else if (eq auth "clerk")}}
+const { userId } = await auth();
+if (!userId) {
+	return Response.json({ message: "Unauthorized" }, { status: 401 });
+}
+
+{{else if (eq auth "nextauth")}}
+const session = await auth();
+if (!session?.user) {
+	return Response.json({ message: "Unauthorized" }, { status: 401 });
+}
+
+{{else if (eq auth "stack-auth")}}
+const user = await stackServerApp.getUser();
+if (!user) {
+	return Response.json({ message: "Unauthorized" }, { status: 401 });
+}
+
+{{else if (eq auth "supabase-auth")}}
+const supabase = await createClient();
+const {
+	data: { user },
+} = await supabase.auth.getUser();
+if (!user) {
+	return Response.json({ message: "Unauthorized" }, { status: 401 });
+}
+
+{{else if (eq auth "auth0")}}
+const session = await auth0.getSession();
+if (!session) {
+	return Response.json({ message: "Unauthorized" }, { status: 401 });
+}
+
+{{/if}}
+{{/inline}}
+{{#if (or (isBetterAuth auth) (eq auth "nextauth"))}}
+import { auth } from "@{{projectName}}/auth";
+{{else if (eq auth "clerk")}}
+import { auth } from "@clerk/nextjs/server";
+{{else if (eq auth "stack-auth")}}
+import { stackServerApp } from "@/stack/server";
+{{else if (eq auth "supabase-auth")}}
+import { createClient } from "@/lib/supabase/server";
+{{else if (eq auth "auth0")}}
+import { auth0 } from "@/lib/auth0";
+{{/if}}
 {{#if (eq ai "modelfusion")}}
 import { streamText, openai } from "modelfusion";
 
@@ -10,6 +70,7 @@ const model = openai.ChatTextGenerator({
 });
 
 export async function POST(req: Request) {
+	{{> requireUser}}
 	const { messages } = await req.json();
 
 	const chatMessages = messages.map((msg: { role: string; content: string }) => {
@@ -67,6 +128,7 @@ const agent = createReactAgent({
 });
 
 export async function POST(req: Request) {
+	{{> requireUser}}
 	const { messages } = await req.json();
 
 	const langchainMessages: BaseMessage[] = messages.map((msg: { role: string; content: string }) => {
@@ -123,6 +185,7 @@ const agent = new LlmAgent({
 });
 
 export async function POST(req: Request) {
+	{{> requireUser}}
 	const { messages } = await req.json();
 
 	const lastMessage = messages[messages.length - 1];
@@ -166,6 +229,7 @@ import { streamText, type UIMessage, convertToModelMessages } from "ai";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
+	{{> requireUser}}
 	const { messages }: { messages: UIMessage[] } = await req.json();
 
 	const model = google("gemini-2.5-flash");

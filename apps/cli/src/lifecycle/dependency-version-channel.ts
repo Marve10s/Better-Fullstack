@@ -1,6 +1,9 @@
+import type { SynchronizedDependencyFamily } from "@better-fullstack/template-generator";
+
 import { log } from "@clack/prompts";
 import fs from "fs-extra";
 import path from "node:path";
+import { isMap, parseDocument } from "yaml";
 
 import type { VersionChannel } from "@/types";
 
@@ -15,18 +18,9 @@ const VERSION_CACHE = new Map<string, NpmPackageInfo>();
 const PRERELEASE_TAG_PRIORITY = ["beta", "next", "rc", "canary", "alpha"] as const;
 const REGISTRY_FETCH_TIMEOUT_MS = 10_000;
 const REGISTRY_CONCURRENCY = 10;
-const SYNCHRONIZED_VERSION_FAMILIES = [
-  {
-    name: "oRPC",
-    packages: [
-      "@orpc/server",
-      "@orpc/client",
-      "@orpc/openapi",
-      "@orpc/zod",
-      "@orpc/tanstack-query",
-    ],
-  },
-] as const;
+const PNPM_WORKSPACE_FILE = "pnpm-workspace.yaml";
+const SEMVER_PATTERN =
+  /^\d+\.\d+\.\d+(?:-(?<prerelease>[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 
 function mapWithConcurrency<T, R>(
   items: T[],
@@ -85,7 +79,7 @@ function getVersionSections(packageJson: Record<string, unknown>): PackageJsonVe
 }
 
 export function parseVersion(value: string): ParsedVersion {
-  const normalized = value.replace(/^[^\d]*/, "");
+  const normalized = value.replace(/^[^\d]*/, "").replace(/\+.*$/, "");
   const dashIdx = normalized.indexOf("-");
   const base = dashIdx === -1 ? normalized : normalized.slice(0, dashIdx);
   const prerelease = dashIdx === -1 ? "" : normalized.slice(dashIdx + 1);
@@ -136,7 +130,7 @@ export function compareVersions(a: string, b: string): number {
 }
 
 function isPrerelease(version: string): boolean {
-  return /-(alpha|beta|rc|next|canary)/i.test(version);
+  return SEMVER_PATTERN.exec(version.replace(/^[^\d]*/, ""))?.groups?.prerelease !== undefined;
 }
 
 function getVersionPrefix(version: string): string {
@@ -144,7 +138,7 @@ function getVersionPrefix(version: string): string {
   return match?.[0] ?? "";
 }
 
-function applyVersionPrefix(currentVersion: string, resolvedVersion: string): string {
+export function applyVersionPrefix(currentVersion: string, resolvedVersion: string): string {
   return `${getVersionPrefix(currentVersion)}${resolvedVersion}`;
 }
 
@@ -158,8 +152,13 @@ function shouldApplyResolvedVersion(
   return compareVersions(resolvedVersion, currentVersion) >= 0;
 }
 
-function isRegistrySemverSpec(version: string): boolean {
+export function isRegistrySemverSpec(version: string): boolean {
   return /^[~^]?\d/.test(version);
+}
+
+/** Forget fetched registry metadata so the next plan reads the registry again. */
+export function clearRegistryVersionCache(): void {
+  VERSION_CACHE.clear();
 }
 
 async function fetchPackageInfo(packageName: string): Promise<NpmPackageInfo> {
@@ -242,30 +241,97 @@ function resolveSharedFamilyVersion(
     );
   }
 
-  return [...commonVersions].sort((left, right) => compareVersions(right, left))[0] ?? null;
+  // Latest follows each package's latest tag: a release published above it is not latest yet.
+  const latestTags =
+    channel === "latest"
+      ? packageInfos.flatMap((packageInfo) => packageInfo["dist-tags"]?.latest ?? [])
+      : [];
+
+  return (
+    [...commonVersions]
+      .filter((version) => latestTags.every((tag) => compareVersions(version, tag) <= 0))
+      .sort((left, right) => compareVersions(right, left))[0] ?? null
+  );
+}
+
+function resolveFamilyVersion(
+  packageNames: readonly string[],
+  packageInfos: ReadonlyMap<string, NpmPackageInfo>,
+  latestChannelHolds: ReadonlyMap<string, string>,
+  channel: Exclude<VersionChannel, "stable">,
+): string | null {
+  const familyPackageInfos = packageNames.flatMap((packageName) => {
+    const packageInfo = packageInfos.get(packageName);
+    return packageInfo ? [packageInfo] : [];
+  });
+  if (familyPackageInfos.length !== packageNames.length) return null;
+
+  // A hold applies to the whole family or to none of it.
+  const heldVersions = new Set(
+    packageNames.map((packageName) => latestChannelHolds.get(packageName)),
+  );
+  if (heldVersions.size > 1) return null;
+  const [heldVersion] = heldVersions;
+
+  return heldVersion ?? resolveSharedFamilyVersion(familyPackageInfos, channel);
 }
 
 function applySynchronizedFamilyVersions(
+  families: readonly SynchronizedDependencyFamily[],
+  currentVersions: ReadonlyMap<string, readonly string[]>,
   resolvedVersions: Map<string, string>,
   packageInfos: Map<string, NpmPackageInfo>,
+  latestChannelHolds: ReadonlyMap<string, string>,
   channel: Exclude<VersionChannel, "stable">,
+  frozenPackages: ReadonlySet<string>,
 ): void {
-  for (const family of SYNCHRONIZED_VERSION_FAMILIES) {
+  for (const family of families) {
+    const frozenPackage = family.packages.find((packageName) => frozenPackages.has(packageName));
+    if (frozenPackage) {
+      log.warn(
+        `Keeping ${family.name} packages on their current versions: ${frozenPackage} is in an aliased pnpm catalog that cannot be rewritten`,
+      );
+      for (const packageName of family.packages) {
+        resolvedVersions.delete(packageName);
+      }
+      continue;
+    }
+
     const selectedPackages = family.packages.filter((packageName) =>
-      resolvedVersions.has(packageName),
+      currentVersions.has(packageName),
     );
     if (selectedPackages.length < 2) continue;
 
-    const selectedPackageInfos = selectedPackages.flatMap((packageName) => {
-      const packageInfo = packageInfos.get(packageName);
-      return packageInfo ? [packageInfo] : [];
-    });
-    if (selectedPackageInfos.length !== selectedPackages.length) continue;
-
-    const sharedVersion = resolveSharedFamilyVersion(selectedPackageInfos, channel);
+    const sharedVersion = resolveFamilyVersion(
+      selectedPackages,
+      packageInfos,
+      latestChannelHolds,
+      channel,
+    );
 
     if (!sharedVersion) {
-      log.warn(`Failed to resolve shared ${channel} version for ${family.name} packages`);
+      log.warn(
+        `Failed to resolve shared ${channel} version for ${family.name} packages; keeping their current versions`,
+      );
+      for (const packageName of selectedPackages) {
+        resolvedVersions.delete(packageName);
+      }
+      continue;
+    }
+
+    // Moving only the members that are not ahead of the shared release would split the family.
+    const newerPackage = selectedPackages.find((packageName) =>
+      currentVersions
+        .get(packageName)
+        ?.some((version) => !shouldApplyResolvedVersion(version, sharedVersion, channel)),
+    );
+    if (newerPackage) {
+      log.warn(
+        `Keeping ${family.name} packages on their current versions: ${newerPackage} is newer than the shared ${channel} version ${sharedVersion}`,
+      );
+      for (const packageName of selectedPackages) {
+        resolvedVersions.delete(packageName);
+      }
       continue;
     }
 
@@ -273,6 +339,41 @@ function applySynchronizedFamilyVersions(
       resolvedVersions.set(packageName, sharedVersion);
     }
   }
+}
+
+async function readPnpmCatalog(
+  projectDir: string,
+  projectedContents: ReadonlyMap<string, string | null>,
+) {
+  const workspacePath = path.join(projectDir, PNPM_WORKSPACE_FILE);
+  const projectedContent = projectedContents.get(workspacePath);
+  if (projectedContent === null) return null;
+
+  const content =
+    projectedContent ??
+    ((await fs.pathExists(workspacePath)) ? await fs.readFile(workspacePath, "utf-8") : null);
+  if (content === null) return null;
+
+  const parsed = parsePnpmCatalog(content);
+  return parsed ? { workspacePath, ...parsed } : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+export function parsePnpmCatalog(content: string) {
+  const document = parseDocument(content);
+  if (document.errors.length > 0) return null;
+  const parsed: unknown = document.toJS();
+  const catalogValue = isRecord(parsed) ? parsed.catalog : undefined;
+  if (!isRecord(catalogValue)) return null;
+
+  const catalog: PackageJsonVersionSection = {};
+  for (const [name, version] of Object.entries(catalogValue)) {
+    if (typeof version === "string") catalog[name] = version;
+  }
+  return { document, catalog, editable: isMap(document.get("catalog")) };
 }
 
 export async function collectPackageJsonPaths(projectDir: string): Promise<string[]> {
@@ -307,6 +408,168 @@ export async function collectPackageJsonPaths(projectDir: string): Promise<strin
   return results.sort();
 }
 
+function readDeclaredReleases(filePath: string, content: string): Map<string, Set<string>> {
+  const releases = new Map<string, Set<string>>();
+  const recordVersions = (section: PackageJsonVersionSection) => {
+    for (const [name, version] of Object.entries(section)) {
+      if (typeof version !== "string" || !isRegistrySemverSpec(version)) continue;
+      const release = version.slice(getVersionPrefix(version).length);
+      releases.set(name, (releases.get(name) ?? new Set()).add(release));
+    }
+  };
+
+  const fileName = path.basename(filePath);
+  if (fileName === PNPM_WORKSPACE_FILE) {
+    const catalog = parsePnpmCatalog(content)?.catalog;
+    if (catalog) recordVersions(catalog);
+    return releases;
+  }
+  if (fileName !== "package.json") return releases;
+  let packageJson: unknown;
+  try {
+    packageJson = JSON.parse(content);
+  } catch {
+    return releases;
+  }
+  if (!isRecord(packageJson)) return releases;
+  for (const section of getVersionSections(packageJson)) recordVersions(section);
+  return releases;
+}
+
+/**
+ * The one release each family declares across package manifests and the pnpm catalog, without
+ * its range prefix: `1.7.7` and `^1.7.7` declare the same release.
+ */
+function collectFamilyVersions(
+  families: readonly SynchronizedDependencyFamily[],
+  files: ReadonlyMap<string, string>,
+): Map<string, string> {
+  const declaredVersions = new Map<string, Set<string>>();
+  for (const [filePath, content] of files) {
+    for (const [name, releases] of readDeclaredReleases(filePath, content)) {
+      declaredVersions.set(name, new Set([...(declaredVersions.get(name) ?? []), ...releases]));
+    }
+  }
+
+  const familyVersions = new Map<string, string>();
+  for (const family of families) {
+    const versions = new Set(
+      family.packages.flatMap((packageName) => [...(declaredVersions.get(packageName) ?? [])]),
+    );
+    const [version] = versions;
+    if (versions.size !== 1 || !version) continue;
+    for (const packageName of family.packages) familyVersions.set(packageName, version);
+  }
+  return familyVersions;
+}
+
+export async function readDependencyManifests(projectDir: string): Promise<Map<string, string>> {
+  const files = new Map<string, string>();
+  await Promise.all(
+    [
+      ...(await collectPackageJsonPaths(projectDir)),
+      path.join(projectDir, PNPM_WORKSPACE_FILE),
+    ].map(async (filePath) => {
+      const content = await fs.readFile(filePath, "utf-8").catch(() => null);
+      if (content !== null) {
+        files.set(path.relative(projectDir, filePath).split(path.sep).join("/"), content);
+      }
+    }),
+  );
+  return files;
+}
+
+/**
+ * Families the project moved off the release its generated baseline declares, keyed by every
+ * member package. A package the template adds to one of these families joins the project's
+ * release; a family still on the generated release follows the template instead.
+ */
+export async function collectDivergedFamilyVersions(
+  projectDir: string,
+  baselineContents: Readonly<Record<string, string>>,
+): Promise<Map<string, string>> {
+  const { SYNCHRONIZED_DEPENDENCY_FAMILIES } = await import("@better-fullstack/template-generator");
+  const projectVersions = collectFamilyVersions(
+    SYNCHRONIZED_DEPENDENCY_FAMILIES,
+    await readDependencyManifests(projectDir),
+  );
+  const baselineVersions = collectFamilyVersions(
+    SYNCHRONIZED_DEPENDENCY_FAMILIES,
+    new Map(Object.entries(baselineContents)),
+  );
+  return new Map(
+    [...projectVersions].filter(
+      ([packageName, version]) => baselineVersions.get(packageName) !== version,
+    ),
+  );
+}
+
+export type DependencyFamilyConflict = { paths: string[]; reason: string };
+
+type DeclaredReleasesByFile = ReadonlyMap<string, ReadonlyMap<string, ReadonlySet<string>>>;
+
+function readDeclaredReleasesByFile(files: ReadonlyMap<string, string>): DeclaredReleasesByFile {
+  return new Map(
+    [...files].map(([filePath, content]) => [filePath, readDeclaredReleases(filePath, content)]),
+  );
+}
+
+function releasesOf(files: DeclaredReleasesByFile, filePath: string, packageName: string) {
+  return [...(files.get(filePath)?.get(packageName) ?? [])].sort(compareVersions);
+}
+
+export async function findFamilyConflicts(
+  before: ReadonlyMap<string, string>,
+  after: ReadonlyMap<string, string>,
+): Promise<DependencyFamilyConflict[]> {
+  const { SYNCHRONIZED_DEPENDENCY_FAMILIES } = await import("@better-fullstack/template-generator");
+  const beforeReleases = readDeclaredReleasesByFile(before);
+  const afterReleases = readDeclaredReleasesByFile(after);
+  const filePaths = [...new Set([...before.keys(), ...after.keys()])].sort();
+
+  const conflicts: DependencyFamilyConflict[] = [];
+  for (const family of SYNCHRONIZED_DEPENDENCY_FAMILIES) {
+    const paths = filePaths.filter((filePath) =>
+      family.packages.some(
+        (packageName) =>
+          releasesOf(beforeReleases, filePath, packageName).join() !==
+          releasesOf(afterReleases, filePath, packageName).join(),
+      ),
+    );
+    if (paths.length === 0) continue;
+
+    const memberReleases = family.packages.flatMap((packageName) =>
+      [
+        ...new Set(
+          filePaths.flatMap((filePath) => releasesOf(afterReleases, filePath, packageName)),
+        ),
+      ].map((release) => ({ packageName, release })),
+    );
+    const lowered = paths.flatMap((filePath) =>
+      family.packages.flatMap((packageName) => {
+        const previous = releasesOf(beforeReleases, filePath, packageName);
+        return releasesOf(afterReleases, filePath, packageName)
+          .filter((release) => previous.some((current) => compareVersions(release, current) < 0))
+          .map((release) => `${packageName} ${previous.join(", ")} to ${release}`);
+      }),
+    );
+
+    if (new Set(memberReleases.map(({ release }) => release)).size > 1) {
+      const members = memberReleases.map(({ packageName, release }) => `${packageName} ${release}`);
+      conflicts.push({
+        paths,
+        reason: `${family.name} packages would mix releases (${members.join(", ")}); align them on one release by hand`,
+      });
+    } else if (lowered.length > 0) {
+      conflicts.push({
+        paths,
+        reason: `${family.name} packages would move to an older release (${lowered.join("; ")}); the recorded baseline may come from a version channel, so align them by hand`,
+      });
+    }
+  }
+  return conflicts;
+}
+
 export async function planDependencyVersionChannel(
   projectDir: string,
   channel: VersionChannel,
@@ -320,7 +583,11 @@ export async function planDependencyVersionChannel(
       ...projectedPackageJsonContents.keys(),
     ]),
   ]
-    .filter((packageJsonPath) => projectedPackageJsonContents.get(packageJsonPath) !== null)
+    .filter(
+      (packageJsonPath) =>
+        path.basename(packageJsonPath) === "package.json" &&
+        projectedPackageJsonContents.get(packageJsonPath) !== null,
+    )
     .sort();
   if (packageJsonPaths.length === 0) return [];
 
@@ -331,30 +598,42 @@ export async function planDependencyVersionChannel(
     return fs.readJson(packageJsonPath) as Promise<Record<string, unknown>>;
   };
 
-  const packageNames = new Set<string>();
+  // pnpm keeps its catalog in pnpm-workspace.yaml rather than the root package.json.
+  const pnpmCatalog = await readPnpmCatalog(projectDir, projectedPackageJsonContents);
+  const currentVersions = new Map<string, string[]>();
+  const declaredPackageNames = new Set<string>();
+  const recordCurrentVersions = (section: PackageJsonVersionSection) => {
+    for (const [depName, depVersion] of Object.entries(section)) {
+      declaredPackageNames.add(depName);
+      if (typeof depVersion === "string" && isRegistrySemverSpec(depVersion)) {
+        currentVersions.set(depName, [...(currentVersions.get(depName) ?? []), depVersion]);
+      }
+    }
+  };
 
   for (const packageJsonPath of packageJsonPaths) {
     const packageJson = await readPackageJson(packageJsonPath);
-
-    for (const section of getVersionSections(packageJson)) {
-      for (const [depName, depVersion] of Object.entries(section)) {
-        if (typeof depVersion === "string" && isRegistrySemverSpec(depVersion)) {
-          packageNames.add(depName);
-        }
-      }
-    }
+    for (const section of getVersionSections(packageJson)) recordCurrentVersions(section);
   }
+  if (pnpmCatalog?.editable) recordCurrentVersions(pnpmCatalog.catalog);
+  const frozenPackages = new Set(
+    pnpmCatalog && !pnpmCatalog.editable ? Object.keys(pnpmCatalog.catalog) : [],
+  );
 
-  if (packageNames.size === 0) return [];
+  const packageNames = [...currentVersions.keys()];
+  if (packageNames.length === 0) return [];
 
-  const { getGeneratedPackageJsonPins, getLatestChannelPinnedVersion } =
-    await import("@better-fullstack/template-generator");
+  const {
+    getGeneratedPackageJsonPins,
+    getLatestChannelPinnedVersion,
+    SYNCHRONIZED_DEPENDENCY_FAMILIES,
+  } = await import("@better-fullstack/template-generator");
   const resolvedVersions = new Map<string, string>();
   const packageInfos = new Map<string, NpmPackageInfo>();
   const latestChannelHolds = new Map<string, string>();
 
   await mapWithConcurrency(
-    [...packageNames],
+    packageNames,
     async (packageName) => {
       try {
         const packageInfo = await fetchPackageInfo(packageName);
@@ -401,8 +680,40 @@ export async function planDependencyVersionChannel(
 
   if (resolvedVersions.size === 0) return [];
 
-  applySynchronizedFamilyVersions(resolvedVersions, packageInfos, channel);
+  applySynchronizedFamilyVersions(
+    SYNCHRONIZED_DEPENDENCY_FAMILIES,
+    currentVersions,
+    resolvedVersions,
+    packageInfos,
+    latestChannelHolds,
+    channel,
+    frozenPackages,
+  );
   const rewrites: DependencyVersionChannelRewrite[] = [];
+
+  const rewriteSection = (
+    section: PackageJsonVersionSection,
+    templatePins: ReadonlyMap<string, string>,
+  ): string[] => {
+    const changedPackages: string[] = [];
+    for (const [packageName, currentVersion] of Object.entries(section)) {
+      if (!isRegistrySemverSpec(currentVersion)) continue;
+      if (templatePins.has(packageName)) continue;
+
+      const resolvedVersion = resolvedVersions.get(packageName);
+      if (!resolvedVersion) continue;
+      if (!shouldApplyResolvedVersion(currentVersion, resolvedVersion, channel)) continue;
+
+      const nextVersion = latestChannelHolds.has(packageName)
+        ? resolvedVersion
+        : applyVersionPrefix(currentVersion, resolvedVersion);
+      if (nextVersion !== currentVersion) {
+        section[packageName] = nextVersion;
+        changedPackages.push(packageName);
+      }
+    }
+    return changedPackages;
+  };
 
   for (const packageJsonPath of packageJsonPaths) {
     const packageJson = await readPackageJson(packageJsonPath);
@@ -411,29 +722,32 @@ export async function planDependencyVersionChannel(
       new Set(sections.flatMap((section) => Object.keys(section))),
     );
     let changed = false;
-
     for (const section of sections) {
-      for (const [packageName, currentVersion] of Object.entries(section)) {
-        if (!isRegistrySemverSpec(currentVersion)) continue;
-        if (templatePins.has(packageName)) continue;
-
-        const resolvedVersion = resolvedVersions.get(packageName);
-        if (!resolvedVersion) continue;
-        if (!shouldApplyResolvedVersion(currentVersion, resolvedVersion, channel)) continue;
-
-        const nextVersion = latestChannelHolds.has(packageName)
-          ? resolvedVersion
-          : applyVersionPrefix(currentVersion, resolvedVersion);
-        if (nextVersion !== currentVersion) {
-          section[packageName] = nextVersion;
-          changed = true;
-        }
-      }
+      if (rewriteSection(section, templatePins).length > 0) changed = true;
     }
 
     if (changed) {
       const content = `${JSON.stringify(packageJson, null, 2)}\n`;
       rewrites.push({ packageJsonPath, content, sha256: hashContent(Buffer.from(content)) });
+    }
+  }
+
+  if (pnpmCatalog?.editable) {
+    const { workspacePath, document, catalog } = pnpmCatalog;
+    const changedPackages = rewriteSection(
+      catalog,
+      getGeneratedPackageJsonPins(declaredPackageNames),
+    );
+    if (changedPackages.length > 0) {
+      for (const packageName of changedPackages) {
+        document.setIn(["catalog", packageName], catalog[packageName]);
+      }
+      const content = document.toString();
+      rewrites.push({
+        packageJsonPath: workspacePath,
+        content,
+        sha256: hashContent(Buffer.from(content)),
+      });
     }
   }
   return rewrites;

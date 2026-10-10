@@ -16,10 +16,7 @@ import type {
   UILibrary,
 } from "@/config/types";
 
-import {
-  getCapabilityDisabledReason,
-  normalizeCapabilitySelection,
-} from "@/capabilities/capabilities";
+import { getAuthIncompatibility, normalizeCapabilitySelection } from "@/capabilities/capabilities";
 import {
   getCodeQualitySelectionIssue,
   getShadcnLintFrontendIssue,
@@ -34,6 +31,9 @@ import {
 } from "@/catalog/option-metadata";
 import { ANALYTICS_VALUES } from "@/config/schemas";
 import {
+  getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
+  getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
   hasPWACompatibleFrontend,
   hasTanStackAICompatibleFrontend,
@@ -43,12 +43,20 @@ import {
 } from "@/stack/stack-compatibility-rules";
 import {
   getAddonStackPartBinding,
+  getGoMessageQueueIncompatibility,
+  getGoMigrationsIncompatibility,
+  getPythonLoggingIncompatibility,
   getStackPartCompatibilityIssueForPart,
   legacyProjectConfigToStackParts,
 } from "@/stack/stack-graph";
 
 export {
   BACKEND_UTILS_COMPATIBLE_BACKENDS,
+  getBetterAuthDatabaseIncompatibility,
+  getDatabaseOrmIncompatibility,
+  getDatabaseOrmRequirementIssue,
+  getJobQueueIncompatibility,
+  hasGeneratedJobQueueRequirements,
   getUnsupportedWebDeployFrontend,
   hasDockerComposeCompatibleFrontend,
   hasPWACompatibleFrontend,
@@ -491,6 +499,7 @@ export type CompatibilityInput = {
   pythonCaching: string;
   pythonRealtime: string;
   pythonObservability: string;
+  pythonLogging: string;
   pythonCli: string[];
   pythonCloudSdk: string;
   pythonHttpClient: string;
@@ -763,6 +772,18 @@ export function stackQualifiesForSingleApp(stack: CompatibilityInput): boolean {
 
 const usesCloudflareFullstackRuntime = (stack: CompatibilityInput): boolean =>
   stack.webDeploy === "cloudflare" && FULLSTACK_SELF_BACKENDS.has(stack.backend);
+
+// The ORM that replaces one the database cannot use: Prisma for MongoDB, none for databases with
+// their own client, and Drizzle for SQL databases.
+const DATABASE_ORM_REPLACEMENTS: Record<string, { orm: string; label: string }> = {
+  mongodb: { orm: "prisma", label: "Prisma" },
+  edgedb: { orm: "none", label: "None" },
+  redis: { orm: "none", label: "None" },
+};
+const SQL_ORM_REPLACEMENT = { orm: "drizzle", label: "Drizzle" };
+
+const getReplacementOrm = (database: string) =>
+  DATABASE_ORM_REPLACEMENTS[database] ?? SQL_ORM_REPLACEMENT;
 
 export const analyzeStackCompatibility = (
   stack: CompatibilityInput,
@@ -1137,12 +1158,16 @@ export const analyzeStackCompatibility = (
         });
       }
     }
-    if (!["better-auth", "none"].includes(nextStack.auth)) {
+    const solidAuthReason =
+      nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations"
+        ? null
+        : getAuthIncompatibility(nextStack.auth, nextStack);
+    if (solidAuthReason) {
       nextStack.auth = "better-auth";
       changed = true;
       changes.push({
         category: "auth",
-        message: "Auth set to 'Better Auth' (the only provider for TanStack Start (Solid) yet)",
+        message: `Auth set to 'Better Auth' (${solidAuthReason})`,
       });
     }
     const examples = nextStack.examples.filter((example) =>
@@ -1287,9 +1312,21 @@ export const analyzeStackCompatibility = (
       }
     }
 
+    // An impossible pair keeps the database and replaces the ORM, reporting the shared reason.
+    const databaseOrmIssue = getDatabaseOrmIncompatibility(nextStack.database, nextStack.orm);
+    if (databaseOrmIssue) {
+      const replacement = getReplacementOrm(nextStack.database);
+      nextStack.orm = replacement.orm;
+      changed = true;
+      changes.push({
+        category: "database",
+        message: `ORM set to '${replacement.label}' (${databaseOrmIssue})`,
+      });
+    }
+
     // MongoDB requires Prisma or Mongoose
     if (nextStack.database === "mongodb") {
-      if (nextStack.orm !== "prisma" && nextStack.orm !== "mongoose") {
+      if (nextStack.orm === "none") {
         nextStack.orm = "prisma";
         changed = true;
         changes.push({
@@ -1320,14 +1357,6 @@ export const analyzeStackCompatibility = (
         changes.push({
           category: "database",
           message: "ORM set to 'Drizzle' (required for database)",
-        });
-      }
-      if (nextStack.orm === "mongoose") {
-        nextStack.orm = "drizzle";
-        changed = true;
-        changes.push({
-          category: "database",
-          message: "ORM set to 'Drizzle' (Mongoose only works with MongoDB)",
         });
       }
     }
@@ -1524,29 +1553,6 @@ export const analyzeStackCompatibility = (
   // AUTH CONSTRAINTS
   // ============================================
 
-  // Redis is a key-value store without SQL support - better-auth requires SQL tables
-  const isBetterAuthSelection =
-    nextStack.auth === "better-auth" || nextStack.auth === "better-auth-organizations";
-
-  if (isBetterAuthSelection && nextStack.database === "redis") {
-    nextStack.auth = "none";
-    changed = true;
-    changes.push({
-      category: "auth",
-      message: "Auth set to 'None' (Better Auth requires a SQL database, not Redis)",
-    });
-  }
-
-  const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-  if (isBetterAuthSelection && ormsWithoutBetterAuth.includes(nextStack.orm)) {
-    nextStack.auth = "none";
-    changed = true;
-    changes.push({
-      category: "auth",
-      message: `Auth set to 'None' (${nextStack.orm} has no Better Auth adapter)`,
-    });
-  }
-
   const normalizedAuth = normalizeCapabilitySelection(
     "auth",
     {
@@ -1554,6 +1560,8 @@ export const analyzeStackCompatibility = (
       backend: nextStack.backend,
       webFrontend: nextStack.webFrontend,
       nativeFrontend: nextStack.nativeFrontend,
+      database: nextStack.database,
+      orm: nextStack.orm,
     },
     nextStack.auth as Auth,
   );
@@ -2253,6 +2261,18 @@ export const analyzeStackCompatibility = (
         message: "Python observability set to 'None' (SigNoz request tracing is wired for FastAPI)",
       });
     }
+    const pythonLoggingIssue = getPythonLoggingIncompatibility(
+      nextStack.pythonLogging,
+      nextStack.pythonWebFramework,
+    );
+    if (pythonLoggingIssue) {
+      nextStack.pythonLogging = "none";
+      changed = true;
+      changes.push({
+        category: "pythonLogging",
+        message: `Python logging set to 'None' (${pythonLoggingIssue})`,
+      });
+    }
     if (nextStack.pythonWebFramework !== "django" && nextStack.pythonApi !== "none") {
       nextStack.pythonApi = "none";
       changed = true;
@@ -2361,6 +2381,27 @@ export const analyzeStackCompatibility = (
       message:
         "Go observability set to 'None' (SigNoz requires an instrumented HTTP, gRPC, or Go Better Auth server target)",
     });
+  }
+
+  if (nextStack.ecosystem === "go") {
+    const messageQueueIssue = getGoMessageQueueIncompatibility(nextStack.goMessageQueue, nextStack);
+    if (messageQueueIssue) {
+      nextStack.goMessageQueue = "none";
+      changed = true;
+      changes.push({
+        category: "goMessageQueue",
+        message: `Go message queue set to 'None' (${messageQueueIssue})`,
+      });
+    }
+    const migrationsIssue = getGoMigrationsIncompatibility(nextStack.goMigrations, nextStack);
+    if (migrationsIssue) {
+      nextStack.goMigrations = "none";
+      changed = true;
+      changes.push({
+        category: "goMigrations",
+        message: `Go migrations set to 'None' (${migrationsIssue})`,
+      });
+    }
   }
 
   // ============================================
@@ -2711,6 +2752,19 @@ export const analyzeStackCompatibility = (
       message: wasVercel
         ? "Analytics set to 'None' (Vercel Analytics is not mounted for this frontend)"
         : "Analytics set to 'None' (no analytics template for this frontend)",
+    });
+  }
+
+  const jobQueueIssue =
+    nextStack.ecosystem === "typescript"
+      ? getJobQueueIncompatibility(nextStack.jobQueue, nextStack)
+      : null;
+  if (jobQueueIssue) {
+    nextStack.jobQueue = "none";
+    changed = true;
+    changes.push({
+      category: "jobQueue",
+      message: `Job queue set to 'None' (${jobQueueIssue})`,
     });
   }
 
@@ -3184,6 +3238,13 @@ export const getDisabledReason = (
   ) {
     return "SigNoz request tracing is currently wired for FastAPI";
   }
+  if (category === "pythonLogging" || category === "pythonWebFramework") {
+    const reason = getPythonLoggingIncompatibility(
+      category === "pythonLogging" ? optionId : currentStack.pythonLogging,
+      category === "pythonWebFramework" ? optionId : currentStack.pythonWebFramework,
+    );
+    if (reason) return reason;
+  }
   if (
     category === "integrations" &&
     optionId === "nango" &&
@@ -3466,17 +3527,12 @@ export const getDisabledReason = (
       if (currentStack.runtime === "workers") {
         return "Mongoose requires MongoDB, and Better-Fullstack currently doesn't support MongoDB with Workers runtime";
       }
-      // Only block if a non-MongoDB database is EXPLICITLY selected
-      if (currentStack.database !== "none" && currentStack.database !== "mongodb") {
-        return "Mongoose only works with MongoDB";
-      }
-      // Allow when database is "none" - system will auto-select MongoDB
     }
-    if (optionId === "drizzle" && currentStack.database === "mongodb") {
-      return "Drizzle does not support MongoDB";
-    }
-    if (optionId === "none" && currentStack.database !== "none") {
-      return "Database requires an ORM";
+    const databaseOrmIssue = getDatabaseOrmIncompatibility(currentStack.database, optionId);
+    if (databaseOrmIssue) return databaseOrmIssue;
+    if (optionId === "none") {
+      const requirementIssue = getDatabaseOrmRequirementIssue(currentStack.database, optionId);
+      if (requirementIssue) return requirementIssue;
     }
   }
 
@@ -3616,25 +3672,7 @@ export const getDisabledReason = (
   // AUTH CONSTRAINTS
   // ============================================
   if (category === "auth") {
-    const isBetterAuthOption =
-      optionId === "better-auth" || optionId === "better-auth-organizations";
-    if (isBetterAuthOption && currentStack.database === "redis") {
-      return "Better Auth requires a SQL database (not Redis)";
-    }
-    const ormsWithoutBetterAuth = ["typeorm", "sequelize", "mikroorm"];
-    if (isBetterAuthOption && ormsWithoutBetterAuth.includes(currentStack.orm)) {
-      return `Better Auth has no ${currentStack.orm} adapter`;
-    }
-    return getCapabilityDisabledReason(
-      "auth",
-      {
-        ecosystem: currentStack.ecosystem,
-        backend: currentStack.backend,
-        webFrontend: currentStack.webFrontend,
-        nativeFrontend: currentStack.nativeFrontend,
-      },
-      optionId as Auth,
-    );
+    return getAuthIncompatibility(optionId, currentStack);
   }
 
   // ============================================
@@ -3749,6 +3787,11 @@ export const getDisabledReason = (
     if (currentStack.runtime === "workers" || usesCloudflareFullstackRuntime(currentStack)) {
       return "Nango's Node SDK is not available on Cloudflare Workers";
     }
+  }
+
+  if (category === "jobQueue" && currentStack.ecosystem === "typescript") {
+    const reason = getJobQueueIncompatibility(optionId, currentStack);
+    if (reason) return reason;
   }
 
   // ============================================
@@ -4209,21 +4252,37 @@ export const getDisabledReason = (
   // GO ECOSYSTEM RULES
   // ============================================
   if (
-    category === "goMigrations" &&
-    optionId !== "none" &&
-    currentStack.ecosystem === "go" &&
-    !["sqlite", "postgres", "mysql"].includes(currentStack.database)
-  ) {
-    return "Go migrations require SQLite, PostgreSQL, or MySQL";
-  }
-
-  if (
     category === "database" &&
     currentStack.ecosystem === "go" &&
     currentStack.goMigrations !== "none" &&
     !["sqlite", "postgres", "mysql"].includes(optionId)
   ) {
     return "The selected Go migration tool requires SQLite, PostgreSQL, or MySQL";
+  }
+
+  if (
+    currentStack.ecosystem === "go" &&
+    (category === "goMigrations" ||
+      category === "goMessageQueue" ||
+      category === "goOrm" ||
+      category === "goWebFramework" ||
+      category === "database")
+  ) {
+    const selection = {
+      database: category === "database" ? optionId : currentStack.database,
+      goOrm: category === "goOrm" ? optionId : currentStack.goOrm,
+      goWebFramework: category === "goWebFramework" ? optionId : currentStack.goWebFramework,
+    };
+    const reason =
+      getGoMigrationsIncompatibility(
+        category === "goMigrations" ? optionId : currentStack.goMigrations,
+        selection,
+      ) ??
+      getGoMessageQueueIncompatibility(
+        category === "goMessageQueue" ? optionId : currentStack.goMessageQueue,
+        selection,
+      );
+    if (reason) return reason;
   }
 
   // ============================================
@@ -4962,6 +5021,14 @@ const GRAPH_DISABLED_REASON_BINDINGS: Partial<
     currentEcosystem: "python",
     authoritative: true,
     candidateIdPrefix: "candidate:native",
+  },
+  pythonLogging: {
+    role: "logging",
+    ecosystem: "python",
+    ownerRole: "backend",
+    ownerEcosystem: "python",
+    currentEcosystem: "python",
+    authoritative: true,
   },
   pythonCli: {
     role: "cli",
@@ -5806,21 +5873,14 @@ export function isFrontendAllowedWithBackend(frontend: Frontend, backend?: Backe
   if (frontend === "redwood" && backend && backend !== "none") return false;
   if (frontend === "fresh" && backend && backend !== "none") return false;
 
-  if (auth && auth !== "none") {
-    return (
-      getCapabilityDisabledReason(
-        "auth",
-        {
-          ecosystem: "typescript",
-          backend,
-          webFrontend: [frontend],
-        },
-        auth as Auth,
-      ) === null
-    );
-  }
-
-  return true;
+  // An unanswered backend may still be one that supports the auth.
+  return (
+    getAuthIncompatibility(
+      auth,
+      { ecosystem: "typescript", backend, webFrontend: [frontend] },
+      { partial: true },
+    ) === null
+  );
 }
 
 export function requiresChatSdkVercelAIForSelection(

@@ -1,5 +1,6 @@
 import type { Ecosystem, ProjectConfig } from "@better-fullstack/types";
 import type { ComboCandidate } from "@testing/lib/generate-combos/types";
+import type { RuntimeCheck } from "@testing/lib/verify";
 
 import {
   buildHistoryFingerprint,
@@ -85,6 +86,7 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
     pythonCaching: "none",
     pythonRealtime: "none",
     pythonObservability: "none",
+    pythonLogging: "none",
     pythonCli: [],
     pythonCloudSdk: "none",
     pythonHttpClient: "none",
@@ -160,6 +162,7 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
 type PresetDef = {
   ecosystem: Ecosystem;
   overrides: Partial<ProjectConfig>;
+  runtimeChecks?: readonly RuntimeCheck[];
 };
 
 export type PresetGroupId = "pr-core" | "pr-broad" | "all";
@@ -197,6 +200,8 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       ],
       examples: ["tanstack-showcase"],
     },
+    // A production build of this stack once answered 500 on every request.
+    runtimeChecks: [{ kind: "production-start", routes: ["/", "/login"] }],
   },
 
   t3: {
@@ -295,6 +300,27 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       validation: "zod",
       addons: ["turborepo"],
     },
+  },
+
+  // The server image the docker deploy target generates, built and run as a user would.
+  "hono-node-prisma-docker": {
+    ecosystem: "typescript",
+    overrides: {
+      frontend: ["none"],
+      backend: "hono",
+      runtime: "node",
+      database: "sqlite",
+      orm: "prisma",
+      api: "trpc",
+      serverDeploy: "docker",
+      packageManager: "pnpm",
+    },
+    runtimeChecks: [
+      {
+        kind: "docker-image",
+        env: { DATABASE_URL: "file:/tmp/smoke.db", CORS_ORIGIN: "http://localhost:3001" },
+      },
+    ],
   },
 
   "frontend-only-react-vite": {
@@ -616,6 +642,7 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
     overrides: {
       goWebFramework: "go-zero",
       goOrm: "sqlx",
+      database: "postgres",
       goApi: "grpc-gateway",
       goAuth: "oauth2",
       goTesting: ["testcontainers", "ginkgo-gomega", "mockery"],
@@ -662,6 +689,7 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "none",
+      pythonLogging: "none",
       pythonCli: [],
       email: "none",
       observability: "none",
@@ -715,6 +743,7 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       pythonCaching: "none",
       pythonRealtime: "none",
       pythonObservability: "prometheus-client",
+      pythonLogging: "none",
       pythonCli: ["typer"],
       pythonCloudSdk: "boto3",
       pythonHttpClient: "requests",
@@ -996,6 +1025,7 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
   "native-uniwind-trpc": {
     ecosystem: "react-native",
     overrides: {
+      ecosystem: "typescript",
       frontend: ["native-uniwind"],
       backend: "hono",
       runtime: "bun",
@@ -1005,12 +1035,12 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       api: "trpc",
       packageManager: "bun",
       mobileNavigation: "expo-router",
-      mobileUI: "none",
+      mobileUI: "uniwind",
       mobileStorage: "none",
       mobileTesting: "none",
       mobilePush: "none",
       mobileOTA: "none",
-      mobileDeepLinking: "none",
+      mobileDeepLinking: "expo-linking",
     },
   },
 };
@@ -1029,6 +1059,7 @@ const PRESET_GROUPS = {
     "elixir-plain-worker",
     "native-uniwind-trpc",
     "frontend-only-react-vite",
+    "hono-node-prisma-docker",
   ],
   "pr-broad": [
     "nextjs-minimal",
@@ -1123,6 +1154,7 @@ function buildSinglePresetCombo(presetId: string): ComboCandidate {
     fingerprint,
     fingerprintKey,
     command: buildCommand(config.projectName, config),
+    runtimeChecks: def.runtimeChecks,
   };
 }
 

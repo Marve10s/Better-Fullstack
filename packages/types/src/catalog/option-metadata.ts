@@ -52,6 +52,7 @@ import {
   EFFECT_VALUES,
   EMAIL_VALUES,
   ECOMMERCE_VALUES,
+  EXAMPLES_VALUES,
   FEATURE_FLAGS_VALUES,
   INTEGRATIONS_VALUES,
   FILE_STORAGE_VALUES,
@@ -114,6 +115,7 @@ import {
   PYTHON_CACHING_VALUES,
   PYTHON_REALTIME_VALUES,
   PYTHON_OBSERVABILITY_VALUES,
+  PYTHON_LOGGING_VALUES,
   PYTHON_CLI_VALUES,
   PYTHON_CLOUD_SDK_VALUES,
   PYTHON_DATA_VALUES,
@@ -278,6 +280,7 @@ export type OptionCategory =
   | "pythonCaching"
   | "pythonRealtime"
   | "pythonObservability"
+  | "pythonLogging"
   | "pythonCli"
   | "pythonCloudSdk"
   | "pythonHttpClient"
@@ -512,6 +515,7 @@ export const PYTHON_CATEGORY_ORDER = [
   "pythonCaching",
   "pythonRealtime",
   "pythonObservability",
+  "pythonLogging",
   "pythonCli",
   "pythonCloudSdk",
   "pythonHttpClient",
@@ -739,6 +743,7 @@ export function getCategoryDisplayName(categoryKey: string): string {
     pythonCaching: "Python Caching",
     pythonRealtime: "Python Realtime",
     pythonObservability: "Python Observability",
+    pythonLogging: "Python Logging",
     pythonCli: "Python CLI Tooling",
     pythonCloudSdk: "Python Cloud SDK",
     pythonHttpClient: "Python HTTP Client",
@@ -927,7 +932,6 @@ const APP_PLATFORM_VALUES = [
 const toolingSelectionIds = (category: Parameters<typeof getToolingSelectionOptions>[0]) =>
   getToolingSelectionOptions(category).map((selection) => selection.id);
 
-const EXAMPLE_VALUES = ["ai", "chat-sdk"] as const satisfies readonly string[];
 const BOOLEAN_OPTION_VALUES = ["true", "false"] as const satisfies readonly string[];
 
 const MULTI_SELECT_CATEGORIES = new Set<OptionCategory>([
@@ -1034,7 +1038,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   packageManager: PACKAGE_MANAGER_VALUES,
   workspaceShape: WORKSPACE_SHAPE_VALUES,
   versionChannel: VERSION_CHANNEL_VALUES,
-  examples: EXAMPLE_VALUES,
+  examples: EXAMPLES_VALUES,
   ai: AI_VALUES,
   aiDocs: AI_DOCS_VALUES,
   git: BOOLEAN_OPTION_VALUES,
@@ -1079,6 +1083,7 @@ const CATEGORY_VALUE_IDS: Record<OptionCategory, readonly string[]> = {
   pythonCaching: PYTHON_CACHING_VALUES,
   pythonRealtime: PYTHON_REALTIME_VALUES,
   pythonObservability: PYTHON_OBSERVABILITY_VALUES,
+  pythonLogging: PYTHON_LOGGING_VALUES,
   pythonCli: PYTHON_CLI_VALUES,
   pythonCloudSdk: PYTHON_CLOUD_SDK_VALUES,
   pythonHttpClient: PYTHON_HTTP_CLIENT_VALUES,
@@ -1295,6 +1300,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   jobQueue: {
     bullmq: "BullMQ",
     "trigger-dev": "Trigger.dev",
+    "pg-boss": "pg-boss",
+    "upstash-qstash": "Upstash QStash",
   },
   i18n: {
     paraglide: "Paraglide",
@@ -1467,6 +1474,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   examples: {
     ai: "AI Example",
     "chat-sdk": "Chat SDK Bots",
+    "tanstack-showcase": "TanStack Showcase",
   },
   ai: {
     "vercel-ai": "Vercel AI SDK",
@@ -1736,6 +1744,10 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     signoz: "SigNoz",
     "prometheus-client": "Prometheus Client",
   },
+  pythonLogging: {
+    loguru: "Loguru",
+    structlog: "structlog",
+  },
   pythonCli: {
     typer: "Typer",
     click: "Click",
@@ -1822,6 +1834,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     watermill: "Watermill",
     "kafka-go": "kafka-go",
     asynq: "Asynq",
+    river: "River",
+    gocron: "gocron",
   },
   goCaching: {
     redis: "go-redis",
@@ -1844,6 +1858,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   goMigrations: {
     "golang-migrate": "golang-migrate",
+    goose: "goose",
+    atlas: "Atlas",
   },
   goTemplating: {
     templ: "templ",
@@ -2313,6 +2329,7 @@ export const OPTION_CATEGORY_METADATA: Record<OptionCategory, OptionCategoryMeta
   pythonCaching: buildCategoryMetadata("pythonCaching"),
   pythonRealtime: buildCategoryMetadata("pythonRealtime"),
   pythonObservability: buildCategoryMetadata("pythonObservability"),
+  pythonLogging: buildCategoryMetadata("pythonLogging"),
   pythonCli: buildCategoryMetadata("pythonCli"),
   pythonCloudSdk: buildCategoryMetadata("pythonCloudSdk"),
   pythonHttpClient: buildCategoryMetadata("pythonHttpClient"),

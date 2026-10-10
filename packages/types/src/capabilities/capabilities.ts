@@ -1,5 +1,8 @@
 import type { Auth, Ecosystem } from "@/config/types";
 
+import { AUTH_VALUES, BACKEND_VALUES, ECOSYSTEM_VALUES, FRONTEND_VALUES } from "@/config/schemas";
+import { getBetterAuthDatabaseIncompatibility } from "@/stack/stack-compatibility-rules";
+
 export type CapabilityName = "auth";
 
 export type CapabilityStackContext = {
@@ -8,6 +11,8 @@ export type CapabilityStackContext = {
   frontend?: readonly string[];
   webFrontend?: readonly string[];
   nativeFrontend?: readonly string[];
+  database?: string;
+  orm?: string;
 };
 
 export type CapabilityDefinitionBase = {
@@ -153,6 +158,12 @@ const CONVEX_CLERK_WEB = new Set([
   "tanstack-start",
   "next",
 ]);
+// Fullstack frontends whose templates generate no server route that invokes the Better Auth
+// handler. Next.js, TanStack Start, SvelteKit, SolidStart, and TanStack Start (Solid) mount it.
+const UNMOUNTED_BETTER_AUTH_FULLSTACK_LABELS: Record<string, string> = {
+  astro: "Astro",
+  vinext: "Vinext",
+};
 
 function capitalizeFirst(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -179,6 +190,31 @@ function getFrontendSets(context: CapabilityStackContext): {
     webFrontend: dedupe(context.webFrontend ?? []),
     nativeFrontend: dedupe(context.nativeFrontend ?? []),
   };
+}
+
+// Every selected frontend needs its own Convex auth client: a supported web or native app must not
+// mask a web frontend the templates do not wire.
+function hasConvexAuthClients(
+  webFrontend: readonly string[],
+  hasNativeFrontend: boolean,
+  supportedWeb: ReadonlySet<string>,
+): boolean {
+  const web = webFrontend.filter((frontend) => frontend !== "none");
+  return (
+    (web.length > 0 || hasNativeFrontend) && web.every((frontend) => supportedWeb.has(frontend))
+  );
+}
+
+function getUnmountedBetterAuthReason(backend: string | undefined, webFrontend: string[]) {
+  if (backend === "encore") return "Better Auth isn't available for the Encore backend yet";
+  if (!isSelfBackend(backend)) return null;
+  const fullstackFrontends = backend?.startsWith("self-")
+    ? [backend.slice("self-".length)]
+    : webFrontend;
+  const label = fullstackFrontends
+    .map((frontend) => UNMOUNTED_BETTER_AUTH_FULLSTACK_LABELS[frontend])
+    .find((candidate) => candidate !== undefined);
+  return label ? `Better Auth isn't available for fullstack ${label} yet` : null;
 }
 
 function isSelfBackend(backend?: string): boolean {
@@ -223,7 +259,8 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
 
   if (
     (webFrontend.includes("tanstack-start-solid") || backend === "self-tanstack-start-solid") &&
-    optionId !== "better-auth"
+    optionId !== "better-auth" &&
+    optionId !== "better-auth-organizations"
   ) {
     return "TanStack Start (Solid) supports Better Auth only for now";
   }
@@ -240,7 +277,11 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
     return `${capitalizeFirst(ecosystem)} stacks do not support auth integrations yet`;
   }
 
-  if (webFrontend.some((frontend) => ["vanilla-vite", "vue"].includes(frontend))) {
+  // Passport is scaffolded on the server only, so it needs no client integration.
+  if (
+    optionId !== "passport" &&
+    webFrontend.some((frontend) => ["vanilla-vite", "vue"].includes(frontend))
+  ) {
     return "Auth client integrations are not yet wired for standalone Vue or Vanilla Vite frontends";
   }
 
@@ -254,25 +295,17 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
     }
 
     if (backend === "convex") {
-      const hasCompatibleFrontend =
-        webFrontend.some((frontend) => CONVEX_BETTER_AUTH_WEB.has(frontend)) ||
-        nativeFrontend.some((frontend) => NATIVE_FRONTENDS.has(frontend));
-
-      if (!hasCompatibleFrontend) {
+      if (!hasConvexAuthClients(webFrontend, hasNativeFrontend, CONVEX_BETTER_AUTH_WEB)) {
         return "Better-Auth with Convex requires React + Vite, TanStack Router, TanStack Start, Next.js, or React Native";
       }
     }
 
-    return null;
+    return getUnmountedBetterAuthReason(backend, webFrontend);
   }
 
   if (optionId === "clerk") {
     if (backend === "convex") {
-      const hasCompatibleFrontend =
-        webFrontend.some((frontend) => CONVEX_CLERK_WEB.has(frontend)) ||
-        nativeFrontend.some((frontend) => NATIVE_FRONTENDS.has(frontend));
-
-      if (!hasCompatibleFrontend) {
+      if (!hasConvexAuthClients(webFrontend, hasNativeFrontend, CONVEX_CLERK_WEB)) {
         return "Clerk with Convex requires React Router, React + Vite, TanStack Router, TanStack Start, Next.js, or React Native";
       }
 
@@ -349,7 +382,7 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
   }
 
   const nextOnlyLabel = getNextOnlyAuthLabel(optionId);
-  if (backend !== "self" && backend !== "self-next") {
+  if (!isSelfBackend(backend)) {
     return `${nextOnlyLabel} needs fullstack Next.js`;
   }
 
@@ -357,7 +390,66 @@ function getAuthDisabledReason(context: CapabilityStackContext, optionId: Auth):
     return `${nextOnlyLabel} needs the Next.js frontend`;
   }
 
+  if (hasNativeFrontend) {
+    return `${nextOnlyLabel} needs a web-only Next.js project (no mobile app)`;
+  }
+
   return null;
+}
+
+function isAuth(value: string): value is Auth {
+  return (AUTH_VALUES as readonly string[]).includes(value);
+}
+
+function hasFrontendAnswer(stack: CapabilityStackContext): boolean {
+  return (
+    stack.frontend !== undefined ||
+    stack.webFrontend !== undefined ||
+    stack.nativeFrontend !== undefined
+  );
+}
+
+function getAuthStackIncompatibility(
+  auth: Auth,
+  stack: CapabilityStackContext,
+  partial: boolean,
+): string | null {
+  const reason = getAuthDisabledReason(stack, auth);
+  if (!reason || !partial) return reason;
+
+  const ecosystems = stack.ecosystem === undefined ? ECOSYSTEM_VALUES : [stack.ecosystem];
+  const backends = stack.backend === undefined ? BACKEND_VALUES : [stack.backend];
+  const frontends = hasFrontendAnswer(stack)
+    ? [{}]
+    : FRONTEND_VALUES.map((frontend) => ({ frontend: [frontend] }));
+  const canBeSupported = ecosystems.some((ecosystem) =>
+    backends.some((backend) =>
+      frontends.some(
+        (frontend) =>
+          getAuthDisabledReason({ ...stack, ecosystem, backend, ...frontend }, auth) === null,
+      ),
+    ),
+  );
+  return canBeSupported ? null : reason;
+}
+
+/**
+ * Shared reason an auth provider cannot be generated for a stack: the provider's backend and
+ * frontend rules, then Better Auth's database and ORM adapter rule. Compatibility analysis, graph
+ * validation, CLI and MCP validation, prompts, and the builder all report this text.
+ * With `partial`, an undefined ecosystem, backend, frontend, database, or ORM is still unanswered:
+ * the auth is judged unsupported only when no answer to those questions could support it.
+ */
+export function getAuthIncompatibility(
+  auth: string | undefined,
+  stack: CapabilityStackContext,
+  { partial = false } = {},
+): string | null {
+  if (!auth || !isAuth(auth)) return null;
+  return (
+    getAuthStackIncompatibility(auth, stack, partial) ??
+    getBetterAuthDatabaseIncompatibility(auth, stack, { partial })
+  );
 }
 
 export function getCapabilityDefinitions<K extends CapabilityName>(
@@ -372,7 +464,7 @@ export function getCapabilityDisabledReason<K extends CapabilityName>(
   optionId: CapabilityDefinitionMap[K]["id"],
 ): string | null {
   if (capability === "auth") {
-    return getAuthDisabledReason(context, optionId as Auth) as string | null;
+    return getAuthIncompatibility(optionId, context);
   }
 
   return null;

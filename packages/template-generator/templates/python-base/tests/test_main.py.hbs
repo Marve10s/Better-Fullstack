@@ -25,6 +25,14 @@ def test_health(client: TestClient):
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
+{{#if (ne pythonLogging "none")}}
+
+
+def test_request_id_header(client: TestClient):
+    """Responses echo the incoming request id set by the logging middleware."""
+    response = client.get("/health", headers={"X-Request-ID": "test-request-id"})
+    assert response.headers["X-Request-ID"] == "test-request-id"
+{{/if}}
 {{#if (includes pythonAi "langchain")}}
 
 
@@ -424,6 +432,14 @@ def test_health(client):
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
+{{#if (ne pythonLogging "none")}}
+
+
+def test_request_id_header(client):
+    """Responses echo the incoming request id set by the logging middleware."""
+    response = client.get("/health", headers={"X-Request-ID": "test-request-id"})
+    assert response.headers["X-Request-ID"] == "test-request-id"
+{{/if}}
 {{/if}}
 {{#if (eq pythonWebFramework "flask")}}
 import pytest
@@ -451,6 +467,14 @@ def test_health(client):
     response = client.get("/health")
     assert response.status_code == 200
     assert response.get_json() == {"status": "healthy"}
+{{#if (ne pythonLogging "none")}}
+
+
+def test_request_id_header(client):
+    """Responses echo the incoming request id set by the logging middleware."""
+    response = client.get("/health", headers={"X-Request-ID": "test-request-id"})
+    assert response.headers["X-Request-ID"] == "test-request-id"
+{{/if}}
 {{/if}}
 {{#if (eq pythonWebFramework "litestar")}}
 import pytest
@@ -478,6 +502,14 @@ def test_health(client):
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+{{#if (ne pythonLogging "none")}}
+
+
+def test_request_id_header(client):
+    """Responses echo the incoming request id set by the logging middleware."""
+    response = client.get("/health", headers={"X-Request-ID": "test-request-id"})
+    assert response.headers["X-Request-ID"] == "test-request-id"
+{{/if}}
 {{/if}}
 {{#if (eq pythonWebFramework "starlette")}}
 from starlette.testclient import TestClient
@@ -499,6 +531,14 @@ def test_health():
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+{{#if (ne pythonLogging "none")}}
+
+
+def test_request_id_header():
+    """Responses echo the incoming request id set by the logging middleware."""
+    response = client.get("/health", headers={"X-Request-ID": "test-request-id"})
+    assert response.headers["X-Request-ID"] == "test-request-id"
+{{/if}}
 {{/if}}
 {{#if (eq pythonWebFramework "aiohttp")}}
 from aiohttp.test_utils import TestClient, TestServer
@@ -520,6 +560,15 @@ async def test_health():
         response = await client.get("/health")
         assert response.status == 200
         assert await response.json() == {"status": "healthy"}
+{{#if (ne pythonLogging "none")}}
+
+
+async def test_request_id_header():
+    """Responses echo the incoming request id set by the logging middleware."""
+    async with TestClient(TestServer(create_app())) as client:
+        response = await client.get("/health", headers={"X-Request-ID": "test-request-id"})
+        assert response.headers["X-Request-ID"] == "test-request-id"
+{{/if}}
 {{/if}}
 {{#if (eq pythonWebFramework "streamlit")}}
 from pathlib import Path

@@ -60,9 +60,14 @@ import {
   getStarterTracksResult,
 } from "@/commands/stack/starter-tracks";
 import { defineOperation } from "@/operations/operation";
+import { listCatalogOptions, searchCatalogOptions } from "@/operations/option-catalog";
+import { explainOption } from "@/operations/option-explain";
 import {
   capabilityEvidenceOutputSchema,
+  catalogListOutputSchema,
+  catalogSearchOutputSchema,
   compatibilityOutputSchema,
+  explainOptionOutputSchema,
   guidanceOutputSchema,
   schemaOutputSchema,
   starterTrackCatalogOutputSchema,
@@ -206,6 +211,67 @@ export const getSchemaOperation = defineOperation({
         ? { category: result.category, options: result.options }
         : { categories: result };
   },
+});
+
+export const listOptionsOperation = defineOperation({
+  name: "list_options",
+  title: "List options",
+  description:
+    "Lists option categories with their CLI flag, bfs_get_schema category name (schemaCategory), selection mode, ecosystems, and option count. With a category, returns that category's options with label, aliases, and the CLI flag that selects each one. Aliases are older IDs that builder URLs and search still accept; CLI flags take only the flag value. Use ecosystem to keep only that ecosystem's categories.",
+  input: z.object({
+    category: z
+      .string()
+      .optional()
+      .describe("Canonical category ID such as 'orm' or 'goAuth'. Omit to list categories."),
+    ecosystem: EcosystemSchema.optional().describe("Only include this ecosystem's categories"),
+  }),
+  output: catalogListOutputSchema,
+  safety: "read",
+  idempotent: true,
+  openWorld: false,
+  run: async (input) => listCatalogOptions(input),
+});
+
+export const searchOptionsOperation = defineOperation({
+  name: "search_options",
+  title: "Search options",
+  description:
+    "Finds options whose ID, label, or alias contains the query, across every category and ecosystem. Each match includes its category, ecosystems, aliases, and the CLI flag that selects it. Exact matches come first.",
+  input: z.object({
+    query: z.string().trim().min(1).describe("Text to match, such as 'drizzle' or 'sveltekit'"),
+    ecosystem: EcosystemSchema.optional().describe("Only search this ecosystem's categories"),
+  }),
+  output: catalogSearchOutputSchema,
+  safety: "read",
+  idempotent: true,
+  openWorld: false,
+  run: async (input) => searchCatalogOptions(input),
+});
+
+export const explainOptionOperation = defineOperation({
+  name: "explain_option",
+  title: "Explain option",
+  description:
+    "Explains one option: its category, ecosystems, label, CLI flag, aliases, and evidence level; the categories it requires; the options it excludes; and the options that exclude it, each with the shared compatibility reason. Rules are derived by changing one selection at a time on the builder's default stack for the ecosystem plus any `with` selections. The evaluation says whether the option fits that stack, every failing reason, and the compatible alternatives in its category. Name an option by ID or alias, or as category:id when the ID exists in several categories.",
+  input: z.object({
+    option: z
+      .string()
+      .trim()
+      .min(1)
+      .describe("Option ID or alias, or category:id such as 'orm:drizzle'"),
+    with: z
+      .array(z.string().trim().min(1))
+      .optional()
+      .describe("Other selections for the evaluated stack, as option IDs or category:id"),
+    ecosystem: EcosystemSchema.optional().describe(
+      "Ecosystem to evaluate in. Defaults to the first ecosystem that uses the option's category.",
+    ),
+  }),
+  output: explainOptionOutputSchema,
+  safety: "read",
+  idempotent: true,
+  openWorld: false,
+  run: async (input) => explainOption(input),
 });
 
 export const listPresetsOperation = defineOperation({

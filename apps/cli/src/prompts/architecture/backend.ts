@@ -1,9 +1,16 @@
-import type { Backend, Frontend } from "@/types";
 import type { PromptOption, PromptSingleResolution } from "@/prompts/core/prompt-contract";
 
 import { DEFAULT_CONFIG } from "@/constants";
-import { exitCancelled } from "@/presentation/errors";
+import { exitCancelled, exitWithError } from "@/presentation/errors";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
+import {
+  getAuthIncompatibility,
+  getJobQueueIncompatibility,
+  type Auth,
+  type Backend,
+  type Frontend,
+  type JobQueue,
+} from "@/types";
 
 // Frontends with built-in server capabilities for backend="self"
 const FULLSTACK_FRONTENDS: readonly Frontend[] = [
@@ -88,6 +95,8 @@ const BACKEND_PROMPT_OPTIONS: PromptOption<Backend>[] = [
 type BackendPromptContext = {
   backendFramework?: Backend;
   frontends?: Frontend[];
+  jobQueue?: JobQueue;
+  auth?: Auth;
 };
 
 export function resolveBackendPrompt(
@@ -114,7 +123,17 @@ export function resolveBackendPrompt(
     ...(!hasIncompatibleFrontend ? (["convex"] as const) : []),
     "none",
   ]);
-  const options = BACKEND_PROMPT_OPTIONS.filter((option) => availableValues.has(option.value));
+  const options = BACKEND_PROMPT_OPTIONS.filter(
+    (option) =>
+      availableValues.has(option.value) &&
+      !getJobQueueIncompatibility(context.jobQueue, { backend: option.value }, { partial: true }) &&
+      !getAuthIncompatibility(
+        context.auth,
+        { ecosystem: "typescript", backend: option.value, frontend: context.frontends },
+        { partial: true },
+      ),
+  );
+  const offersSelf = options.some((option) => option.value === "self");
 
   return context.backendFramework !== undefined
     ? {
@@ -127,17 +146,32 @@ export function resolveBackendPrompt(
         shouldPrompt: true,
         mode: "single",
         options,
-        initialValue: hasFullstackFrontend ? "self" : DEFAULT_CONFIG.backend,
+        initialValue: offersSelf
+          ? "self"
+          : options.some((option) => option.value === DEFAULT_CONFIG.backend)
+            ? DEFAULT_CONFIG.backend
+            : options[0]?.value,
       };
 }
 
 export async function getBackendFrameworkChoice(
   backendFramework?: Backend,
   frontends?: Frontend[],
+  jobQueue?: JobQueue,
+  auth?: Auth,
 ) {
-  const resolution = resolveBackendPrompt({ backendFramework, frontends });
+  const resolution = resolveBackendPrompt({ backendFramework, frontends, jobQueue, auth });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
+  }
+  if (resolution.options.length === 0) {
+    return exitWithError(
+      getAuthIncompatibility(
+        auth,
+        { ecosystem: "typescript", frontend: frontends },
+        { partial: true },
+      ) ?? "No backend supports the selected frontends and requirements",
+    );
   }
 
   const response = await navigableSelect<Backend>({

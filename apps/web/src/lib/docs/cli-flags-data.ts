@@ -129,6 +129,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "ai",
           "chat-sdk",
+          "tanstack-showcase",
           "none"
         ],
         "valueHint": null,
@@ -573,6 +574,9 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "trigger-dev",
           "inngest",
           "temporal",
+          "pg-boss",
+          "upstash-qstash",
+          "hatchet",
           "none"
         ],
         "valueHint": null,
@@ -1655,6 +1659,18 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "multiple": false
       },
       {
+        "flag": "--python-logging",
+        "summary": "Python logging.",
+        "values": [
+          "loguru",
+          "structlog",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
         "flag": "--python-cli",
         "summary": "Python CLI tooling.",
         "values": [
@@ -1878,6 +1894,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "watermill",
           "kafka-go",
           "asynq",
+          "river",
+          "gocron",
           "none"
         ],
         "valueHint": null,
@@ -1948,6 +1966,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Go database migrations.",
         "values": [
           "golang-migrate",
+          "goose",
+          "atlas",
           "none"
         ],
         "valueHint": null,

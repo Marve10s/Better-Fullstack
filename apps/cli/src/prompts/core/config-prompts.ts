@@ -114,6 +114,7 @@ import type {
   PythonCaching,
   PythonRealtime,
   PythonObservability,
+  PythonLogging,
   PythonCli,
   PythonCloudSdk,
   PythonData,
@@ -155,8 +156,9 @@ import type {
 } from "@/types";
 
 import { hasWebStyling, requiresChatSdkVercelAI } from "@/config/compatibility-rules";
+import { getRequestedAuthRejection } from "@/config/stack-compatibility";
 import { getUserPkgManager } from "@/platform/get-package-manager";
-import { exitCancelled } from "@/presentation/errors";
+import { exitCancelled, exitWithError } from "@/presentation/errors";
 import { getApiChoice } from "@/prompts/architecture/api";
 import { getBackendFrameworkChoice } from "@/prompts/architecture/backend";
 import { getFrontendChoice, getNativeFrontendChoice } from "@/prompts/architecture/frontend";
@@ -284,6 +286,7 @@ import {
   getPythonCachingChoice,
   getPythonRealtimeChoice,
   getPythonObservabilityChoice,
+  getPythonLoggingChoice,
   getPythonCliChoice,
   getPythonCloudSdkChoice,
   getPythonDataChoice,
@@ -426,6 +429,7 @@ type PromptGroupResults = {
   pythonCaching: PythonCaching;
   pythonRealtime: PythonRealtime;
   pythonObservability: PythonObservability;
+  pythonLogging: PythonLogging;
   pythonCli: PythonCli[];
   pythonCloudSdk: PythonCloudSdk;
   pythonHttpClient: PythonHttpClient;
@@ -610,6 +614,7 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   pythonCaching: true,
   pythonRealtime: true,
   pythonObservability: true,
+  pythonLogging: true,
   pythonCli: true,
   pythonCloudSdk: true,
   pythonHttpClient: true,
@@ -730,15 +735,28 @@ function getPromptResolutionValue(
   const frontends = results.frontend ?? flags.frontend;
   const contextByKey: Record<string, Record<string, unknown>> = {
     frontend: { frontend: flags.frontend, backend: flags.backend, auth: flags.auth },
-    backend: { backendFramework: flags.backend, frontends },
-    runtime: { runtime: flags.runtime, backend: results.backend },
-    database: { database: flags.database, backend: results.backend, runtime: results.runtime },
+    backend: {
+      backendFramework: flags.backend,
+      frontends,
+      jobQueue: flags.jobQueue,
+      auth: flags.auth,
+    },
+    runtime: { runtime: flags.runtime, backend: results.backend, jobQueue: flags.jobQueue },
+    database: {
+      database: flags.database,
+      backend: results.backend,
+      runtime: results.runtime,
+      jobQueue: flags.jobQueue,
+      auth: flags.auth,
+      orm: flags.orm,
+    },
     orm: {
       orm: flags.orm,
       hasDatabase: results.database !== undefined && results.database !== "none",
       database: results.database,
       backend: results.backend,
       runtime: results.runtime,
+      auth: flags.auth,
     },
     api: {
       api: flags.api,
@@ -751,6 +769,8 @@ function getPromptResolutionValue(
       backend: results.backend,
       frontend: frontends,
       ecosystem: results.ecosystem,
+      database: results.database,
+      orm: results.orm,
     },
     payments: {
       payments: flags.payments,
@@ -781,7 +801,12 @@ function getPromptResolutionValue(
       ecosystem: results.ecosystem,
     },
     realtime: { realtime: flags.realtime, backend: results.backend },
-    jobQueue: { jobQueue: flags.jobQueue, backend: results.backend },
+    jobQueue: {
+      jobQueue: flags.jobQueue,
+      backend: results.backend,
+      runtime: results.runtime,
+      database: results.database,
+    },
     fileUpload: { fileUpload: flags.fileUpload, backend: results.backend },
     logging: { logging: flags.logging, backend: results.backend },
     rateLimit: { rateLimit: flags.rateLimit, backend: results.backend },
@@ -879,7 +904,7 @@ export async function gatherConfig(
   const shouldPromptForScope = !hasStackPromptFlags(flags);
   const promptEntries = {
     // Ecosystem choice first
-    ecosystem: () => getEcosystemChoice(flags.ecosystem),
+    ecosystem: () => getEcosystemChoice(flags.ecosystem, flags.auth),
     configScope: () => (shouldPromptForScope ? getConfigScopeChoice() : Promise.resolve("full")),
     configSections: ({ results }) => {
       if (!shouldPromptForScope || results.configScope !== "custom") {
@@ -934,16 +959,23 @@ export async function gatherConfig(
     },
     backend: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Backend);
-      return getBackendFrameworkChoice(flags.backend, results.frontend);
+      return getBackendFrameworkChoice(flags.backend, results.frontend, flags.jobQueue, flags.auth);
     },
     runtime: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as Runtime);
-      return getRuntimeChoice(flags.runtime, results.backend);
+      return getRuntimeChoice(flags.runtime, results.backend, flags.jobQueue);
     },
     database: ({ results }) => {
       const database = resolveDatabaseFlagForEcosystem(results.ecosystem, flags.database);
       if (database !== undefined) return Promise.resolve(database);
-      return getDatabaseChoice(flags.database, results.backend, results.runtime);
+      return getDatabaseChoice(
+        flags.database,
+        results.backend,
+        results.runtime,
+        flags.jobQueue,
+        flags.auth,
+        flags.orm,
+      );
     },
     orm: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as ORM);
@@ -953,6 +985,7 @@ export async function gatherConfig(
         results.database,
         results.backend,
         results.runtime,
+        flags.auth,
       );
     },
     api: ({ results }) => {
@@ -966,7 +999,10 @@ export async function gatherConfig(
     },
     auth: ({ results }) => {
       if (results.ecosystem === "typescript") {
-        return getAuthChoice(flags.auth, results.backend, results.frontend, "typescript");
+        return getAuthChoice(flags.auth, results.backend, results.frontend, "typescript", {
+          database: results.database,
+          orm: results.orm,
+        });
       }
       if (results.ecosystem === "react-native") {
         return Promise.resolve((flags.auth ?? "none") as Auth);
@@ -974,6 +1010,12 @@ export async function gatherConfig(
       if (results.ecosystem === "go") {
         return getAuthChoice(flags.auth, undefined, undefined, "go");
       }
+      // These ecosystems generate no `--auth` provider, so a requested one is rejected, not reset.
+      const rejection = getRequestedAuthRejection(flags.auth, {
+        ecosystem: results.ecosystem,
+        auth: "none",
+      });
+      if (rejection) return exitWithError(rejection);
       return Promise.resolve("none" as Auth);
     },
     payments: ({ results }) => {
@@ -1111,7 +1153,7 @@ export async function gatherConfig(
     },
     jobQueue: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as JobQueue);
-      return getJobQueueChoice(flags.jobQueue, results.backend);
+      return getJobQueueChoice(flags.jobQueue, results.backend, results.runtime, results.database);
     },
     fileUpload: ({ results }) => {
       if (results.ecosystem !== "typescript") return Promise.resolve("none" as FileUpload);
@@ -1413,6 +1455,10 @@ export async function gatherConfig(
       }
       return getPythonObservabilityChoice(flags.pythonObservability);
     },
+    pythonLogging: ({ results }) => {
+      if (results.ecosystem !== "python") return Promise.resolve("none" as PythonLogging);
+      return getPythonLoggingChoice(flags.pythonLogging, results.pythonWebFramework);
+    },
     pythonCli: ({ results }) => {
       if (results.ecosystem !== "python") return Promise.resolve([] as PythonCli[]);
       return getPythonCliChoice(flags.pythonCli);
@@ -1480,7 +1526,10 @@ export async function gatherConfig(
     },
     goMessageQueue: ({ results }) => {
       if (results.ecosystem !== "go") return Promise.resolve("none" as GoMessageQueue);
-      return getGoMessageQueueChoice(flags.goMessageQueue);
+      return getGoMessageQueueChoice(flags.goMessageQueue, {
+        database: results.database,
+        goWebFramework: results.goWebFramework,
+      });
     },
     goCaching: ({ results }) => {
       if (results.ecosystem !== "go") return Promise.resolve("none" as GoCaching);
@@ -1510,7 +1559,10 @@ export async function gatherConfig(
       ) {
         return Promise.resolve("none" as GoMigrations);
       }
-      return getGoMigrationsChoice(flags.goMigrations);
+      return getGoMigrationsChoice(flags.goMigrations, {
+        database: results.database,
+        goOrm: results.goOrm,
+      });
     },
     goTemplating: ({ results }) => {
       if (results.ecosystem !== "go") return Promise.resolve("none" as GoTemplating);
@@ -1886,6 +1938,7 @@ export async function gatherConfig(
     pythonCaching: result.pythonCaching,
     pythonRealtime: result.pythonRealtime,
     pythonObservability: result.pythonObservability,
+    pythonLogging: result.pythonLogging,
     pythonCli: result.pythonCli,
     pythonCloudSdk: result.pythonCloudSdk,
     pythonHttpClient: result.pythonHttpClient,

@@ -21,13 +21,16 @@ export const dependencyVersionMap = {
   // Exact-pin the reviewed Better Auth family. Version 1.7 changes the required
   // account identity schema and cannot be admitted by the 1.6 template range.
   "better-auth": "1.6.22",
+  // The adapters and Expo plugin only peer on ^core, so npm otherwise installs the
+  // newest core beside the exact one better-auth requires.
+  "@better-auth/core": "1.6.22",
   "@better-auth/expo": "1.6.22",
   // Runtime imports of @better-auth/expo's client - must exist in the
   // native app even when the corresponding mobile options are "none".
-  "expo-linking": "^56.0.14",
-  "expo-constants": "^56.0.18",
-  "expo-web-browser": "^56.0.5",
-  "expo-network": "^56.0.5",
+  "expo-linking": "~56.0.18",
+  "expo-constants": "~56.0.27",
+  "expo-web-browser": "~56.0.6",
+  "expo-network": "~56.0.5",
   "@better-auth/drizzle-adapter": "1.6.22",
   "@better-auth/prisma-adapter": "1.6.22",
   "@better-auth/mongo-adapter": "1.6.22",
@@ -37,11 +40,11 @@ export const dependencyVersionMap = {
   "@clerk/tanstack-react-start": "^1.6.1",
   "@clerk/clerk-expo": "^2.20.0",
 
-  // Auth.js (NextAuth v5)
-  "next-auth": "^4.24.15",
-  "@auth/core": "^0.34.3",
+  // Auth.js (NextAuth v5). v5 is published only under the beta tag, so pin it exactly.
+  "next-auth": "5.0.0-beta.32",
   "@auth/drizzle-adapter": "^1.11.3",
   "@auth/prisma-adapter": "^2.11.3",
+  bcryptjs: "^3.0.3",
 
   // Stack Auth
   "@stackframe/stack": "^2.8.108",
@@ -170,7 +173,7 @@ export const dependencyVersionMap = {
 
   // Nitro
   nitropack: "^2.13.4",
-  h3: "^2.0.0",
+  h3: "^1.15.11",
 
   // feTS
   fets: "^0.8.12",
@@ -616,6 +619,9 @@ export const dependencyVersionMap = {
   "@temporalio/worker": "^1.24.0",
   "@temporalio/workflow": "^1.24.0",
   "@temporalio/activity": "^1.24.0",
+  "pg-boss": "^12.37.0",
+  "@upstash/qstash": "^2.12.0",
+  "@hatchet-dev/typescript-sdk": "^1.35.1",
 
   // Testing - Jest
   jest: "^30.5.2",
@@ -664,10 +670,6 @@ export const dependencyVersionMap = {
   "@storybook/addon-interactions": "^8.6.18",
   "@storybook/test": "^8.6.18",
 
-  // React Native animation runtime
-  "react-native-reanimated": "^4.5.3",
-  "react-native-worklets": "^0.11.4",
-
   // React Native styling
   uniwind: "1.12.0",
 
@@ -678,7 +680,7 @@ export const dependencyVersionMap = {
   "@react-spring/native": "^10.1.2",
   "@formkit/auto-animate": "^0.9.0",
   "lottie-react": "^2.4.1",
-  "lottie-react-native": "^7.5.0",
+  "lottie-react-native": "~7.3.4",
 
   // Payments - Stripe
   stripe: "^22.6.2",

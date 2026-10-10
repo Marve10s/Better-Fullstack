@@ -172,6 +172,7 @@ export async function displayPostInstallInstructions(
   const revenueCatInstructions =
     config.payments === "revenuecat" ? getRevenueCatInstructions(backend, packageManager) : "";
   const paymentSetupInstructions = getPaymentSetupInstructions(config.payments, backend);
+  const jobQueueInstructions = getJobQueueInstructions(config.jobQueue, runtime, packageManager);
   const alchemyDeployInstructions = getAlchemyDeployInstructions(
     runCmd,
     webDeploy,
@@ -321,6 +322,7 @@ export async function displayPostInstallInstructions(
   if (polarInstructions) output += `\n${polarInstructions.trim()}\n`;
   if (revenueCatInstructions) output += `\n${revenueCatInstructions.trim()}\n`;
   if (paymentSetupInstructions) output += `\n${paymentSetupInstructions.trim()}\n`;
+  if (jobQueueInstructions) output += `\n${jobQueueInstructions.trim()}\n`;
 
   if (noOrmWarning) output += `\n${noOrmWarning.trim()}\n`;
   if (bunWebNativeWarning) output += `\n${bunWebNativeWarning.trim()}\n`;
@@ -397,6 +399,41 @@ function getGitleaksInstructions(runCmd: string, hasPackageScript = true, gitEna
     `${pc.cyan("•")} Install the Gitleaks binary: ${pc.underline("https://github.com/gitleaks/gitleaks#installing")}\n` +
     `${pc.cyan("•")} Scan Git history: ${scanCommand}\n`
   );
+}
+
+function getJobQueueInstructions(
+  jobQueue: ProjectConfig["jobQueue"],
+  runtime: ProjectConfig["runtime"],
+  packageManager: ProjectConfig["packageManager"],
+) {
+  const serverRun = `cd apps/server && ${packageManager} run`;
+  if (jobQueue === "pg-boss") {
+    return (
+      `${pc.bold("pg-boss background jobs:")}\n` +
+      `${pc.cyan("•")} Jobs are stored in the PostgreSQL database from DATABASE_URL\n` +
+      `${pc.cyan("•")} Start the worker: ${pc.white(`${serverRun} jobs:worker`)}\n` +
+      `${pc.cyan("•")} Enqueue a test job: ${pc.white(`${serverRun} jobs:enqueue`)}\n`
+    );
+  }
+  if (jobQueue === "hatchet") {
+    return (
+      `${pc.bold("Hatchet background jobs:")}\n` +
+      `${pc.cyan("•")} Set HATCHET_CLIENT_TOKEN in apps/server/.env (${pc.underline("https://cloud.onhatchet.run")})\n` +
+      `${pc.cyan("•")} Start the worker: ${pc.white(`${serverRun} jobs:worker`)}\n` +
+      `${pc.cyan("•")} Enqueue a test run: ${pc.white(`${serverRun} jobs:enqueue`)}\n`
+    );
+  }
+  if (jobQueue === "upstash-qstash") {
+    return (
+      `${pc.bold("Upstash QStash background jobs:")}\n` +
+      `${pc.cyan("•")} Set the QSTASH_* keys in your server env (${pc.underline("https://console.upstash.com/qstash")})\n` +
+      `${pc.cyan("•")} Point QSTASH_WEBHOOK_URL at the public URL of POST /api/jobs/welcome-email\n` +
+      (runtime === "workers"
+        ? ""
+        : `${pc.cyan("•")} Publish a test job: ${pc.white(`${serverRun} jobs:enqueue`)}\n`)
+    );
+  }
+  return "";
 }
 
 function getSigNozInstructions(envFile: string) {
@@ -1024,6 +1061,53 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
   consola.box(output);
 }
 
+function getGoJobAndMigrationGuidance(
+  goMessageQueue: ProjectConfig["goMessageQueue"],
+  goMigrations: ProjectConfig["goMigrations"],
+): Array<[string, string[]]> {
+  const sections: Array<[string, string[]]> = [];
+  if (goMessageQueue === "river") {
+    sections.push([
+      "River jobs:",
+      [
+        "Set DATABASE_URL to PostgreSQL; the server runs River's rivermigrate step before starting the client",
+        'Run the River migration on its own: go run github.com/riverqueue/river/cmd/river@v0.49.0 migrate-up --database-url "$DATABASE_URL"',
+        'Enqueue a job: curl -X POST http://localhost:8080/api/jobs/welcome-email -d \'{"email":"you@example.com"}\'',
+      ],
+    ]);
+  }
+  if (goMessageQueue === "gocron") {
+    sections.push([
+      "gocron scheduler:",
+      [
+        "internal/jobs/gocron.go runs a heartbeat job every minute and stops the scheduler on shutdown",
+      ],
+    ]);
+  }
+  if (goMigrations === "goose") {
+    sections.push([
+      "goose migrations:",
+      [
+        "Apply migrations: go run ./cmd/migrate up",
+        "Check status: go run ./cmd/migrate status",
+        "Roll back one migration: go run ./cmd/migrate down",
+      ],
+    ]);
+  }
+  if (goMigrations === "atlas") {
+    sections.push([
+      "Atlas migrations:",
+      [
+        "Install the Atlas CLI: https://atlasgo.io/docs#installation",
+        "Set ATLAS_DATABASE_URL (Atlas URL format, see .env.example)",
+        "Apply the schema: atlas schema apply --env local",
+        "Plan a versioned migration: atlas migrate diff --env local initial",
+      ],
+    ]);
+  }
+  return sections;
+}
+
 function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean }) {
   const {
     relativePath,
@@ -1143,6 +1227,11 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
 
   if (goObservability === "signoz") {
     output += `\n${getSigNozInstructions(".env").trim()}\n`;
+  }
+
+  for (const [title, lines] of getGoJobAndMigrationGuidance(goMessageQueue, goMigrations)) {
+    output += `\n${pc.bold(title)}\n`;
+    for (const line of lines) output += `${pc.cyan("•")} ${line}\n`;
   }
 
   output += `\n${pc.bold("Common Go commands:")}\n`;
@@ -1465,6 +1554,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
     pythonQuality,
     pythonPackageManager,
     pythonObservability,
+    pythonLogging,
   } = config;
 
   const cdCmd = `cd ${relativePath}`;
@@ -1587,6 +1677,10 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
 
   if (pythonObservability && pythonObservability !== "none") {
     output += `${pc.cyan("•")} Observability: ${pythonObservability === "signoz" ? "SigNoz" : pythonObservability}\n`;
+  }
+
+  if (pythonLogging && pythonLogging !== "none") {
+    output += `${pc.cyan("•")} Logging: ${pythonLogging === "loguru" ? "Loguru" : "structlog"} (set APP_ENV=production for JSON logs, LOG_LEVEL to change the level)\n`;
   }
 
   if (pythonObservability === "signoz") {

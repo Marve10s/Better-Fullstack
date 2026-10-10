@@ -95,6 +95,7 @@ import {
   PYTHON_CACHING_VALUES,
   PYTHON_REALTIME_VALUES,
   PYTHON_OBSERVABILITY_VALUES,
+  PYTHON_LOGGING_VALUES,
   PYTHON_CLI_VALUES,
   PYTHON_TASK_QUEUE_VALUES,
   PYTHON_VALIDATION_VALUES,
@@ -386,6 +387,7 @@ describe("stack graph", () => {
       "backend:typescript:hono",
       "backend.runtime:typescript:node",
       "backend.deploy:typescript:railway",
+      "backend.orm:typescript:drizzle",
       "database:universal:postgres",
       "database.dbSetup:universal:neon",
     ]);
@@ -1314,6 +1316,9 @@ describe("stack graph structural round-trip (phase 0)", () => {
     if (field === "cms" && (value === "payload" || value === "keystatic")) {
       config.frontend = ["next"];
     }
+    if (field === "jobQueue" && value === "pg-boss") {
+      config.database = "postgres";
+    }
     return config;
   }
 
@@ -1747,9 +1752,9 @@ describe("stack graph structural round-trip (phase 0)", () => {
       neon: { database: "postgres", runtime: "bun" },
       "prisma-postgres": { database: "postgres", runtime: "bun" },
       planetscale: { database: "mysql", runtime: "bun" },
-      "mongodb-atlas": { database: "mongodb", runtime: "bun" },
+      "mongodb-atlas": { database: "mongodb", orm: "prisma", runtime: "bun" },
       supabase: { database: "postgres", runtime: "bun" },
-      upstash: { database: "redis", runtime: "bun", auth: "none" },
+      upstash: { database: "redis", orm: "none", runtime: "bun", auth: "none" },
       d1: { database: "sqlite", runtime: "workers" },
       docker: { database: "postgres", runtime: "bun" },
       none: { database: "postgres", runtime: "bun" },
@@ -1960,6 +1965,7 @@ describe("stack graph structural round-trip (phase 0)", () => {
           pythonCaching: PYTHON_CACHING_VALUES,
           pythonRealtime: PYTHON_REALTIME_VALUES,
           pythonObservability: PYTHON_OBSERVABILITY_VALUES,
+          pythonLogging: PYTHON_LOGGING_VALUES,
         },
         arrays: {
           pythonAi: PYTHON_AI_VALUES,

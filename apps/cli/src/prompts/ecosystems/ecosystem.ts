@@ -1,7 +1,8 @@
-import type { Ecosystem } from "@/types";
+import type { Auth, Ecosystem } from "@/types";
 
 import { exitCancelled } from "@/presentation/errors";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
+import { getAuthIncompatibility } from "@/types";
 
 export const ECOSYSTEM_PROMPT_OPTIONS = [
   {
@@ -46,13 +47,16 @@ export const ECOSYSTEM_PROMPT_OPTIONS = [
   },
 ];
 
-export async function getEcosystemChoice(ecosystem?: Ecosystem) {
+export async function getEcosystemChoice(ecosystem?: Ecosystem, auth?: Auth) {
   if (ecosystem !== undefined) return ecosystem;
 
+  const options = ECOSYSTEM_PROMPT_OPTIONS.filter(
+    (option) => !getAuthIncompatibility(auth, { ecosystem: option.value }, { partial: true }),
+  );
   const response = await navigableSelect<Ecosystem>({
     message: "Select ecosystem",
-    options: ECOSYSTEM_PROMPT_OPTIONS,
-    initialValue: "typescript",
+    options,
+    initialValue: options[0]?.value,
   });
 
   if (isCancel(response)) return exitCancelled("Operation cancelled");

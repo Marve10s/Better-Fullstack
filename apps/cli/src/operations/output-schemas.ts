@@ -33,6 +33,85 @@ export const schemaOutputSchema = z.object({
   error: z.string().optional(),
 });
 
+export const catalogCategoryOutputSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  schemaCategory: z.string().nullable(),
+  selectionMode: z.enum(["single", "multiple"]),
+  flag: z.string().nullable(),
+  ecosystems: z.array(EcosystemSchema),
+  optionCount: z.number().int(),
+});
+
+export const catalogOptionOutputSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  aliases: z.array(z.string()),
+  flag: z.string().nullable(),
+});
+
+/** Categories when no category was requested, otherwise one category and its options. */
+export const catalogListOutputSchema = z.object({
+  ecosystem: EcosystemSchema.nullable(),
+  categories: z.array(catalogCategoryOutputSchema).optional(),
+  category: catalogCategoryOutputSchema.optional(),
+  options: z.array(catalogOptionOutputSchema).optional(),
+});
+
+const catalogMatchOutputSchema = catalogOptionOutputSchema.extend({
+  category: z.string(),
+  categoryLabel: z.string(),
+  ecosystems: z.array(EcosystemSchema),
+});
+
+export const catalogSearchOutputSchema = z.object({
+  query: z.string(),
+  ecosystem: EcosystemSchema.nullable(),
+  matches: z.array(catalogMatchOutputSchema),
+});
+
+const explainRequirementOutputSchema = z.object({
+  category: z.string(),
+  categoryLabel: z.string(),
+  reason: z.string(),
+});
+
+const explainRuleOutputSchema = explainRequirementOutputSchema.extend({
+  optionId: z.string(),
+  label: z.string(),
+});
+
+export const explainOptionOutputSchema = z.object({
+  schemaVersion: z.literal(1),
+  option: catalogMatchOutputSchema,
+  ecosystem: EcosystemSchema,
+  with: z.array(catalogMatchOutputSchema),
+  evidence: z
+    .object({
+      level: z.string(),
+      declaredLevel: z.string(),
+      maturity: z.string(),
+      freshness: z.string(),
+      limitation: z.string(),
+    })
+    .nullable(),
+  requires: z.array(explainRequirementOutputSchema),
+  excludes: z.array(explainRuleOutputSchema),
+  excludedBy: z.array(explainRuleOutputSchema),
+  evaluation: z.object({
+    allowed: z.boolean(),
+    failures: z.array(
+      z.object({
+        category: z.string().nullable(),
+        optionId: z.string().nullable(),
+        reason: z.string(),
+      }),
+    ),
+    alternatives: z.array(catalogOptionOutputSchema),
+  }),
+  limitations: z.array(z.string()),
+});
+
 export const compatibilityCapabilityReferenceOutputSchema = z.object({
   id: z.string(),
   category: z.string(),

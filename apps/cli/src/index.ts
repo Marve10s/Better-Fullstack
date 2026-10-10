@@ -19,9 +19,15 @@ export {
   recovery,
 } from "@/run";
 
-import type { ProjectConfig } from "@/types";
+import { hasGeneratedJobQueueRequirements, type ProjectConfig } from "@/types";
 
 import { applyEffectBackendDefaults } from "@/config/config-processing";
+import {
+  getAuthSelectionIssue,
+  getDatabaseOrmRequirementSelectionIssue,
+  getDataLayerSelectionIssue,
+  getProviderDataLayer,
+} from "@/config/stack-compatibility";
 
 // Re-export virtual filesystem types for programmatic usage
 export {
@@ -169,6 +175,7 @@ export async function createVirtual(
       pythonCaching: options.pythonCaching || "none",
       pythonRealtime: options.pythonRealtime || "none",
       pythonObservability: options.pythonObservability || "none",
+      pythonLogging: options.pythonLogging || "none",
       pythonCli: options.pythonCli || [],
       pythonCloudSdk: options.pythonCloudSdk || "none",
       pythonHttpClient: options.pythonHttpClient || "none",
@@ -255,14 +262,51 @@ export async function createVirtual(
     if (options.stackParts) {
       config.stackParts = options.stackParts;
     }
+    Object.assign(config, getProviderDataLayer(config, options));
     applyEffectBackendDefaults(config, new Set(Object.keys(options)));
+
+    const authIssue = getAuthSelectionIssue(config);
+    if (authIssue) return { success: false, error: authIssue };
 
     const hasLegacyContainerAddon =
       !config.stackParts &&
       (config.addons ?? []).some(
         (addon) => addon === "docker-compose" || addon === "devcontainer" || addon === "kong",
       );
-    if (config.integrations === "nango" || config.payments !== "none" || hasLegacyContainerAddon) {
+    // Graph input generates from its own job queue part, so check it alongside the flat field.
+    const jobQueueSelections = [
+      config.jobQueue,
+      ...(config.stackParts ?? [])
+        .filter((part) => part.role === "jobQueue")
+        .map((part) => part.toolId),
+    ];
+    // Graph input generates from its own logging parts, so check them alongside the flat field.
+    const pythonLoggingSelections = [
+      config.pythonLogging,
+      ...(config.stackParts ?? [])
+        .filter((part) => part.role === "logging" && part.ecosystem === "python")
+        .map((part) => part.toolId),
+    ];
+    const goJobAndMigrationSelections = [
+      config.goMessageQueue,
+      config.goMigrations,
+      ...(config.stackParts ?? [])
+        .filter(
+          (part) =>
+            part.ecosystem === "go" && (part.role === "jobQueue" || part.role === "migrations"),
+        )
+        .map((part) => part.toolId),
+    ];
+    if (
+      config.integrations === "nango" ||
+      config.payments !== "none" ||
+      jobQueueSelections.some(hasGeneratedJobQueueRequirements) ||
+      pythonLoggingSelections.some((selection) => selection && selection !== "none") ||
+      goJobAndMigrationSelections.some((selection) =>
+        ["river", "gocron", "goose", "atlas"].includes(selection ?? "none"),
+      ) ||
+      hasLegacyContainerAddon
+    ) {
       const [{ validateConfigForProgrammaticUse }, { runWithContextAsync }] = await Promise.all([
         import("@/config/config-validation"),
         import("@/presentation/context"),
@@ -271,6 +315,10 @@ export async function createVirtual(
         validateConfigForProgrammaticUse(config),
       );
     }
+
+    const dataLayerIssue =
+      getDataLayerSelectionIssue(config) ?? getDatabaseOrmRequirementSelectionIssue(config);
+    if (dataLayerIssue) return { success: false, error: dataLayerIssue };
 
     const { generateVirtualProject: generate, EMBEDDED_TEMPLATES } =
       await import("@better-fullstack/template-generator");

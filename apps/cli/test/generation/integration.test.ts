@@ -390,7 +390,7 @@ describe("Integration Tests - Real World Scenarios", () => {
       expectError(result, "tRPC API requires React-based frontends");
     });
 
-    it("should normalize Clerk + incompatible frontend to no auth", async () => {
+    it("should reject Clerk + incompatible frontend with the shared reason", async () => {
       const result = await runTRPCTest({
         projectName: "clerk-svelte-fail",
         backend: "convex",
@@ -407,8 +407,10 @@ describe("Integration Tests - Real World Scenarios", () => {
         serverDeploy: "none",
       });
 
-      expectSuccess(result);
-      expect(result.result?.projectConfig.auth).toBe("none");
+      expectError(
+        result,
+        "Clerk with Convex requires React Router, React + Vite, TanStack Router, TanStack Start, Next.js, or React Native",
+      );
     });
 
     it("should fail with addon incompatibility", async () => {

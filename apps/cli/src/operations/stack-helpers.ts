@@ -16,6 +16,7 @@ import {
   formatStackPartSpec,
   getCategoryOrderForEcosystem,
   getCodeQualitySelectionIssue,
+  getJobQueueIncompatibility,
   getReplacedCodeQualityTools,
   getToolingCapability,
   getToolingCategory,
@@ -34,7 +35,15 @@ import { listPresets } from "@/commands/stack/presets";
 import { getStarterTrackRecommendation } from "@/commands/stack/starter-tracks";
 import { applyEffectBackendDefaults } from "@/config/config-processing";
 import { getEffectiveStack, getGraphSummary } from "@/config/graph-summary";
-import { getCompatibilityBackend } from "@/config/stack-compatibility";
+import {
+  getCompatibilityBackend,
+  getAuthSelectionIssue,
+  getDatabaseOrmRequirementSelectionIssue,
+  getDataLayerSelectionIssue,
+  getProviderDataLayer,
+  getGoJobAndMigrationSelectionIssue,
+  getPythonLoggingSelectionIssue,
+} from "@/config/stack-compatibility";
 
 const MCP_ECOSYSTEMS = new Set<OptionCategoryEcosystem>(
   EcosystemSchema.options as OptionCategoryEcosystem[],
@@ -108,6 +117,12 @@ function getMcpSchemaOptionValues(key: string): string[] {
       ),
     ),
   ];
+}
+
+/** The category name `bfs_get_schema` accepts for a catalog category, or null when it has none. */
+export function getMcpSchemaCategory(category: OptionCategory): string | null {
+  const key = MCP_LEGACY_CATEGORY_KEYS[category]?.[0] ?? category;
+  return getMcpSchemaOptionValues(key).length > 0 ? key : null;
 }
 
 export function getMcpCategoryKeysForEcosystem(ecosystem: OptionCategoryEcosystem): string[] {
@@ -305,6 +320,7 @@ const MCP_COMPATIBILITY_DEFAULTS = {
   pythonCaching: "none",
   pythonRealtime: "none",
   pythonObservability: "none",
+  pythonLogging: "none",
   pythonCli: [],
   pythonCloudSdk: "none",
   pythonHttpClient: "none",
@@ -423,16 +439,45 @@ function getMcpProjectConfigDefaults(input: Record<string, unknown>) {
 
 export function validateMcpProjectConfigCompatibility(
   config: Pick<ProjectConfig, "ecosystem" | "integrations"> &
-    Partial<Pick<ProjectConfig, "backend" | "runtime" | "webDeploy" | "stackParts" | "addons">>,
+    Partial<
+      Pick<
+        ProjectConfig,
+        | "backend"
+        | "runtime"
+        | "database"
+        | "dbSetup"
+        | "jobQueue"
+        | "webDeploy"
+        | "stackParts"
+        | "addons"
+        | "pythonWebFramework"
+        | "pythonLogging"
+        | "auth"
+        | "frontend"
+        | "orm"
+      >
+    >,
 ): void {
   const qualityIssue = getCodeQualitySelectionIssue(config.addons ?? []);
   if (qualityIssue) throw new Error(qualityIssue);
+  const pythonLoggingIssue = getPythonLoggingSelectionIssue(config);
+  if (pythonLoggingIssue) throw new Error(pythonLoggingIssue.reason);
+  const goJobAndMigrationIssue = getGoJobAndMigrationSelectionIssue(config);
+  if (goJobAndMigrationIssue) throw new Error(goJobAndMigrationIssue);
+  const selectionIssue =
+    getAuthSelectionIssue(config) ??
+    getDataLayerSelectionIssue(config) ??
+    getDatabaseOrmRequirementSelectionIssue(config);
+  if (selectionIssue) throw new Error(selectionIssue);
   if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
     const qualityIssues = validateStackParts(config.stackParts).issues.filter(
-      (issue) => issue.role === "codeQuality",
+      (issue) => issue.role === "codeQuality" || issue.role === "jobQueue",
     );
     if (qualityIssues.length)
       throw new Error(qualityIssues.map((issue) => issue.message).join("\n"));
+  } else if (config.ecosystem === "typescript") {
+    const jobQueueIssue = getJobQueueIncompatibility(config.jobQueue, config);
+    if (jobQueueIssue) throw new Error(jobQueueIssue);
   }
   if (config.integrations !== "nango") return;
 
@@ -576,6 +621,7 @@ export function buildProjectConfig(
     }
   }
 
+  Object.assign(config, getProviderDataLayer(config, input));
   applyEffectBackendDefaults(config, new Set(Object.keys(input)));
   validateMcpProjectConfigCompatibility(config);
 

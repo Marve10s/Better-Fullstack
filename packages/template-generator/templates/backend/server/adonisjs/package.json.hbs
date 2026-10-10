@@ -2,6 +2,12 @@
 	"name": "server",
 	"main": "bin/server.js",
 	"type": "module",
+	"imports": {
+		"#controllers/*": "./app/controllers/*.js",
+		"#middleware/*": "./app/middleware/*.js",
+		"#start/*": "./start/*.js",
+		"#config/*": "./config/*.js"
+	},
 	"scripts": {
 		"dev": "node ace serve --watch",
 		"build": "node ace build",
