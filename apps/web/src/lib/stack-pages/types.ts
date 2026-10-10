@@ -32,7 +32,12 @@ export type GeneratedStackPage = {
   selection: StackSelectionState;
   canonicalParts: GeneratedStackPart[];
   architecture: {
-    shape: "single-app" | "split-app" | "backend-service" | "rust-fullstack";
+    shape:
+      | "single-app"
+      | "split-app"
+      | "backend-service"
+      | "server-rendered-app"
+      | "rust-fullstack";
     facts: string[];
   };
   command: string;
