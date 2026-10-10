@@ -1,4 +1,7 @@
 import {
+  DEFAULT_STACK_SELECTION,
+  analyzeStackCompatibility,
+  normalizeStackSelection,
   createStackSelectionSearchParams,
   generateStackSelectionCommand,
   legacyProjectConfigToStackParts,
@@ -12,7 +15,31 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { StackCombinationPage } from "@/components/stack-pages/stack-combination-page";
+import { deriveArchitecture, deriveCanonicalParts } from "@/lib/stack-pages/facts";
+import { PUBLISHED_STACK_SEEDS } from "@/lib/stack-pages/seeds";
 import { getPublishedStackPages, getStackPage } from "@/lib/stack-pages/source";
+import { TemplateCatalogSections } from "@/routes/templates";
+
+function deriveSeedFacts(slug: string) {
+  const seed = PUBLISHED_STACK_SEEDS.find((candidate) => candidate.slug === slug);
+  if (!seed) throw new Error(`Missing seed: ${slug}`);
+  const normalized = normalizeStackSelection({ ...DEFAULT_STACK_SELECTION, ...seed.selection });
+  const selection = normalizeStackSelection({
+    ...normalized,
+    ...analyzeStackCompatibility(normalized).adjustedStack,
+  });
+  const config = stackSelectionToProjectConfig(selection, {
+    projectDir: "/virtual/my-app",
+    relativePath: "my-app",
+    install: true,
+  });
+  const parts = filterStackPartsForSelectedEcosystem(
+    legacyProjectConfigToStackParts(config),
+    selection.ecosystem,
+  );
+  const canonicalParts = deriveCanonicalParts(selection, parts, seed);
+  return { canonicalParts, architecture: deriveArchitecture(selection, canonicalParts, parts) };
+}
 
 describe("programmatic stack pages", () => {
   const pages = getPublishedStackPages();
@@ -76,11 +103,11 @@ describe("programmatic stack pages", () => {
     for (const ecosystem of ["java", "dotnet", "elixir"]) expect(ecosystems).toContain(ecosystem);
 
     for (const slug of ["expo-hono-trpc-drizzle-better-auth", "expo-convex"]) {
-      const page = getStackPage(slug);
-      expect(page?.canonicalParts).toContainEqual(
+      const page = deriveSeedFacts(slug);
+      expect(page.canonicalParts).toContainEqual(
         expect.objectContaining({ category: "nativeFrontend", ownership: "Primary mobile app" }),
       );
-      expect(page?.architecture.facts).toContain(
+      expect(page.architecture.facts).toContain(
         "The frontend and backend are separate primary stack parts.",
       );
     }
@@ -88,12 +115,32 @@ describe("programmatic stack pages", () => {
 
   it("describes server-rendered Blazor and LiveView apps as having a browser UI", () => {
     for (const slug of ["dotnet-blazor-efcore-identity-sqlite", "elixir-phoenix-liveview-ecto"]) {
-      const page = getStackPage(slug);
-      expect(page?.architecture.shape).toBe("server-rendered-app");
-      expect(page?.architecture.facts).toContain(
+      const page = deriveSeedFacts(slug);
+      expect(page.architecture.shape).toBe("server-rendered-app");
+      expect(page.architecture.facts).toContain(
         "The backend framework renders the browser UI on the server.",
       );
-      expect(page?.description).not.toContain("backend service");
+      expect(getStackPage(slug)?.description).not.toContain("backend service");
+    }
+  });
+
+  it("renders every published starter in the template catalog", () => {
+    const html = renderToStaticMarkup(createElement(TemplateCatalogSections, { pages }));
+    for (const page of pages) expect(html).toContain(`href="/stack/${page.slug}"`);
+    for (const label of ["Java / Kotlin", ".NET", "Elixir"]) expect(html).toContain(label);
+  });
+
+  it("includes selected Java libraries in the derived page facts", () => {
+    const seed = PUBLISHED_STACK_SEEDS.find(
+      (candidate) =>
+        "javaLibraries" in candidate.selection && candidate.selection.javaLibraries.includes("flyway"),
+    );
+    if (!seed || !("javaLibraries" in seed.selection)) throw new Error("Missing Flyway seed");
+    const { canonicalParts } = deriveSeedFacts(seed.slug);
+    for (const id of seed.selection.javaLibraries) {
+      expect(canonicalParts).toContainEqual(
+        expect.objectContaining({ category: "javaLibraries", id }),
+      );
     }
   });
 

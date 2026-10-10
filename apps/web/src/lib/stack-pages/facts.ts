@@ -56,6 +56,7 @@ const CORE_KEYS_BY_ECOSYSTEM: Record<string, StackSelectionKey[]> = {
     "javaApi",
     "javaBuildTool",
     "javaTestingLibraries",
+    "javaLibraries",
   ],
   dotnet: [
     "dotnetWebFramework",
@@ -116,6 +117,7 @@ const ROLE_LABELS: Partial<Record<OptionCategory, string>> = {
   javaAuth: "Authentication",
   javaApi: "API",
   javaTestingLibraries: "Testing",
+  javaLibraries: "Libraries",
   dotnetWebFramework: "Backend",
   dotnetOrm: "Data access",
   dotnetAuth: "Authentication",
