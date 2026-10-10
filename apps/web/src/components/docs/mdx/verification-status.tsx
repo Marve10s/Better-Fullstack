@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import type { PublicVerificationReport } from "@/lib/docs/release-verification";
 
+import { localizedEvidenceLevel, localizedVerificationProse } from "@/lib/docs/verification-copy";
 import { getLocaleDateTag } from "@/lib/i18n/locales";
 import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
@@ -53,7 +54,7 @@ export function VerificationStatus() {
               {verified ? m.docsVerificationCurrent() : m.docsVerificationNotCurrent()}
             </p>
             <p className="mt-1 mb-0 max-w-2xl text-muted-foreground text-sm leading-6">
-              {report.reason}
+              {localizedVerificationProse(report.reason)}
             </p>
           </div>
           <span
@@ -64,7 +65,7 @@ export function VerificationStatus() {
                 : "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300",
             )}
           >
-            {report.evidenceLevel ?? m.docsVerificationNoEvidence()}
+            {localizedEvidenceLevel(report.evidenceLevel)}
           </span>
         </div>
 
@@ -118,7 +119,11 @@ export function VerificationStatus() {
             {report.cases.map((entry) => (
               <tr className="border-border border-t" key={entry.id}>
                 <td className="px-4 py-3 font-mono text-xs">{entry.id}</td>
-                <td className="px-4 py-3">{entry.result}</td>
+                <td className="px-4 py-3">
+                  {entry.result === "pass"
+                    ? m.docsVerificationPassed()
+                    : m.docsVerificationNotRun()}
+                </td>
                 <td className="px-4 py-3">
                   {entry.ecosystems.join(", ") || m.docsVerificationNotRun()}
                 </td>
@@ -126,7 +131,9 @@ export function VerificationStatus() {
                   {entry.requiredStages.join(", ") || m.docsVerificationNotRun()}
                 </td>
                 <td className="px-4 py-3">
-                  {entry.runtimeLimitation ?? m.docsVerificationNoAssertion()}
+                  {entry.runtimeLimitation
+                    ? localizedVerificationProse(entry.runtimeLimitation)
+                    : m.docsVerificationNoAssertion()}
                 </td>
               </tr>
             ))}
