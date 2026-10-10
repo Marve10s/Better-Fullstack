@@ -228,7 +228,7 @@ export default defineConfig({
         },
         "/docs/**": {
           headers: {
-            "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+            "cache-control": "private, no-store",
           },
         },
         "/guides/**": {

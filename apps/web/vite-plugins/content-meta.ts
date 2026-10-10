@@ -34,6 +34,7 @@ const RESOLVED_LOCALIZED_CONTENT_ID = "\0" + LOCALIZED_CONTENT_ID;
 const LOCALIZED_MDX_BUNDLE_PREFIX = "virtual:localized-content-mdx-bundle/";
 const LOCALIZED_MDX_PREFIX = "virtual:localized-content-mdx/";
 const LOCALIZED_RAW_PREFIX = "virtual:localized-content-raw/";
+const RESOLVED_LOCALIZED_RAW_PREFIX = "\0" + LOCALIZED_RAW_PREFIX;
 
 const UNSAFE_MODULE_CODE_CHARACTER = /[<>\b\f\n\r\t\0\u2028\u2029]/gu;
 const MODULE_CODE_CHARACTER_ESCAPE: Record<string, string> = {
@@ -56,10 +57,6 @@ function serializeModuleValue(value: unknown): string {
     UNSAFE_MODULE_CODE_CHARACTER,
     (character) => MODULE_CODE_CHARACTER_ESCAPE[character] ?? character,
   );
-}
-
-function rawImporterName(locale: LocalizedContentLocale): string {
-  return `__raw_${locale.replace(/[^a-zA-Z0-9]/g, "_")}`;
 }
 
 type ContentSubdir = "docs" | "guides" | "blog";
@@ -157,8 +154,11 @@ function readLocalizedBundles(rootDir: string): {
   return { bundles, watchFiles };
 }
 
-function localizedEntryToMdxSource(entry: LocalizedJsonEntry): string {
-  const frontmatter = entry.frontmatter ?? {};
+function localizedEntryToMdxSource(
+  entry: LocalizedJsonEntry,
+  canonicalFrontmatter: Record<string, unknown> = {},
+): string {
+  const frontmatter = { ...canonicalFrontmatter, ...entry.frontmatter };
   const body = entry.body ?? "";
   return `---\n${stringifyYaml(frontmatter).trim()}\n---\n\n${body}`;
 }
@@ -276,8 +276,6 @@ export function contentMetaPlugin(): Plugin {
       blog: { mdxLoaders: [], rawLoaders: [] },
     };
 
-    const rawLocales = new Set<LocalizedContentLocale>();
-
     for (const locale of LOCALIZED_CONTENT_LOCALES) {
       const bundle = bundles[locale];
       if (!bundle) continue;
@@ -288,31 +286,33 @@ export function contentMetaPlugin(): Plugin {
           a.localeCompare(b),
         )) {
           if (!entry.body) continue;
+          if (
+            contentSubdir === "docs" &&
+            !fs.existsSync(path.join(rootDir, "content", "docs", relativePath))
+          ) {
+            continue;
+          }
           const key = localizedLoaderKey(locale, contentSubdir, relativePath);
-          const bundleId = localizedMdxBundleModuleId(contentSubdir, locale);
-          maps[contentSubdir].mdxLoaders.push(
-            `${serializeModuleValue(key)}: () => import(${serializeModuleValue(bundleId)}).then((m) => m.default[${serializeModuleValue(key)}])`,
-          );
-          // Raw MDX source is only consumed by the search index (opened on
-          // demand). Load it lazily from a per-locale bundle so the source text
-          // stays OUT of the initial-load chunk instead of being inlined here.
-          rawLocales.add(locale);
-          maps[contentSubdir].rawLoaders.push(
-            `${serializeModuleValue(key)}: () => ${rawImporterName(locale)}().then((m) => m.default[${serializeModuleValue(key)}] ?? "")`,
-          );
+          if (contentSubdir === "docs") {
+            const moduleId = localizedMdxModuleId(contentSubdir, locale, relativePath);
+            const rawId = `${LOCALIZED_RAW_PREFIX}${locale}/${relativePath}?raw`;
+            maps.docs.mdxLoaders.push(
+              `${serializeModuleValue(key)}: () => import(${serializeModuleValue(moduleId)})`,
+            );
+            maps.docs.rawLoaders.push(
+              `${serializeModuleValue(key)}: () => import(${serializeModuleValue(rawId)}).then((m) => m.default)`,
+            );
+          } else {
+            const bundleId = localizedMdxBundleModuleId(contentSubdir, locale);
+            maps[contentSubdir].mdxLoaders.push(
+              `${serializeModuleValue(key)}: () => import(${serializeModuleValue(bundleId)}).then((m) => m.default[${serializeModuleValue(key)}])`,
+            );
+          }
         }
       }
     }
 
-    const rawImporters = [...rawLocales].map(
-      (locale) =>
-        `const ${rawImporterName(locale)} = () => import(${serializeModuleValue(
-          LOCALIZED_RAW_PREFIX + locale,
-        )});`,
-    );
-
     return [
-      ...rawImporters,
       `export const localizedDocsMdxLoaders = {${maps.docs.mdxLoaders.join(",")}};`,
       `export const localizedDocsRawMdxLoaders = {${maps.docs.rawLoaders.join(",")}};`,
       `export const localizedGuideMdxLoaders = {${maps.guides.mdxLoaders.join(",")}};`,
@@ -323,24 +323,15 @@ export function contentMetaPlugin(): Plugin {
   function buildLocalizedRawModule(
     bundles: LocalizedJsonBundles,
     locale: LocalizedContentLocale,
-  ): string {
-    const bundle = bundles[locale];
-    const entriesOut: string[] = [];
-    if (bundle) {
-      // Only docs raw source is referenced (localizedDocsRawMdxLoaders); keep the
-      // per-locale bundle to exactly that set.
-      const docs = bundle.docs ?? {};
-      for (const [relativePath, entry] of Object.entries(docs).sort(([a], [b]) =>
-        a.localeCompare(b),
-      )) {
-        if (!entry.body) continue;
-        const key = localizedLoaderKey(locale, "docs", relativePath);
-        entriesOut.push(
-          `${serializeModuleValue(key)}: ${serializeModuleValue(localizedEntryToMdxSource(entry))}`,
-        );
-      }
-    }
-    return `export default {${entriesOut.join(",")}};`;
+    relativePath: string,
+    addWatchFile: (file: string) => void,
+  ): string | undefined {
+    const entry = bundles[locale]?.docs?.[relativePath];
+    const canonicalFile = path.join(rootDir, "content", "docs", relativePath);
+    if (!entry?.body || !fs.existsSync(canonicalFile)) return undefined;
+    addWatchFile(canonicalFile);
+    const canonicalFrontmatter = extractFrontmatter(fs.readFileSync(canonicalFile, "utf8"));
+    return `export default ${serializeModuleValue(localizedEntryToMdxSource(entry, canonicalFrontmatter))};`;
   }
 
   function buildLocalizedMdxBundleModule(
@@ -435,7 +426,7 @@ export function contentMetaPlugin(): Plugin {
         return id;
       }
       if (id.startsWith(LOCALIZED_RAW_PREFIX)) {
-        return id;
+        return "\0" + id;
       }
       return undefined;
     },
@@ -462,6 +453,7 @@ export function contentMetaPlugin(): Plugin {
         const entry =
           bundles[localizedMdx.locale]?.[localizedMdx.contentSubdir]?.[localizedMdx.relativePath];
         if (!entry) return undefined;
+        this.addWatchFile(path.join(rootDir, "content", "i18n", `${localizedMdx.locale}.json`));
         return localizedEntryToMdxSource(entry);
       }
 
@@ -475,13 +467,21 @@ export function contentMetaPlugin(): Plugin {
         );
       }
 
-      if (id.startsWith(LOCALIZED_RAW_PREFIX)) {
-        const locale = id.slice(LOCALIZED_RAW_PREFIX.length);
+      if (id.startsWith(RESOLVED_LOCALIZED_RAW_PREFIX)) {
+        const [locale, ...relativeParts] = id
+          .slice(RESOLVED_LOCALIZED_RAW_PREFIX.length)
+          .split("?")[0]
+          .split("/");
         if (!LOCALIZED_CONTENT_LOCALES.includes(locale as LocalizedContentLocale)) {
           return undefined;
         }
-        for (const filePath of localizedWatchFiles) this.addWatchFile(filePath);
-        return buildLocalizedRawModule(bundles, locale as LocalizedContentLocale);
+        this.addWatchFile(path.join(rootDir, "content", "i18n", `${locale}.json`));
+        return buildLocalizedRawModule(
+          bundles,
+          locale as LocalizedContentLocale,
+          relativeParts.join("/"),
+          (file) => this.addWatchFile(file),
+        );
       }
 
       if (id !== RESOLVED_ID) return undefined;
