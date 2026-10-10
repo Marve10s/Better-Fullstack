@@ -15,6 +15,7 @@ import {
   type SupportedLocale,
   toSupportedLocale,
 } from "@/lib/i18n/locales";
+import { m } from "@/paraglide/messages.js";
 import { getLocale } from "@/paraglide/runtime.js";
 
 export { getLocalizedDocFrontmatter } from "@/lib/docs/frontmatter";
@@ -177,36 +178,6 @@ const DOC_FOLDER_TITLE_TRANSLATIONS: Record<string, LocalizedFrontmatter<{ title
     fr: { title: "Sections" },
     uk: { title: "Розділи" },
   },
-  Start: {
-    es: { title: "Empezar" },
-    zh: { title: "开始" },
-    ja: { title: "はじめる" },
-    ko: { title: "시작" },
-    "zh-Hant": { title: "開始" },
-    de: { title: "Start" },
-    fr: { title: "Démarrer" },
-    uk: { title: "Початок" },
-  },
-  Build: {
-    es: { title: "Construir" },
-    zh: { title: "构建" },
-    ja: { title: "構築" },
-    ko: { title: "빌드" },
-    "zh-Hant": { title: "建構" },
-    de: { title: "Erstellen" },
-    fr: { title: "Construire" },
-    uk: { title: "Створення" },
-  },
-  Automate: {
-    es: { title: "Automatizar" },
-    zh: { title: "自动化" },
-    ja: { title: "自動化" },
-    ko: { title: "자동화" },
-    "zh-Hant": { title: "自動化" },
-    de: { title: "Automatisieren" },
-    fr: { title: "Automatiser" },
-    uk: { title: "Автоматизація" },
-  },
 };
 
 const metaModules = import.meta.glob<{ default: MetaFile }>("@web-root/content/docs/**/meta.json", {
@@ -243,6 +214,9 @@ function contentCacheKey(page: DocPage, locale: ContentLocale): string {
 }
 
 function localizedFolderName(name: string, locale = currentContentLocale()): string {
+  if (name === "Start") return m.docsSectionStart({}, { locale });
+  if (name === "Build") return m.docsSectionBuild({}, { locale });
+  if (name === "Automate") return m.docsSectionAutomate({}, { locale });
   if (locale === "en") return name;
   return DOC_FOLDER_TITLE_TRANSLATIONS[name]?.[locale]?.title ?? name;
 }
