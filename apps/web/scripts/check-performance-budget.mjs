@@ -23,6 +23,7 @@ const TRACKED_KEYS = [
 const LOCALIZED_CONTENT_JS_PATTERN =
   /^(?:localized-content-|(?:es|zh-Hant|zh|ja|ko|de|fr|uk)[.-]).*\.js$/;
 const LAZY_SYNTAX_JS_PATTERN = /^lazy-syntax-(?:language|theme)-.*\.js$/;
+const CONTENT_JS_PATTERN = /^content-(?:docs|guides|blog)-.*\.js$/;
 
 const DEFAULT_BUDGETS = {
   mainJsGzip: 8 * 1024,
@@ -74,6 +75,10 @@ function isLazySyntaxAsset(file) {
   return LAZY_SYNTAX_JS_PATTERN.test(file);
 }
 
+function isContentAsset(file) {
+  return CONTENT_JS_PATTERN.test(file);
+}
+
 async function collectMetrics() {
   const files = await fs.readdir(ASSETS_DIR);
   const jsFiles = files.filter((file) => file.endsWith(".js"));
@@ -100,8 +105,12 @@ async function collectMetrics() {
     .sort((a, b) => b.gzip - a.gzip || a.file.localeCompare(b.file))[0];
   const localizedContentJsSizes = jsSizes.filter((entry) => isLocalizedContentAsset(entry.file));
   const lazySyntaxJsSizes = jsSizes.filter((entry) => isLazySyntaxAsset(entry.file));
+  const contentJsSizes = jsSizes.filter((entry) => isContentAsset(entry.file));
   const budgetedJsSizes = jsSizes.filter(
-    (entry) => !isLocalizedContentAsset(entry.file) && !isLazySyntaxAsset(entry.file),
+    (entry) =>
+      !isLocalizedContentAsset(entry.file) &&
+      !isLazySyntaxAsset(entry.file) &&
+      !isContentAsset(entry.file),
   );
 
   if (!mainJs || !mainCss || !stackBuilderJs) {
@@ -122,6 +131,8 @@ async function collectMetrics() {
   );
   const lazySyntaxJsRaw = lazySyntaxJsSizes.reduce((sum, item) => sum + item.raw, 0);
   const lazySyntaxJsGzip = lazySyntaxJsSizes.reduce((sum, item) => sum + item.gzip, 0);
+  const contentJsRaw = contentJsSizes.reduce((sum, item) => sum + item.raw, 0);
+  const contentJsGzip = contentJsSizes.reduce((sum, item) => sum + item.gzip, 0);
 
   return {
     generatedAt: new Date().toISOString(),
@@ -132,6 +143,7 @@ async function collectMetrics() {
       budgetedJs: budgetedJsSizes.length,
       localizedContentJs: localizedContentJsSizes.length,
       lazySyntaxJs: lazySyntaxJsSizes.length,
+      contentJs: contentJsSizes.length,
       css: cssSizes.length,
     },
     metrics: {
@@ -149,6 +161,8 @@ async function collectMetrics() {
       localizedContentJsGzip,
       lazySyntaxJsRaw,
       lazySyntaxJsGzip,
+      contentJsRaw,
+      contentJsGzip,
     },
     largestJsChunk: largestJs.file,
     trackedAssets: {
@@ -283,6 +297,7 @@ async function checkAgainstBaseline(current) {
     `Tracked assets: main JS \`${current.trackedAssets?.mainJs ?? "unknown"}\`, main CSS \`${current.trackedAssets?.mainCss ?? "unknown"}\`, stack builder JS \`${current.trackedAssets?.stackBuilderJs ?? "unknown"}\``,
     `Localized lazy content JS excluded from total budget: ${current.assetCount.localizedContentJs ?? 0} chunks (${formatBytes(current.metrics.localizedContentJsGzip ?? 0)} gzip)`,
     `On-demand syntax JS excluded from total budget: ${current.assetCount.lazySyntaxJs ?? 0} chunks (${formatBytes(current.metrics.lazySyntaxJsGzip ?? 0)} gzip)`,
+    `English lazy content JS excluded from total budget: ${current.assetCount.contentJs ?? 0} chunks (${formatBytes(current.metrics.contentJsGzip ?? 0)} gzip)`,
     "",
   ];
 
