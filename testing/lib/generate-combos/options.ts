@@ -522,17 +522,18 @@ function makePythonDraft(args: GeneratorArgs): CandidateDraft {
 }
 
 function makeGoDraft(args: GeneratorArgs): CandidateDraft {
-  const common = createCommonOptions("go", args);
+  const database = sampleScalar(["sqlite", "postgres", "mysql", "none"] as const, 0.4, "database");
   const goWebFramework = sampleScalar(GO_WEB_FRAMEWORK_VALUES, 0.18);
   const goOrm = sampleScalar(GO_ORM_VALUES, 0.15);
-  const goSelection = { database: common.database, goOrm, goWebFramework };
+  const goSelection = { database, goOrm, goWebFramework };
   const goMessageQueue = sampleScalar(GO_MESSAGE_QUEUE_VALUES, 0.5);
   const goMigrations = sampleScalar(GO_MIGRATIONS_VALUES, 0.5);
   return {
     ecosystem: "go",
     options: {
-      ...common,
+      ...createCommonOptions("go", args),
       auth: sampleScalar(["go-better-auth", "none"] as const, 0.5),
+      database,
       goWebFramework,
       goOrm,
       goApi: sampleScalar(GO_API_VALUES, 0.35),
