@@ -156,6 +156,11 @@ export default function Footer() {
 
           <LinkColumn title={m.footerProject()} className="col-span-6 sm:col-span-3 lg:col-span-2">
             <li>
+              <Link to="/changelog" className={FOOTER_LINK}>
+                {m.footerChangelog()}
+              </Link>
+            </li>
+            <li>
               <a
                 href="https://github.com/Marve10s/Better-Fullstack"
                 target="_blank"

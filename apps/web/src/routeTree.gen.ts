@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StackShareRouteImport } from './routes/$stackShare'
 import { Route as BenchmarkRouteImport } from './routes/benchmark'
+import { Route as ChangelogRouteImport } from './routes/changelog'
+import { Route as ChangelogDotmdRouteImport } from './routes/changelog[.]md'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DocsDotmdRouteImport } from './routes/docs[.]md'
 import { Route as GuidesDotmdRouteImport } from './routes/guides[.]md'
@@ -56,6 +58,16 @@ const StackShareRoute = StackShareRouteImport.update({
 const BenchmarkRoute = BenchmarkRouteImport.update({
   id: '/benchmark',
   path: '/benchmark',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogDotmdRoute = ChangelogDotmdRouteImport.update({
+  id: '/changelog.md',
+  path: '/changelog.md',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -215,6 +227,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$stackShare': typeof StackShareRoute
   '/benchmark': typeof BenchmarkRoute
+  '/changelog': typeof ChangelogRoute
+  '/changelog.md': typeof ChangelogDotmdRoute
   '/compare': typeof CompareRoute
   '/docs.md': typeof DocsDotmdRoute
   '/guides.md': typeof GuidesDotmdRoute
@@ -250,6 +264,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$stackShare': typeof StackShareRoute
   '/benchmark': typeof BenchmarkRoute
+  '/changelog': typeof ChangelogRoute
+  '/changelog.md': typeof ChangelogDotmdRoute
   '/compare': typeof CompareRoute
   '/docs.md': typeof DocsDotmdRoute
   '/guides.md': typeof GuidesDotmdRoute
@@ -286,6 +302,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$stackShare': typeof StackShareRoute
   '/benchmark': typeof BenchmarkRoute
+  '/changelog': typeof ChangelogRoute
+  '/changelog.md': typeof ChangelogDotmdRoute
   '/compare': typeof CompareRoute
   '/docs.md': typeof DocsDotmdRoute
   '/guides.md': typeof GuidesDotmdRoute
@@ -323,6 +341,8 @@ export interface FileRouteTypes {
     | '/'
     | '/$stackShare'
     | '/benchmark'
+    | '/changelog'
+    | '/changelog.md'
     | '/compare'
     | '/docs.md'
     | '/guides.md'
@@ -358,6 +378,8 @@ export interface FileRouteTypes {
     | '/'
     | '/$stackShare'
     | '/benchmark'
+    | '/changelog'
+    | '/changelog.md'
     | '/compare'
     | '/docs.md'
     | '/guides.md'
@@ -393,6 +415,8 @@ export interface FileRouteTypes {
     | '/'
     | '/$stackShare'
     | '/benchmark'
+    | '/changelog'
+    | '/changelog.md'
     | '/compare'
     | '/docs.md'
     | '/guides.md'
@@ -429,6 +453,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   StackShareRoute: typeof StackShareRoute
   BenchmarkRoute: typeof BenchmarkRoute
+  ChangelogRoute: typeof ChangelogRoute
+  ChangelogDotmdRoute: typeof ChangelogDotmdRoute
   CompareRoute: typeof CompareRoute
   DocsDotmdRoute: typeof DocsDotmdRoute
   GuidesDotmdRoute: typeof GuidesDotmdRoute
@@ -482,6 +508,20 @@ declare module '@tanstack/react-router' {
       path: '/benchmark'
       fullPath: '/benchmark'
       preLoaderRoute: typeof BenchmarkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog.md': {
+      id: '/changelog.md'
+      path: '/changelog.md'
+      fullPath: '/changelog.md'
+      preLoaderRoute: typeof ChangelogDotmdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -701,6 +741,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   StackShareRoute: StackShareRoute,
   BenchmarkRoute: BenchmarkRoute,
+  ChangelogRoute: ChangelogRoute,
+  ChangelogDotmdRoute: ChangelogDotmdRoute,
   CompareRoute: CompareRoute,
   DocsDotmdRoute: DocsDotmdRoute,
   GuidesDotmdRoute: GuidesDotmdRoute,

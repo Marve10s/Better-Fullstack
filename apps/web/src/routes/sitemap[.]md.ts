@@ -8,12 +8,14 @@ export const Route = createFileRoute("/sitemap.md")({
           { getAllPages },
           { getAllGuidePages },
           { getAllBlogPosts },
+          { changelogPage },
           { generateMarkdownSitemap },
           { getPublishedStackPageSummaries },
         ] = await Promise.all([
           import("@/lib/docs/source"),
           import("@/lib/guides/source"),
           import("@/lib/blog/source"),
+          import("@/lib/changelog/source"),
           import("@/lib/content/llms"),
           import("@/lib/stack-pages/source"),
         ]);
@@ -22,6 +24,7 @@ export const Route = createFileRoute("/sitemap.md")({
             docsPages: getAllPages(),
             guidePages: getAllGuidePages(),
             blogPages: getAllBlogPosts(),
+            changelogPages: [changelogPage],
             stackPages: getPublishedStackPageSummaries(),
           }),
           {

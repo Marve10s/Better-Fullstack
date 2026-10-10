@@ -1,0 +1,2603 @@
+---
+title: Changelog
+description: Release notes for every published Better Fullstack version, newest first, with a link to each GitHub release.
+updated: "2026-10-02"
+---
+
+## v2.7.0
+
+Released October 2, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.7.0)
+
+**What's Changed**
+
+* Give docs and guides one shell that matches the redesigned site by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/443
+* Keep agent docs focused on current behavior and unfinished work by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/442
+* chore(deps): update codebase dependencies by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/445
+* chore(deps): Update dependency versions by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/444
+* Add Future Stack: Solid, Effect, and the TanStack libraries in one preset by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/446
+
+**Full Changelog**: https://github.com/Marve10s/Better-Fullstack/compare/v2.6.8...v2.7.0
+
+## v2.6.8
+
+Released September 24, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.6.8)
+
+**What's Changed**
+
+* chore(deps): Update dependency versions by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/430
+* chore(deps): update codebase dependencies by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/431
+* Stop wxt scaffolds hanging and restore the WebContainer proof on main by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/435
+* Give projects a live devtools panel that agents discover, from one operations table by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/436
+* Retry dropped connections in the tech icon validator by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/437
+* Remove the devtools panel and keep the slimmer MCP server by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/438
+* Make the builder one bar and one dock, and fix presets that opened multi mode by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/440
+* chore(deps): Update dependency versions by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/439
+
+**Full Changelog**: https://github.com/Marve10s/Better-Fullstack/compare/v2.6.7...v2.6.8
+
+## v2.6.7
+
+Released September 15, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.6.7)
+
+**What's Changed**
+
+* Hide Java-only integrations from the Kotlin builder surface by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/428
+* Reduce CI time and generation overhead by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/427
+* Re-enable silently skipped docs tests and remove dead code by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/429
+* Protect component styling with shadcn/lint by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/432
+* Replace Convex analytics with PostHog and independent archives by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/433
+* chore(release): 2.6.7 by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/434
+
+**Full Changelog**: https://github.com/Marve10s/Better-Fullstack/compare/v2.6.5...v2.6.7
+
+## v2.6.5
+
+Released September 9, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.6.5)
+
+**What's Changed**
+
+* Make multi-ecosystem setup follow the selected applications by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/422
+
+**Full Changelog**: https://github.com/Marve10s/Better-Fullstack/compare/v2.6.4...v2.6.5
+
+## v2.6.4
+
+Released September 7, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.6.4)
+
+Hotfix release. Publishes `create-better-fullstack`, `create-bfs`, `@better-fullstack/types`, and `@better-fullstack/template-generator` at 2.6.4.
+
+**Fixes for generated projects**
+
+- **Redwood stays on React 18.** The dependency sync had moved the Redwood web template to React 19, which `@redwoodjs/web` 8.9 rejects through its exact `react@18.3.1` peers. Template-specific pins now hold those versions, and the `latest` and `beta` dependency channels leave them alone as well. (#425)
+- **Ash 3.33 projects compile.** Ash 3.33.0 refuses to compile any resource until `config :ash, default_string_length_count` is set. Elixir projects using Ash now generate the installer default. (#425)
+- **Vue apps with Vercel Analytics build under Vite 8.** The `@vercel/analytics/vue` wrapper imports from `vue-router` at module scope, which the rolldown build fails on when the optional peer is absent. The generated component now uses the framework-neutral `inject()`. (#425)
+- **The CLI refreshes the Bun cache after a registry miss** instead of failing on the stale index. (#419)
+
+**Changes since 2.6.3**
+
+- **The first screen proves the stack.** The generated home page leads with the project name and stack, and its main panel is a database-backed task list: adding a task writes a row through the ORM and API layer, and it survives a reload. With Better Auth the panel sits behind the session guard and every procedure is scoped to the signed-in user. Covers Drizzle on SQLite, Postgres, and MySQL with tRPC and TanStack Router; other stacks show an honest fallback panel. (#419)
+- **Generated web apps can expose WebMCP tools** through the new `--web-mcp` option, covered by the builder, history replay, and update paths. (#420)
+- **MCP server isolates startup and enforces response schemas.** (40c2ba0)
+- **Redwood GraphQL codegen dependency aligned** with the rest of the Redwood family. (#420)
+- **Template dependency versions refreshed** for the patch and minor updates that passed the smoke lanes, and the repository's own toolchain updated. (#425, #426)
+
+**Upgrading**
+
+```bash
+bunx create-better-fullstack@latest my-app
+```
+
+Existing projects can pull the template fixes with `bunx create-better-fullstack@latest update`.
+
+**Full Changelog**: https://github.com/Marve10s/Better-Fullstack/compare/v2.6.3...v2.6.4
+
+## v2.6.3
+
+Released August 31, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.6.3)
+
+**What's Changed**
+
+* Publish the GPT-5.6 Luna row and show only suite 3.0 results by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/413
+* Connect every coding agent to Better Fullstack with one install command by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/415
+
+**Full Changelog**: https://github.com/Marve10s/Better-Fullstack/compare/v2.6.2...v2.6.3
+
+## v2.6.2
+
+Released August 27, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.6.2)
+
+**What's Changed**
+
+* Stop offering Kotlin and Swift options that React Native can never use by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/403
+* Cut the docs from 41 pages to 18 and rewrite what is left by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/404
+* Reset ScaffBench to a pass@1 suite that stops flattening the laptop by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/405
+* chore(deps): Update dependency versions by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/408
+* chore(deps): update codebase dependencies by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/409
+* Rebuild the docs as one short path from install to AI agents by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/406
+* Make Better Fullstack a reliable project lifecycle by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/407
+* chore(release): 2.6.2 by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/410
+* chore(release): 2.6.2 by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/412
+* Replace em dashes with hyphens and keep new ones out by @Marve10s in https://github.com/Marve10s/Better-Fullstack/pull/411
+
+**Full Changelog**: https://github.com/Marve10s/Better-Fullstack/compare/v2.6.1...v2.6.2
+
+## v2.6.1
+
+Released August 19, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.6.1)
+
+**🚀 Features**
+
+- **telemetry**: Report why a setup step failed, not just that it did - by @Marve10s [(f809f)](https://github.com/Marve10s/Better-Fullstack/commit/f809f03f)
+- **web**: Announce 2.6.0 in a changelog card that opens on hover - by @Marve10s [(40349)](https://github.com/Marve10s/Better-Fullstack/commit/40349776)
+
+**🐞 Bug Fixes**
+
+- **cli**:
+  - Satisfy oxlint promise rules in the telemetry exit path - by @Marve10s [(17cae)](https://github.com/Marve10s/Better-Fullstack/commit/17cae157)
+  - Stop routing fatal exits through the error channel - by @Marve10s [(bd006)](https://github.com/Marve10s/Better-Fullstack/commit/bd006921)
+- **telemetry**:
+  - Restore project-creation telemetry and unblock backend deploys - by @Marve10s [(faf06)](https://github.com/Marve10s/Better-Fullstack/commit/faf064f7)
+  - Address Codex review on the backfill rebuild - by @Marve10s [(8d244)](https://github.com/Marve10s/Better-Fullstack/commit/8d2444f8)
+  - Tighten the backfill against large payloads and concurrent ingest - by @Marve10s [(09d9a)](https://github.com/Marve10s/Better-Fullstack/commit/09d9a720)
+- **templates**:
+  - Make Vite+ lint, format, and check work in generated projects - by @Marve10s [(5f52c)](https://github.com/Marve10s/Better-Fullstack/commit/5f52c1b0)
+  - Cover scriptless workspaces and more build output in the Vite+ gate - by @Marve10s [(f4c2d)](https://github.com/Marve10s/Better-Fullstack/commit/f4c2d9d5)
+- **web**:
+  - Let the changelog title wrap and the summary actually clamp - by @Marve10s [(7c132)](https://github.com/Marve10s/Better-Fullstack/commit/7c1324e9)
+  - Scope the single-app docs contract to the npm README - by @Marve10s [(46605)](https://github.com/Marve10s/Better-Fullstack/commit/46605db3)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.6.0...v2.6.1)**
+
+## v2.6.0
+
+Released August 18, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.6.0)
+
+Better Fullstack has always been good at the first minute of a project. 2.6.0 is about every minute after it.
+
+Until now the CLI could scaffold a stack and then had nothing more to say. This release adds a full lifecycle around an existing project - inspect it, plan a change, apply it, undo it - and it does that transactionally, so a half-applied change is no longer something you resolve by hand.
+
+**Change a project after you've created it**
+
+Two new commands, and two existing ones rebuilt on the same contract:
+
+- **`status`** *(new)* - what your project is actually made of, read from its manifest rather than guessed.
+- **`remove`** *(new)* - takes a stack part back out, behind a plan-then-apply gate.
+- **`update`** - now plans a stack change, shows the diff, and applies it only against a review token from that exact plan.
+- **`doctor`** - checks the project against the current templates and reports drift.
+
+The transaction layer underneath them is new in this release, and every mutating path runs through it. If an apply fails partway, the project is restored rather than left in a mixed state, and `bfs_recover_project_transaction` can recover a run that was interrupted. Plans and applies are bound together by a token, so an apply cannot silently act on a stale plan - the thing you reviewed is the thing that runs.
+
+The MCP server exposes the same lifecycle: `bfs_plan_part_removal`, `bfs_apply_part_removal`, and `bfs_recover_project_transaction` join the existing planning tools, so an agent gets the identical review-then-apply contract a human does.
+
+**One command reaches every language**
+
+The old hero command pinned `--backend none --frontend none --ecosystem react-native` to scaffold a mobile app. Beyond reading as a double negative, it quietly locked you out of Kotlin, Swift, and Flutter, which only existed inside the multi-ecosystem composer.
+
+`--shape fullstack|frontend|backend|mobile` replaces that. You name what you're building, the CLI asks which language or platform fits, and it runs only the prompts that shape needs. Mobile routes React Native through the existing flow and Kotlin, Swift, and Flutter through stack-graph parts. .NET frontends now build through the stack graph too, instead of a special case.
+
+**New stack options**
+
+- **Vite+ workspace tooling** - the Vite+ toolchain as a first-class workspace option, with compatibility gates so it cannot be combined into a broken workspace.
+- **Bot protection** - Vercel BotID and Cloudflare Turnstile, gated to the frontends and backends that can actually host them.
+- **Vercel Analytics** - with a warning when the chosen frontend has no template for the provider, rather than generating something that does not run.
+
+**Web**
+
+The hero is now full-viewport and centres on a single copyable command, with a command bar for MCP clients beside it. The stack builder is grouped into sections with compact subsections and renders every category as option cards, which makes a 973-option surface navigable instead of a wall of pills. Returning visitors get a changelog widget. Five documentation pages that crashed are fixed, and the duplicates around them are gone.
+
+**Fixes worth calling out**
+
+Roughly a third of this release is hardening on the lifecycle work above - ownership and recovery, mutation boundaries, provenance-safe removal reviews, executable removal commands. Beyond that: `paraglide-js` is held at 2.23.2 because lix 0.12's native addon needs glibc 2.38+ and breaks Vercel's Amazon Linux image; the Storybook family is held at 8.x; Strapi client calls no longer pass Next fetch options they never supported; and the AdonisJS SigNoz tracing import gets the explicit extension `nodenext` requires.
+
+---
+
+Full commit log
+
+**🚀 Features**
+
+- Complete trusted project lifecycle - by @Marve10s [(9e6a9)](https://github.com/Marve10s/Better-Fullstack/commit/9e6a9a3e)
+- Add Vite+ workspace tooling - by @Marve10s [(5299e)](https://github.com/Marve10s/Better-Fullstack/commit/5299ed9c)
+- Add bot protection providers - by @Marve10s [(4a451)](https://github.com/Marve10s/Better-Fullstack/commit/4a451d28)
+- Add Vercel Analytics integration - by @Marve10s [(8a5b8)](https://github.com/Marve10s/Better-Fullstack/commit/8a5b89bc)
+- **cli**:
+  - Reach every frontend, backend, and mobile language from one command - by @Marve10s [(d5719)](https://github.com/Marve10s/Better-Fullstack/commit/d57197e9)
+  - Build the .NET frontend shape through the stack graph - by @Marve10s [(da164)](https://github.com/Marve10s/Better-Fullstack/commit/da164ff6)
+- **web**:
+  - Add X social proof to hero - by @Marve10s [(04565)](https://github.com/Marve10s/Better-Fullstack/commit/04565278)
+  - Turn the hero into one copyable command - by @Marve10s [(dad02)](https://github.com/Marve10s/Better-Fullstack/commit/dad029fe)
+  - Full-viewport hero, MCP client command bar, cleaner docs header - by @Marve10s [(db2f1)](https://github.com/Marve10s/Better-Fullstack/commit/db2f192e)
+  - Show returning visitors a changelog widget - by @Marve10s [(758a4)](https://github.com/Marve10s/Better-Fullstack/commit/758a4aa3)
+  - Group stack builder into sections with compact subsections - by @Marve10s [(22ed4)](https://github.com/Marve10s/Better-Fullstack/commit/22ed4cc5)
+
+**🐞 Bug Fixes**
+
+- Address lifecycle review findings - by @Marve10s [(4f801)](https://github.com/Marve10s/Better-Fullstack/commit/4f80124e)
+- Close executable docs review gaps - by @Marve10s [(8f852)](https://github.com/Marve10s/Better-Fullstack/commit/8f852b2d)
+- Close trusted lifecycle review gaps - by @Marve10s [(fd214)](https://github.com/Marve10s/Better-Fullstack/commit/fd214578)
+- Validate active public documentation - by @Marve10s [(04f2c)](https://github.com/Marve10s/Better-Fullstack/commit/04f2ca03)
+- Hash browser lifecycle operation ids - by @Marve10s [(60285)](https://github.com/Marve10s/Better-Fullstack/commit/60285db2)
+- Preserve lifecycle ownership and recovery - by @Marve10s [(86de3)](https://github.com/Marve10s/Better-Fullstack/commit/86de32ad)
+- Close lifecycle mutation gaps - by @Marve10s [(d7ac3)](https://github.com/Marve10s/Better-Fullstack/commit/d7ac37db)
+- Exclude recovery snapshots from dependency updates - by @Marve10s [(0b51b)](https://github.com/Marve10s/Better-Fullstack/commit/0b51b5ad)
+- Make removal reviews provenance-safe - by @Marve10s [(769de)](https://github.com/Marve10s/Better-Fullstack/commit/769de0b8)
+- Close lifecycle transaction gaps - by @Marve10s [(6728a)](https://github.com/Marve10s/Better-Fullstack/commit/6728a09e)
+- Close lifecycle review gaps - by @Marve10s [(e7a02)](https://github.com/Marve10s/Better-Fullstack/commit/e7a02542)
+- Preserve transactional addon updates - by @Marve10s [(583fd)](https://github.com/Marve10s/Better-Fullstack/commit/583fd73c)
+- Strengthen lifecycle qualification - by @Marve10s [(2e050)](https://github.com/Marve10s/Better-Fullstack/commit/2e05003a)
+- Bind lifecycle removal safety - by @Marve10s [(5902d)](https://github.com/Marve10s/Better-Fullstack/commit/5902ddea)
+- Emit executable removal commands - by @Marve10s [(1d843)](https://github.com/Marve10s/Better-Fullstack/commit/1d8437a8)
+- Close removal lifecycle gaps - by @Marve10s [(1d914)](https://github.com/Marve10s/Better-Fullstack/commit/1d914c76)
+- Harden removal edge cases - by @Marve10s [(107ae)](https://github.com/Marve10s/Better-Fullstack/commit/107aec9d)
+- Harden lifecycle apply boundaries - by @Marve10s [(1bf2f)](https://github.com/Marve10s/Better-Fullstack/commit/1bf2f6b0)
+- Bind reviewed dependency rewrites - by @Marve10s [(c73d2)](https://github.com/Marve10s/Better-Fullstack/commit/c73d28e2)
+- Complete lifecycle review safety - by @Marve10s [(318b3)](https://github.com/Marve10s/Better-Fullstack/commit/318b320c)
+- Enforce Vite+ workspace compatibility - by @Marve10s [(7f060)](https://github.com/Marve10s/Better-Fullstack/commit/7f060341)
+- Keep tooling overlays on the legacy pipeline and restore lost gates - by @Marve10s [(29c14)](https://github.com/Marve10s/Better-Fullstack/commit/29c14a0e)
+- Close bot protection integration gaps - by @Marve10s [(2c6bb)](https://github.com/Marve10s/Better-Fullstack/commit/2c6bb4f0)
+- Let CLI defaults apply before tooling overlays expand into addons - by @Marve10s [(b6459)](https://github.com/Marve10s/Better-Fullstack/commit/b6459e65)
+- Treat absent bot protection as none in compatibility auto-adjust - by @Marve10s [(a0824)](https://github.com/Marve10s/Better-Fullstack/commit/a0824ded)
+- Hide unsupported Vercel Analytics choices and detect Next in mixed stacks - by @Marve10s [(bdbe7)](https://github.com/Marve10s/Better-Fullstack/commit/bdbe714c)
+- Keep tooling overlays flat and use the documented Vite+ overrides - by @Marve10s [(6d36e)](https://github.com/Marve10s/Better-Fullstack/commit/6d36e1e9)
+- Require the self-hosted Next.js backend for Vercel BotID - by @Marve10s [(e3da3)](https://github.com/Marve10s/Better-Fullstack/commit/e3da3a0d)
+- Keep CLI overlay expansion on the graph-derived parts - by @Marve10s [(feb95)](https://github.com/Marve10s/Better-Fullstack/commit/feb95d4b)
+- Keep both bot protection and analytics README sections after the merge - by @Marve10s [(68210)](https://github.com/Marve10s/Better-Fullstack/commit/68210216)
+- Validate tooling overlay ecosystems and Vite+ conflicts on the flat path - by @Marve10s [(bc0d3)](https://github.com/Marve10s/Better-Fullstack/commit/bc0d3412)
+- Randomize tooling profiles, keep selected test runner, init git before install - by @Marve10s [(2e260)](https://github.com/Marve10s/Better-Fullstack/commit/2e260b45)
+- Allow switching off Vite+ and align the generated Vitest family - by @Marve10s [(6a9ea)](https://github.com/Marve10s/Better-Fullstack/commit/6a9ead17)
+- Skip the initial commit when Git is unavailable - by @Marve10s [(8db4e)](https://github.com/Marve10s/Better-Fullstack/commit/8db4ee0a)
+- Strip owner names from MCP part specs before telemetry - by @Marve10s [(7b3be)](https://github.com/Marve10s/Better-Fullstack/commit/7b3be20b)
+- Mount Nuxt Vercel Analytics from the runtime entry and drop solo graph parts - by @Marve10s [(7433f)](https://github.com/Marve10s/Better-Fullstack/commit/7433f70d)
+- Journal transaction writes and close the remaining review findings - by @Marve10s [(fdb0c)](https://github.com/Marve10s/Better-Fullstack/commit/fdb0c2d1)
+- Upload only registered stack selections in part telemetry - by @Marve10s [(50ef2)](https://github.com/Marve10s/Better-Fullstack/commit/50ef28dd)
+- Run workspace vite scripts through vp under the Vite+ toolchain - by @Marve10s [(dbfc9)](https://github.com/Marve10s/Better-Fullstack/commit/dbfc90ab)
+- Stop shapes losing to conflicting input, restore dropped MCP clients - by @Marve10s [(fe1b1)](https://github.com/Marve10s/Better-Fullstack/commit/fe1b1271)
+- Hold generated projects on safe paraglide, skip native install everywhere - by @Marve10s [(58bae)](https://github.com/Marve10s/Better-Fullstack/commit/58bae0ef)
+- Reject unsupported stacks at validation, not mid-generation - by @Marve10s [(b2da4)](https://github.com/Marve10s/Better-Fullstack/commit/b2da4e53)
+- Keep standalone addons in the graph and in the reproduced command - by @Marve10s [(59ba4)](https://github.com/Marve10s/Better-Fullstack/commit/59ba42aa)
+- Report what the tools actually do - by @Marve10s [(5a978)](https://github.com/Marve10s/Better-Fullstack/commit/5a97827a)
+- Unblock Release Guard and reject two more contradictory shapes - by @Marve10s [(4cc9f)](https://github.com/Marve10s/Better-Fullstack/commit/4cc9fef0)
+- **ci**:
+  - Address deps-verification review findings - by @Marve10s [(9e455)](https://github.com/Marve10s/Better-Fullstack/commit/9e455312)
+  - Make derived smoke flags target the changed option - by @Marve10s [(c2e36)](https://github.com/Marve10s/Better-Fullstack/commit/c2e36212)
+- **cli**:
+  - Make a shape fail loudly instead of losing quietly - by @Marve10s [(9a446)](https://github.com/Marve10s/Better-Fullstack/commit/9a446576)
+  - Validate a shape before touching the filesystem - by @Marve10s [(e49dc)](https://github.com/Marve10s/Better-Fullstack/commit/e49dc980)
+  - Only offer shapes the generator can actually deliver - by @Marve10s [(a9aef)](https://github.com/Marve10s/Better-Fullstack/commit/a9aef240)
+  - Keep the shape guards honest in both directions - by @Marve10s [(1b896)](https://github.com/Marve10s/Better-Fullstack/commit/1b896570)
+  - Apply the mobile and required-half guards on every path - by @Marve10s [(6bb6f)](https://github.com/Marve10s/Better-Fullstack/commit/6bb6f45a)
+  - Scope the required-half guard to the chosen ecosystem - by @Marve10s [(e2a50)](https://github.com/Marve10s/Better-Fullstack/commit/e2a50116)
+  - Reject mobile selectors on shapes that build no mobile app - by @Marve10s [(383bd)](https://github.com/Marve10s/Better-Fullstack/commit/383bd2a0)
+  - Journal transaction writes before mutating bytes - by @Marve10s [(f63e5)](https://github.com/Marve10s/Better-Fullstack/commit/f63e5115)
+  - Stop offering capabilities that add refuses - by @Marve10s [(e122d)](https://github.com/Marve10s/Better-Fullstack/commit/e122df50)
+  - Narrow the unverified journal window and guard the .NET half - by @Marve10s [(c6037)](https://github.com/Marve10s/Better-Fullstack/commit/c6037dfd)
+- **deps**:
+  - Hold paraglide-js at 2.23.2 - lix 0.12 native addon needs glibc 2.38+, breaks Vercel (AL2023) - by @Marve10s [(27915)](https://github.com/Marve10s/Better-Fullstack/commit/27915297)
+  - Align test pins and hold storybook family at 8.x - by @Marve10s [(f6004)](https://github.com/Marve10s/Better-Fullstack/commit/f600424c)
+- **signoz**:
+  - Use an explicit extension for the AdonisJS tracing import - by @Marve10s [(dee23)](https://github.com/Marve10s/Better-Fullstack/commit/dee23bec)
+- **strapi**:
+  - Drop unsupported Next fetch options from the Strapi client calls - by @Marve10s [(c00a7)](https://github.com/Marve10s/Better-Fullstack/commit/c00a7d66)
+- **templates**:
+  - Add .js extension to signoz tracing import in AdonisJS server entry - by @Marve10s [(0731d)](https://github.com/Marve10s/Better-Fullstack/commit/0731de64)
+- **test**:
+  - Wait for the whole process group after SIGKILL - by @Marve10s [(4c4ed)](https://github.com/Marve10s/Better-Fullstack/commit/4c4ed399)
+- **web**:
+  - Warn when the analytics provider lacks a template for the chosen frontend - by @Marve10s [(9183c)](https://github.com/Marve10s/Better-Fullstack/commit/9183c74a)
+  - Restore five crashed docs pages and cut duplicate docs - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/393 [(b024c)](https://github.com/Marve10s/Better-Fullstack/commit/b024c770)
+  - Make the changelog modal scroll and drop the card icon - by @Marve10s [(5e4ef)](https://github.com/Marve10s/Better-Fullstack/commit/5e4efc3b)
+  - Render every builder category as option cards, drop pill rows - by @Marve10s [(402d9)](https://github.com/Marve10s/Better-Fullstack/commit/402d9da6)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.5.1...v2.6.0)**
+
+## v2.5.1
+
+Released August 12, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.5.1)
+
+**🚀 Features**
+
+- Make GitHub Sponsors the primary funding option - by @Marve10s [(9da24)](https://github.com/Marve10s/Better-Fullstack/commit/9da246e2)
+- Add telemetry decision room - by @Marve10s [(53186)](https://github.com/Marve10s/Better-Fullstack/commit/53186b10)
+- Adopt MCP 2026 and portable agent plugins - by @Marve10s [(427b2)](https://github.com/Marve10s/Better-Fullstack/commit/427b23c9)
+- Prove lifecycle surfaces - by @Marve10s [(32bab)](https://github.com/Marve10s/Better-Fullstack/commit/32babe0f)
+
+**🐞 Bug Fixes**
+
+- Pin TanStack router template dependencies - by @Marve10s [(e6f24)](https://github.com/Marve10s/Better-Fullstack/commit/e6f24a4a)
+- Keep latest dependency channel installable - by @Marve10s [(0ff2d)](https://github.com/Marve10s/Better-Fullstack/commit/0ff2d935)
+- Address telemetry and replay review feedback - by @Marve10s [(172de)](https://github.com/Marve10s/Better-Fullstack/commit/172dea85)
+- Protect telemetry decision room - by @Marve10s [(d0e8e)](https://github.com/Marve10s/Better-Fullstack/commit/d0e8e560)
+- Build workspace packages in proof CI - by @Marve10s [(01fd7)](https://github.com/Marve10s/Better-Fullstack/commit/01fd759e)
+- Install Go modules before proof build - by @Marve10s [(ec3d7)](https://github.com/Marve10s/Better-Fullstack/commit/ec3d7c02)
+- Dismiss share prompt in WebContainer proof - by @Marve10s [(ef900)](https://github.com/Marve10s/Better-Fullstack/commit/ef900b37)
+- Address wave 0 review findings - by @Marve10s [(e65bf)](https://github.com/Marve10s/Better-Fullstack/commit/e65bf8ad)
+- Address wave 2 review findings - by @Marve10s [(1992f)](https://github.com/Marve10s/Better-Fullstack/commit/1992f648)
+- Orpc lockstep bump and dependency-checker robustness - by @Marve10s [(e69c5)](https://github.com/Marve10s/Better-Fullstack/commit/e69c5f04)
+- Address development review findings - by @Marve10s [(3adfc)](https://github.com/Marve10s/Better-Fullstack/commit/3adfc5f5)
+- Bind verification summary to deployed revision - by @Marve10s [(f2ada)](https://github.com/Marve10s/Better-Fullstack/commit/f2ada13c)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.5.0...v2.5.1)**
+
+## v2.5.0
+
+Released August 5, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.5.0)
+
+**🚀 Features**
+
+- Expand multi-ecosystem project creation - by @Marve10s [(2fa28)](https://github.com/Marve10s/Better-Fullstack/commit/2fa28d7f)
+- **web**:
+  - Retire launch radar surfaces from chrome - by @Marve10s [(fa962)](https://github.com/Marve10s/Better-Fullstack/commit/fa96246b)
+  - Remove new-option badges and filter from the builder - by @Marve10s [(76588)](https://github.com/Marve10s/Better-Fullstack/commit/765887b3)
+
+**🐞 Bug Fixes**
+
+- Repair expanded stack CI regressions - by @Marve10s [(fcf3c)](https://github.com/Marve10s/Better-Fullstack/commit/fcf3c678)
+- Restore CLI graph update parity - by @Marve10s [(b6498)](https://github.com/Marve10s/Better-Fullstack/commit/b6498b08)
+- **cli**: Resolve prompts to defaults in non-interactive environments - by @Marve10s [(086b9)](https://github.com/Marve10s/Better-Fullstack/commit/086b923f)
+- **release**: Pass integrations and ecommerce flags in published smoke - by @Marve10s [(2ef3d)](https://github.com/Marve10s/Better-Fullstack/commit/2ef3d562)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.4.0...v2.5.0)**
+
+## v2.4.0
+
+Released August 4, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.4.0)
+
+**🚀 Features**
+
+- Add Nango integrations support - by @Marve10s [(d333d)](https://github.com/Marve10s/Better-Fullstack/commit/d333de20)
+- Add MedusaJS e-commerce support - by @Marve10s [(9c50e)](https://github.com/Marve10s/Better-Fullstack/commit/9c50eb2c)
+- Add Kong Gateway addon - by @Marve10s [(f30ec)](https://github.com/Marve10s/Better-Fullstack/commit/f30ec1f6)
+- Add Xendit, SigNoz, Knip, and Gitleaks - by @Marve10s [(b646c)](https://github.com/Marve10s/Better-Fullstack/commit/b646c4a2)
+- **web**:
+  - Expand organic search content - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/353 [(e3f48)](https://github.com/Marve10s/Better-Fullstack/commit/e3f4826c)
+  - Capture builder failures - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/352 [(33f6e)](https://github.com/Marve10s/Better-Fullstack/commit/33f6e034)
+  - Spider-Man Brand New Day easter eggs - by @Marve10s [(d182c)](https://github.com/Marve10s/Better-Fullstack/commit/d182c4c8)
+
+**🐞 Bug Fixes**
+
+- Preserve upstream MIT attribution - by @Marve10s [(6a5fd)](https://github.com/Marve10s/Better-Fullstack/commit/6a5fd76e)
+- Address tool integration review feedback - by @Marve10s [(b807a)](https://github.com/Marve10s/Better-Fullstack/commit/b807a3a7)
+- **auth**:
+  - Include vinext in web better-auth dependency gate - by @Marve10s [(94700)](https://github.com/Marve10s/Better-Fullstack/commit/94700713)
+- **containers**:
+  - Address Codex review findings on Development promotion - by @Marve10s [(0537e)](https://github.com/Marve10s/Better-Fullstack/commit/0537e003)
+- **deps**:
+  - Restore published template versions - by @Marve10s [(d9412)](https://github.com/Marve10s/Better-Fullstack/commit/d94121c2)
+  - Restore Elixir telemetry compatibility - by @Marve10s [(bdd09)](https://github.com/Marve10s/Better-Fullstack/commit/bdd09cd9)
+- **ecommerce**:
+  - Normalize unsupported update paths - by @Marve10s [(3494c)](https://github.com/Marve10s/Better-Fullstack/commit/3494c128)
+- **elixir**:
+  - Keep stream data available to ash - by @Marve10s [(906e4)](https://github.com/Marve10s/Better-Fullstack/commit/906e4913)
+- **elysia**:
+  - Drop unused app binding outside signoz tracing path - by @Marve10s [(ac143)](https://github.com/Marve10s/Better-Fullstack/commit/ac143e2c)
+- **go**:
+  - Tolerate gRPC ErrServerStopped during shutdown - by @Marve10s [(9450f)](https://github.com/Marve10s/Better-Fullstack/commit/9450fa1c)
+- **integrations**:
+  - Cover Cloudflare and stack updates - by @Marve10s [(7f86d)](https://github.com/Marve10s/Better-Fullstack/commit/7f86de65)
+  - Complete API and shutdown handling - by @Marve10s [(3abda)](https://github.com/Marve10s/Better-Fullstack/commit/3abdac88)
+  - Close compatibility edge cases - by @Marve10s [(f8c08)](https://github.com/Marve10s/Better-Fullstack/commit/f8c088f9)
+- **kong**:
+  - Close cross-ecosystem routing gaps - by @Marve10s [(74b07)](https://github.com/Marve10s/Better-Fullstack/commit/74b072bc)
+  - Address final integration review - by @Marve10s [(2c794)](https://github.com/Marve10s/Better-Fullstack/commit/2c794540)
+  - Secure gateway-only upstreams - by @Marve10s [(b31a7)](https://github.com/Marve10s/Better-Fullstack/commit/b31a7dae)
+  - Close infrastructure compatibility gaps - by @Marve10s [(e5880)](https://github.com/Marve10s/Better-Fullstack/commit/e588094c)
+  - Resolve container and graph review gaps - by @Marve10s [(add56)](https://github.com/Marve10s/Better-Fullstack/commit/add567d0)
+  - Preserve graph and runtime routing - by @Marve10s [(02bb8)](https://github.com/Marve10s/Better-Fullstack/commit/02bb80e3)
+  - Harden container generation - by @Marve10s [(9baed)](https://github.com/Marve10s/Better-Fullstack/commit/9baed093)
+  - Cover remaining container layouts - by @Marve10s [(653bd)](https://github.com/Marve10s/Better-Fullstack/commit/653bd21a)
+  - Validate and harden gateway containers - by @Marve10s [(70425)](https://github.com/Marve10s/Better-Fullstack/commit/70425e86)
+  - Validate effective graph addons - by @Marve10s [(080ca)](https://github.com/Marve10s/Better-Fullstack/commit/080ca820)
+  - Align builder container constraints - by @Marve10s [(d18cb)](https://github.com/Marve10s/Better-Fullstack/commit/d18cb081)
+  - Align Next standalone output - by @Marve10s [(8c106)](https://github.com/Marve10s/Better-Fullstack/commit/8c10647a)
+  - Normalize container workspace shape - by @Marve10s [(da169)](https://github.com/Marve10s/Better-Fullstack/commit/da169bbf)
+  - Cover container edge cases - by @Marve10s [(db3ef)](https://github.com/Marve10s/Better-Fullstack/commit/db3ef1cd)
+- **lefthook**:
+  - Refresh linter jobs on addon updates - by @Marve10s [(fd22c)](https://github.com/Marve10s/Better-Fullstack/commit/fd22cd08)
+  - Execute npm linter binaries - by @Marve10s [(773bd)](https://github.com/Marve10s/Better-Fullstack/commit/773bd51e)
+- **medusa**:
+  - Register dark-mode icon - by @Marve10s [(d91c6)](https://github.com/Marve10s/Better-Fullstack/commit/d91c699b)
+  - Support NodeNext SDK imports - by @Marve10s [(b574b)](https://github.com/Marve10s/Better-Fullstack/commit/b574bbd1)
+- **nango**:
+  - Guard Cloudflare self generation - by @Marve10s [(06acd)](https://github.com/Marve10s/Better-Fullstack/commit/06acd6ea)
+  - Close MCP and builder review gaps - by @Marve10s [(b4983)](https://github.com/Marve10s/Better-Fullstack/commit/b4983e92)
+  - Enforce generator compatibility at inputs - by @Marve10s [(ec271)](https://github.com/Marve10s/Better-Fullstack/commit/ec271027)
+  - Enforce MCP backend ownership - by @Marve10s [(ec9a1)](https://github.com/Marve10s/Better-Fullstack/commit/ec9a1665)
+  - Validate virtual generation requests - by @Marve10s [(bcd04)](https://github.com/Marve10s/Better-Fullstack/commit/bcd045f5)
+  - Validate public create requests - by @Marve10s [(3fda6)](https://github.com/Marve10s/Better-Fullstack/commit/3fda6dcd)
+- **opentui**:
+  - Tolerate dependency declaration errors - by @Marve10s [(6304b)](https://github.com/Marve10s/Better-Fullstack/commit/6304b337)
+- **payments**:
+  - Type Lemon Squeezy success search - by @Marve10s [(7e094)](https://github.com/Marve10s/Better-Fullstack/commit/7e094cb9)
+- **signoz**:
+  - Cover edge and grpc runtimes - by @Marve10s [(f2360)](https://github.com/Marve10s/Better-Fullstack/commit/f2360bfd)
+  - Coordinate grpc shutdown - by @Marve10s [(183ce)](https://github.com/Marve10s/Better-Fullstack/commit/183cec97)
+  - Finish Nitro spans on response - by @Marve10s [(0c7ae)](https://github.com/Marve10s/Better-Fullstack/commit/0c7ae192)
+  - Mark aborted responses - by @Marve10s [(5ca69)](https://github.com/Marve10s/Better-Fullstack/commit/5ca69be6)
+  - Complete request tracing coverage - by @Marve10s [(dd5b5)](https://github.com/Marve10s/Better-Fullstack/commit/dd5b5d95)
+  - Mark cancelled streams as errors - by @Marve10s [(62a60)](https://github.com/Marve10s/Better-Fullstack/commit/62a60762)
+- **smoke**:
+  - Cover ecommerce in generated commands - by @Marve10s [(35359)](https://github.com/Marve10s/Better-Fullstack/commit/35359206)
+- **tooling**:
+  - Close SigNoz and Gitleaks edge cases - by @Marve10s [(fa5d4)](https://github.com/Marve10s/Better-Fullstack/commit/fa5d4bea)
+  - Close signal and native Knip gaps - by @Marve10s [(8137f)](https://github.com/Marve10s/Better-Fullstack/commit/8137fef2)
+  - Close integration review gaps - by @Marve10s [(ff331)](https://github.com/Marve10s/Better-Fullstack/commit/ff33178d)
+  - Repair hooks and bound fiber shutdown - by @Marve10s [(d5d09)](https://github.com/Marve10s/Better-Fullstack/commit/d5d09723)
+  - Close final review edge cases - by @Marve10s [(1f971)](https://github.com/Marve10s/Better-Fullstack/commit/1f97187c)
+  - Preserve hook and trace context - by @Marve10s [(af726)](https://github.com/Marve10s/Better-Fullstack/commit/af726c2c)
+- **tools**:
+  - Close integration compatibility gaps - by @Marve10s [(05e32)](https://github.com/Marve10s/Better-Fullstack/commit/05e326ed)
+- **types**:
+  - Default integrations for existing configs - by @Marve10s [(56f63)](https://github.com/Marve10s/Better-Fullstack/commit/56f63480)
+  - Default ecommerce for existing configs - by @Marve10s [(2fdfa)](https://github.com/Marve10s/Better-Fullstack/commit/2fdfa25a)
+  - Normalize omitted integrations compatibility - by @Marve10s [(dc526)](https://github.com/Marve10s/Better-Fullstack/commit/dc5269a4)
+- **validation**:
+  - Address second-round Codex findings - by @Marve10s [(0ed42)](https://github.com/Marve10s/Better-Fullstack/commit/0ed42cf8)
+- **web**:
+  - Address PR review feedback - by @Marve10s [(6fa3c)](https://github.com/Marve10s/Better-Fullstack/commit/6fa3c4eb)
+  - Load analytics on demand so dev cache churn can't block the builder - by @Marve10s [(9f304)](https://github.com/Marve10s/Better-Fullstack/commit/9f304946)
+  - Remove Live Run from homepage hero - by @Marve10s [(50006)](https://github.com/Marve10s/Better-Fullstack/commit/500060a3)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.3.1...v2.4.0)**
+
+## v2.3.1
+
+Released July 29, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.3.1)
+
+**🚀 Features**
+
+- Begin Python ecosystem library expansion - by @Marve10s [(3afd3)](https://github.com/Marve10s/Better-Fullstack/commit/3afd33f3)
+- **ecosystems**:
+  - Expand .NET and React Native libraries - by @Marve10s [(efb4b)](https://github.com/Marve10s/Better-Fullstack/commit/efb4b55f)
+- **java**:
+  - Add 20 Spring Boot libraries - by @Marve10s [(562f7)](https://github.com/Marve10s/Better-Fullstack/commit/562f70be)
+- **python**:
+  - Complete 20-library expansion - by @Marve10s [(5ee84)](https://github.com/Marve10s/Better-Fullstack/commit/5ee848b9)
+- **scaffbench**:
+  - Add GPT-5.6 Terra max-effort row (3/13, index 52) - by @Marve10s [(f83f9)](https://github.com/Marve10s/Better-Fullstack/commit/f83f9314)
+  - Publish GPT-5.6 Terra/Sol high MCP-lane results - by @Marve10s [(e3384)](https://github.com/Marve10s/Better-Fullstack/commit/e3384e00)
+  - Methodology card above the board + explicit self-verify permission in prompts - by @Marve10s [(3fe4f)](https://github.com/Marve10s/Better-Fullstack/commit/3fe4fc3a)
+  - Harness hardening 2.2.0 - all four batches - by @Marve10s [(a7244)](https://github.com/Marve10s/Better-Fullstack/commit/a7244069)
+  - Code-volume metric (LoC) - measured, backfilled, displayed - by @Marve10s [(d10ff)](https://github.com/Marve10s/Better-Fullstack/commit/d10ff77e)
+  - Pi adapter + openai/kilocode routing - Luna runs in 4 harnesses - by @Marve10s [(da590)](https://github.com/Marve10s/Better-Fullstack/commit/da590b4b)
+  - Publish Gemini 3.6 Flash row on the 2.2 board - by @Marve10s [(af5a5)](https://github.com/Marve10s/Better-Fullstack/commit/af5a57cb)
+  - Single-trial rows rank; Gemini 3.6 Flash row is ranked - by @Marve10s [(429a0)](https://github.com/Marve10s/Better-Fullstack/commit/429a0180)
+- **web**:
+  - Add per-competitor comparison pages + Better-T-Stack column - by @Marve10s [(39a69)](https://github.com/Marve10s/Better-Fullstack/commit/39a691fd)
+  - 15 programmatic stack-combination SEO pages at /stack/\<slug> - by @Marve10s [(e23cc)](https://github.com/Marve10s/Better-Fullstack/commit/e23cc93c)
+  - Explain surprising ScaffBench rows with hover notes - by @Marve10s [(14f1d)](https://github.com/Marve10s/Better-Fullstack/commit/14f1dc75)
+  - Tie-band ranks + historical badges on the ScaffBench board - by @Marve10s [(aa44d)](https://github.com/Marve10s/Better-Fullstack/commit/aa44d8df)
+  - Single Full-tier Pass column + review fixes (repeat-aware, Wilson tie-bands) - by @Marve10s [(f8569)](https://github.com/Marve10s/Better-Fullstack/commit/f85695f6)
+  - ScaffBench 2.2 - new board version, rewritten blog, brutalist hero - by @Marve10s [(0d9d8)](https://github.com/Marve10s/Better-Fullstack/commit/0d9d808a)
+  - Launch-radar full refresh, ScaffBench section cleanup, Block-S mark - by @Marve10s [(23a20)](https://github.com/Marve10s/Better-Fullstack/commit/23a206fd)
+  - Cross-harness Luna rows - harness icons in table, harness+model in graph - by @Marve10s [(f3734)](https://github.com/Marve10s/Better-Fullstack/commit/f3734e37)
+  - Edit & Run overhaul, launch-radar modal redesign, replace lucide-react with react-icons - by @Marve10s [(11f3c)](https://github.com/Marve10s/Better-Fullstack/commit/11f3c7eb)
+  - V2.2 graph shows Codex-run models only; agy adapter knows Gemini 3.6 Flash - by @Marve10s [(71684)](https://github.com/Marve10s/Better-Fullstack/commit/716844dd)
+  - V2.2 graph shows Codex-run models only; agy adapter knows Gemini 3.6 Flash - by @Marve10s [(acc9d)](https://github.com/Marve10s/Better-Fullstack/commit/acc9dc99)
+
+**🐞 Bug Fixes**
+
+- Address ecosystem review feedback - by @Marve10s [(4add3)](https://github.com/Marve10s/Better-Fullstack/commit/4add3599)
+- PR #331 CI failures + all 22 Codex review findings - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/331 [(36751)](https://github.com/Marve10s/Better-Fullstack/commit/36751700)
+- Address remaining 11 Codex P2 findings from PR #331 python expansion - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/331 [(1d70c)](https://github.com/Marve10s/Better-Fullstack/commit/1d70cb25)
+- Address 11 Codex round-2 findings on PR #331 - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/331 [(870a8)](https://github.com/Marve10s/Better-Fullstack/commit/870a85b0)
+- Address 8 unresolved Codex P2 findings on PR #331 - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/331 [(1e971)](https://github.com/Marve10s/Better-Fullstack/commit/1e971180)
+- Address 3 Codex P2 findings - Run tab stale state, GraphQL gate for framework none, pyright-clean pyjwt templates - by @Marve10s [(eb954)](https://github.com/Marve10s/Better-Fullstack/commit/eb95427e)
+- Pip-backed --verify runs quality checks, stack-update respects python package manager - by @Marve10s [(e2497)](https://github.com/Marve10s/Better-Fullstack/commit/e2497258)
+- Address release CI and review feedback - by @Marve10s [(f6007)](https://github.com/Marve10s/Better-Fullstack/commit/f6007b55)
+- Refresh Axiom icon source - by @Marve10s [(0d039)](https://github.com/Marve10s/Better-Fullstack/commit/0d039654)
+- Close remaining release review gaps - by @Marve10s [(fc133)](https://github.com/Marve10s/Better-Fullstack/commit/fc1330f1)
+- Retain campaign on builder browse - by @Marve10s [(fe6e4)](https://github.com/Marve10s/Better-Fullstack/commit/fe6e413c)
+- Address final campaign review feedback - by @Marve10s [(7d188)](https://github.com/Marve10s/Better-Fullstack/commit/7d1886a0)
+- Harden ScaffBench publication guards - by @Marve10s [(cfbdb)](https://github.com/Marve10s/Better-Fullstack/commit/cfbdb64b)
+- Restore the ScaffBench metrics graph, pinned to the 2.2 board - by @Marve10s [(56502)](https://github.com/Marve10s/Better-Fullstack/commit/56502e81)
+- Address Codex review - explicit-prompt splice guard, campaign i18n - by @Marve10s [(08e1b)](https://github.com/Marve10s/Better-Fullstack/commit/08e1b6ca)
+- **ci**:
+  - Npm 10 edgesOut override, prisma turso unused import, torii+rusqlite incompatibility - by @Marve10s [(db4c7)](https://github.com/Marve10s/Better-Fullstack/commit/db4c7fcd)
+- **copy**:
+  - Derive public stack counts from schema - by @Marve10s [(59512)](https://github.com/Marve10s/Better-Fullstack/commit/59512192)
+- **python**:
+  - Keep expanded flows non-interactive - by @Marve10s [(b07cf)](https://github.com/Marve10s/Better-Fullstack/commit/b07cfd80)
+  - Make poetry projects installable - by @Marve10s [(0dca0)](https://github.com/Marve10s/Better-Fullstack/commit/0dca0313)
+- **scaffbench**:
+  - Round-2 review fixes (harness 2.2.1) + quality gates default-on - by @Marve10s [(37987)](https://github.com/Marve10s/Better-Fullstack/commit/37987503)
+  - --validate-existing must not trip the resume protocol guard - by @Marve10s [(9d8a2)](https://github.com/Marve10s/Better-Fullstack/commit/9d8a256c)
+- **seo**:
+  - Derive SoftwareApplication counts, complete partial heads, normalize share paths - by @Marve10s [(995bd)](https://github.com/Marve10s/Better-Fullstack/commit/995bdad5)
+- **smoke**:
+  - Stabilize cross-ecosystem templates - by @Marve10s [(2d3ff)](https://github.com/Marve10s/Better-Fullstack/commit/2d3ffefe)
+- **template-generator**:
+  - Add React types for Resend in frontend-less stacks - by @taltas in https://github.com/Marve10s/Better-Fullstack/issues/345 [(16fc3)](https://github.com/Marve10s/Better-Fullstack/commit/16fc3d83)
+- **templates**:
+  - Pin nuxt to 4.4.8 - 4.5.0 needs @unhead/vue ^3 while @nuxt/ui 4.10.0 still pins ^2 - by @Marve10s [(f2aaf)](https://github.com/Marve10s/Better-Fullstack/commit/f2aaf4d1)
+- **types**:
+  - Reset array categories to [] in graph projection, not "none" - by @Marve10s [(60d66)](https://github.com/Marve10s/Better-Fullstack/commit/60d66a5c)
+- **web**:
+  - CI greens - commit radar test update, a11y + hook-deps lint - by @Marve10s [(22262)](https://github.com/Marve10s/Better-Fullstack/commit/22262b61)
+  - Add missing lines field to ScaffbenchCell type - by @Marve10s [(ce504)](https://github.com/Marve10s/Better-Fullstack/commit/ce504340)
+  - Edit & Run - gate Run tab to browser-runnable stacks, fix empty binary-template glob - by @Marve10s [(3044e)](https://github.com/Marve10s/Better-Fullstack/commit/3044efb4)
+  - Graph and table share one pass tally; official harness logos - by @Marve10s [(4f46a)](https://github.com/Marve10s/Better-Fullstack/commit/4f46a1e2)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.3.0...v2.3.1)**
+
+## v2.3.0
+
+Released July 22, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.3.0)
+
+**🐞 Bug Fixes**
+
+- **web**:
+  - Derive homepage option count - by @Marve10s [(7b0cd)](https://github.com/Marve10s/Better-Fullstack/commit/7b0cde05)
+  - Compact updates button at lg breakpoint - by @Marve10s [(e1e29)](https://github.com/Marve10s/Better-Fullstack/commit/e1e29927)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.2.0...v2.3.0)**
+
+## v2.2.0
+
+Released July 15, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.2.0)
+
+**🚀 Features**
+
+- Expand Elixir ecosystem libraries - by @Marve10s [(41b71)](https://github.com/Marve10s/Better-Fullstack/commit/41b71b09)
+- Expand Go ecosystem libraries - by @Marve10s [(b66a7)](https://github.com/Marve10s/Better-Fullstack/commit/b66a7dd9)
+- **cli**:
+  - Structured merge for package.json/.env.example in bfs update - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/313 [(0f261)](https://github.com/Marve10s/Better-Fullstack/commit/0f26185d)
+- **graph**:
+  - Pin cross-ecosystem CORS to the web origin via CORS_ORIGIN - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/315 [(f6e2a)](https://github.com/Marve10s/Better-Fullstack/commit/f6e2a9bc)
+- **rust**:
+  - Add next 20 ecosystem libraries - by @Marve10s [(749de)](https://github.com/Marve10s/Better-Fullstack/commit/749de0da)
+- **web**:
+  - Blog in navbar + editorial blog redesign - by @Marve10s [(98da1)](https://github.com/Marve10s/Better-Fullstack/commit/98da1242)
+  - Refine builder experience - by @Marve10s [(1562a)](https://github.com/Marve10s/Better-Fullstack/commit/1562a993)
+  - Showcase new ecosystem additions - by @Marve10s [(82da8)](https://github.com/Marve10s/Better-Fullstack/commit/82da88f3)
+
+**🐞 Bug Fixes**
+
+- Use stable ExAws icon source - by @Marve10s [(d08f4)](https://github.com/Marve10s/Better-Fullstack/commit/d08f45cd)
+- Address Elixir generator review feedback - by @Marve10s [(606d0)](https://github.com/Marve10s/Better-Fullstack/commit/606d012f)
+- Align Elixir constraints and release storage - by @Marve10s [(c65fa)](https://github.com/Marve10s/Better-Fullstack/commit/c65fa680)
+- Use collision-safe Go tool icons - by @Marve10s [(f3de2)](https://github.com/Marve10s/Better-Fullstack/commit/f3de2936)
+- Address Go generator review feedback - by @Marve10s [(125a3)](https://github.com/Marve10s/Better-Fullstack/commit/125a3d80)
+- Address Development review feedback - by @Marve10s [(02e9c)](https://github.com/Marve10s/Better-Fullstack/commit/02e9cdf9)
+- **ci**:
+  - Restore template dependency updates - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/326 [(93980)](https://github.com/Marve10s/Better-Fullstack/commit/93980318)
+  - Resolve validation failures - by @Marve10s [(d5662)](https://github.com/Marve10s/Better-Fullstack/commit/d5662ed9)
+- **cli**:
+  - Auto-adjust incompatible create flags with explanations - by @Marve10s [(3cb6c)](https://github.com/Marve10s/Better-Fullstack/commit/3cb6c510)
+  - Run the create auto-adjust pass when --ecosystem is omitted - by @Marve10s [(286d6)](https://github.com/Marve10s/Better-Fullstack/commit/286d60b5)
+- **deps**:
+  - Enforce safe automated updates - by @Marve10s [(13e49)](https://github.com/Marve10s/Better-Fullstack/commit/13e49aa5)
+  - Align OpenTelemetry release train - by @Marve10s [(892e6)](https://github.com/Marve10s/Better-Fullstack/commit/892e6511)
+- **generator**:
+  - Close review edge cases - by @Marve10s [(d056a)](https://github.com/Marve10s/Better-Fullstack/commit/d056af40)
+  - Resolve promotion review regressions - by @Marve10s [(8b4f4)](https://github.com/Marve10s/Better-Fullstack/commit/8b4f48bf)
+- **nextauth**:
+  - Generate buildable Next.js projects - by @Marve10s [(700fe)](https://github.com/Marve10s/Better-Fullstack/commit/700fef7d)
+- **rust**:
+  - Address ecosystem review gaps - by @Marve10s [(673f8)](https://github.com/Marve10s/Better-Fullstack/commit/673f862d)
+- **templates**:
+  - Garph client credentials via gqty core fetcher - by @Marve10s [(68182)](https://github.com/Marve10s/Better-Fullstack/commit/681829b8)
+  - Add fastify to packages/api deps for fastify backend - by @Marve10s [(89ac2)](https://github.com/Marve10s/Better-Fullstack/commit/89ac2b00)
+  - Type Intlayer locale from provider - by @Marve10s [(13f46)](https://github.com/Marve10s/Better-Fullstack/commit/13f468ff)
+- **web**:
+  - Exclude lazy syntax assets from startup budget - by @Marve10s [(db8cf)](https://github.com/Marve10s/Better-Fullstack/commit/db8cf3ad)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.1.8...v2.2.0)**
+
+## v2.1.8
+
+Released July 10, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.1.8)
+
+**🐞 Bug Fixes**
+
+- **java**:
+  - Harden the Kotlin language gate - shared predicate, honest UI/CLI, JPA allOpen - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/311 [(26092)](https://github.com/Marve10s/Better-Fullstack/commit/26092913)
+- **web**:
+  - Remove Claude Code plugin section from the share modal - by @Marve10s [(7bff5)](https://github.com/Marve10s/Better-Fullstack/commit/7bff5f3a)
+  - Hide the 'Describe your app' brief suggester in the presets panel - by @Marve10s [(7756c)](https://github.com/Marve10s/Better-Fullstack/commit/7756ca2c)
+  - Honest ScaffBench graph filtering + version dropdown - by @Marve10s [(9ee7f)](https://github.com/Marve10s/Better-Fullstack/commit/9ee7fe7c)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.1.7...v2.1.8)**
+
+## v2.1.7
+
+Released July 9, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.1.7)
+
+**🚀 Features**
+
+- Add RevenueCat payments integration for native apps - by @Alisha-21-cloud in https://github.com/Marve10s/Better-Fullstack/issues/229 [(51ce4)](https://github.com/Marve10s/Better-Fullstack/commit/51ce4fe0)
+- **analytics**: Full-coverage telemetry pipeline - by @Marve10s [(99ea9)](https://github.com/Marve10s/Better-Fullstack/commit/99ea9ffc)
+- **auth**: Support Supabase Auth with TanStack Start fullstack - by @Marve10s [(8c781)](https://github.com/Marve10s/Better-Fullstack/commit/8c7812fc)
+- **cli**: Route add stack flags through planner - by @Marve10s [(95ad8)](https://github.com/Marve10s/Better-Fullstack/commit/95ad8c58)
+- **java**: Add gRPC-java API option (protoc codegen + Spring Boot server) - by @Marve10s [(7aeb2)](https://github.com/Marve10s/Better-Fullstack/commit/7aeb284d)
+- **scaffbench**: Add v2.1 MCP leaderboard tab with DeepSeek results - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/293 [(b3031)](https://github.com/Marve10s/Better-Fullstack/commit/b3031b50)
+
+**🐞 Bug Fixes**
+
+- Align stack compatibility edge cases - by @Marve10s [(c4818)](https://github.com/Marve10s/Better-Fullstack/commit/c481830c)
+- Preserve native project TypeScript backend updates - by @Marve10s [(f8c0b)](https://github.com/Marve10s/Better-Fullstack/commit/f8c0b710)
+- Synchronize oRPC latest version channel - by @Marve10s [(fe0d5)](https://github.com/Marve10s/Better-Fullstack/commit/fe0d50bd)
+- **analytics**:
+  - Address PR review - exclude failed creates from project aggregates, derive optionStats from generic stack - by @Marve10s [(fd23f)](https://github.com/Marve10s/Better-Fullstack/commit/fd23fd5c)
+  - Address add telemetry review feedback - by @Marve10s [(3594f)](https://github.com/Marve10s/Better-Fullstack/commit/3594ffe5)
+  - Cover remaining telemetry review gaps - by @Marve10s [(e35f6)](https://github.com/Marve10s/Better-Fullstack/commit/e35f65da)
+- **auth**:
+  - Preserve Supabase cookies in TanStack Start - by @Marve10s [(b3eae)](https://github.com/Marve10s/Better-Fullstack/commit/b3eae195)
+- **blog**:
+  - Trim ScaffBench 2.1 description to 154 chars (docs contract ≤170) - by @Marve10s [(4ebd3)](https://github.com/Marve10s/Better-Fullstack/commit/4ebd34e5)
+- **generator**:
+  - Project graph addon selections into templates - by @Marve10s [(0e355)](https://github.com/Marve10s/Better-Fullstack/commit/0e355e93)
+  - Include tanstack start query devtools - by @Marve10s [(68a24)](https://github.com/Marve10s/Better-Fullstack/commit/68a24fb2)
+- **inngest**:
+  - Add .js extension to inngest client import - by @Marve10s [(cd305)](https://github.com/Marve10s/Better-Fullstack/commit/cd3057c1)
+- **java**:
+  - Avoid Spring Boot WireMock Jetty clash - by @Marve10s [(35ea0)](https://github.com/Marve10s/Better-Fullstack/commit/35ea04dc)
+- **native**:
+  - Pin Babel to ^7 in Expo templates (Metro build broke on Babel 8) - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/295 [(49ef7)](https://github.com/Marve10s/Better-Fullstack/commit/49ef7bb4)
+  - Use single-page web output for unistyles + expo-router - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/298 [(c4eaa)](https://github.com/Marve10s/Better-Fullstack/commit/c4eaafec)
+- **redis**:
+  - Align Upstash template types - by @Marve10s [(28ffc)](https://github.com/Marve10s/Better-Fullstack/commit/28ffc6b0)
+- **search**:
+  - Restrict Bleve to Go projects - by @Marve10s [(d05b5)](https://github.com/Marve10s/Better-Fullstack/commit/d05b5f72)
+- **templates**:
+  - Migrate AI examples to the ai@6 streaming API - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/297 [(80a7a)](https://github.com/Marve10s/Better-Fullstack/commit/80a7af8d)
+- **web**:
+  - Align localized content performance budget - by @Marve10s [(b8a80)](https://github.com/Marve10s/Better-Fullstack/commit/b8a804fa)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.1.6...v2.1.7)**
+
+## v2.1.6
+
+Released July 6, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.1.6)
+
+**🚀 Features**
+
+- **bench**: Add GPT-5.5 High to ScaffBench 2.1 + Core/Full/Wired/Time columns - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/288 [(72117)](https://github.com/Marve10s/Better-Fullstack/commit/72117db3)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.1.5...v2.1.6)**
+
+## v2.1.5
+
+Released July 3, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.1.5)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.1.4...v2.1.5)**
+
+## v2.1.4
+
+Released July 3, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.1.4)
+
+**🚀 Features**
+
+- **bench**:
+  - Add 4 free-tier models to ScaffBench 2.1 - by @Marve10s [(d13d7)](https://github.com/Marve10s/Better-Fullstack/commit/d13d7c48)
+- **scaffbench**:
+  - V2 expansion - core/quality scoring, frontier paths, new ecosystems + batch-1 specs - by @Marve10s [(24299)](https://github.com/Marve10s/Better-Fullstack/commit/24299a5e)
+  - Batch-2 specs - java-spring-jooq-keycloak + elixir-broadway-absinthe - by @Marve10s [(877cc)](https://github.com/Marve10s/Better-Fullstack/commit/877ccbaf)
+  - Batch-3 specs - react-native-expo + 2 frontier (prompt-only) → 14 total - by @Marve10s [(b6ce0)](https://github.com/Marve10s/Better-Fullstack/commit/b6ce0efc)
+- **web**:
+  - Floating Patreon support button with hover tooltip - by @Marve10s [(d916c)](https://github.com/Marve10s/Better-Fullstack/commit/d916c32b)
+  - Refresh contributors list - by @Marve10s [(16dfe)](https://github.com/Marve10s/Better-Fullstack/commit/16dfedb4)
+  - ScaffBench V2.1 homepage - current run, v2 → legacy - by @Marve10s [(584f1)](https://github.com/Marve10s/Better-Fullstack/commit/584f1ed3)
+  - ScaffBench 2.1 max-effort results + Claude Sonnet 5 - by @Marve10s [(dddbf)](https://github.com/Marve10s/Better-Fullstack/commit/dddbf9a3)
+  - Publish full Opus 4.8 max (13 specs); correct low-vs-max - by @Marve10s [(306ad)](https://github.com/Marve10s/Better-Fullstack/commit/306ade01)
+  - Sonnet 5 max → 9 specs (1/8); fix blog description length - by @Marve10s [(295ab)](https://github.com/Marve10s/Better-Fullstack/commit/295ab707)
+  - Restructure ScaffBench 2.1 blog + add bar-chart visuals - by @Marve10s [(4aedb)](https://github.com/Marve10s/Better-Fullstack/commit/4aedbe12)
+  - Finalize ScaffBench 2.1 with Sonnet 5's full 13-spec run - by @Marve10s [(002cf)](https://github.com/Marve10s/Better-Fullstack/commit/002cfa7b)
+  - Add Sonnet 4.6 + Codex Spark (high) to ScaffBench 2.1 - by @Marve10s [(27d04)](https://github.com/Marve10s/Better-Fullstack/commit/27d04601)
+  - Add Gemini 3.5 Flash to ScaffBench 2.1 + provider logos - by @Marve10s [(feca8)](https://github.com/Marve10s/Better-Fullstack/commit/feca889e)
+  - Add /run page - reproduce ScaffBench yourself - by @Marve10s [(7af4a)](https://github.com/Marve10s/Better-Fullstack/commit/7af4aadf)
+  - Hide free-tier models on the benchmark graph by default, add model picker - by @Marve10s [(81bff)](https://github.com/Marve10s/Better-Fullstack/commit/81bff64a)
+
+**🐞 Bug Fixes**
+
+- **scaffbench**:
+  - Price Claude from token usage + raise gen timeout - by @Marve10s [(d4520)](https://github.com/Marve10s/Better-Fullstack/commit/d4520e31)
+  - Gate Java/Elixir validators on explicit native profile, not file autodetect - by @Marve10s [(7c4f7)](https://github.com/Marve10s/Better-Fullstack/commit/7c4f73de)
+  - Marker accuracy - index pom.xml/mix.exs, fix dotnet solo flags, robust markers, gate vacuous-pass guard - by @Marve10s [(43859)](https://github.com/Marve10s/Better-Fullstack/commit/438592f5)
+- **templates**:
+  - Pin vinext vite to 8.1.0 (8.1.1 breaks RSC dev server) - by @Marve10s [(8b341)](https://github.com/Marve10s/Better-Fullstack/commit/8b341863)
+  - Gate react-router react-query imports to APIs that use them - by @Marve10s [(a16f8)](https://github.com/Marve10s/Better-Fullstack/commit/a16f8723)
+  - Wire react-router ts-rest to react-query (parity with tanstack-router) - by @Marve10s [(11d2d)](https://github.com/Marve10s/Better-Fullstack/commit/11d2dc9b)
+  - Pin graphql to 16.x (v17 violates garph/yoga/apollo peers) - by @Marve10s [(f62a2)](https://github.com/Marve10s/Better-Fullstack/commit/f62a2364)
+  - Fix fastify + openapi server typecheck (2 errors) - by @Marve10s [(6e350)](https://github.com/Marve10s/Better-Fullstack/commit/6e350058)
+- **web**:
+  - Restore changelog update widget + add v2.1.3 release - by @Marve10s [(e9842)](https://github.com/Marve10s/Better-Fullstack/commit/e9842f57)
+  - Move ScaffBench 'legacy' tag inside the v2 pill - by @Marve10s [(0945b)](https://github.com/Marve10s/Better-Fullstack/commit/0945b91e)
+  - Use the four-color Google mark for Gemini rows - by @Marve10s [(ff370)](https://github.com/Marve10s/Better-Fullstack/commit/ff3709c2)
+  - Commit routeTree.gen.ts with the /run route - by @Marve10s [(06f8a)](https://github.com/Marve10s/Better-Fullstack/commit/06f8af58)
+  - Drop unmetered models from the benchmark scatter instead of plotting at 0 - by @Marve10s [(db130)](https://github.com/Marve10s/Better-Fullstack/commit/db130aad)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.1.3...v2.1.4)**
+
+## v2.1.3
+
+Released June 29, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.1.3)
+
+**Highlights**
+
+Patch release - generated-template bug fixes. No flags or APIs changed; `bun create better-fullstack@latest` now scaffolds these clean.
+
+**Payments**
+- Dodo / Paddle / Lemon Squeezy: added the missing server env-schema vars (scaffolds no longer fail type-check on `env.*`).
+- Paddle: `verifyWebhookSignature` is now `async` (matches the SDK's `unmarshal`).
+- Lemon Squeezy: aligned with `@lemonsqueezy/lemonsqueezy.js` v4 types.
+- Stripe: stopped pinning a fixed `apiVersion` - it now tracks the SDK and won't go stale on upgrades.
+
+**Java** - Spring Boot 4 + Testcontainers 2.x: use the renamed `testcontainers-junit-jupiter` artifact (Maven & Gradle) so the build resolves.
+
+**Go** - dropped an unused `os` import in `cmd/server/main.go` for frameworkless + Sentry setups.
+
+**Elixir** - fixed a comma syntax error in the `prom_ex.ex` PromEx plugin list.
+
+**TypeScript (ts-rest)** - generate `context.ts` for fETS and other backends (fixes a dangling import).
+
+**Solid** - generate `routeTree.gen.ts` during `check-types` (TanStack Solid Router) so a fresh scaffold type-checks.
+
+Plus Rust (`cargo fmt`/`clippy`), Python (`ruff`), and Go (`gofmt`) formatting hygiene so generated projects pass their own lint/format gates.
+
+---
+
+**🚀 Features**
+
+- **web**:
+  - Hero release badge auto-updates from latest GitHub release - by @Marve10s [(38c28)](https://github.com/Marve10s/Better-Fullstack/commit/38c2896e)
+  - Leaderboard shows Core pass only, withhold Full pending re-run - by @Marve10s [(98a77)](https://github.com/Marve10s/Better-Fullstack/commit/98a77ec1)
+  - V2 benchmark view is Prompt-only - by @Marve10s [(80b5a)](https://github.com/Marve10s/Better-Fullstack/commit/80b5a6ba)
+
+**🐞 Bug Fixes**
+
+- **deps**:
+  - Keep generated installs green - by @Marve10s [(1d511)](https://github.com/Marve10s/Better-Fullstack/commit/1d511969)
+- **payments**:
+  - Add dodo/paddle env schema + paddle async webhook verify; refresh rust snapshots - by @Marve10s [(f6d36)](https://github.com/Marve10s/Better-Fullstack/commit/f6d3697c)
+  - Lemon-squeezy env schema + SDK type alignment - by @Marve10s [(b166f)](https://github.com/Marve10s/Better-Fullstack/commit/b166f3a0)
+  - Stop pinning a stale Stripe apiVersion literal - by @Marve10s [(6c821)](https://github.com/Marve10s/Better-Fullstack/commit/6c82146f)
+- **python**:
+  - Dedupe StreamingResponse import + ruff format in FastAPI templates - by @Marve10s [(171a4)](https://github.com/Marve10s/Better-Fullstack/commit/171a4287)
+- **scaffbench**:
+  - Honest, read-only quality gate (Findings 1 & 4) - by @Marve10s [(2e080)](https://github.com/Marve10s/Better-Fullstack/commit/2e080b3b)
+  - Read-only biome format gate + gate-logic tests - by @Marve10s [(c6352)](https://github.com/Marve10s/Better-Fullstack/commit/c6352bda)
+- **templates**:
+  - Biome 2.5 preset + lineWidth 100 to match oxfmt; useImportType in theme-provider/card - by @Marve10s [(c5b92)](https://github.com/Marve10s/Better-Fullstack/commit/c5b9229d)
+  - Rust-base passes cargo fmt --check + clippy -D warnings - by @Marve10s [(836f0)](https://github.com/Marve10s/Better-Fullstack/commit/836f0bd5)
+  - Gofmt-clean Go server main.go (imports + grpc goroutine + blank lines) - by @Marve10s [(79928)](https://github.com/Marve10s/Better-Fullstack/commit/7992867e)
+  - Java testcontainers 2.x rename (CI smoke blocker) + rust clippy hygiene - by @Marve10s [(a31fd)](https://github.com/Marve10s/Better-Fullstack/commit/a31fd41b)
+  - Elixir prom_ex leading-comma syntax error + ts-rest context for fets - by @Marve10s [(c9dea)](https://github.com/Marve10s/Better-Fullstack/commit/c9dea707)
+  - Go unused os import (sentry-only) + solid tanstack-router routeTree - by @Marve10s [(c1bf5)](https://github.com/Marve10s/Better-Fullstack/commit/c1bf5aa7)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.1.2...v2.1.3)**
+
+## v2.1.2
+
+Released June 29, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.1.2)
+
+**🐞 Bug Fixes**
+
+- **templates**: MikroORM SQLite uses v7 @mikro-orm/sqlite driver - by @Marve10s [(232f5)](https://github.com/Marve10s/Better-Fullstack/commit/232f5ccb)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.1.1...v2.1.2)**
+
+## v2.1.1
+
+Released June 24, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.1.1)
+
+**Better Fullstack v2.1.1**
+
+This release ships the latest MCP stack-update work and a set of generator reliability fixes for generated projects.
+
+**Highlights**
+
+- Added broader MCP stack update coverage for supported create-time fields.
+- Added deterministic generator output for more addon paths, including Fumadocs, skills, OpenTUI, Ultracite, WXT, and Dodo payment success files.
+- Filled additional .NET and Elixir generator/update coverage gaps, including Blazor, Auth0 ASP.NET Core, Duende IdentityServer, deploy, caching, observability, and testing paths.
+- Tightened schema/template coverage so generator allowlists only include values that are produced unconditionally.
+
+**Fixes**
+
+- Fixed Svelte + Better Auth generated project smoke builds.
+- Fixed OpenAPI server `tsconfig` base path generation.
+- Fixed Qwik chunk naming for Rolldown builds.
+- Fixed Kysely auth schema type import handling.
+- Fixed Nuxt oRPC auth context generation.
+- Added missing WXT `check-types` script coverage.
+- Updated env placeholder test expectations to match the corrected generator behavior.
+
+**Verification**
+
+- Release Guard passed.
+- Lint, Test & Build passed.
+- Smoke Test passed.
+- Strict Smoke Tests Core and Broad passed.
+- Playwright Web Builder Tests passed.
+- Package Manager Default Matrix passed.
+
+**Published Packages**
+
+- `create-better-fullstack@2.1.1`
+- `create-bfs@2.1.1`
+- `@better-fullstack/types@2.1.1`
+- `@better-fullstack/template-generator@2.1.1`
+
+## v2.1.0
+
+Released June 23, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.1.0)
+
+**🚀 Features**
+
+- **addons**:
+  - Add github-actions CI addon - by @Marve10s [(ebe4e)](https://github.com/Marve10s/Better-Fullstack/commit/ebe4eb2e)
+- **ai-docs**:
+  - Generate AGENTS.md by default with the standard uppercase filename - by @Marve10s [(53390)](https://github.com/Marve10s/Better-Fullstack/commit/53390292)
+- **analytics**:
+  - Collect all-ecosystem telemetry + ecosystem leaderboard - by @Marve10s [(124c8)](https://github.com/Marve10s/Better-Fullstack/commit/124c8479)
+- **cli**:
+  - Support create --from-history and --config - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/244 [(09f65)](https://github.com/Marve10s/Better-Fullstack/commit/09f6522b)
+  - Add telemetry notice and bfs telemetry toggle command - by @Marve10s [(ca1e2)](https://github.com/Marve10s/Better-Fullstack/commit/ca1e2701)
+  - Add `bfs doctor` command - by @Marve10s [(2f862)](https://github.com/Marve10s/Better-Fullstack/commit/2f862f67)
+- **mcp**:
+  - Expose missing create fields + targetDir - by @Marve10s [(9b3be)](https://github.com/Marve10s/Better-Fullstack/commit/9b3be20d)
+  - Structured outputs + annotations + list_presets/recommend_stack tools - by @Marve10s [(75eda)](https://github.com/Marve10s/Better-Fullstack/commit/75eda5f4)
+- **templates**:
+  - Add check-types to generated packages + coverage guard - by @Marve10s [(c6555)](https://github.com/Marve10s/Better-Fullstack/commit/c65553a4)
+- **types,cli,web**:
+  - Add vectorDb category (pgvector/qdrant/chroma/pinecone) - by @Marve10s [(e1310)](https://github.com/Marve10s/Better-Fullstack/commit/e1310e0a)
+- **web**:
+  - Add /showcase route for the community project gallery - by @Marve10s [(7883b)](https://github.com/Marve10s/Better-Fullstack/commit/7883b6c6)
+  - Add /analytics popular-stacks dashboard + nav links - by @Marve10s [(db608)](https://github.com/Marve10s/Better-Fullstack/commit/db608a93)
+  - Slim analytics into a stack leaderboard; remove /showcase - by @Marve10s [(db393)](https://github.com/Marve10s/Better-Fullstack/commit/db393fa3)
+
+**🐞 Bug Fixes**
+
+- Show changelog once per release - by @Marve10s [(3f197)](https://github.com/Marve10s/Better-Fullstack/commit/3f197a86)
+- **cli**:
+  - Report accurate scaffold status and roll back partial output on failure - by @Marve10s [(1f439)](https://github.com/Marve10s/Better-Fullstack/commit/1f4399d4)
+  - Make bfs doctor exit non-zero on failure - by @Marve10s [(e4a70)](https://github.com/Marve10s/Better-Fullstack/commit/e4a70d33)
+  - Complete the AGENTS.md default (createVirtual + MCP compat defaults) - by @Marve10s [(18fcf)](https://github.com/Marve10s/Better-Fullstack/commit/18fcf6d3)
+- **deps**:
+  - Refresh generated outputs - by @Marve10s [(e0b01)](https://github.com/Marve10s/Better-Fullstack/commit/e0b0124b)
+- **generator**:
+  - Populate database package.json in graph --part mode - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/242 [(9992c)](https://github.com/Marve10s/Better-Fullstack/commit/9992c44d)
+  - Repair smoke failures after rebase - by @Marve10s [(21ac0)](https://github.com/Marve10s/Better-Fullstack/commit/21ac00ae)
+  - Align smoke templates with dependency updates - by @Marve10s [(437bc)](https://github.com/Marve10s/Better-Fullstack/commit/437bc417)
+  - Cover additional smoke edge cases - by @Marve10s [(b4849)](https://github.com/Marve10s/Better-Fullstack/commit/b4849bbe)
+  - Configure elixir swoosh finch client - by @Marve10s [(ef76c)](https://github.com/Marve10s/Better-Fullstack/commit/ef76c7bc)
+  - Keep smoke test templates type-safe - by @Marve10s [(63003)](https://github.com/Marve10s/Better-Fullstack/commit/6300367b)
+  - Gate keystatic astro on upstream support - by @Marve10s [(0c503)](https://github.com/Marve10s/Better-Fullstack/commit/0c503d6c)
+- **mcp,ci**:
+  - Ecosystem-correct compatibility issues, recommend config, and CI for all ecosystems - by @Marve10s [(23336)](https://github.com/Marve10s/Better-Fullstack/commit/23336005)
+- **templates**:
+  - Gate native Expo web.output static behind expo-router - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/237 [(7b830)](https://github.com/Marve10s/Better-Fullstack/commit/7b830e36)
+  - Stripe env/apiVersion + better-auth api dep + go handlers import - by @Marve10s [(82ab5)](https://github.com/Marve10s/Better-Fullstack/commit/82ab51d7)
+  - Vinext base-ui trigger + better-auth no-db + python redis/celery - by @Marve10s [(01523)](https://github.com/Marve10s/Better-Fullstack/commit/015231e3)
+- **templates,testing**:
+  - Redis zscore type, garph ctx/context, better-auth redis, go handlers import, dev-check timeout - by @Marve10s [(955e1)](https://github.com/Marve10s/Better-Fullstack/commit/955e17ec)
+- **testing**:
+  - Gate CI smoke on any real step failure - by @Marve10s [(908f0)](https://github.com/Marve10s/Better-Fullstack/commit/908f0afa)
+- **types**:
+  - Update default-aiDocs test for the AGENTS.md default - by @Marve10s [(6da04)](https://github.com/Marve10s/Better-Fullstack/commit/6da04259)
+  - Tolerate omitted vectorDb in analyzeStackCompatibility - by @Marve10s [(a4a5e)](https://github.com/Marve10s/Better-Fullstack/commit/a4a5e4ab)
+- **web**:
+  - Derive ecosystem count/names from schema (include .NET = 8) - by @Marve10s [(0cdfb)](https://github.com/Marve10s/Better-Fullstack/commit/0cdfbf60)
+  - Hide analytics page - by @Marve10s [(cec5d)](https://github.com/Marve10s/Better-Fullstack/commit/cec5d3fe)
+- **web,testing**:
+  - VectorDb icons + smoke command emits --vector-db - by @Marve10s [(d4997)](https://github.com/Marve10s/Better-Fullstack/commit/d499799c)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.0.3...v2.1.0)**
+
+## v2.0.3
+
+Released June 17, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.0.3)
+
+**Better Fullstack 2.0.3 - OpenAPI APIs and Nx workspaces**
+
+This release turns two community requests into first-class stack choices. `openapi` now works as a TypeScript API option across the CLI, Web Builder, shared schema metadata, generated templates, and release checks. `nx` joins the workspace tooling lineup alongside Turborepo, with generated workspace configuration and root scripts that fit the rest of the stack.
+
+**📘 OpenAPI API scaffolds**
+
+Choose `openapi` from the CLI or Web Builder to scaffold REST-style TypeScript APIs with an OpenAPI 3.1 contract, generated `/openapi.json`, and an `openapi:verify` script that catches spec drift in generated projects.
+
+The option is wired through the shared schema, compatibility rules, stack translation, option metadata, tech icons, resource links, CLI prompts, web preview state, and template snapshots, so OpenAPI projects behave like the existing API choices instead of a one-off template path.
+
+**🧱 Nx workspace tooling**
+
+Nx is now available as a workspace tooling addon. Generated projects can include `nx.json`, root-level Nx scripts, task target defaults, dependency wiring, and package config output that understands build, lint, type-check, database, Docker, and deploy tasks.
+
+Nx and Turborepo are treated as mutually exclusive workspace orchestrators, so users get one clear task runner instead of overlapping root tooling.
+
+**🛠 Fixes and polish**
+
+- Fixed OpenAPI health checks in Vinext templates to read `env.VITE_SERVER_URL` instead of the Next-only `NEXT_PUBLIC_SERVER_URL`.
+- Hardened Nx database scripts by using explicit targets for `db:*` commands, preserving package-script names that contain colons.
+- Expanded CLI addon validation so Nx can be selected and tested like other workspace tooling.
+- Added generated-project coverage for Hono + OpenAPI + Better Auth, including `check-types` and `openapi:verify`.
+
+**✅ Release coverage**
+
+- Added CLI prompt and validation tests for OpenAPI and Nx.
+- Added package config regression tests for Nx root scripts and dependency output.
+- Updated generated template snapshots for the new API and workspace-tooling combinations.
+- Ran the release verification lane for template snapshots, CLI/Web Builder parity, preview config, and smoke coverage.
+
+**Published packages**
+
+- `create-better-fullstack@2.0.3`
+- `create-bfs@2.0.3`
+- `@better-fullstack/types@2.0.3`
+- `@better-fullstack/template-generator@2.0.3`
+
+Closes [#221](https://github.com/Marve10s/Better-Fullstack/issues/221) and [#224](https://github.com/Marve10s/Better-Fullstack/issues/224).
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.0.2...v2.0.3)**
+
+## v2.0.2
+
+Released June 11, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.0.2)
+
+**Better Fullstack 2.0.2 - .NET arrives, agents get measured, installs get lighter**
+
+The biggest release since 2.0. A whole new ecosystem, new deployment targets, a published AI-agent benchmark, and a dramatically leaner install - plus a round of scaffold fixes that the benchmark itself hunted down.
+
+**🟪 .NET is here**
+
+.NET joins TypeScript, Python, Go, Rust, Java, Elixir, and React Native as a first-class ecosystem. Scaffold ASP.NET Core backends with testing, validation (FluentValidation), and observability options - standalone, or wired into a multi-ecosystem project next to a TypeScript frontend and a shared database.
+
+**🚀 New deployment targets**
+
+**Render** and **Netlify** join the deployment lineup. Pick them in the builder or CLI and your generated project ships with the right config from the first commit.
+
+**🤖 We benchmarked AI agents building with us - and published everything**
+
+36 scaffold runs: frontier models building the same four project specs through prompt-only generation, our CLI, and our MCP server. Agents on the MCP path finished **up to 7× faster** with **4× fewer output tokens** - and every project had to survive a real install and build. The full interactive results now live on the homepage, and the redesigned **/mcp** page gives you one-paste setup for Claude Code, Codex, Gemini CLI, Cursor, VS Code, Claude Desktop, Windsurf, and Zed.
+
+Best part: the benchmark caught four real scaffold bugs (Storybook on Next.js projects, multi-ecosystem database packages missing their ORM deps and auth schema, a missing `expo-network` for Better Auth on native). All fixed in this release.
+
+**🧠 Stack graph, phases 0–4**
+
+The stack graph - the model that lets one project span multiple ecosystems - completed phases 0 through 4: an enterprise tier, shared backend-utils, and automated dependency management across every ecosystem.
+
+**⚡ 42% lighter install**
+
+Install size dropped from **122 MB → 71 MB**, and the web entry chunk shrank **32%**. Scaffolds download faster, CI caches less, cold starts feel it.
+
+**🧭 Starter tracks**
+
+New curated, goal-based stack presets - pick what you're building and get a proven combination instead of assembling from 677 options by hand.
+
+**🛠 Fixes**
+
+- Storybook scaffolds on Next.js: correct framework detection for multi-frontend stacks, story types imported from the renderer package, builds type-check clean
+- Multi-ecosystem database packages now get their ORM dependencies and auth schema in the right place
+- `expo-network` added for Better Auth on the unistyles native template
+- Starter track CI contracts, docs search hardening, builder mode toggle cleanup
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.0.1...v2.0.2)**
+
+## v2.0.1
+
+Released June 6, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.0.1)
+
+**🚀 Features**
+
+- **web**: Refresh homepage hero and navbar chrome - by @Marve10s and @cursoragent [(41b80)](https://github.com/Marve10s/Better-Fullstack/commit/41b8097d)
+
+**🐞 Bug Fixes**
+
+- **cli**:
+  - Harden multi-ecosystem scaffolds - by @Marve10s [(51e46)](https://github.com/Marve10s/Better-Fullstack/commit/51e46bf5)
+  - Harden multi-ecosystem scaffolds - by @Marve10s [(ffe4c)](https://github.com/Marve10s/Better-Fullstack/commit/ffe4caae)
+- **go**:
+  - Mount only generated ent routes - by @Marve10s [(7121a)](https://github.com/Marve10s/Better-Fullstack/commit/7121a6ca)
+- **web**:
+  - Keep rust icon visible in dark theme - by @Marve10s [(a3797)](https://github.com/Marve10s/Better-Fullstack/commit/a3797e11)
+  - Use local uppy icon - by @Marve10s [(c4624)](https://github.com/Marve10s/Better-Fullstack/commit/c4624e20)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v2.0.0...v2.0.1)**
+
+## v2.0.0
+
+Released June 3, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.0.0)
+
+**Better Fullstack v2.0.0 is live**
+
+This is the multi-ecosystem release.
+
+You can now build projects where each part of the app can use the ecosystem that fits it best.
+
+TypeScript frontend.
+Go, Rust, Python, Java, or Elixir backend.
+Database layer.
+Mobile app.
+One project model.
+One generated command.
+
+**Multi-ecosystem support**
+
+Better Fullstack is no longer limited to one ecosystem per project.
+
+v2.0 adds a new stack graph model that understands project roles:
+
+- Frontend
+- Backend
+- Database
+- Mobile
+- Shared tooling
+
+That means the builder and CLI can now reason about a project as a real product made from multiple parts, instead of one flat list of options.
+
+**New CLI part syntax**
+
+The CLI can now parse and generate scoped project parts.
+
+Example:
+
+```bash
+bun create better-fullstack my-app \
+  --part frontend:typescript:react-vite \
+  --part backend:go:gin \
+  --database postgres
+```
+
+The important bit: choices now belong to the right role.
+
+A backend option is a backend option.
+A frontend library stays in the frontend flow.
+Database choices stay tied to the database layer.
+
+**Redesigned web builder**
+
+The `/new` builder has been rebuilt around the new model.
+
+The multi-ecosystem flow is now:
+
+1. Frontend
+2. Backend
+3. Database
+4. Mobile
+5. Finalize
+
+Each step focuses on one part of the project.
+
+The final step handles general settings like package manager, AI docs, git, and version channel.
+
+**Command preview while you build**
+
+The builder now works better as a command composer.
+
+You can keep choosing tools and still see the generated command update as you go.
+
+Partial command during the flow.
+Full command at the end.
+Copy when ready.
+
+**Better multi-ecosystem UX**
+
+v2.0 also includes a lot of polish around the builder:
+
+- Multi-Ecosystem mode is now a first-class toggle in the header
+- New update modal for the 2.0 launch
+- Cleaner step navigation
+- Better role cards
+- Tool icons in the right places
+- Less noise in the Finalize step
+- Compatibility fixes so TypeScript-only libraries do not appear where they should not
+
+**Generator support**
+
+The template generator now understands stack graph parts across the main ecosystem handlers.
+
+This release wires the foundation through:
+
+- TypeScript
+- Go
+- Rust
+- Python
+- Java
+- Elixir
+- Database templates
+
+Not every possible combination is finished yet, but the base is now in place.
+
+This is what lets future ecosystem combinations grow without bolting everything onto the old flat config.
+
+**Validation and compatibility fixes**
+
+A lot of this release is about making the new model behave correctly.
+
+Fixed and improved:
+
+- Scoped backend validation
+- Go auth command roundtrips
+- Web command roundtrips
+- Reproducible CLI commands
+- Frontend-only TypeScript options showing in the wrong step
+- TypeScript defaults leaking into non-TypeScript stacks
+- Builder CI and Playwright coverage around the new flow
+
+**Published packages**
+
+Published to npm:
+
+- `create-better-fullstack@2.0.0`
+- `create-bfs@2.0.0`
+- `@better-fullstack/types@2.0.0`
+- `@better-fullstack/template-generator@2.0.0`
+
+Create a new project:
+
+```bash
+npm create better-fullstack@latest
+```
+
+or:
+
+```bash
+bun create better-fullstack@latest
+```
+
+**Verified before release**
+
+v2.0 passed the release pipeline before publishing:
+
+- Release Guard
+- Lint
+- Test
+- Build Check
+- Smoke Test
+- Strict smoke tests
+- Playwright builder tests
+- Web command roundtrip
+- Package manager matrix
+- CodeQL
+
+**Why 2.0**
+
+This is a foundation release.
+
+Better Fullstack is becoming a builder for real full-stack systems, not just single-ecosystem starter apps.
+
+v2.0 gives the CLI, web builder, compatibility layer, and generator the same language for describing a project.
+
+That unlocks the next phase: more ecosystem combinations, deeper validation, better previews, and smoother generation for teams building across multiple stacks.
+
+Full changelog:
+https://github.com/Marve10s/Better-Fullstack/compare/v1.8.1...v2.0.0
+
+## v1.8.1
+
+Released May 26, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.8.1)
+
+**v1.8.1**
+
+This release adds the requested TypeScript stack options across the CLI, web Stack Builder, compatibility rules, generated templates, and release-facing verification.
+
+**Highlights**
+
+- Added `shadcn-svelte` as a SvelteKit UI library option, including package dependencies, template output, metadata, resource links, and builder/CLI coverage.
+- Added `evlog` as a logging option and wired it through schema metadata, compatibility, dependency generation, docs/search surfaces, and generated scaffold validation.
+- Added Directus CMS support across React, Next.js, Astro, Nuxt, and SvelteKit templates, including env output and Nuxt runtime config wiring.
+- Added Cloudinary file storage support with generated helper templates, environment variables, dependencies, and coverage.
+- Added SWR as a data-fetching addon, including prompt grouping, Vinext compatibility, resource metadata, dependency wiring, and regression tests.
+
+**Quality**
+
+- Expanded CLI/web parity coverage for the new options.
+- Added generated-app roundtrip coverage for Directus, Cloudinary, evlog, SWR, and shadcn-svelte.
+- Fixed the reported lint issue from duplicate resource-link metadata.
+- Addressed review feedback for SWR prompt grouping, SWR + Vinext compatibility, and Directus Nuxt runtime config.
+
+**Published packages**
+
+- `create-better-fullstack@1.8.1`
+- `create-bfs@1.8.1`
+- `@better-fullstack/types@1.8.1`
+- `@better-fullstack/template-generator@1.8.1`
+
+## v1.8.0
+
+Released May 24, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.8.0)
+
+**Better Fullstack v1.8.0**
+
+This is one of the biggest Better Fullstack releases yet. Elixir is now a first-class ecosystem, React Native has its own dedicated mobile path, and the generator now has much stronger CI coverage for real scaffolded apps.
+
+The release spans the shared type system, CLI prompts, template generator, web builder, docs, smoke testing, and publish safety. It is a major expansion of what Better Fullstack can generate and verify.
+
+**Highlights**
+
+- Added Elixir as a first-class ecosystem with Phoenix and Phoenix LiveView support.
+- Added React Native as a standalone mobile ecosystem for Expo-based apps.
+- Added full-stack Phoenix templates with Ecto, PostgreSQL, auth, REST, GraphQL, realtime, jobs, email, caching, testing, Docker, and release setup.
+- Added mobile scaffolds for Expo Router, React Navigation, Tamagui, Gluestack UI, Uniwind, Unistyles, MMKV, push notifications, OTA updates, deep linking, Maestro, and React Native Testing Library.
+- Added stricter generated-app CI with PostgreSQL service containers, BEAM setup, strict smoke lanes, Playwright builder coverage, package-manager coverage, and richer failure artifacts.
+- Updated docs, builder option references, tech icons, CLI help, generated commands, and compatibility rules for the expanded ecosystem surface.
+- Cleaned up legacy Better T Stack naming in user-facing surfaces.
+
+**New: Elixir Ecosystem**
+
+Elixir projects can now be generated from both the CLI and the web builder using `--ecosystem elixir`.
+
+Supported Elixir project shapes include:
+
+- Phoenix web apps.
+- Phoenix LiveView apps.
+- Plain Elixir scaffolds where Phoenix-specific selections are not enabled.
+- Mix-native project structure rather than the TypeScript monorepo layout.
+
+Generated Phoenix projects now include:
+
+- `mix.exs` and standard Phoenix application structure.
+- Config for dev, test, runtime, and base application setup.
+- Endpoint, router, telemetry, layouts, controllers, error views, and health checks.
+- `.env.example`, README output, `.gitignore`, and setup guidance.
+- ExUnit test scaffolding and connection test helpers.
+
+Elixir option groups now include:
+
+- Web framework: `phoenix`, `phoenix-live-view`.
+- Persistence: `ecto-sql`, `none`.
+- Auth: `phx-gen-auth`, `none`.
+- API: `rest`, `absinthe`, `none`.
+- Realtime: `channels`, `presence`, `pubsub`, `live-view-streams`, `none`.
+- Jobs: `oban`, `quantum`, `none`.
+- HTTP client: `req`, `finch`, `none`.
+- JSON: `jason`.
+- Email: `swoosh`, `none`.
+- Caching: `cachex`, `none`.
+- Observability: `telemetry`, `none`.
+- Testing: `ex_unit`.
+- Quality: `credo`, `dialyxir`, `sobelow`, `none`.
+- Deploy: `docker`, `mix-release`, `none`.
+
+**Phoenix, Ecto, and PostgreSQL**
+
+The Elixir generator now produces working Phoenix + PostgreSQL application code instead of dependency-only placeholders.
+
+Ecto SQL selections generate:
+
+- Repo setup.
+- PostgreSQL config.
+- Catalog schema and context files.
+- Migrations for generated sample data.
+- Seeds.
+- Test database config.
+
+Auth selections generate `phx.gen.auth`-style files, including:
+
+- User schema.
+- Accounts context.
+- Session controller.
+- User migration.
+- JSON error handling paths for API-friendly scaffolds.
+
+The generator also now enforces important compatibility rules:
+
+- `phx-gen-auth` requires Ecto SQL.
+- Oban requires Ecto SQL and PostgreSQL-backed projects.
+- LiveView streams require Phoenix LiveView.
+- Phoenix-only selections are rejected for plain Elixir apps.
+- Dependency-only Elixir choices without real template support are disabled or rejected until matching generation exists.
+
+**Phoenix APIs, Realtime, and Background Work**
+
+The release adds real generated files for common Phoenix app needs:
+
+- REST controller scaffolds.
+- Absinthe GraphQL schema and resolver scaffolds.
+- Phoenix Channels.
+- Presence setup.
+- PubSub-ready wiring.
+- LiveView routes and LiveView item examples.
+- Oban sample worker and migration support.
+- Quantum scheduler setup.
+- Req and Finch HTTP clients.
+- Swoosh mailer setup.
+- Cachex caching setup.
+
+A final CI-discovered Phoenix router issue was also fixed before release: non-LiveView Phoenix apps now use `fetch_flash`, while LiveView apps use `fetch_live_flash`.
+
+**New: React Native Ecosystem**
+
+React Native is now its own ecosystem instead of being modeled as a TypeScript web frontend. This makes mobile stacks much cleaner in both the CLI and builder.
+
+React Native projects are selected with `--ecosystem react-native` and generate Expo-compatible apps.
+
+Supported mobile options include:
+
+- Native frontend: `native-bare`, `native-uniwind`, `native-unistyles`.
+- Navigation: `expo-router`, `react-navigation`, `none`.
+- UI: `tamagui`, `gluestack-ui`, `uniwind`, `unistyles`, `none`.
+- Storage: `mmkv`, `none`.
+- Testing: `maestro`, `react-native-testing-library`, `maestro-react-native-testing-library`, `none`.
+- Push: `expo-notifications`, `none`.
+- OTA: `expo-updates`, `none`.
+- Deep linking: `expo-linking`, `none`.
+
+Generated React Native projects can now include:
+
+- Expo config with scheme and runtime settings.
+- Expo Router route files or React Navigation entrypoints.
+- UI provider and theme files for selected mobile styling systems.
+- MMKV storage helpers.
+- Expo Notifications registration helpers.
+- Expo Updates helpers.
+- Expo Linking/deep-linking helpers.
+- Jest Expo and React Native Testing Library examples.
+- Maestro flows.
+- Mobile `.env.example` conventions using `EXPO_PUBLIC_` variables.
+
+The builder and CLI now hide web-only categories when React Native is selected, keeping mobile choices focused and preventing invalid mixed stacks.
+
+**Builder and CLI Improvements**
+
+The builder and CLI both received broad ecosystem-aware updates:
+
+- Added Elixir and React Native to shared schemas, defaults, metadata, and stack translation.
+- Added CLI flags and prompts for Elixir and mobile option groups.
+- Added stack display and reproducible command output for the new ecosystems.
+- Added web builder URL state support for new ecosystem selections.
+- Added compatibility rules for Phoenix, LiveView, Ecto, Oban, React Native UI modes, and mobile integrations.
+- Fixed builder defaults for React Native and native frontend selections.
+- Fixed prompt behavior so Elixir does not receive unrelated shared TypeScript email/service prompts.
+- Fixed command/default detection for ecosystem-specific stacks.
+- Added regression tests for plain Elixir validation and Phoenix-only option rejection.
+
+**Template Generator Improvements**
+
+The template generator now understands more standalone ecosystem shapes and emits richer project structures.
+
+Major template additions include:
+
+- `templates/elixir-base` with Phoenix, Ecto, auth, API, realtime, jobs, email, cache, Docker, release, and test files.
+- `templates/frontend/native` for React Native and Expo app variants.
+- Native auth templates for mobile-compatible flows.
+- Mobile storage, notifications, updates, deep-linking, navigation, and test templates.
+- Improved generated README behavior for non-TypeScript ecosystems.
+- Updated env var generation for mobile and Elixir conventions.
+- Better template-handler routing for ecosystem-specific outputs.
+
+Several template regressions were fixed while broadening the matrix, including Fresh/Deno config, React Native Jest dependencies, ModelFusion/Fets smoke coverage, and Phoenix auth/router edge cases.
+
+**Docs and Web Updates**
+
+This release expands the docs and builder reference to match the new generator surface:
+
+- Added Elixir ecosystem docs.
+- Added React Native ecosystem docs.
+- Added React Native option reference docs.
+- Updated TypeScript option docs for the new ecosystem split.
+- Updated CLI create docs and roadmap content.
+- Updated compatibility matrix rendering.
+- Updated stack builder behavior for ecosystem-specific categories.
+- Updated tech resource links and icon registry coverage.
+- Added tech icon validation so broken or missing builder icons are caught in CI.
+- Updated project stats and combination counts for the larger stack surface.
+
+**CI and Smoke Testing**
+
+Generated-app verification is much stronger in v1.8.0.
+
+CI now includes:
+
+- PostgreSQL service containers for smoke and E2E jobs.
+- Erlang/OTP and Elixir setup through `erlef/setup-beam`.
+- Java, Python/uv, Node, Bun, and other ecosystem setup in strict smoke paths.
+- Strict Smoke Tests for core and broad generated-app presets.
+- React Native and Elixir presets in generated-app smoke coverage.
+- PR-stable smoke coverage separated from broader scheduled/runtime matrices.
+- Playwright web builder tests for stack selection and command parity.
+- Package-manager default matrix coverage.
+- Web command round-trip coverage.
+- Artifact uploads for smoke and E2E results.
+- Step summaries that make generated-app failures easier to inspect.
+
+The final v1.8.0 PR passed:
+
+- Lint.
+- Test.
+- Build Check.
+- Release Guard.
+- Smoke Test.
+- Strict Smoke Tests (Core).
+- Strict Smoke Tests (Broad).
+- Playwright Web Builder Tests.
+- Web Command Roundtrip.
+- Package Manager Default Matrix.
+- CodeQL.
+- Vercel preview.
+
+**Fixes and Cleanup**
+
+Also included in this release:
+
+- Fixed plain Elixir smoke preset validation.
+- Fixed Phoenix API router flash handling.
+- Fixed Elixir shared prompt leakage from unrelated TypeScript categories.
+- Fixed React Native Jest scaffold dependencies.
+- Fixed mobile defaults in CLI, builder, and template tests.
+- Fixed React Native compatibility and command default behavior.
+- Fixed Fresh Deno runtime/config regressions found by smoke tests.
+- Fixed smoke test coverage for generated templates across multiple ecosystems.
+- Cleaned up legacy scaffold branding.
+- Hardened release workflows around deterministic Bun usage and npm publishing.
+
+**Published Packages**
+
+- `create-better-fullstack@1.8.0`
+- `create-bfs@1.8.0`
+- `@better-fullstack/types@1.8.0`
+- `@better-fullstack/template-generator@1.8.0`
+
+**Links**
+
+- Compare: https://github.com/Marve10s/Better-Fullstack/compare/v1.7.1...v1.8.0
+- Release: https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.8.0
+- Pull request: https://github.com/Marve10s/Better-Fullstack/pull/200
+
+## v1.7.1
+
+Released May 11, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.7.1)
+
+**What's New in v1.7.1**
+
+This release significantly expands the tools and libraries you can pick when scaffolding a project, refreshes generated app dependencies, and fixes a handful of template issues that were breaking new builds.
+
+**At a Glance**
+
+- **More choices**: dozens of new options across UI libraries, icons, caching, email, search, observability, feature flags, and language-specific frameworks
+- **Broader language coverage**: Python, Rust, Go, and Java now match TypeScript more closely in feature parity
+- **Up-to-date dependencies**: generated apps ship with refreshed package versions
+- **Important fixes**: TinaCMS and Supabase Auth templates now build cleanly on the latest Next.js and TypeScript
+
+**New Frontend Options**
+
+- **UI libraries**: MUI and Ant Design are now selectable for React projects
+- **shadcn/ui**: two new style presets - Luma and Sera
+- **Icons**: pick Heroicons or React Icons when using shadcn
+- **Cleaner React templates** for Next.js, React Router, React Vite, TanStack Router, and TanStack Start
+
+**Python Gets a Major Upgrade**
+
+- **APIs**: choose Django REST Framework or Django Ninja
+- **GraphQL**: scaffold a project with Ariadne
+- **AI & search**: built-in Haystack integration
+- **Task queues**: pick RQ, Dramatiq, or Huey
+- **Type checking**: mypy or Pyright preconfigured
+- **Plus**: ready-to-go caching, email, observability, and search modules
+
+**Rust Catches Up**
+
+New libraries you can include out of the box:
+
+- **Utilities**: uuid, Chrono, Reqwest, config, DashMap, parking_lot, Secrecy, Tokio Util
+- **API docs**: utoipa
+- **Testing**: Proptest and Insta
+- **Services**: email, Meilisearch search, Sentry-style observability, and Upstash Redis caching
+
+**Go Catches Up**
+
+- **CLI framework**: urfave/cli
+- **Logging**: Logrus
+- **Services**: Redis caching, Resend email, Sentry observability, and Meilisearch search
+
+**Java Catches Up**
+
+- **New framework**: Quarkus joins Spring Boot as a Java option
+- **New libraries**: Resilience4j, Spring WebFlux, Spring Batch, Spring Kafka, Spring Mail, Spring Boot DevTools, Micrometer Prometheus, and Thymeleaf
+- **Services**: caching, search, and email scaffolding included
+
+**Cross-Ecosystem Services**
+
+These work across multiple languages now:
+
+- **Feature flags**: LaunchDarkly, Flagsmith, and Unleash
+- **Caching, email, observability, and search**: expanded support and validation across every supported ecosystem
+- **Email**: Plunk templates refreshed
+- **Job queues**: worker templates updated
+
+**Web Builder**
+
+- Updated option catalog, tech icons, and resource links - all 405 builder options were validated
+- New presets and saved-stack panels
+- v1.7.1 changelog entry added to the in-app widget
+
+**Fixes**
+
+- **TinaCMS**: visual editing helpers now type-check correctly; TinaCMS + Next.js builds compile on the current TypeScript
+- **Supabase Auth**: no longer crashes during Next.js prerender - the browser client now initializes lazily
+- **Accessibility**: replaced a generic `role="region"` with `motion.section` to satisfy lint rules
+
+**Dependency Refresh**
+
+Generated app dependencies are bumped across frontend, backend, and language-specific manifests. A few pins are intentionally kept (e.g. `lint-staged@^16.4.0`) to preserve Node 20 compatibility.
+
+**Pull Requests**
+
+- #188 Expand ecosystem tool options
+- #189 Update dependency versions
+- #190 Update codebase dependencies
+
+[View full changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.7.0...v1.7.1)
+
+## v1.7.0
+
+Released May 7, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.7.0)
+
+**What changed**
+
+- Shared stack selection translation now lives in `@better-fullstack/types`, reducing duplicate CLI/web mapping code.
+- CLI and web compatibility paths now use more shared structured rule helpers.
+- Fresh pnpm scaffolds now allow dependency build scripts during first install, fixing pnpm v10 `ERR_PNPM_IGNORED_BUILDS` failures.
+- The web changelog widget has updated release copy for this version.
+
+**Verification**
+
+- PR checks passed before merge, including release guard, command roundtrip, package-manager matrix, Playwright builder tests, and strict smoke tests.
+
+## v1.6.3
+
+Released May 1, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.6.3)
+
+**🚀 Features**
+
+- Add site changelog widget - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/180 [(669e1)](https://github.com/Marve10s/Better-Fullstack/commit/669e1227)
+- **cli**: Add docker-compose addon for containerized deployments - by @Alisha-21-cloud in https://github.com/Marve10s/Better-Fullstack/issues/160 [(88f77)](https://github.com/Marve10s/Better-Fullstack/commit/88f77117)
+
+**🐞 Bug Fixes**
+
+- Repair main ci smoke and perf checks - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/179 [(3508f)](https://github.com/Marve10s/Better-Fullstack/commit/3508f2cb)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.6.2...v1.6.3)**
+
+## v1.6.2
+
+Released April 29, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.6.2)
+
+**v1.6.2**
+
+This release is larger than the auto-generated notes made it look. It publishes the new documentation work, expands the Java ecosystem substantially, and hardens the generator/release path around the new stack surface.
+
+Published packages:
+
+- [`create-better-fullstack@1.6.2`](https://www.npmjs.com/package/create-better-fullstack/v/1.6.2)
+- [`create-bfs@1.6.2`](https://www.npmjs.com/package/create-bfs/v/1.6.2)
+- [`@better-fullstack/types@1.6.2`](https://www.npmjs.com/package/@better-fullstack/types/v/1.6.2)
+- [`@better-fullstack/template-generator@1.6.2`](https://www.npmjs.com/package/@better-fullstack/template-generator/v/1.6.2)
+
+**Documentation**
+
+- Added the new documentation experience under `/docs` with pages for getting started, installation, first project setup, CLI usage, AI-agent docs, MCP, ecosystem guides, and option references. [#175](https://github.com/Marve10s/Better-Fullstack/pull/175)
+- Added docs pages for TypeScript, Python, Rust, Go, and Java ecosystems.
+- Added option reference docs generated from the shared stack metadata so the published docs stay closer to the actual builder/CLI schema.
+- Added reusable docs UI pieces: sidebar, table of contents, search dialog, page actions, MDX callouts, code blocks, package-manager tabs, and option/category count components.
+- Fixed docs routing and rendering issues in the TanStack Start/Fumadocs path, including content glob resolution and serializable loader data.
+- Improved docs styling, theme behavior, package-manager tabs, code block rendering, and `llms.txt` coverage.
+- Clarified standalone project messaging. [#170](https://github.com/Marve10s/Better-Fullstack/pull/170)
+
+**Java Ecosystem**
+
+Expanded Java from a smaller starter surface into a more complete Spring Boot generation path. [#174](https://github.com/Marve10s/Better-Fullstack/pull/174)
+
+New Java library options:
+
+- [Liquibase](https://github.com/liquibase/liquibase)
+- [Springdoc OpenAPI](https://github.com/springdoc/springdoc-openapi)
+- [Lombok](https://github.com/projectlombok/lombok)
+- [MapStruct](https://github.com/mapstruct/mapstruct)
+- [Caffeine](https://github.com/ben-manes/caffeine)
+
+New Java testing options:
+
+- [AssertJ](https://github.com/assertj/assertj)
+- [REST Assured](https://github.com/rest-assured/rest-assured)
+- [WireMock](https://github.com/wiremock/wiremock)
+- [Awaitility](https://github.com/awaitility/awaitility)
+- [ArchUnit](https://github.com/TNG/ArchUnit)
+- [jqwik](https://github.com/jqwik-team/jqwik)
+- [Testcontainers](https://github.com/testcontainers/testcontainers-java) coverage was expanded in the generated templates.
+
+Generator and template improvements:
+
+- Wired Java schemas, compatibility rules, CLI prompts, web builder metadata, icons/resource links, templates, README output, AI docs output, post-install output, and tests.
+- Added Maven and Gradle dependency output for the expanded Java options.
+- Added generated examples for Liquibase changelogs, MapStruct DTO mapping, Caffeine-backed Spring Cache, ArchUnit rules, jqwik properties, REST Assured tests, WireMock tests, and Testcontainers tests.
+- Hardened Java compatibility around Spring Boot, build tools, JPA-only migration libraries, and the Flyway/Liquibase mutual exclusion rule.
+- Added the proper Java language icon in the stack builder.
+
+**CLI, Generator, and Smoke Fixes**
+
+- Fixed smoke-test blockers for ruler addon plus Go `sqlc` + JWT. [#171](https://github.com/Marve10s/Better-Fullstack/pull/171)
+- Fixed smoke-test blockers for skills addon and Nuxt + Convex. [#172](https://github.com/Marve10s/Better-Fullstack/pull/172)
+- Fixed smoke-test blockers for Nuxt + GraphQL Yoga, Rust TUI + no error handling, and Next + Auth0. [#173](https://github.com/Marve10s/Better-Fullstack/pull/173)
+- Built workspace packages before dependency snapshots so snapshot tests consume fresh generated output.
+- Improved generated README/post-install guidance for the expanded option surface.
+- Updated dependency handling utilities and template dependency output across frontend templates.
+- Renamed the generated auth client template from `.ts` to `.tsx` where JSX is emitted.
+
+**Testing and Release Infrastructure**
+
+- Added broader Java ecosystem tests across CLI prompts, web builder metadata, and template generation.
+- Expanded template snapshots for Java, smoke presets, combo generation, and verification helpers.
+- Added Java template dependency freshness coverage for Maven and Gradle.
+- Updated dependency freshness and template matrix workflows.
+- Fixed the release workflow to pin Bun for deterministic verification and publish packages with `npm publish` on Node 24.
+- Fixed a CodeQL insecure-randomness alert by replacing the non-seeded combo generator fallback with `node:crypto` `randomInt`. [#178](https://github.com/Marve10s/Better-Fullstack/pull/178)
+
+**Dependencies**
+
+- Refreshed workspace dependency versions and `bun.lock`. [#164](https://github.com/Marve10s/Better-Fullstack/pull/164), [#176](https://github.com/Marve10s/Better-Fullstack/pull/176), [#177](https://github.com/Marve10s/Better-Fullstack/pull/177)
+- Refreshed Java template dependency versions for Spring Boot, Lombok, Mockito, ArchUnit, and Maven plugins, while leaving larger JUnit/Testcontainers major bumps for manual review.
+
+**Validation**
+
+Before publishing, release verification passed both locally in a clean worktree and in CI:
+
+```sh
+bun run test:release
+```
+
+The CI release then published all four NPM packages, created the GitHub release, and pushed the `v1.6.2` tag.
+
+**Full diff:** https://github.com/Marve10s/Better-Fullstack/compare/v1.6.1...v1.6.2
+
+## v1.6.1
+
+Released April 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.6.1)
+
+**🚀 Features**
+
+- Add Java ecosystem support.
+- Support plain Java scaffolds with no framework.
+- Add Rust auth (oauth2) category.
+- Add Go auth options with Casbin and JWT.
+- Add `tortoise-orm` to the Python ORM category.
+
+**🛠 Improvements**
+
+- Harden Java scaffolds with build-tool guards, Flyway compatibility, reserved-word package handling, unused import cleanup, and Windows-friendly `*.bat` line endings.
+- Skip Java test verification when the selected build tool is `none`.
+- Add CLI and web parity contracts.
+- Harden the runtime matrix and CLI diagnostics.
+- Add template-generator unit tests and wire them into CI.
+- Show monthly npm downloads in the navbar.
+- Allow Vercel previews for `@Marve10s` pull requests.
+
+**🐞 Bug Fixes**
+
+- Use the proper Java language icon for Java presets.
+- Guard indexed access in the Java base warning assertion.
+- Add the missing `tortoise-orm` icon entry.
+- Scope `.js` API template extensions to AdonisJS backends only.
+- Guard CI database setup prompts and fix related smoke-test regressions.
+- Align `playwright-core` for a11y tests.
+- Refresh the web performance budget baseline.
+
+**Notes**
+
+- GitHub release `v1.6.1` is published, but npm package publication is still blocked by the failing `Release` workflow on `main`.
+- The current failure is at `Publish types to NPM`, where npm rejects the authenticated publish for `@better-fullstack/types@1.6.1` with a permission-style `404`.
+
+[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.6.0...v1.6.1)
+
+## v1.6.0
+
+Released April 11, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.6.0)
+
+**🚀 18 New Tools Across All Ecosystems**
+
+The biggest single release in Better-Fullstack history - 18 new tools, 7 new categories, all validated with 70+ scaffold combos.
+
+**TypeScript Ecosystem**
+
+| Tool | Category | Highlights |
+|------|----------|------------|
+| **Algolia** | Search | Server-side client with search, CRUD, index management, multi-search |
+| **Vercel** | Deploy | Zero-config deployment for all frameworks + serverless compat rules |
+| **GraphQL Yoga + Pothos** | API | Full GraphQL server with code-first schema builder |
+| **Tauri** | Desktop | Wrap any web frontend into a native desktop app (85k+ stars) |
+| **i18next** | i18n (new) | Universal i18n - works with all frontends (22M weekly npm downloads) |
+| **next-intl** | i18n (new) | Next.js-specific i18n with App Router middleware |
+
+**Rust Ecosystem**
+
+| Tool | Category | Highlights |
+|------|----------|------------|
+| **tracing + env-logger** | Logging (new) | Structured logging with subscriber setup |
+| **anyhow + thiserror** | Error Handling (new) | Application + custom error types with proper `?` support |
+| **eyre + color-eyre** | Error Handling (new) | Pretty error reports with backtraces |
+| **Diesel** | ORM | Compile-time query validation, async via diesel-async |
+| **Rocket** | Web Framework | Convention-over-config, `#[launch]` macro, 25k+ stars |
+| **moka** | Caching (new) | High-performance in-memory cache (used by crates.io) |
+| **redis-rs** | Caching (new) | Official Redis client with async + connection pooling |
+
+**Go Ecosystem**
+
+| Tool | Category | Highlights |
+|------|----------|------------|
+| **Fiber** | Web Framework | Express.js-like API on FastHTTP (38k+ stars) |
+| **Chi** | Web Framework | Zero-dependency stdlib router (18k+ stars) |
+| **zerolog** | Logging | Zero-allocation JSON logger, fastest benchmarks |
+| **slog** | Logging | Go 1.21+ stdlib structured logging (no external deps) |
+| **Ent** | ORM | Code-first ORM by Meta with compile-time safety (15k+ stars) |
+
+**Python Ecosystem**
+
+| Tool | Category | Highlights |
+|------|----------|------------|
+| **Flask** | Web Framework | #2 most-used Python framework (68k+ stars) |
+| **Litestar** | Web Framework | FastAPI competitor with 2x faster serialization |
+| **authlib** | Auth (new) | OAuth1/2, OIDC, JWT - most comprehensive Python auth lib |
+| **jwt (python-jose)** | Auth (new) | Simple JWT token handling |
+| **Strawberry** | GraphQL (new) | Code-first GraphQL with type hints, all framework integrations |
+
+**🛡️ Infrastructure Improvements**
+
+- **Adding New Tool Options Guideline** - 3,000+ line guide suite covering every file touchpoint, with worked examples, template reference, test patterns, routing gotchas, and compatibility rules
+- **PR-Aware Smoke Tests** - `--force-option`, `--force-non-none`, `--partition` flags for targeted CI testing
+- **Strengthened CI** - `test:release` expanded from 3 to 6 tests + tech-links validation; smoke test failures now block PRs
+- **Compatibility Rules** - Vercel blocks NestJS/AdonisJS (serverless), warns on Elysia (Bun-only); next-intl restricted to Next.js
+- **Meilisearch v0.57 Fix** - Updated template for renamed `Meilisearch` class and `tasks.*` API
+
+**📊 By the Numbers**
+
+- **18 tools** shipped across 4 ecosystems
+- **7 new categories** created (i18n, error handling, logging, caching, auth, GraphQL × 2)
+- **400+ files** changed
+- **70+ scaffold combos** validated with compile/type-check
+- **19 PRs** merged
+
+## v1.5.4
+
+Released April 11, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.5.4)
+
+**🚀 18 New Tools Across All Ecosystems**
+
+The biggest single release in Better-Fullstack history - 18 new tools, 7 new categories, all validated with 70+ scaffold combos.
+
+**TypeScript Ecosystem**
+
+| Tool | Category | Highlights |
+|------|----------|------------|
+| **Algolia** | Search | Server-side client with search, CRUD, index management, multi-search |
+| **Vercel** | Deploy | Zero-config deployment for all frameworks + serverless compat rules |
+| **GraphQL Yoga + Pothos** | API | Full GraphQL server with code-first schema builder |
+| **Tauri** | Desktop | Wrap any web frontend into a native desktop app (85k+ stars) |
+| **i18next** | i18n (new) | Universal i18n - works with all frontends (22M weekly npm downloads) |
+| **next-intl** | i18n (new) | Next.js-specific i18n with App Router middleware |
+
+**Rust Ecosystem**
+
+| Tool | Category | Highlights |
+|------|----------|------------|
+| **tracing + env-logger** | Logging (new) | Structured logging with subscriber setup |
+| **anyhow + thiserror** | Error Handling (new) | Application + custom error types with proper `?` support |
+| **eyre + color-eyre** | Error Handling (new) | Pretty error reports with backtraces |
+| **Diesel** | ORM | Compile-time query validation, async via diesel-async |
+| **Rocket** | Web Framework | Convention-over-config, `#[launch]` macro, 25k+ stars |
+| **moka** | Caching (new) | High-performance in-memory cache (used by crates.io) |
+| **redis-rs** | Caching (new) | Official Redis client with async + connection pooling |
+
+**Go Ecosystem**
+
+| Tool | Category | Highlights |
+|------|----------|------------|
+| **Fiber** | Web Framework | Express.js-like API on FastHTTP (38k+ stars) |
+| **Chi** | Web Framework | Zero-dependency stdlib router (18k+ stars) |
+| **zerolog** | Logging | Zero-allocation JSON logger, fastest benchmarks |
+| **slog** | Logging | Go 1.21+ stdlib structured logging (no external deps) |
+| **Ent** | ORM | Code-first ORM by Meta with compile-time safety (15k+ stars) |
+
+**Python Ecosystem**
+
+| Tool | Category | Highlights |
+|------|----------|------------|
+| **Flask** | Web Framework | #2 most-used Python framework (68k+ stars) |
+| **Litestar** | Web Framework | FastAPI competitor with 2x faster serialization |
+| **authlib** | Auth (new) | OAuth1/2, OIDC, JWT - most comprehensive Python auth lib |
+| **jwt (python-jose)** | Auth (new) | Simple JWT token handling |
+| **Strawberry** | GraphQL (new) | Code-first GraphQL with type hints, all framework integrations |
+
+**🛡️ Infrastructure Improvements**
+
+- **Adding New Tool Options Guideline** - 3,000+ line guide suite covering every file touchpoint, with worked examples, template reference, test patterns, routing gotchas, and compatibility rules
+- **PR-Aware Smoke Tests** - `--force-option`, `--force-non-none`, `--partition` flags for targeted CI testing
+- **Strengthened CI** - `test:release` expanded from 3 to 6 tests + tech-links validation; smoke test failures now block PRs
+- **Compatibility Rules** - Vercel blocks NestJS/AdonisJS (serverless), warns on Elysia (Bun-only); next-intl restricted to Next.js
+- **Meilisearch v0.57 Fix** - Updated template for renamed `Meilisearch` class and `tasks.*` API
+
+**📊 By the Numbers**
+
+- **18 tools** shipped across 4 ecosystems
+- **7 new categories** created (i18n, error handling, logging, caching, auth, GraphQL × 2)
+- **400+ files** changed
+- **70+ scaffold combos** validated with compile/type-check
+- **19 PRs** merged
+
+## v1.5.3
+
+Released April 7, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.5.3)
+
+**🚀 Features**
+
+- Ecosystem test coverage and dependency freshness - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/122 [(30de0)](https://github.com/Marve10s/Better-Fullstack/commit/30de074d)
+- Add Algolia as search engine option - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/125 [(94d41)](https://github.com/Marve10s/Better-Fullstack/commit/94d41d82)
+- Add logging category to Rust ecosystem - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/126 [(7e39b)](https://github.com/Marve10s/Better-Fullstack/commit/7e39ba40)
+- Add Fiber as Go web framework option - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/127 [(5b2b1)](https://github.com/Marve10s/Better-Fullstack/commit/5b2b1c84)
+- Add Flask as Python web framework option - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/128 [(13e22)](https://github.com/Marve10s/Better-Fullstack/commit/13e22b7b)
+- **cli**:
+  - Add --dry-run flag + CI security improvements - by @Marve10s [(6392d)](https://github.com/Marve10s/Better-Fullstack/commit/6392d7fb)
+  - Complete Phase 1 quality hardening - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/121 [(0d0a3)](https://github.com/Marve10s/Better-Fullstack/commit/0d0a372b)
+
+**🐞 Bug Fixes**
+
+- **ci**:
+  - Use PAT for dep update PRs to trigger downstream workflows - by @Marve10s [(edbfb)](https://github.com/Marve10s/Better-Fullstack/commit/edbfb8db)
+- **docs**:
+  - Use -u flag for snapshot updates, not --update - by @Marve10s [(59d37)](https://github.com/Marve10s/Better-Fullstack/commit/59d37c13)
+- **templates**:
+  - Garph client schema building and mailgun.js v12 type imports - by @Marve10s [(b18a8)](https://github.com/Marve10s/Better-Fullstack/commit/b18a8014)
+  - Add @libsql/client to web deps for SvelteKit fullstack + Prisma + SQLite - by @Marve10s [(820d1)](https://github.com/Marve10s/Better-Fullstack/commit/820d19ec)
+  - Add Drizzle example schema for non-auth projects + ORM+auth test coverage - by @Marve10s [(d2936)](https://github.com/Marve10s/Better-Fullstack/commit/d2936e6f)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.5.2...v1.5.3)**
+
+## v1.5.2
+
+Released April 2, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.5.2)
+
+**What's New**
+
+**🚀 Features**
+
+- **Polar Payments + Convex Integration** - Full Polar payment support for Convex-backed Better Auth projects with CLI integration - by @Alisha-21-cloud in #110
+- **MCP Server for AI Agents** - New MCP server enabling AI agents (Claude, Cursor, etc.) to scaffold and modify projects programmatically - by @Marve10s in #112
+- **MCP Documentation Page** - New `/mcp` route on the website with setup instructions, tool catalog, and workflow tips - by @Marve10s
+- **Elasticsearch Search Engine** - Added Elasticsearch as a search option with full template support - by @Kavin-Bakyaraj
+
+**🐞 Bug Fixes**
+
+- **Inngest v4 API migration** - Updated inngest functions template from deprecated 3-arg `createFunction` to v4 2-arg API with `triggers` in config object (#120)
+- **oRPC/tRPC context unused params** - Fixed `TS6133` errors for unused `req` parameter in orpc and trpc context templates when `auth != better-auth` (fastify, self+next, self+tanstack-start, self+svelte, self+solid backends) (#120)
+- **Template smoke test fixes** - Resolved type errors for otel, orpc, Angular Tailwind, and Qwik CLI scaffolding
+- **CodeQL security fixes** - Resolved alerts for incomplete sanitization and URL validation
+
+**🔧 CI/Infra**
+
+- Added CodeQL security scanning (#113)
+- Added PR size labels and vouch label workflows
+- MCP server ecosystem-aware responses with reduced token usage
+
+**👥 New Contributors**
+
+- @Alisha-21-cloud - Polar payments + Convex integration
+- @Kavin-Bakyaraj - Elasticsearch search engine support
+
+**Full Changelog**: https://github.com/Marve10s/Better-Fullstack/compare/v1.5.1...v1.5.2
+
+## v1.5.1
+
+Released April 2, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.5.1)
+
+**What's Changed**
+
+**✨ New Features**
+
+- **search**: Implemented Elasticsearch stack for search - by @Kavin-Bakyaraj in #111
+
+**🐞 Bug Fixes**
+
+- **cli**: Improve help text descriptions and post-install instructions - by @Marve10s in #115
+- **cli**: Group shadcn color theme options by temperature - by @Marve10s in #114
+- **compatibility**: Auto-adjust better-auth to none for ORMs without adapter - by @Marve10s in #116
+- **search**: Polish elasticsearch template - bump dep, add JSDoc and deleteAllDocuments - by @Marve10s
+
+**🧪 Tests**
+
+- **cli**: Add ORM + auth combination tests for untested combos - by @Marve10s in #116
+
+**🔧 CI & Infrastructure**
+
+- Add CodeQL security scanning - by @Marve10s in #113
+- Publish packages to GitHub Packages registry - by @Marve10s
+
+**📦 Dependencies**
+
+- Update dependency versions - in #105
+- Update codebase dependencies - in #109
+
+**📝 Documentation**
+
+- Add Divith123 and Kavin-Bakyaraj to homepage contributors section - by @Marve10s
+
+**New Contributors**
+
+- @Kavin-Bakyaraj made their first contribution in #111
+
+**Contributors**
+
+- @Marve10s
+- @Kavin-Bakyaraj
+- @Divith123
+
+**Full Changelog**: https://github.com/Marve10s/Better-Fullstack/compare/v1.5.0...v1.5.1
+
+## v1.5.0
+
+Released March 28, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.5.0)
+
+**🚀 Features**
+
+- Add version channels and builder parity - by @Divith123 [(1cf3b)](https://github.com/Marve10s/Better-Fullstack/commit/1cf3b4d3)
+- Enhance version handling with concurrency and add comprehensive tests for version parsing and comparison - by @Divith123 [(e5f39)](https://github.com/Marve10s/Better-Fullstack/commit/e5f39c1a)
+- **testing**: Add version-channel-latest smoke test preset - by @Marve10s [(f3fe8)](https://github.com/Marve10s/Better-Fullstack/commit/f3fe819e)
+
+**🐞 Bug Fixes**
+
+- Add versionChannel to tech-links validation skip list - by @Marve10s [(a6097)](https://github.com/Marve10s/Better-Fullstack/commit/a60970dd)
+- Improve version channel UX and fix prerelease parsing - by @Marve10s [(f80d6)](https://github.com/Marve10s/Better-Fullstack/commit/f80d6f7c)
+- **web**: Move versionChannel next to git in builder ordering - by @Marve10s [(59bee)](https://github.com/Marve10s/Better-Fullstack/commit/59beefcb)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.16...v1.5.0)**
+
+## v1.4.16
+
+Released March 28, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.16)
+
+**🚀 Features**
+
+- Add pre-flight config validation to warn about silently skipped features - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/100 [(e500e)](https://github.com/Marve10s/Better-Fullstack/commit/e500e7ca)
+- **seo**:
+  - Add comparison page, AI search optimization, and enhanced structured data - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/101 [(00070)](https://github.com/Marve10s/Better-Fullstack/commit/00070930)
+- **testing**:
+  - E2E runtime, enhanced smoke, and Playwright tests - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/103 [(5bab2)](https://github.com/Marve10s/Better-Fullstack/commit/5bab2d92)
+  - Add major-dependency smoke test system - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/108 [(d1e05)](https://github.com/Marve10s/Better-Fullstack/commit/d1e054e6)
+
+**🐞 Bug Fixes**
+
+- Repair template smoke regressions - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/107 [(77374)](https://github.com/Marve10s/Better-Fullstack/commit/773746ca)
+- Refresh template snapshots after PR 103 merge - by @Marve10s [(28010)](https://github.com/Marve10s/Better-Fullstack/commit/28010fe5)
+- **ci**:
+  - Build core packages before running tests - by @Marve10s [(22d4f)](https://github.com/Marve10s/Better-Fullstack/commit/22d4f30c)
+  - Prevent web prebuild from racing with CLI tests - by @Marve10s [(db189)](https://github.com/Marve10s/Better-Fullstack/commit/db189f71)
+- **test**:
+  - Extend module resolution retry to cover template-generator - by @Marve10s [(52765)](https://github.com/Marve10s/Better-Fullstack/commit/52765d81)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.15...v1.4.16)**
+
+## v1.4.15
+
+Released March 17, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.15)
+
+**🚀 Features**
+
+- **cms**: Add TinaCMS support - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/81 [(3a0ae)](https://github.com/Marve10s/Better-Fullstack/commit/3a0ae0e2)
+- **testing**: Add dev server health check and preset support to smoke test - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/98 [(88b9c)](https://github.com/Marve10s/Better-Fullstack/commit/88b9c240)
+
+**🐞 Bug Fixes**
+
+- Resolve garph and paddle template smoke test failures - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/86 [(5bd6d)](https://github.com/Marve10s/Better-Fullstack/commit/5bd6d9e9)
+- Resolve mailgun email template type errors - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/99 [(0ca47)](https://github.com/Marve10s/Better-Fullstack/commit/0ca47abe)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.14...v1.4.15)**
+
+## v1.4.14
+
+Released March 17, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.14)
+
+**🚀 Features**
+
+- Add strict oxlint configuration - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/83 [(89275)](https://github.com/Marve10s/Better-Fullstack/commit/89275c04)
+
+**🐞 Bug Fixes**
+
+- **adonisjs**:
+  - Fix build failure and upgrade to AdonisJS v7 - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/96 [(ce0bb)](https://github.com/Marve10s/Better-Fullstack/commit/ce0bb5f9)
+- **deps**:
+  - Scan template files for dependency versions in CI - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/91 [(d7176)](https://github.com/Marve10s/Better-Fullstack/commit/d7176b59)
+  - Update each workspace individually in codebase-deps CI - by @Marve10s
+  - Revert 0.x minor bumps and prereleases in patch-minor mode - by @Marve10s
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.13...v1.4.14)**
+
+## v1.4.13
+
+Released March 15, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.13)
+
+**🐞 Bug Fixes**
+
+- Enable Vercel deployments only on main branch - by @Marve10s [(970f1)](https://github.com/Marve10s/Better-Fullstack/commit/970f16d0)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.12...v1.4.13)**
+
+## v1.4.12
+
+Released March 15, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.12)
+
+**What's New**
+
+**TanStack Ecosystem - 6 New Libraries**
+
+- **5 new TanStack addons**: Query (standalone), Table, Virtual, DB (Beta), Pacer (Beta)
+- **TanStack AI** as a new AI SDK option (Alpha, React + Solid only)
+- Each addon auto-installs the correct framework-specific adapter (React, Vue, Svelte, Solid, Angular) based on frontend selection, with Astro integration awareness and core package fallbacks
+- TanStack Query standalone is auto-disabled when an API layer (tRPC/oRPC/ts-rest/garph) already provides it
+
+**Presets Tab & Builder UI**
+
+- New **presets panel** with tabbed UI and 16+ presets across categories: Next, React, TanStack, Svelte, Nuxt, Astro, Solid, Angular, Qwik, Mobile, Rust, Python, Go
+- Includes T3, PERN, MERN, TanStack Start, TanStack+Hono, TanStack Fullstack, SvelteKit, Nuxt, Astro, SolidStart, Angular, Qwik, Uniwind, and more
+- New preset dropdown and presets panel components
+
+**Homepage Redesign**
+
+- Replaced GSAP with **Motion** for animations
+- New **testimonials section**
+- Updated hero section and icons
+
+**Yarn Support**
+
+- **Yarn** added as a package manager option
+
+**CI Improvements**
+
+- Added **dependency caching** (`actions/cache`) across all CI workflows (test, lint, release, preview, smoke test, deps-check)
+- Added **Turbo cache** for web build job
+- Streamlined build steps in test pipeline
+
+**Bug Fixes**
+
+- Fix `useFeatureValue` return type cast in GrowthBook template
+- Add `.js` extension to Typesense deep imports
+- Update `react-email` to v1.0.9 and pin Qwik to `~1.18.0`
+- Remove deprecated Next.js plugin, add react-perf, fix exhaustive-deps regression
+- Add strict oxlint configuration and fix all lint errors
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.11...v1.4.12)**
+
+## v1.4.11
+
+Released March 13, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.11)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.10...v1.4.11)**
+
+## v1.4.10
+
+Released March 12, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.10)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.9...v1.4.10)**
+
+## v1.4.9
+
+Released March 12, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.9)
+
+**🐞 Bug Fixes**
+
+- Unblock monday dependency updates - by @Marve10s [(d2c2a)](https://github.com/Marve10s/Better-Fullstack/commit/d2c2a77d)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.8...v1.4.9)**
+
+## v1.4.8
+
+Released March 9, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.8)
+
+**🐞 Bug Fixes**
+
+- **web**:
+  - Scope auth options by ecosystem - by @Marve10s [(bf5b5)](https://github.com/Marve10s/Better-Fullstack/commit/bf5b5956)
+  - Apply auth visibility filter in all builder render paths - by @Marve10s [(fbf88)](https://github.com/Marve10s/Better-Fullstack/commit/fbf88d6a)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.7...v1.4.8)**
+
+## v1.4.7
+
+Released March 8, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.7)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.18...v1.4.7)**
+
+## v1.3.18
+
+Released March 8, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.18)
+
+**🚀 Features**
+
+- Complete engineering backlog follow-ups - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/61 [(a030f)](https://github.com/Marve10s/Better-Fullstack/commit/a030fdd7)
+- **web**: Move stack preview to client-side generation - by @Marve10s and **Claude Opus 4.6** in https://github.com/Marve10s/Better-Fullstack/issues/60 [(a34b1)](https://github.com/Marve10s/Better-Fullstack/commit/a34b18e3)
+
+**🐞 Bug Fixes**
+
+- **template-generator**: Address fets/redwood matrix regressions - by @Marve10s [(5511b)](https://github.com/Marve10s/Better-Fullstack/commit/5511beef)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.6...v1.3.18)**
+
+## v1.4.6
+
+Released March 4, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.6)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.5...v1.4.6)**
+
+## v1.4.5
+
+Released March 4, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.5)
+
+**🐞 Bug Fixes**
+
+- Complete shadcn template coverage and stabilize turbo CLI tests - by @Marve10s [(99036)](https://github.com/Marve10s/Better-Fullstack/commit/99036e2e)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.4...v1.4.5)**
+
+## v1.4.4
+
+Released March 4, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.4)
+
+**🐞 Bug Fixes**
+
+- **templates**: Cover non-shadcn icon deps and nitro trpc context - by @Marve10s [(91dc2)](https://github.com/Marve10s/Better-Fullstack/commit/91dc257c)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.3...v1.4.4)**
+
+## v1.4.3
+
+Released March 3, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.3)
+
+**🐞 Bug Fixes**
+
+- **templates**: Patch nitro orpc context and fets auth handler typing - by @Marve10s [(76013)](https://github.com/Marve10s/Better-Fullstack/commit/7601328c)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.2...v1.4.3)**
+
+## v1.4.2
+
+Released March 3, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.2)
+
+**🐞 Bug Fixes**
+
+- **shadcn**: Resolve hugeicons install and tabler sonner icon export - by @Marve10s [(082c5)](https://github.com/Marve10s/Better-Fullstack/commit/082c56e9)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.1...v1.4.2)**
+
+## v1.4.1
+
+Released March 2, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.1)
+
+**🚀 Features**
+
+- Add SvelteKit and SolidStart fullstack support - by @Marve10s and **Claude Sonnet 4.6** [(3682c)](https://github.com/Marve10s/Better-Fullstack/commit/3682cbdf)
+- Unify compatibility logic across CLI and web - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/56 [(c928f)](https://github.com/Marve10s/Better-Fullstack/commit/c928fb5d)
+- **shadcn**: Add shadcn/ui customization with 7 sub-options - by @Marve10s and **Claude Sonnet 4.6** in https://github.com/Marve10s/Better-Fullstack/issues/49 [(f5ccc)](https://github.com/Marve10s/Better-Fullstack/commit/f5ccc903)
+- **web**: Restore stack preview mode with SSR-safe state hook - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/54 [(d5375)](https://github.com/Marve10s/Better-Fullstack/commit/d5375e27)
+
+**🐞 Bug Fixes**
+
+- Unblock release ci checks - by @Marve10s [(a927f)](https://github.com/Marve10s/Better-Fullstack/commit/a927f519)
+- Guard examples in cli ai prompt - by @Marve10s [(331f4)](https://github.com/Marve10s/Better-Fullstack/commit/331f46a1)
+- **ci**:
+  - Cover SvelteKit and SolidStart sync gaps - by @Marve10s [(8c19d)](https://github.com/Marve10s/Better-Fullstack/commit/8c19de9d)
+- **web**:
+  - Use shared icon for Solid and SolidStart - by @Marve10s [(1efce)](https://github.com/Marve10s/Better-Fullstack/commit/1efce4a3)
+  - Reduce vercel build memory pressure - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/57 [(e4e0c)](https://github.com/Marve10s/Better-Fullstack/commit/e4e0caa5)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.4.0...v1.4.1)**
+
+## v1.4.0
+
+Released February 25, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.4.0)
+
+**🚀 Features**
+
+- Add chat-sdk scaffolding examples - by @Marve10s [(f9250)](https://github.com/Marve10s/Better-Fullstack/commit/f925037f)
+- **clerk**:
+  - Support self backend for next and tanstack start - by @Marve10s [(ecc34)](https://github.com/Marve10s/Better-Fullstack/commit/ecc3474b)
+- **web**:
+  - Collapsible builder sections and improved card hover - by @Marve10s and **Claude Sonnet 4.6** [(b9650)](https://github.com/Marve10s/Better-Fullstack/commit/b9650209)
+  - Mark legacy libraries in builder - by @Marve10s and **Claude Sonnet 4.6** [(83ddd)](https://github.com/Marve10s/Better-Fullstack/commit/83ddd8e4)
+  - Add docs and GitHub links to builder cards - by @Marve10s [(ab77a)](https://github.com/Marve10s/Better-Fullstack/commit/ab77a90c)
+  - Improve builder compatibility guidance and link QA - by @Marve10s [(5bfdb)](https://github.com/Marve10s/Better-Fullstack/commit/5bfdb882)
+  - Refresh homepage terminal and landing experiments - by @Marve10s [(48191)](https://github.com/Marve10s/Better-Fullstack/commit/48191211)
+  - Update homepage terminal icons, features accuracy, and revert combos to original - by @Marve10s [(42c8c)](https://github.com/Marve10s/Better-Fullstack/commit/42c8c36d)
+
+**🐞 Bug Fixes**
+
+- Serialize template generation prebuild - by @Marve10s [(ddcc5)](https://github.com/Marve10s/Better-Fullstack/commit/ddcc5f3d)
+- **ai**: Add langgraph example runtime deps - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/43 [(e44b6)](https://github.com/Marve10s/Better-Fullstack/commit/e44b6947)
+- **web**: Restore builder icons for typesense s3 and posthog - by @Marve10s [(64b01)](https://github.com/Marve10s/Better-Fullstack/commit/64b01aa4)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.17...v1.4.0)**
+
+## v1.3.17
+
+Released February 24, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.17)
+
+**🚀 Features**
+
+- **web**: Improve seo and social previews - by @Marve10s [(fb9e0)](https://github.com/Marve10s/Better-Fullstack/commit/fb9e03f0)
+
+**🐞 Bug Fixes**
+
+- **deps**: Detect downgrades in version updater - by @Marve10s [(52783)](https://github.com/Marve10s/Better-Fullstack/commit/52783c86)
+- **templates**: Fix 4 type-check bugs in tanstack-router/trpc templates - by @Marve10s [(9008d)](https://github.com/Marve10s/Better-Fullstack/commit/9008df2a)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.16...v1.3.17)**
+
+## v1.3.16
+
+Released February 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.16)
+
+**🚀 Features**
+
+- Backport upstream improvements and add dedicated command tests - by @Marve10s [(cd440)](https://github.com/Marve10s/Better-Fullstack/commit/cd440cc9)
+
+**🐞 Bug Fixes**
+
+- **templates**:
+  - Fix 7 type-check bugs in NestJS/AdonisJS/Elysia/Drizzle templates - by @Marve10s and **Claude Sonnet 4.6** [(32354)](https://github.com/Marve10s/Better-Fullstack/commit/32354bb7)
+  - Fix Drizzle mysql2 connection API for drizzle-orm 0.45.1 - by @Marve10s and **Claude Sonnet 4.6** [(74b7c)](https://github.com/Marve10s/Better-Fullstack/commit/74b7c30d)
+  - Add Prisma postinstall script + batch-4 combo ledger - by @Marve10s and **Claude Sonnet 4.6** [(dbbcd)](https://github.com/Marve10s/Better-Fullstack/commit/dbbcd6db)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.15...v1.3.16)**
+
+## v1.3.15
+
+Released February 20, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.15)
+
+**🐞 Bug Fixes**
+
+- Clean lint warnings and align dependency version checks - by @Marve10s [(1b0b6)](https://github.com/Marve10s/Better-Fullstack/commit/1b0b6e36)
+- **deps**: Prevent version regressions in template map - by @Marve10s [(5ad73)](https://github.com/Marve10s/Better-Fullstack/commit/5ad73d8f)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.14...v1.3.15)**
+
+## v1.3.14
+
+Released February 18, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.14)
+
+**🐞 Bug Fixes**
+
+- **redwood**: Resolve missing deps for Redwood projects (Issue K) - by @Marve10s [(7c137)](https://github.com/Marve10s/Better-Fullstack/commit/7c137a8f)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.13...v1.3.14)**
+
+## v1.3.13
+
+Released February 17, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.13)
+
+**🐞 Bug Fixes**
+
+- **template-generator**: Update @garph/gqty version from ^1.3.5 to ^0.4.5 - by @Marve10s and **Claude Opus 4.6** [(0d1af)](https://github.com/Marve10s/Better-Fullstack/commit/0d1af159)
+- **testing**: Remove duplicate batch 6 rows and fix ledger totals - by @Marve10s and **Claude Opus 4.6** [(20fa8)](https://github.com/Marve10s/Better-Fullstack/commit/20fa851f)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.12...v1.3.13)**
+
+## v1.3.12
+
+Released February 17, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.12)
+
+**🐞 Bug Fixes**
+
+- **template-generator**: Update outdated dep versions for dodopayments, storybook, legendapp - by @Marve10s and **Claude Opus 4.6** [(9fd4d)](https://github.com/Marve10s/Better-Fullstack/commit/9fd4df2e)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.11...v1.3.12)**
+
+## v1.3.11
+
+Released February 17, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.11)
+
+**🐞 Bug Fixes**
+
+- **template-generator**: Update outdated dep versions for ts-rest, uploadthing, mastra - by @Marve10s and **Claude Opus 4.6** [(43844)](https://github.com/Marve10s/Better-Fullstack/commit/438441a6)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.10...v1.3.11)**
+
+## v1.3.10
+
+Released February 17, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.10)
+
+**🐞 Bug Fixes**
+
+- **template-generator**: Redirect email/logging/observability to apps/web for backend=self - by @Marve10s and **Claude Opus 4.6** [(59644)](https://github.com/Marve10s/Better-Fullstack/commit/5964457d)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.9...v1.3.10)**
+
+## v1.3.9
+
+Released February 17, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.9)
+
+**🐞 Bug Fixes**
+
+- **template-generator**: Prevent orphaned apps/server/ dir with backend=self and fix post-install message for astro/angular - by @Marve10s and **Claude Opus 4.6** [(9b9a0)](https://github.com/Marve10s/Better-Fullstack/commit/9b9a0277)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.8...v1.3.9)**
+
+## v1.3.8
+
+Released February 17, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.8)
+
+**🐞 Bug Fixes**
+
+- **template-generator**: Add missing deps for fullstack frontends with backend=none - by @Marve10s and **Claude Opus 4.6** [(4c66f)](https://github.com/Marve10s/Better-Fullstack/commit/4c66f847)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.7...v1.3.8)**
+
+## v1.3.7
+
+Released February 17, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.7)
+
+**🐞 Bug Fixes**
+
+- **ci**: Unblock deps and release automation - by @Marve10s [(00bae)](https://github.com/Marve10s/Better-Fullstack/commit/00bae4a1)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.6...v1.3.7)**
+
+## v1.3.6
+
+Released February 17, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.6)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.5...v1.3.6)**
+
+## v1.3.5
+
+Released February 17, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.5)
+
+**🐞 Bug Fixes**
+
+- **template-generator**: Fix batch 2+3 template generation bugs - by @Marve10s in https://github.com/Marve10s/Better-Fullstack/issues/35 [(39d58)](https://github.com/Marve10s/Better-Fullstack/commit/39d581e8)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.4...v1.3.5)**
+
+## v1.3.4
+
+Released February 16, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.4)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.3...v1.3.4)**
+
+## v1.3.3
+
+Released February 15, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.3)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.2...v1.3.3)**
+
+## v1.3.2
+
+Released January 29, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.2)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.1...v1.3.2)**
+
+## v1.3.1
+
+Released January 28, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.1)
+
+**🐞 Bug Fixes**
+
+- Filter incompatible options for Fresh frontend - by @Marve10s [(f2713)](https://github.com/Marve10s/Better-Fullstack/commit/f27132c0)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.3.0...v1.3.1)**
+
+## v1.3.0
+
+Released January 28, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.3.0)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.2.0...v1.3.0)**
+
+## v1.2.0
+
+Released January 28, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.2.0)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.15...v1.2.0)**
+
+## v1.1.15
+
+Released January 24, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.15)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.16...v1.1.15)**
+
+## v1.1.16
+
+Released January 24, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.16)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.14...v1.1.16)**
+
+## v1.1.14
+
+Released January 24, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.14)
+
+**🚀 Features**
+
+- **analytics**:
+  - Add Plausible privacy-focused analytics integration - by @Marve10s and **Claude Opus 4.5** [(7afc5)](https://github.com/Marve10s/Better-Fullstack/commit/7afc5e00)
+  - Add Umami open-source analytics integration - by @Marve10s and **Claude Opus 4.5** [(f63d7)](https://github.com/Marve10s/Better-Fullstack/commit/f63d7d92)
+- **auth**:
+  - Add Stack Auth authentication provider - by @Marve10s and **Claude Opus 4.5** [(357ab)](https://github.com/Marve10s/Better-Fullstack/commit/357ab192)
+  - Add Supabase Auth authentication provider - by @Marve10s and **Claude Opus 4.5** [(83a2a)](https://github.com/Marve10s/Better-Fullstack/commit/83a2a086)
+- **cross-ecosystem**:
+  - Add Upstash managed database service for Redis - by @Marve10s and **Claude Opus 4.5** [(70605)](https://github.com/Marve10s/Better-Fullstack/commit/7060558c)
+  - Add Auth0 identity platform authentication - by @Marve10s and **Claude Opus 4.5** [(d3317)](https://github.com/Marve10s/Better-Fullstack/commit/d33173c2)
+  - Add Fly.io deployment platform support - by @Marve10s and **Claude Opus 4.5** [(3ca5e)](https://github.com/Marve10s/Better-Fullstack/commit/3ca5e1c8)
+  - Add Railway deployment platform support - by @Marve10s and **Claude Opus 4.5** [(00258)](https://github.com/Marve10s/Better-Fullstack/commit/00258d5b)
+  - Add Docker containerization infrastructure support - by @Marve10s and **Claude Opus 4.5** [(43a86)](https://github.com/Marve10s/Better-Fullstack/commit/43a865a7)
+  - Add SST (Serverless Stack) AWS infrastructure support - by @Marve10s and **Claude Opus 4.5** [(2b89b)](https://github.com/Marve10s/Better-Fullstack/commit/2b89b595)
+  - Add Grafana dashboard observability support - by @Marve10s and **Claude Opus 4.5** [(5e2a1)](https://github.com/Marve10s/Better-Fullstack/commit/5e2a1ae5)
+  - Add Meilisearch search engine integration - by @Marve10s and **Claude Opus 4.5** [(91367)](https://github.com/Marve10s/Better-Fullstack/commit/91367c09)
+  - Add Typesense search engine integration - by @Marve10s and **Claude Opus 4.5** [(12358)](https://github.com/Marve10s/Better-Fullstack/commit/12358823)
+  - Add AWS S3 file storage integration - by @Marve10s and **Claude Opus 4.5** [(340b8)](https://github.com/Marve10s/Better-Fullstack/commit/340b8ed6)
+  - Add Cloudflare R2 file storage integration - by @Marve10s and **Claude Opus 4.5** [(7de24)](https://github.com/Marve10s/Better-Fullstack/commit/7de24ace)
+- **database**:
+  - Add EdgeDB graph-relational database support - by @Marve10s and **Claude Opus 4.5** [(254af)](https://github.com/Marve10s/Better-Fullstack/commit/254afd8a)
+  - Add Redis in-memory data store support - by @Marve10s and **Claude Opus 4.5** [(586c3)](https://github.com/Marve10s/Better-Fullstack/commit/586c3234)
+- **feature-flags**:
+  - Add GrowthBook feature flags integration - by @Marve10s and **Claude Opus 4.5** [(7c595)](https://github.com/Marve10s/Better-Fullstack/commit/7c5958fd)
+  - Add PostHog feature flags + analytics integration - by @Marve10s and **Claude Opus 4.5** [(d5d97)](https://github.com/Marve10s/Better-Fullstack/commit/d5d97432)
+- **go**:
+  - Add Go ecosystem tab to Builder page - by @Marve10s and **Claude Opus 4.5** [(50b19)](https://github.com/Marve10s/Better-Fullstack/commit/50b196d9)
+  - Complete Go ecosystem Step 1 - language support, base template, and tests - by @Marve10s and **Claude Opus 4.5** [(c9bba)](https://github.com/Marve10s/Better-Fullstack/commit/c9bbaea2)
+  - Complete Echo web framework support with README generation - by @Marve10s and **Claude Opus 4.5** [(14cbe)](https://github.com/Marve10s/Better-Fullstack/commit/14cbe6c5)
+  - Complete SQLC type-safe SQL code generator support - by @Marve10s and **Claude Opus 4.5** [(307d1)](https://github.com/Marve10s/Better-Fullstack/commit/307d1d4b)
+- **observability**:
+  - Add Sentry error tracking integration - by @Marve10s and **Claude Opus 4.5** [(b2828)](https://github.com/Marve10s/Better-Fullstack/commit/b2828975)
+- **python**:
+  - Add Python ecosystem tab to Builder page - by @Marve10s and **Claude Opus 4.5** [(3a5f2)](https://github.com/Marve10s/Better-Fullstack/commit/3a5f23ff)
+  - Add Python language support to CLI and template generator - by @Marve10s and **Claude Opus 4.5** [(39399)](https://github.com/Marve10s/Better-Fullstack/commit/39399e53)
+  - Add SQLAlchemy ORM support with full template generation - by @Marve10s and **Claude Opus 4.5** [(548be)](https://github.com/Marve10s/Better-Fullstack/commit/548bee3d)
+  - Add SQLModel ORM support with full template generation - by @Marve10s and **Claude Opus 4.5** [(84de9)](https://github.com/Marve10s/Better-Fullstack/commit/84de9d1d)
+  - Add Pydantic validation library support with pydantic-settings - by @Marve10s and **Claude Opus 4.5** [(f88da)](https://github.com/Marve10s/Better-Fullstack/commit/f88dac24)
+  - Add LangChain AI framework support with full template generation - by @Marve10s and **Claude Opus 4.5** [(6d8e9)](https://github.com/Marve10s/Better-Fullstack/commit/6d8e91e7)
+  - Add LlamaIndex AI framework support with full template generation - by @Marve10s and **Claude Opus 4.5** [(75d7d)](https://github.com/Marve10s/Better-Fullstack/commit/75d7dfac)
+  - Add OpenAI SDK AI framework support with full template generation - by @Marve10s and **Claude Opus 4.5** [(a531b)](https://github.com/Marve10s/Better-Fullstack/commit/a531b502)
+  - Add Anthropic SDK AI framework support with full template generation - by @Marve10s and **Claude Opus 4.5** [(d464e)](https://github.com/Marve10s/Better-Fullstack/commit/d464e5e9)
+  - Add LangGraph AI framework support with full template generation - by @Marve10s and **Claude Opus 4.5** [(28cd9)](https://github.com/Marve10s/Better-Fullstack/commit/28cd9af7)
+  - Add CrewAI AI framework support with full template generation - by @Marve10s and **Claude Opus 4.5** [(3df89)](https://github.com/Marve10s/Better-Fullstack/commit/3df89a82)
+  - Add Celery distributed task queue support with full template generation - by @Marve10s and **Claude Opus 4.5** [(ac0e2)](https://github.com/Marve10s/Better-Fullstack/commit/ac0e2929)
+
+**🐞 Bug Fixes**
+
+- **python**: Add missing Python fields to CLI and web types - by @Marve10s and **Claude Opus 4.5** [(68972)](https://github.com/Marve10s/Better-Fullstack/commit/68972bb5)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.12...v1.1.14)**
+
+## v1.1.12
+
+Released January 23, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.12)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.11...v1.1.12)**
+
+## v1.1.11
+
+Released January 23, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.11)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.10...v1.1.11)**
+
+## v1.1.10
+
+Released January 22, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.10)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.9...v1.1.10)**
+
+## v1.1.9
+
+Released January 22, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.9)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.8...v1.1.9)**
+
+## v1.1.8
+
+Released January 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.8)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.7...v1.1.8)**
+
+## v1.1.7
+
+Released January 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.7)
+
+**🚀 Features**
+
+- Add dependency version management pipeline - by @Marve10s [(bc645)](https://github.com/Marve10s/Better-Fullstack/commit/bc6450a7)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.6...v1.1.7)**
+
+## v1.1.6
+
+Released January 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.6)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.5...v1.1.6)**
+
+## v1.1.5
+
+Released January 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.5)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.4...v1.1.5)**
+
+## v1.1.4
+
+Released January 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.4)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.3...v1.1.4)**
+
+## v1.1.3
+
+Released January 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.3)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.2...v1.1.3)**
+
+## v1.1.2
+
+Released January 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.2)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.1...v1.1.2)**
+
+## v1.1.1
+
+Released January 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.1)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.1.0...v1.1.1)**
+
+## v1.1.0
+
+Released January 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.1.0)
+
+*No significant changes*
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.0.5...v1.1.0)**
+
+## v1.0.5
+
+Released January 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.0.5)
+
+**🐞 Bug Fixes**
+
+- Rename create-bts to create-bfs - by @Marve10s [(316b2)](https://github.com/Marve10s/Better-Fullstack/commit/316b208b)
+- Update create-bts to create-bfs in bump script - by @Marve10s [(31ed7)](https://github.com/Marve10s/Better-Fullstack/commit/31ed7ca2)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.0.3...v1.0.5)**
+
+## v1.0.3
+
+Released January 21, 2026 · [GitHub release](https://github.com/Marve10s/Better-Fullstack/releases/tag/v1.0.3)
+
+**🐞 Bug Fixes**
+
+- Handle multi-line commit   messages in release workflow - by @Marve10s [(9a91b)](https://github.com/Marve10s/Better-Fullstack/commit/9a91b4f4)
+
+**[View changes on GitHub](https://github.com/Marve10s/Better-Fullstack/compare/v1.0.1...v1.0.3)**
