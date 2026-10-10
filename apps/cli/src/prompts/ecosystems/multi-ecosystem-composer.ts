@@ -804,7 +804,7 @@ export async function gatherMultiEcosystemConfig(
       goWebFramework === "none"
         ? "none"
         : await scopedPromptValue("go", "goMessageQueue", configScope, backendSections, () =>
-            getGoMessageQueueChoice(flags.goMessageQueue),
+            getGoMessageQueueChoice(flags.goMessageQueue, { database, goWebFramework }),
           );
     const goCaching =
       goWebFramework === "none"
@@ -840,7 +840,7 @@ export async function gatherMultiEcosystemConfig(
       goWebFramework === "none" || !["sqlite", "postgres", "mysql"].includes(database)
         ? "none"
         : await scopedPromptValue("go", "goMigrations", configScope, backendSections, () =>
-            getGoMigrationsChoice(flags.goMigrations),
+            getGoMigrationsChoice(flags.goMigrations, { database, goOrm }),
           );
     const goTemplating =
       goWebFramework === "none"

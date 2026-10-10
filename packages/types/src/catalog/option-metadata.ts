@@ -1834,6 +1834,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     watermill: "Watermill",
     "kafka-go": "kafka-go",
     asynq: "Asynq",
+    river: "River",
+    gocron: "gocron",
   },
   goCaching: {
     redis: "go-redis",
@@ -1856,6 +1858,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   goMigrations: {
     "golang-migrate": "golang-migrate",
+    goose: "goose",
+    atlas: "Atlas",
   },
   goTemplating: {
     templ: "templ",

@@ -287,11 +287,24 @@ export async function createVirtual(
         .filter((part) => part.role === "logging" && part.ecosystem === "python")
         .map((part) => part.toolId),
     ];
+    const goJobAndMigrationSelections = [
+      config.goMessageQueue,
+      config.goMigrations,
+      ...(config.stackParts ?? [])
+        .filter(
+          (part) =>
+            part.ecosystem === "go" && (part.role === "jobQueue" || part.role === "migrations"),
+        )
+        .map((part) => part.toolId),
+    ];
     if (
       config.integrations === "nango" ||
       config.payments !== "none" ||
       jobQueueSelections.some(hasGeneratedJobQueueRequirements) ||
       pythonLoggingSelections.some((selection) => selection && selection !== "none") ||
+      goJobAndMigrationSelections.some((selection) =>
+        ["river", "gocron", "goose", "atlas"].includes(selection ?? "none"),
+      ) ||
       hasLegacyContainerAddon
     ) {
       const [{ validateConfigForProgrammaticUse }, { runWithContextAsync }] = await Promise.all([

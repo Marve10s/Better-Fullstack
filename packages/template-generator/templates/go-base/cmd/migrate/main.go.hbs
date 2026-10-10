@@ -1,0 +1,75 @@
+{{#if (eq goMigrations "goose")}}
+package main
+
+import (
+	"context"
+	"database/sql"
+	"log"
+	"os"
+
+{{#if (eq database "mysql")}}
+	_ "github.com/go-sql-driver/mysql"
+{{/if}}
+{{#if (eq database "postgres")}}
+	_ "github.com/jackc/pgx/v5/stdlib"
+{{/if}}
+	"github.com/joho/godotenv"
+{{#if (eq database "sqlite")}}
+	_ "github.com/mattn/go-sqlite3"
+{{/if}}
+	"github.com/pressly/goose/v3"
+
+	"{{projectName}}/migrations"
+)
+
+func main() {
+	if err := run(os.Args[1:]); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run(args []string) error {
+	_ = godotenv.Load()
+
+	command := "up"
+	if len(args) > 0 {
+		command, args = args[0], args[1:]
+	}
+
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+{{#if (eq database "postgres")}}
+		databaseURL = "postgres://user:password@localhost:5432/dbname?sslmode=disable"
+{{else if (eq database "mysql")}}
+		databaseURL = "root:password@tcp(localhost:3306)/{{projectName}}?parseTime=true"
+{{else}}
+		databaseURL = "app.db"
+{{/if}}
+	}
+
+{{#if (eq database "postgres")}}
+	db, err := sql.Open("pgx", databaseURL)
+{{else if (eq database "mysql")}}
+	db, err := sql.Open("mysql", databaseURL)
+{{else}}
+	db, err := sql.Open("sqlite3", databaseURL)
+{{/if}}
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	goose.SetBaseFS(migrations.FS)
+{{#if (eq database "postgres")}}
+	if err := goose.SetDialect("postgres"); err != nil {
+{{else if (eq database "mysql")}}
+	if err := goose.SetDialect("mysql"); err != nil {
+{{else}}
+	if err := goose.SetDialect("sqlite3"); err != nil {
+{{/if}}
+		return err
+	}
+
+	return goose.RunContext(context.Background(), command, db, ".", args...)
+}
+{{/if}}

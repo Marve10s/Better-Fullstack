@@ -599,9 +599,13 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   prometheus: { type: "si", slug: "prometheus", hex: "E6522C" },
   "kafka-go": { type: "si", slug: "apachekafka", hex: "231F20" },
   asynq: { type: "si", slug: "redis", hex: "DC382D" },
+  river: { type: "si", slug: "postgresql", hex: "4169E1" },
+  gocron: { type: "si", slug: "go", hex: "00ADD8" },
   validator: { type: "si", slug: "go", hex: "00ADD8" },
   "golangci-lint": { type: "si", slug: "go", hex: "00ADD8" },
   "golang-migrate": { type: "si", slug: "go", hex: "00ADD8" },
+  goose: { type: "si", slug: "go", hex: "00ADD8" },
+  atlas: { type: "si", slug: "go", hex: "00ADD8" },
   templ: { type: "si", slug: "go", hex: "00ADD8" },
   fx: { type: "si", slug: "uber", hex: "000000" },
 
