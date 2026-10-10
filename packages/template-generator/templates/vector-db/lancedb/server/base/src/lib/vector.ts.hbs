@@ -6,7 +6,10 @@ const DEFAULT_TABLE = "embeddings";
 let connectionPromise: Promise<lancedb.Connection> | undefined;
 
 export function getVectorClient(): Promise<lancedb.Connection> {
-  connectionPromise ??= lancedb.connect(LANCEDB_URI);
+  connectionPromise ??= lancedb.connect(LANCEDB_URI).catch((error: unknown) => {
+    connectionPromise = undefined;
+    throw error;
+  });
   return connectionPromise;
 }
 
@@ -26,11 +29,7 @@ export async function upsertVectors(
     vector: record.vector,
     text: record.text ?? "",
   }));
-  if (!(await db.tableNames()).includes(tableName)) {
-    await db.createTable(tableName, rows);
-    return;
-  }
-  const table = await db.openTable(tableName);
+  const table = await db.createTable(tableName, rows, { existOk: true });
   await table.mergeInsert("id").whenMatchedUpdateAll().whenNotMatchedInsertAll().execute(rows);
 }
 

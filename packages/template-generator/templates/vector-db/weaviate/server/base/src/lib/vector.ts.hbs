@@ -5,6 +5,7 @@ const WEAVIATE_API_KEY = process.env.WEAVIATE_API_KEY;
 const DEFAULT_COLLECTION = "Embeddings";
 
 let clientPromise: Promise<WeaviateClient> | undefined;
+const collectionPromises = new Map<string, Promise<void>>();
 
 function connect(): Promise<WeaviateClient> {
   if (WEAVIATE_API_KEY) {
@@ -20,7 +21,10 @@ function connect(): Promise<WeaviateClient> {
 }
 
 export function getVectorClient(): Promise<WeaviateClient> {
-  clientPromise ??= connect();
+  clientPromise ??= connect().catch((error: unknown) => {
+    clientPromise = undefined;
+    throw error;
+  });
   return clientPromise;
 }
 
@@ -30,13 +34,27 @@ export interface VectorRecord {
   properties?: Record<string, string | number | boolean>;
 }
 
-export async function ensureCollection(name: string = DEFAULT_COLLECTION): Promise<void> {
+async function createCollectionIfMissing(name: string): Promise<void> {
   const client = await getVectorClient();
   if (await client.collections.exists(name)) return;
-  await client.collections.create({
-    name,
-    vectorizers: weaviate.configure.vectors.selfProvided(),
+  try {
+    await client.collections.create({
+      name,
+      vectorizers: weaviate.configure.vectors.selfProvided(),
+    });
+  } catch (error) {
+    if (!(await client.collections.exists(name))) throw error;
+  }
+}
+
+export function ensureCollection(name: string = DEFAULT_COLLECTION): Promise<void> {
+  const pending = collectionPromises.get(name);
+  if (pending) return pending;
+  const promise = createCollectionIfMissing(name).finally(() => {
+    collectionPromises.delete(name);
   });
+  collectionPromises.set(name, promise);
+  return promise;
 }
 
 export async function upsertVectors(
@@ -53,7 +71,9 @@ export async function upsertVectors(
     })),
   );
   if (result.hasErrors) {
-    throw new Error(`Weaviate rejected ${Object.keys(result.errors).length} vector(s)`);
+    throw new Error(`Weaviate rejected ${Object.keys(result.errors).length} vector(s)`, {
+      cause: result.errors,
+    });
   }
 }
 

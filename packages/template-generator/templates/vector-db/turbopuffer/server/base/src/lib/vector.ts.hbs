@@ -19,9 +19,9 @@ export async function upsertVectors(
 ): Promise<void> {
   await vectorClient.namespace(namespace).write({
     upsert_rows: records.map((record) => ({
+      ...record.attributes,
       id: record.id,
       vector: record.vector,
-      ...record.attributes,
     })),
     distance_metric: "cosine_distance",
   });
