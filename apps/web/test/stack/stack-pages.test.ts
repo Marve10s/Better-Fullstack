@@ -17,7 +17,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { StackCombinationPage } from "@/components/stack-pages/stack-combination-page";
 import { deriveArchitecture, deriveCanonicalParts } from "@/lib/stack-pages/facts";
 import { PUBLISHED_STACK_SEEDS } from "@/lib/stack-pages/seeds";
-import { getPublishedStackPages, getStackPage } from "@/lib/stack-pages/source";
+import {
+  getPublishedStackPages,
+  getRelatedStackPages,
+  getStackPage,
+} from "@/lib/stack-pages/source";
 import { TemplateCatalogSections } from "@/routes/templates";
 
 function deriveSeedFacts(slug: string) {
@@ -191,7 +195,12 @@ describe("programmatic stack pages", () => {
       expect(page).toBeDefined();
       if (!page) continue;
 
-      const html = renderToStaticMarkup(createElement(StackCombinationPage, { page }));
+      const related = getRelatedStackPages(page).map(({ slug: relatedSlug, title }) => ({
+        slug: relatedSlug,
+        title,
+      }));
+      const html = renderToStaticMarkup(createElement(StackCombinationPage, { page, related }));
+      for (const link of related) expect(html).toContain(`href="/stack/${link.slug}"`);
       expect(html).toContain(`<h1`);
       expect(html).toContain(page.title);
       expect(html).toContain("<table");

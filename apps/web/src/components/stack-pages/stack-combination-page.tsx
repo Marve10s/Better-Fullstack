@@ -1,7 +1,10 @@
 import type { GeneratedStackPage } from "@/lib/stack-pages/types";
 
 import { CapabilityEvidenceProvider } from "@/components/stack-builder/capability-evidence-badge";
-import { getRelatedStackPages } from "@/lib/stack-pages/source";
+
+export type RelatedStackLink = Pick<GeneratedStackPage, "slug" | "title">;
+
+type StackCombinationPageProps = { page: GeneratedStackPage; related: RelatedStackLink[] };
 
 const SHAPE_COPY: Record<GeneratedStackPage["architecture"]["shape"], string> = {
   "single-app": "one frontend framework owns the UI and server boundary",
@@ -46,8 +49,7 @@ function StackSection({
   );
 }
 
-function StackCombinationPageContent({ page }: { page: GeneratedStackPage }) {
-  const relatedPages = getRelatedStackPages(page);
+function StackCombinationPageContent({ page, related }: StackCombinationPageProps) {
   const selectedLabels = page.canonicalParts
     .filter((part) => part.id !== "none")
     .map((part) => part.label);
@@ -238,17 +240,17 @@ function StackCombinationPageContent({ page }: { page: GeneratedStackPage }) {
 
         <StackSection number="08 / next" title="Related stacks and guide">
           <nav aria-label="Related stack templates" className="grid gap-3 md:grid-cols-3">
-            {relatedPages.map((related) => (
+            {related.map((link) => (
               <a
-                key={related.slug}
-                href={`/stack/${related.slug}`}
+                key={link.slug}
+                href={`/stack/${link.slug}`}
                 className="group rounded-lg border border-border/80 p-4 transition-colors hover:bg-muted/30"
               >
                 <span className="font-mono text-[0.65rem] text-muted-foreground uppercase tracking-[0.16em]">
                   Alternative
                 </span>
                 <span className="mt-2 block font-medium leading-6 group-hover:text-foreground">
-                  {related.title}
+                  {link.title}
                 </span>
               </a>
             ))}
@@ -302,10 +304,10 @@ function StackCombinationPageContent({ page }: { page: GeneratedStackPage }) {
   );
 }
 
-export function StackCombinationPage({ page }: { page: GeneratedStackPage }) {
+export function StackCombinationPage({ page, related }: StackCombinationPageProps) {
   return (
     <CapabilityEvidenceProvider>
-      <StackCombinationPageContent page={page} />
+      <StackCombinationPageContent page={page} related={related} />
     </CapabilityEvidenceProvider>
   );
 }

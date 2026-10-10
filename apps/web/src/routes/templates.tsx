@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
 
 import type { GeneratedStackPage } from "@/lib/stack-pages/types";
 
@@ -59,13 +60,15 @@ function templateIndexJsonLd(pages: GeneratedStackPage[]) {
   };
 }
 
+const loadTemplatePages = createServerFn({ method: "GET" }).handler(async () => {
+  const { getPublishedStackPages } = await import("@/lib/stack-pages/source");
+  return getPublishedStackPages().sort(
+    (left, right) => right.priority - left.priority || left.title.localeCompare(right.title),
+  );
+});
+
 export const Route = createFileRoute("/templates")({
-  loader: async () => {
-    const { getPublishedStackPages } = await import("@/lib/stack-pages/source");
-    return getPublishedStackPages().sort(
-      (left, right) => right.priority - left.priority || left.title.localeCompare(right.title),
-    );
-  },
+  loader: () => loadTemplatePages(),
   head: ({ loaderData: pages = [] }) => {
     const title = `Fullstack Starter Templates | ${SITE_NAME}`;
     const description =
