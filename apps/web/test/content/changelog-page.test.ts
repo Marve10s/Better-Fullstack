@@ -28,6 +28,20 @@ const changelogPage = {
 const EM_DASH = String.fromCodePoint(0x2014);
 const RELEASE_HEADING = /^## (v\d+\.\d+\.\d+)\n\nReleased (.+) · \[GitHub release\]\((.+)\)$/gm;
 
+async function renderReleaseNotes(notes: string) {
+  const compiled = await mdx({ outputFormat: "function-body" }).transform(
+    normalizeReleaseNotes(notes),
+    "release.mdx",
+  );
+  if (!compiled) throw new Error("Missing compiled release notes");
+  const module = runInNewContext(`(function () { ${compiled.code} })(runtime)`, {
+    runtime: jsxRuntime,
+  }) as {
+    default: ComponentType;
+  };
+  return renderToStaticMarkup(createElement(module.default));
+}
+
 describe("changelog page contract", () => {
   it("keeps unrelated content metadata out of the eager changelog bundle", async () => {
     const webRoot = path.resolve(import.meta.dir, "../..");
@@ -199,19 +213,15 @@ describe("changelog page contract", () => {
       expect(normalizeReleaseNotes(notes)).toBe(
         `${fence}text\n\`\`\`\n{name}\n${fence}\nLiteral \\{name\\}`,
       );
-      const compiled = await mdx({ outputFormat: "function-body" }).transform(
-        normalizeReleaseNotes(notes),
-        "release.mdx",
-      );
-      if (!compiled) throw new Error("Missing compiled release notes");
-      const module = runInNewContext(`(function () { ${compiled.code} })(runtime)`, {
-        runtime: jsxRuntime,
-      }) as {
-        default: ComponentType;
-      };
-      const html = renderToStaticMarkup(createElement(module.default));
-      expect(html).toContain("<p>Literal {name}</p>");
+      expect(await renderReleaseNotes(notes)).toContain("<p>Literal {name}</p>");
     }
+  });
+
+  it("renders existing Markdown escapes without turning them into MDX expressions", async () => {
+    expect(await renderReleaseNotes("Literal \\{name\\} and \\<slug>")).toBe(
+      "<p>Literal {name} and &lt;slug&gt;</p>",
+    );
+    expect(await renderReleaseNotes("Literal \\\\{name}")).toBe("<p>Literal \\{name}</p>");
   });
 
   it("preserves HTML comments, blank lines, and spaces inside fenced examples", () => {

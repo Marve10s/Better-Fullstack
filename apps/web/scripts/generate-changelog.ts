@@ -51,7 +51,10 @@ async function fetchReleases(): Promise<GitHubRelease[]> {
 }
 
 function escapeMdxText(text: string): string {
-  return text.replace(/[<{}]/g, (character) => `\\${character}`);
+  return text.replace(/\\*[<{}]/g, (match) => {
+    const backslashCount = match.length - 1;
+    return backslashCount % 2 === 0 ? `\\${match}` : match;
+  });
 }
 
 function escapeOutsideInlineCode(line: string): string {
