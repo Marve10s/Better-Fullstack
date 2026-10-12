@@ -1,4 +1,4 @@
-import { changelogMeta } from "virtual:content-meta";
+import { changelogMeta } from "virtual:changelog-meta";
 
 import { createSuspenseCache } from "@/lib/content/mdx-suspense-cache";
 

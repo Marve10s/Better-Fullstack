@@ -12,7 +12,6 @@ declare module "virtual:content-meta" {
   export const docsMeta: ReadonlyArray<ContentMetaEntry>;
   export const guidesMeta: ReadonlyArray<ContentMetaEntry>;
   export const blogMeta: ReadonlyArray<ContentMetaEntry>;
-  export const changelogMeta: ReadonlyArray<ContentMetaEntry>;
 }
 
 declare module "virtual:blog-raw" {
@@ -28,6 +27,15 @@ declare module "virtual:docs-raw" {
 declare module "virtual:guides-raw" {
   /** Raw English MDX source per guide slug, for Markdown and LLM endpoints. */
   export const rawGuidePages: Record<string, string>;
+}
+
+declare module "virtual:changelog-meta" {
+  import type { ChangelogFrontmatter } from "@/lib/changelog/source";
+
+  export const changelogMeta: ReadonlyArray<{
+    filePath: string;
+    frontmatter: ChangelogFrontmatter;
+  }>;
 }
 
 declare module "virtual:changelog-raw" {

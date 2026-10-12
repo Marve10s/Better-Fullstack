@@ -1,10 +1,19 @@
+import mdx from "@mdx-js/rollup";
+import { normalizeReleaseNotes, renderChangelog } from "@scripts/generate-changelog";
+import { contentMetaPlugin } from "@vite-plugins/content-meta";
+import { mdxContentPlugin } from "@vite-plugins/mdx-content";
 import { describe, expect, it } from "bun:test";
+import path from "node:path";
+import { runInNewContext } from "node:vm";
+import { createElement, type ComponentType } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import * as jsxRuntime from "react/jsx-runtime";
+import { build } from "vite";
 
 import { changelogHead } from "@/lib/changelog/seo";
 import { generateLlmsFullTxt, generateLlmsTxt, generateMarkdownSitemap } from "@/lib/content/llms";
 import { canonicalUrl, SITE_NAME } from "@/lib/seo/seo";
 import { generateSitemapXmlFromEntries, getSitemapEntriesFromPages } from "@/lib/seo/sitemap-core";
-import { normalizeReleaseNotes, renderChangelog } from "@scripts/generate-changelog";
 
 const changelogPage = {
   url: "/changelog",
@@ -20,6 +29,45 @@ const EM_DASH = String.fromCodePoint(0x2014);
 const RELEASE_HEADING = /^## (v\d+\.\d+\.\d+)\n\nReleased (.+) · \[GitHub release\]\((.+)\)$/gm;
 
 describe("changelog page contract", () => {
+  it("keeps unrelated content metadata out of the eager changelog bundle", async () => {
+    const webRoot = path.resolve(import.meta.dir, "../..");
+    const entryId = "virtual:changelog-bundle-test";
+    const result = await build({
+      configFile: false,
+      root: webRoot,
+      logLevel: "silent",
+      resolve: { alias: { "@": path.join(webRoot, "src"), "@web-root": webRoot } },
+      plugins: [
+        contentMetaPlugin(),
+        mdxContentPlugin({}),
+        {
+          name: "changelog-bundle-test",
+          resolveId(id) {
+            if (id === entryId) return id;
+          },
+          load(id) {
+            if (id !== entryId) return;
+            return `
+              export { changelogPage } from "/src/lib/changelog/source.ts";
+              export const loadOtherContent = () => import("virtual:content-meta");
+            `;
+          },
+        },
+      ],
+      build: {
+        write: false,
+        minify: false,
+        modulePreload: false,
+        rollupOptions: { input: entryId, preserveEntrySignatures: "strict" },
+      },
+    });
+
+    if (!("output" in result)) throw new Error("Expected a single Vite build output");
+    const entry = result.output.find((output) => output.type === "chunk" && output.isEntry);
+    if (entry?.type !== "chunk") throw new Error("Missing changelog entry chunk");
+    expect(Buffer.byteLength(entry.code)).toBeLessThan(16 * 1024);
+  });
+
   it("renders canonical, social, and structured metadata without alternate-language links", () => {
     const head = changelogHead(changelogPage);
     const canonical = canonicalUrl("/changelog");
@@ -115,9 +163,7 @@ describe("changelog page contract", () => {
     expect(releases.map((release) => release.date)).toEqual(
       releases.map((release) => release.date).sort((a, b) => b - a),
     );
-    expect(source).toContain(
-      `updated: "${new Date(releases[0].date).toISOString().slice(0, 10)}"`,
-    );
+    expect(source).toContain(`updated: "${new Date(releases[0].date).toISOString().slice(0, 10)}"`);
     expect(source).not.toContain(EM_DASH);
   });
 
@@ -147,6 +193,40 @@ describe("changelog page contract", () => {
     );
   });
 
+  it("tracks fence characters and lengths before escaping prose", async () => {
+    for (const fence of ["~~~", "````"]) {
+      const notes = `${fence}text\n\`\`\`\n{name}\n${fence}\nLiteral {name}`;
+      expect(normalizeReleaseNotes(notes)).toBe(
+        `${fence}text\n\`\`\`\n{name}\n${fence}\nLiteral \\{name\\}`,
+      );
+      const compiled = await mdx({ outputFormat: "function-body" }).transform(
+        normalizeReleaseNotes(notes),
+        "release.mdx",
+      );
+      if (!compiled) throw new Error("Missing compiled release notes");
+      const module = runInNewContext(`(function () { ${compiled.code} })(runtime)`, {
+        runtime: jsxRuntime,
+      }) as {
+        default: ComponentType;
+      };
+      const html = renderToStaticMarkup(createElement(module.default));
+      expect(html).toContain("<p>Literal {name}</p>");
+    }
+  });
+
+  it("preserves HTML comments, blank lines, and spaces inside fenced examples", () => {
+    const example = `   ~~~~html\n<!-- keep this example -->\n\n\n\n<div>  ${EM_DASH}\n   ~~~~`;
+    expect(normalizeReleaseNotes(`<!-- remove -->\n${example}\n\n\nProse`)).toBe(
+      `${example}\n\nProse`,
+    );
+  });
+
+  it("closes an unterminated fence before the next release section", () => {
+    expect(normalizeReleaseNotes("````text\n{name}\n```\n  ")).toBe(
+      "````text\n{name}\n```\n  \n````",
+    );
+  });
+
   it("skips drafts and prereleases and orders releases by publish date", () => {
     const output = renderChangelog([
       {
@@ -173,8 +253,17 @@ describe("changelog page contract", () => {
         prerelease: false,
         published_at: "2026-02-01T00:00:00Z",
       },
+      {
+        tag_name: "v2.0.0-beta.1",
+        html_url: "https://github.com/Marve10s/Better-Fullstack/releases/tag/v2.0.0-beta.1",
+        body: "Prerelease",
+        draft: false,
+        prerelease: true,
+        published_at: "2026-03-01T00:00:00Z",
+      },
     ]);
 
+    expect(output).not.toContain("v2.0.0-beta.1");
     expect(output).toContain('updated: "2026-02-01"');
     expect(output.indexOf("## v1.1.0")).toBeLessThan(output.indexOf("## v1.0.0"));
     expect(output).not.toContain("v1.2.0");

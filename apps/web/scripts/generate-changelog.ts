@@ -40,7 +40,9 @@ async function fetchReleases(): Promise<GitHubRelease[]> {
       },
     );
     if (!response.ok) {
-      throw new Error(`GitHub releases request failed: ${response.status} ${await response.text()}`);
+      throw new Error(
+        `GitHub releases request failed: ${response.status} ${await response.text()}`,
+      );
     }
     const batch = (await response.json()) as GitHubRelease[];
     releases.push(...batch);
@@ -68,26 +70,51 @@ function headingToParagraph(line: string): string {
   return `\n**${heading[1].replaceAll("**", "").trim()}**\n`;
 }
 
-export function normalizeReleaseNotes(body: string): string {
-  let inFence = false;
-  const lines = body
-    .replace(/\r\n?/g, "\n")
+function normalizeProse(lines: string[]): string {
+  return lines
+    .join("\n")
     .replace(HTML_COMMENT, "")
     .replace(EM_DASH, "-")
     .split("\n")
     .map((line) => {
-      if (/^\s*```/.test(line)) {
-        inFence = !inFence;
-        return line;
-      }
-      if (inFence) return line;
       const cleaned = line.replace(KNOWN_HTML_TAG, "").replace(NON_BREAKING_SPACES, " ");
       return escapeOutsideInlineCode(headingToParagraph(cleaned.trimEnd()));
-    });
-  return lines
+    })
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
-    .trim();
+    .replace(/^\n+|\n+$/g, "\n");
+}
+
+export function normalizeReleaseNotes(body: string): string {
+  const output: string[] = [];
+  let prose: string[] = [];
+  let fence: { character: string; length: number } | undefined;
+
+  for (const line of body.replace(/\r\n?/g, "\n").split("\n")) {
+    const marker = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
+    if (fence) {
+      output.push(line);
+      if (
+        marker &&
+        marker[1][0] === fence.character &&
+        marker[1].length >= fence.length &&
+        marker[2].trim() === ""
+      ) {
+        fence = undefined;
+      }
+    } else if (marker && (marker[1][0] !== "`" || !marker[2].includes("`"))) {
+      if (prose.length) output.push(normalizeProse(prose));
+      prose = [];
+      fence = { character: marker[1][0], length: marker[1].length };
+      output.push(line);
+    } else {
+      prose.push(line);
+    }
+  }
+
+  if (prose.length) output.push(normalizeProse(prose));
+  if (fence) output.push(fence.character.repeat(fence.length));
+  return output.join("\n").replace(/^\n+|\n+$/g, "");
 }
 
 function displayDate(publishedAt: string): string {

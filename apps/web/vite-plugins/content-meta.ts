@@ -29,6 +29,8 @@ const DOCS_RAW_ID = "virtual:docs-raw";
 const RESOLVED_DOCS_RAW_ID = "\0" + DOCS_RAW_ID;
 const GUIDES_RAW_ID = "virtual:guides-raw";
 const RESOLVED_GUIDES_RAW_ID = "\0" + GUIDES_RAW_ID;
+const CHANGELOG_META_ID = "virtual:changelog-meta";
+const RESOLVED_CHANGELOG_META_ID = "\0" + CHANGELOG_META_ID;
 const CHANGELOG_RAW_ID = "virtual:changelog-raw";
 const RESOLVED_CHANGELOG_RAW_ID = "\0" + CHANGELOG_RAW_ID;
 const LOCALIZED_CONTENT_ID = "virtual:localized-content";
@@ -430,6 +432,7 @@ export function contentMetaPlugin(): Plugin {
       if (id === BLOG_RAW_ID) return RESOLVED_BLOG_RAW_ID;
       if (id === DOCS_RAW_ID) return RESOLVED_DOCS_RAW_ID;
       if (id === GUIDES_RAW_ID) return RESOLVED_GUIDES_RAW_ID;
+      if (id === CHANGELOG_META_ID) return RESOLVED_CHANGELOG_META_ID;
       if (id === CHANGELOG_RAW_ID) return RESOLVED_CHANGELOG_RAW_ID;
       if (id === LOCALIZED_CONTENT_ID) return RESOLVED_LOCALIZED_CONTENT_ID;
       if (id.startsWith(LOCALIZED_MDX_BUNDLE_PREFIX)) {
@@ -457,6 +460,14 @@ export function contentMetaPlugin(): Plugin {
         return buildRawContentModule("changelog", "rawChangelogPages", (file) =>
           this.addWatchFile(file),
         );
+      }
+
+      if (id === RESOLVED_CHANGELOG_META_ID) {
+        const changelog = buildMeta("changelog", "/content/changelog/", {});
+        for (const entry of changelog.entries) {
+          this.addWatchFile(path.join(rootDir, entry.filePath.slice(1)));
+        }
+        return `export const changelogMeta = ${serializeModuleValue(changelog.entries)};`;
       }
 
       const { bundles, watchFiles: localizedWatchFiles } = readLocalizedBundles(rootDir);
@@ -497,20 +508,13 @@ export function contentMetaPlugin(): Plugin {
       const docs = buildMeta("docs", "/content/docs/", bundles);
       const guides = buildMeta("guides", "/content/guides/", bundles);
       const blog = buildMeta("blog", "/content/blog/", bundles);
-      const changelog = buildMeta("changelog", "/content/changelog/", bundles);
-      for (const entry of [
-        ...docs.entries,
-        ...guides.entries,
-        ...blog.entries,
-        ...changelog.entries,
-      ]) {
+      for (const entry of [...docs.entries, ...guides.entries, ...blog.entries]) {
         this.addWatchFile(path.join(rootDir, entry.filePath.slice(1)));
       }
       for (const filePath of [
         ...docs.watchFiles,
         ...guides.watchFiles,
         ...blog.watchFiles,
-        ...changelog.watchFiles,
         ...localizedWatchFiles,
       ]) {
         this.addWatchFile(filePath);
@@ -518,8 +522,7 @@ export function contentMetaPlugin(): Plugin {
       return (
         `export const docsMeta = ${serializeModuleValue(docs.entries)};\n` +
         `export const guidesMeta = ${serializeModuleValue(guides.entries)};\n` +
-        `export const blogMeta = ${serializeModuleValue(blog.entries)};\n` +
-        `export const changelogMeta = ${serializeModuleValue(changelog.entries)};\n`
+        `export const blogMeta = ${serializeModuleValue(blog.entries)};\n`
       );
     },
     handleHotUpdate(ctx) {
@@ -531,6 +534,7 @@ export function contentMetaPlugin(): Plugin {
         RESOLVED_DOCS_RAW_ID,
         RESOLVED_GUIDES_RAW_ID,
         RESOLVED_CHANGELOG_RAW_ID,
+        RESOLVED_CHANGELOG_META_ID,
       ]) {
         const mod = ctx.server.moduleGraph.getModuleById(id);
         if (mod) ctx.server.moduleGraph.invalidateModule(mod);
