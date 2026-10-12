@@ -23,4 +23,14 @@ export async function processVectorDbTemplates(
     destPrefix,
     config,
   );
+
+  if (config.vectorDb === "lancedb") {
+    const gitignore = vfs.readFile(".gitignore") ?? "";
+    if (!gitignore.split("\n").includes(".lancedb")) {
+      vfs.writeFile(
+        ".gitignore",
+        `${gitignore}${gitignore.endsWith("\n") || gitignore.length === 0 ? "" : "\n"}.lancedb\n`,
+      );
+    }
+  }
 }

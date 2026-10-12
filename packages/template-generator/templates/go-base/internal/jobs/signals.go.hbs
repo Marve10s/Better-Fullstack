@@ -1,0 +1,21 @@
+{{#if (or (eq goMessageQueue "river") (eq goMessageQueue "gocron"))}}
+{{#if (and (or (or (eq goWebFramework "gin") (eq goWebFramework "echo")) (or (eq goWebFramework "fiber") (eq goWebFramework "chi"))) (ne goObservability "signoz"))}}
+package jobs
+
+import (
+	"os"
+	"os/signal"
+	"syscall"
+)
+
+func StopOnSignal(runner *Runner) {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-signals
+		runner.Stop()
+		os.Exit(0)
+	}()
+}
+{{/if}}
+{{/if}}

@@ -23,6 +23,7 @@ const NON_SCAFFOLD_COMMANDS = new Set([
   "docs",
   "doctor",
   "evidence",
+  "explain",
   "gen",
   "history",
   "install",

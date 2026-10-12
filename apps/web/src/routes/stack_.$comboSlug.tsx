@@ -1,4 +1,5 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
 
 import type { GeneratedStackPage } from "@/lib/stack-pages/types";
 
@@ -45,29 +46,42 @@ function stackPageJsonLd(page: GeneratedStackPage) {
   };
 }
 
+const loadStackPage = createServerFn({ method: "GET" })
+  .validator((slug: string) => slug)
+  .handler(async ({ data: slug }) => {
+    const { getRelatedStackPages, getStackPage } = await import("@/lib/stack-pages/source");
+    const page = getStackPage(slug);
+    if (!page) return null;
+    const related = getRelatedStackPages(page).map(({ slug: relatedSlug, title }) => ({
+      slug: relatedSlug,
+      title,
+    }));
+    return { page, related };
+  });
+
 export const Route = createFileRoute("/stack_/$comboSlug")({
   loader: async ({ params }) => {
-    const { getStackPage } = await import("@/lib/stack-pages/source");
-    const page = getStackPage(params.comboSlug);
-    if (!page) throw notFound();
-    return page;
+    const result = await loadStackPage({ data: params.comboSlug });
+    if (!result) throw notFound();
+    return result;
   },
   head: ({ loaderData }) => {
     if (!loaderData) return {};
-    const title = `${loaderData.title} | ${SITE_NAME}`;
-    const url = canonicalUrl(`/stack/${loaderData.slug}`);
-    const ecosystemImage = getEcosystemOgImage(loaderData.ecosystem);
+    const { page } = loaderData;
+    const title = `${page.title} | ${SITE_NAME}`;
+    const url = canonicalUrl(`/stack/${page.slug}`);
+    const ecosystemImage = getEcosystemOgImage(page.ecosystem);
     return {
       meta: [
         { title },
-        { name: "description", content: loaderData.description },
+        { name: "description", content: page.description },
         { name: "robots", content: DEFAULT_ROBOTS },
         {
           name: "keywords",
-          content: [loaderData.primaryKeyword, ...loaderData.keywordAliases].join(", "),
+          content: [page.primaryKeyword, ...page.keywordAliases].join(", "),
         },
         { property: "og:title", content: title },
-        { property: "og:description", content: loaderData.description },
+        { property: "og:description", content: page.description },
         { property: "og:type", content: "website" },
         { property: "og:url", content: url },
         { property: "og:image", content: ecosystemImage },
@@ -76,10 +90,10 @@ export const Route = createFileRoute("/stack_/$comboSlug")({
         { property: "og:image:height", content: String(DEFAULT_OG_IMAGE_HEIGHT) },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: title },
-        { name: "twitter:description", content: loaderData.description },
+        { name: "twitter:description", content: page.description },
         { name: "twitter:image", content: ecosystemImage },
         { name: "twitter:image:alt", content: DEFAULT_OG_IMAGE_ALT },
-        { "script:ld+json": stackPageJsonLd(loaderData) },
+        { "script:ld+json": stackPageJsonLd(page) },
       ],
       links: [{ rel: "canonical", href: url }],
     };
@@ -88,5 +102,6 @@ export const Route = createFileRoute("/stack_/$comboSlug")({
 });
 
 function StackCombinationRoute() {
-  return <StackCombinationPage page={Route.useLoaderData()} />;
+  const { page, related } = Route.useLoaderData();
+  return <StackCombinationPage page={page} related={related} />;
 }

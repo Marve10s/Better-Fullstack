@@ -870,6 +870,7 @@ function buildServerVars(
   caching: ProjectConfig["caching"],
   search: ProjectConfig["search"],
   fileStorage: ProjectConfig["fileStorage"],
+  vectorDb: ProjectConfig["vectorDb"],
 ): EnvVariable[] {
   const hasChatSdkExample = examples?.includes("chat-sdk") || false;
   const isChatSdkSlackSelf =
@@ -2040,6 +2041,48 @@ function buildServerVars(
       condition: fileStorage === "supabase-storage",
       comment: "Supabase Storage bucket name",
     },
+    {
+      key: "WEAVIATE_URL",
+      value: "http://localhost:8080",
+      condition: vectorDb === "weaviate",
+      comment: "Weaviate URL - local Docker default, or your Weaviate Cloud cluster URL",
+    },
+    {
+      key: "WEAVIATE_API_KEY",
+      value: "",
+      condition: vectorDb === "weaviate",
+      comment: "Weaviate Cloud API key - leave empty for a local Weaviate without authentication",
+    },
+    {
+      key: "UPSTASH_VECTOR_REST_URL",
+      value: "https://your-index.upstash.io",
+      condition: vectorDb === "upstash-vector",
+      comment: "Upstash Vector REST URL - get it at https://console.upstash.com/vector",
+    },
+    {
+      key: "UPSTASH_VECTOR_REST_TOKEN",
+      value: "",
+      condition: vectorDb === "upstash-vector",
+      comment: "Upstash Vector REST token - get it at https://console.upstash.com/vector",
+    },
+    {
+      key: "TURBOPUFFER_API_KEY",
+      value: "",
+      condition: vectorDb === "turbopuffer",
+      comment: "turbopuffer API key - create one at https://turbopuffer.com/dashboard",
+    },
+    {
+      key: "TURBOPUFFER_REGION",
+      value: "gcp-us-central1",
+      condition: vectorDb === "turbopuffer",
+      comment: "turbopuffer region that hosts your namespaces",
+    },
+    {
+      key: "LANCEDB_URI",
+      value: "./.lancedb",
+      condition: vectorDb === "lancedb",
+      comment: "LanceDB storage path or object store URI (for example s3://bucket/path)",
+    },
   ];
 }
 
@@ -2338,6 +2381,7 @@ export function processEnvVariables(vfs: VirtualFileSystem, config: ProjectConfi
     config.caching,
     config.search,
     config.fileStorage,
+    config.vectorDb,
   );
 
   if (config.ecosystem !== "typescript") {

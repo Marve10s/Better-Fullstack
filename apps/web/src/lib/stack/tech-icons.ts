@@ -474,6 +474,10 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   qdrant: { type: "si", slug: "qdrant", hex: "DC244C" },
   chroma: { type: "local", src: "/icon/chroma.svg" },
   pinecone: { type: "local", src: "/icon/pinecone.svg" },
+  weaviate: { type: "local", src: "/icon/weaviate.png" },
+  "upstash-vector": { type: "si", slug: "upstash", hex: "00E9A3" },
+  turbopuffer: { type: "local", src: "/icon/turbopuffer.png" },
+  lancedb: { type: "local", src: "/icon/lancedb.png" },
 
   // ─── File Storage ──────────────────────────────────────────────────────────
   s3: { type: "local", src: "/icon/aws-s3.svg" },
@@ -599,9 +603,13 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   prometheus: { type: "si", slug: "prometheus", hex: "E6522C" },
   "kafka-go": { type: "si", slug: "apachekafka", hex: "231F20" },
   asynq: { type: "si", slug: "redis", hex: "DC382D" },
+  river: { type: "si", slug: "postgresql", hex: "4169E1" },
+  gocron: { type: "si", slug: "go", hex: "00ADD8" },
   validator: { type: "si", slug: "go", hex: "00ADD8" },
   "golangci-lint": { type: "si", slug: "go", hex: "00ADD8" },
   "golang-migrate": { type: "si", slug: "go", hex: "00ADD8" },
+  goose: { type: "si", slug: "go", hex: "00ADD8" },
+  atlas: { type: "si", slug: "go", hex: "00ADD8" },
   templ: { type: "si", slug: "go", hex: "00ADD8" },
   fx: { type: "si", slug: "uber", hex: "000000" },
 

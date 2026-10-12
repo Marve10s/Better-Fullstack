@@ -35,6 +35,7 @@ import {
   getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getUnsupportedWebDeployFrontend,
+  getVectorDbIncompatibility,
   hasPWACompatibleFrontend,
   hasTanStackAICompatibleFrontend,
   hasTauriCompatibleFrontend,
@@ -43,6 +44,8 @@ import {
 } from "@/stack/stack-compatibility-rules";
 import {
   getAddonStackPartBinding,
+  getGoMessageQueueIncompatibility,
+  getGoMigrationsIncompatibility,
   getPythonLoggingIncompatibility,
   getStackPartCompatibilityIssueForPart,
   legacyProjectConfigToStackParts,
@@ -56,7 +59,9 @@ export {
   getJobQueueIncompatibility,
   hasGeneratedJobQueueRequirements,
   getUnsupportedWebDeployFrontend,
+  getVectorDbIncompatibility,
   hasDockerComposeCompatibleFrontend,
+  hasVectorDbRuntimeRequirements,
   hasPWACompatibleFrontend,
   hasTanStackAICompatibleFrontend,
   hasTauriCompatibleFrontend,
@@ -2381,6 +2386,27 @@ export const analyzeStackCompatibility = (
     });
   }
 
+  if (nextStack.ecosystem === "go") {
+    const messageQueueIssue = getGoMessageQueueIncompatibility(nextStack.goMessageQueue, nextStack);
+    if (messageQueueIssue) {
+      nextStack.goMessageQueue = "none";
+      changed = true;
+      changes.push({
+        category: "goMessageQueue",
+        message: `Go message queue set to 'None' (${messageQueueIssue})`,
+      });
+    }
+    const migrationsIssue = getGoMigrationsIncompatibility(nextStack.goMigrations, nextStack);
+    if (migrationsIssue) {
+      nextStack.goMigrations = "none";
+      changed = true;
+      changes.push({
+        category: "goMigrations",
+        message: `Go migrations set to 'None' (${migrationsIssue})`,
+      });
+    }
+  }
+
   // ============================================
   // JAVA ECOSYSTEM CONSTRAINTS
   // ============================================
@@ -2742,6 +2768,19 @@ export const analyzeStackCompatibility = (
     changes.push({
       category: "jobQueue",
       message: `Job queue set to 'None' (${jobQueueIssue})`,
+    });
+  }
+
+  const vectorDbIssue =
+    nextStack.ecosystem === "typescript"
+      ? getVectorDbIncompatibility(nextStack.vectorDb, nextStack)
+      : null;
+  if (vectorDbIssue) {
+    nextStack.vectorDb = "none";
+    changed = true;
+    changes.push({
+      category: "vectorDb",
+      message: `Vector database set to 'None' (${vectorDbIssue})`,
     });
   }
 
@@ -4229,21 +4268,37 @@ export const getDisabledReason = (
   // GO ECOSYSTEM RULES
   // ============================================
   if (
-    category === "goMigrations" &&
-    optionId !== "none" &&
-    currentStack.ecosystem === "go" &&
-    !["sqlite", "postgres", "mysql"].includes(currentStack.database)
-  ) {
-    return "Go migrations require SQLite, PostgreSQL, or MySQL";
-  }
-
-  if (
     category === "database" &&
     currentStack.ecosystem === "go" &&
     currentStack.goMigrations !== "none" &&
     !["sqlite", "postgres", "mysql"].includes(optionId)
   ) {
     return "The selected Go migration tool requires SQLite, PostgreSQL, or MySQL";
+  }
+
+  if (
+    currentStack.ecosystem === "go" &&
+    (category === "goMigrations" ||
+      category === "goMessageQueue" ||
+      category === "goOrm" ||
+      category === "goWebFramework" ||
+      category === "database")
+  ) {
+    const selection = {
+      database: category === "database" ? optionId : currentStack.database,
+      goOrm: category === "goOrm" ? optionId : currentStack.goOrm,
+      goWebFramework: category === "goWebFramework" ? optionId : currentStack.goWebFramework,
+    };
+    const reason =
+      getGoMigrationsIncompatibility(
+        category === "goMigrations" ? optionId : currentStack.goMigrations,
+        selection,
+      ) ??
+      getGoMessageQueueIncompatibility(
+        category === "goMessageQueue" ? optionId : currentStack.goMessageQueue,
+        selection,
+      );
+    if (reason) return reason;
   }
 
   // ============================================

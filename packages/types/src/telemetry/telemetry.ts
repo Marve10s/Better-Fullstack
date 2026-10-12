@@ -42,6 +42,7 @@ export const TELEMETRY_ACTION_IDS = [
   "bfs_check_recipes",
   "bfs_confirm_project_adoption",
   "bfs_create_project",
+  "bfs_explain_option",
   "bfs_get_capability_evidence",
   "bfs_get_guidance",
   "bfs_get_project_context",

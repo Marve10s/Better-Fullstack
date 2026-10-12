@@ -1,0 +1,24 @@
+import { Index } from "@upstash/vector";
+
+export const vectorClient = new Index({
+  url: process.env.UPSTASH_VECTOR_REST_URL!,
+  token: process.env.UPSTASH_VECTOR_REST_TOKEN!,
+});
+
+export interface VectorRecord {
+  id: string;
+  vector: number[];
+  metadata?: Record<string, unknown>;
+}
+
+export async function upsertVectors(records: VectorRecord[], namespace = ""): Promise<void> {
+  await vectorClient.upsert(records, { namespace });
+}
+
+export async function queryVectors(vector: number[], topK = 5, namespace = "") {
+  return vectorClient.query({ vector, topK, includeMetadata: true }, { namespace });
+}
+
+export async function deleteVectors(ids: string[], namespace = ""): Promise<void> {
+  await vectorClient.delete(ids, { namespace });
+}

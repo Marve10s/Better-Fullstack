@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
 
 import type { GeneratedStackPage } from "@/lib/stack-pages/types";
 
@@ -14,12 +15,15 @@ import {
 } from "@/lib/seo/seo";
 
 const TEMPLATE_IMAGE = canonicalUrl("/search-media/stack-decisions-1200x630.png");
-const ECOSYSTEM_ORDER = ["typescript", "python", "go", "rust"] as const;
+const ECOSYSTEM_ORDER = ["typescript", "python", "go", "rust", "java", "dotnet", "elixir"] as const;
 const ECOSYSTEM_LABELS: Record<string, string> = {
   typescript: "TypeScript",
   python: "Python",
   go: "Go",
   rust: "Rust",
+  java: "Java / Kotlin",
+  dotnet: ".NET",
+  elixir: "Elixir",
 };
 
 function templateIndexJsonLd(pages: GeneratedStackPage[]) {
@@ -56,13 +60,15 @@ function templateIndexJsonLd(pages: GeneratedStackPage[]) {
   };
 }
 
+const loadTemplatePages = createServerFn({ method: "GET" }).handler(async () => {
+  const { getPublishedStackPages } = await import("@/lib/stack-pages/source");
+  return getPublishedStackPages().sort(
+    (left, right) => right.priority - left.priority || left.title.localeCompare(right.title),
+  );
+});
+
 export const Route = createFileRoute("/templates")({
-  loader: async () => {
-    const { getPublishedStackPages } = await import("@/lib/stack-pages/source");
-    return getPublishedStackPages().sort(
-      (left, right) => right.priority - left.priority || left.title.localeCompare(right.title),
-    );
-  },
+  loader: () => loadTemplatePages(),
   head: ({ loaderData: pages = [] }) => {
     const title = `Fullstack Starter Templates | ${SITE_NAME}`;
     const description =
@@ -141,6 +147,38 @@ function TemplateCard({ page, ordinal }: { page: GeneratedStackPage; ordinal: nu
   );
 }
 
+export function TemplateCatalogSections({ pages }: { pages: GeneratedStackPage[] }) {
+  return (
+    <>
+      {ECOSYSTEM_ORDER.map((ecosystem) => {
+        const ecosystemPages = pages.filter((page) => page.ecosystem === ecosystem);
+        if (!ecosystemPages.length) return null;
+
+        return (
+          <section key={ecosystem} className="grid gap-8 py-14 lg:grid-cols-[13rem_minmax(0,1fr)]">
+            <div>
+              <p className="font-mono text-[0.68rem] text-muted-foreground uppercase tracking-[0.2em]">
+                Ecosystem
+              </p>
+              <h2 className="mt-2 font-mono font-bold text-2xl">
+                {ECOSYSTEM_LABELS[ecosystem] ?? ecosystem}
+              </h2>
+              <p className="mt-3 text-sm text-muted-foreground">
+                {ecosystemPages.length} templates
+              </p>
+            </div>
+            <div className="grid md:grid-cols-2">
+              {ecosystemPages.map((page, index) => (
+                <TemplateCard key={page.slug} page={page} ordinal={index + 1} />
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </>
+  );
+}
+
 function TemplatesPage() {
   const pages = Route.useLoaderData();
 
@@ -176,34 +214,7 @@ function TemplatesPage() {
             </div>
           </header>
 
-          {ECOSYSTEM_ORDER.map((ecosystem) => {
-            const ecosystemPages = pages.filter((page) => page.ecosystem === ecosystem);
-            if (!ecosystemPages.length) return null;
-
-            return (
-              <section
-                key={ecosystem}
-                className="grid gap-8 py-14 lg:grid-cols-[13rem_minmax(0,1fr)]"
-              >
-                <div>
-                  <p className="font-mono text-[0.68rem] text-muted-foreground uppercase tracking-[0.2em]">
-                    Ecosystem
-                  </p>
-                  <h2 className="mt-2 font-mono font-bold text-2xl">
-                    {ECOSYSTEM_LABELS[ecosystem] ?? ecosystem}
-                  </h2>
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    {ecosystemPages.length} templates
-                  </p>
-                </div>
-                <div className="grid md:grid-cols-2">
-                  {ecosystemPages.map((page, index) => (
-                    <TemplateCard key={page.slug} page={page} ordinal={index + 1} />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+          <TemplateCatalogSections pages={pages} />
 
           <section className="border-border border-t py-12 text-center">
             <h2 className="font-mono font-bold text-2xl">Need the decision context?</h2>

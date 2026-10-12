@@ -1318,6 +1318,28 @@ export const router = os.router({
       const { searchCommand } = await import("@/commands/stack/options.js");
       searchCommand({ query, ...options });
     }),
+  explain: os
+    .meta({
+      description:
+        "Explain an option: its flag, aliases, evidence, what it requires and excludes, and whether it fits a stack built from --with",
+    })
+    .input(
+      z.tuple([
+        z.string().trim().min(1).describe("Option ID or alias, or category:id such as orm:drizzle"),
+        z.object({
+          with: z
+            .array(z.string().trim().min(1))
+            .optional()
+            .describe("Other selections to evaluate against, as option IDs or category:id"),
+          ecosystem: EcosystemSchema.optional().describe("Ecosystem to evaluate the option in"),
+          json: z.boolean().optional().default(false).describe("Output the result as JSON"),
+        }),
+      ]),
+    )
+    .handler(async ({ input: [option, options] }) => {
+      const { explainCommand } = await import("@/commands/stack/options.js");
+      explainCommand({ option, ...options });
+    }),
 });
 
 const caller = createRouterClient(router, { context: {} });

@@ -1,0 +1,187 @@
+---
+title: Convex with TanStack Start and Better Auth
+description: Create a TanStack Start app on a Convex backend with Better Auth email sign-in through the Convex Better Auth component, using Better Fullstack.
+translationStatus: pending
+updated: 2026-10-09
+category: TypeScript
+tags:
+  - convex
+  - tanstack-start
+  - better-auth
+  - realtime
+keywords:
+  - convex better auth
+  - convex tanstack start
+  - convex starter
+  - convex auth starter
+  - create convex app
+---
+
+Use this stack when the backend should be Convex: queries, mutations, storage, and auth run in a Convex deployment, and the web app is a TanStack Start project that subscribes to them.
+
+```npm
+npm create better-fullstack@latest my-convex-app -- \
+  --ecosystem typescript \
+  --frontend tanstack-start \
+  --backend convex \
+  --runtime none \
+  --database none \
+  --orm none \
+  --auth better-auth \
+  --api none \
+  --css-framework tailwind \
+  --ui-library shadcn-ui
+```
+
+Convex provides the database and the function runtime, so the command sets `--runtime`, `--database`, `--orm`, and `--api` to `none`. The CLI rejects a runtime such as `--runtime bun` with Convex and suggests `--runtime none`.
+
+## What this creates
+
+- A Convex project in `packages/backend/convex` with a `healthCheck` query, a `privateData` query that checks the session, and an empty schema.
+- Better Auth running inside Convex through the `@convex-dev/better-auth` component, with email and password sign-in.
+- A TanStack Start app in `apps/web` with sign-in and sign-up forms, a user menu, and a dashboard that renders different content for signed-in and signed-out users.
+- A TanStack Start server route at `/api/auth/$` that forwards auth requests to the Convex deployment.
+- Tailwind CSS and shadcn/ui components in the web app.
+- A Turborepo workspace and a reproducible `bts.jsonc` stack configuration.
+
+## Generated shape
+
+```txt
+my-convex-app/
+  bts.jsonc
+  turbo.json
+  apps/web/
+    .env
+    src/
+      lib/
+        auth-client.ts
+        auth-server.ts
+      router.tsx
+      routes/
+        __root.tsx
+        index.tsx
+        dashboard.tsx
+        api/auth/$.ts
+  packages/
+    backend/
+      .env.local
+      convex/
+        auth.config.ts
+        auth.ts
+        convex.config.ts
+        healthCheck.ts
+        http.ts
+        privateData.ts
+        schema.ts
+    env/src/web.ts
+```
+
+`convex.config.ts` installs the Better Auth component, `auth.ts` builds the Better Auth instance on the component's adapter, and `http.ts` registers the auth HTTP routes on the Convex deployment. In the web app, `__root.tsx` wraps the app in `ConvexBetterAuthProvider` and reads the auth token on the server through `auth-server.ts`.
+
+## Set up Convex
+
+The app needs a Convex deployment to talk to. Install dependencies and run the setup script, which runs `convex dev --configure` and asks you to log in and choose a project:
+
+```npm
+npm install
+npm run dev:setup
+```
+
+Better Auth reads `BETTER_AUTH_SECRET` and `SITE_URL` from the Convex deployment environment, not from a local file. Set them from `packages/backend`, as the comments in its generated `.env.local` describe:
+
+```bash
+cd packages/backend
+npx convex env set BETTER_AUTH_SECRET "$(openssl rand -base64 32)"
+npx convex env set SITE_URL http://localhost:3001
+```
+
+Then copy the deployment URLs into `apps/web/.env`:
+
+| Variable | Value |
+| --- | --- |
+| `VITE_CONVEX_URL` | The deployment URL that `convex dev` writes to `packages/backend/.env.local`, ending in `.convex.cloud`. |
+| `VITE_CONVEX_SITE_URL` | The same deployment's HTTP actions URL, ending in `.convex.site`. |
+
+`packages/env/src/web.ts` validates both values as URLs. The generated placeholders pass that check, so the app starts, but it cannot reach Convex until both point at your deployment.
+
+## Run it locally
+
+```npm
+npm run dev
+```
+
+Turborepo runs `convex dev` in `packages/backend` and `vite dev` in `apps/web`. The web app runs on port 3001, which is why `SITE_URL` uses that origin. The home page shows the `healthCheck` result, and `/dashboard` shows the sign-up and sign-in forms until a session exists, then calls `privateData`.
+
+## Add a table and functions
+
+Define tables in `packages/backend/convex/schema.ts`:
+
+```ts
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
+
+export default defineSchema({
+  notes: defineTable({
+    ownerId: v.string(),
+    body: v.string(),
+  }).index("by_owner", ["ownerId"]),
+});
+```
+
+Then add functions in a new file, such as `packages/backend/convex/notes.ts`. The Convex Better Auth integration issues tokens Convex can verify, so `ctx.auth.getUserIdentity()` returns the signed-in user:
+
+```ts
+import { v } from "convex/values";
+
+import { mutation, query } from "./_generated/server";
+
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    return ctx.db
+      .query("notes")
+      .withIndex("by_owner", (q) => q.eq("ownerId", identity.subject))
+      .collect();
+  },
+});
+
+export const add = mutation({
+  args: { body: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not signed in");
+    await ctx.db.insert("notes", { ownerId: identity.subject, body: args.body });
+  },
+});
+```
+
+`convex dev` pushes the change and regenerates `convex/_generated`. In the web app, read the list with `useQuery(api.notes.list)` from `convex/react`, as the generated dashboard does for `privateData`.
+
+## Compatibility notes
+
+- Better Auth with Convex uses the Convex component, so the auth tables live in the component's own storage rather than in your schema.
+- Payments, email, search, and ecommerce options generate no files with `--backend convex`; the CLI reports payments as not supported. Keep them `none` and add those integrations as Convex functions.
+
+## Deployment notes
+
+Deploy the Convex functions with `npx convex deploy` from `packages/backend`, and set `BETTER_AUTH_SECRET` and `SITE_URL` on the production deployment with `npx convex env set --prod`. `SITE_URL` must be the public web origin. Build the web app with `VITE_CONVEX_URL` and `VITE_CONVEX_SITE_URL` pointing at the production deployment.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Queries never resolve and sign-in fails | Replace the placeholder URLs in `apps/web/.env` with the deployment's `.convex.cloud` and `.convex.site` URLs. |
+| Sign-in fails or redirects to the wrong origin | `SITE_URL` in the Convex environment must match the web origin, `http://localhost:3001` locally. |
+| `api.notes` does not exist in the web app | Keep `npm run dev` running so `convex dev` regenerates `convex/_generated`. |
+
+## Comparison notes
+
+Choose Convex when reactive queries and a managed backend matter more than owning a server and database. Compare [TanStack Start with PostgreSQL and Drizzle](/guides/typescript/tanstack-start-postgres-drizzle/) for a self-hosted database, or [Hono with Better Auth and Drizzle](/guides/typescript/hono-better-auth/) for a separate API service.
+
+## Next steps
+
+- Open the [Stack Builder with Convex selected](/new?eco=typescript&fe-w=tanstack-start&be=convex&au=better-auth).
+- Read the [Better Auth architecture article](/blog/better-auth-architecture/).
+- Review the [CLI create reference](/docs/cli/create/).

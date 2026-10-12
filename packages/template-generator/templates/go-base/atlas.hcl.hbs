@@ -1,0 +1,30 @@
+{{#if (eq goMigrations "atlas")}}
+{{#if (eq goOrm "gorm")}}
+data "external_schema" "gorm" {
+  program = ["go", "run", "-mod=mod", "./cmd/atlas-loader"]
+}
+
+{{/if}}
+env "local" {
+{{#if (eq goOrm "gorm")}}
+  src = data.external_schema.gorm.url
+{{else if (eq goOrm "ent")}}
+  src = "ent://ent/schema"
+{{else if (eq goOrm "sqlc")}}
+  src = "file://sql/schema"
+{{else}}
+  src = "file://schema.sql"
+{{/if}}
+  url = getenv("ATLAS_DATABASE_URL")
+{{#if (eq database "postgres")}}
+  dev = "docker://postgres/17/dev?search_path=public"
+{{else if (eq database "mysql")}}
+  dev = "docker://mysql/8/dev"
+{{else}}
+  dev = "sqlite://dev?mode=memory"
+{{/if}}
+  migration {
+    dir = "file://migrations"
+  }
+}
+{{/if}}

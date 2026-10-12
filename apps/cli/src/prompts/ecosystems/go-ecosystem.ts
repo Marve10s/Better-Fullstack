@@ -19,6 +19,7 @@ import type {
   GoWebFramework,
 } from "@/types";
 
+import { getGoMessageQueueIncompatibility, getGoMigrationsIncompatibility } from "@/types";
 import { exitCancelled } from "@/presentation/errors";
 import { isCancel, navigableMultiselect, navigableSelect } from "@/prompts/core/navigable";
 import {
@@ -419,6 +420,16 @@ const GO_MESSAGE_QUEUE_PROMPT_OPTIONS: PromptOption<GoMessageQueue>[] = [
     hint: "Redis-backed background jobs with retries, scheduling, and priorities",
   },
   {
+    value: "river",
+    label: "River",
+    hint: "Transactional PostgreSQL job queue with a pgx-backed worker client",
+  },
+  {
+    value: "gocron",
+    label: "gocron",
+    hint: "In-process scheduler for recurring jobs that runs with the server",
+  },
+  {
     value: "none",
     label: "None",
     hint: "No message queue",
@@ -508,6 +519,16 @@ const GO_MIGRATIONS_PROMPT_OPTIONS: PromptOption<GoMigrations>[] = [
     label: "golang-migrate",
     hint: "Versioned database migrations across PostgreSQL, MySQL, SQLite, and more",
   },
+  {
+    value: "goose",
+    label: "goose",
+    hint: "Annotated SQL migrations with an embedded migrate command",
+  },
+  {
+    value: "atlas",
+    label: "Atlas",
+    hint: "Declarative schema migrations loaded from your ORM or SQL schema",
+  },
   { value: "none", label: "None", hint: "No migration tooling" },
 ];
 
@@ -581,16 +602,28 @@ export async function getGoRealtimeChoice(goRealtime?: GoRealtime) {
   return response;
 }
 
-export function resolveGoMessageQueuePrompt(goMessageQueue?: GoMessageQueue) {
+type GoJobSelection = { database?: string; goOrm?: string; goWebFramework?: string };
+
+export function resolveGoMessageQueuePrompt(
+  goMessageQueue?: GoMessageQueue,
+  selection?: GoJobSelection,
+) {
   return createStaticSinglePromptResolution(
-    GO_MESSAGE_QUEUE_PROMPT_OPTIONS,
+    selection
+      ? GO_MESSAGE_QUEUE_PROMPT_OPTIONS.filter(
+          (option) => !getGoMessageQueueIncompatibility(option.value, selection),
+        )
+      : GO_MESSAGE_QUEUE_PROMPT_OPTIONS,
     "none",
     goMessageQueue,
   );
 }
 
-export async function getGoMessageQueueChoice(goMessageQueue?: GoMessageQueue) {
-  const resolution = resolveGoMessageQueuePrompt(goMessageQueue);
+export async function getGoMessageQueueChoice(
+  goMessageQueue?: GoMessageQueue,
+  selection?: GoJobSelection,
+) {
+  const resolution = resolveGoMessageQueuePrompt(goMessageQueue, selection);
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }
@@ -705,12 +738,26 @@ export async function getGoQualityChoice(goQuality?: GoQuality) {
   return response;
 }
 
-export function resolveGoMigrationsPrompt(goMigrations?: GoMigrations) {
-  return createStaticSinglePromptResolution(GO_MIGRATIONS_PROMPT_OPTIONS, "none", goMigrations);
+export function resolveGoMigrationsPrompt(
+  goMigrations?: GoMigrations,
+  selection?: GoJobSelection,
+) {
+  return createStaticSinglePromptResolution(
+    selection
+      ? GO_MIGRATIONS_PROMPT_OPTIONS.filter(
+          (option) => !getGoMigrationsIncompatibility(option.value, selection),
+        )
+      : GO_MIGRATIONS_PROMPT_OPTIONS,
+    "none",
+    goMigrations,
+  );
 }
 
-export async function getGoMigrationsChoice(goMigrations?: GoMigrations) {
-  const resolution = resolveGoMigrationsPrompt(goMigrations);
+export async function getGoMigrationsChoice(
+  goMigrations?: GoMigrations,
+  selection?: GoJobSelection,
+) {
+  const resolution = resolveGoMigrationsPrompt(goMigrations, selection);
   if (!resolution.shouldPrompt) return resolution.autoValue ?? "none";
   const response = await navigableSelect<GoMigrations>({
     message: "Select Go database migration tooling",

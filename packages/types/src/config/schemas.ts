@@ -472,9 +472,19 @@ export const SearchSchema = z
   );
 
 export const VectorDbSchema = z
-  .enum(["pgvector", "qdrant", "chroma", "pinecone", "none"])
+  .enum([
+    "pgvector",
+    "qdrant",
+    "chroma",
+    "pinecone",
+    "weaviate",
+    "upstash-vector",
+    "turbopuffer",
+    "lancedb",
+    "none",
+  ])
   .describe(
-    "Vector database for AI embeddings/semantic search (pgvector on Postgres, or Qdrant, Chroma, or Pinecone)",
+    "Vector database for AI embeddings/semantic search (pgvector on Postgres, or Qdrant, Chroma, Pinecone, Weaviate, Upstash Vector, turbopuffer, or embedded LanceDB)",
   );
 
 export const FileStorageSchema = z
@@ -807,7 +817,7 @@ export const GoRealtimeSchema = z
   .describe("Go realtime/WebSocket library");
 
 export const GoMessageQueueSchema = z
-  .enum(["nats", "watermill", "kafka-go", "asynq", "none"])
+  .enum(["nats", "watermill", "kafka-go", "asynq", "river", "gocron", "none"])
   .describe("Go message queue/eventing library");
 
 export const GoCachingSchema = z
@@ -829,7 +839,7 @@ export const GoQualitySchema = z
   .describe("Go code quality tooling");
 
 export const GoMigrationsSchema = z
-  .enum(["golang-migrate", "none"])
+  .enum(["golang-migrate", "goose", "atlas", "none"])
   .describe("Go database migration tooling");
 
 export const GoTemplatingSchema = z.enum(["templ", "none"]).describe("Go templating library");

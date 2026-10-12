@@ -1,6 +1,6 @@
 module {{projectName}}
 
-go 1.25.0
+go {{#if (or (eq goMessageQueue "river") (eq goMigrations "goose"))}}1.26.0{{else}}1.25.0{{/if}}
 
 require (
 {{#if (eq auth "go-better-auth")}}
@@ -35,11 +35,17 @@ require (
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/driver/postgres v1.6.0
 {{/if}}
-{{#if (eq goOrm "sqlc")}}
+{{#if (or (eq goMessageQueue "river") (and (eq goMigrations "goose") (eq database "postgres")))}}
+	github.com/jackc/pgx/v5 v5.11.0
+{{else if (eq goOrm "sqlc")}}
 	github.com/jackc/pgx/v5 v5.9.1
 {{/if}}
 {{#if (eq goOrm "ent")}}
+{{#if (eq goMigrations "atlas")}}
+	entgo.io/ent v0.14.6
+{{else}}
 	entgo.io/ent v0.14.0
+{{/if}}
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.24
 {{/if}}
@@ -149,6 +155,13 @@ require (
 {{#if (eq goMessageQueue "asynq")}}
 	github.com/hibiken/asynq v0.26.0
 {{/if}}
+{{#if (eq goMessageQueue "river")}}
+	github.com/riverqueue/river v0.49.0
+	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.49.0
+{{/if}}
+{{#if (eq goMessageQueue "gocron")}}
+	github.com/go-co-op/gocron/v2 v2.22.0
+{{/if}}
 {{#if (eq goCaching "ristretto")}}
 	github.com/dgraph-io/ristretto/v2 v2.4.0
 {{/if}}
@@ -178,6 +191,18 @@ require (
 {{/if}}
 {{#if (eq goMigrations "golang-migrate")}}
 	github.com/golang-migrate/migrate/v4 v4.19.1
+{{/if}}
+{{#if (eq goMigrations "goose")}}
+	github.com/pressly/goose/v3 v3.28.0
+{{#if (and (eq database "mysql") (ne goOrm "sqlx"))}}
+	github.com/go-sql-driver/mysql v1.9.3
+{{/if}}
+{{#if (and (eq database "sqlite") (and (ne goOrm "ent") (and (ne goOrm "bun") (ne goOrm "sqlx"))))}}
+	github.com/mattn/go-sqlite3 v1.14.24
+{{/if}}
+{{/if}}
+{{#if (and (eq goMigrations "atlas") (eq goOrm "gorm"))}}
+	ariga.io/atlas-provider-gorm v0.6.1
 {{/if}}
 {{#if (eq goTemplating "templ")}}
 	github.com/a-h/templ v0.3.1020

@@ -50,7 +50,10 @@ import {
   getDatabaseOrmRequirementIssue,
   getJobQueueIncompatibility,
   getShadcnLintFrontendIssue,
+  getVectorDbIncompatibility,
   hasVitePlusWorkspaceRoot,
+  getGoMessageQueueIncompatibility,
+  getGoMigrationsIncompatibility,
   hasSignozSupportedGoServerTarget,
   isBotIdWebFrontend,
   isSignozSupportedPythonWebFramework,
@@ -99,6 +102,19 @@ function validateJobQueueConstraints(config: Partial<ProjectConfig>, partial = f
   if ((selection.ecosystem ?? "typescript") !== "typescript") return;
 
   const reason = getJobQueueIncompatibility(selection.jobQueue, selection, {
+    partial: partial && !usesGraph,
+  });
+  if (reason) throw new Error(reason);
+}
+
+function validateVectorDbConstraints(config: Partial<ProjectConfig>, partial = false) {
+  const usesGraph = Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
+  const selection = usesGraph
+    ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "typescript")
+    : config;
+  if ((selection.ecosystem ?? "typescript") !== "typescript") return;
+
+  const reason = getVectorDbIncompatibility(selection.vectorDb, selection, {
     partial: partial && !usesGraph,
   });
   if (reason) throw new Error(reason);
@@ -1411,6 +1427,36 @@ export function validateGoExpansionConstraints(config: Partial<ProjectConfig>) {
       ],
     });
   }
+
+  const messageQueueReason = getGoMessageQueueIncompatibility(goConfig.goMessageQueue, goConfig);
+  if (messageQueueReason) {
+    incompatibilityError({
+      message: `${messageQueueReason}.`,
+      provided: {
+        "go-message-queue": goConfig.goMessageQueue ?? "none",
+        "go-web-framework": goConfig.goWebFramework ?? "none",
+        database: goConfig.database ?? "none",
+      },
+      suggestions: [
+        "Use --go-web-framework gin, echo, fiber, chi, or stdlib",
+        ...(goConfig.goMessageQueue === "river" ? ["Use --database postgres"] : []),
+        "Set --go-message-queue none",
+      ],
+    });
+  }
+
+  const migrationsReason = getGoMigrationsIncompatibility(goConfig.goMigrations, goConfig);
+  if (migrationsReason) {
+    incompatibilityError({
+      message: `${migrationsReason}.`,
+      provided: {
+        "go-migrations": goConfig.goMigrations ?? "none",
+        "go-orm": goConfig.goOrm ?? "none",
+        database: goConfig.database ?? "none",
+      },
+      suggestions: ["Use --database postgres", "Set --go-migrations none"],
+    });
+  }
 }
 
 function validateI18nConstraints(config: Partial<ProjectConfig>) {
@@ -1532,6 +1578,7 @@ export function validateFullConfig(
   validateI18nConstraints(config);
   validateIntegrationsConstraints(config);
   validateJobQueueConstraints(config, partial);
+  validateVectorDbConstraints(config, partial);
 
   const hasGraphBackend = config.stackParts?.some(
     (part) =>
@@ -1685,6 +1732,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
 
     validateIntegrationsConstraints(config);
     validateJobQueueConstraints(config);
+    validateVectorDbConstraints(config);
     validateContainerAddonConstraints(config);
     const authIssue = getAuthSelectionIssue(config);
     if (authIssue) throw new Error(authIssue);

@@ -4,6 +4,7 @@ import {
   readVirtualFileContent,
 } from "@test/support/virtual-tree-utils";
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
+import { spawnSync } from "node:child_process";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -19,6 +20,7 @@ import { resolvePythonLoggingPrompt } from "@/prompts/ecosystems/python-ecosyste
 import { getPythonLoggingIncompatibility, parseStackPartSpecs } from "@/types";
 
 const STREAMLIT_REASON = getPythonLoggingIncompatibility("loguru", "streamlit") ?? "";
+const pythonExecutable = Bun.which("python3") ?? Bun.which("python");
 
 const FRAMEWORK_WIRING = [
   ["fastapi", ["app.add_middleware(RequestLoggingMiddleware)", "log_config=None"]],
@@ -241,6 +243,80 @@ describe("Python logging", () => {
       }
     }
   });
+
+  it.skipIf(!pythonExecutable)(
+    "propagates ASGI streaming failures and logs the status already sent",
+    async () => {
+      for (const pythonWebFramework of ["fastapi", "starlette", "litestar"] as const) {
+        for (const pythonLogging of ["loguru", "structlog"] as const) {
+          const [loggingModule] = await generatedFiles(
+            { pythonWebFramework, pythonLogging },
+            "src/app/logging_config.py",
+          );
+          const proof = spawnSync(
+            pythonExecutable!,
+            [
+              "-c",
+              `
+from __future__ import annotations
+import ast
+import asyncio
+import contextlib
+import sys
+import time
+import types
+
+source = ast.parse(sys.stdin.read())
+middleware = next(node for node in source.body if isinstance(node, ast.ClassDef) and node.name == "RequestLoggingMiddleware")
+namespace = {
+    "time": time,
+    "ScopeType": types.SimpleNamespace(HTTP="http"),
+    "_request_id": lambda incoming: "request-id",
+    "request_context": lambda request_id: contextlib.nullcontext(),
+    "logger": types.SimpleNamespace(exception=lambda message: None),
+    "_ERROR_BODY": b"Internal Server Error",
+}
+records = []
+namespace["_log_request"] = lambda method, path, status, started: records.append(status)
+exec(compile(ast.Module(body=[middleware], type_ignores=[]), "generated-logging", "exec"), namespace)
+
+async def verify(started):
+    events = []
+    failure = RuntimeError("stream failed")
+    async def app(scope, receive, send):
+        if started:
+            await send({"type": "http.response.start", "status": 200, "headers": []})
+            await send({"type": "http.response.body", "body": b"partial", "more_body": True})
+        raise failure
+    async def send(message):
+        events.append(message)
+    async def receive():
+        return {"type": "http.request", "body": b""}
+    try:
+        await namespace["RequestLoggingMiddleware"](app)({"type": "http", "headers": [], "method": "GET", "path": "/stream"}, receive, send)
+    except RuntimeError as error:
+        assert started and error is failure
+    else:
+        assert not started, "stream failure was swallowed"
+    assert records[-1] == (200 if started else 500), records
+    assert len(events) == 2, events
+    assert (b"x-request-id", b"request-id") in events[0]["headers"]
+    if not started:
+        assert events[-1]["more_body"] is False
+        assert events[-1]["body"] == b"Internal Server Error"
+
+asyncio.run(verify(True))
+asyncio.run(verify(False))
+`,
+            ],
+            { input: loggingModule, encoding: "utf8" },
+          );
+          expect(proof.stderr).toBe("");
+          expect(proof.status).toBe(0);
+        }
+      }
+    },
+  );
 
   it("lets aiohttp close a streamed response that fails instead of appending a 500", async () => {
     for (const pythonLogging of ["loguru", "structlog"] as const) {

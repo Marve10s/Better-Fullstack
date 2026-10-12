@@ -1,0 +1,121 @@
+---
+title: Create an Ecommerce Store
+description: Create a Next.js storefront with a Medusa JS SDK client, Stripe Checkout helpers, Better Auth, Drizzle, PostgreSQL, and tRPC using Better Fullstack.
+translationStatus: pending
+updated: 2026-10-09
+category: Packs
+tags:
+  - ecommerce
+  - nextjs
+  - medusa
+  - stripe
+keywords:
+  - create ecommerce store
+  - nextjs ecommerce starter
+  - medusa storefront starter
+  - nextjs stripe checkout starter
+  - headless commerce starter
+---
+
+Use the Ecommerce Store pack when you need a storefront that reads products from a Medusa backend, takes payments through Stripe Checkout, and keeps customer accounts and app data in your own database.
+
+## Generate the ecommerce starter
+
+```npm
+npm create better-fullstack@latest my-store -- \
+  --ecosystem typescript \
+  --frontend next \
+  --backend self \
+  --runtime none \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --payments stripe \
+  --ecommerce medusa \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui
+```
+
+## What the pack includes
+
+- A Next.js app in `apps/web` that serves the pages, the Better Auth handler at `/api/auth/*`, and tRPC at `/api/trpc`.
+- A Medusa JS SDK client in `apps/web/src/lib/medusa.ts` for an existing Medusa backend. The pack does not generate a Medusa server.
+- Stripe Checkout helpers in `packages/auth/src/lib/stripe.ts`: `createCheckoutSession`, `createSubscriptionCheckout`, and `constructWebhookEvent`, plus a `/success` page that shows the Checkout session ID.
+- Better Auth with email and password sign-in, a login page, and a protected dashboard.
+- PostgreSQL through Drizzle, with auth tables and user-scoped `tasks` procedures in the tRPC router.
+- Tailwind CSS and shadcn/ui components.
+
+## Environment
+
+The generator writes `apps/web/.env` with these keys:
+
+| Variable | Purpose |
+| --- | --- |
+| `MEDUSA_BACKEND_URL` | URL of the Medusa backend, `http://localhost:9000` by default. |
+| `MEDUSA_PUBLISHABLE_KEY` | Medusa store publishable API key. |
+| `STRIPE_SECRET_KEY` | Stripe secret key, validated in `packages/env/src/server.ts`. |
+| `STRIPE_WEBHOOK_SECRET` | Signing secret for a Stripe webhook endpoint. |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key for browser code. |
+| `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `CORS_ORIGIN` | Database and auth settings for the app on `http://localhost:3001`. |
+
+`medusa.ts` throws on import when either Medusa variable is missing. Both variables lack the `NEXT_PUBLIC_` prefix, so import the client only from server components, route handlers, or server actions.
+
+## Run it locally
+
+Point `DATABASE_URL` at PostgreSQL, fill the Stripe test keys, and point the Medusa variables at a running Medusa backend. Then:
+
+```npm
+npm install
+npm run db:push
+npm run dev
+```
+
+The app runs on `http://localhost:3001`.
+
+## First things to customize
+
+List products in a server component with the Medusa SDK:
+
+```tsx
+import { medusa } from "@/lib/medusa";
+
+export default async function ProductsPage() {
+  const { products } = await medusa.store.product.list({ limit: 12 });
+  return (
+    <ul>
+      {products.map((product) => (
+        <li key={product.id}>{product.title}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+Start a Stripe Checkout session from a route handler, such as `apps/web/src/app/api/checkout/route.ts`:
+
+```ts
+import { createCheckoutSession } from "@my-store/auth/lib/stripe";
+
+export async function POST(request: Request) {
+  const { priceId } = await request.json();
+  const origin = new URL(request.url).origin;
+  const session = await createCheckoutSession({
+    priceId,
+    successUrl: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancelUrl: `${origin}/`,
+  });
+  return Response.json({ url: session.url });
+}
+```
+
+Then:
+
+1. Add a webhook route that reads the raw body with `request.text()`, passes it and the `stripe-signature` header to `constructWebhookEvent`, and records paid orders. The pack does not generate a webhook route.
+2. Decide which system owns orders: Medusa's cart and order flow, or Stripe Checkout plus your own Drizzle tables. Keep one source of truth for order state.
+3. Validate the `priceId` against your catalog before creating a session, so clients cannot pay arbitrary prices.
+4. Use the Stripe CLI to forward test webhooks to the local route before going live.
+
+## When this is the right pack
+
+Choose this pack for a custom Next.js storefront in front of Medusa, or for a store that sells a small catalog through Stripe Checkout with accounts in your own database. If you only need subscriptions for a SaaS product, start with the [SaaS app pack](/guides/packs/create-saas-app/). For the stack-level walkthrough, read [Next.js with Drizzle and Better Auth](/guides/typescript/nextjs-drizzle-better-auth/).

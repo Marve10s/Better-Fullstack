@@ -1295,6 +1295,22 @@ const BASE_LINKS: LinkMap = {
     docsUrl: "https://docs.pinecone.io/",
     githubUrl: "https://github.com/pinecone-io/pinecone-ts-client",
   },
+  weaviate: {
+    docsUrl: "https://docs.weaviate.io/weaviate",
+    githubUrl: "https://github.com/weaviate/typescript-client",
+  },
+  "upstash-vector": {
+    docsUrl: "https://upstash.com/docs/vector/overall/getstarted",
+    githubUrl: "https://github.com/upstash/vector-js",
+  },
+  turbopuffer: {
+    docsUrl: "https://turbopuffer.com/docs",
+    githubUrl: "https://github.com/turbopuffer/turbopuffer-typescript",
+  },
+  lancedb: {
+    docsUrl: "https://lancedb.com/docs/",
+    githubUrl: "https://github.com/lancedb/lancedb",
+  },
   s3: {
     docsUrl: "https://docs.aws.amazon.com/AmazonS3/",
     githubUrl: "https://github.com/aws/aws-sdk-js-v3",
@@ -2118,6 +2134,14 @@ const CATEGORY_LINKS: LinkMap = {
     docsUrl: "https://github.com/hibiken/asynq/wiki",
     githubUrl: "https://github.com/hibiken/asynq",
   },
+  "goMessageQueue:river": {
+    docsUrl: "https://riverqueue.com/docs",
+    githubUrl: "https://github.com/riverqueue/river",
+  },
+  "goMessageQueue:gocron": {
+    docsUrl: "https://pkg.go.dev/github.com/go-co-op/gocron/v2",
+    githubUrl: "https://github.com/go-co-op/gocron",
+  },
   "goAuth:oauth2": {
     docsUrl: "https://pkg.go.dev/golang.org/x/oauth2",
     githubUrl: "https://github.com/golang/oauth2",
@@ -2133,6 +2157,14 @@ const CATEGORY_LINKS: LinkMap = {
   "goMigrations:golang-migrate": {
     docsUrl: "https://github.com/golang-migrate/migrate#readme",
     githubUrl: "https://github.com/golang-migrate/migrate",
+  },
+  "goMigrations:goose": {
+    docsUrl: "https://pressly.github.io/goose/",
+    githubUrl: "https://github.com/pressly/goose",
+  },
+  "goMigrations:atlas": {
+    docsUrl: "https://atlasgo.io/docs",
+    githubUrl: "https://github.com/ariga/atlas",
   },
   "goTemplating:templ": {
     docsUrl: "https://templ.guide/",

@@ -366,24 +366,23 @@ class RequestLoggingMiddleware:
             try:
                 await self.app(scope, receive, send_with_request_id)
             except Exception:
-                # Handle the error here so its traceback carries the request id and
-                # the 500 response returns it; the server would do neither.
                 logger.exception("Unhandled error")
+                if response_started:
+                    raise
                 status_code = 500
-                if not response_started:
-                    await send_with_request_id(
-                        {
-                            "type": "http.response.start",
-                            "status": 500,
-                            "headers": [
-                                (b"content-type", b"text/plain; charset=utf-8"),
-                                (b"content-length", str(len(_ERROR_BODY)).encode()),
-                            ],
-                        }
-                    )
-                    await send_with_request_id(
-                        {"type": "http.response.body", "body": _ERROR_BODY, "more_body": False}
-                    )
+                await send_with_request_id(
+                    {
+                        "type": "http.response.start",
+                        "status": 500,
+                        "headers": [
+                            (b"content-type", b"text/plain; charset=utf-8"),
+                            (b"content-length", str(len(_ERROR_BODY)).encode()),
+                        ],
+                    }
+                )
+                await send_with_request_id(
+                    {"type": "http.response.body", "body": _ERROR_BODY, "more_body": False}
+                )
             finally:
                 _log_request(scope["method"], scope["path"], status_code, started)
 {{/if}}

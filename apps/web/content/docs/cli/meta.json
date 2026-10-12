@@ -11,6 +11,7 @@
     "experimental",
     "telemetry",
     "completion",
-    "options"
+    "options",
+    "explain"
   ]
 }

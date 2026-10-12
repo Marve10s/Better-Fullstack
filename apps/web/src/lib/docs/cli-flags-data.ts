@@ -726,6 +726,10 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "qdrant",
           "chroma",
           "pinecone",
+          "weaviate",
+          "upstash-vector",
+          "turbopuffer",
+          "lancedb",
           "none"
         ],
         "valueHint": null,
@@ -1894,6 +1898,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "watermill",
           "kafka-go",
           "asynq",
+          "river",
+          "gocron",
           "none"
         ],
         "valueHint": null,
@@ -1964,6 +1970,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Go database migrations.",
         "values": [
           "golang-migrate",
+          "goose",
+          "atlas",
           "none"
         ],
         "valueHint": null,

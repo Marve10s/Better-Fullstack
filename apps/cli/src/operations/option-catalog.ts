@@ -72,7 +72,7 @@ const CATEGORY_FLAGS = new Map<string, CategoryFlag>(
 );
 
 // Kotlin, Swift, and Flutter apps exist only as multi-ecosystem Stack Parts.
-function ecosystemCategories(ecosystem: OptionCategoryEcosystem): readonly OptionCategory[] {
+export function ecosystemCategories(ecosystem: OptionCategoryEcosystem): readonly OptionCategory[] {
   const order = getCategoryOrderForEcosystem(ecosystem);
   return ecosystem === "react-native"
     ? order.filter((category) => !isMultiEcosystemMobileCategory(category))
@@ -109,7 +109,7 @@ function optionFlag(category: OptionCategory, option: OptionMetadata): string | 
   return `--${flag.name} ${option.cliValue}`;
 }
 
-function toOption(category: OptionCategory, option: OptionMetadata): CatalogOption {
+export function toCatalogOption(category: OptionCategory, option: OptionMetadata): CatalogOption {
   return {
     id: option.id,
     label: option.label,
@@ -151,7 +151,18 @@ export function listCatalogOptions(input: {
   return {
     ecosystem,
     category: toCategory(category),
-    options: OPTION_CATEGORY_METADATA[category].options.map((option) => toOption(category, option)),
+    options: OPTION_CATEGORY_METADATA[category].options.map((option) =>
+      toCatalogOption(category, option),
+    ),
+  };
+}
+
+export function toCatalogMatch(category: OptionCategory, option: OptionMetadata): CatalogMatch {
+  return {
+    ...toCatalogOption(category, option),
+    category,
+    categoryLabel: getCategoryDisplayName(category),
+    ecosystems: CATEGORY_ECOSYSTEMS.get(category) ?? [],
   };
 }
 
@@ -174,13 +185,7 @@ export function searchCatalogOptions(input: {
     OPTION_CATEGORY_METADATA[category].options.flatMap((option) => {
       const rank = matchRank(option, query);
       if (rank === null) return [];
-      const match: CatalogMatch = {
-        ...toOption(category, option),
-        category,
-        categoryLabel: getCategoryDisplayName(category),
-        ecosystems: CATEGORY_ECOSYSTEMS.get(category) ?? [],
-      };
-      return [{ rank, match }];
+      return [{ rank, match: toCatalogMatch(category, option) }];
     }),
   );
   return {

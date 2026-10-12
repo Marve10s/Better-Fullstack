@@ -4,8 +4,11 @@ import {
   getAuthIncompatibility,
   getDatabaseOrmIncompatibility,
   getDatabaseOrmRequirementIssue,
+  getGoMessageQueueIncompatibility,
+  getGoMigrationsIncompatibility,
   getJobQueueIncompatibility,
   getPythonLoggingIncompatibility,
+  getVectorDbIncompatibility,
   isToolingOverlayOnly,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
@@ -54,6 +57,14 @@ export function getRequestedJobQueueRejection(
 ): string | null {
   if (!requestedJobQueue || adjustedConfig.jobQueue === requestedJobQueue) return null;
   return getJobQueueIncompatibility(requestedJobQueue, adjustedConfig);
+}
+
+export function getRequestedVectorDbRejection(
+  requestedVectorDb: ProjectConfig["vectorDb"] | undefined,
+  adjustedConfig: Partial<ProjectConfig>,
+): string | null {
+  if (!requestedVectorDb || adjustedConfig.vectorDb === requestedVectorDb) return null;
+  return getVectorDbIncompatibility(requestedVectorDb, adjustedConfig);
 }
 
 function getAuthStack(config: Partial<ProjectConfig>) {
@@ -325,6 +336,23 @@ export function getPythonLoggingSelectionIssue(config: Partial<ProjectConfig>) {
     if (reason) return { reason, selection };
   }
   return null;
+}
+
+export function getGoJobAndMigrationSelectionIssue(config: Partial<ProjectConfig>) {
+  const usesGoGraph =
+    config.stackParts?.some(
+      (part) => part.role === "backend" && part.ecosystem === "go" && part.source !== "provided",
+    ) ?? false;
+  const goConfig = usesGoGraph
+    ? stackGraphToLegacyProjectConfigForEcosystem(config as ProjectConfig, "go")
+    : config.ecosystem === "go"
+      ? config
+      : undefined;
+  if (!goConfig) return null;
+  return (
+    getGoMessageQueueIncompatibility(goConfig.goMessageQueue, goConfig) ??
+    getGoMigrationsIncompatibility(goConfig.goMigrations, goConfig)
+  );
 }
 
 export function hasSelectedTypeScriptBackendPart(config: Partial<ProjectConfig>): boolean {

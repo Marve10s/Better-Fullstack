@@ -567,12 +567,20 @@ export async function gatherMultiEcosystemConfig(
 
   if (backendEcosystem === "typescript") {
     const backend = promptValue(
-      await getBackendFrameworkChoice(flags.backend, appFrontends, flags.jobQueue, flags.auth),
+      await getBackendFrameworkChoice(
+        flags.backend,
+        appFrontends,
+        flags.jobQueue,
+        flags.auth,
+        flags.vectorDb,
+      ),
     );
     const runtime =
       backend === "none"
         ? "none"
-        : promptValue(await getRuntimeChoice(flags.runtime, backend, flags.jobQueue));
+        : promptValue(
+            await getRuntimeChoice(flags.runtime, backend, flags.jobQueue, flags.vectorDb),
+          );
     if (backend !== "none") {
       database = promptValue(
         await getDatabaseChoice(
@@ -688,7 +696,7 @@ export async function gatherMultiEcosystemConfig(
       backend === "none"
         ? "none"
         : await scopedPromptValue("typescript", "vectorDb", configScope, backendSections, () =>
-            getVectorDbChoice(flags.vectorDb, backend),
+            getVectorDbChoice(flags.vectorDb, { backend, runtime, webDeploy }),
           );
     const fileStorage =
       backend === "none"
@@ -804,7 +812,7 @@ export async function gatherMultiEcosystemConfig(
       goWebFramework === "none"
         ? "none"
         : await scopedPromptValue("go", "goMessageQueue", configScope, backendSections, () =>
-            getGoMessageQueueChoice(flags.goMessageQueue),
+            getGoMessageQueueChoice(flags.goMessageQueue, { database, goWebFramework }),
           );
     const goCaching =
       goWebFramework === "none"
@@ -840,7 +848,7 @@ export async function gatherMultiEcosystemConfig(
       goWebFramework === "none" || !["sqlite", "postgres", "mysql"].includes(database)
         ? "none"
         : await scopedPromptValue("go", "goMigrations", configScope, backendSections, () =>
-            getGoMigrationsChoice(flags.goMigrations),
+            getGoMigrationsChoice(flags.goMigrations, { database, goOrm }),
           );
     const goTemplating =
       goWebFramework === "none"

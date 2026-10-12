@@ -61,11 +61,13 @@ import {
 } from "@/commands/stack/starter-tracks";
 import { defineOperation } from "@/operations/operation";
 import { listCatalogOptions, searchCatalogOptions } from "@/operations/option-catalog";
+import { explainOption } from "@/operations/option-explain";
 import {
   capabilityEvidenceOutputSchema,
   catalogListOutputSchema,
   catalogSearchOutputSchema,
   compatibilityOutputSchema,
+  explainOptionOutputSchema,
   guidanceOutputSchema,
   schemaOutputSchema,
   starterTrackCatalogOutputSchema,
@@ -141,7 +143,7 @@ function getGuidance() {
       search:
         "String. TypeScript supports multiple providers; Rust, Python, Go, and Java currently support meilisearch or none.",
       vectorDb:
-        "String. TypeScript-only vector database for AI embeddings: pgvector, qdrant, chroma, pinecone, or none. Each provider is a standalone service (pgvector connects to a dedicated Postgres+pgvector instance via PGVECTOR_DATABASE_URL). Requires a standalone backend (not convex/none).",
+        "String. TypeScript-only vector database for AI embeddings: pgvector, qdrant, chroma, pinecone, weaviate, upstash-vector, turbopuffer, lancedb, or none. Each provider except LanceDB is a standalone service (pgvector connects to a dedicated Postgres+pgvector instance via PGVECTOR_DATABASE_URL). Requires a standalone backend (not convex/none). Weaviate needs the Node.js or Bun runtime (not Cloudflare Workers). LanceDB is embedded and needs a standalone server on the Node.js or Bun runtime.",
     },
     ambiguityRules: [
       "If the user request leaves major stack choices unspecified, ASK the user before proceeding. Do not guess.",
@@ -244,6 +246,32 @@ export const searchOptionsOperation = defineOperation({
   idempotent: true,
   openWorld: false,
   run: async (input) => searchCatalogOptions(input),
+});
+
+export const explainOptionOperation = defineOperation({
+  name: "explain_option",
+  title: "Explain option",
+  description:
+    "Explains one option: its category, ecosystems, label, CLI flag, aliases, and evidence level; the categories it requires; the options it excludes; and the options that exclude it, each with the shared compatibility reason. Rules are derived by changing one selection at a time on the builder's default stack for the ecosystem plus any `with` selections. The evaluation says whether the option fits that stack, every failing reason, and the compatible alternatives in its category. Name an option by ID or alias, or as category:id when the ID exists in several categories.",
+  input: z.object({
+    option: z
+      .string()
+      .trim()
+      .min(1)
+      .describe("Option ID or alias, or category:id such as 'orm:drizzle'"),
+    with: z
+      .array(z.string().trim().min(1))
+      .optional()
+      .describe("Other selections for the evaluated stack, as option IDs or category:id"),
+    ecosystem: EcosystemSchema.optional().describe(
+      "Ecosystem to evaluate in. Defaults to the first ecosystem that uses the option's category.",
+    ),
+  }),
+  output: explainOptionOutputSchema,
+  safety: "read",
+  idempotent: true,
+  openWorld: false,
+  run: async (input) => explainOption(input),
 });
 
 export const listPresetsOperation = defineOperation({

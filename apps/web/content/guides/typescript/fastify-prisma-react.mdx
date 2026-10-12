@@ -1,0 +1,179 @@
+---
+title: Fastify with Prisma and React
+description: Create a Fastify API on Node.js with Prisma, PostgreSQL, Better Auth, tRPC, and a React frontend on TanStack Router using Better Fullstack.
+translationStatus: pending
+updated: 2026-10-09
+category: TypeScript
+tags:
+  - fastify
+  - prisma
+  - react
+  - trpc
+keywords:
+  - fastify prisma starter
+  - fastify react starter
+  - fastify trpc
+  - fastify better auth
+  - create fastify app
+---
+
+Use this stack when the API should be a Fastify service on Node.js, with Prisma for PostgreSQL and a React single-page app that calls it through tRPC.
+
+```npm
+npm create better-fullstack@latest my-fastify-api -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend fastify \
+  --runtime node \
+  --database postgres \
+  --orm prisma \
+  --auth better-auth \
+  --api trpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui
+```
+
+## What this creates
+
+- A Fastify server in `apps/server` with `@fastify/cors`, a Better Auth route at `/api/auth/*`, and the tRPC Fastify plugin at `/trpc`.
+- A React app in `apps/web` on TanStack Router, with sign-in and sign-up forms, a user menu, a protected dashboard, and a tRPC client on TanStack Query.
+- Prisma 7 on PostgreSQL through the `@prisma/adapter-pg` driver adapter, with the Better Auth models in their own schema file.
+- Better Auth with email and password sign-in, using the Prisma adapter.
+- Tailwind CSS and shadcn/ui components in the web app.
+- A Turborepo workspace and a reproducible `bts.jsonc` stack configuration.
+
+## Generated shape
+
+```txt
+my-fastify-api/
+  bts.jsonc
+  turbo.json
+  apps/
+    server/
+      .env
+      src/index.ts
+    web/
+      .env
+      src/
+        lib/auth-client.ts
+        utils/trpc.ts
+        routes/
+          index.tsx
+          login.tsx
+          dashboard.tsx
+  packages/
+    api/src/
+      context.ts
+      index.ts
+      routers/index.ts
+    auth/src/index.ts
+    db/
+      prisma.config.ts
+      prisma/schema/
+        schema.prisma
+        auth.prisma
+      src/index.ts
+    env/src/
+      server.ts
+      web.ts
+```
+
+The Fastify auth route converts each Fastify request into a Fetch `Request`, passes it to `auth.handler`, and copies the status, headers, and body back to the reply. The tRPC context converts the Fastify request headers the same way and resolves the Better Auth session from them.
+
+## Routes
+
+| Route | Purpose |
+| --- | --- |
+| `GET /` | Returns `OK`. |
+| `/api/auth/*` | Better Auth endpoints for email sign-up, sign-in, session, and sign-out. |
+| `/trpc/healthCheck` | Public query that returns `"OK"`. The web home page shows its status. |
+| `/trpc/privateData` | Protected query. It throws `UNAUTHORIZED` without a session. |
+
+Fastify listens on port 3000 with its built-in logger enabled. The web app runs on Vite's port 5173.
+
+## Environment
+
+| File | Variable | Purpose |
+| --- | --- | --- |
+| `apps/server/.env` | `DATABASE_URL` | PostgreSQL connection string used by Prisma and the server. |
+| `apps/server/.env` | `BETTER_AUTH_SECRET` | Generated random secret, at least 32 characters. |
+| `apps/server/.env` | `BETTER_AUTH_URL` | Public URL of the server, `http://localhost:3000` locally. |
+| `apps/server/.env` | `CORS_ORIGIN` | Web origin the server and Better Auth trust, `http://localhost:5173` locally. |
+| `apps/web/.env` | `VITE_SERVER_URL` | Server URL used by the auth client and the tRPC client. |
+
+`packages/db/prisma.config.ts` loads `apps/server/.env`, so Prisma commands and the server read the same `DATABASE_URL`.
+
+## Run it locally
+
+Point `DATABASE_URL` at a PostgreSQL database. Installing dependencies runs `prisma generate` through the database package's `postinstall` script. Then push the schema and start both apps:
+
+```npm
+npm install
+npm run db:push
+npm run dev
+```
+
+The server's `dev` script runs `tsx watch src/index.ts`. Open `http://localhost:5173/login` to create an account, then visit `/dashboard`, which calls `privateData`.
+
+## Add a model and a procedure
+
+Add product models to `packages/db/prisma/schema/schema.prisma` and leave `auth.prisma` to Better Auth:
+
+```prisma
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
+}
+```
+
+Apply it and regenerate Prisma Client, which the database package writes to `packages/db/prisma/generated`:
+
+```npm
+npm run db:push
+npm run db:generate
+```
+
+Then add a procedure to `appRouter` in `packages/api/src/routers/index.ts`. `protectedProcedure` guarantees `ctx.session`:
+
+```ts
+createProject: protectedProcedure
+  .input(z.object({ name: z.string().min(2) }))
+  .mutation(({ ctx, input }) =>
+    prisma.project.create({ data: { name: input.name, ownerId: ctx.session.user.id } }),
+  ),
+```
+
+Import `prisma` as the default export of `@my-fastify-api/db` and `z` from `zod`. The web app calls it with `trpc.createProject.mutationOptions()`.
+
+## Compatibility notes
+
+- `--runtime node` matches the generated scripts: `tsx watch` in development and `node dist/index.mjs` in production.
+- The CLI accepts both `--api trpc` and `--api orpc` with Fastify and a React frontend. This guide uses tRPC, which the generated server mounts through the official tRPC Fastify adapter.
+- Prisma uses the `prisma-client` generator with an ESM output folder, so import the client from the database package rather than from `@prisma/client`.
+
+## Deployment notes
+
+Build with `npm run build` (tsdown writes `apps/server/dist`) and start the server with `npm run start` from `apps/server`. The server binds to `0.0.0.0:3000`. Set `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and `CORS_ORIGIN` in its environment, and build the web app with `VITE_SERVER_URL` set to the deployed API. For tracked schema changes, create migrations with `npm run db:migrate` and apply them with `prisma migrate deploy` before starting new code.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Imports from `prisma/generated` fail | Run `npm run db:generate`; the client is generated, not committed. |
+| Sign-up fails with a missing table error | Run `npm run db:push` against the database in `DATABASE_URL`. |
+| Auth requests return `AUTH_FAILURE` | Read the Fastify log; the auth route logs the underlying error before replying with 500. |
+| Browser requests fail CORS checks | `CORS_ORIGIN` must match the web origin exactly, including the port. |
+
+## Comparison notes
+
+Choose Fastify when the team wants Fastify's plugin system and logging on Node.js. Compare [Elysia with Drizzle and Better Auth](/guides/typescript/elysia-drizzle-better-auth/) for a Bun server, or [Hono with tRPC and Drizzle](/guides/typescript/hono-trpc-drizzle/) for a smaller server that runs on several runtimes.
+
+## Next steps
+
+- Open the [Stack Builder with Fastify selected](/new?eco=typescript&fe-w=tanstack-router&be=fastify&rt=node&db=postgres&orm=prisma&au=better-auth&api=trpc).
+- Read the [Drizzle versus Prisma comparison](/blog/drizzle-vs-prisma/).
+- Review the [CLI create reference](/docs/cli/create/).

@@ -1061,6 +1061,53 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
   consola.box(output);
 }
 
+function getGoJobAndMigrationGuidance(
+  goMessageQueue: ProjectConfig["goMessageQueue"],
+  goMigrations: ProjectConfig["goMigrations"],
+): Array<[string, string[]]> {
+  const sections: Array<[string, string[]]> = [];
+  if (goMessageQueue === "river") {
+    sections.push([
+      "River jobs:",
+      [
+        "Set DATABASE_URL to PostgreSQL; the server runs River's rivermigrate step before starting the client",
+        'Run the River migration on its own: go run github.com/riverqueue/river/cmd/river@v0.49.0 migrate-up --database-url "$DATABASE_URL"',
+        'Enqueue a job: curl -X POST http://localhost:8080/api/jobs/welcome-email -d \'{"email":"you@example.com"}\'',
+      ],
+    ]);
+  }
+  if (goMessageQueue === "gocron") {
+    sections.push([
+      "gocron scheduler:",
+      [
+        "internal/jobs/gocron.go runs a heartbeat job every minute and stops the scheduler on shutdown",
+      ],
+    ]);
+  }
+  if (goMigrations === "goose") {
+    sections.push([
+      "goose migrations:",
+      [
+        "Apply migrations: go run ./cmd/migrate up",
+        "Check status: go run ./cmd/migrate status",
+        "Roll back one migration: go run ./cmd/migrate down",
+      ],
+    ]);
+  }
+  if (goMigrations === "atlas") {
+    sections.push([
+      "Atlas migrations:",
+      [
+        "Install the Atlas CLI: https://atlasgo.io/docs#installation",
+        "Set ATLAS_DATABASE_URL (Atlas URL format, see .env.example)",
+        "Apply the schema: atlas schema apply --env local",
+        "Plan a versioned migration: atlas migrate diff --env local initial",
+      ],
+    ]);
+  }
+  return sections;
+}
+
 function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean }) {
   const {
     relativePath,
@@ -1180,6 +1227,11 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
 
   if (goObservability === "signoz") {
     output += `\n${getSigNozInstructions(".env").trim()}\n`;
+  }
+
+  for (const [title, lines] of getGoJobAndMigrationGuidance(goMessageQueue, goMigrations)) {
+    output += `\n${pc.bold(title)}\n`;
+    for (const line of lines) output += `${pc.cyan("•")} ${line}\n`;
   }
 
   output += `\n${pc.bold("Common Go commands:")}\n`;

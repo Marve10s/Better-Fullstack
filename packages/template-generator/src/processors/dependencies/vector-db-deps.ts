@@ -41,6 +41,14 @@ function getVectorDbDeps(vectorDb: ProjectConfig["vectorDb"]): AvailableDependen
       return ["chromadb"];
     case "pinecone":
       return ["@pinecone-database/pinecone"];
+    case "weaviate":
+      return ["weaviate-client"];
+    case "upstash-vector":
+      return ["@upstash/vector"];
+    case "turbopuffer":
+      return ["@turbopuffer/turbopuffer"];
+    case "lancedb":
+      return ["@lancedb/lancedb"];
     default:
       return [];
   }

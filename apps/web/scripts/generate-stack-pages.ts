@@ -94,7 +94,12 @@ export function filterStackPartsForSelectedEcosystem(
   parts: readonly StackPart[],
   ecosystem: StackSelectionState["ecosystem"],
 ): StackPart[] {
-  return parts.filter((part) => part.ecosystem === ecosystem || part.ecosystem === "universal");
+  return parts.filter(
+    (part) =>
+      part.ecosystem === ecosystem ||
+      part.ecosystem === "universal" ||
+      (ecosystem === "typescript" && part.ecosystem === "react-native"),
+  );
 }
 
 function collectFiles(directory: VirtualDirectory): string[] {
@@ -110,13 +115,17 @@ function representativeFiles(files: readonly string[]): string[] {
     "Cargo.toml",
     "pyproject.toml",
     "go.mod",
+    "pom.xml",
+    "build.gradle.kts",
+    "mix.exs",
+    "Program.cs",
     "bts.jsonc",
   ];
   const preferred = preferredNames.flatMap((name) =>
     files.filter((file) => file === name || file.endsWith(`/${name}`)),
   );
   const sourceFiles = files.filter((file) =>
-    /(^|\/)(src|app|apps|server|frontend|backend)\//.test(file),
+    /(^|\/)(src|app|apps|server|frontend|backend|lib|Components)\//.test(file),
   );
   return [...new Set([...preferred, ...sourceFiles, ...files])].slice(0, 8);
 }

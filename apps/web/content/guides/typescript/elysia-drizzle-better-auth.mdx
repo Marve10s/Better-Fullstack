@@ -1,0 +1,164 @@
+---
+title: Elysia with Drizzle and Better Auth
+description: Create an Elysia API on Bun with Drizzle, PostgreSQL, Better Auth, oRPC, and a TanStack Router frontend in one Better Fullstack workspace.
+translationStatus: pending
+updated: 2026-10-09
+category: TypeScript
+tags:
+  - elysia
+  - bun
+  - drizzle
+  - better-auth
+keywords:
+  - elysia better auth
+  - elysia drizzle starter
+  - elysia bun api starter
+  - elysia orpc
+  - create elysia app
+---
+
+Use this stack when the API should be a separate Elysia service on Bun, with sign-in, typed procedures, and PostgreSQL access owned by the server.
+
+```npm
+npm create better-fullstack@latest my-elysia-api -- \
+  --ecosystem typescript \
+  --frontend tanstack-router \
+  --backend elysia \
+  --runtime bun \
+  --database postgres \
+  --orm drizzle \
+  --auth better-auth \
+  --api orpc \
+  --css-framework tailwind \
+  --ui-library shadcn-ui
+```
+
+## What this creates
+
+- An Elysia server in `apps/server` that mounts Better Auth at `/api/auth/*`, oRPC at `/rpc`, and an OpenAPI reference at `/api-reference`.
+- A TanStack Router app in `apps/web` with sign-in and sign-up forms, a user menu, and a protected dashboard.
+- Drizzle on PostgreSQL through `node-postgres`, with the Better Auth tables and a `task` table.
+- Better Auth with email and password sign-in, using the Drizzle adapter.
+- Tailwind CSS and shadcn/ui components in the web app.
+- A Turborepo workspace and a reproducible `bts.jsonc` stack configuration.
+
+## Generated shape
+
+```txt
+my-elysia-api/
+  bts.jsonc
+  turbo.json
+  apps/
+    server/
+      .env
+      src/index.ts
+    web/
+      .env
+      src/
+        lib/auth-client.ts
+        utils/orpc.ts
+        routes/
+          index.tsx
+          login.tsx
+          dashboard.tsx
+  packages/
+    api/src/
+      context.ts
+      index.ts
+      routers/index.ts
+    auth/src/index.ts
+    db/
+      drizzle.config.ts
+      src/
+        schema/
+          auth.ts
+          task.ts
+        tasks.ts
+    env/src/
+      server.ts
+      web.ts
+```
+
+`apps/server/src/index.ts` is the only Elysia file. It applies CORS for `CORS_ORIGIN` with credentials, passes `/api/auth/*` requests to `auth.handler`, and hands `/rpc` and `/api-reference` requests to oRPC handlers built from the router in `packages/api`. The oRPC context reads the Better Auth session from the request headers.
+
+## Routes
+
+| Route | Purpose |
+| --- | --- |
+| `GET /` | Returns `OK`. |
+| `/api/auth/*` | Better Auth endpoints for email sign-up, sign-in, session, and sign-out. |
+| `/rpc/healthCheck` | Public oRPC procedure that returns `"OK"`. |
+| `/rpc/privateData` | Protected oRPC procedure. It throws `UNAUTHORIZED` without a session. |
+| `/api-reference` | OpenAPI reference generated from the router. |
+
+The server listens on port 3000. The web app runs on Vite's port 5173 and calls the server through `VITE_SERVER_URL`.
+
+## Environment
+
+| File | Variable | Purpose |
+| --- | --- | --- |
+| `apps/server/.env` | `DATABASE_URL` | PostgreSQL connection string, `postgresql://postgres:password@localhost:5432/postgres` by default. |
+| `apps/server/.env` | `BETTER_AUTH_SECRET` | Generated random secret, at least 32 characters. |
+| `apps/server/.env` | `BETTER_AUTH_URL` | Public URL of the server, `http://localhost:3000` locally. |
+| `apps/server/.env` | `CORS_ORIGIN` | Web origin the server and Better Auth trust, `http://localhost:5173` locally. |
+| `apps/web/.env` | `VITE_SERVER_URL` | Server URL used by the auth client and the oRPC client. |
+
+`packages/env/src/server.ts` validates the server variables with Zod at startup, so a missing or short secret fails early.
+
+## Run it locally
+
+Install Bun first: the server's `dev` script runs `bun run --hot src/index.ts`. Point `DATABASE_URL` at a PostgreSQL database, then install dependencies, push the Drizzle schema, and start both apps through Turborepo:
+
+```npm
+npm install
+npm run db:push
+npm run dev
+```
+
+`npm run dev:server` and `npm run dev:web` start one app at a time. Open `http://localhost:5173/login` to create an account, then visit `/dashboard`, which calls `privateData`.
+
+`db:push` applies the schema directly. For tracked migrations, use `npm run db:generate` and `npm run db:migrate`; Drizzle Kit writes them to `packages/db/src/migrations`.
+
+## Add task procedures
+
+The generator writes task queries in `packages/db/src/tasks.ts`, scoped to a user ID, but the oRPC router does not expose them yet. Add a `tasks` entry to `appRouter` in `packages/api/src/routers/index.ts`, next to `healthCheck` and `privateData`:
+
+```ts
+tasks: {
+  list: protectedProcedure.handler(({ context }) => listTasks(context.session.user.id)),
+  create: protectedProcedure
+    .input(z.object({ title: z.string().trim().min(1) }))
+    .handler(({ context, input }) => createTask(context.session.user.id, input.title)),
+},
+```
+
+Import `listTasks` and `createTask` from `@my-elysia-api/db/tasks` and `z` from `zod`; the API package already depends on both. `protectedProcedure` rejects requests without a session, so every task query runs for the signed-in user only. The web app can then call `orpc.tasks.list.queryOptions()` with TanStack Query.
+
+## Compatibility notes
+
+- `--runtime bun` is the runtime for this Elysia server. The generated scripts call `bun` directly for `dev`, `start`, and `compile`.
+- oRPC is one choice here. The CLI also accepts `--api trpc` with Elysia and a React frontend.
+- Better Auth sets cookies with `sameSite: "none"` and `secure: true` in `packages/auth/src/index.ts`, because the web app and the API run on different origins.
+
+## Deployment notes
+
+Build the server with `npm run build` (tsdown writes `apps/server/dist`) and start it with `bun run dist/index.mjs`, or produce a single binary with the server's `compile` script. Set `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and `CORS_ORIGIN` in the server environment. `BETTER_AUTH_URL` must be the public API origin and `CORS_ORIGIN` the exact web origin. Build the web app with `VITE_SERVER_URL` pointing at the deployed API, since Vite inlines it at build time.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| The server exits on start with an env error | Fill every variable in `apps/server/.env`; `BETTER_AUTH_SECRET` needs at least 32 characters. |
+| Sign-up fails with a missing table error | Run `npm run db:push` against the database in `DATABASE_URL`. |
+| Browser requests fail CORS checks | `CORS_ORIGIN` must match the web origin exactly, including the port. |
+| `privateData` returns `UNAUTHORIZED` | Sign in first; the oRPC client sends cookies with `credentials: "include"`. |
+
+## Comparison notes
+
+Choose Elysia when the team wants a Bun-first server with Elysia's plugin model. Compare [Hono with Better Auth and Drizzle](/guides/typescript/hono-better-auth/) for a server that also runs on Node and Workers, or [Fastify with Prisma and React](/guides/typescript/fastify-prisma-react/) for a Node server with Prisma.
+
+## Next steps
+
+- Open the [Stack Builder with Elysia selected](/new?eco=typescript&fe-w=tanstack-router&be=elysia&rt=bun&db=postgres&orm=drizzle&au=better-auth&api=orpc).
+- Read the [Hono, Express, Fastify, and Elysia comparison](/blog/hono-vs-express-vs-fastify-vs-elysia/).
+- Review the [CLI create reference](/docs/cli/create/).

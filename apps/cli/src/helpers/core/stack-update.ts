@@ -39,6 +39,7 @@ import {
   getCompatibilityBackend,
   getRequestedAuthRejection,
   getRequestedJobQueueRejection,
+  getRequestedVectorDbRejection,
   hasSelectedTypeScriptBackendPart,
 } from "@/config/stack-compatibility";
 import { getDefaultConfig } from "@/constants";
@@ -1955,6 +1956,7 @@ export async function planStackUpdate(
   }
   const requestRejection =
     getRequestedJobQueueRejection(requestedChanges.jobQueue, proposedConfig) ??
+    getRequestedVectorDbRejection(requestedChanges.vectorDb, proposedConfig) ??
     getRequestedAuthRejection(requestedChanges.auth, proposedConfig) ??
     dataLayerRejection;
   if (requestRejection) {
