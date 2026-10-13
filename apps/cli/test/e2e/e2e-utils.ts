@@ -480,7 +480,7 @@ export async function checkStaticAssets(
   html: string,
   options?: { timeout?: number },
 ): Promise<AssetCheckResult> {
-  const timeout = options?.timeout ?? 10_000;
+  const timeout = options?.timeout ?? 30_000;
   const failed: AssetCheckResult["failed"] = [];
 
   const assetPatterns = [

@@ -33,7 +33,7 @@
     },
     "apps/cli": {
       "name": "create-better-fullstack",
-      "version": "2.8.0",
+      "version": "2.8.1",
       "bin": {
         "create-better-fullstack": "dist/cli.mjs",
       },
@@ -147,7 +147,7 @@
     },
     "packages/create-bfs": {
       "name": "create-bfs",
-      "version": "2.8.0",
+      "version": "2.8.1",
       "bin": {
         "create-bfs": "cli.js",
       },
@@ -157,7 +157,7 @@
     },
     "packages/project-lifecycle": {
       "name": "@better-fullstack/project-lifecycle",
-      "version": "2.8.0",
+      "version": "2.8.1",
       "dependencies": {
         "fs-extra": "^11.4.1",
       },
@@ -170,7 +170,7 @@
     },
     "packages/template-generator": {
       "name": "@better-fullstack/template-generator",
-      "version": "2.8.0",
+      "version": "2.8.1",
       "dependencies": {
         "@better-fullstack/types": "^2.7.0",
         "handlebars": "^4.7.9",
@@ -190,7 +190,7 @@
     },
     "packages/types": {
       "name": "@better-fullstack/types",
-      "version": "2.8.0",
+      "version": "2.8.1",
       "dependencies": {
         "zod": "4.6.5",
       },
