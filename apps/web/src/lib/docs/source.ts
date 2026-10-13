@@ -15,6 +15,7 @@ import {
   type SupportedLocale,
   toSupportedLocale,
 } from "@/lib/i18n/locales";
+import { m } from "@/paraglide/messages.js";
 import { getLocale } from "@/paraglide/runtime.js";
 
 export { getLocalizedDocFrontmatter } from "@/lib/docs/frontmatter";
@@ -213,6 +214,9 @@ function contentCacheKey(page: DocPage, locale: ContentLocale): string {
 }
 
 function localizedFolderName(name: string, locale = currentContentLocale()): string {
+  if (name === "Start") return m.docsSectionStart({}, { locale });
+  if (name === "Build") return m.docsSectionBuild({}, { locale });
+  if (name === "Automate") return m.docsSectionAutomate({}, { locale });
   if (locale === "en") return name;
   return DOC_FOLDER_TITLE_TRANSLATIONS[name]?.[locale]?.title ?? name;
 }
@@ -423,7 +427,7 @@ function localizePageNode(node: PageNode): PageNode {
 }
 
 function localizePageTreeNode(node: PageTreeNode): PageTreeNode {
-  if (node.type === "separator") return node;
+  if (node.type === "separator") return { ...node, name: localizedFolderName(node.name) };
   if (node.type === "page") return localizePageNode(node);
   return {
     ...node,

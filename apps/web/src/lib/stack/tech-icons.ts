@@ -410,7 +410,7 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   turborepo: { type: "si", slug: "turborepo", hex: "EF4444" },
   "vite-plus": {
     type: "local",
-    src: "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/logo.svg",
+    src: "https://raw.githubusercontent.com/voidzero-dev/vite-plus/main/docs/public/icon.svg",
   },
   tauri: { type: "si", slug: "tauri", hex: "FFC131" },
   storybook: { type: "si", slug: "storybook", hex: "FF4785" },

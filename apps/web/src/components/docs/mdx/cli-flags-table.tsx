@@ -1,4 +1,5 @@
-import { CLI_FLAG_GROUPS_BY_ID } from "@/lib/docs/cli-flags-data";
+import { CLI_FLAG_GROUPS_BY_ID, CLI_FLAG_SUMMARY_MESSAGES } from "@/lib/docs/cli-flags-data";
+import { m } from "@/paraglide/messages.js";
 
 /**
  * Renders a CLI flag reference table for a single flag group. Data is generated
@@ -19,9 +20,9 @@ export function CliFlagTable({ group }: { group: string }) {
         <table className="w-full min-w-[48rem] border-collapse text-left text-sm">
           <thead className="border-[var(--docs-border-subtle)] border-b bg-[var(--docs-surface)] text-muted-foreground text-xs uppercase">
             <tr>
-              <th className="px-4 py-2 font-medium">Flag</th>
-              <th className="px-4 py-2 font-medium">Accepted values</th>
-              <th className="px-4 py-2 font-medium">Default</th>
+              <th className="px-4 py-2 font-medium">{m.docsCliFlag()}</th>
+              <th className="px-4 py-2 font-medium">{m.docsCliAcceptedValues()}</th>
+              <th className="px-4 py-2 font-medium">{m.builderDefault()}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--docs-border-subtle)]">
@@ -33,10 +34,12 @@ export function CliFlagTable({ group }: { group: string }) {
                   </code>
                   {flag.multiple ? (
                     <span className="ml-2 text-[0.68rem] text-muted-foreground uppercase">
-                      multiple
+                      {m.docsCliMultiple()}
                     </span>
                   ) : null}
-                  <div className="mt-1 text-muted-foreground text-xs">{flag.summary}</div>
+                  <div className="mt-1 text-muted-foreground text-xs">
+                    {CLI_FLAG_SUMMARY_MESSAGES[`${group}:${flag.flag}`]?.() ?? flag.summary}
+                  </div>
                 </td>
                 <td className="px-4 py-3 align-top">
                   {flag.values.length > 0 ? (
@@ -51,7 +54,13 @@ export function CliFlagTable({ group }: { group: string }) {
                       ))}
                     </ul>
                   ) : (
-                    <span className="text-muted-foreground text-xs">{flag.valueHint}</span>
+                    <span className="text-muted-foreground text-xs">
+                      {flag.valueHint === "boolean flag"
+                        ? m.docsCliBooleanFlag()
+                        : flag.valueHint === "role:ecosystem:tool (e.g. frontend:typescript:next)"
+                          ? m.docsCliPartHint()
+                          : flag.valueHint}
+                    </span>
                   )}
                 </td>
                 <td className="px-4 py-3 align-top">

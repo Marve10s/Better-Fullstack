@@ -7,14 +7,14 @@ import {
   type BrowserTelemetryStatus,
 } from "@/lib/analytics/product-analytics";
 import { cn } from "@/lib/platform/utils";
+import { m } from "@/paraglide/messages.js";
 
-const STATUS_COPY: Record<BrowserTelemetryStatus["reason"], string> = {
-  enabled: "Browser analytics are enabled.",
-  "local-opt-out": "Browser analytics are disabled for this browser.",
-  "do-not-track": "Browser analytics are disabled because Do Not Track is enabled.",
-  "global-privacy-control":
-    "Browser analytics are disabled because Global Privacy Control is enabled.",
-  unavailable: "Browser analytics preferences are unavailable in this environment.",
+const STATUS_COPY: Record<BrowserTelemetryStatus["reason"], () => string> = {
+  enabled: m.docsTelemetryEnabled,
+  "local-opt-out": m.docsTelemetryLocalOptOut,
+  "do-not-track": m.docsTelemetryDoNotTrack,
+  "global-privacy-control": m.docsTelemetryGlobalPrivacyControl,
+  unavailable: m.docsTelemetryUnavailable,
 };
 
 export function BrowserTelemetryControls() {
@@ -41,7 +41,7 @@ export function BrowserTelemetryControls() {
   return (
     <div className="my-6 rounded-lg border border-border bg-card/40 p-4">
       <p className="m-0 text-sm text-foreground" aria-live="polite">
-        {STATUS_COPY[status.reason]}
+        {STATUS_COPY[status.reason]()}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button
@@ -53,7 +53,7 @@ export function BrowserTelemetryControls() {
             "border-border bg-background hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50",
           )}
         >
-          Disable browser analytics
+          {m.docsTelemetryDisable()}
         </button>
         <button
           type="button"
@@ -69,7 +69,7 @@ export function BrowserTelemetryControls() {
             "border-border bg-background hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50",
           )}
         >
-          Enable browser analytics
+          {m.docsTelemetryEnable()}
         </button>
       </div>
     </div>

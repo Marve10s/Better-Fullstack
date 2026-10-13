@@ -1,6 +1,7 @@
 import { create, insertMultiple, search } from "@orama/orama";
 
 import type { DocFrontmatter } from "@/lib/docs/source";
+import type { SupportedLocale } from "@/lib/i18n/locales";
 
 export type SearchSection = {
   id: string;
@@ -75,7 +76,7 @@ function slugify(text: string): string {
   return text
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, "")
+    .replace(/[^\p{L}\p{N}\p{M}_\s-]/gu, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
@@ -85,7 +86,11 @@ export type DocSearch = {
   query(input: string, limit?: number): Promise<SearchHit[]>;
 };
 
-export async function createDocSearch(sections: SearchSection[]): Promise<DocSearch> {
+export async function createDocSearch(
+  sections: SearchSection[],
+  locale: SupportedLocale = "en",
+): Promise<DocSearch> {
+  const segmenter = new Intl.Segmenter(locale, { granularity: "word" });
   const db = create({
     schema: {
       pageTitle: "string",
@@ -93,7 +98,21 @@ export async function createDocSearch(sections: SearchSection[]): Promise<DocSea
       body: "string",
     },
     components: {
-      tokenizer: { language: "english", stemming: true },
+      tokenizer:
+        locale === "en"
+          ? { language: "english", stemming: true }
+          : {
+              language: locale,
+              normalizationCache: new Map<string, string>(),
+              tokenize(raw: string) {
+                const words = segmenter.segment(raw.normalize("NFKC").toLocaleLowerCase(locale));
+                return [
+                  ...new Set(
+                    [...words].filter((word) => word.isWordLike).map((word) => word.segment),
+                  ),
+                ];
+              },
+            },
     },
   });
 

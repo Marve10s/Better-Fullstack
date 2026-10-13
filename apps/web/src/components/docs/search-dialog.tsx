@@ -100,7 +100,7 @@ export function DocsSearchDialog({
     let cancelled = false;
     const init = async () => {
       const sections = await loadSearchSections();
-      const instance = await createDocSearch(sections);
+      const instance = await createDocSearch(sections, locale);
       if (!cancelled) setSearch(instance);
     };
     void init();

@@ -101,7 +101,7 @@ export function PMTabs({
     >
       <div
         role="tablist"
-        aria-label="Package manager"
+        aria-label={m.docsPackageManager()}
         className="flex items-center overflow-x-auto border-[var(--code-border)] border-b bg-[var(--code-chrome-bg)]"
       >
         {MANAGERS.map((manager) => {

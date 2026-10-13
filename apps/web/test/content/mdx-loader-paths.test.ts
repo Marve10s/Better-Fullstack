@@ -74,9 +74,11 @@ for (const ssr of [false, true]) {
                   throw new Error("Markdown guide index lost authored content: " + authoredText);
                 }
               }
-              const landing = docsMeta.find((page) => page.filePath.endsWith("/docs/index.mdx"));
-              if (landing?.frontmatter.translationStatus !== "pending") {
-                throw new Error("Expected the docs landing page to exercise English fallback");
+              const pendingGuide = guidesMeta.find((page) =>
+                page.filePath.endsWith("/guides/ai/claude-code-fullstack-mcp.mdx"),
+              );
+              if (pendingGuide?.frontmatter.translationStatus !== "pending") {
+                throw new Error("Expected a pending guide to exercise English fallback");
               }
               export const verified = true;
             `;

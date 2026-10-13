@@ -7,6 +7,8 @@ import {
   TbFileText as FileText,
 } from "react-icons/tb";
 
+import { m } from "@/paraglide/messages.js";
+
 const GITHUB_BRANCH = "main";
 const GITHUB_DOCS_BASE = `https://github.com/Marve10s/Better-Fullstack/blob/${GITHUB_BRANCH}/apps/web/content/docs`;
 
@@ -51,11 +53,11 @@ export function DocsPageActions({ path, markdown }: DocsPageActionsProps) {
         className="inline-flex h-8 items-center gap-1.5 px-2.5 text-[0.8125rem]"
       >
         {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-        {copied ? "Copied" : "Copy MD"}
+        {copied ? m.docsActionsCopied() : m.docsActionsCopyMarkdown()}
       </button>
       <details className="group">
         <summary className="flex h-8 cursor-pointer list-none items-center border-[var(--docs-border-subtle)] border-l px-2 [&::-webkit-details-marker]:hidden">
-          <span className="sr-only">Open documentation actions</span>
+          <span className="sr-only">{m.docsActionsMenu()}</span>
           <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" />
         </summary>
         <div className="absolute top-9 right-0 z-20 min-w-40 rounded-md border border-[var(--docs-border-subtle)] bg-popover p-1 text-popover-foreground shadow-lg">
@@ -66,7 +68,7 @@ export function DocsPageActions({ path, markdown }: DocsPageActionsProps) {
             className="flex items-center gap-2 rounded-sm px-2.5 py-2 text-[0.8125rem] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <FileText className="size-3.5" />
-            View Markdown
+            {m.docsActionsViewMarkdown()}
           </a>
           <a
             href={githubUrl}
@@ -75,7 +77,7 @@ export function DocsPageActions({ path, markdown }: DocsPageActionsProps) {
             className="flex items-center gap-2 rounded-sm px-2.5 py-2 text-[0.8125rem] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <ExternalLink className="size-3.5" />
-            Open on GitHub
+            {m.docsActionsOpenGithub()}
           </a>
         </div>
       </details>

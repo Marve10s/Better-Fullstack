@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { TbCheck as Check, TbCopy as Copy } from "react-icons/tb";
 
 import { cn } from "@/lib/platform/utils";
+import { m } from "@/paraglide/messages.js";
 
 /**
  * Wraps the `<pre>` element rehype-shiki produces so we can layer a language
@@ -40,7 +41,7 @@ export function CodeBlock({ className, children, ...rest }: React.HTMLAttributes
         <button
           type="button"
           onClick={handleCopy}
-          aria-label={copied ? "Copied" : "Copy code"}
+          aria-label={copied ? m.navCopied() : m.docsCopyCode()}
           className="ml-auto flex size-7 items-center justify-center rounded-md text-[var(--code-muted)] transition-colors hover:bg-[var(--code-bg)] hover:text-[var(--code-fg)]"
         >
           {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
