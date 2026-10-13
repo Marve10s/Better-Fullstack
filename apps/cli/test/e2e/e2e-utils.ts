@@ -505,9 +505,10 @@ export async function checkStaticAssets(
     }
   }
 
+  const signal = AbortSignal.timeout(timeout);
   for (const assetUrl of urls) {
     try {
-      const res = await fetch(assetUrl, { signal: AbortSignal.timeout(timeout) });
+      const res = await fetch(assetUrl, { signal });
       if (!res.ok) {
         failed.push({ url: assetUrl, status: res.status });
       }

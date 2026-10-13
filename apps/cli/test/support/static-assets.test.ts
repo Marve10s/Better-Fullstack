@@ -43,4 +43,27 @@ describe("generated frontend asset checks", () => {
       await server.stop(true);
     }
   });
+
+  it("reports every stalled asset within one overall deadline", async () => {
+    const server = Bun.serve({
+      hostname: "127.0.0.1",
+      port: 0,
+      fetch() {
+        return new Promise<Response>(() => {});
+      },
+    });
+    const html = Array.from({ length: 8 }, (_, index) => `<link href="/${index}.css">`).join("");
+
+    try {
+      const started = performance.now();
+      const result = await checkStaticAssets(server.url.toString(), html, { timeout: 200 });
+      const elapsed = performance.now() - started;
+      expect(result.ok).toBe(false);
+      expect(result.checked).toBe(8);
+      expect(result.failed).toHaveLength(8);
+      expect(elapsed).toBeLessThan(1_000);
+    } finally {
+      await server.stop(true);
+    }
+  });
 });
