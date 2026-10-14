@@ -42,9 +42,58 @@ function pickScene() {
   return next;
 }
 
-export function sceneImage(scene: Scene, time: "day" | "night") {
-  return SCENE_IMAGES[`../../assets/home/hero-${scene.id}-${time}.avif`];
+type SceneTime = "day" | "night";
+
+const SCENE_WIDTHS = [
+  [1280, "-1280"],
+  [1920, "-1920"],
+  [2560, ""],
+] as const;
+
+export const SCENE_SIZES = "(max-width: 832px) 560px, 100vw";
+
+function sceneFile(scene: Scene, time: SceneTime, suffix: string) {
+  return SCENE_IMAGES[`../../assets/home/hero-${scene.id}-${time}${suffix}.avif`];
 }
+
+export function sceneImage(scene: Scene, time: SceneTime) {
+  return sceneFile(scene, time, "");
+}
+
+export function sceneSrcSet(scene: Scene, time: SceneTime) {
+  return SCENE_WIDTHS.map(([width, suffix]) => `${sceneFile(scene, time, suffix)} ${width}w`).join(
+    ", ",
+  );
+}
+
+const SCENE_SRCSETS = Object.fromEntries(
+  SCENES.map((scene) => [
+    scene.id,
+    { day: sceneSrcSet(scene, "day"), night: sceneSrcSet(scene, "night") },
+  ]),
+);
+
+export const HERO_SCENE_PRELOAD_SCRIPT = `(() => {
+  try {
+    const srcsets = ${JSON.stringify(SCENE_SRCSETS)};
+    const ids = Object.keys(srcsets);
+    let id = sessionStorage.getItem("${SCENE_VISIT_KEY}");
+    if (!srcsets[id]) {
+      const last = localStorage.getItem("${SCENE_LAST_KEY}");
+      const pool = ids.filter((entry) => entry !== last);
+      id = pool[Math.floor(Math.random() * pool.length)] ?? ids[0];
+      sessionStorage.setItem("${SCENE_VISIT_KEY}", id);
+      localStorage.setItem("${SCENE_LAST_KEY}", id);
+    }
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.setAttribute("fetchpriority", "high");
+    link.setAttribute("imagesrcset", srcsets[id][document.documentElement.classList.contains("dark") ? "night" : "day"]);
+    link.setAttribute("imagesizes", "${SCENE_SIZES}");
+    document.head.appendChild(link);
+  } catch {}
+})();`;
 
 const LOAD_FALLBACK_MS = 4000;
 

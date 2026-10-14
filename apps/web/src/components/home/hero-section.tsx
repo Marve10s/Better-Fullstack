@@ -11,7 +11,14 @@ import {
   TbStack2 as Stack,
 } from "react-icons/tb";
 
-import { type Scene, sceneImage, useHeroScene, useThemePair } from "@/components/home/hero-scene";
+import {
+  SCENE_SIZES,
+  type Scene,
+  sceneImage,
+  sceneSrcSet,
+  useHeroScene,
+  useThemePair,
+} from "@/components/home/hero-scene";
 import { LIKED_BY } from "@/components/home/testimonials-data";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/platform/utils";
@@ -58,6 +65,7 @@ function HeroBackdrop({ scene }: { scene: Scene }) {
     "absolute inset-0 size-full object-cover transition-opacity duration-1000 ease-in-out";
   const style = { objectPosition: `${scene.focus} 100%` };
   const show = useThemePair();
+  const fetchPriority = show.day === show.night ? undefined : "high";
 
   return (
     <div
@@ -67,8 +75,11 @@ function HeroBackdrop({ scene }: { scene: Scene }) {
       {show.day && (
         <img
           src={sceneImage(scene, "day")}
+          srcSet={sceneSrcSet(scene, "day")}
+          sizes={SCENE_SIZES}
           alt=""
           decoding="async"
+          fetchPriority={fetchPriority}
           style={style}
           className={cn(image, "opacity-100 dark:opacity-0")}
         />
@@ -76,8 +87,11 @@ function HeroBackdrop({ scene }: { scene: Scene }) {
       {show.night && (
         <img
           src={sceneImage(scene, "night")}
+          srcSet={sceneSrcSet(scene, "night")}
+          sizes={SCENE_SIZES}
           alt=""
           decoding="async"
+          fetchPriority={fetchPriority}
           style={style}
           className={cn(image, "opacity-0 dark:opacity-100")}
         />

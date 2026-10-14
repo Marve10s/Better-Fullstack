@@ -16,8 +16,6 @@ import { toast } from "sonner";
 import type { DocSearch, SearchHit } from "@/lib/docs/search";
 import type { PageNode, PageTreeNode } from "@/lib/docs/source";
 
-import { createDocSearch } from "@/lib/docs/search";
-import { loadSearchSections } from "@/lib/docs/search-data";
 import { getLocalizedPageTree } from "@/lib/docs/source";
 import { cn } from "@/lib/platform/utils";
 import { m } from "@/paraglide/messages.js";
@@ -99,6 +97,10 @@ export function DocsSearchDialog({
     if (!open || search) return;
     let cancelled = false;
     const init = async () => {
+      const [{ loadSearchSections }, { createDocSearch }] = await Promise.all([
+        import("@/lib/docs/search-data"),
+        import("@/lib/docs/search"),
+      ]);
       const sections = await loadSearchSections();
       const instance = await createDocSearch(sections, locale);
       if (!cancelled) setSearch(instance);

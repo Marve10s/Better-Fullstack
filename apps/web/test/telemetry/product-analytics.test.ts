@@ -1,6 +1,11 @@
+import { TELEMETRY_STACK_DIMENSION_KEYS } from "@better-fullstack/types/telemetry";
 import { describe, expect, it } from "bun:test";
 
-import { resolveBrowserTelemetryStatus, sanitizeProductProperties } from "@/lib/analytics/product-analytics";
+import {
+  PAGE_PROPERTY_KEYS,
+  resolveBrowserTelemetryStatus,
+} from "@/lib/analytics/product-analytics";
+import { sanitizeProductProperties } from "@/lib/analytics/product-properties";
 
 describe("browser product analytics", () => {
   it("accepts bounded product signals and rejects browser/user content", () => {
@@ -45,6 +50,12 @@ describe("browser product analytics", () => {
       selection_problem: "missing-capability",
       starter_track: "rest-api",
     });
+  });
+
+  it("sends page events without the stack sanitizer only for non-stack keys", () => {
+    for (const key of PAGE_PROPERTY_KEYS) {
+      expect(TELEMETRY_STACK_DIMENSION_KEYS as readonly string[]).not.toContain(key);
+    }
   });
 
   it("uses one explicit preference and Do Not Track decision", () => {

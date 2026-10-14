@@ -1,5 +1,4 @@
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
-import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import {
   TbArrowRight as ArrowRight,
@@ -59,19 +58,15 @@ const MOBILE_MENU_GROUP_CLASS = "rounded-lg border border-border/50 bg-muted/20 
 function GithubStarButton() {
   const stats = useProjectStats();
   const stars = stats?.github.stars;
-  const reduceMotion = useReducedMotion();
 
   return (
-    <motion.a
+    <a
       href="https://github.com/Marve10s/Better-Fullstack"
       target="_blank"
       rel="noopener noreferrer"
       aria-label={m.navGithubRepository()}
       title={stars === undefined ? m.navGithubRepository() : `${stars.toLocaleString()} stars`}
-      whileHover={reduceMotion ? undefined : { y: -1 }}
-      whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-      transition={{ duration: 0.18, ease: "easeOut" }}
-      className="group inline-flex h-9 items-center gap-2 rounded-full border border-ink/10 bg-surface/45 px-3 font-mono text-[11px] font-semibold text-foreground backdrop-blur-md transition-colors hover:bg-surface/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:border-white/15"
+      className="group inline-flex h-9 items-center gap-2 rounded-full border border-ink/10 bg-surface/45 px-3 font-mono text-[11px] font-semibold text-foreground backdrop-blur-md transition duration-180 ease-out hover:-translate-y-px hover:bg-surface/80 active:scale-97 motion-reduce:translate-none motion-reduce:scale-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:border-white/15"
     >
       <Github className="size-4" aria-hidden />
       <span className="sr-only">GitHub</span>
@@ -87,7 +82,7 @@ function GithubStarButton() {
           formatCompactStat(stars)
         )}
       </span>
-    </motion.a>
+    </a>
   );
 }
 

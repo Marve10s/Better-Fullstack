@@ -16,7 +16,7 @@ export type LikedByPerson = {
 export const ROW_1: Testimonial[] = [
   {
     name: "Franco RATOVOSON",
-    avatar: "https://avatars.githubusercontent.com/u/56756707?v=4",
+    avatar: "https://avatars.githubusercontent.com/u/56756707?s=64&v=4",
     comment: "Arguably one of the best project I've seen this year so far",
   },
   {
@@ -93,7 +93,7 @@ export const ROW_2: Testimonial[] = [
   },
   {
     name: "Franco Carrara",
-    avatar: "https://avatars.githubusercontent.com/u/6468230?v=4",
+    avatar: "https://avatars.githubusercontent.com/u/6468230?s=64&v=4",
     comment:
       "I find it really useful. I tried a lot of combinations for my projects! Thanks for building this amazing OSS!",
   },
@@ -126,7 +126,7 @@ export const ROW_3: Testimonial[] = [
   },
   {
     name: "theLazyBoy",
-    avatar: "https://avatars.githubusercontent.com/u/114607201?v=4",
+    avatar: "https://avatars.githubusercontent.com/u/114607201?s=64&v=4",
     comment: "love it",
   },
   {
@@ -149,7 +149,7 @@ export const ROW_3: Testimonial[] = [
   },
   {
     name: "Gaurab Gogoi",
-    avatar: "https://avatars.githubusercontent.com/u/67511840?v=4",
+    avatar: "https://avatars.githubusercontent.com/u/67511840?s=64&v=4",
     comment: "Perfect.",
     gif: "https://media.tenor.com/QiIRP06rosgAAAAC/wow-oh-my.gif",
   },
@@ -159,37 +159,37 @@ export const LIKED_BY: LikedByPerson[] = [
   {
     name: "shadcn",
     handle: "shadcn",
-    avatar: "https://github.com/shadcn.png",
+    avatar: "https://avatars.githubusercontent.com/shadcn?s=80",
     role: "Creator of shadcn/ui",
   },
   {
     name: "Tanner Linsley",
     handle: "tannerlinsley",
-    avatar: "https://github.com/tannerlinsley.png",
+    avatar: "https://avatars.githubusercontent.com/tannerlinsley?s=80",
     role: "Creator of TanStack",
   },
   {
     name: "SolidJS",
     handle: "solid_js",
-    avatar: "https://github.com/solidjs.png",
+    avatar: "https://avatars.githubusercontent.com/solidjs?s=80",
     role: "Reactive JavaScript library",
   },
   {
     name: "Ahmad Awais",
     handle: "MrAhmadAwais",
-    avatar: "https://github.com/ahmadawais.png",
+    avatar: "https://avatars.githubusercontent.com/ahmadawais?s=80",
     role: "Founder & CEO of Command Code",
   },
   {
     name: "SaltyAom",
     handle: "saltyAom",
-    avatar: "https://github.com/SaltyAom.png",
+    avatar: "https://avatars.githubusercontent.com/SaltyAom?s=80",
     role: "Creator of Elysia",
   },
   {
     name: "ElysiaJS",
     handle: "elysiaJS",
-    avatar: "https://github.com/elysiajs.png",
+    avatar: "https://avatars.githubusercontent.com/elysiajs?s=80",
     role: "Ergonomic web framework",
   },
   {
@@ -202,25 +202,25 @@ export const LIKED_BY: LikedByPerson[] = [
   {
     name: "Hayden Bleasel",
     handle: "haydenbleasel",
-    avatar: "https://github.com/haydenbleasel.png",
+    avatar: "https://avatars.githubusercontent.com/haydenbleasel?s=80",
     role: "Creator of Ultracite",
   },
   {
     name: "Dev Agrawal",
     handle: "devagrawal09",
-    avatar: "https://github.com/devagrawal09.png",
+    avatar: "https://avatars.githubusercontent.com/devagrawal09?s=80",
     role: "SolidJS core · TanStack maintainer",
   },
   {
     name: "Aman Varshney",
     handle: "amanvarshney01",
-    avatar: "https://github.com/AmanVarshney01.png",
+    avatar: "https://avatars.githubusercontent.com/AmanVarshney01?s=80",
     role: "Creator of Better T Stack",
   },
   {
     name: "Emanuele Di Pietro",
     handle: "emanueledpt",
-    avatar: "https://github.com/Emanuele-web04.png",
+    avatar: "https://avatars.githubusercontent.com/Emanuele-web04?s=80",
     role: "Indie hacker · iOS & web builder",
   },
 ];

@@ -8,11 +8,11 @@ import {
   CodeBlockBody,
   CodeBlockContent,
   CodeBlockCopyButton,
-  CodeBlockFilename,
   CodeBlockFiles,
   CodeBlockHeader,
   CodeBlockItem,
 } from "@/components/ui/kibo-ui/code-block";
+import { CodeBlockFilename } from "@/components/ui/kibo-ui/code-block/filename";
 import * as m from "@/paraglide/messages";
 
 interface CodeViewerProps {

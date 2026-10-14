@@ -61,7 +61,7 @@ function ContributorCard({ contributor, index }: { contributor: Contributor; ind
       className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-colors hover:border-foreground/30"
     >
       <img
-        src={`https://github.com/${contributor.username}.png`}
+        src={`https://avatars.githubusercontent.com/${contributor.username}?s=112`}
         alt={contributor.name}
         loading="lazy"
         className="h-14 w-14 rounded-full border-2 border-border transition-colors group-hover:border-brand/60"
