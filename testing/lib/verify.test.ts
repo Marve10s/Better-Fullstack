@@ -7,6 +7,7 @@ import {
   getVerifier,
   runWithRegistryPropagationRetry,
   verifyElixir,
+  verifyReactNative,
   verifyTypeScript,
 } from "@testing/lib/verify";
 import { describe, expect, it } from "bun:test";
@@ -74,6 +75,48 @@ describe("smoke verifiers", () => {
     expect(result.classification).toBe("template");
     expect(attempts).toBe(3);
   });
+
+  it("retries a React Native install hit by an npm publication race", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "bfs-rn-registry-race-"));
+    const bin = join(dir, "bin");
+    const project = join(dir, "project");
+    const native = join(project, "apps", "native");
+    mkdirSync(bin);
+    mkdirSync(native, { recursive: true });
+    const attempts = join(dir, "install-attempts.log");
+    writeFileSync(
+      join(bin, "bun"),
+      `#!/bin/sh
+if [ "$1" = install ]; then
+  echo install >> "${attempts}"
+  count=$(wc -l < "${attempts}" | tr -d ' ')
+  if [ "$count" -lt 2 ]; then
+    echo 'error: No version matching "^2.9.45" found for specifier "@react-navigation/elements" (but package exists)' >&2
+    exit 1
+  fi
+fi
+`,
+    );
+    writeFileSync(join(bin, "bunx"), "#!/bin/sh\nexit 0\n");
+    chmodSync(join(bin, "bun"), 0o755);
+    chmodSync(join(bin, "bunx"), 0o755);
+    writeFileSync(join(native, "package.json"), JSON.stringify({ name: "native" }));
+    writeFileSync(join(native, "app.json"), JSON.stringify({}));
+    writeFileSync(join(native, "tsconfig.json"), JSON.stringify({}));
+    const path = process.env.PATH;
+    process.env.PATH = `${bin}:${path}`;
+
+    try {
+      const result = await verifyReactNative("native-registry-race", project);
+
+      expect(result.overallSuccess).toBe(true);
+      expect(readFileSync(attempts, "utf-8").trim().split("\n")).toEqual(["install", "install"]);
+      expect(result.steps[0]?.stdout).toContain("Registry propagation attempts: 2.");
+    } finally {
+      process.env.PATH = path;
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 90_000);
 
   it("gates a Docker build that times out, since a hang is not proof of a network fault", () => {
     const result = dockerFailure({

@@ -620,7 +620,9 @@ export async function verifyReactNative(
     }
   }
 
-  steps.push(await runStep("install", "bun", ["install"], projectDir));
+  steps.push(
+    await runWithRegistryPropagationRetry(() => runStep("install", "bun", ["install"], projectDir)),
+  );
   if (!steps.at(-1)!.success) return wrapResult("react-native", comboName, projectDir, steps);
 
   steps.push(
