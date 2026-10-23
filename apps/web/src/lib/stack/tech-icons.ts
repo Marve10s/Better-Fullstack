@@ -92,6 +92,8 @@ export const ICON_REGISTRY: Record<string, IconConfig> = {
   python: { type: "si", slug: "python", hex: "3776AB" },
   go: { type: "si", slug: "go", hex: "00ADD8" },
   java: { type: "local", src: "/icon/java.svg" },
+  crystal: { type: "si", slug: "crystal", hex: "000000" },
+  kemal: { type: "si", slug: "crystal", hex: "000000" },
   elixir: { type: "si", slug: "elixir", hex: "4B275F" },
   dotnet: { type: "si", slug: "dotnet", hex: "512BD4" },
   "aspnet-minimal": { type: "si", slug: "dotnet", hex: "512BD4" },

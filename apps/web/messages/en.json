@@ -763,5 +763,6 @@
   "builderComposerProjectTitle": "Set up your project",
   "builderComposerReviewTitle": "Review {name}",
   "builderComposerJsWorkspace": "JavaScript workspace",
-  "builderComposerNativeToolchains": "Native toolchains"
+  "builderComposerNativeToolchains": "Native toolchains",
+  "docsCliSummaryCrystalCrystalWebFramework": "Experimental Crystal HTTP framework."
 }

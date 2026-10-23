@@ -14,6 +14,16 @@ export async function getinstallChoice(
 ) {
   if (install !== undefined) return install;
 
+  if (ecosystem === "crystal") {
+    if (!(await commandExists("crystal")) || !(await commandExists("shards"))) {
+      log.warn("Install Crystal 1.22.1 and Shards 0.20.0 from https://crystal-lang.org/install/");
+      return false;
+    }
+    const response = await navigableConfirm({ message: "Run shards install?", initialValue: DEFAULT_CONFIG.install });
+    if (isCancel(response)) return exitCancelled("Operation cancelled");
+    return response;
+  }
+
   // For Rust: check cargo and show appropriate message
   if (ecosystem === "rust") {
     const cargoInstalled = await commandExists("cargo");

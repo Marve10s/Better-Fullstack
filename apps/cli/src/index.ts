@@ -19,6 +19,7 @@ export {
   recovery,
 } from "@/run";
 
+import { CRYSTAL_PROJECT_DEFAULTS } from "@better-fullstack/types";
 import { applyEffectBackendDefaults } from "@/config/config-processing";
 import {
   getAuthSelectionIssue,
@@ -72,6 +73,9 @@ export async function createVirtual(
   try {
     const ecosystem = options.ecosystem || "typescript";
     const isReactNative = ecosystem === "react-native";
+    if (ecosystem === "crystal") {
+      options = { ...CRYSTAL_PROJECT_DEFAULTS, ...options };
+    }
     const frontend = options.frontend || (isReactNative ? ["native-bare"] : ["tanstack-router"]);
     const backend = options.backend || (isReactNative ? "none" : "hono");
     const hasNativeFrontend = frontend.some(
@@ -202,6 +206,7 @@ export async function createVirtual(
       goTemplating: options.goTemplating || "none",
       goProtoTooling: options.goProtoTooling || "none",
       goDI: options.goDI || "none",
+      crystalWebFramework: options.crystalWebFramework ?? (ecosystem === "crystal" ? "kemal" : "none"),
       javaWebFramework:
         options.javaWebFramework || (options.ecosystem === "java" ? "spring-boot" : "none"),
       javaLanguage: options.javaLanguage || "java",

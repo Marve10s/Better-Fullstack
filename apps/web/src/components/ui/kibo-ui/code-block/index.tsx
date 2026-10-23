@@ -72,6 +72,7 @@ const LANGUAGE_LOADERS = {
   bash: () => import("shiki/dist/langs/bash.mjs"),
   shellscript: () => import("shiki/dist/langs/shellscript.mjs"),
   handlebars: () => import("shiki/dist/langs/handlebars.mjs"),
+  crystal: () => import("shiki/dist/langs/crystal.mjs"),
   rust: () => import("shiki/dist/langs/rust.mjs"),
   go: () => import("shiki/dist/langs/go.mjs"),
   templ: () => import("shiki/dist/langs/templ.mjs"),

@@ -5,6 +5,7 @@ export * from "@/capabilities/capabilities";
 export * from "@/stack/compatibility";
 export * from "@/catalog/option-metadata";
 export * from "@/catalog/cli-flags";
+export * from "@/platform/crystal-project";
 export * from "@/platform/local-dev";
 export * from "@/platform/dotnet-project";
 export * from "@/config/defaults";

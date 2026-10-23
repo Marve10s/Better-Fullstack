@@ -10,6 +10,7 @@ const STACK_SHARE_LABELS = {
   rust: "Rust",
   python: "Python",
   go: "Go",
+  crystal: "Crystal",
   java: "Java",
   elixir: "Elixir",
   dotnet: ".NET",

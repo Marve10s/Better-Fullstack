@@ -6566,6 +6566,10 @@ export const TECH_OPTIONS: Record<
     },
   ],
   // Java ecosystem options
+  crystalWebFramework: [
+    { id: "kemal", name: "Kemal", description: "Experimental native Crystal HTTP service", icon: "https://cdn.simpleicons.org/crystal", color: "from-slate-500 to-zinc-600", default: true },
+    { id: "none", name: "None", description: "Crystal source project", icon: "", color: "from-gray-400 to-gray-600", default: false },
+  ],
   javaWebFramework: [
     {
       id: "ktor",
@@ -7732,6 +7736,13 @@ export const ECOSYSTEMS: {
     description: "High-performance Go ecosystem",
     icon: "https://cdn.simpleicons.org/go/00ADD8",
     color: "from-cyan-500 to-blue-600",
+  },
+  {
+    id: "crystal",
+    name: "Crystal",
+    description: "Experimental Kemal HTTP service",
+    icon: "https://cdn.simpleicons.org/crystal",
+    color: "from-slate-500 to-zinc-600",
   },
   {
     id: "java",

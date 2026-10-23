@@ -35,6 +35,10 @@ The proof writes `generated-project-proof.json` and `capability-runtime-receipt.
 `testing/.smoke-output/generated-project-proof/`. A release receipt embeds the capability receipt
 only when all eight recipes pass from a clean, full-SHA checkout.
 
+## Experimental Crystal observation
+
+Crystal's Kemal recipe uses the separate `testing/crystal-runtime-proof.ts` gate with Crystal 1.22.1 and Shards 0.20.0. It scaffolds through the built CLI, installs dependencies, compiles, runs native specs, and checks live JSON HTTP, rejected input, and shutdown. Its revision, toolchain, lockfile, and result remain an unqualified observation. Crystal stays listed and experimental; the eight golden recipes and historical upgrade receipt schema are unchanged.
+
 ## Freshness and producer changes
 
 Evidence fails closed under these conditions:

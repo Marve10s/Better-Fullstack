@@ -36,6 +36,7 @@ export const HOME_FEATURE_OPTIONS = {
     "rustWebFramework",
     "pythonWebFramework",
     "goWebFramework",
+    "crystalWebFramework",
     "javaWebFramework",
     "elixirWebFramework",
     "dotnetWebFramework",

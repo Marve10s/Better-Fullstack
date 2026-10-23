@@ -37,7 +37,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "go",
           "java",
           "elixir",
-          "dotnet"
+          "dotnet",
+          "crystal"
         ],
         "valueHint": null,
         "defaultValue": "typescript",
@@ -1283,7 +1284,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "none"
         ],
         "valueHint": null,
-        "defaultValue": "none",
+        "defaultValue": "axum",
         "multiple": false
       },
       {
@@ -1312,7 +1313,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "none"
         ],
         "valueHint": null,
-        "defaultValue": "none",
+        "defaultValue": "sea-orm",
         "multiple": false
       },
       {
@@ -2011,6 +2012,24 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         ],
         "valueHint": null,
         "defaultValue": "none",
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "id": "crystal",
+    "title": "Crystal flags",
+    "description": "Experimental Kemal HTTP service with Crystal and Shards.",
+    "flags": [
+      {
+        "flag": "--crystal-web-framework",
+        "summary": "Crystal HTTP framework.",
+        "values": [
+          "kemal",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "kemal",
         "multiple": false
       }
     ]
@@ -2784,6 +2803,7 @@ export const CLI_FLAG_SUMMARY_MESSAGES: Record<string, () => string> = {
   "go:--go-templating": m.docsCliSummaryGoGoTemplating,
   "go:--go-proto-tooling": m.docsCliSummaryGoGoProtoTooling,
   "go:--go-di": m.docsCliSummaryGoGoDi,
+  "crystal:--crystal-web-framework": m.docsCliSummaryCrystalCrystalWebFramework,
   "java:--java-web-framework": m.docsCliSummaryJavaJavaWebFramework,
   "java:--java-language": m.docsCliSummaryJavaJavaLanguage,
   "java:--java-build-tool": m.docsCliSummaryJavaJavaBuildTool,

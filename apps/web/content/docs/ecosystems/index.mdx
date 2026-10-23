@@ -2,10 +2,10 @@
 translationStatus: pending
 title: Ecosystems
 description: Supported language ecosystems, what Better Fullstack scaffolds for each one, and the compatibility rules that apply.
-updated: 2026-08-22
+updated: 2026-10-23
 ---
 
-One CLI covers eight solo ecosystems plus additional languages for composed projects. Each ecosystem ships its own templates, toolchain checks, and compatibility rules.
+One CLI scaffolds solo ecosystems and additional languages for composed projects. Each ecosystem ships its own templates, toolchain checks, and compatibility rules.
 
 | Ecosystem                           | Best for                                                                                                       | Tooling            |
 | ----------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------- |
@@ -14,6 +14,7 @@ One CLI covers eight solo ecosystems plus additional languages for composed proj
 | [Rust](#rust)                       | Backend services, CLIs, GraphQL/gRPC, web frontends, typed libraries.                                           | Cargo               |
 | [Python](#python)                   | API and AI-oriented services with framework, ORM, validation, queue, and quality choices.                       | uv                  |
 | [Go](#go)                           | API services, gRPC, CLIs, ORMs, logging, and auth helpers.                                                      | Go modules          |
+| [Crystal](#crystal) | Experimental Kemal JSON HTTP service with a native compiler and HTTP proof. | Shards |
 | [Java and Kotlin](#java-and-kotlin) | Spring Boot, Ktor, Quarkus, Micronaut, or plain JVM projects with Maven/Gradle.                                 | Maven/Gradle        |
 | [Elixir](#elixir)                   | Phoenix and LiveView apps with Ecto, Absinthe, realtime, jobs, and deploy files.                                | Mix                 |
 | [.NET](#net)                        | ASP.NET Core services with EF Core or Dapper, Identity, Minimal APIs, SignalR, jobs, and tests.                 | .NET SDK 10         |
@@ -45,6 +46,23 @@ Accepting all defaults creates a TypeScript web project. The package manager fol
 Runtime and package manager are separate choices: a generated TypeScript project can install with npm while selecting Bun as its application runtime.
 
 Some flags are global because they live in one project config, but not every flag applies to every ecosystem. The generated tables on [CLI Create](/docs/cli/create/) are the exact current inventory per ecosystem.
+
+## Crystal
+
+The experimental Crystal recipe generates a native Kemal JSON HTTP service. It requires Crystal 1.22.1 and Shards 0.20.0, and pins Kemal 1.15.0. Public capability evidence stays listed until a current receipt qualifies the recipe.
+
+```sh
+bunx create-better-fullstack@latest crystal-api --ecosystem crystal --crystal-web-framework kemal --database none --addons none --examples none --ai-docs agents-md --no-install --no-git
+cd crystal-api
+shards install
+shards build --release
+crystal spec
+crystal run scripts/http_proof.cr
+```
+
+The service exposes `/health`, a validated greeting at `/api/hello?name=Crystal`, and a JSON POST endpoint at `/api/echo`. The HTTP proof checks parsed responses, rejected input, the body limit, SIGTERM shutdown, and port release. `crystalWebFramework=none` instead creates a native greeting program without Kemal.
+
+Database, authentication, deployment, and native addon adapters are unsupported. Use an explicit mixed graph for independent applications. Environment variables come from the process; the example environment file is not loaded automatically. CORS covers one configured origin for GET requests. Cross-origin POST, credentials, production hosting, and Windows runtime behavior remain unqualified.
 
 ## TypeScript
 

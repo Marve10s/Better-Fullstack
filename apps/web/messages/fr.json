@@ -762,5 +762,6 @@
   "builderComposerProjectTitle": "Configurez votre projet",
   "builderComposerReviewTitle": "Vérifier {name}",
   "builderComposerJsWorkspace": "Workspace JavaScript",
-  "builderComposerNativeToolchains": "Toolchains natives"
+  "builderComposerNativeToolchains": "Toolchains natives",
+  "docsCliSummaryCrystalCrystalWebFramework": "Experimental Crystal HTTP framework."
 }

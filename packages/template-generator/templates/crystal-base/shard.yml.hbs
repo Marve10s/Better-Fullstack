@@ -1,0 +1,13 @@
+name: {{shardName}}
+version: 0.1.0
+crystal: ">= 1.22.1, < 1.23.0"
+license: MIT
+targets:
+  server:
+    main: src/server.cr
+{{#if hasKemal}}
+dependencies:
+  kemal:
+    github: kemalcr/kemal
+    version: 1.15.0
+{{/if}}

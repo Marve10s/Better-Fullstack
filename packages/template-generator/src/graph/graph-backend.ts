@@ -57,9 +57,14 @@ const BACKEND_LABELS: Record<string, string> = {
   "aspnet-minimal": ".NET ASP.NET Core Minimal APIs",
   "aspnet-mvc": ".NET ASP.NET Core MVC",
   "aspnet-blazor": ".NET ASP.NET Core Blazor",
+  kemal: "Crystal Kemal",
   phoenix: "Elixir Phoenix",
   "phoenix-live-view": "Elixir Phoenix LiveView",
 };
+
+function crystalShellDirectory(value: string) {
+  return `'${value.replaceAll("'", "'\\''")}'`;
+}
 
 function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnection | null {
   const backend = (config.stackParts ?? []).find(
@@ -89,6 +94,10 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
   const webOrigin = graphFrontends.length <= 1 && webPort ? `http://localhost:${webPort}` : null;
 
   switch (backend.ecosystem) {
+    case "crystal": {
+      const directory = crystalShellDirectory(targetPath);
+      return { partId: backend.id, ecosystem: backend.ecosystem, toolId: backend.toolId, label, targetPath, webOrigin, serverUrl: "http://localhost:3000", healthPath: "/health", healthUrl: "http://localhost:3000/health", setupCommand: `cd ${directory} && shards install`, devCommand: `cd ${directory} && ${webOrigin ? `export CORS_ORIGIN=${webOrigin} && ` : ""}crystal run src/server.cr`, checkCommand: `cd ${directory} && shards build --release`, testCommand: `cd ${directory} && crystal spec` };
+    }
     case "elixir": {
       const hasPhoenix = backend.toolId === "phoenix" || backend.toolId === "phoenix-live-view";
       const hasEcto = (config.stackParts ?? []).some(
@@ -300,14 +309,15 @@ export function getGraphBackendConnections(config: ProjectConfig): GraphBackendC
     if (port === defaultPort) return connection;
 
     const serverUrl = `${url.protocol}//${url.hostname}:${port}`;
+    const shellDirectory = connection.ecosystem === "crystal" ? crystalShellDirectory(connection.targetPath) : connection.targetPath;
     return {
       ...connection,
       serverUrl,
       healthUrl: `${serverUrl}${connection.healthPath}`,
       devCommand: connection.devCommand
         .replace(
-          `cd ${connection.targetPath} && `,
-          `cd ${connection.targetPath} && export PORT=${port} && `,
+          `cd ${shellDirectory} && `,
+          `cd ${shellDirectory} && export PORT=${port} && `,
         )
         .replace(`\${PORT:-${defaultPort}}`, `\${PORT:-${port}}`),
     };

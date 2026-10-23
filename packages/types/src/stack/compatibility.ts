@@ -404,7 +404,8 @@ export type CompatibilityInput = {
     | "go"
     | "java"
     | "elixir"
-    | "dotnet";
+    | "dotnet"
+    | "crystal";
   projectName: string | null;
   webFrontend: string[];
   nativeFrontend: string[];
@@ -533,6 +534,7 @@ export type CompatibilityInput = {
   goProtoTooling: string;
   goDI: string;
   javaLanguage: string;
+  crystalWebFramework: string;
   javaWebFramework: string;
   javaBuildTool: string;
   javaOrm: string;
@@ -795,6 +797,7 @@ export const analyzeStackCompatibility = (
   stack: CompatibilityInput,
   options: { normalizeCodeQualityProfiles?: boolean } = {},
 ): CompatibilityAnalysisResult => {
+  if (stack.ecosystem === "crystal") return { adjustedStack: null, notes: {}, changes: [] };
   // Skip all validation if YOLO mode is enabled
   if (stack.yolo === "true") {
     return {
@@ -2906,6 +2909,10 @@ export const getDisabledReason = (
   category: CompatibilityCategory,
   optionId: string,
 ): string | null => {
+  if (currentStack.ecosystem === "crystal" && optionId !== "none" && !["crystalWebFramework", "aiDocs", "git", "install", "workspaceShape", "packageManager", "versionChannel"].includes(category)) {
+    return "Crystal's bounded recipe supports Kemal HTTP only. Use a mixed graph for independently owned tools.";
+  }
+  if (category === "crystalWebFramework" && optionId !== "none" && currentStack.ecosystem !== "crystal") return "Kemal requires the Crystal ecosystem or a Crystal backend part.";
   if (
     optionId !== "none" &&
     category === "kotlinMobileLibraries" &&
@@ -6104,7 +6111,7 @@ const ISSUE_CODE_BY_CATEGORY: Partial<Record<OptionCategory, string>> = {
   dotnetLibraries: "INCOMPATIBLE_DOTNET_LIBRARY",
 };
 
-const SERVER_ECOSYSTEMS = ["rust", "python", "go", "java", "dotnet", "elixir"] as const;
+const SERVER_ECOSYSTEMS = ["rust", "python", "go", "java", "dotnet", "elixir", "crystal"] as const;
 
 const typeScriptCategories: ReadonlySet<OptionCategory> = new Set(
   getCategoryOrderForEcosystem("typescript"),

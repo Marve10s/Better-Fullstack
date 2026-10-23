@@ -78,12 +78,13 @@ export const createProjectOperation = defineOperation({
       );
       failureStage = "post_installation";
       const installCmd = getInstallCommand(
-        input.ecosystem ?? "typescript",
+        config.ecosystem,
         projectName,
-        input.packageManager,
-        input.javaBuildTool,
-        input.javaWebFramework,
-        input.pythonPackageManager,
+        config.packageManager,
+        config.javaBuildTool,
+        config.javaWebFramework,
+        config.pythonPackageManager,
+        config.crystalWebFramework,
       );
       await trackProjectCreation(config, false, {
         source: "mcp",

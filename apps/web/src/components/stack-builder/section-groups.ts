@@ -312,6 +312,7 @@ export const SECTIONS_BY_ECOSYSTEM: Record<Ecosystem, readonly BuilderSectionDef
   rust: RUST_SECTIONS,
   python: PYTHON_SECTIONS,
   go: GO_SECTIONS,
+  crystal: [section("frameworkBuild", "Framework & Build", ["crystalWebFramework"]), section("deployScaffold", "Deploy & Scaffold", ["aiDocs", "git", "install"])],
   java: JAVA_SECTIONS,
   dotnet: DOTNET_SECTIONS,
   elixir: ELIXIR_SECTIONS,

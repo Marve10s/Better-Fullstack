@@ -3,9 +3,9 @@ import { z } from "zod";
 import { PRESET_ALIAS_IDS, PRESET_IDS } from "@/catalog/preset-ids";
 
 export const EcosystemSchema = z
-  .enum(["typescript", "react-native", "rust", "python", "go", "java", "elixir", "dotnet"])
+  .enum(["typescript", "react-native", "rust", "python", "go", "java", "elixir", "dotnet", "crystal"])
   .describe(
-    "Language ecosystem (typescript, react-native, rust, python, go, java, elixir, or dotnet)",
+    "Language ecosystem (typescript, react-native, rust, python, go, java, elixir, dotnet, or crystal)",
   );
 
 export const StackPartEcosystemSchema = z
@@ -851,6 +851,8 @@ export const GoProtoToolingSchema = z.enum(["buf", "none"]).describe("Go Protoco
 export const GoDISchema = z.enum(["fx", "none"]).describe("Go dependency injection library");
 
 // Java ecosystem schemas
+export const CrystalWebFrameworkSchema = z.enum(["kemal", "none"]).describe("Experimental Crystal HTTP framework");
+
 export const JavaLanguageSchema = z
   .enum(["java", "kotlin"])
   .describe("JVM language variant for the Java ecosystem (java or kotlin)");
@@ -1352,6 +1354,7 @@ const STACK_CONFIG_FIELDS = {
   goProtoTooling: GoProtoToolingSchema,
   goDI: GoDISchema,
   // Java ecosystem options
+  crystalWebFramework: CrystalWebFrameworkSchema.default("none"),
   javaLanguage: JavaLanguageSchema.optional(),
   javaWebFramework: JavaWebFrameworkSchema,
   javaBuildTool: JavaBuildToolSchema,
@@ -1439,7 +1442,7 @@ export const CreateInputSchema = z.object({
   part: z
     .array(z.string())
     .optional()
-    .describe("Stack graph part binding, e.g. frontend:typescript:next or backend.orm:go:gorm"),
+    .describe("Stack graph binding role:ecosystem:tool[:id][@relative-path], e.g. frontend:typescript:next or backend:crystal:kemal:reports@services/reports"),
 });
 
 export const AddInputSchema = CreateInputSchema.omit({
@@ -1641,6 +1644,7 @@ export const GO_TEMPLATING_VALUES = GoTemplatingSchema.options;
 export const GO_PROTO_TOOLING_VALUES = GoProtoToolingSchema.options;
 export const GO_DI_VALUES = GoDISchema.options;
 export const JAVA_LANGUAGE_VALUES = JavaLanguageSchema.options;
+export const CRYSTAL_WEB_FRAMEWORK_VALUES = CrystalWebFrameworkSchema.options;
 export const JAVA_WEB_FRAMEWORK_VALUES = JavaWebFrameworkSchema.options;
 export const JAVA_BUILD_TOOL_VALUES = JavaBuildToolSchema.options;
 export const JAVA_ORM_VALUES = JavaOrmSchema.options;

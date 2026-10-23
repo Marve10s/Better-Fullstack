@@ -88,6 +88,8 @@ export function processReadme(vfs: VirtualFileSystem, config: ProjectConfig): vo
     content = generatePythonReadmeContent(config);
   } else if (config.ecosystem === "go") {
     content = generateGoReadmeContent(config);
+  } else if (config.ecosystem === "crystal" && vfs.exists("README.md")) {
+    return;
   } else if (config.ecosystem === "java") {
     content = generateJavaReadmeContent(config);
   } else if (config.ecosystem === "elixir") {

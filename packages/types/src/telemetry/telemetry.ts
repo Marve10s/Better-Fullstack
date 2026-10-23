@@ -363,6 +363,7 @@ export const TELEMETRY_PROJECT_CONFIG_KEYS = [
   "goTemplating",
   "goProtoTooling",
   "goDI",
+  "crystalWebFramework",
   "javaLanguage",
   "javaWebFramework",
   "javaBuildTool",

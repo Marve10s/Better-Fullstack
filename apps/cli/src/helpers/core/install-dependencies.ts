@@ -342,3 +342,16 @@ export async function runMixCompile({
     return toStepFailure(step, error, errorMessage);
   }
 }
+
+export async function runShardsInstall({ projectDir }: { projectDir: string }): Promise<SetupStepResult> {
+  const step = "Install Crystal shards";
+  if (!(await commandExists("crystal")) || !(await commandExists("shards"))) {
+    return { step, success: false, errorMessage: "Install Crystal 1.22.1 and Shards 0.20.0 from https://crystal-lang.org/install/" };
+  }
+  try {
+    await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`shards install`;
+    return { step, success: true };
+  } catch (error) {
+    return toStepFailure(step, error, toErrorMessage(error));
+  }
+}

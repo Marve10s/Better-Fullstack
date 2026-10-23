@@ -120,6 +120,8 @@ async function ecosystemManifestExists(
       return fs.pathExists(path.join(dir, "Cargo.toml"));
     case "python":
       return fs.pathExists(path.join(dir, "pyproject.toml"));
+    case "crystal":
+      return fs.pathExists(path.join(dir, "shard.yml"));
     case "elixir":
       return fs.pathExists(path.join(dir, "mix.exs"));
     case "java": {
@@ -447,6 +449,8 @@ async function commandsForTarget(
       };
     case "python":
       return pythonCommands(config, target);
+    case "crystal":
+      return { toolchain: "Crystal + Shards", required: ["crystal", "shards"], commands: [display("shards", ["install"]), display("shards", ["build", "--release"]), display("crystal", ["spec"])] };
     case "elixir":
       return {
         toolchain: "mix",

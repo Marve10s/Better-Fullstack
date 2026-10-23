@@ -1,6 +1,7 @@
 import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
 import {
+  getCrystalSelectionIssue,
   parseStackPartSpecs,
   formatStackGraphIssue,
   getCodeQualitySelectionIssue,
@@ -48,6 +49,7 @@ import {
   processRustBaseTemplate,
   processPythonBaseTemplate,
   processGoBaseTemplate,
+  processCrystalBaseTemplate,
   processJavaBaseTemplate,
   processDotnetBaseTemplate,
   processElixirBaseTemplate,
@@ -110,6 +112,7 @@ const ECOSYSTEM_BASE_TEMPLATE_PROCESSORS = {
   rust: processRustBaseTemplate,
   python: processPythonBaseTemplate,
   go: processGoBaseTemplate,
+  crystal: processCrystalBaseTemplate,
   java: processJavaBaseTemplate,
   dotnet: processDotnetBaseTemplate,
   elixir: processElixirBaseTemplate,
@@ -471,6 +474,9 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
         error: "No templates provided. Templates must be passed via the templates option.",
       };
     }
+
+    const crystalIssue = getCrystalSelectionIssue(config);
+    if (crystalIssue) return { success: false, error: crystalIssue };
 
     const usesGraphParts =
       Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);

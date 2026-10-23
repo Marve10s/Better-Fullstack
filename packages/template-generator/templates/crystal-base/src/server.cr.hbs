@@ -1,0 +1,62 @@
+require "./greeting"
+{{#if hasKemal}}
+require "kemal"
+
+port_value = ENV.fetch("PORT", "3000")
+port = port_value.to_i?
+unless port && (1..65535).includes?(port) && port.to_s == port_value
+  STDERR.puts "PORT must be an integer between 1 and 65535"
+  exit 2
+end
+
+Kemal.config.host_binding = ENV.fetch("HOST", "127.0.0.1")
+Kemal.config.port = port
+Kemal.config.env = ENV.fetch("KEMAL_ENV", "production")
+Kemal.config.max_request_body_size = 4096
+Kemal.config.shutdown_timeout = 2.seconds
+
+before_all do |env|
+  env.response.content_type = "application/json"
+  if origin = ENV["CORS_ORIGIN"]?
+    if env.request.headers["Origin"]? == origin
+      env.response.headers["Access-Control-Allow-Origin"] = origin
+      env.response.headers["Vary"] = "Origin"
+    end
+  end
+end
+
+get "/health" do
+  {status: "ok"}.to_json
+end
+
+get "/api/hello" do |env|
+  begin
+    Greeting.response(env.params.query["name"]? || "World")
+  rescue ex : ArgumentError
+    env.response.status_code = 422
+    {error: ex.message}.to_json
+  end
+end
+
+post "/api/echo" do |env|
+  begin
+    payload = JSON.parse(env.params.raw_body)
+    name = payload.as_h["name"]?.try(&.as_s?)
+    raise ArgumentError.new("name must be a string") unless name
+    Greeting.response(name)
+  rescue ex : JSON::ParseException
+    env.response.status_code = 400
+    {error: "invalid JSON"}.to_json
+  rescue ex : TypeCastError
+    env.response.status_code = 422
+    {error: "JSON object required"}.to_json
+  rescue ex : ArgumentError
+    env.response.status_code = 422
+    {error: ex.message}.to_json
+  end
+end
+
+Kemal.run(args: nil)
+{{else}}
+puts Greeting.response("World")
+{{/if}}

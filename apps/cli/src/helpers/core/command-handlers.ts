@@ -1,3 +1,4 @@
+import { CRYSTAL_PROJECT_DEFAULTS } from "@better-fullstack/types";
 import { lifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
 import { intro, log, note, outro } from "@clack/prompts";
 import consola from "consola";
@@ -79,6 +80,7 @@ import {
 import {
   getProvidedFlags,
   assertShapeInputIsUsable,
+  assertCrystalInputIsUsable,
   processAndValidateFlags,
   processProvidedFlagsWithoutValidation,
   validateConfigCompatibility,
@@ -216,6 +218,7 @@ async function showBuilderRecommendationPrompt() {
 }
 
 function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
+  if (flagConfig.ecosystem === "crystal") return { ...getDefaultConfig(), ...CRYSTAL_PROJECT_DEFAULTS };
   const baseConfig = getDefaultConfig();
   if (
     flagConfig.stackParts?.length &&
@@ -511,6 +514,7 @@ export async function createProjectHandler(
 
       // Input-only, so it runs before any directory is resolved, cleared, or
       // created. A rejected shape must never cost the user their files.
+      assertCrystalInputIsUsable(originalInput);
       assertShapeInputIsUsable(originalInput, providedFlags);
 
       failureStage = "directory_preparation";
@@ -680,6 +684,7 @@ export async function createProjectHandler(
               goTemplating: "none",
               goProtoTooling: "none",
               goDI: "none",
+              crystalWebFramework: "none",
               javaWebFramework: "none",
               javaBuildTool: "none",
               javaOrm: "none",

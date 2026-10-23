@@ -72,6 +72,12 @@ jobs:
           otp-version: 28.0.2
           elixir-version: 1.19.0
 
+      - name: Setup pinned Crystal and Shards
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: "1.22.1"
+          shards: "0.20.0"
+
       - name: Cache Dependencies
         uses: actions/cache@v4
         with:
@@ -103,6 +109,9 @@ jobs:
       - name: Run eight-ecosystem generated project runtime proof
         run: bun run testing/generated-project-proof.ts
 
+      - name: Run native Crystal HTTP proof
+        run: bun run testing/crystal-runtime-proof.ts --output testing/.smoke-output/crystal-runtime-proof
+
       - name: Publish job summary
         if: always()
         run: |
@@ -115,6 +124,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: generated-project-proof-${{ github.sha }}
-          path: testing/.smoke-output/generated-project-proof/
+          path: |
+            testing/.smoke-output/generated-project-proof/
+            testing/.smoke-output/crystal-runtime-proof/
           include-hidden-files: true
           if-no-files-found: error

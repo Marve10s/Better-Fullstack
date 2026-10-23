@@ -762,5 +762,6 @@
   "builderComposerProjectTitle": "Налаштуйте проєкт",
   "builderComposerReviewTitle": "Перевірити {name}",
   "builderComposerJsWorkspace": "Робочий простір JavaScript",
-  "builderComposerNativeToolchains": "Нативні тулчейни"
+  "builderComposerNativeToolchains": "Нативні тулчейни",
+  "docsCliSummaryCrystalCrystalWebFramework": "Experimental Crystal HTTP framework."
 }

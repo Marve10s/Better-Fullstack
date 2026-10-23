@@ -86,6 +86,7 @@ export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): str
       typeof fingerprint.goProtoTooling === "string" ? fingerprint.goProtoTooling : undefined,
       typeof fingerprint.goDI === "string" ? fingerprint.goDI : undefined,
     ],
+    crystal: [typeof fingerprint.crystalWebFramework === "string" ? fingerprint.crystalWebFramework : undefined],
     java: [
       typeof fingerprint.javaWebFramework === "string" ? fingerprint.javaWebFramework : undefined,
       typeof fingerprint.javaBuildTool === "string" ? fingerprint.javaBuildTool : undefined,
@@ -361,6 +362,9 @@ export function buildCommand(name: string, config: ProjectConfig): string {
       break;
     case "go":
       orderedFlags.push(...sharedServiceFlags, ...goFlags);
+      break;
+    case "crystal":
+      orderedFlags.push(["crystal-web-framework", config.crystalWebFramework]);
       break;
     case "java":
       orderedFlags.push(...sharedServiceFlags, ...javaFlags);

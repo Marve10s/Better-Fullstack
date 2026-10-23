@@ -1,0 +1,93 @@
+{{#if hasKemal}}
+require "http/client"
+require "json"
+require "socket"
+
+probe = TCPServer.new("127.0.0.1", 0)
+port = probe.local_address.port
+probe.close
+
+invalid_output = IO::Memory.new
+invalid_process = Process.new("./bin/server", env: {"PORT" => "invalid"}, output: invalid_output, error: invalid_output)
+invalid_exited = Channel(Process::Status).new(1)
+spawn { invalid_exited.send(invalid_process.wait) }
+select
+when invalid = invalid_exited.receive
+  raise "invalid PORT did not exit 2" unless invalid.exit_code == 2
+when timeout(5.seconds)
+  invalid_process.signal(Signal::KILL)
+  select
+  when invalid_exited.receive
+  when timeout(5.seconds)
+    raise "invalid PORT process could not be reaped"
+  end
+  raise "invalid PORT did not fail before binding"
+end
+raise "invalid PORT diagnostic missing" unless invalid_output.to_s.includes?("PORT must be an integer")
+
+process = Process.new("./bin/server", env: {"HOST" => "127.0.0.1", "PORT" => port.to_s, "KEMAL_ENV" => "production", "CORS_ORIGIN" => "http://localhost:5173"}, output: Process::Redirect::Inherit, error: Process::Redirect::Inherit)
+exited = Channel(Process::Status).new(1)
+spawn { exited.send(process.wait) }
+finished = false
+
+begin
+  client = HTTP::Client.new("127.0.0.1", port)
+  client.connect_timeout = 1.second
+  client.read_timeout = 2.seconds
+  deadline = Time.instant + 15.seconds
+  loop do
+    begin
+      health = client.get("/health")
+      break if health.status_code == 200 && JSON.parse(health.body)["status"].as_s == "ok"
+    rescue IO::Error | Socket::Error
+    end
+    raise "server did not become ready" if Time.instant >= deadline
+    sleep 100.milliseconds
+  end
+
+  valid = client.get("/api/hello?name=Crystal", HTTP::Headers{"Origin" => "http://localhost:5173"})
+  raise "valid greeting failed" unless valid.status_code == 200 && JSON.parse(valid.body)["message"].as_s == "Hello, Crystal!"
+  raise "CORS origin failed" unless valid.headers["Access-Control-Allow-Origin"]? == "http://localhost:5173"
+  raise "content type failed" unless valid.headers["Content-Type"].starts_with?("application/json")
+
+  invalid_name = client.get("/api/hello?name=%20%20")
+  raise "invalid name accepted" unless invalid_name.status_code == 422 && JSON.parse(invalid_name.body)["error"].as_s.includes?("name")
+
+  headers = HTTP::Headers{"Content-Type" => "application/json"}
+  echoed = client.post("/api/echo", headers, %({"name":"Crystal"}))
+  raise "POST greeting failed" unless echoed.status_code == 200 && JSON.parse(echoed.body)["message"].as_s == "Hello, Crystal!"
+  malformed = client.post("/api/echo", headers, "{")
+  raise "malformed JSON accepted" unless malformed.status_code == 400 && JSON.parse(malformed.body)["error"].as_s == "invalid JSON"
+  wrong_type = client.post("/api/echo", headers, %({"name":12}))
+  raise "non-string name accepted" unless wrong_type.status_code == 422
+  oversized = client.post("/api/echo", headers, %({"name":"#{"x" * 5000}"}))
+  raise "oversized body accepted" unless oversized.status_code == 413
+  client.close
+
+  process.signal(Signal::TERM)
+  select
+  when status = exited.receive
+    finished = true
+    raise "shutdown failed" unless status.success?
+  when timeout(5.seconds)
+    raise "server failed to shut down after SIGTERM"
+  end
+
+  begin
+    TCPServer.open("127.0.0.1", port) { }
+  rescue ex : Socket::Error
+    raise "listener remained open: #{ex.message}"
+  end
+  puts ({proof: "crystal-kemal-http-v1", success: true, assertions: ["invalid-port", "health-json", "hello-json", "cors", "content-type", "blank-name-422", "post-json", "malformed-json-400", "wrong-type-422", "body-limit-413", "sigterm-exit", "port-released"]}).to_json
+ensure
+  unless finished
+    if process.exists?
+      process.signal(Signal::KILL)
+    end
+    select
+    when exited.receive
+    when timeout(5.seconds)
+    end
+  end
+end
+{{/if}}

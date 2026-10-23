@@ -125,6 +125,7 @@ import type {
   GoTemplatingSchema,
   GoProtoToolingSchema,
   GoDISchema,
+  CrystalWebFrameworkSchema,
   JavaLanguageSchema,
   JavaWebFrameworkSchema,
   JavaBuildToolSchema,
@@ -299,6 +300,7 @@ export type GoMigrations = z.infer<typeof GoMigrationsSchema>;
 export type GoTemplating = z.infer<typeof GoTemplatingSchema>;
 export type GoProtoTooling = z.infer<typeof GoProtoToolingSchema>;
 export type GoDI = z.infer<typeof GoDISchema>;
+export type CrystalWebFramework = z.infer<typeof CrystalWebFrameworkSchema>;
 export type JavaLanguage = z.infer<typeof JavaLanguageSchema>;
 export type JavaWebFramework = z.infer<typeof JavaWebFrameworkSchema>;
 export type JavaBuildTool = z.infer<typeof JavaBuildToolSchema>;

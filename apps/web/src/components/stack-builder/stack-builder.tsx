@@ -1,6 +1,7 @@
 import type { IconType } from "react-icons";
 
 import {
+  createCrystalStackSelection,
   CATEGORY_ORDER,
   updateCodeQualitySelection,
   getCategoryOrderForEcosystem,
@@ -194,12 +195,7 @@ import {
 } from "@/lib/i18n/builder-copy";
 import { cn } from "@/lib/platform/utils";
 import { getStackRunSupport } from "@/lib/project/run-support";
-import {
-  DEFAULT_STACK,
-  ECOSYSTEMS,
-  type StackState,
-  TECH_OPTIONS,
-} from "@/lib/stack/constant";
+import { DEFAULT_STACK, ECOSYSTEMS, type StackState, TECH_OPTIONS } from "@/lib/stack/constant";
 import { buildPresetStack } from "@/lib/stack/preset-stack";
 import { useStackState } from "@/lib/stack/stack-url-state";
 import {
@@ -325,7 +321,7 @@ type GraphMobileEcosystem = Extract<
 >;
 type GraphBackendEcosystem = Extract<
   StackPartEcosystem,
-  "typescript" | "rust" | "python" | "go" | "java" | "elixir" | "dotnet"
+  "typescript" | "rust" | "python" | "go" | "java" | "elixir" | "dotnet" | "crystal"
 >;
 type GraphSelection = {
   rootIds?: Partial<Record<ComposerRole, string>>;
@@ -681,6 +677,12 @@ const GRAPH_BACKEND_CONFIGS: GraphBackendConfig[] = [
     authCategory: "pythonAuth",
   },
   {
+    ecosystem: "crystal",
+    label: "Crystal",
+    frameworkCategory: "crystalWebFramework",
+    ormCategory: "orm",
+  },
+  {
     ecosystem: "java",
     label: "Java",
     frameworkCategory: "javaWebFramework",
@@ -956,6 +958,7 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "caching",
     "search",
   ],
+  crystal: [],
   java: [
     "javaBuildTool",
     "javaApi",
@@ -1118,7 +1121,10 @@ function getSoloBackendSelection(stack: StackState): GraphSelection {
         ? stack.rustFrontend
         : frontendEcosystem === "dotnet"
           ? (stack.dotnetFrontend ?? "none")
-          : getSelectedOptionId(stack.webFrontend, "tanstack-router"),
+          : getSelectedOptionId(
+              stack.webFrontend,
+              stack.webFrontend.includes("none") ? "none" : "tanstack-router",
+            ),
     mobileEcosystem:
       (stack.swiftMobile ?? "none") !== "none"
         ? "swift"
@@ -2356,10 +2362,14 @@ function CreationModeComposer({
     "mobile",
     mobileConfig.ecosystem,
   );
+  const composerParts = parseStackPartSpecs(
+    stack.stackPartSpecs.length > 0 ? stack.stackPartSpecs : graphSelectionToSpecs(graphSelection),
+  );
   const allBackendOptions = getGraphToolOptions(
     backendConfig.frameworkCategory,
     "backend",
     graphSelection.backendEcosystem,
+    { parts: composerParts },
   );
   const backendOptions = isKotlinBackendSelection(
     graphSelection.backendEcosystem,
@@ -2369,7 +2379,9 @@ function CreationModeComposer({
         (option) => !isKotlinIncompatibleOption("javaWebFramework", option.id),
       )
     : allBackendOptions;
-  const databaseOptions = getGraphToolOptions("database", "database", "universal");
+  const databaseOptions = getGraphToolOptions("database", "database", "universal", {
+    parts: composerParts,
+  });
   const allBackendOrmOptions = getGraphToolOptions(
     backendConfig.ormCategory,
     "orm",
@@ -4253,7 +4265,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
       // webFrontend, hiding the Run tab back on TS) and stale
       // foreign-ecosystem params in the URL.
       setStack({
-        ...DEFAULT_STACK,
+        ...(ecosystemId === "crystal" ? createCrystalStackSelection() : DEFAULT_STACK),
         projectName: stack.projectName,
         packageManager: stack.packageManager,
         git: stack.git,
@@ -5435,9 +5447,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                   {index > 0 && " · "}
                                   <span
                                     className={
-                                      item.picked
-                                        ? "text-foreground/80"
-                                        : "text-muted-foreground"
+                                      item.picked ? "text-foreground/80" : "text-muted-foreground"
                                     }
                                   >
                                     {item.label}

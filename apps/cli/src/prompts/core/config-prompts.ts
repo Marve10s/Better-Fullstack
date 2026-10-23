@@ -1,3 +1,5 @@
+import { getCrystalWebFrameworkChoice } from "@/prompts/ecosystems/crystal-ecosystem";
+import { CRYSTAL_PROJECT_DEFAULTS, getCrystalSelectionIssue } from "@better-fullstack/types";
 import { log } from "@clack/prompts";
 
 import type {
@@ -458,6 +460,7 @@ type PromptGroupResults = {
   goProtoTooling: GoProtoTooling;
   goDI: GoDI;
   // Java ecosystem
+  crystalWebFramework: ProjectConfig["crystalWebFramework"];
   javaWebFramework: JavaWebFramework;
   javaLanguage: JavaLanguage;
   javaBuildTool: JavaBuildTool;
@@ -641,6 +644,7 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   goTemplating: true,
   goProtoTooling: true,
   goDI: true,
+  crystalWebFramework: true,
   javaWebFramework: true,
   javaLanguage: true,
   javaBuildTool: true,
@@ -702,7 +706,7 @@ export function hasStackPromptFlags(flags: Partial<ProjectConfig>) {
   });
 }
 
-const SERVER_ECOSYSTEMS = new Set<Ecosystem>(["rust", "python", "go", "java", "dotnet", "elixir"]);
+const SERVER_ECOSYSTEMS = new Set<Ecosystem>(["rust", "python", "go", "java", "dotnet", "elixir", "crystal"]);
 
 export function resolveDatabaseFlagForEcosystem(
   ecosystem: Ecosystem | undefined,
@@ -924,7 +928,16 @@ export async function gatherConfig(
   const shouldPromptForScope = !hasStackPromptFlags(flags);
   const promptEntries = {
     // Ecosystem choice first
-    ecosystem: () => getEcosystemChoice(flags.ecosystem, flags.auth),
+    ecosystem: async () => {
+      const ecosystem = await getEcosystemChoice(flags.ecosystem, flags.auth);
+      if (ecosystem === "crystal") {
+        const issue = getCrystalSelectionIssue({ ...CRYSTAL_PROJECT_DEFAULTS, ...flags, ecosystem });
+        if (issue) throw new Error(issue);
+        const { crystalWebFramework: _frameworkDefault, ...nativeDefaults } = CRYSTAL_PROJECT_DEFAULTS;
+        Object.assign(flags, { ...nativeDefaults, ...flags });
+      }
+      return ecosystem;
+    },
     configScope: () => (shouldPromptForScope ? getConfigScopeChoice() : Promise.resolve("full")),
     configSections: ({ results }) => {
       if (!shouldPromptForScope || results.configScope !== "custom") {
@@ -1629,6 +1642,7 @@ export async function gatherConfig(
       return getGoDIChoice(flags.goDI);
     },
     // Java ecosystem prompts (skip if not Java)
+    crystalWebFramework: ({ results }) => results.ecosystem === "crystal" ? getCrystalWebFrameworkChoice(flags.crystalWebFramework) : Promise.resolve("none" as const),
     javaWebFramework: ({ results }) => {
       if (results.ecosystem !== "java") return Promise.resolve("none" as JavaWebFramework);
       return getJavaWebFrameworkChoice(flags.javaWebFramework);
@@ -1879,7 +1893,8 @@ export async function gatherConfig(
         results.ecosystem === "go" ||
         results.ecosystem === "java" ||
         results.ecosystem === "dotnet" ||
-        results.ecosystem === "elixir"
+        results.ecosystem === "elixir" ||
+        results.ecosystem === "crystal"
       )
         return Promise.resolve(flags.packageManager ?? getUserPkgManager());
       return getPackageManagerChoice(flags.packageManager);
@@ -2019,6 +2034,7 @@ export async function gatherConfig(
     goProtoTooling: result.goProtoTooling,
     goDI: result.goDI,
     // Java ecosystem options
+    crystalWebFramework: result.crystalWebFramework,
     javaWebFramework: result.javaWebFramework,
     javaLanguage: result.javaLanguage,
     javaBuildTool: result.javaBuildTool,

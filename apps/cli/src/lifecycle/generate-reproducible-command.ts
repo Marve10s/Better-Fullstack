@@ -1262,6 +1262,10 @@ export function generateReproducibleCommand(config: ProjectConfig) {
     case "go":
       flags = getGoFlags(config);
       break;
+    case "crystal":
+      flags = ["--ecosystem crystal", `--crystal-web-framework ${config.crystalWebFramework}`, "--addons none", "--examples none"];
+      appendCommonFlags(flags, config);
+      break;
     case "java":
       flags = getJavaFlags(config);
       break;

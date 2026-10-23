@@ -841,6 +841,25 @@ export async function verifyDotnet(comboName: string, projectDir: string): Promi
   return wrapResult("dotnet", comboName, projectDir, steps);
 }
 
+export async function verifyCrystal(comboName: string, projectDir: string): Promise<VerifyResult> {
+  const steps: StepResult[] = [];
+  if (!existsSync(join(projectDir, "shard.yml"))) {
+    return wrapResult("crystal", comboName, projectDir, [templateFailure("structure", "Expected Crystal shard.yml")]);
+  }
+  for (const [step, command, args] of [
+    ["install", "shards", ["install"]],
+    ["build", "shards", ["build", "--release"]],
+    ["test", "crystal", ["spec"]],
+  ] as const) {
+    steps.push(await runStep(step, command, [...args], projectDir));
+    if (!steps.at(-1)!.success) return wrapResult("crystal", comboName, projectDir, steps);
+  }
+  if (existsSync(join(projectDir, "scripts/http_proof.cr"))) {
+    steps.push(await runStep("http-proof", "crystal", ["run", "scripts/http_proof.cr"], projectDir));
+  }
+  return wrapResult("crystal", comboName, projectDir, steps);
+}
+
 export function getVerifier(
   ecosystem: Ecosystem,
 ): (comboName: string, projectDir: string, options?: VerifyOptions) => Promise<VerifyResult> {
@@ -855,6 +874,8 @@ export function getVerifier(
       return verifyPython;
     case "go":
       return verifyGo;
+    case "crystal":
+      return verifyCrystal;
     case "java":
       return verifyJava;
     case "elixir":

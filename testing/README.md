@@ -28,6 +28,10 @@ without one. A preset with `packageManager: "pnpm"` installs with pnpm, since Bu
 pnpm `catalog:` versions, so pnpm must be on `PATH`; its scripts still run through `bun run`.
 `--dev-check` loads a web page, so it is skipped for a project without a web frontend.
 
+## Crystal native proof
+
+`bun run testing/crystal-runtime-proof.ts --output <directory>` requires Crystal 1.22.1 and Shards 0.20.0 after building core packages. It creates a fresh native project, installs and compiles Kemal, runs specs, and checks real HTTP responses and shutdown. The output preserves the generated project, toolchain, dependency lockfile, producer identity, and results as an experimental observation, separately from the eight-recipe public receipt.
+
 ## Prompt-free execution
 
 - Use explicit stack flags without `--yes`; the default-path matrix tests `--yes` separately.

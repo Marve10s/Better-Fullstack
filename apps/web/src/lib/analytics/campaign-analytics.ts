@@ -23,6 +23,7 @@ const BACKEND_KEY_BY_ECOSYSTEM = {
   rust: "rustWebFramework",
   python: "pythonWebFramework",
   go: "goWebFramework",
+  crystal: "crystalWebFramework",
   java: "javaWebFramework",
   elixir: "elixirWebFramework",
   dotnet: "dotnetWebFramework",

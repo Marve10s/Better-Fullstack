@@ -122,6 +122,7 @@ export const CLI_DEFAULT_PROJECT_CONFIG = {
   goTemplating: "none",
   goProtoTooling: "none",
   goDI: "none",
+  crystalWebFramework: "kemal",
   javaWebFramework: "spring-boot",
   javaBuildTool: "maven",
   javaOrm: "none",

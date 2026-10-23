@@ -76,6 +76,11 @@ export async function displayPostInstallInstructions(
     return;
   }
 
+  if (ecosystem === "crystal") {
+    consola.box(`Next steps\n\ncd ${relativePath}\n${depsInstalled ? "" : "shards install\n"}shards build --release\ncrystal spec\n${config.crystalWebFramework === "kemal" ? "crystal run scripts/http_proof.cr\nHOST=127.0.0.1 PORT=3000 ./bin/server" : "./bin/server"}\n\nExperimental recipe. Runtime proof has not been recorded.`);
+    return;
+  }
+
   // Handle Rust projects with different instructions
   if (ecosystem === "rust") {
     displayRustInstructions(config);

@@ -46,6 +46,7 @@ const HIGHLIGHT_KEYS_BY_ECOSYSTEM: Record<string, readonly (keyof StackState)[]>
   python: ["pythonWebFramework", "pythonOrm", "pythonAi", "pythonApi", "pythonTaskQueue"],
   go: ["goWebFramework", "goOrm", "goApi", "goCli"],
   java: [
+    "crystalWebFramework",
     "javaWebFramework",
     "javaBuildTool",
     "javaOrm",

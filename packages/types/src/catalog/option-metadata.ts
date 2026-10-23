@@ -96,6 +96,7 @@ import {
   JAVA_LIBRARIES_VALUES,
   JAVA_ORM_VALUES,
   JAVA_TESTING_LIBRARIES_VALUES,
+  CRYSTAL_WEB_FRAMEWORK_VALUES,
   JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
@@ -175,7 +176,8 @@ export type OptionCategoryEcosystem =
   | "go"
   | "java"
   | "dotnet"
-  | "elixir";
+  | "elixir"
+  | "crystal";
 
 export const TYPESCRIPT_CATEGORY_ORDER = [
   "webFrontend",
@@ -449,6 +451,7 @@ export const CATEGORY_ORDER = [
     ...RUST_CATEGORY_ORDER,
     ...PYTHON_CATEGORY_ORDER,
     ...GO_CATEGORY_ORDER,
+    "crystalWebFramework",
     ...JAVA_CATEGORY_ORDER,
     ...DOTNET_CATEGORY_ORDER,
     ...ELIXIR_CATEGORY_ORDER,
@@ -467,6 +470,8 @@ export function getCategoryOrderForEcosystem(
       return PYTHON_CATEGORY_ORDER;
     case "go":
       return GO_CATEGORY_ORDER;
+    case "crystal":
+      return ["crystalWebFramework", "aiDocs", "git", "install"];
     case "java":
       return JAVA_CATEGORY_ORDER;
     case "dotnet":
@@ -826,6 +831,7 @@ const CATEGORY_DEFINITIONS = {
   goProtoTooling: { values: GO_PROTO_TOOLING_VALUES, displayName: "Go Protobuf Tooling" },
   goDI: { values: GO_DI_VALUES, displayName: "Go Dependency Injection" },
   javaLanguage: { values: JAVA_LANGUAGE_VALUES, displayName: "Java Language" },
+  crystalWebFramework: { values: CRYSTAL_WEB_FRAMEWORK_VALUES, displayName: "Crystal HTTP framework" },
   javaWebFramework: { values: JAVA_WEB_FRAMEWORK_VALUES, displayName: "Java Web Framework" },
   javaBuildTool: { values: JAVA_BUILD_TOOL_VALUES, displayName: "Java Build Tool" },
   javaOrm: { values: JAVA_ORM_VALUES, displayName: "Java ORM / Database" },
@@ -1622,6 +1628,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     java: "Java",
     kotlin: "Kotlin",
   },
+  crystalWebFramework: { kemal: "Kemal", none: "None" },
   javaWebFramework: {
     "spring-boot": "Spring Boot",
     ktor: "Ktor",

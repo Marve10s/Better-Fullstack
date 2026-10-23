@@ -41,6 +41,8 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     configDisplay.push(`${pc.blue("Project Name:")} ${config.projectName}`);
   }
 
+  if (config.ecosystem === "crystal") configDisplay.push(`${pc.blue("Crystal HTTP framework:")} ${config.crystalWebFramework ?? "kemal"}`);
+
   if (config.frontend !== undefined) {
     const frontend = Array.isArray(config.frontend) ? config.frontend : [config.frontend];
     const frontendText =

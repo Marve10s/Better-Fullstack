@@ -11,6 +11,7 @@ export const ECOSYSTEM_SHARE_SLUGS = {
   rust: "rust",
   python: "python",
   go: "go",
+  crystal: "crystal",
   java: "java",
   elixir: "elixir",
   dotnet: "dotnet",

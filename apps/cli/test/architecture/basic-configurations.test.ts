@@ -21,6 +21,7 @@ describe("Basic Configurations", () => {
       "java",
       "dotnet",
       "elixir",
+      "crystal",
     ]);
   });
 

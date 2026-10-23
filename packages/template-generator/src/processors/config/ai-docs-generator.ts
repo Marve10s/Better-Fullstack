@@ -73,6 +73,14 @@ const JAVA_RESERVED_WORDS = new Set([
 export function processAiDocs(vfs: VirtualFileSystem, config: ProjectConfig): void {
   if (!config.aiDocs || config.aiDocs.length === 0) return;
 
+  if (config.ecosystem === "crystal" && !config.stackParts?.some(part => part.ecosystem !== "crystal" && ["backend", "frontend", "mobile"].includes(part.role))) {
+    for (const docType of config.aiDocs) {
+      const filename = getFilename(docType);
+      if (filename) vfs.writeFile(filename, "# Crystal project\n\nUse Crystal 1.22.1, Shards 0.20.0, and Kemal 1.15.0. Run shards install, shards build --release, and crystal spec. For Kemal run crystal run scripts/http_proof.cr after building. Read README.md for the bounded HTTP contract and native environment variables. Keep dependencies in shard.yml and commit shard.lock after installation. This experimental recipe has no recorded build or runtime receipt. Do not add JavaScript dependencies to this native service.\n");
+    }
+    return;
+  }
+
   for (const docType of config.aiDocs) {
     if (docType === "none") continue;
 

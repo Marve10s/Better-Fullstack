@@ -1,3 +1,4 @@
+import { CRYSTAL_UNSUPPORTED_FIELDS, getCrystalSelectionIssue, getCrystalRequestedIssue } from "@/platform/crystal-project";
 import type {
   CLIInput,
   ProjectConfig,
@@ -180,6 +181,7 @@ export const STACK_SELECTION_OPTION_CATEGORY_BY_KEY: Record<
   goProtoTooling: "goProtoTooling",
   goDI: "goDI",
   javaLanguage: "javaLanguage",
+  crystalWebFramework: "crystalWebFramework",
   javaWebFramework: "javaWebFramework",
   javaBuildTool: "javaBuildTool",
   javaOrm: "javaOrm",
@@ -376,6 +378,7 @@ export const STACK_SELECTION_URL_KEYS = {
   goProtoTooling: "gproto",
   goDI: "gdi",
   javaLanguage: "jlang",
+  crystalWebFramework: "cwf",
   javaWebFramework: "jwf",
   javaBuildTool: "jbt",
   javaOrm: "jorm",
@@ -481,6 +484,20 @@ export function cloneDefaultStackSelection(): StackSelectionState {
   return cloned as StackSelectionState;
 }
 
+export function createCrystalStackSelection(overrides: Partial<StackSelectionState> = {}): StackSelectionState {
+  const defaults = cloneDefaultStackSelection() as unknown as Record<string, unknown>;
+  for (const key of CRYSTAL_UNSUPPORTED_FIELDS) {
+    if (key in defaults) defaults[key] = Array.isArray(defaults[key]) ? [] : "none";
+  }
+  return {
+    ...defaults,
+    ecosystem: "crystal",
+    webFrontend: ["none"], nativeFrontend: ["none"], codeQuality: [], documentation: [],
+    appPlatforms: [], backendLibraries: "none", aiSdk: "none",
+    ...overrides,
+  } as StackSelectionState;
+}
+
 export function normalizeStackSelectionValue<K extends StackSelectionKey>(
   key: K,
   value: StackSelectionState[K],
@@ -566,12 +583,14 @@ function parseScalarSelectionValue(value: StackSelectionUrlValue, defaultValue: 
 export function parseStackSelectionFromUrlRecord(
   params: StackSelectionUrlRecord,
 ): StackSelectionState {
-  const parsed = cloneDefaultStackSelection() as Record<string, unknown>;
+  const crystal = params.eco === "crystal" || params[STACK_SELECTION_URL_KEYS.ecosystem] === "crystal";
+  const defaults = crystal ? createCrystalStackSelection() : cloneDefaultStackSelection();
+  const parsed = { ...defaults } as Record<string, unknown>;
 
   for (const stackKey of STACK_SELECTION_KEYS) {
     const urlKey = STACK_SELECTION_URL_KEYS[stackKey];
     const rawValue = params[urlKey];
-    const defaultValue = DEFAULT_STACK_SELECTION[stackKey];
+    const defaultValue = defaults[stackKey];
 
     if (isArrayStackSelectionKey(stackKey)) {
       parsed[stackKey] = parseArraySelectionValue(rawValue, defaultValue as string[]);
@@ -767,6 +786,7 @@ const CLI_SCALAR_CONFIG_FIELDS = [
   ["goProtoTooling", "goProtoTooling"],
   ["goDI", "goDI"],
   ["javaLanguage", "javaLanguage"],
+  ["crystalWebFramework", "crystalWebFramework"],
   ["javaWebFramework", "javaWebFramework"],
   ["javaBuildTool", "javaBuildTool"],
   ["javaOrm", "javaOrm"],
@@ -908,6 +928,8 @@ const GO_CONFIG_KEYS = [
   "goProtoTooling",
   "goDI",
 ] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
+
+const CRYSTAL_CONFIG_KEYS = ["crystalWebFramework"] as const satisfies readonly (keyof CliDefaultProjectConfigBase)[];
 
 const JAVA_CONFIG_KEYS = [
   "javaLanguage",
@@ -1390,7 +1412,7 @@ function expandScopedStackPartSpecs(
   fields: readonly ScopedStackPartField[],
 ) {
   const stackParts = parseStackPartSpecs(specs, "selected");
-  const stackPartSpecs = stackParts.map((part) => formatStackPartSpec(part, stackParts));
+  const stackPartSpecs = stackParts.filter(part => part.source !== "provided").map((part) => formatStackPartSpec(part, stackParts));
   const stackPartSpecSet = new Set(stackPartSpecs);
 
   const getPrimary = (
@@ -1615,7 +1637,7 @@ export function patchGraphScopedSelections(
     );
     changedFields.push({ ...field, ownerPartId: owner?.id, value: [...newValues] });
   }
-  const specs = parts.map((part) => formatStackPartSpec(part, parts));
+  const specs = parts.filter(part => part.source !== "provided").map((part) => formatStackPartSpec(part, parts));
   return { ...updates, stackPartSpecs: expandScopedStackPartSpecs(specs, changedFields) };
 }
 
@@ -1653,6 +1675,9 @@ function getGraphStackParts(selection: StackSelectionInput) {
   const hasJavaScript = hasJavaScriptWorkspaceRoot(
     parseStackPartSpecs(selection.stackPartSpecs, "selected"),
   );
+  const rawParts = parseStackPartSpecs(selection.stackPartSpecs, "selected");
+  const crystalIssue = getCrystalSelectionIssue({ stackParts: rawParts });
+  if (crystalIssue) throw new Error(crystalIssue);
   const fields = getSelectionScopedPartFields(selection).map((field) => ({
     ...field,
     value: (Array.isArray(field.value) ? field.value : [field.value]).filter(
@@ -1782,7 +1807,9 @@ export function cliInputToProjectConfigPartial(
 function getCliGraphStackParts(input: CLIInput): StackPart[] {
   const inputSpecs = [...(input.part ?? [])];
   const stackParts = parseStackPartSpecs(inputSpecs, "selected");
-  const stackPartSpecs = stackParts.map((part) => formatStackPartSpec(part, stackParts));
+  const crystalIssue = getCrystalRequestedIssue(input, stackParts);
+  if (crystalIssue) throw new Error(crystalIssue);
+  const stackPartSpecs = stackParts.filter(part => part.source !== "provided").map((part) => formatStackPartSpec(part, stackParts));
   const stackPartSpecSet = new Set(stackPartSpecs);
 
   const hasPrimary = (role: StackPartRole, ecosystem: StackPartEcosystem) =>
@@ -1877,7 +1904,7 @@ function buildProjectConfigBase(
     orm: stack.orm as ProjectConfig["orm"],
     backend: mapBackendToCli(stack.backend) as ProjectConfig["backend"],
     runtime: stack.runtime as ProjectConfig["runtime"],
-    frontend: frontend.length > 0 ? frontend : ["tanstack-router"],
+    frontend: frontend.length > 0 ? frontend : stack.ecosystem === "crystal" ? [] : ["tanstack-router"],
     addons: [
       ...toUniqueNonNoneArray(stack.codeQuality),
       ...toUniqueNonNoneArray(stack.documentation),
@@ -2005,6 +2032,7 @@ function buildProjectConfigBase(
     goProtoTooling: stack.goProtoTooling as ProjectConfig["goProtoTooling"],
     goDI: stack.goDI as ProjectConfig["goDI"],
     javaLanguage: stack.javaLanguage as ProjectConfig["javaLanguage"],
+    crystalWebFramework: stack.crystalWebFramework as ProjectConfig["crystalWebFramework"],
     javaWebFramework: stack.javaWebFramework as ProjectConfig["javaWebFramework"],
     javaBuildTool: stack.javaBuildTool as ProjectConfig["javaBuildTool"],
     javaOrm: stack.javaOrm as ProjectConfig["javaOrm"],
@@ -2124,6 +2152,7 @@ export function isCliDefaultStackSelection(
           ...RUST_CONFIG_KEYS,
           ...PYTHON_CONFIG_KEYS,
           ...GO_CONFIG_KEYS,
+          ...CRYSTAL_CONFIG_KEYS,
           ...JAVA_CONFIG_KEYS,
           ...DOTNET_CONFIG_KEYS,
           ...ELIXIR_CONFIG_KEYS,
@@ -2556,6 +2585,8 @@ export function generateStackSelectionCommand(selection: StackSelectionInput): s
       return generatePythonCommand(selection, projectName);
     case "go":
       return generateGoCommand(selection, projectName);
+    case "crystal":
+      return `${getBaseCommand(selection)} ${projectName} --ecosystem crystal --crystal-web-framework ${selection.crystalWebFramework} --package-manager ${selection.packageManager} --workspace-shape ${selection.workspaceShape} --version-channel ${selection.versionChannel} --addons none --examples none ${formatArrayFlag("ai-docs", selection.aiDocs)} ${selection.git === "false" ? "--no-git" : "--git"} ${selection.install === "false" ? "--no-install" : "--install"}`;
     case "java":
       return generateJavaCommand(selection, projectName);
     case "dotnet":

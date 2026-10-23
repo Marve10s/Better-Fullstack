@@ -1,3 +1,4 @@
+import { resolveCrystalWebFrameworkPrompt } from "@/prompts/ecosystems/crystal-ecosystem";
 import {
   AI_VALUES,
   ANIMATION_VALUES,
@@ -664,6 +665,11 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   goDI: {
     schemaValues: GO_DI_VALUES,
     resolve: ({ value }: { value?: string } = {}) => resolveGoDIPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  crystalWebFramework: {
+    schemaValues: ["kemal", "none"],
+    resolve: ({ value }: { value?: string } = {}) => resolveCrystalWebFrameworkPrompt(value),
     coverageContexts: [{}],
   },
   javaWebFramework: {

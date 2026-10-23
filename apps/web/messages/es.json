@@ -762,5 +762,6 @@
   "builderComposerProjectTitle": "Configura tu proyecto",
   "builderComposerReviewTitle": "Revisar {name}",
   "builderComposerJsWorkspace": "Workspace de JavaScript",
-  "builderComposerNativeToolchains": "Toolchains nativas"
+  "builderComposerNativeToolchains": "Toolchains nativas",
+  "docsCliSummaryCrystalCrystalWebFramework": "Experimental Crystal HTTP framework."
 }

@@ -234,6 +234,119 @@ describe("stack graph", () => {
     expect(validateStackParts(stackParts).issues).toEqual([]);
   });
 
+  it("keeps canonical and named native paths compact beside fixed JavaScript paths", () => {
+    const specs = [
+      "frontend:dotnet:blazor-webassembly:web",
+      "frontend:typescript:react-vite:site",
+      "backend:go:gin",
+      "backend:rust:axum",
+      "mobile:kotlin:jetpack-compose:native",
+      "mobile:react-native:native-bare:expo",
+      "backend.orm:go:gorm",
+      "backend.orm:rust:diesel",
+    ];
+    const parts = parseStackPartSpecs(specs);
+    const formatted = parts
+      .filter((part) => part.source !== "provided")
+      .map((part) => formatStackPartSpec(part, parts));
+
+    expect(parts.find((part) => part.id === "web")?.targetPath).toBe("apps/web-2");
+    expect(parts.find((part) => part.id === "native")?.targetPath).toBe("apps/native-2");
+    expect(parts.find((part) => part.id === "backend:go:gin")?.targetPath).toBe("services/go-gin");
+    expect(parts.find((part) => part.id === "backend:rust:axum")?.targetPath).toBe(
+      "services/rust-axum",
+    );
+    expect(formatted).toEqual(specs);
+    expect(parseStackPartSpecs(formatted)).toEqual(parts);
+  });
+
+  it("keeps collision suffixes compact when native service names overlap", () => {
+    const specs = [
+      "backend:go:gin",
+      "backend:rust:axum:go-gin",
+      "backend:python:fastapi:go-gin-2",
+    ];
+    const parts = parseStackPartSpecs(specs);
+    const formatted = parts
+      .filter((part) => part.source !== "provided")
+      .map((part) => formatStackPartSpec(part, parts));
+
+    expect(parts.filter((part) => part.role === "backend").map((part) => part.targetPath)).toEqual([
+      "services/go-gin",
+      "services/go-gin-2",
+      "services/go-gin-2-2",
+    ]);
+    expect(formatted).toEqual(specs);
+    expect(parseStackPartSpecs(formatted)).toEqual(parts);
+  });
+
+  it("retains an explicit role default when repeated native services would rename it", () => {
+    const specs = [
+      "backend:crystal:kemal:reports@apps/server",
+      "backend:go:gin:worker",
+      "backend.orm:go:gorm",
+    ];
+    const parts = parseStackPartSpecs(specs);
+    const formatted = parts
+      .filter((part) => part.source !== "provided")
+      .map((part) => formatStackPartSpec(part, parts));
+
+    expect(parts.find((part) => part.id === "reports")?.targetPath).toBe("apps/server");
+    expect(parts.find((part) => part.id === "worker")?.targetPath).toBe("services/worker");
+    expect(parts.find((part) => part.toolId === "gorm")?.ownerPartId).toBe("worker");
+    expect(formatted).toEqual(specs);
+    expect(parseStackPartSpecs(formatted)).toEqual(parts);
+  });
+
+  it("retains only the custom path that reserves another native service's name", () => {
+    for (const services of [
+      ["backend:go:gin:api@services/worker", "backend:go:echo:worker"],
+      ["backend:go:echo:worker", "backend:go:gin:api@services/worker"],
+    ]) {
+      const specs = [...services, "api.orm:go:gorm", "worker.orm:go:sqlc"];
+      const parts = parseStackPartSpecs(specs);
+      const formatted = parts.map((part) => formatStackPartSpec(part, parts));
+
+      expect(parts.find((part) => part.id === "worker")?.targetPath).toBe("services/worker-2");
+      expect(formatted).toEqual(specs);
+      expect(parseStackPartSpecs(formatted)).toEqual(parts);
+    }
+  });
+
+  it("omits explicit paths that compact bindings already reconstruct", () => {
+    for (const [specs, compact] of [
+      [["backend:go:gin:api@apps/server"], ["backend:go:gin:api"]],
+      [
+        ["backend:go:gin:api@services/api", "backend:go:echo:admin@services/admin"],
+        ["backend:go:gin:api", "backend:go:echo:admin"],
+      ],
+    ]) {
+      const parts = parseStackPartSpecs(specs);
+      const formatted = parts.map((part) => formatStackPartSpec(part, parts));
+
+      expect(formatted).toEqual(compact);
+      expect(parseStackPartSpecs(formatted)).toEqual(parts);
+    }
+  });
+
+  it("round-trips encoded custom paths and named capability owners", () => {
+    const specs = [
+      "backend:go:gin:api@services/api%20v2%40blue%3A50%25/%252F",
+      "backend:go:echo:admin",
+      "api.orm:go:gorm",
+      "admin.orm:go:sqlc",
+    ];
+    const parts = parseStackPartSpecs(specs);
+    const formatted = parts.map((part) => formatStackPartSpec(part, parts));
+
+    expect(parts.find((part) => part.id === "api")?.targetPath).toBe("services/api v2@blue:50%/%2F");
+    expect(parts.find((part) => part.toolId === "gorm")?.ownerPartId).toBe("api");
+    expect(parts.find((part) => part.toolId === "sqlc")?.ownerPartId).toBe("admin");
+    expect(formatted).toEqual(specs);
+    expect(parseStackPartSpecs(formatted)).toEqual(parts);
+    expect(formatStackPartSpec(parts[0])).toBe(specs[0]);
+  });
+
   it("requires stable IDs when the same primary service is repeated", () => {
     const stackParts = parseStackPartSpecs(["backend:go:gin", "backend:go:gin"]);
 

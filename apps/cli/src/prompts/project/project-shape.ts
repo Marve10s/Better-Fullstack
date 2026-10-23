@@ -77,7 +77,7 @@ const BACKEND_SHAPE_YES_DEFAULTS: Partial<Record<Ecosystem, Partial<ProjectConfi
 export const SHAPE_ECOSYSTEMS = {
   fullstack: ECOSYSTEM_VALUES,
   frontend: ["typescript", "rust", "dotnet"],
-  backend: ["typescript", "go", "rust", "python", "java", "dotnet", "elixir"],
+  backend: ["typescript", "go", "rust", "python", "java", "dotnet", "elixir", "crystal"],
   mobile: ["react-native"],
 } as const satisfies Record<ProjectShape, readonly Ecosystem[]>;
 
@@ -104,6 +104,7 @@ const SHAPE_REQUIRED_HALF: Record<"frontend" | "backend", Partial<Record<Ecosyst
     rust: "rustWebFramework",
     go: "goWebFramework",
     python: "pythonWebFramework",
+    crystal: "crystalWebFramework",
     java: "javaWebFramework",
     dotnet: "dotnetWebFramework",
     elixir: "elixirWebFramework",

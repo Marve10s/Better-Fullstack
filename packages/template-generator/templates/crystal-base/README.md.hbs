@@ -1,0 +1,31 @@
+# {{projectName}}
+
+Experimental Crystal 1.22.1 and Shards 0.20.0 project. {{#if hasKemal}}Kemal is pinned to 1.15.0.{{/if}} Public capability evidence remains unverified until a current receipt qualifies this recipe.
+
+Install the native toolchain using the [official installation guide](https://crystal-lang.org/install/). On macOS, Homebrew provides `brew install crystal`, which includes Shards. Confirm `crystal --version` reports 1.22.1 and `shards --version` reports 0.20.0 before qualifying this exact recipe. Package manager versions may advance; use official release archives if needed.
+
+```sh
+shards install
+shards build --release
+crystal spec
+{{#if hasKemal}}
+crystal run scripts/http_proof.cr
+HOST=127.0.0.1 PORT=3000 KEMAL_ENV=production ./bin/server
+{{else}}
+./bin/server
+{{/if}}
+```
+
+Commit `shard.lock` after the first successful install. It pins transitive shards. Subsequent clean installs can use `shards install --frozen`. `shards update` intentionally changes the lock; review and rerun native proofs after updating. `shards build --release` emits `bin/server`.
+
+{{#if hasKemal}}
+`GET /health` returns `{"status":"ok"}`. `GET /api/hello?name=Crystal` and `POST /api/echo` with `{"name":"Crystal"}` return `{"message":"Hello, Crystal!"}`. Blank or more than 80 characters returns 422; malformed JSON returns 400; request bodies larger than 4096 bytes return 413. Unknown routes use Kemal's default 404 behavior.
+
+`PORT` accepts canonical decimal integers from 1 through 65535; invalid values exit 2 before binding. `HOST` defaults to loopback. `KEMAL_ENV` defaults to production. Configure `CORS_ORIGIN` to allow that exact origin for GET requests. Cross-origin POST/preflight and browser credentials are outside this recipe. Environment values are read from the process; `.env.example` is documentation and is not loaded automatically.
+
+The proof chooses a free loopback port, starts the compiled server, parses real HTTP JSON, rejects invalid input, sends SIGTERM, waits at most five seconds, and checks the port can be rebound. Cleanup kills only its child process on failure. Port selection has a small close/bind race. The proof uses POSIX signals and targets macOS/Linux. Kemal drains active requests for at most two seconds; long-lived request draining has not been qualified.
+{{/if}}
+
+Database, ORM, auth, deployment, native addons, and service overlays are unsupported. Use an explicit mixed graph to add an independently owned frontend or another service; keep Crystal's manifest and native commands in its service directory.
+
+Named service replay uses `--part backend:crystal:kemal:reports@services/reports`. The optional `@relative-path` suffix preserves the directory; percent-encode special path characters. Parent directories and absolute paths are rejected by the part parser. Existing part bindings without a suffix retain their defaults.

@@ -1,5 +1,6 @@
 import { analyzeStackCompatibility } from "@better-fullstack/types";
 import {
+  createCrystalStackSelection,
   createStackSelectionSearchParams as createStackSearchParams,
 } from "@better-fullstack/types/stack-translation";
 
@@ -21,6 +22,7 @@ function withCompatibility(stack: StackState): StackState {
 }
 
 function createEcosystemShareStack(ecosystem: StackState["ecosystem"]): StackState {
+  if (ecosystem === "crystal") return createCrystalStackSelection();
   return withCompatibility({
     ...DEFAULT_STACK,
     ecosystem,
@@ -53,6 +55,7 @@ export function createDefaultMultiEcosystemShareStack(): StackState {
     goOrm: "none",
     goApi: "none",
     goAuth: "none",
+    crystalWebFramework: "none",
     javaWebFramework: "none",
     javaOrm: "none",
     javaAuth: "none",

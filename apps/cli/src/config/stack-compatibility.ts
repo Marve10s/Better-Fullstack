@@ -527,6 +527,7 @@ export function buildCompatibilityInputFromConfig(
     goProtoTooling: asString(config.goProtoTooling),
     goDI: asString(config.goDI),
     javaLanguage: asString(config.javaLanguage, "java"),
+    crystalWebFramework: asString(config.crystalWebFramework, "kemal"),
     javaWebFramework: asString(config.javaWebFramework),
     javaBuildTool: asString(config.javaBuildTool),
     javaOrm: asString(config.javaOrm),

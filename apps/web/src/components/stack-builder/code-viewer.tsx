@@ -58,6 +58,7 @@ export function getLanguage(extension: string, filePath = ""): BundledLanguage {
     yml: "yaml",
     toml: "toml",
     sql: "sql",
+    cr: "crystal",
     rs: "rust",
     go: "go",
     templ: "templ",

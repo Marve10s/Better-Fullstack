@@ -17,6 +17,7 @@ import {
   runMavenTests,
   runPythonInstall,
   runGoModTidy,
+  runShardsInstall,
   runMixCompile,
   type SetupStepResult,
 } from "@/helpers/core/install-dependencies";
@@ -202,6 +203,11 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
         options.javaBuildTool === "gradle"
           ? await runGradleTests({ projectDir })
           : await runMavenTests({ projectDir });
+      if (!result.success) setupFailures.push(result);
+    }
+
+    if (options.install && !usesGraph && installEcosystem === "crystal") {
+      const result = await runShardsInstall({ projectDir });
       if (!result.success) setupFailures.push(result);
     }
 

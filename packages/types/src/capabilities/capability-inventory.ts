@@ -539,6 +539,7 @@ export function getCapabilityInventory(
     "java",
     "dotnet",
     "elixir",
+    "crystal",
   ] as const) {
     for (const category of getCategoryOrderForEcosystem(ecosystem)) {
       for (const option of OPTION_CATEGORY_METADATA[category].options) {
@@ -590,14 +591,18 @@ export function getCapabilityInventory(
           ? quarantineEntry.visibility === "hidden"
             ? "quarantined"
             : "experimental"
-          : recipeIds.length > 0 || CONTROL_CATEGORIES.has(category)
-            ? "stable"
-            : "experimental";
+          : ecosystem === "crystal"
+            ? "experimental"
+            : recipeIds.length > 0 || CONTROL_CATEGORIES.has(category)
+              ? "stable"
+              : "experimental";
         const freshness: CapabilityFreshness = quarantineEntry
           ? "quarantined"
-          : failedRecipe
-            ? "failed"
-            : state.freshness;
+          : ecosystem === "crystal"
+            ? "unverified"
+            : failedRecipe
+              ? "failed"
+              : state.freshness;
         const verified =
           (evidenceLevel === "build-verified" || evidenceLevel === "runtime-verified") &&
           state.receipt;
@@ -624,16 +629,18 @@ export function getCapabilityInventory(
           lastVerifiedAt: verified ? (state.receipt?.createdAt ?? null) : null,
           limitation: quarantineEntry
             ? quarantineEntry.reason
-            : recipeIds.length === 0
-              ? CONTROL_CATEGORIES.has(category)
-                ? "Schema-listed project control. No runtime recipe is declared for this control."
-                : "No current golden runtime recipe covers this option."
-              : passingCoverage.length === 0
-                ? "A golden runtime recipe exists, but no current matching receipt proves it."
-                : strongestPassingCoverage?.evidenceLevel === "build-verified"
-                  ? `Build evidence covers this option, but the recipe's live assertion does not. ${evidenceRecipe?.runtime.limitation ?? "Runtime evidence is limited to the recorded recipe."}`
-                  : (evidenceRecipe?.runtime.limitation ??
-                    "Runtime evidence is limited to the recorded recipe."),
+            : ecosystem === "crystal"
+              ? "Experimental Crystal 1.22.1 / Kemal 1.15.0 HTTP recipe. No qualified current runtime receipt covers this recipe. No database, auth, deployment, or native overlays."
+              : recipeIds.length === 0
+                ? CONTROL_CATEGORIES.has(category)
+                  ? "Schema-listed project control. No runtime recipe is declared for this control."
+                  : "No current golden runtime recipe covers this option."
+                : passingCoverage.length === 0
+                  ? "A golden runtime recipe exists, but no current matching receipt proves it."
+                  : strongestPassingCoverage?.evidenceLevel === "build-verified"
+                    ? `Build evidence covers this option, but the recipe's live assertion does not. ${evidenceRecipe?.runtime.limitation ?? "Runtime evidence is limited to the recorded recipe."}`
+                    : (evidenceRecipe?.runtime.limitation ??
+                      "Runtime evidence is limited to the recorded recipe."),
           recipeIds,
         });
       }
