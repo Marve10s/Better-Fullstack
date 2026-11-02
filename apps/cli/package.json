@@ -155,8 +155,8 @@
     "@better-fullstack/types": "^2.8.1",
     "@clack/core": "^0.5.0",
     "@clack/prompts": "^1.8.1",
-    "@modelcontextprotocol/server": "^2.3.0",
-    "@orpc/server": "^1.15.4",
+    "@modelcontextprotocol/server": "^2.4.0",
+    "@orpc/server": "^1.16.1",
     "consola": "^3.4.2",
     "env-paths": "^4.0.0",
     "execa": "^9.6.1",
@@ -168,12 +168,12 @@
     "trpc-cli": "0.12.4",
     "ts-morph": "^27.0.2",
     "yaml": "^2.9.1",
-    "zod": "4.6.5"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@better-fullstack/project-lifecycle": "workspace:*",
-    "@modelcontextprotocol/client": "^2.3.0",
-    "@types/bun": "^1.4.2",
+    "@modelcontextprotocol/client": "^2.4.0",
+    "@types/bun": "^1.4.4",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.9.3",
     "publint": "^0.3.25",
