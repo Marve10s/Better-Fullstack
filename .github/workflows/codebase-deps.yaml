@@ -63,6 +63,11 @@ jobs:
             fi
           done
 
+      - name: Restore Held Dependencies
+        run: |
+          bun run .github/scripts/restore-held-dependencies.ts
+          bun install
+
       - name: Revert Major Bumps (patch-minor mode)
         if: steps.mode.outputs.mode == 'patch-minor'
         run: |
