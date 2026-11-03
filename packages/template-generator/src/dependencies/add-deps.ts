@@ -768,7 +768,7 @@ export const dependencyVersionMap = {
   evlog: "^2.34.0",
 
   // OpenTelemetry
-  "@opentelemetry/api": "^1.9.1",
+  "@opentelemetry/api": "~1.9.1",
   "@opentelemetry/sdk-node": "0.220.0",
   "@opentelemetry/auto-instrumentations-node": "0.78.0",
   "@opentelemetry/exporter-trace-otlp-http": "0.220.0",
