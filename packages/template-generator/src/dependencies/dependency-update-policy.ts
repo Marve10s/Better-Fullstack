@@ -303,9 +303,9 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     reason: "Keep the router plugin on the latest reviewed installable release.",
   },
   "@tanstack/solid-router": {
-    pinnedVersion: "1.170.38",
+    pinnedVersion: "1.170.43",
     holdLatestChannel: true,
-    reason: "The upstream latest tag depends on an unpublished @tanstack/router-core release.",
+    reason: "Match the exact Solid Router release that @tanstack/solid-start 1.169 depends on.",
   },
   "@tanstack/solid-router-devtools": {
     pinnedVersion: "1.167.0",
@@ -382,6 +382,11 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     pinnedVersion: "1.6.22",
     reason:
       "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
+  },
+  "@opentelemetry/api": {
+    pinnedVersion: "^1.9.1",
+    reason:
+      "The pinned OpenTelemetry SDK 0.220 and 2.9 packages require @opentelemetry/api below 1.10.0.",
   },
   "@opentelemetry/sdk-node": {
     pinnedVersion: "0.220.0",

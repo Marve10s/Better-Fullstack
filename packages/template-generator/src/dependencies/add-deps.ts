@@ -304,7 +304,7 @@ export const dependencyVersionMap = {
 
   "@tanstack/solid-query": "^5.105.0",
   "@tanstack/solid-query-devtools": "^5.105.0",
-  "@tanstack/solid-router": "1.170.38",
+  "@tanstack/solid-router": "1.170.43",
   "@tanstack/solid-router-devtools": "1.167.0",
   "@tanstack/solid-start": "^1.169.4",
 
@@ -768,7 +768,7 @@ export const dependencyVersionMap = {
   evlog: "^2.34.0",
 
   // OpenTelemetry
-  "@opentelemetry/api": "^1.10.0",
+  "@opentelemetry/api": "^1.9.1",
   "@opentelemetry/sdk-node": "0.220.0",
   "@opentelemetry/auto-instrumentations-node": "0.78.0",
   "@opentelemetry/exporter-trace-otlp-http": "0.220.0",
