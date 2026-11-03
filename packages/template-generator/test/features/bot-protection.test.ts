@@ -69,7 +69,7 @@ describe("bot protection generation", () => {
     const output = await generate("botid");
     expect(output.get("apps/web/package.json")).toContain('"botid": "catalog:"');
     expect(output.get("packages/auth/package.json")).toContain('"botid": "catalog:"');
-    expect(output.get("package.json")).toContain('"botid": "^1.5.11"');
+    expect(output.get("package.json")).toContain(`"botid": "${dependencyVersionMap.botid}"`);
     expect(output.get("apps/web/instrumentation-client.ts")).toContain("initBotId");
     expect(output.get("apps/web/next.config.ts")).toContain("withBotId(nextConfig)");
     expect(output.get("packages/auth/src/index.ts")).toContain("await checkBotId()");

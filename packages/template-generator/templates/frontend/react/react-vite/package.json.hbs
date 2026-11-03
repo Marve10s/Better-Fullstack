@@ -11,18 +11,18 @@
     "start": "vite"
   },
   "dependencies": {
-    "@base-ui/react": "^1.8.0",
+    "@base-ui/react": "^1.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "react-router": "^8.4.0",
+    "react-router": "^8.5.1",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
 {{#if (eq uiLibrary "shadcn-ui")}}
     "@hookform/resolvers": "^5.9.1",
-    "shadcn": "^4.21.1",
+    "shadcn": "^4.23.0",
     "@tanstack/react-form": "^1.33.0",
 {{/if}}
 {{#if (eq cssFramework "tailwind")}}
@@ -30,33 +30,33 @@
     "tw-animate-css": "^1.4.0",
 {{/if}}
 {{#if (or (eq api "orpc") (eq api "trpc") (eq api "ts-rest"))}}
-    "@tanstack/react-query": "^5.104.1",
+    "@tanstack/react-query": "^5.105.0",
 {{/if}}
 {{#if (or (eq api "orpc") (eq api "trpc"))}}
-    "@tanstack/react-query-devtools": "^5.104.1",
+    "@tanstack/react-query-devtools": "^5.105.0",
 {{/if}}
 {{#if (eq backend "convex")}}
-    "convex": "^1.46.0",
+    "convex": "^1.49.0",
 {{/if}}
 {{#if (eq api "ts-rest")}}
     "@ts-rest/react-query": "^3.52.1",
 {{/if}}
 {{#if (eq uiLibrary "mantine")}}
-    "@mantine/core": "^9.6.3",
-    "@mantine/hooks": "^9.6.3",
+    "@mantine/core": "^9.7.4",
+    "@mantine/hooks": "^9.7.4",
 {{/if}}
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.6",
     "@types/react": "~19.2.18",
     "@types/react-dom": "~19.2.7",
-    "@vitejs/plugin-react": "^6.1.1",
+    "@vitejs/plugin-react": "^6.1.2",
 {{#if (eq cssFramework "tailwind")}}
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.3",
 {{/if}}
     "typescript": "^5",
-    "vite": "^8.3.2"
+    "vite": "^8.3.5"
   }
 }
