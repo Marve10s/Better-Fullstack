@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
 
 import { composeMarkdownReport } from "../.github/scripts/compose-markdown-report";
+import {
+  HELD_DEPENDENCIES,
+  restoreHeldVersions,
+} from "../.github/scripts/restore-held-dependencies";
 
 const workflows = [".github/workflows/codebase-deps.yaml", ".github/workflows/deps-check.yaml"];
 
@@ -47,6 +51,57 @@ describe("automated dependency PR verification", () => {
     expect(workflow).toContain('echo "build_exit_code=$BUILD_EXIT_CODE" >> "$GITHUB_OUTPUT"');
     expect(workflow).toContain('"${{ steps.full-tests.outputs.build_exit_code }}"');
     expect(workflow).toContain("## Build verification");
+  });
+
+  it("restores held codebase dependencies before detecting pending changes", async () => {
+    const workflow = await Bun.file(".github/workflows/codebase-deps.yaml").text();
+    const restore = workflow.indexOf("bun run .github/scripts/restore-held-dependencies.ts");
+
+    expect(restore).toBeGreaterThan(workflow.indexOf("bun update --latest"));
+    expect(restore).toBeLessThan(workflow.indexOf("name: Determine Pending Changes"));
+  });
+
+  it("holds only packages the codebase manifests still declare", async () => {
+    for (const [manifestPath, heldPackages] of Object.entries(HELD_DEPENDENCIES)) {
+      const manifest = await Bun.file(manifestPath).json();
+      const declared = { ...manifest.dependencies, ...manifest.devDependencies };
+
+      for (const name of Object.keys(heldPackages)) {
+        expect(declared).toHaveProperty([name]);
+      }
+    }
+  });
+
+  it("restores held versions and keeps other updates", () => {
+    const current = {
+      dependencies: {
+        "@tanstack/react-start": "^1.169.4",
+        "@tanstack/react-router": "^1.170.46",
+        "@vercel/analytics": "^1.7.0",
+      },
+    };
+
+    const restored = restoreHeldVersions(
+      {
+        dependencies: {
+          "@tanstack/react-start": "~1.168.60",
+          "@tanstack/react-router": "1.170.42",
+          "@vercel/analytics": "^1.6.1",
+        },
+      },
+      current,
+      ["@tanstack/react-start", "@tanstack/react-router"],
+    );
+
+    expect(restored).toEqual([
+      "@tanstack/react-start@~1.168.60",
+      "@tanstack/react-router@1.170.42",
+    ]);
+    expect(current.dependencies).toEqual({
+      "@tanstack/react-start": "~1.168.60",
+      "@tanstack/react-router": "1.170.42",
+      "@vercel/analytics": "^1.7.0",
+    });
   });
 
   it("uses one shared size budget for the dependency and verification reports", async () => {
