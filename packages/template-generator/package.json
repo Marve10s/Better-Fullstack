@@ -74,7 +74,7 @@
   },
   "dependencies": {
     "@better-fullstack/types": "^2.8.1",
-    "handlebars": "^4.7.9",
+    "handlebars": "^4.7.10",
     "pathe": "^2.0.3",
     "ts-morph": "^27.0.2",
     "yaml": "^2.9.1"
