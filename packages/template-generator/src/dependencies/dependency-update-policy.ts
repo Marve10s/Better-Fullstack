@@ -384,9 +384,9 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
       "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
   },
   "@opentelemetry/api": {
-    pinnedVersion: "~1.9.1",
+    pinnedVersion: "^1.9.1",
     reason:
-      "The pinned OpenTelemetry SDK 0.220 and 2.9 packages require @opentelemetry/api below 1.10.0.",
+      "Keep the floor the pinned SDK 0.220 and 2.9 packages accept; Fresh's Deno build only resolves @fresh/core's ^1.9.0 import against a caret range.",
   },
   "@opentelemetry/sdk-node": {
     pinnedVersion: "0.220.0",
