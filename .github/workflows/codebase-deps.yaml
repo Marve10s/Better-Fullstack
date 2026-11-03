@@ -245,7 +245,7 @@ jobs:
 
     steps:
       - name: Install System Dependencies
-        run: dnf install -y git tar gzip unzip libstdc++ which curl ca-certificates nodejs22
+        run: dnf install -y git tar gzip unzip libstdc++ which ca-certificates nodejs22
 
       - name: Checkout Dependency Branch
         uses: actions/checkout@v4
