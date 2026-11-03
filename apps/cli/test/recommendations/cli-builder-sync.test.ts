@@ -69,6 +69,7 @@ const NON_BUILDER_CREATE_OPTION_KEYS = new Set([
   "renderTitle",
   "disableAnalytics",
   "manualDb",
+  "tui",
   "part",
 ]);
 

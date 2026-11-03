@@ -49,6 +49,18 @@ dirty worktree belongs to its author; do not overwrite or reformat it during unr
 Do not hand-correct a flag, default, or accepted value in the output. Fix the shared registry so CLI
 and docs change together.
 
+## CLI TUI Icons
+
+- Source: `apps/web/src/lib/stack/tech-icons.ts`, `apps/web/public/icon/**`, and the remote logos
+  that registry points to (Simple Icons CDN, GitHub avatars, favicons).
+- Producer: `apps/cli/scripts/generate-tui-icons.ts`.
+- Output: `apps/cli/src/tui/icons.generated.json` (half-block cells plus a deflated pixel atlas,
+  shipped only in the lazy beta TUI chunk).
+- Command: `bun run --cwd apps/cli generate:tui-icons` (needs network).
+
+Regenerate after adding or changing a web icon. `apps/cli/test/features/tui-icons.test.ts` fails
+when a registry id has no TUI icon or an icon breaks the 3:1 contrast rule.
+
 ## Stack SEO Pages
 
 The web prebuild runs `apps/web/scripts/generate-stack-pages.ts`. Change its source data and shared

@@ -34,6 +34,11 @@ export const CreateCommandOptionsSchema = CreateInputSchema.omit({ projectName: 
     .optional()
     .default(false)
     .describe("Skip automatic/manual database setup prompt and use manual setup"),
+  tui: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe("Answer the prompts in the beta full-screen TUI (downloads OpenTUI once)"),
 });
 
 export const CreateCommandInputSchema = z.tuple([

@@ -16,6 +16,8 @@ import pc from "picocolors";
 
 import {
   didLastPromptShowUI as ctxDidLastPromptShowUI,
+  getPromptDriver,
+  getPromptStep,
   isFirstPrompt as ctxIsFirstPrompt,
   setIsFirstPrompt as ctxSetIsFirstPrompt,
   setLastPromptShownUI as ctxSetLastPromptShownUI,
@@ -23,6 +25,7 @@ import {
 import { CLIError } from "@/presentation/errors";
 import { GO_BACK_SYMBOL } from "@/presentation/navigation";
 import { canPromptInteractively } from "@/presentation/prompt-environment";
+import type { PromptDriver, PromptNavigation } from "@/prompts/core/prompt-driver";
 
 function nonInteractivePromptError(message: string): CLIError {
   return new CLIError(
@@ -101,6 +104,16 @@ async function runWithNavigation<T>(prompt: any): Promise<T | symbol> {
   return goBack ? GO_BACK_SYMBOL : result;
 }
 
+function runWithDriver<T>(
+  ask: (driver: PromptDriver, navigation: PromptNavigation) => Promise<T>,
+): Promise<T> | undefined {
+  const driver = getPromptDriver();
+  if (!driver) return undefined;
+  ctxSetLastPromptShownUI(true);
+  const step = getPromptStep();
+  return ask(driver, { canGoBack: !ctxIsFirstPrompt(), stepKey: step?.key, results: step?.results });
+}
+
 interface SelectOption<T> {
   value: T;
   label?: string;
@@ -115,6 +128,9 @@ export interface NavigableSelectOptions<T> {
 }
 
 export async function navigableSelect<T>(opts: NavigableSelectOptions<T>): Promise<T | symbol> {
+  const driven = runWithDriver((driver, navigation) => driver.select(opts, navigation));
+  if (driven) return driven;
+
   if (!canPromptInteractively()) {
     if (opts.initialValue !== undefined) return opts.initialValue;
     const fallback = opts.options.find((option) => !option.disabled);
@@ -181,6 +197,9 @@ export interface NavigableMultiselectOptions<T> {
 export async function navigableMultiselect<T>(
   opts: NavigableMultiselectOptions<T>,
 ): Promise<T[] | symbol> {
+  const driven = runWithDriver((driver, navigation) => driver.multiselect(opts, navigation));
+  if (driven) return driven;
+
   if (!canPromptInteractively()) return opts.initialValues ?? [];
 
   const required = opts.required ?? true;
@@ -295,6 +314,9 @@ export interface NavigableConfirmOptions {
 }
 
 export async function navigableConfirm(opts: NavigableConfirmOptions): Promise<boolean | symbol> {
+  const driven = runWithDriver((driver, navigation) => driver.confirm(opts, navigation));
+  if (driven) return driven;
+
   if (!canPromptInteractively()) return opts.initialValue ?? true;
 
   const active = opts.active ?? "Yes";
@@ -341,6 +363,9 @@ export interface NavigableTextOptions {
 }
 
 export async function navigableText(opts: NavigableTextOptions): Promise<string | symbol> {
+  const driven = runWithDriver((driver, navigation) => driver.text(opts, navigation));
+  if (driven) return driven;
+
   if (!canPromptInteractively()) {
     const fallback = opts.initialValue ?? opts.defaultValue;
     if (fallback !== undefined) return fallback;
