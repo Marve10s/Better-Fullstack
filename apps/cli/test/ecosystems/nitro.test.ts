@@ -270,6 +270,31 @@ describe("Nitro Backend Framework", () => {
       expectSuccess(result);
     });
 
+    it("targets an ES version that allows the Mongoose module's top-level await", async () => {
+      const result = await runTRPCTest({
+        projectName: "nitro-mongodb-mongoose",
+        backend: "nitro",
+        runtime: "node",
+        frontend: ["tanstack-router"],
+        database: "mongodb",
+        orm: "mongoose",
+        auth: "none",
+        api: "trpc",
+        addons: ["none"],
+        examples: ["none"],
+        dbSetup: "none",
+        webDeploy: "none",
+        serverDeploy: "none",
+        install: false,
+      });
+
+      expectSuccess(result);
+      const dbModule = await Bun.file(`${result.projectDir}/packages/db/src/index.ts`).text();
+      const nitroConfig = await Bun.file(`${result.projectDir}/apps/server/nitro.config.ts`).text();
+      expect(dbModule).toContain("await ");
+      expect(nitroConfig).toContain('target: "es2022"');
+    });
+
     it("should work with nitro + mysql + prisma", async () => {
       const result = await runTRPCTest({
         projectName: "nitro-mysql-prisma",
