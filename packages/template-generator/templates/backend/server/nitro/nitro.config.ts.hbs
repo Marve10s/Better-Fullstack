@@ -13,6 +13,11 @@ export default defineNitroConfig({
 	preset: "cloudflare-module",
 {{/if}}
 	sourceMap: true,
+	esbuild: {
+		options: {
+			target: "es2022",
+		},
+	},
 {{#unless (isBetterAuth auth)}}
 	// Route rules
 	routeRules: {
