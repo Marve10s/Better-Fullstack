@@ -111,6 +111,26 @@ describe("processAuthDeps", () => {
     ]);
   });
 
+  for (const frontend of ["tanstack-start-solid", "solid"] as const) {
+    it(`adds the Solid form package used by ${frontend} Better Auth forms`, () => {
+      const vfs = createSeededVFS(["apps/web/package.json", "packages/auth/package.json"]);
+
+      processAuthDeps(
+        vfs,
+        makeConfig({
+          auth: "better-auth",
+          forms: "modular-forms",
+          frontend: [frontend],
+        }),
+      );
+
+      expectIncludesAll(getDeps(vfs, "apps/web/package.json").deps, [
+        "better-auth",
+        "@tanstack/solid-form",
+      ]);
+    });
+  }
+
   it("adds Clerk dependencies for TanStack Start in standard mode", () => {
     const vfs = createSeededVFS(["apps/web/package.json"]);
 

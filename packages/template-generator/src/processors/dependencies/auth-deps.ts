@@ -180,12 +180,16 @@ function processStandardAuthDeps(vfs: VirtualFileSystem, config: ProjectConfig):
       const hasReactWebAuthForms = frontend.some((f) =>
         ["react-router", "react-vite", "tanstack-router", "tanstack-start", "next"].includes(f),
       );
+      const hasSolidWebAuthForms = frontend.some((f) =>
+        ["solid", "tanstack-start-solid"].includes(f),
+      );
+      const webAuthDependencies: AvailableDependencies[] = ["better-auth"];
+      if (hasReactWebAuthForms) webAuthDependencies.push("@tanstack/react-form");
+      if (hasSolidWebAuthForms) webAuthDependencies.push("@tanstack/solid-form");
       addPackageDependency({
         vfs,
         packagePath: webPath,
-        dependencies: hasReactWebAuthForms
-          ? ["better-auth", "@tanstack/react-form"]
-          : ["better-auth"],
+        dependencies: webAuthDependencies,
       });
     }
 
