@@ -217,6 +217,28 @@ function processTanStackStartAlchemy(vfs: VirtualFileSystem) {
     });
   }
 
+  // Fallback for plain `vite build` before `alchemy dev`/`alchemy deploy` has
+  // created .alchemy/local/wrangler.jsonc (e.g. in CI). The Alchemy Vite plugin
+  // validates that file at config-load time and throws when it is absent, while
+  // @cloudflare/vite-plugin (already a generated devDependency) tolerates it.
+  // Mirror of the Svelte adapter guard above, applied to the Vite plugin array.
+  if (
+    !sourceFile.getImportDeclaration((decl) => decl.getModuleSpecifierValue() === "node:fs") &&
+    !sourceFile.getImportDeclaration((decl) => decl.getModuleSpecifierValue() === "fs")
+  ) {
+    sourceFile.addImportDeclaration({
+      moduleSpecifier: "node:fs",
+      namedImports: ["existsSync"],
+    });
+  }
+
+  if (!sourceFile.getImportDeclaration((decl) => decl.getModuleSpecifierValue() === "@cloudflare/vite-plugin")) {
+    sourceFile.addImportDeclaration({
+      moduleSpecifier: "@cloudflare/vite-plugin",
+      namedImports: ["cloudflare"],
+    });
+  }
+
   const exportAssignment = sourceFile.getExportAssignment((d) => !d.isExportEquals());
   if (!exportAssignment) return;
 
@@ -227,6 +249,12 @@ function processTanStackStartAlchemy(vfs: VirtualFileSystem) {
   ) {
     return;
   }
+
+  const importCount = sourceFile.getImportDeclarations().length;
+  sourceFile.insertStatements(
+    importCount,
+    'const cloudflarePlugin = existsSync(".alchemy/local/wrangler.jsonc") ? alchemy() : cloudflare();',
+  );
 
   let configObject = defineConfigCall.getArguments()[0];
   if (!configObject) {
@@ -240,15 +268,15 @@ function processTanStackStartAlchemy(vfs: VirtualFileSystem) {
       if (tsMorph.Node.isArrayLiteralExpression(initializer)) {
         const hasAlchemy = initializer
           .getElements()
-          .some((el) => el.getText().includes("alchemy("));
+          .some((el) => el.getText().includes("alchemy(") || el.getText().includes("cloudflarePlugin"));
         if (!hasAlchemy) {
-          initializer.addElement("alchemy()");
+          initializer.addElement("cloudflarePlugin");
         }
       }
     } else {
       configObject.addPropertyAssignment({
         name: "plugins",
-        initializer: "[alchemy()]",
+        initializer: "[cloudflarePlugin]",
       });
     }
   }
