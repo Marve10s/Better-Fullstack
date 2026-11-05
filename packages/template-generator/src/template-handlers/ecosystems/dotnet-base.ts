@@ -1,4 +1,4 @@
-import type { ProjectConfig } from "@better-fullstack/types";
+import { type ProjectConfig, toDotnetIdentifierSegment } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "@/core/virtual-fs";
 
@@ -46,15 +46,6 @@ type DotnetTemplateContext = ProjectConfig & {
   dotnetHasMoq: boolean;
   dotnetHasTestcontainers: boolean;
 };
-
-function toDotnetIdentifierSegment(value: string): string {
-  const cleaned = value
-    .replace(/[^A-Za-z0-9_]+/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^_+|_+$/g, "");
-  const segment = cleaned || "App";
-  return /^[A-Za-z_]/.test(segment) ? segment : `App${segment}`;
-}
 
 function toCloudResourceName(value: string): string {
   const cleaned = value

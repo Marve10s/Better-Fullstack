@@ -1,0 +1,192 @@
+# {{projectName}}
+
+{{#if (eq phpWebFramework "laravel")}}
+Experimental PHP/Laravel HTTP application. Composer owns PHP dependencies and scripts. The recipe uses PHP 8.5.12, Laravel 13.38.0{{#if (ne phpTesting "none")}} and PHPUnit 13.4.3{{/if}} as its minimum patch versions. PHP 8.6 is outside this recipe's declared version range.
+{{else if (eq phpWebFramework "symfony")}}
+Experimental PHP/Symfony HTTP application. Composer owns PHP dependencies and scripts. The recipe uses PHP 8.5.12, Symfony FrameworkBundle 8.1.9{{#if (ne phpTesting "none")}} and PHPUnit 13.4.3{{/if}} as its minimum patch versions. PHP 8.6 is outside this recipe's declared version range.
+{{else}}
+Experimental PHP/Slim HTTP application. Composer owns PHP dependencies and scripts. The recipe uses PHP 8.5.12, Slim 4.15.3, Slim PSR-7 1.8.0{{#if (ne phpTesting "none")}} and PHPUnit 13.4.3{{/if}} as its minimum patch versions. PHP 8.6 is outside this recipe's declared version range.
+{{/if}}
+
+## Setup and checks
+
+Install PHP 8.5.12 or a later 8.5 patch and Composer 2.{{#if (ne phpTesting "none")}} PHPUnit requires DOM, filter, JSON, libxml, mbstring and XMLWriter extensions.{{/if}} Run these commands in this service directory:
+
+```sh
+composer install --no-interaction
+composer run build
+{{#if (ne phpTesting "none")}}
+composer test
+{{/if}}
+composer run proof:http
+composer run dev
+```
+
+Commit the generated `composer.lock`. `build` validates the manifest, checks PHP syntax and validates optimized PSR-4 autoloading. {{#if (ne phpTesting "none")}}`test` exercises the real {{#if (eq phpWebFramework "laravel")}}Laravel HTTP kernel{{else if (eq phpWebFramework "symfony")}}Symfony HTTP kernel{{else}}Slim request pipeline{{/if}} in process. {{/if}}`proof:http` starts a PHP HTTP process on an available loopback port, checks parsed responses and rejection behavior, then verifies shutdown. A successful file generation is not build or runtime verification.
+
+{{#if (eq phpTesting "pest")}}
+`composer test` runs Pest. Pest executes the PHPUnit test classes in `tests/` unchanged and the Pest-style specs in `tests/Feature/`; `tests/Pest.php` configures them.
+
+{{else if (eq phpTesting "codeception")}}
+`composer test` runs the Codeception `Unit` suite defined by `codeception.yml` and `tests/Unit.suite.yml`. The suite executes the PHPUnit test classes in `tests/` unchanged and `tests/HealthCodeceptTest.php`, which extends `Codeception\Test\Unit`. Codeception generates `tests/Support/_generated/` on the first run.
+
+{{else if (eq phpTesting "none")}}
+No test runner or test files are generated. `composer run proof:http` is the only generated check of HTTP behavior.
+
+{{/if}}
+`composer run dev` uses PHP's development server at http://127.0.0.1:8080. Stop it with Ctrl-C. This server is for local development only.
+
+## HTTP contract
+
+- `GET /health` returns `{"status":"ok","framework":"{{phpWebFramework}}"}`.
+- `POST /api/greetings` accepts `application/json` with `name` and optional integer `repetitions` from 1 to 5. A trimmed name must contain 1 to 80 bytes. Unknown fields are rejected.
+- `{"name":"Ada","repetitions":2}` returns `{"message":"Hello, Ada! Hello, Ada!","repetitions":2}`.
+- Malformed JSON returns 400, invalid values return 422, wrong media types return 415, and bodies over 4096 bytes return 413. Missing routes return JSON with status 404.
+
+{{#if (ne phpValidation "none")}}
+## Validation
+
+{{#if (eq phpValidation "symfony-validator")}}
+`{{phpSourceDirectory}}/Greeting.php` validates the decoded payload with a Symfony Validator `Collection` constraint, which also rejects unknown fields. The 422 `message` names the field and the violation.
+{{else if (eq phpValidation "respect-validation")}}
+`{{phpSourceDirectory}}/Greeting.php` validates the decoded payload with a Respect\Validation `keySet` rule, which also rejects unknown fields. The 422 `message` is the first Respect violation. Respect\Validation 3 counts name length in characters.
+{{else}}
+`app/Greeting.php` validates the decoded payload with Laravel's validator (`required|string|max:80` and `sometimes|integer:strict|between:1,5`) after rejecting unknown fields. The 422 `message` is the first validator message. Laravel counts name length in characters.
+{{/if}}
+
+{{/if}}{{#if (ne phpOrm "none")}}
+## Database
+
+{{#if (eq phpOrm "eloquent")}}
+Eloquent stores notes in SQLite. {{#if (eq phpWebFramework "laravel")}}`app/Models/Note.php` is the model and `database/migrations/` owns the schema. Set DB_DATABASE to choose the file; it defaults to `database/database.sqlite`.{{else}}`src/Notes.php` boots the Illuminate Database Capsule, `src/Entity/Note.php` is the model, and `Notes::migrate` creates the table. Set DATABASE_PATH to choose the file; it defaults to `var/database.sqlite`.{{/if}}
+{{else if (eq phpOrm "doctrine")}}
+Doctrine ORM stores notes in SQLite. `src/Entity/Note.php` maps the entity with PHP attributes. {{#if (eq phpWebFramework "symfony")}}DoctrineBundle is configured in `src/Kernel.php` and `src/Controller/NotesController.php` uses the entity manager.{{else}}`src/Notes.php` creates the entity manager and uses Doctrine's schema tool.{{/if}} Set DATABASE_PATH to choose the file; it defaults to `var/database.sqlite`.
+{{else if (eq phpOrm "cycle")}}
+Cycle ORM stores notes in SQLite. `src/Notes.php` declares the ORM schema, creates the table through Cycle Database and persists `src/Entity/Note.php`. Set DATABASE_PATH to choose the file; it defaults to `var/database.sqlite`.
+{{/if}}
+
+Run `composer run db:setup` once before `composer run dev`. `GET /api/notes` lists notes. `POST /api/notes` accepts `{"title":"..."}` with 1 to 120 bytes of trimmed text and returns 201 with `id` and `title`. Invalid notes return 422 and malformed JSON returns 400. {{#if (eq phpTesting "none")}}`composer run proof:http` uses{{else}}`composer test` and `composer run proof:http` use{{/if}} temporary SQLite databases. Migrations beyond this starter schema are not generated.
+
+{{/if}}
+{{#if (ne phpCache "none")}}
+## Cache
+
+`GET /api/cached-time` returns `{"value":"<timestamp>","cached":false}` on a cache miss and the same value with `"cached":true` until it expires after 60 seconds. `{{phpSourceDirectory}}/CachedClock.php` owns the cache access and prefixes keys with CACHE_NAMESPACE (default `app`).
+{{#if (eq phpCache "symfony-cache")}}
+{{#if (eq phpWebFramework "symfony")}}It uses Symfony's `cache.app` pool, configured by FrameworkBundle under `var/cache/`.{{else}}It uses a Symfony Cache `FilesystemAdapter` in `{{#if (eq phpWebFramework "laravel")}}storage/framework/cache/app{{else}}var/cache/app{{/if}}`.{{/if}}
+{{else if (eq phpCache "laminas-cache")}}
+It uses the Laminas Cache filesystem adapter in `{{#if (eq phpWebFramework "laravel")}}storage/framework/cache/app{{else}}var/cache/app{{/if}}` through its PSR-16 decorator.
+{{else if (eq phpCache "predis")}}
+It stores the value in Redis through Predis with a 60-second expiry. Set REDIS_URL (default `tcp://127.0.0.1:6379`) to a running Redis server before `composer run dev`, `composer run proof:http` or the cache test; without Redis the route fails and the cache test is skipped.
+{{else}}
+It uses Laravel's `file` cache store in `storage/framework/cache/data`.
+{{/if}}
+{{#if (ne phpCache "predis")}}
+A filesystem cache is local to one machine; use a shared store before running several instances.
+{{/if}}
+
+{{/if}}
+{{#if (ne phpJobQueue "none")}}
+## Background jobs
+
+`POST /api/jobs` queues a job and returns 202 with `{"id":"...","status":"queued"}`. `GET /api/jobs/{id}` returns the job status, which becomes `done` with `processedAt` after a worker handles it; unknown ids return 404. `{{phpSourceDirectory}}/JobQueue.php` owns dispatch and status files in QUEUE_PATH (default `{{#if (eq phpWebFramework "laravel")}}storage/app/queue{{else}}var/queue{{/if}}`).
+{{#if (eq phpJobQueue "symfony-messenger")}}
+Symfony Messenger sends `{{phpSourceDirectory}}/ProcessJob.php` messages through its Doctrine transport to `messages.sqlite` in QUEUE_PATH and creates the table on first use. The transport is wired directly in `JobQueue.php`{{#if (eq phpWebFramework "symfony")}}, not through FrameworkBundle's `messenger` configuration{{/if}}.
+{{else if (eq phpJobQueue "enqueue-fs")}}
+Enqueue's filesystem transport stores messages under `messages/` in QUEUE_PATH and consumes them through the queue-interop API. It suits one machine; use a networked transport before running workers on several hosts.
+{{else}}
+Laravel's database queue stores `app/Jobs/ProcessJob.php` jobs in the `jobs` table. Run `composer run db:setup` once to create it.
+{{/if}}
+Run `composer run queue:work` in a second terminal beside `composer run dev`; add `--stop-when-empty` after `--` to exit once the queue is drained. Jobs stay queued until a worker runs.
+
+{{/if}}
+{{#if (ne phpEmail "none")}}
+## Email
+
+`composer run mail:send -- you@example.com` sends a plain-text welcome email from `{{phpSourceDirectory}}/WelcomeMailer.php`. No HTTP route sends email, so the service cannot be used as an open relay.
+{{#if (eq phpEmail "symfony-mailer")}}
+Symfony Mailer sends through MAILER_DSN (default `smtp://127.0.0.1:1025`) from MAIL_FROM_ADDRESS. Point MAILER_DSN at your provider, for example `smtp://user:pass@smtp.example.com:587`.
+{{else if (eq phpEmail "phpmailer")}}
+PHPMailer sends over SMTP to MAIL_HOST and MAIL_PORT (default `127.0.0.1:1025`) from MAIL_FROM_ADDRESS. Set MAIL_USERNAME and MAIL_PASSWORD to authenticate and MAIL_ENCRYPTION to `tls` or `ssl` for your provider.
+{{else}}
+Laravel Mail sends with the MAIL_MAILER mailer (`smtp` to MAIL_HOST and MAIL_PORT, default `127.0.0.1:1025`) from MAIL_FROM_ADDRESS; `routes/console.php` defines the `mail:send` Artisan command.
+{{/if}}
+A local SMTP catcher such as Mailpit listens on port 1025. `composer run proof:http` delivers one message to a temporary in-process SMTP listener and checks the recipient and subject; it does not contact a real provider.
+
+{{/if}}
+{{#if (ne phpLogging "none")}}
+## Logging
+
+Each accepted greeting writes one JSON log entry, `greeting.created` with the repetition count, to standard error. The name is not logged.
+{{#if (eq phpLogging "monolog")}}
+`public/index.php` creates a Monolog logger with a JSON `StreamHandler` and passes it to `src/Application.php` as a PSR-3 logger. LOG_LEVEL (default `info`) sets the minimum level.
+{{else if (eq phpLogging "laravel-log")}}
+`routes/api.php` logs through Laravel's `Log` facade. `.env` selects the `stderr` channel with Monolog's JSON formatter; change LOG_CHANNEL to use another Laravel channel.
+{{else}}
+MonologBundle is registered in `src/Kernel.php` with a JSON stream handler, and `src/Controller/ApiController.php` receives the PSR-3 logger. LOG_PATH (default `php://stderr`) chooses the stream.
+{{/if}}
+Logging is owned by the framework: Slim uses Monolog directly, Laravel uses its logging channels, and Symfony uses MonologBundle.
+
+{{/if}}
+{{#if (ne phpHttpClient "none")}}
+## Outbound HTTP
+
+`GET /api/upstream` fetches UPSTREAM_URL with a {{#if (eq phpHttpClient "guzzle")}}Guzzle{{else if (eq phpHttpClient "symfony-http-client")}}Symfony HttpClient{{else}}PHP-HTTP cURL (PSR-18){{/if}} client and a 5-second timeout, then returns `{"upstreamStatus":200,"data":{...}}` with the decoded JSON. It returns 503 when UPSTREAM_URL is unset or not an http(s) URL, 502 when the upstream is unreachable or times out, and 502 when the body is not JSON. `{{phpSourceDirectory}}/UpstreamClient.php` owns the request.{{#if (eq phpHttpClient "httplug-curl")}} Nyholm PSR-7 supplies the request and response factories, so Composer's discovery plugin is not needed.{{/if}}
+Only point UPSTREAM_URL at services you trust; the route forwards their JSON to callers. Tests and `composer run proof:http` start a local PHP fixture server as the upstream.
+
+{{/if}}
+{{#if (ne phpAuth "none")}}
+## Authentication
+
+`GET /api/me` requires `Authorization: Bearer <token>` and returns `{"subject":"..."}` from the token's `sub` claim. Missing, malformed, expired or foreign tokens return 401 JSON with `WWW-Authenticate: Bearer`. Tokens must be HS256 JWTs signed with JWT_SECRET (at least 32 bytes) and carry `exp`, the JWT_ISSUER issuer and the JWT_AUDIENCE audience. Every token is rejected until JWT_SECRET is set.
+
+{{#if (eq phpAuth "firebase-jwt")}}
+`{{phpSourceDirectory}}/TokenVerifier.php` verifies tokens with firebase/php-jwt.
+{{else if (eq phpAuth "lcobucci-jwt")}}
+`{{phpSourceDirectory}}/TokenVerifier.php` verifies tokens with lcobucci/jwt signature, issuer, audience and time constraints.
+{{else}}
+Symfony Security protects `/api/me` with a stateless `access_token` firewall configured in `src/Kernel.php`. `src/Security/BearerTokenHandler.php` turns a verified token into a user, using `src/TokenVerifier.php` with firebase/php-jwt.
+{{/if}}
+This starter verifies tokens; it does not log users in. Issue tokens from your identity provider with the same secret, issuer and audience. For local testing, `composer run token:issue -- <subject>` prints a 15-minute token signed with JWT_SECRET.
+
+{{/if}}
+## Configuration and extension
+
+{{#if (eq phpWebFramework "laravel")}}
+Composer copies `.env.example` to `.env` after install when `.env` is missing. Laravel loads `.env` itself; `config/cors.php` reads CORS_ORIGIN and `bin/serve.php` reads HOST and PORT. Run `php artisan key:generate` before adding sessions, cookies or encryption. Exported environment variables take precedence. HOST defaults to 127.0.0.1 and PORT to 8080. Set CORS_ORIGIN to a comma-separated list of exact allowed origins. A composed web graph includes each frontend's development origin. Requests from other origins receive no CORS header.
+{{else if (eq phpWebFramework "symfony")}}
+Copy `.env.example` to `.env` if local configuration is needed. `Environment::load` reads only APP_ENV, APP_DEBUG, HOST, PORT and CORS_ORIGIN as INI strings. APP_ENV defaults to `prod`; the compiled container is cached in `var/cache/`. Exported environment variables take precedence. HOST defaults to 127.0.0.1 and PORT to 8080. Set CORS_ORIGIN to a comma-separated list of exact allowed origins. A composed web graph includes each frontend's development origin. Requests from other origins receive no CORS header.
+{{else}}
+Copy `.env.example` to `.env` if local configuration is needed. `Environment::load` reads only HOST, PORT and CORS_ORIGIN as INI strings. Exported environment variables take precedence. HOST defaults to 127.0.0.1 and PORT to 8080. Set CORS_ORIGIN to a comma-separated list of exact allowed origins. A composed web graph includes each frontend's development origin. Requests from other origins receive no CORS header.
+{{/if}}
+
+{{#if (eq phpWebFramework "laravel")}}
+`bootstrap/app.php` owns middleware and JSON error rendering, `routes/api.php` owns routes, and `app/Greeting.php` owns typed input validation. Add behavior here {{#if (eq phpTesting "none")}}and{{else}}with request-level {{#if (eq phpTesting "pest")}}Pest{{else if (eq phpTesting "codeception")}}Codeception{{else}}PHPUnit{{/if}} tests;{{/if}} keep `bin/proof-http.php` aligned with the public HTTP contract. Composer remains the dependency authority. TypeScript package processors must not modify this service.
+{{else if (eq phpWebFramework "symfony")}}
+`src/Kernel.php` owns bundles and services, `src/Controller/ApiController.php` owns routes, `src/EventSubscriber/HttpContractSubscriber.php` owns CORS and JSON errors, and `src/Greeting.php` owns typed input validation. Add behavior here {{#if (eq phpTesting "none")}}and{{else}}with request-level {{#if (eq phpTesting "pest")}}Pest{{else if (eq phpTesting "codeception")}}Codeception{{else}}PHPUnit{{/if}} tests;{{/if}} keep `bin/proof-http.php` aligned with the public HTTP contract. Composer remains the dependency authority. TypeScript package processors must not modify this service.
+{{else}}
+`src/Application.php` owns routes and middleware. `src/Greeting.php` owns typed input validation. Add behavior here {{#if (eq phpTesting "none")}}and{{else}}with request-level {{#if (eq phpTesting "pest")}}Pest{{else if (eq phpTesting "codeception")}}Codeception{{else}}PHPUnit{{/if}} tests;{{/if}} keep `bin/proof-http.php` aligned with the public HTTP contract. Composer remains the dependency authority. TypeScript package processors must not modify this service.
+{{/if}}
+
+{{#if (eq phpOrm "none")}}No database, migrations, {{#if (eq phpAuth "none")}}authentication, {{/if}}deployment adapter or production hosting recipe is generated.{{else}}No {{#if (eq phpAuth "none")}}authentication, {{/if}}deployment adapter or production hosting recipe is generated.{{/if}} Add these through explicit Stack Part roles and compatibility rules before advertising support. For a production rollout, configure a PHP-capable web server with `public/` as its document root and route application requests to `public/index.php`; obtain separate deployment verification.
+
+## Upstream references
+
+- [PHP 8.5](https://www.php.net/releases/8_5_0.php)
+{{#if (eq phpWebFramework "laravel")}}
+- [Laravel 13](https://laravel.com/docs/13.x)
+{{else if (eq phpWebFramework "symfony")}}
+- [Symfony 8.1](https://symfony.com/doc/8.1/index.html)
+{{else}}
+- [Slim 4.15.3 source](https://github.com/slimphp/Slim/tree/4.15.3)
+- [Slim PSR-7 1.8.0 source](https://github.com/slimphp/Slim-Psr7/tree/1.8.0)
+{{/if}}
+{{#if (ne phpTesting "none")}}
+- [PHPUnit 13.4](https://docs.phpunit.de/en/13.4/)
+{{/if}}
+{{#if (eq phpTesting "pest")}}
+- [Pest](https://pestphp.com/docs/installation)
+{{else if (eq phpTesting "codeception")}}
+- [Codeception unit tests](https://codeception.com/docs/UnitTests)
+{{/if}}
+- [Composer scripts](https://getcomposer.org/doc/articles/scripts.md)

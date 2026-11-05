@@ -1,0 +1,70 @@
+{{#if (eq phpOrm "doctrine")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Kernel;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\SchemaTool;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+final class NotesTest extends TestCase
+{
+    private string $database;
+
+    private Kernel $kernel;
+
+    protected function setUp(): void
+    {
+        $this->database = tempnam(sys_get_temp_dir(), 'notes-') ?: throw new \RuntimeException('Cannot create database file.');
+        putenv('DATABASE_PATH=' . $this->database);
+        $this->kernel = new Kernel('test', false);
+        $this->kernel->boot();
+        $entities = $this->kernel->getContainer()->get('doctrine.orm.entity_manager');
+        self::assertInstanceOf(EntityManagerInterface::class, $entities);
+        (new SchemaTool($entities))->createSchema($entities->getMetadataFactory()->getAllMetadata());
+    }
+
+    protected function tearDown(): void
+    {
+        $this->kernel->shutdown();
+        putenv('DATABASE_PATH');
+        @unlink($this->database);
+    }
+
+    private function postNote(string $body): Response
+    {
+        return $this->kernel->handle(Request::create('/api/notes', 'POST', server: ['CONTENT_TYPE' => 'application/json'], content: $body));
+    }
+
+    private static function decode(Response $response): mixed
+    {
+        return json_decode((string) $response->getContent(), true, 32, JSON_THROW_ON_ERROR);
+    }
+
+    public function testPersistsAndListsNotes(): void
+    {
+        $created = $this->postNote('{"title":" First note "}');
+        self::assertSame(201, $created->getStatusCode());
+        self::assertSame(['id' => 1, 'title' => 'First note'], self::decode($created));
+        $this->postNote('{"title":"Second note"}');
+        $this->kernel->shutdown();
+        $this->kernel = new Kernel('test', false);
+        $list = $this->kernel->handle(Request::create('/api/notes'));
+        self::assertSame(['notes' => [['id' => 1, 'title' => 'First note'], ['id' => 2, 'title' => 'Second note']]], self::decode($list));
+    }
+
+    public function testRejectsInvalidNotes(): void
+    {
+        foreach (['{"title":""}', '{"title":7}', '{"title":"x","extra":1}', '[]'] as $body) {
+            self::assertSame(422, $this->postNote($body)->getStatusCode(), $body);
+        }
+        self::assertSame(400, $this->postNote('{')->getStatusCode());
+        self::assertSame(['notes' => []], self::decode($this->kernel->handle(Request::create('/api/notes'))));
+    }
+}
+{{/if}}

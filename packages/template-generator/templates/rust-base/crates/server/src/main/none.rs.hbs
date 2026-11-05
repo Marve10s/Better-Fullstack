@@ -1,0 +1,124 @@
+{{#if (ne rustOrm "none")}}
+mod database;
+{{/if}}
+{{#if (eq rustApi "jsonrpsee")}}
+mod rpc;
+{{/if}}
+{{#if (ne rustErrorHandling "none")}}
+mod error;
+{{/if}}
+{{#if (ne rustCaching "none")}}
+mod cache;
+{{/if}}
+{{#if (ne rustAuth "none")}}
+mod auth;
+{{/if}}
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+mod realtime;
+{{/if}}
+{{#if (ne rustMessageQueue "none")}}
+mod messaging;
+{{/if}}
+{{#if (ne rustObservability "none")}}
+mod otel;
+{{/if}}
+{{#if (ne rustTemplating "none")}}
+mod templating;
+{{/if}}
+{{#if (eq email "resend")}}
+mod email;
+{{/if}}
+{{#if (eq rustLogging "tracing")}}
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+{{/if}}
+{{#if (eq rustApi "tonic")}}
+
+mod grpc;
+{{/if}}
+
+#[tokio::main]
+async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Result<()>{{else if (eq rustErrorHandling "eyre")}}eyre::Result<()>{{else}}Result<(), Box<dyn std::error::Error>>{{/if}} {
+    // Load environment variables
+    dotenvy::dotenv().ok();
+{{#if (eq rustApi "jsonrpsee")}}
+
+    // Start JSON-RPC on a dedicated port alongside the HTTP server
+    let rpc_host = std::env::var("JSONRPC_HOST")
+        .or_else(|_| std::env::var("HOST"))
+        .unwrap_or_else(|_| "127.0.0.1".to_string());
+    let rpc_port = std::env::var("JSONRPC_PORT").unwrap_or_else(|_| "9944".to_string());
+    let rpc_address = format!("{rpc_host}:{rpc_port}").parse()?;
+    let rpc_server = rpc::start(rpc_address).await.map_err(|error| std::io::Error::other(error.to_string()))?;
+{{/if}}
+{{#if (eq rustObservability "metrics")}}
+
+    // Install the Prometheus metrics recorder and HTTP exporter
+    otel::install_metrics().map_err(|error| std::io::Error::other(error.to_string()))?;
+{{/if}}
+{{#if (or (eq rustOrm "mongodb") (eq rustOrm "rusqlite") (eq rustOrm "tokio-postgres"))}}
+
+    // Connect the selected database driver at startup
+    let _database = database::connect().await.map_err(|error| std::io::Error::other(error.to_string()))?;
+{{/if}}
+{{#if (eq rustErrorHandling "eyre")}}
+
+    // Install color-eyre error handler
+    color_eyre::install()?;
+{{/if}}
+
+{{#if (eq rustLogging "tracing")}}
+    // Initialize tracing
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+{{else if (eq rustLogging "env-logger")}}
+    // Initialize logging
+    env_logger::init();
+{{/if}}
+
+{{#if (eq rustCaching "moka")}}
+    // Initialize in-memory cache
+    let _cache = cache::create_cache::<String>();
+    {{#rustLog "info"}}"Moka in-memory cache initialized"{{/rustLog}}
+{{/if}}
+{{#if (eq rustCaching "redis")}}
+    // Initialize Redis client
+    let _redis_client = cache::create_redis_client()?;
+    {{#rustLog "info"}}"Redis client initialized"{{/rustLog}}
+{{/if}}
+
+{{#if (eq rustAuth "oauth2")}}
+    // Initialize OAuth2 client
+    let oauth2_client = auth::create_oauth2_client();
+    let (_authorization_url, _csrf_token) = auth::authorize_url(&oauth2_client);
+    {{#rustLog "info"}}"OAuth2 client initialized"{{/rustLog}}
+{{/if}}
+
+{{#if (eq rustApi "tonic")}}
+    // Get host and port from environment
+    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let grpc_port = std::env::var("GRPC_PORT").unwrap_or_else(|_| "50051".to_string());
+    let grpc_addr = format!("{}:{}", host, grpc_port).parse()?;
+
+    {{#rustLog "info"}}"Starting gRPC server at {}", grpc_addr{{/rustLog}}
+
+    tonic::transport::Server::builder()
+        .add_service(grpc::create_grpc_server())
+        .serve(grpc_addr)
+        .await?;
+{{else}}
+{{#if (eq rustApi "jsonrpsee")}}
+{{#if (eq rustLogging "tracing")}}    tracing::info!(%rpc_address, "JSON-RPC server listening");{{else if (eq rustLogging "env-logger")}}    log::info!("JSON-RPC server listening at {}", rpc_address);{{else}}    println!("JSON-RPC server listening at {}", rpc_address);{{/if}}
+    rpc_server.stopped().await;
+{{else}}
+    {{#rustLog "info"}}"Hello from {{projectName}}!"{{/rustLog}}
+    {{#rustLog "info"}}"Add a web framework (axum, actix-web, or rocket) to start building your API."{{/rustLog}}
+{{/if}}
+{{/if}}
+
+    Ok(())
+}

@@ -1,0 +1,6 @@
+require "./project"
+require "marten/cli"
+require "./apps/greetings/migrations/**"
+{{#if (eq crystalAuth "marten-auth")}}
+require "./apps/accounts/migrations/**"
+{{/if}}

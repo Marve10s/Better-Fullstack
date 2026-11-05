@@ -21,7 +21,8 @@ The separate `posthog_betterfulstack` MCP connection uses OAuth for Better Fulls
 GiftSong retains its separate plugin connection.
 
 The private [Better Fullstack analytics dashboard](https://eu.posthog.com/project/275138/dashboard/954254)
-contains all ten reports from `scripts/analytics/posthog-dashboard.json`. On 2026-09-15, each SQL
+initially contained the ten reports from `scripts/analytics/posthog-dashboard.json`. The repository
+definition may have newer reports that must be added to PostHog separately. On 2026-09-15, each SQL
 query and the saved dashboard executed successfully against the empty destination. This validates
 query execution, not event delivery or reconciliation. Production cutover completed on 2026-09-15:
 the web endpoint went live, CLI 2.6.7 shipped with the new endpoint, and the hosted Convex project
@@ -160,6 +161,19 @@ trusted adapter is supplied. Caller-selected machine IDs do not allocate buckets
 limits reset with the instance; configure hosting ingress limits for protection across instances.
 
 ## Free allowance and baseline
+
+The dashboard definition includes custom product activity, command outcomes, and daily event volume.
+Apply new or changed definitions to the private PostHog dashboard separately; changing the JSON does
+not update PostHog. Event-time counts are diagnostic and do not replace organization billing usage.
+
+MCP server startup alone no longer emits a command event, and ingest discards that event from older
+clients after validation. MCP tool actions and their outcomes remain available. Historical startup
+events remain in reports, so compare command counts by action and status.
+
+Check the organization's Product Analytics billing usage and configured limit before relying on the
+free allowance. PostHog sends free-allotment alerts at 80% and 100%; billing limits stop additional
+ingestion and discarded data cannot be recovered. Limits apply per product, and this repository does
+not configure them. See [billing limits and alerts](https://posthog.com/docs/billing/limits-alerts).
 
 The production audit on 2026-09-15 found 12,361 stored events and 4,459 recorded project creations.
 August had 5,096 events; September through the audit had 3,035. CLI creation counts are incomplete

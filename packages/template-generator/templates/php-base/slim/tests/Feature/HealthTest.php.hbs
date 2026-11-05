@@ -1,0 +1,15 @@
+{{#if (eq phpTesting "pest")}}
+<?php
+
+declare(strict_types=1);
+
+use App\Application;
+use Slim\Psr7\Factory\ServerRequestFactory;
+
+it('reports health as JSON', function (): void {
+    $response = Application::create()->handle((new ServerRequestFactory())->createServerRequest('GET', '/health'));
+
+    expect($response->getStatusCode())->toBe(200)
+        ->and(json_decode((string) $response->getBody(), true, 32, JSON_THROW_ON_ERROR))->toBe(['status' => 'ok', 'framework' => 'slim']);
+});
+{{/if}}

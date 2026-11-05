@@ -121,6 +121,15 @@ export function processAddonsDeps(vfs: VirtualFileSystem, config: ProjectConfig)
   const webPkgPath = getWebPackagePath(config.frontend, config.backend);
   const serverPkgPath = getServerPackagePath(config.frontend, config.backend);
 
+  if (config.addons.includes("plasmo")) {
+    addPackageDependency({
+      vfs,
+      packagePath: "apps/extension/package.json",
+      dependencies: ["react", "react-dom"],
+      devDependencies: ["plasmo", "typescript", "@types/react", "@types/react-dom", "@types/chrome"],
+    });
+  }
+
   if (config.addons.includes("shadcn-lint")) {
     addPackageDependency({
       vfs,

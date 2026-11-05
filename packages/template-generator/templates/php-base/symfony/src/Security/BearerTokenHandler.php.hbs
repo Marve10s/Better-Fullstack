@@ -1,0 +1,27 @@
+{{#if (eq phpAuth "symfony-security")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Security;
+
+use App\TokenVerifier;
+use SensitiveParameter;
+use Symfony\Component\Security\Core\Exception\BadCredentialsException;
+use Symfony\Component\Security\Core\User\InMemoryUser;
+use Symfony\Component\Security\Http\AccessToken\AccessTokenHandlerInterface;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
+
+final readonly class BearerTokenHandler implements AccessTokenHandlerInterface
+{
+    public function __construct(private TokenVerifier $tokens)
+    {
+    }
+
+    public function getUserBadgeFrom(#[SensitiveParameter] string $accessToken): UserBadge
+    {
+        $subject = $this->tokens->subject('Bearer ' . $accessToken) ?? throw new BadCredentialsException('Invalid access token.');
+        return new UserBadge($subject, fn (string $identifier): InMemoryUser => new InMemoryUser($identifier, null, ['ROLE_USER']));
+    }
+}
+{{/if}}

@@ -1,0 +1,33 @@
+defmodule {{elixirModuleName}}.Cluster do
+  use GenServer
+
+  @reconnect_interval 5_000
+
+  def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+
+  def connect(hosts) do
+    for host <- hosts, host != node(), host not in Node.list(), into: %{} do
+      {host, Node.connect(host)}
+    end
+  end
+
+  @impl true
+  def init(_opts) do
+    case Application.get_env(:{{elixirAppName}}, :cluster_hosts, []) do
+      [] -> :ignore
+      hosts -> if Node.alive?(), do: {:ok, hosts, {:continue, :connect}}, else: :ignore
+    end
+  end
+
+  @impl true
+  def handle_continue(:connect, hosts), do: {:noreply, reconnect(hosts)}
+
+  @impl true
+  def handle_info(:connect, hosts), do: {:noreply, reconnect(hosts)}
+
+  defp reconnect(hosts) do
+    connect(hosts)
+    Process.send_after(self(), :connect, @reconnect_interval)
+    hosts
+  end
+end

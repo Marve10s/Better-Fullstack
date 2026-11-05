@@ -1,0 +1,26 @@
+{{#if (ne phpAuth "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Middleware;
+
+use App\TokenVerifier;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+final class RequireBearerToken
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        $tokens = new TokenVerifier((string) config('jwt.secret'), (string) config('jwt.issuer'), (string) config('jwt.audience'));
+        $subject = $tokens->subject((string) $request->header('Authorization', ''));
+        if ($subject === null) {
+            return response()->json(['error' => 'unauthorized'], 401, ['WWW-Authenticate' => 'Bearer']);
+        }
+        $request->attributes->set('subject', $subject);
+        return $next($request);
+    }
+}
+{{/if}}

@@ -16,6 +16,18 @@ defmodule {{elixirModuleName}}Web.ItemController do
       conn
       |> put_status(:created)
       |> json(%{data: item_json(item)})
+{{#if (or (eq elixirValidation "nimble-options") (eq elixirValidation "peri") (eq elixirValidation "tarams"))}}
+    else
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: Ecto.Changeset.traverse_errors(changeset, fn {message, _opts} -> message end)})
+
+      {:error, message} when is_binary(message) ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: message})
+{{/if}}
     end
   end
 

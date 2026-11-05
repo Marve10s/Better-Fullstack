@@ -193,4 +193,25 @@ describe("processEnvVariables", () => {
     expect(serverEnv.DATABASE_URL).toBe("http://127.0.0.1:8080");
     expect(webEnv.NEXT_PUBLIC_SANITY_API_VERSION).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
+
+  it("declares the connection settings each vector database helper reads", () => {
+    const serverEnvFor = (overrides: Parameters<typeof makeConfig>[0]) => {
+      const vfs = createSeededVFS(["apps/web/package.json", "apps/server/package.json"]);
+      processEnvVariables(vfs, makeConfig({ backend: "hono", ...overrides }));
+      return getEnvVars(vfs, "apps/server/.env");
+    };
+
+    expect(serverEnvFor({ vectorDb: "pinecone" })).toMatchObject({
+      PINECONE_API_KEY: "",
+      PINECONE_INDEX: "embeddings",
+    });
+    expect(serverEnvFor({ vectorDb: "qdrant" }).QDRANT_URL).toBe("http://localhost:6333");
+    expect(serverEnvFor({ vectorDb: "chroma" }).CHROMA_URL).toBe("http://localhost:8000");
+    expect(serverEnvFor({ vectorDb: "pgvector", database: "sqlite" }).PGVECTOR_DATABASE_URL).toBe(
+      "postgresql://postgres:password@localhost:5432/postgres",
+    );
+    expect(
+      serverEnvFor({ vectorDb: "pgvector", database: "postgres" }).PGVECTOR_DATABASE_URL,
+    ).toBeUndefined();
+  });
 });

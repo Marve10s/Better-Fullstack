@@ -16,9 +16,90 @@ if config_env() == :dev and File.exists?(".env") do
     end
   end)
 end
-{{#if (or (ne elixirWebFramework "none") (or (eq elixirObservability "sentry") (or (eq elixirOrm "ecto-sql") (or (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3")))))}}
+{{#if (eq elixirConfig "dotenvy")}}
+import Dotenvy
 
+source!([".env", System.get_env()])
+
+config :{{elixirAppName}}, :settings,
+  greeting: env!("APP_GREETING", :string, "Hello"),
+  max_connections: env!("APP_MAX_CONNECTIONS", :integer, 10)
+
+{{/if}}
+{{#if (eq elixirClustering "libcluster")}}
+cluster_hosts =
+  System.get_env("CLUSTER_HOSTS", "")
+  |> String.split(",", trim: true)
+  |> Enum.map(&String.trim/1)
+  |> Enum.reject(&(&1 == ""))
+  |> Enum.map(&String.to_atom/1)
+
+cluster_dns_query =
+  System.get_env("DNS_CLUSTER_QUERY"){{#if (eq elixirDeploy "fly")}} ||
+    case System.get_env("FLY_APP_NAME") do
+      nil -> nil
+      app_name -> "#{app_name}.internal"
+    end{{/if}}
+
+cluster_topologies =
+  cond do
+    cluster_hosts != [] ->
+      [configured_hosts: [strategy: Cluster.Strategy.Epmd, config: [hosts: cluster_hosts, timeout: 1_000]]]
+
+    is_binary(cluster_dns_query) and cluster_dns_query != "" ->
+      [dns: [strategy: Cluster.Strategy.DNSPoll,
+             config: [query: cluster_dns_query, node_basename: "{{elixirAppName}}", polling_interval: 5_000]]]
+
+    true ->
+      []
+  end
+
+config :{{elixirAppName}}, :cluster_topologies, cluster_topologies
+
+{{/if}}
+{{#if (eq elixirClustering "dns-cluster")}}
+dns_cluster_query =
+  System.get_env("DNS_CLUSTER_QUERY"){{#if (eq elixirDeploy "fly")}} ||
+    case System.get_env("FLY_APP_NAME") do
+      nil -> nil
+      app_name -> "#{app_name}.internal"
+    end{{/if}}
+
+config :{{elixirAppName}}, :dns_cluster_query, dns_cluster_query
+
+{{/if}}
+{{#if (eq elixirClustering "distributed-erlang")}}
+cluster_hosts =
+  System.get_env("CLUSTER_HOSTS", "")
+  |> String.split(",", trim: true)
+  |> Enum.map(&String.trim/1)
+  |> Enum.reject(&(&1 == ""))
+  |> Enum.map(&String.to_atom/1)
+
+config :{{elixirAppName}}, :cluster_hosts, cluster_hosts
+
+{{/if}}
+{{#if (eq elixirApi "grpc")}}
+config :{{elixirAppName}}, {{elixirModuleName}}.GRPCEndpoint,
+  port: String.to_integer(System.get_env("GRPC_PORT") || "50051")
+
+{{/if}}
+{{#if (eq elixirJobs "exq")}}
+
+config :exq, url: System.get_env("REDIS_URL", "redis://localhost:6379")
+{{/if}}
+
+{{#if (or (eq elixirApi "grpc") (or (ne elixirWebFramework "none") (or (eq elixirObservability "sentry") (or (eq elixirOrm "ecto-sql") (or (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3"))))))}}
 if config_env() == :prod do
+{{#if (eq elixirApi "grpc")}}
+  config :{{elixirAppName}}, {{elixirModuleName}}.GRPCEndpoint,
+{{#if (eq elixirDeploy "fly")}}
+    adapter_opts: [ip: {0, 0, 0, 0, 0, 0, 0, 0}, ipv6_v6only: false]
+{{else}}
+    adapter_opts: [ip: {0, 0, 0, 0}]
+{{/if}}
+
+{{/if}}
 {{#if (eq elixirOrm "ecto-sql")}}
   database_url = System.get_env("DATABASE_URL")
 

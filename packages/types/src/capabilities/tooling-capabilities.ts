@@ -217,6 +217,7 @@ export const TOOLING_SELECTION_OPTIONS: readonly ToolingSelectionOption[] = [
   option("appPlatforms", "electron", "Electron", "JavaScript-powered desktop shell."),
   option("appPlatforms", "capacitor", "Capacitor", "iOS and Android shell for a web application."),
   option("appPlatforms", "wxt", "WXT", "Browser extension application."),
+  option("appPlatforms", "plasmo", "Plasmo", "Bounded Chrome Manifest V3 extension application."),
   option("appPlatforms", "opentui", "OpenTUI", "Terminal user interface application."),
   option("testingTools", "msw", "MSW", "Network-level API mocking."),
   option("testingTools", "storybook", "Storybook", "Component workshop and visual testing."),
@@ -334,7 +335,7 @@ export const TOOLING_CAPABILITIES: readonly ToolingCapabilityDefinition[] = [
     ecosystem: "typescript" as const,
     ownerRole: "frontend" as const,
   })),
-  ...(["wxt", "opentui"] as const).map((toolId) => ({
+  ...(["wxt", "plasmo", "opentui"] as const).map((toolId) => ({
     toolId,
     category: "appPlatforms" as const,
     role: "appPlatform" as const,

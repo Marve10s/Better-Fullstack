@@ -82,8 +82,12 @@ function getGuidance() {
       java: "Backend/API: Spring Boot with Maven or Gradle Wrapper, optional Spring Data JPA, Spring Security, app libraries, and Java testing libraries.",
       dotnet:
         "Backend/API: ASP.NET Core Minimal APIs, MVC, or Blazor with EF Core/Dapper, Identity/Auth0, SignalR, xUnit, and Docker-ready output.",
+      ruby: "Experimental Sinatra, Rails, Roda, or Grape HTTP service with Bundler, Puma, and validated JSON routes. Optional Active Record, Sequel, or ROM on SQLite; JWT, OmniAuth, or Rodauth authentication; Minitest, RSpec, or Test::Unit tests; request validation; Redis, Memcached, or in-process caching; Sidekiq, Resque, or Solid Queue jobs; Mail, Action Mailer, or Resend email; request logging; and a Faraday, HTTParty, or HTTPX client. No deployment adapters.",
+      php: "Slim, Laravel, or Symfony JSON API with Composer. Optional Eloquent, Doctrine, or Cycle on SQLite; Firebase JWT, lcobucci/jwt, or Symfony Security bearer auth; PHPUnit, Pest, or Codeception tests; request validation; Symfony, Laminas, Predis, or Laravel caching; Symfony Messenger, Enqueue, or Laravel Queue jobs; Symfony Mailer, PHPMailer, or Laravel Mail; framework-matched Monolog logging; and a Guzzle, Symfony HttpClient, or cURL client.",
+      crystal:
+        "Kemal, Lucky, Athena, or Marten HTTP service with Shards. Optional crystal-db, Avram, or Marten ORM; JWT, Kemal sessions, or Marten Auth; Spec, Spectator, or spec-kemal tests; Athena, ActiveModel, or Marten validation; memory, file, or Redis caching; and Sidekiq.cr, Mosquito, or Tasker jobs.",
       elixir:
-        "Phoenix: Phoenix or Phoenix LiveView with Ecto SQL, PostgreSQL-ready config, REST or Absinthe, Channels/Presence, Oban, and Mix releases/Docker.",
+        "Phoenix: Phoenix or Phoenix LiveView with Ecto SQL, PostgreSQL-ready config, REST or Absinthe, Channels/Presence, Oban, Quantum, or Exq jobs, and Mix releases/Docker. Optional structured logging, runtime config, RabbitMQ/NATS/Kafka messaging, EEx/Liquid/Mustache templates, and Mix CLI tasks.",
     },
     fieldRules: {
       projectName: "kebab-case directory name. Required for bfs_create_project.",

@@ -1,0 +1,23 @@
+{{#if (eq phpTesting "codeception")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Kernel;
+use Codeception\Test\Unit;
+use Symfony\Component\HttpFoundation\Request;
+
+final class HealthCodeceptTest extends Unit
+{
+    public function testReportsHealthAsJson(): void
+    {
+        $kernel = new Kernel('test', false);
+        $response = $kernel->handle(Request::create('/health'));
+        $kernel->shutdown();
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(['status' => 'ok', 'framework' => 'symfony'], json_decode((string) $response->getContent(), true, 32, JSON_THROW_ON_ERROR));
+    }
+}
+{{/if}}

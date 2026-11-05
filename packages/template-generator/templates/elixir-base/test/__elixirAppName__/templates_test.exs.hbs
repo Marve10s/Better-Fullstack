@@ -1,0 +1,10 @@
+defmodule {{elixirModuleName}}.TemplatesTest do
+  use ExUnit.Case, async: true
+
+  alias {{elixirModuleName}}.Templates
+
+  test "renders the welcome template with assigns" do
+    assert Templates.welcome("Ada", 1) == "Hello, Ada! You have 1 new message.\n"
+    assert Templates.welcome("Ada", 3) == "Hello, Ada! You have 3 new messages.\n"
+  end
+end

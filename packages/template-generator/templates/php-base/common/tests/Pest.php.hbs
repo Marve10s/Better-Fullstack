@@ -1,0 +1,11 @@
+{{#if (eq phpTesting "pest")}}
+<?php
+
+declare(strict_types=1);
+
+{{#if (eq phpWebFramework "laravel")}}
+use Illuminate\Foundation\Testing\TestCase;
+
+pest()->extend(TestCase::class)->in('Feature');
+{{/if}}
+{{/if}}

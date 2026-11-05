@@ -7,6 +7,10 @@ import type {
   StackPartSource,
 } from "@/config/types";
 
+import {
+  getBrowserExtensionRecipeIssue,
+  isBrowserExtension,
+} from "@/capabilities/browser-extensions";
 import { getAuthIncompatibility } from "@/capabilities/capabilities";
 import {
   getCodeQualitySelectionIssue,
@@ -18,6 +22,7 @@ import {
   getToolingCategory,
   getToolingSelectionOptions,
   TOOLING_CAPABILITIES,
+  toolingRequiresJavaScriptWorkspace,
 } from "@/capabilities/tooling-capabilities";
 import {
   API_VALUES,
@@ -59,6 +64,26 @@ import {
   ELIXIR_REALTIME_VALUES,
   ELIXIR_TESTING_VALUES,
   ELIXIR_VALIDATION_VALUES,
+  RUBY_WEB_FRAMEWORK_VALUES,
+  RUBY_ORM_VALUES,
+  RUBY_AUTH_VALUES,
+  RUBY_TESTING_VALUES,
+  RUBY_VALIDATION_VALUES,
+  RUBY_CACHE_VALUES,
+  RUBY_JOB_QUEUE_VALUES,
+  RUBY_EMAIL_VALUES,
+  RUBY_LOGGING_VALUES,
+  RUBY_HTTP_CLIENT_VALUES,
+  PHP_WEB_FRAMEWORK_VALUES,
+  PHP_ORM_VALUES,
+  PHP_AUTH_VALUES,
+  PHP_TESTING_VALUES,
+  PHP_VALIDATION_VALUES,
+  PHP_CACHE_VALUES,
+  PHP_JOB_QUEUE_VALUES,
+  PHP_EMAIL_VALUES,
+  PHP_LOGGING_VALUES,
+  PHP_HTTP_CLIENT_VALUES,
   ELIXIR_WEB_FRAMEWORK_VALUES,
   EFFECT_VALUES,
   EMAIL_VALUES,
@@ -96,6 +121,13 @@ import {
   JAVA_LIBRARIES_VALUES,
   JAVA_ORM_VALUES,
   JAVA_TESTING_LIBRARIES_VALUES,
+  CRYSTAL_WEB_FRAMEWORK_VALUES,
+  CRYSTAL_ORM_VALUES,
+  CRYSTAL_AUTH_VALUES,
+  CRYSTAL_TESTING_VALUES,
+  CRYSTAL_VALIDATION_VALUES,
+  CRYSTAL_CACHE_VALUES,
+  CRYSTAL_JOBS_VALUES,
   JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
@@ -171,6 +203,11 @@ import {
   ELIXIR_APPLICATION_FRAMEWORK_VALUES,
   ELIXIR_DOCUMENTATION_VALUES,
   ELIXIR_CLUSTERING_VALUES,
+  ELIXIR_LOGGING_VALUES,
+  ELIXIR_CONFIG_VALUES,
+  ELIXIR_MESSAGE_QUEUE_VALUES,
+  ELIXIR_TEMPLATING_VALUES,
+  ELIXIR_CLI_VALUES,
   StackPartRoleSchema,
   STATE_MANAGEMENT_VALUES,
   TESTING_VALUES,
@@ -178,6 +215,21 @@ import {
   VALIDATION_VALUES,
   WEB_DEPLOY_VALUES,
 } from "@/config/schemas";
+import {
+  getCrystalSelectionIssue,
+  getCrystalDatabaseSelectionIssue,
+} from "@/platform/crystal-project";
+import {
+  getPhpCapabilityIssue,
+  isPhpCapabilityRole,
+  PHP_RECIPE_REASONS,
+} from "@/stack/php-compatibility";
+import {
+  getRubyDatabaseSelectionIssue,
+  getRubyOwnedToolIssue,
+  isRubyOwnedRole,
+  RUBY_RECIPE_EXTENSION_REASON,
+} from "@/stack/ruby-compatibility";
 import {
   getDatabaseOrmIncompatibility,
   getDatabaseOrmRequirementIssue,
@@ -190,6 +242,7 @@ import {
   hasTauriCompatibleFrontend,
   isBackendUtilsCompatibleBackend,
   isExampleAIAllowed,
+  isExampleTanstackShowcaseAllowed,
   isExampleChatSdkAllowed,
   requiresChatSdkVercelAIForExamples,
   UI_LIBRARY_COMPATIBILITY,
@@ -313,6 +366,10 @@ const ELIXIR_PHOENIX_REQUIRED_ROLE_MESSAGES: Partial<Record<StackPartRole, strin
   i18n: "Elixir Internationalization requires Phoenix",
   runtime: "HTTP server adapters require Phoenix",
 };
+const ELIXIR_STANDALONE_I18N_TOOLS = new Set(["linguist", "ex-cldr-messages"]);
+const ELIXIR_PHOENIX_REQUIRED_TOOL_MESSAGES: Record<string, string> = {
+  logster: "Logster request logging requires Phoenix",
+};
 const ELIXIR_UNSUPPORTED_GRAPH_TOOL_MESSAGES: Record<string, string> = {};
 export const ELIXIR_UNSUPPORTED_GRAPH_TOOLS = new Set(
   Object.keys(ELIXIR_UNSUPPORTED_GRAPH_TOOL_MESSAGES),
@@ -329,12 +386,16 @@ const LEGACY_BACKEND_CATEGORY_BY_ECOSYSTEM = {
   rust: "rustWebFramework",
   python: "pythonWebFramework",
   go: "goWebFramework",
+  crystal: "crystalWebFramework",
   java: "javaWebFramework",
   dotnet: "dotnetWebFramework",
+  ruby: "rubyWebFramework",
+  php: "phpWebFramework",
   elixir: "elixirWebFramework",
 } as const satisfies Record<LegacyBackendEcosystem, keyof ProjectConfig>;
 
 const LEGACY_CAPABILITY_CATEGORIES_BY_ECOSYSTEM = {
+  crystal: { orm: "crystalOrm", auth: "crystalAuth" },
   rust: {
     orm: "rustOrm",
     api: "rustApi",
@@ -364,6 +425,8 @@ const LEGACY_CAPABILITY_CATEGORIES_BY_ECOSYSTEM = {
     observability: "observability",
   },
   dotnet: { orm: "dotnetOrm", api: "dotnetApi", auth: "dotnetAuth" },
+  ruby: { orm: "rubyOrm", auth: "rubyAuth" },
+  php: { orm: "phpOrm", auth: "phpAuth" },
   elixir: { orm: "elixirOrm", api: "elixirApi", auth: "elixirAuth" },
 } as const satisfies Record<
   LegacyBackendEcosystem,
@@ -437,6 +500,7 @@ const LEGACY_MOBILE_ARRAY_CATEGORIES = {
 } as const satisfies Partial<Record<StackPartRole, keyof ProjectConfig>>;
 
 const LEGACY_BACKEND_ARRAY_CATEGORIES_BY_ECOSYSTEM = {
+  crystal: {},
   rust: { libraries: "rustLibraries" },
   python: { ai: "pythonAi", testing: "pythonTesting", cli: "pythonCli", data: "pythonData" },
   go: { testing: "goTesting" },
@@ -446,6 +510,8 @@ const LEGACY_BACKEND_ARRAY_CATEGORIES_BY_ECOSYSTEM = {
     observability: "dotnetObservability",
     libraries: "dotnetLibraries",
   },
+  ruby: {},
+  php: {},
   elixir: { libraries: "elixirLibraries" },
 } as const satisfies Record<
   LegacyBackendEcosystem,
@@ -481,7 +547,7 @@ function getHistoricalAddonRole(toolId: string): StackPartRole | undefined {
     return "codeQuality";
   }
   if (["starlight", "fumadocs"].includes(toolId)) return "documentation";
-  if (["pwa", "tauri", "electron", "capacitor", "wxt", "opentui"].includes(toolId)) {
+  if (["pwa", "tauri", "electron", "capacitor", "wxt", "plasmo", "opentui"].includes(toolId)) {
     return "appPlatform";
   }
   if (
@@ -603,6 +669,7 @@ const OWNER_ROLES_BY_SCOPED_ROLE = {
   server: ["backend"],
   packageManager: ["backend"],
   messageQueue: ["backend"],
+  runtimeConfig: ["backend"],
 } as Partial<Record<StackPartRole, readonly StackPrimaryRole[]>>;
 
 const FRESH_UNSUPPORTED_STATE_MANAGEMENT_TOOLS = new Set([
@@ -679,6 +746,13 @@ function isNativeEcosystemBackendServiceTool(
   if (part.role === "email" && part.ecosystem === "elixir") {
     return (ELIXIR_EMAIL_VALUES as readonly string[]).includes(part.toolId);
   }
+  if (part.role === "email" && part.ecosystem === "ruby") {
+    return (RUBY_EMAIL_VALUES as readonly string[]).includes(part.toolId);
+  }
+
+  if (part.role === "email" && part.ecosystem === "php") {
+    return (PHP_EMAIL_VALUES as readonly string[]).includes(part.toolId);
+  }
 
   if (part.role === "caching") {
     if (part.ecosystem === "elixir") {
@@ -695,6 +769,12 @@ function isNativeEcosystemBackendServiceTool(
     }
     if (part.ecosystem === "python") {
       return (PYTHON_CACHING_VALUES as readonly string[]).includes(part.toolId);
+    }
+    if (part.ecosystem === "ruby") {
+      return (RUBY_CACHE_VALUES as readonly string[]).includes(part.toolId);
+    }
+    if (part.ecosystem === "php") {
+      return (PHP_CACHE_VALUES as readonly string[]).includes(part.toolId);
     }
   }
 
@@ -721,6 +801,7 @@ function isNativeEcosystemBackendServiceTool(
 
 // Backend-owned selections that round-trip through the legacy config projection.
 const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
+  crystal: { testing: "crystalTesting", validation: "crystalValidation", caching: "crystalCache", jobQueue: "crystalJobs" },
   rust: {
     caching: "rustCaching",
     cli: "rustCli",
@@ -770,6 +851,24 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
     deploy: "dotnetDeploy",
     validation: "dotnetValidation",
   },
+  ruby: {
+    testing: "rubyTesting",
+    validation: "rubyValidation",
+    caching: "rubyCache",
+    jobQueue: "rubyJobQueue",
+    email: "rubyEmail",
+    logging: "rubyLogging",
+    httpClient: "rubyHttpClient",
+  },
+  php: {
+    testing: "phpTesting",
+    validation: "phpValidation",
+    caching: "phpCache",
+    jobQueue: "phpJobQueue",
+    email: "phpEmail",
+    logging: "phpLogging",
+    httpClient: "phpHttpClient",
+  },
   elixir: {
     realtime: "elixirRealtime",
     jobQueue: "elixirJobs",
@@ -785,6 +884,11 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
     libraries: "elixirApplicationFramework",
     documentation: "elixirDocumentation",
     config: "elixirClustering",
+    logging: "elixirLogging",
+    runtimeConfig: "elixirConfig",
+    messageQueue: "elixirMessageQueue",
+    templating: "elixirTemplating",
+    cli: "elixirCli",
     deploy: "elixirDeploy",
   },
 } as const satisfies Record<
@@ -793,6 +897,7 @@ const LEGACY_EXTRA_CATEGORIES_BY_ECOSYSTEM = {
 >;
 
 const LEGACY_SHARED_BACKEND_SINGLE_CATEGORIES_BY_ECOSYSTEM = {
+  crystal: {},
   rust: {
     caching: "caching",
     search: "search",
@@ -810,6 +915,8 @@ const LEGACY_SHARED_BACKEND_SINGLE_CATEGORIES_BY_ECOSYSTEM = {
     search: "search",
   },
   dotnet: {},
+  ruby: {},
+  php: {},
   elixir: {},
 } as const satisfies Record<
   LegacyBackendEcosystem,
@@ -1165,6 +1272,13 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(GO_TEMPLATING_VALUES, "templating", "go", "goTemplating"),
   ...defineTools(GO_PROTO_TOOLING_VALUES, "buildTool", "go", "goProtoTooling"),
   ...defineTools(GO_DI_VALUES, "libraries", "go", "goDI"),
+  ...defineTools(CRYSTAL_WEB_FRAMEWORK_VALUES, "backend", "crystal", "crystalWebFramework"),
+  ...defineTools(CRYSTAL_ORM_VALUES, "orm", "crystal", "crystalOrm"),
+  ...defineTools(CRYSTAL_AUTH_VALUES, "auth", "crystal", "crystalAuth"),
+  ...defineTools(CRYSTAL_TESTING_VALUES, "testing", "crystal", "crystalTesting"),
+  ...defineTools(CRYSTAL_VALIDATION_VALUES, "validation", "crystal", "crystalValidation"),
+  ...defineTools(CRYSTAL_CACHE_VALUES, "caching", "crystal", "crystalCache"),
+  ...defineTools(CRYSTAL_JOBS_VALUES, "jobQueue", "crystal", "crystalJobs"),
   ...defineTools(JAVA_WEB_FRAMEWORK_VALUES, "backend", "java", "javaWebFramework"),
   ...defineTools(JAVA_LANGUAGE_VALUES, "language", "java", "javaLanguage"),
   ...defineTools(JAVA_BUILD_TOOL_VALUES, "buildTool", "java", "javaBuildTool"),
@@ -1200,6 +1314,42 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   ...defineTools(DOTNET_LIBRARIES_VALUES, "libraries", "dotnet", "dotnetLibraries", {
     allowMultiple: true,
   }),
+  ...defineTools(RUBY_WEB_FRAMEWORK_VALUES, "backend", "ruby", "rubyWebFramework"),
+  ...defineTools(RUBY_ORM_VALUES, "orm", "ruby", "rubyOrm"),
+  ...defineTools(RUBY_AUTH_VALUES, "auth", "ruby", "rubyAuth"),
+  ...defineTools(RUBY_TESTING_VALUES, "testing", "ruby", "rubyTesting"),
+  ...defineTools(RUBY_VALIDATION_VALUES, "validation", "ruby", "rubyValidation"),
+  ...defineTools(RUBY_CACHE_VALUES, "caching", "ruby", "rubyCache"),
+  ...defineTools(RUBY_JOB_QUEUE_VALUES, "jobQueue", "ruby", "rubyJobQueue"),
+  ...defineTools(RUBY_EMAIL_VALUES, "email", "ruby", "rubyEmail"),
+  ...defineTools(RUBY_LOGGING_VALUES, "logging", "ruby", "rubyLogging"),
+  ...defineTools(RUBY_HTTP_CLIENT_VALUES, "httpClient", "ruby", "rubyHttpClient"),
+  ...defineTools(PHP_WEB_FRAMEWORK_VALUES, "backend", "php", "phpWebFramework").map(
+    (definition) => ({
+      ...definition,
+      provides: [
+        { role: "api", toolId: "rest", overrideable: false },
+        { role: "packageManager", toolId: "composer", overrideable: false },
+      ] satisfies ProvidedCapabilityDefinition[],
+    }),
+  ),
+  ...defineTools(PHP_ORM_VALUES, "orm", "php", "phpOrm"),
+  ...defineTools(PHP_AUTH_VALUES, "auth", "php", "phpAuth"),
+  ...defineTools(["rest"], "api", "php").map((definition) => ({
+    ...definition,
+    selectable: false,
+  })),
+  ...defineTools(PHP_TESTING_VALUES, "testing", "php", "phpTesting"),
+  ...defineTools(PHP_VALIDATION_VALUES, "validation", "php", "phpValidation"),
+  ...defineTools(PHP_CACHE_VALUES, "caching", "php", "phpCache"),
+  ...defineTools(PHP_JOB_QUEUE_VALUES, "jobQueue", "php", "phpJobQueue"),
+  ...defineTools(PHP_EMAIL_VALUES, "email", "php", "phpEmail"),
+  ...defineTools(PHP_LOGGING_VALUES, "logging", "php", "phpLogging"),
+  ...defineTools(PHP_HTTP_CLIENT_VALUES, "httpClient", "php", "phpHttpClient"),
+  ...defineTools(["composer"], "packageManager", "php").map((definition) => ({
+    ...definition,
+    selectable: false,
+  })),
   ...defineTools(ELIXIR_WEB_FRAMEWORK_VALUES, "backend", "elixir", "elixirWebFramework"),
   ...defineTools(ELIXIR_ORM_VALUES, "orm", "elixir", "elixirOrm"),
   ...defineTools(ELIXIR_AUTH_VALUES, "auth", "elixir", "elixirAuth"),
@@ -1229,6 +1379,11 @@ export const STACK_TOOL_DEFINITIONS: readonly ToolDefinition[] = [
     ownerless: true,
   }),
   ...defineTools(ELIXIR_CLUSTERING_VALUES, "config", "elixir", "elixirClustering"),
+  ...defineTools(ELIXIR_LOGGING_VALUES, "logging", "elixir", "elixirLogging"),
+  ...defineTools(ELIXIR_CONFIG_VALUES, "runtimeConfig", "elixir", "elixirConfig"),
+  ...defineTools(ELIXIR_MESSAGE_QUEUE_VALUES, "messageQueue", "elixir", "elixirMessageQueue"),
+  ...defineTools(ELIXIR_TEMPLATING_VALUES, "templating", "elixir", "elixirTemplating"),
+  ...defineTools(ELIXIR_CLI_VALUES, "cli", "elixir", "elixirCli"),
   ...defineTools(ELIXIR_DEPLOY_VALUES, "deploy", "elixir", "elixirDeploy"),
   {
     toolId: "convex",
@@ -1304,6 +1459,23 @@ function isLegacyBackendEcosystem(
   ecosystem: StackPartEcosystem | undefined,
 ): ecosystem is LegacyBackendEcosystem {
   return ecosystem !== undefined && ecosystem in LEGACY_BACKEND_CATEGORY_BY_ECOSYSTEM;
+}
+
+export function getStandaloneBackendEcosystem(
+  parts: readonly StackPart[] | undefined,
+): LegacyBackendEcosystem | undefined {
+  const primaries = (parts ?? []).filter(
+    (part) =>
+      !part.ownerPartId &&
+      part.source !== "provided" &&
+      (part.role === "frontend" || part.role === "backend" || part.role === "mobile"),
+  );
+  const [backend] = primaries;
+  if (primaries.length !== 1 || !backend || backend.role !== "backend") return undefined;
+  if (backend.targetPath !== undefined && backend.targetPath !== getRoleTargetPath("backend")) {
+    return undefined;
+  }
+  return isLegacyBackendEcosystem(backend.ecosystem) ? backend.ecosystem : undefined;
 }
 
 function allowsCrossEcosystemOwner(
@@ -1695,6 +1867,7 @@ function createTypeScriptBackendCompatibilityIssue(
         backend: context.ownerToolId,
         runtime: context.siblingToolIdsByRole?.runtime,
         serverDeploy: part.role === "deploy" ? part.toolId : context.siblingToolIdsByRole?.deploy,
+        webDeploy: getFrontendDeploy(context.parts ?? []),
         database: getDataLayerDatabase({
           standalone: context.primaryToolIdsByRole?.database,
           backend: context.siblingToolIdsByRole?.database,
@@ -2717,6 +2890,20 @@ function createAddonCompatibilityIssue(
       });
     }
 
+    if (
+      part.toolId === "tanstack-showcase" &&
+      !isExampleTanstackShowcaseAllowed(frontendTools as ProjectConfig["frontend"])
+    ) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message:
+          "The TanStack showcase example requires TanStack Router, TanStack Start, SolidStart, or TanStack Start (Solid).",
+      });
+    }
+
     if (part.toolId === "chat-sdk") {
       if (
         backendEcosystem !== "typescript" ||
@@ -2976,6 +3163,96 @@ function getStackPartCompatibilityIssue(
     Partial<Pick<StackPart, "source">>,
   context: StackPartOptionContext,
 ): StackGraphIssue | undefined {
+  if (part.role === "database" || (part.role === "backend" && part.ecosystem === "crystal")) {
+    const message = getCrystalDatabaseSelectionIssue([...(context.parts ?? []), part]);
+    if (message)
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message,
+      });
+  }
+  if (
+    (part.role === "database" || (part.role === "backend" && part.ecosystem === "ruby")) &&
+    getRubyDatabaseSelectionIssue([...(context.parts ?? []), part])
+  ) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_GRAPH_SELECTION",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: RUBY_RECIPE_EXTENSION_REASON,
+    });
+  }
+  if (
+    part.source !== "provided" &&
+    getToolingCapability(part.toolId) &&
+    context.parts?.some(
+      (candidate) => candidate.role === "backend" && candidate.ecosystem === "ruby",
+    ) &&
+    !hasJavaScriptWorkspaceRoot(context.parts)
+  ) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_GRAPH_SELECTION",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: RUBY_RECIPE_EXTENSION_REASON,
+    });
+  }
+  if (
+    context.ownerEcosystem === "ruby" &&
+    part.source !== "provided" &&
+    part.toolId !== "none" &&
+    !(part.ecosystem === "ruby" && isRubyOwnedRole(part.role))
+  ) {
+    return createStackGraphIssue({
+      code: "UNSUPPORTED_ROLE_BINDING",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: RUBY_RECIPE_EXTENSION_REASON,
+    });
+  }
+  const rubyOptionIssue =
+    context.ownerEcosystem === "ruby" && part.ecosystem === "ruby"
+      ? getRubyOwnedToolIssue(
+          part.role,
+          part.toolId,
+          context.ownerToolId,
+          context.siblingToolIdsByRole?.orm,
+        )
+      : null;
+  if (rubyOptionIssue) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_OWNER_TOOL",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: rubyOptionIssue,
+    });
+  }
+
+  if (part.role === "appPlatform" && isBrowserExtension(part.toolId)) {
+    const hasPrimarySelection = context.parts?.some(
+      (candidate) => candidate.source !== "provided" && PRIMARY_ROLES.has(candidate.role),
+    );
+    const message =
+      getBrowserExtensionRecipeIssue({ stackParts: context.parts }) ??
+      (hasPrimarySelection && !hasJavaScriptWorkspaceRoot(context.parts)
+        ? "Browser extensions require a generated JavaScript application workspace."
+        : null);
+    if (message)
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message,
+      });
+  }
   if (
     context.ownerEcosystem &&
     part.ecosystem !== context.ownerEcosystem &&
@@ -2987,6 +3264,69 @@ function getStackPartCompatibilityIssue(
       role: part.role,
       toolId: part.toolId,
       message: `'${part.toolId}' uses the ${part.ecosystem} adapter but its owner uses ${context.ownerEcosystem}.`,
+    });
+  }
+
+  if (
+    context.ownerEcosystem === "php" &&
+    part.source !== "provided" &&
+    !(part.ecosystem === "php" && isPhpCapabilityRole(part.role))
+  ) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_GRAPH_SELECTION",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message:
+        part.role === "database" || part.role === "orm"
+          ? PHP_RECIPE_REASONS.database
+          : PHP_RECIPE_REASONS.capability,
+    });
+  }
+  const phpCapabilityIssue =
+    part.ecosystem === "php" && context.ownerEcosystem === "php"
+      ? getPhpCapabilityIssue(context.ownerToolId, part.role, part.toolId)
+      : undefined;
+  if (phpCapabilityIssue) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_GRAPH_SELECTION",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: phpCapabilityIssue,
+    });
+  }
+  if (part.ecosystem === "php" && context.ownerRole && context.ownerRole !== "backend") {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_OWNER_ROLE",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: PHP_RECIPE_REASONS.owner,
+    });
+  }
+  if (
+    ((part.ecosystem === "php" &&
+      part.role === "backend" &&
+      context.primaryToolIdsByRole?.database) ||
+      (part.role === "database" &&
+        part.toolId !== "none" &&
+        context.primaryToolIdsByRole?.backend &&
+        context.primaryEcosystemsByRole?.backend === "php")) &&
+    !context.parts?.some(
+      (candidate) =>
+        candidate.role === "backend" &&
+        !candidate.ownerPartId &&
+        candidate.source !== "provided" &&
+        !["php", "ruby", "crystal"].includes(candidate.ecosystem),
+    )
+  ) {
+    return createStackGraphIssue({
+      code: "INCOMPATIBLE_GRAPH_SELECTION",
+      partId: part.id,
+      role: part.role,
+      toolId: part.toolId,
+      message: PHP_RECIPE_REASONS.database,
     });
   }
 
@@ -3144,15 +3484,46 @@ function getStackPartCompatibilityIssue(
     }
   }
 
+  if (
+    part.ecosystem === "elixir" &&
+    part.role === "validation" &&
+    ["peri", "tarams"].includes(part.toolId) &&
+    (!context.ownerRole || context.ownerRole === "backend")
+  ) {
+    const ormTool = context.ownerRole
+      ? context.siblingToolIdsByRole?.orm
+      : context.selectedToolIdsByRole?.orm;
+    if (isNoneTool(ormTool)) {
+      return createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: "Peri and Tarams require Ecto",
+      });
+    }
+  }
+
   if (part.ecosystem === "elixir" && !context.ownerRole) {
     const phoenixRequiredMessage = ELIXIR_PHOENIX_REQUIRED_ROLE_MESSAGES[part.role];
-    if (phoenixRequiredMessage && part.toolId !== "none") {
+    const isStandaloneI18n = part.role === "i18n" && ELIXIR_STANDALONE_I18N_TOOLS.has(part.toolId);
+    if (phoenixRequiredMessage && part.toolId !== "none" && !isStandaloneI18n) {
       return createStackGraphIssue({
         code: "MISSING_OWNER_PART",
         partId: part.id,
         role: part.role,
         toolId: part.toolId,
         message: phoenixRequiredMessage,
+      });
+    }
+    const phoenixRequiredToolMessage = ELIXIR_PHOENIX_REQUIRED_TOOL_MESSAGES[part.toolId];
+    if (phoenixRequiredToolMessage) {
+      return createStackGraphIssue({
+        code: "MISSING_OWNER_PART",
+        partId: part.id,
+        role: part.role,
+        toolId: part.toolId,
+        message: phoenixRequiredToolMessage,
       });
     }
 
@@ -3377,31 +3748,39 @@ function parseRolePath(rolePath: string): {
   return { role, ownerPartId: sanitizePartId(rawOwnerRole) };
 }
 
-export function parseStackPartSpecs(
-  specs: readonly string[],
-  source: StackPartSource = "selected",
-): StackPart[] {
-  const unresolved = specs.map((spec) => {
-    const [rolePath, ecosystem, toolId, customId] = spec.split(":");
-    if (!rolePath || !ecosystem || !toolId || spec.split(":").length > 4) {
-      throw new Error(
-        `Invalid --part '${spec}'. Use role:ecosystem:tool or owner.role:ecosystem:tool.`,
-      );
-    }
-    const { role, ownerRole, ownerPartId } = parseRolePath(rolePath);
-    return {
-      role,
-      ownerRole,
-      ownerPartId,
-      ecosystem: ecosystem as StackPartEcosystem,
-      toolId,
-      customId,
-    };
-  });
+type PrimaryPartPathInput = Pick<StackPart, "role" | "ecosystem" | "toolId" | "targetPath"> & {
+  customId?: string;
+};
 
-  const unresolvedPrimaryParts = unresolved.filter((part) => !part.ownerRole && !part.ownerPartId);
+function usesFixedJavaScriptPath(part: PrimaryPartPathInput) {
+  return (
+    (part.ecosystem === "typescript" || part.ecosystem === "react-native") &&
+    ["frontend", "backend", "mobile"].includes(part.role)
+  );
+}
+
+function getFixedWorkspaceTargetPath(part: StackPart, parts: readonly StackPart[]) {
+  if (usesFixedJavaScriptPath(part)) return getRoleTargetPath(part.role);
+  if (part.role !== "database") return undefined;
+  const backend = parts.find(
+    (candidate) =>
+      candidate.role === "backend" &&
+      candidate.ecosystem === "typescript" &&
+      !candidate.ownerPartId &&
+      candidate.source !== "provided" &&
+      candidate.toolId !== "none",
+  );
+  const orm = getSelectedScopedPart(parts, backend, "orm");
+  return part.toolId === "redis" ||
+    part.toolId === "edgedb" ||
+    (orm?.ecosystem === "typescript" && orm.toolId !== "none")
+    ? getRoleTargetPath("database")
+    : undefined;
+}
+
+function allocatePrimaryPartTargetPaths(parts: readonly PrimaryPartPathInput[]) {
   const primaryRoleCounts = new Map<StackPartRole, number>();
-  for (const part of unresolvedPrimaryParts) {
+  for (const part of parts) {
     primaryRoleCounts.set(part.role, (primaryRoleCounts.get(part.role) ?? 0) + 1);
   }
   const repeatedTargetRoot: Partial<Record<StackPrimaryRole, string>> = {
@@ -3411,23 +3790,21 @@ export function parseStackPartSpecs(
     database: "data",
   };
 
-  const usesFixedJavaScriptPath = (part: (typeof unresolvedPrimaryParts)[number]) =>
-    (part.ecosystem === "typescript" || part.ecosystem === "react-native") &&
-    ["frontend", "backend", "mobile"].includes(part.role);
-  // Reserve fixed JavaScript paths and singleton native paths before naming repeated apps.
   const usedTargetPaths = new Set(
-    unresolvedPrimaryParts
+    parts
       .filter(
         (part) => usesFixedJavaScriptPath(part) || (primaryRoleCounts.get(part.role) ?? 0) <= 1,
       )
       .flatMap((part) => {
-        const targetPath = getRoleTargetPath(part.role);
+        const targetPath = part.targetPath ?? getRoleTargetPath(part.role);
         return targetPath ? [targetPath] : [];
       }),
   );
-  const primaryParts = unresolvedPrimaryParts.map((part) => {
-    let targetPath: string | undefined;
+  for (const part of parts) if (part.targetPath) usedTargetPaths.add(part.targetPath);
+  return parts.map((part) => {
+    let targetPath = part.targetPath;
     if (
+      !targetPath &&
       (primaryRoleCounts.get(part.role) ?? 0) > 1 &&
       PRIMARY_ROLES.has(part.role) &&
       !usesFixedJavaScriptPath(part)
@@ -3441,15 +3818,79 @@ export function parseStackPartSpecs(
       }
       usedTargetPaths.add(targetPath);
     }
-    return createStackPart({
+    return targetPath ?? getRoleTargetPath(part.role);
+  });
+}
+
+function normalizeStackPartTargetPath(targetPath: string): string {
+  const segments = targetPath.split("/").filter(Boolean);
+  if (
+    targetPath.startsWith("/") ||
+    /^[a-zA-Z]:/.test(targetPath) ||
+    segments.length === 0 ||
+    segments.some(
+      (segment) =>
+        segment === "." ||
+        segment === ".." ||
+        !/^[a-zA-Z0-9._@:%][a-zA-Z0-9._ @:%-]*$/.test(segment),
+    )
+  ) {
+    throw new Error("Use a relative path without traversal or shell syntax.");
+  }
+  return segments.join("/");
+}
+
+export function parseStackPartSpecs(
+  specs: readonly string[],
+  source: StackPartSource = "selected",
+): StackPart[] {
+  const unresolved = specs.map((spec) => {
+    const pathSeparator = spec.lastIndexOf("@");
+    const binding = pathSeparator < 0 ? spec : spec.slice(0, pathSeparator);
+    let targetPath: string | undefined;
+    if (pathSeparator >= 0) {
+      try {
+        targetPath = normalizeStackPartTargetPath(
+          decodeURIComponent(spec.slice(pathSeparator + 1)),
+        );
+      } catch {
+        throw new Error(
+          `Invalid --part target path in '${spec}'. Use a relative path without traversal or shell syntax.`,
+        );
+      }
+    }
+    const [rolePath, ecosystem, toolId, customId] = binding.split(":");
+    if (!rolePath || !ecosystem || !toolId || binding.split(":").length > 4) {
+      throw new Error(
+        `Invalid --part '${spec}'. Use role:ecosystem:tool or owner.role:ecosystem:tool.`,
+      );
+    }
+    const { role, ownerRole, ownerPartId } = parseRolePath(rolePath);
+    if (targetPath && (ownerRole || ownerPartId || !PRIMARY_ROLES.has(role)))
+      throw new Error("Target paths belong to primary stack parts.");
+    return {
+      role,
+      ownerRole,
+      ownerPartId,
+      ecosystem: ecosystem as StackPartEcosystem,
+      toolId,
+      customId,
+      targetPath,
+    };
+  });
+
+  const unresolvedPrimaryParts = unresolved.filter((part) => !part.ownerRole && !part.ownerPartId);
+  const primaryTargetPaths = allocatePrimaryPartTargetPaths(unresolvedPrimaryParts);
+  const primaryParts = unresolvedPrimaryParts.map((part, index) =>
+    createStackPart({
       role: part.role,
       ecosystem: part.ecosystem,
       toolId: part.toolId,
       source,
       id: part.customId,
-      targetPath,
-    });
-  });
+      targetPath: primaryTargetPaths[index],
+    }),
+  );
 
   const primaryByRole = new Map(primaryParts.map((part) => [part.role, part]));
   const primaryByRoleAndEcosystem = new Map(
@@ -3477,6 +3918,45 @@ export function parseStackPartSpecs(
   return materializeProvidedStackParts([...primaryParts, ...scopedParts]);
 }
 
+function getStackPartSpecCustomId(part: StackPart) {
+  const canonicalId = sanitizePartId(`${part.role}:${part.ecosystem}:${part.toolId}`);
+  return !part.ownerPartId && part.id !== canonicalId ? part.id : undefined;
+}
+
+function getStackPartSpecTargetPath(part: StackPart, parts: readonly StackPart[]) {
+  const primaryParts = parts.filter(
+    (candidate) => !candidate.ownerPartId && candidate.source !== "provided",
+  );
+  let partIndex = primaryParts.findIndex((candidate) => candidate.id === part.id);
+  if (partIndex < 0) {
+    partIndex = primaryParts.length;
+    primaryParts.push(part);
+  }
+  const bindings = primaryParts.map((candidate) => ({
+    role: candidate.role,
+    ecosystem: candidate.ecosystem,
+    toolId: candidate.toolId,
+    customId: getStackPartSpecCustomId(candidate),
+    targetPath: candidate.targetPath,
+  }));
+  for (const binding of bindings) {
+    const targetPath = binding.targetPath;
+    if (targetPath === undefined) continue;
+    binding.targetPath = undefined;
+    const allocatedPaths = allocatePrimaryPartTargetPaths(bindings);
+    if (
+      allocatedPaths.some(
+        (allocatedPath, index) =>
+          allocatedPath !==
+          (primaryParts[index].targetPath ?? getRoleTargetPath(primaryParts[index].role)),
+      )
+    ) {
+      binding.targetPath = targetPath;
+    }
+  }
+  return bindings[partIndex].targetPath;
+}
+
 export function formatStackPartSpec(part: StackPart, parts: readonly StackPart[] = []): string {
   const owner = part.ownerPartId
     ? parts.find((candidate) => candidate.id === part.ownerPartId)
@@ -3492,9 +3972,12 @@ export function formatStackPartSpec(part: StackPart, parts: readonly StackPart[]
     : [];
   const ownerSelector = owner && sameRoleOwners.length > 1 ? owner.id : owner?.role;
   const rolePath = ownerSelector ? `${ownerSelector}.${part.role}` : part.role;
-  const canonicalId = sanitizePartId(`${part.role}:${part.ecosystem}:${part.toolId}`);
-  const customId = !part.ownerPartId && part.id !== canonicalId ? `:${part.id}` : "";
-  return `${rolePath}:${part.ecosystem}:${part.toolId}${customId}`;
+  const customId = getStackPartSpecCustomId(part);
+  const targetPath =
+    !part.ownerPartId && part.targetPath ? getStackPartSpecTargetPath(part, parts) : undefined;
+  const idSuffix = customId !== undefined ? `:${customId}` : "";
+  const pathSuffix = targetPath ? `@${encodeURIComponent(targetPath).replaceAll("%2F", "/")}` : "";
+  return `${rolePath}:${part.ecosystem}:${part.toolId}${idSuffix}${pathSuffix}`;
 }
 
 export function materializeProvidedStackParts(parts: readonly StackPart[]): StackPart[] {
@@ -3709,8 +4192,12 @@ export function legacyProjectConfigToStackParts(
     throw new Error("Multiple primary mobile frontends are not supported in the stack graph.");
   }
 
-  const webFrontend = webFrontends[0];
-  const nativeFrontend = nativeFrontends[0];
+  const ownsTypeScriptParts =
+    config.ecosystem === undefined ||
+    config.ecosystem === "typescript" ||
+    config.ecosystem === "react-native";
+  const webFrontend = ownsTypeScriptParts ? webFrontends[0] : undefined;
+  const nativeFrontend = ownsTypeScriptParts ? nativeFrontends[0] : undefined;
   const frontendPart = addLegacyPart(parts, "frontend", "typescript", webFrontend, source);
   const mobilePart = addLegacyPart(parts, "mobile", "react-native", nativeFrontend, source);
   addLegacyPart(parts, "frontend", "dotnet", config.dotnetFrontend, source);
@@ -3754,6 +4241,7 @@ export function legacyProjectConfigToStackParts(
   }
 
   for (const addon of config.addons ?? []) {
+    if (!ownsTypeScriptParts && toolingRequiresJavaScriptWorkspace(addon)) continue;
     addLegacyAddonPart(parts, addon, source, frontendPart, backendPart);
   }
   for (const example of config.examples ?? []) {
@@ -3764,11 +4252,7 @@ export function legacyProjectConfigToStackParts(
   // stacks. For other ecosystems these are inert TS defaults and the ecosystem-specific
   // blocks below own the real bindings - mapping the generic fields there would emit
   // invalid or duplicate capability parts (e.g. `auth:go:better-auth` alongside `goAuth`).
-  if (
-    config.ecosystem === undefined ||
-    config.ecosystem === "typescript" ||
-    config.ecosystem === "react-native"
-  ) {
+  if (ownsTypeScriptParts) {
     addLegacyPart(parts, "orm", "typescript", config.orm, source, capabilityOwner);
     addLegacyPart(parts, "api", "typescript", config.api, source, capabilityOwner);
     addLegacyPart(
@@ -4091,6 +4575,13 @@ function getSelectedPrimaryPart(parts: readonly StackPart[], role: StackPartRole
   );
 }
 
+function getFrontendDeploy(parts: readonly StackPart[]) {
+  const frontend = parts.find(
+    (part) => part.role === "frontend" && part.ecosystem === "typescript" && !part.ownerPartId,
+  );
+  return getSelectedScopedPart(parts, frontend, "deploy")?.toolId;
+}
+
 function getSelectedScopedPart(
   parts: readonly StackPart[],
   owner: StackPart | undefined,
@@ -4302,12 +4793,83 @@ export function stackGraphToLegacyProjectConfigForEcosystem(
 
 export function validateStackParts(parts: readonly StackPart[]): StackGraphValidationResult {
   const issues: StackGraphIssue[] = [];
+  const crystalIssue = getCrystalSelectionIssue({ stackParts: [...parts] });
+  if (crystalIssue)
+    issues.push(
+      createStackGraphIssue({
+        code: "INCOMPATIBLE_GRAPH_SELECTION",
+        role: "backend",
+        toolId: "kemal",
+        message: crystalIssue,
+      }),
+    );
+
   const partsById = new Map(parts.map((part) => [part.id, part]));
   const seenPartIds = new Set<string>();
 
   const selectedPrimaryParts = parts.filter(
-    (part) => !part.ownerPartId && part.source !== "provided" && PRIMARY_ROLES.has(part.role),
+    (part) =>
+      !part.ownerPartId &&
+      part.source !== "provided" &&
+      part.toolId !== "none" &&
+      PRIMARY_ROLES.has(part.role),
   );
+  const targetPaths: { part: StackPart; targetPath: string }[] = [];
+  const targetPathParts = parts.filter(
+    (part) =>
+      part.source !== "provided" &&
+      part.toolId !== "none" &&
+      ((!part.ownerPartId && PRIMARY_ROLES.has(part.role)) ||
+        (part.role === "database" && getFixedWorkspaceTargetPath(part, parts))),
+  );
+  for (const part of targetPathParts) {
+    const requestedPath = part.targetPath ?? getRoleTargetPath(part.role);
+    if (!requestedPath) continue;
+    let targetPath: string;
+    try {
+      targetPath = normalizeStackPartTargetPath(requestedPath);
+    } catch {
+      issues.push(
+        createStackGraphIssue({
+          code: "INVALID_TARGET_PATH",
+          role: part.role,
+          toolId: part.toolId,
+          partId: part.id,
+          message: `Invalid target path for '${part.id}'. Use a relative path without traversal or shell syntax.`,
+        }),
+      );
+      continue;
+    }
+    const fixedPath = getFixedWorkspaceTargetPath(part, parts);
+    if (fixedPath && targetPath !== fixedPath)
+      issues.push(
+        createStackGraphIssue({
+          code: "UNSUPPORTED_TARGET_PATH",
+          role: part.role,
+          toolId: part.toolId,
+          partId: part.id,
+          message: `Stack part '${part.id}' must use '${fixedPath}' because JavaScript workspace generation requires that directory.`,
+        }),
+      );
+    if (part.ownerPartId) continue;
+    const collision = targetPaths.find(
+      (entry) =>
+        entry.targetPath === targetPath ||
+        entry.targetPath.startsWith(`${targetPath}/`) ||
+        targetPath.startsWith(`${entry.targetPath}/`),
+    );
+    if (collision)
+      issues.push(
+        createStackGraphIssue({
+          code: "OVERLAPPING_TARGET_PATH",
+          role: part.role,
+          toolId: part.toolId,
+          partId: part.id,
+          message: `Application target paths overlap: '${collision.part.id}' at '${collision.targetPath}' and '${part.id}' at '${targetPath}'.`,
+        }),
+      );
+    targetPaths.push({ part, targetPath });
+  }
   const unsupportedRepeatedPrimaryGroups = [
     {
       label: "TypeScript web frontend",
@@ -4346,7 +4908,7 @@ export function validateStackParts(parts: readonly StackPart[]): StackGraphValid
         partId: part.id,
         role: part.role,
         toolId: part.toolId,
-        message: `Only one ${group.label} is currently supported. Named repeated backend services are supported for Rust, Python, Go, Java/Kotlin, .NET, and Elixir.`,
+        message: `Only one ${group.label} is currently supported. Named repeated backend services are supported for Rust, Python, Go, Java/Kotlin, .NET, Elixir, PHP, and Ruby.`,
       });
     }
   }

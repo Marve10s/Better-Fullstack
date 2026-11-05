@@ -15,6 +15,12 @@ config :{{elixirAppName}},
 
 config :{{elixirAppName}}, Oban, testing: :manual
 {{/if}}
+{{#if (eq elixirJobs "exq")}}
+
+config :{{elixirAppName}}, :start_exq, false
+
+config :exq, queue_adapter: Exq.Adapters.Queue.Mock
+{{/if}}
 {{#if (eq elixirAuth "guardian")}}
 
 config :{{elixirAppName}},

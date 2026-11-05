@@ -1,0 +1,1110 @@
+"""Main application entry point."""
+# ruff: noqa: I001
+
+import os
+
+from contextlib import asynccontextmanager
+{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}
+from typing import Annotated
+{{/if}}
+
+from dotenv import load_dotenv
+{{#if (eq pythonObservability "signoz")}}
+from app import otel as _otel  # noqa: F401 - importing activates SigNoz tracing
+{{/if}}
+{{#if (ne pythonLogging "none")}}
+from app.logging_config import RequestLoggingMiddleware, configure_logging
+{{/if}}
+
+{{#if (eq observability "sentry")}}
+from app.observability import init_sentry
+
+{{/if}}
+from fastapi import {{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}Depends, {{/if}}FastAPI{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel") (eq pythonOrm "tortoise-orm") (and (eq pythonOrm "none") (eq pythonValidation "pydantic")) (eq pythonAuth "authlib") (eq pythonAuth "jwt") (eq pythonAuth "pyjwt"))}}, HTTPException{{/if}}{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, Header{{/if}}
+from fastapi.middleware.cors import CORSMiddleware
+{{#if (eq pythonObservability "signoz")}}
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+{{/if}}
+{{#if (eq pythonObservability "prometheus-client")}}
+from fastapi.responses import Response
+
+from app.metrics import render_metrics
+{{/if}}
+{{#if (eq pythonOrm "sqlalchemy")}}
+from sqlalchemy.orm import Session
+
+from app import crud
+from app.database import get_db, init_db
+{{#if (eq pythonValidation "pydantic")}}
+from app.schemas import PostCreate, PostResponse, PostUpdate, UserCreate, UserResponse, UserUpdate
+{{/if}}
+{{/if}}
+{{#if (eq pythonOrm "sqlmodel")}}
+from sqlmodel import Session
+
+from app import crud
+from app.database import get_db, init_db
+from app.models import (
+    PostCreate,
+    PostResponse,
+    PostUpdate,
+    UserCreate,
+    UserResponse,
+    UserUpdate,
+)
+{{/if}}
+{{#if (and (eq pythonValidation "pydantic") (eq pythonOrm "none"))}}
+from app.schemas import ItemCreate, ItemResponse, MessageCreate, MessageResponse
+{{/if}}
+{{#if (eq pythonValidation "pydantic")}}
+from app.settings import get_settings
+{{/if}}
+{{#if (eq pythonOrm "tortoise-orm")}}
+from app import crud
+from app.database import close_db, init_db
+{{/if}}
+{{#if (or (includes pythonAi "langchain") (includes pythonAi "llamaindex") (includes pythonAi "openai-sdk") (includes pythonAi "anthropic-sdk") (includes pythonAi "langgraph"))}}
+from fastapi.responses import StreamingResponse
+
+{{/if}}
+{{#if (includes pythonAi "langchain")}}
+from app.langchain_client import chat, chat_stream, simple_completion
+from app.langchain_schemas import (
+    ChatRequest,
+    ChatResponse,
+    CompletionRequest,
+    CompletionResponse,
+)
+{{/if}}
+{{#if (includes pythonAi "llamaindex")}}
+from app.llamaindex_client import (
+    chat as llamaindex_chat,
+    chat_stream as llamaindex_chat_stream,
+    simple_completion as llamaindex_completion,
+)
+from app.llamaindex_schemas import (
+    ChatRequest as LlamaIndexChatRequest,
+    ChatResponse as LlamaIndexChatResponse,
+    CompletionRequest as LlamaIndexCompletionRequest,
+    CompletionResponse as LlamaIndexCompletionResponse,
+)
+{{/if}}
+{{#if (includes pythonAi "openai-sdk")}}
+from app.openai_client import (
+    chat as openai_chat,
+    chat_stream as openai_chat_stream,
+    simple_completion as openai_completion,
+)
+from app.openai_schemas import (
+    OpenAIChatRequest,
+    OpenAIChatResponse,
+    OpenAICompletionRequest,
+    OpenAICompletionResponse,
+)
+{{/if}}
+{{#if (includes pythonAi "anthropic-sdk")}}
+from app.anthropic_client import (
+    chat as anthropic_chat,
+    chat_stream as anthropic_chat_stream,
+    simple_completion as anthropic_completion,
+)
+from app.anthropic_schemas import (
+    AnthropicChatRequest,
+    AnthropicChatResponse,
+    AnthropicCompletionRequest,
+    AnthropicCompletionResponse,
+)
+{{/if}}
+{{#if (includes pythonAi "langgraph")}}
+from app.langgraph_client import (
+    chat as langgraph_chat,
+    chat_stream as langgraph_chat_stream,
+    run_agent as langgraph_agent,
+    simple_completion as langgraph_completion,
+)
+from app.langgraph_schemas import (
+    LangGraphAgentRequest,
+    LangGraphAgentResponse,
+    LangGraphChatRequest,
+    LangGraphChatResponse,
+    LangGraphCompletionRequest,
+    LangGraphCompletionResponse,
+)
+{{/if}}
+{{#if (includes pythonAi "crewai")}}
+from app.crewai_client import (
+    run_research_crew as crewai_research,
+    run_analysis_crew as crewai_analysis,
+    run_custom_crew as crewai_custom,
+    simple_completion as crewai_completion,
+)
+from app.crewai_schemas import (
+    CrewAIResearchRequest,
+    CrewAIResearchResponse,
+    CrewAIAnalysisRequest,
+    CrewAIAnalysisResponse,
+    CrewAICustomRequest,
+    CrewAICustomResponse,
+    CrewAICompletionRequest,
+    CrewAICompletionResponse,
+)
+{{/if}}
+{{#if (includes pythonAi "haystack")}}
+from app.haystack_client import answer_question as haystack_answer_question
+from app.haystack_schemas import HaystackQuestionRequest, HaystackQuestionResponse
+{{/if}}
+{{#if (eq pythonTaskQueue "celery")}}
+from celery.result import AsyncResult
+
+from app.celery_app import celery_app
+from app.tasks import (
+    example_task,
+    send_email_task,
+    process_data_task,
+)
+from app.celery_schemas import (
+    TaskSubmitRequest,
+    TaskSubmitResponse,
+    TaskStatusResponse,
+    EmailTaskRequest,
+    DataProcessRequest,
+    TaskRevokeRequest,
+    TaskRevokeResponse,
+)
+{{/if}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
+from app.auth import create_access_token, verify_token
+{{/if}}
+{{#if (eq pythonAuth "fastapi-users")}}
+from app.users import auth_router, register_router
+{{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+from strawberry.fastapi import GraphQLRouter
+
+from app.graphql_schema import schema as graphql_schema
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+from ariadne.asgi import GraphQL
+
+from app.ariadne_schema import schema as ariadne_schema
+{{/if}}
+
+{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}
+DbSession = Annotated[Session, Depends(get_db)]
+
+{{/if}}
+
+load_dotenv()
+{{#if (ne pythonLogging "none")}}
+configure_logging()
+{{/if}}
+{{#if (eq observability "sentry")}}
+init_sentry()
+{{/if}}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan handler."""
+{{#if (or (eq pythonOrm "sqlalchemy") (eq pythonOrm "sqlmodel"))}}
+    # Initialize database tables on startup
+    init_db()
+{{/if}}
+{{#if (eq pythonOrm "tortoise-orm")}}
+    # Initialize Tortoise ORM on startup
+    await init_db()
+{{/if}}
+    yield
+{{#if (eq pythonOrm "tortoise-orm")}}
+    # Close Tortoise ORM connections on shutdown
+    await close_db()
+{{/if}}
+
+
+{{#if (eq pythonValidation "pydantic")}}
+settings = get_settings()
+
+app = FastAPI(
+    title=settings.app_name,
+    description="A Python API built with Better Fullstack",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+{{else}}
+app = FastAPI(
+    title="{{projectName}}",
+    description="A Python API built with Better Fullstack",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+{{/if}}
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[os.getenv("CORS_ORIGIN") or "*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+{{#if (ne pythonLogging "none")}}
+app.add_middleware(RequestLoggingMiddleware)
+{{/if}}
+{{#if (eq pythonObservability "signoz")}}
+FastAPIInstrumentor.instrument_app(app)
+{{/if}}
+
+{{#if (eq pythonAuth "fastapi-users")}}
+app.include_router(auth_router, prefix="/auth/jwt", tags=["auth"])
+app.include_router(register_router, prefix="/auth", tags=["auth"])
+{{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+graphql_app = GraphQLRouter(graphql_schema)
+app.include_router(graphql_app, prefix="/graphql")
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+app.mount("/graphql", GraphQL(ariadne_schema, debug=True))
+{{/if}}
+
+@app.get("/")
+async def root():
+    """Root endpoint."""
+    return {"message": "Welcome to {{projectName}}!"}
+
+
+@app.get("/health")
+async def health():
+    """Health check endpoint."""
+    return {"status": "healthy"}
+{{#if (eq pythonObservability "prometheus-client")}}
+
+
+@app.get("/metrics")
+async def metrics() -> Response:
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return Response(content=payload, media_type=content_type)
+{{/if}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
+
+
+# Auth endpoints
+@app.post("/auth/token")
+async def login(username: str = "", password: str = ""):
+    """Create an access token."""
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required")
+    token = create_access_token(data={"sub": username})
+    return {"access_token": token, "token_type": "bearer"}
+
+
+@app.get("/auth/me")
+async def get_current_user(authorization: str = Header(default="")):
+    """Get the current authenticated user from a Bearer token."""
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+    token = authorization.removeprefix("Bearer ")
+    payload = verify_token(token)
+    if payload is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return {"username": payload.get("sub"), "token_data": payload}
+{{/if}}
+{{#if (includes pythonAi "langchain")}}
+
+
+# LangChain AI endpoints
+@app.post("/ai/chat", response_model=ChatResponse)
+async def langchain_chat(request: ChatRequest):
+    """Chat with an AI assistant using LangChain.
+
+    Supports conversation history for multi-turn conversations.
+    """
+    history = None
+    if request.history:
+        history = [{"role": msg.role, "content": msg.content} for msg in request.history]
+
+    response = await chat(
+        message=request.message,
+        history=history,
+        system_prompt=request.system_prompt or "You are a helpful assistant.",
+        model=request.model or "gpt-4o-mini",
+        temperature=request.temperature or 0.7,
+    )
+    return ChatResponse(response=response)
+
+
+@app.post("/ai/chat/stream")
+async def langchain_chat_stream(request: ChatRequest):
+    """Chat with an AI assistant using LangChain with streaming response.
+
+    Returns a Server-Sent Events stream of the response.
+    """
+    history = None
+    if request.history:
+        history = [{"role": msg.role, "content": msg.content} for msg in request.history]
+
+    async def generate():
+        async for chunk in chat_stream(
+            message=request.message,
+            history=history,
+            system_prompt=request.system_prompt or "You are a helpful assistant.",
+            model=request.model or "gpt-4o-mini",
+            temperature=request.temperature or 0.7,
+        ):
+            yield f"data: {chunk}\n\n"
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+@app.post("/ai/completion", response_model=CompletionResponse)
+async def langchain_completion(request: CompletionRequest):
+    """Get a simple completion from the AI without conversation history."""
+    completion = simple_completion(
+        prompt=request.prompt,
+        model=request.model or "gpt-4o-mini",
+        temperature=request.temperature or 0.7,
+    )
+    return CompletionResponse(completion=completion)
+{{/if}}
+{{#if (includes pythonAi "llamaindex")}}
+
+
+# LlamaIndex AI endpoints
+@app.post("/ai/llamaindex/chat", response_model=LlamaIndexChatResponse)
+async def llamaindex_chat_endpoint(request: LlamaIndexChatRequest):
+    """Chat with an AI assistant using LlamaIndex.
+
+    Supports conversation history for multi-turn conversations.
+    """
+    history = None
+    if request.history:
+        history = [{"role": msg.role, "content": msg.content} for msg in request.history]
+
+    response = await llamaindex_chat(
+        message=request.message,
+        history=history,
+        system_prompt=request.system_prompt or "You are a helpful assistant.",
+        model=request.model or "gpt-4o-mini",
+        temperature=request.temperature or 0.7,
+    )
+    return LlamaIndexChatResponse(response=response)
+
+
+@app.post("/ai/llamaindex/chat/stream")
+async def llamaindex_chat_stream_endpoint(request: LlamaIndexChatRequest):
+    """Chat with an AI assistant using LlamaIndex with streaming response.
+
+    Returns a Server-Sent Events stream of the response.
+    """
+    history = None
+    if request.history:
+        history = [{"role": msg.role, "content": msg.content} for msg in request.history]
+
+    async def generate():
+        async for chunk in llamaindex_chat_stream(
+            message=request.message,
+            history=history,
+            system_prompt=request.system_prompt or "You are a helpful assistant.",
+            model=request.model or "gpt-4o-mini",
+            temperature=request.temperature or 0.7,
+        ):
+            yield f"data: {chunk}\n\n"
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+@app.post("/ai/llamaindex/completion", response_model=LlamaIndexCompletionResponse)
+async def llamaindex_completion_endpoint(request: LlamaIndexCompletionRequest):
+    """Get a simple completion from the AI without conversation history."""
+    completion = llamaindex_completion(
+        prompt=request.prompt,
+        model=request.model or "gpt-4o-mini",
+        temperature=request.temperature or 0.7,
+    )
+    return LlamaIndexCompletionResponse(completion=completion)
+{{/if}}
+{{#if (includes pythonAi "openai-sdk")}}
+
+
+# OpenAI SDK endpoints
+@app.post("/ai/openai/chat", response_model=OpenAIChatResponse)
+async def openai_chat_endpoint(request: OpenAIChatRequest):
+    """Chat with OpenAI's API directly.
+
+    Supports conversation history for multi-turn conversations.
+    """
+    history = None
+    if request.history:
+        history = [{"role": msg.role, "content": msg.content} for msg in request.history]
+
+    response = await openai_chat(
+        message=request.message,
+        history=history,
+        system_prompt=request.system_prompt or "You are a helpful assistant.",
+        model=request.model or "gpt-4o-mini",
+        temperature=request.temperature or 0.7,
+    )
+    return OpenAIChatResponse(response=response)
+
+
+@app.post("/ai/openai/chat/stream")
+async def openai_chat_stream_endpoint(request: OpenAIChatRequest):
+    """Chat with OpenAI's API with streaming response.
+
+    Returns a Server-Sent Events stream of the response.
+    """
+    history = None
+    if request.history:
+        history = [{"role": msg.role, "content": msg.content} for msg in request.history]
+
+    async def generate():
+        async for chunk in openai_chat_stream(
+            message=request.message,
+            history=history,
+            system_prompt=request.system_prompt or "You are a helpful assistant.",
+            model=request.model or "gpt-4o-mini",
+            temperature=request.temperature or 0.7,
+        ):
+            yield f"data: {chunk}\n\n"
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+@app.post("/ai/openai/completion", response_model=OpenAICompletionResponse)
+async def openai_completion_endpoint(request: OpenAICompletionRequest):
+    """Get a simple completion from OpenAI without conversation history."""
+    completion = await openai_completion(
+        prompt=request.prompt,
+        model=request.model or "gpt-4o-mini",
+        temperature=request.temperature or 0.7,
+    )
+    return OpenAICompletionResponse(completion=completion)
+{{/if}}
+{{#if (includes pythonAi "anthropic-sdk")}}
+
+
+# Anthropic SDK endpoints
+@app.post("/ai/anthropic/chat", response_model=AnthropicChatResponse)
+async def anthropic_chat_endpoint(request: AnthropicChatRequest):
+    """Chat with Anthropic's Claude API directly.
+
+    Supports conversation history for multi-turn conversations.
+    """
+    history = None
+    if request.history:
+        history = [{"role": msg.role, "content": msg.content} for msg in request.history]
+
+    response = await anthropic_chat(
+        message=request.message,
+        history=history,
+        system_prompt=request.system_prompt or "You are a helpful assistant.",
+        model=request.model or "claude-sonnet-4-20250514",
+        max_tokens=request.max_tokens or 4096,
+        temperature=request.temperature or 0.7,
+    )
+    return AnthropicChatResponse(response=response)
+
+
+@app.post("/ai/anthropic/chat/stream")
+async def anthropic_chat_stream_endpoint(request: AnthropicChatRequest):
+    """Chat with Anthropic's Claude API with streaming response.
+
+    Returns a Server-Sent Events stream of the response.
+    """
+    history = None
+    if request.history:
+        history = [{"role": msg.role, "content": msg.content} for msg in request.history]
+
+    async def generate():
+        async for chunk in anthropic_chat_stream(
+            message=request.message,
+            history=history,
+            system_prompt=request.system_prompt or "You are a helpful assistant.",
+            model=request.model or "claude-sonnet-4-20250514",
+            max_tokens=request.max_tokens or 4096,
+            temperature=request.temperature or 0.7,
+        ):
+            yield f"data: {chunk}\n\n"
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+@app.post("/ai/anthropic/completion", response_model=AnthropicCompletionResponse)
+async def anthropic_completion_endpoint(request: AnthropicCompletionRequest):
+    """Get a simple completion from Anthropic without conversation history."""
+    completion = await anthropic_completion(
+        prompt=request.prompt,
+        model=request.model or "claude-sonnet-4-20250514",
+        max_tokens=request.max_tokens or 4096,
+        temperature=request.temperature or 0.7,
+    )
+    return AnthropicCompletionResponse(completion=completion)
+{{/if}}
+{{#if (includes pythonAi "langgraph")}}
+
+
+# LangGraph AI endpoints
+@app.post("/ai/langgraph/chat", response_model=LangGraphChatResponse)
+async def langgraph_chat_endpoint(request: LangGraphChatRequest):
+    """Chat with an AI assistant using LangGraph.
+
+    Supports conversation history for multi-turn conversations.
+    """
+    history = None
+    if request.history:
+        history = [{"role": msg.role, "content": msg.content} for msg in request.history]
+
+    response = await langgraph_chat(
+        message=request.message,
+        history=history,
+        system_prompt=request.system_prompt or "You are a helpful assistant.",
+        model=request.model or "gpt-4o-mini",
+        temperature=request.temperature or 0.7,
+    )
+    return LangGraphChatResponse(response=response)
+
+
+@app.post("/ai/langgraph/chat/stream")
+async def langgraph_chat_stream_endpoint(request: LangGraphChatRequest):
+    """Chat with an AI assistant using LangGraph with streaming response.
+
+    Returns a Server-Sent Events stream of the response.
+    """
+    history = None
+    if request.history:
+        history = [{"role": msg.role, "content": msg.content} for msg in request.history]
+
+    async def generate():
+        async for chunk in langgraph_chat_stream(
+            message=request.message,
+            history=history,
+            system_prompt=request.system_prompt or "You are a helpful assistant.",
+            model=request.model or "gpt-4o-mini",
+            temperature=request.temperature or 0.7,
+        ):
+            yield f"data: {chunk}\n\n"
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+@app.post("/ai/langgraph/agent", response_model=LangGraphAgentResponse)
+async def langgraph_agent_endpoint(request: LangGraphAgentRequest):
+    """Run a LangGraph agent that can perform multi-step reasoning.
+
+    The agent can loop through multiple reasoning steps before providing
+    a final answer. Useful for complex tasks that require planning.
+    """
+    history = None
+    if request.history:
+        history = [{"role": msg.role, "content": msg.content} for msg in request.history]
+
+    response = await langgraph_agent(
+        message=request.message,
+        history=history,
+        system_prompt=request.system_prompt or "You are a helpful assistant. Think step by step.",
+        model=request.model or "gpt-4o-mini",
+        temperature=request.temperature or 0.7,
+        max_iterations=request.max_iterations or 10,
+    )
+    return LangGraphAgentResponse(response=response)
+
+
+@app.post("/ai/langgraph/completion", response_model=LangGraphCompletionResponse)
+async def langgraph_completion_endpoint(request: LangGraphCompletionRequest):
+    """Get a simple completion using LangGraph without conversation history."""
+    completion = langgraph_completion(
+        prompt=request.prompt,
+        model=request.model or "gpt-4o-mini",
+        temperature=request.temperature or 0.7,
+    )
+    return LangGraphCompletionResponse(completion=completion)
+{{/if}}
+{{#if (includes pythonAi "crewai")}}
+
+
+# CrewAI endpoints
+@app.post("/ai/crewai/research", response_model=CrewAIResearchResponse)
+async def crewai_research_endpoint(request: CrewAIResearchRequest):
+    """Run a research crew that analyzes a topic.
+
+    Creates a crew with researcher and writer agents to analyze
+    a given topic and produce a comprehensive summary.
+    """
+    result = await crewai_research(
+        topic=request.topic,
+        verbose=request.verbose if request.verbose is not None else True,
+    )
+    return CrewAIResearchResponse(result=result)
+
+
+@app.post("/ai/crewai/analysis", response_model=CrewAIAnalysisResponse)
+async def crewai_analysis_endpoint(request: CrewAIAnalysisRequest):
+    """Run an analysis crew that analyzes data.
+
+    Creates a crew with an analyst agent to examine
+    the provided data and generate insights.
+    """
+    result = await crewai_analysis(
+        data=request.data,
+        analysis_type=request.analysis_type or "general",
+        verbose=request.verbose if request.verbose is not None else True,
+    )
+    return CrewAIAnalysisResponse(result=result)
+
+
+@app.post("/ai/crewai/custom", response_model=CrewAICustomResponse)
+async def crewai_custom_endpoint(request: CrewAICustomRequest):
+    """Run a custom crew with a single agent and task.
+
+    Provides a flexible way to create and run a crew with
+    custom agent and task configurations.
+    """
+    result = await crewai_custom(
+        task_description=request.task_description,
+        expected_output=request.expected_output,
+        agent_role=request.agent_role or "Assistant",
+        agent_goal=request.agent_goal or "Complete the assigned task efficiently",
+        agent_backstory=request.agent_backstory or "You are a helpful assistant capable of handling various tasks.",
+        verbose=request.verbose if request.verbose is not None else True,
+    )
+    return CrewAICustomResponse(result=result)
+
+
+@app.post("/ai/crewai/completion", response_model=CrewAICompletionResponse)
+async def crewai_completion_endpoint(request: CrewAICompletionRequest):
+    """Get a simple completion using CrewAI."""
+    completion = crewai_completion(
+        prompt=request.prompt,
+        verbose=request.verbose if request.verbose is not None else False,
+    )
+    return CrewAICompletionResponse(completion=completion)
+{{/if}}
+{{#if (includes pythonAi "haystack")}}
+
+
+# Haystack endpoints
+@app.post("/ai/haystack/ask", response_model=HaystackQuestionResponse)
+async def haystack_question_endpoint(request: HaystackQuestionRequest):
+    """Answer a question using a Haystack prompt pipeline."""
+    answer = haystack_answer_question(
+        question=request.question,
+        context=request.context,
+        model=request.model or "gpt-4o-mini",
+        temperature=request.temperature or 0.7,
+    )
+    return HaystackQuestionResponse(answer=answer)
+{{/if}}
+{{#if (eq pythonTaskQueue "celery")}}
+
+
+# Celery task endpoints
+@app.post("/tasks/submit", response_model=TaskSubmitResponse)
+async def submit_task(request: TaskSubmitRequest):
+    """Submit a background task for processing.
+
+    Returns immediately with a task ID that can be used
+    to check the task status.
+    """
+    result = example_task.delay(request.message)
+    return TaskSubmitResponse(
+        task_id=result.id,
+        status="PENDING",
+    )
+
+
+@app.get("/tasks/{task_id}", response_model=TaskStatusResponse)
+async def get_task_status(task_id: str):
+    """Get the status of a submitted task.
+
+    Returns the current status and result if completed.
+    """
+    result = AsyncResult(task_id, app=celery_app)
+
+    response = TaskStatusResponse(
+        task_id=task_id,
+        status=result.status,
+    )
+
+    if result.ready():
+        if result.successful():
+            response.result = result.result
+        else:
+            response.error = str(result.result)
+    elif result.status == "PROCESSING":
+        # Get progress info from task meta
+        meta = result.info
+        if meta and isinstance(meta, dict):
+            response.progress = meta.get("progress")
+
+    return response
+
+
+@app.post("/tasks/{task_id}/revoke", response_model=TaskRevokeResponse)
+async def revoke_task(task_id: str, request: TaskRevokeRequest):
+    """Revoke a pending or running task.
+
+    If terminate is True, the task will be terminated even
+    if it's currently running.
+    """
+    celery_app.control.revoke(task_id, terminate=request.terminate)
+    return TaskRevokeResponse(
+        task_id=task_id,
+        revoked=True,
+    )
+
+
+@app.post("/tasks/email", response_model=TaskSubmitResponse)
+async def submit_email_task(request: EmailTaskRequest):
+    """Submit an email sending task.
+
+    The email will be sent asynchronously in the background.
+    """
+    result = send_email_task.delay(
+        to_email=request.to_email,
+        subject=request.subject,
+        body=request.body,
+    )
+    return TaskSubmitResponse(
+        task_id=result.id,
+        status="PENDING",
+    )
+
+
+@app.post("/tasks/process-data", response_model=TaskSubmitResponse)
+async def submit_data_processing_task(request: DataProcessRequest):
+    """Submit a data processing task.
+
+    The data will be processed asynchronously. Check task
+    status for progress updates.
+    """
+    result = process_data_task.delay(
+        data=request.data,
+        operation=request.operation or "default",
+    )
+    return TaskSubmitResponse(
+        task_id=result.id,
+        status="PENDING",
+    )
+{{/if}}
+{{#if (and (eq pythonOrm "none") (eq pythonValidation "pydantic"))}}
+
+
+# In-memory storage for demo (replace with database in production)
+_items: dict[int, ItemResponse] = {}
+_next_id = 1
+
+
+@app.post("/items", response_model=ItemResponse, status_code=201)
+async def create_item(item: ItemCreate):
+    """Create a new item with validated data."""
+    global _next_id
+    item_response = ItemResponse(
+        id=_next_id,
+        name=item.name,
+        description=item.description,
+        price=item.price,
+        quantity=item.quantity,
+    )
+    _items[_next_id] = item_response
+    _next_id += 1
+    return item_response
+
+
+@app.get("/items", response_model=list[ItemResponse])
+async def list_items():
+    """List all items."""
+    return list(_items.values())
+
+
+@app.get("/items/{item_id}", response_model=ItemResponse)
+async def get_item(item_id: int):
+    """Get an item by ID."""
+    if item_id not in _items:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return _items[item_id]
+
+
+@app.post("/contact", response_model=MessageResponse)
+async def send_message(message: MessageCreate):
+    """Send a contact message with validated email."""
+    # In a real app, this would send an email or store the message
+    return MessageResponse(
+        success=True,
+        message=f"Message received from {message.email}",
+    )
+{{/if}}
+{{#if (eq pythonOrm "sqlalchemy")}}
+
+
+# User endpoints
+{{#if (eq pythonValidation "pydantic")}}
+@app.post("/users", response_model=UserResponse, status_code=201)
+async def create_user(user: UserCreate, db: DbSession):
+    """Create a new user."""
+    existing = crud.get_user_by_email(db, user.email)
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db, user)
+
+
+@app.get("/users", response_model=list[UserResponse])
+async def list_users(db: DbSession, skip: int = 0, limit: int = 100):
+    """List all users."""
+    return crud.get_users(db, skip=skip, limit=limit)
+
+
+@app.get("/users/{user_id}", response_model=UserResponse)
+async def get_user(user_id: int, db: DbSession):
+    """Get a user by ID."""
+    user = crud.get_user(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@app.patch("/users/{user_id}", response_model=UserResponse)
+async def update_user(user_id: int, user: UserUpdate, db: DbSession):
+    """Update a user."""
+    updated = crud.update_user(db, user_id, user)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated
+
+
+@app.delete("/users/{user_id}", status_code=204)
+async def delete_user(user_id: int, db: DbSession):
+    """Delete a user."""
+    if not crud.delete_user(db, user_id):
+        raise HTTPException(status_code=404, detail="User not found")
+
+
+# Post endpoints
+@app.post("/posts", response_model=PostResponse, status_code=201)
+async def create_post(post: PostCreate, db: DbSession):
+    """Create a new post."""
+    # Verify author exists
+    if crud.get_user(db, post.author_id) is None:
+        raise HTTPException(status_code=400, detail="Author not found")
+    return crud.create_post(db, post)
+
+
+@app.get("/posts", response_model=list[PostResponse])
+async def list_posts(db: DbSession, skip: int = 0, limit: int = 100):
+    """List all posts."""
+    return crud.get_posts(db, skip=skip, limit=limit)
+
+
+@app.get("/posts/{post_id}", response_model=PostResponse)
+async def get_post(post_id: int, db: DbSession):
+    """Get a post by ID."""
+    post = crud.get_post(db, post_id)
+    if post is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return post
+
+
+@app.patch("/posts/{post_id}", response_model=PostResponse)
+async def update_post(post_id: int, post: PostUpdate, db: DbSession):
+    """Update a post."""
+    updated = crud.update_post(db, post_id, post)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return updated
+
+
+@app.delete("/posts/{post_id}", status_code=204)
+async def delete_post(post_id: int, db: DbSession):
+    """Delete a post."""
+    if not crud.delete_post(db, post_id):
+        raise HTTPException(status_code=404, detail="Post not found")
+{{/if}}
+{{/if}}
+{{#if (eq pythonOrm "sqlmodel")}}
+
+
+# User endpoints
+@app.post("/users", response_model=UserResponse, status_code=201)
+async def create_user(user: UserCreate, db: DbSession):
+    """Create a new user."""
+    existing = crud.get_user_by_email(db, user.email)
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db, user)
+
+
+@app.get("/users", response_model=list[UserResponse])
+async def list_users(db: DbSession, skip: int = 0, limit: int = 100):
+    """List all users."""
+    return crud.get_users(db, skip=skip, limit=limit)
+
+
+@app.get("/users/{user_id}", response_model=UserResponse)
+async def get_user(user_id: int, db: DbSession):
+    """Get a user by ID."""
+    user = crud.get_user(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@app.patch("/users/{user_id}", response_model=UserResponse)
+async def update_user(user_id: int, user: UserUpdate, db: DbSession):
+    """Update a user."""
+    updated = crud.update_user(db, user_id, user)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated
+
+
+@app.delete("/users/{user_id}", status_code=204)
+async def delete_user(user_id: int, db: DbSession):
+    """Delete a user."""
+    if not crud.delete_user(db, user_id):
+        raise HTTPException(status_code=404, detail="User not found")
+
+
+# Post endpoints
+@app.post("/posts", response_model=PostResponse, status_code=201)
+async def create_post(post: PostCreate, db: DbSession):
+    """Create a new post."""
+    # Verify author exists
+    if crud.get_user(db, post.author_id) is None:
+        raise HTTPException(status_code=400, detail="Author not found")
+    return crud.create_post(db, post)
+
+
+@app.get("/posts", response_model=list[PostResponse])
+async def list_posts(db: DbSession, skip: int = 0, limit: int = 100):
+    """List all posts."""
+    return crud.get_posts(db, skip=skip, limit=limit)
+
+
+@app.get("/posts/{post_id}", response_model=PostResponse)
+async def get_post(post_id: int, db: DbSession):
+    """Get a post by ID."""
+    post = crud.get_post(db, post_id)
+    if post is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return post
+
+
+@app.patch("/posts/{post_id}", response_model=PostResponse)
+async def update_post(post_id: int, post: PostUpdate, db: DbSession):
+    """Update a post."""
+    updated = crud.update_post(db, post_id, post)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return updated
+
+
+@app.delete("/posts/{post_id}", status_code=204)
+async def delete_post(post_id: int, db: DbSession):
+    """Delete a post."""
+    if not crud.delete_post(db, post_id):
+        raise HTTPException(status_code=404, detail="Post not found")
+{{/if}}
+{{#if (eq pythonOrm "tortoise-orm")}}
+
+
+# User endpoints
+@app.post("/users", status_code=201)
+async def create_user(email: str, name: str | None = None):
+    """Create a new user."""
+    existing = await crud.get_user_by_email(email)
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    user = await crud.create_user(email=email, name=name)
+    return {"id": user.id, "email": user.email, "name": user.name}
+
+
+@app.get("/users")
+async def list_users(skip: int = 0, limit: int = 100):
+    """List all users."""
+    users = await crud.get_users(skip=skip, limit=limit)
+    return [{"id": u.id, "email": u.email, "name": u.name} for u in users]
+
+
+@app.get("/users/{user_id}")
+async def get_user(user_id: int):
+    """Get a user by ID."""
+    user = await crud.get_user(user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"id": user.id, "email": user.email, "name": user.name}
+
+
+@app.patch("/users/{user_id}")
+async def update_user(user_id: int, email: str | None = None, name: str | None = None):
+    """Update a user."""
+    updated = await crud.update_user(user_id, email=email, name=name)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"id": updated.id, "email": updated.email, "name": updated.name}
+
+
+@app.delete("/users/{user_id}", status_code=204)
+async def delete_user(user_id: int):
+    """Delete a user."""
+    if not await crud.delete_user(user_id):
+        raise HTTPException(status_code=404, detail="User not found")
+
+
+# Post endpoints
+@app.post("/posts", status_code=201)
+async def create_post(title: str, author_id: int, content: str | None = None):
+    """Create a new post."""
+    if await crud.get_user(author_id) is None:
+        raise HTTPException(status_code=400, detail="Author not found")
+    post = await crud.create_post(title=title, author_id=author_id, content=content)
+    return {"id": post.id, "title": post.title, "content": post.content, "author_id": post.author_id}
+
+
+@app.get("/posts")
+async def list_posts(skip: int = 0, limit: int = 100):
+    """List all posts."""
+    posts = await crud.get_posts(skip=skip, limit=limit)
+    return [{"id": p.id, "title": p.title, "content": p.content, "author_id": p.author_id} for p in posts]
+
+
+@app.get("/posts/{post_id}")
+async def get_post(post_id: int):
+    """Get a post by ID."""
+    post = await crud.get_post(post_id)
+    if post is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return {"id": post.id, "title": post.title, "content": post.content, "author_id": post.author_id}
+
+
+@app.patch("/posts/{post_id}")
+async def update_post(post_id: int, title: str | None = None, content: str | None = None):
+    """Update a post."""
+    updated = await crud.update_post(post_id, title=title, content=content)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return {"id": updated.id, "title": updated.title, "content": updated.content, "author_id": updated.author_id}
+
+
+@app.delete("/posts/{post_id}", status_code=204)
+async def delete_post(post_id: int):
+    """Delete a post."""
+    if not await crud.delete_post(post_id):
+        raise HTTPException(status_code=404, detail="Post not found")
+{{/if}}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        "app.main:app",
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "8000")),
+        reload=True,
+{{#if (ne pythonLogging "none")}}
+        log_config=None,
+{{/if}}
+    )

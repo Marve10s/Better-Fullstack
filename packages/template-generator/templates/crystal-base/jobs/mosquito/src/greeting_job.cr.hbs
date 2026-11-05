@@ -1,0 +1,33 @@
+require "mosquito"
+
+Mosquito.configure do |settings|
+  settings.global_prefix = ENV["JOBS_QUEUE"]?
+  settings.redis_url = ENV.fetch("REDIS_URL", "redis://localhost:6379")
+end
+
+class GreetingJob < Mosquito::QueuedJob
+  @@results : Redis::Client?
+
+  param id : String
+  param name : String
+
+  def perform
+    GreetingJob.results.set(GreetingJob.key(id), "Hello, #{name}!", ex: 1.hour)
+  end
+
+  def self.schedule(id : String, name : String) : Nil
+    new(id: id, name: name).enqueue
+  end
+
+  def self.result(id : String) : String?
+    results.get(key(id))
+  end
+
+  def self.results : Redis::Client
+    @@results ||= Redis::Client.new(URI.parse(ENV.fetch("REDIS_URL", "redis://localhost:6379")))
+  end
+
+  def self.key(id : String) : String
+    "{{shardName}}:#{ENV.fetch("JOBS_QUEUE", "default")}:greeting-jobs:#{id}"
+  end
+end

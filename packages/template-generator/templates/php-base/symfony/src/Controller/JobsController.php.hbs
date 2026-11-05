@@ -1,0 +1,33 @@
+{{#if (ne phpJobQueue "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use App\JobQueue;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[AsController]
+final readonly class JobsController
+{
+    public function __construct(private JobQueue $jobs)
+    {
+    }
+
+    #[Route('/api/jobs', methods: ['POST'])]
+    public function dispatch(): JsonResponse
+    {
+        return new JsonResponse(['id' => $this->jobs->dispatch(), 'status' => 'queued'], 202);
+    }
+
+    #[Route('/api/jobs/{id}', methods: ['GET'])]
+    public function status(string $id): JsonResponse
+    {
+        $status = $this->jobs->status($id);
+        return $status === null ? new JsonResponse(['error' => 'not_found'], 404) : new JsonResponse($status);
+    }
+}
+{{/if}}

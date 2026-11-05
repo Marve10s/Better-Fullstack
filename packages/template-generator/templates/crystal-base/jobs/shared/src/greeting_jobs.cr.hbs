@@ -1,0 +1,35 @@
+require "./greeting"
+require "./greeting_request"
+require "./greeting_job"
+
+module GreetingJobs
+  def self.enqueue(raw_body : String) : GreetingRequest::Result
+    GreetingRequest.with_name(raw_body) do |value|
+      begin
+        name = Greeting.name(value)
+        id = Random::Secure.hex(8)
+        GreetingJob.schedule(id, name)
+        GreetingRequest::Result.new(202, {id: id, status: "queued"}.to_json)
+      rescue ex : ArgumentError
+        GreetingRequest::Result.new(422, {error: ex.message}.to_json)
+      end
+    end
+  rescue IO::Error{{#if (eq crystalJobs "sidekiq")}} | Redis::ConnectionError{{/if}}
+    unavailable
+  end
+
+  def self.status(id : String?) : GreetingRequest::Result
+    return GreetingRequest::Result.new(422, {error: "id is required"}.to_json) unless id && !id.empty?
+    if message = GreetingJob.result(id)
+      GreetingRequest::Result.new(200, {id: id, status: "done", message: message}.to_json)
+    else
+      GreetingRequest::Result.new(200, {id: id, status: "queued"}.to_json)
+    end
+  rescue IO::Error{{#if (eq crystalJobs "sidekiq")}} | Redis::ConnectionError{{/if}}
+    unavailable
+  end
+
+  private def self.unavailable : GreetingRequest::Result
+    GreetingRequest::Result.new(503, {error: "job queue unavailable"}.to_json)
+  end
+end

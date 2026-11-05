@@ -56,9 +56,34 @@ import {
   ElixirApplicationFrameworkSchema,
   ElixirDocumentationSchema,
   ElixirClusteringSchema,
+  ElixirLoggingSchema,
+  ElixirConfigSchema,
+  ElixirMessageQueueSchema,
+  ElixirTemplatingSchema,
+  ElixirCliSchema,
   ElixirRealtimeSchema,
   ElixirTestingSchema,
   ElixirValidationSchema,
+  RubyWebFrameworkSchema,
+  RubyOrmSchema,
+  RubyAuthSchema,
+  RubyTestingSchema,
+  RubyValidationSchema,
+  RubyCacheSchema,
+  RubyJobQueueSchema,
+  RubyEmailSchema,
+  RubyLoggingSchema,
+  RubyHttpClientSchema,
+  PhpWebFrameworkSchema,
+  PhpOrmSchema,
+  PhpAuthSchema,
+  PhpTestingSchema,
+  PhpValidationSchema,
+  PhpCacheSchema,
+  PhpJobQueueSchema,
+  PhpEmailSchema,
+  PhpLoggingSchema,
+  PhpHttpClientSchema,
   ElixirWebFrameworkSchema,
   JavaAuthSchema,
   JavaBuildToolSchema,
@@ -259,6 +284,46 @@ export function getDotnetLibrariesJsonSchema() {
   return z.toJSONSchema(DotnetLibrariesSchema);
 }
 
+export function getPhpWebFrameworkJsonSchema() {
+  return z.toJSONSchema(PhpWebFrameworkSchema);
+}
+
+export function getPhpOrmJsonSchema() {
+  return z.toJSONSchema(PhpOrmSchema);
+}
+
+export function getPhpAuthJsonSchema() {
+  return z.toJSONSchema(PhpAuthSchema);
+}
+
+export function getPhpTestingJsonSchema() {
+  return z.toJSONSchema(PhpTestingSchema);
+}
+
+export function getPhpValidationJsonSchema() {
+  return z.toJSONSchema(PhpValidationSchema);
+}
+
+export function getPhpCacheJsonSchema() {
+  return z.toJSONSchema(PhpCacheSchema);
+}
+
+export function getPhpJobQueueJsonSchema() {
+  return z.toJSONSchema(PhpJobQueueSchema);
+}
+
+export function getPhpEmailJsonSchema() {
+  return z.toJSONSchema(PhpEmailSchema);
+}
+
+export function getPhpLoggingJsonSchema() {
+  return z.toJSONSchema(PhpLoggingSchema);
+}
+
+export function getPhpHttpClientJsonSchema() {
+  return z.toJSONSchema(PhpHttpClientSchema);
+}
+
 export function getElixirWebFrameworkJsonSchema() {
   return z.toJSONSchema(ElixirWebFrameworkSchema);
 }
@@ -335,6 +400,26 @@ export function getElixirClusteringJsonSchema() {
   return z.toJSONSchema(ElixirClusteringSchema);
 }
 
+export function getElixirLoggingJsonSchema() {
+  return z.toJSONSchema(ElixirLoggingSchema);
+}
+
+export function getElixirConfigJsonSchema() {
+  return z.toJSONSchema(ElixirConfigSchema);
+}
+
+export function getElixirMessageQueueJsonSchema() {
+  return z.toJSONSchema(ElixirMessageQueueSchema);
+}
+
+export function getElixirTemplatingJsonSchema() {
+  return z.toJSONSchema(ElixirTemplatingSchema);
+}
+
+export function getElixirCliJsonSchema() {
+  return z.toJSONSchema(ElixirCliSchema);
+}
+
 export function getElixirDeployJsonSchema() {
   return z.toJSONSchema(ElixirDeploySchema);
 }
@@ -384,6 +469,26 @@ export function getAllJsonSchemas() {
     javaTestingLibraries: getJavaTestingLibrariesJsonSchema(),
     mobileLibraries: getMobileLibrariesJsonSchema(),
     dotnetLibraries: getDotnetLibrariesJsonSchema(),
+    rubyWebFramework: z.toJSONSchema(RubyWebFrameworkSchema),
+    rubyOrm: z.toJSONSchema(RubyOrmSchema),
+    rubyAuth: z.toJSONSchema(RubyAuthSchema),
+    rubyTesting: z.toJSONSchema(RubyTestingSchema),
+    rubyValidation: z.toJSONSchema(RubyValidationSchema),
+    rubyCache: z.toJSONSchema(RubyCacheSchema),
+    rubyJobQueue: z.toJSONSchema(RubyJobQueueSchema),
+    rubyEmail: z.toJSONSchema(RubyEmailSchema),
+    rubyLogging: z.toJSONSchema(RubyLoggingSchema),
+    rubyHttpClient: z.toJSONSchema(RubyHttpClientSchema),
+    phpWebFramework: getPhpWebFrameworkJsonSchema(),
+    phpOrm: getPhpOrmJsonSchema(),
+    phpAuth: getPhpAuthJsonSchema(),
+    phpTesting: getPhpTestingJsonSchema(),
+    phpValidation: getPhpValidationJsonSchema(),
+    phpCache: getPhpCacheJsonSchema(),
+    phpJobQueue: getPhpJobQueueJsonSchema(),
+    phpEmail: getPhpEmailJsonSchema(),
+    phpLogging: getPhpLoggingJsonSchema(),
+    phpHttpClient: getPhpHttpClientJsonSchema(),
     elixirWebFramework: getElixirWebFrameworkJsonSchema(),
     elixirOrm: getElixirOrmJsonSchema(),
     elixirAuth: getElixirAuthJsonSchema(),
@@ -403,6 +508,11 @@ export function getAllJsonSchemas() {
     elixirApplicationFramework: getElixirApplicationFrameworkJsonSchema(),
     elixirDocumentation: getElixirDocumentationJsonSchema(),
     elixirClustering: getElixirClusteringJsonSchema(),
+    elixirLogging: getElixirLoggingJsonSchema(),
+    elixirConfig: getElixirConfigJsonSchema(),
+    elixirMessageQueue: getElixirMessageQueueJsonSchema(),
+    elixirTemplating: getElixirTemplatingJsonSchema(),
+    elixirCli: getElixirCliJsonSchema(),
     elixirDeploy: getElixirDeployJsonSchema(),
     createInput: getCreateInputJsonSchema(),
     projectConfig: getProjectConfigJsonSchema(),

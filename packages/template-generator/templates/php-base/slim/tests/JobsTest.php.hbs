@@ -1,0 +1,44 @@
+{{#if (ne phpJobQueue "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Application;
+use App\JobQueue;
+use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Psr7\Factory\ServerRequestFactory;
+
+final class JobsTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        putenv('QUEUE_PATH=' . sys_get_temp_dir() . '/jobs-' . bin2hex(random_bytes(6)));
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('QUEUE_PATH');
+    }
+
+    private static function decode(ResponseInterface $response): mixed
+    {
+        return json_decode((string) $response->getBody(), true, 32, JSON_THROW_ON_ERROR);
+    }
+
+    public function testWorkerProcessesAQueuedJob(): void
+    {
+        $app = Application::create(jobs: JobQueue::fromEnvironment(''));
+        $factory = new ServerRequestFactory();
+        $queued = $app->handle($factory->createServerRequest('POST', '/api/jobs'));
+        self::assertSame(202, $queued->getStatusCode());
+        $id = self::decode($queued)['id'];
+        self::assertSame(['id' => $id, 'status' => 'queued'], self::decode($app->handle($factory->createServerRequest('GET', '/api/jobs/' . $id))));
+        JobQueue::fromEnvironment('')->work(true);
+        self::assertSame('done', self::decode($app->handle($factory->createServerRequest('GET', '/api/jobs/' . $id)))['status']);
+        self::assertSame(404, $app->handle($factory->createServerRequest('GET', '/api/jobs/' . str_repeat('0', 32)))->getStatusCode());
+    }
+}
+{{/if}}

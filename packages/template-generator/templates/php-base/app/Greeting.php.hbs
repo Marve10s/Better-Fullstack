@@ -1,0 +1,93 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+{{#if (eq phpValidation "laravel-validation")}}
+use Illuminate\Support\Facades\Validator;
+{{/if}}
+use InvalidArgumentException;
+{{#if (eq phpValidation "respect-validation")}}
+use Respect\Validation\Exceptions\ValidationException;
+use Respect\Validation\ValidatorBuilder as v;
+{{/if}}
+use stdClass;
+{{#if (eq phpValidation "symfony-validator")}}
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Validation;
+{{/if}}
+
+final readonly class Greeting
+{
+    private function __construct(public string $name, public int $repetitions)
+    {
+    }
+
+    public static function fromJson(string $json): self
+    {
+        $body = json_decode($json, false, 32, JSON_THROW_ON_ERROR);
+        if (!$body instanceof stdClass) {
+            throw new InvalidArgumentException('Expected a JSON object.');
+        }
+        $fields = get_object_vars($body);
+{{#if (eq phpValidation "symfony-validator")}}
+        $violations = Validation::createValidator()->validate($fields, new Assert\Collection(fields: [
+            'name' => new Assert\Sequentially([
+                new Assert\NotNull(),
+                new Assert\Type('string'),
+                new Assert\NotBlank(normalizer: 'trim'),
+                new Assert\Length(max: 80, normalizer: 'trim', countUnit: Assert\Length::COUNT_BYTES),
+            ]),
+            'repetitions' => new Assert\Optional(new Assert\Sequentially([
+                new Assert\NotNull(),
+                new Assert\Type('int'),
+                new Assert\Range(min: 1, max: 5),
+            ])),
+        ]));
+        if (count($violations) > 0) {
+            throw new InvalidArgumentException($violations[0]->getPropertyPath() . ' ' . $violations[0]->getMessage());
+        }
+{{else if (eq phpValidation "respect-validation")}}
+        try {
+            v::keySet(
+                v::key('name', v::shortCircuit(v::stringType(), v::after('trim', v::length(v::between(1, 80))))),
+                v::keyOptional('repetitions', v::intType()->between(1, 5)),
+            )->assert($fields);
+        } catch (ValidationException $error) {
+            throw new InvalidArgumentException($error->getMessage());
+        }
+{{else if (eq phpValidation "laravel-validation")}}
+        if (array_diff(array_keys($fields), ['name', 'repetitions']) !== []) {
+            throw new InvalidArgumentException('Only name and repetitions are accepted.');
+        }
+        $validator = Validator::make($fields, [
+            'name' => ['required', 'string', 'max:80'],
+            'repetitions' => ['sometimes', 'integer:strict', 'between:1,5'],
+        ]);
+        if ($validator->fails()) {
+            throw new InvalidArgumentException($validator->errors()->first());
+        }
+{{else}}
+        if (array_diff(array_keys($fields), ['name', 'repetitions']) !== []) {
+            throw new InvalidArgumentException('Only name and repetitions are accepted.');
+        }
+{{/if}}
+        $name = $fields['name'] ?? null;
+        $repetitions = array_key_exists('repetitions', $fields) ? $fields['repetitions'] : 1;
+{{#if (eq phpValidation "none")}}
+        if (!is_string($name) || trim($name) === '' || strlen(trim($name)) > 80) {
+            throw new InvalidArgumentException('name must contain 1 to 80 bytes of text.');
+        }
+        if (!is_int($repetitions) || $repetitions < 1 || $repetitions > 5) {
+            throw new InvalidArgumentException('repetitions must be an integer from 1 to 5.');
+        }
+{{/if}}
+        return new self(trim($name), $repetitions);
+    }
+
+    public function message(): string
+    {
+        return implode(' ', array_fill(0, $this->repetitions, "Hello, {$this->name}!"));
+    }
+}

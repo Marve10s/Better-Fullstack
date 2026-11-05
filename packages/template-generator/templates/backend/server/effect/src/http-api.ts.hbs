@@ -1,0 +1,23 @@
+{{#if useEffectHttpApi}}
+import { HttpApi, HttpApiBuilder, HttpApiEndpoint, HttpApiGroup } from "@effect/platform";
+import { Effect } from "effect";
+
+import { HealthResponse, HealthService, HealthUnavailable } from "./health";
+
+export const Api = HttpApi.make("api").add(
+	HttpApiGroup.make("health").add(
+		HttpApiEndpoint.get("check", "/health")
+			.addSuccess(HealthResponse)
+			.addError(HealthUnavailable, { status: 503 })
+	)
+);
+
+export const HealthHandlersLive = HttpApiBuilder.group(Api, "health", (handlers) =>
+	handlers.handle("check", () =>
+		Effect.gen(function* () {
+			const health = yield* HealthService;
+			return yield* health.check;
+		})
+	)
+);
+{{/if}}

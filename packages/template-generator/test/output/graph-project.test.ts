@@ -23,11 +23,114 @@ async function generate(part: string[]) {
 }
 
 describe("multi-ecosystem project output", () => {
+  it("rejects duplicate and nested native service directories before emitting files", async () => {
+    for (const destination of ["services/api", "services/api/jobs"]) {
+      const result = await generateVirtualProject({
+        config: configFor([
+          "backend:go:gin:api@services/api",
+          `backend:go:echo:worker@${destination}`,
+        ]),
+        templates: EMBEDDED_TEMPLATES,
+      });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("target paths overlap");
+      expect(result.tree).toBeUndefined();
+    }
+  });
+
+  it("rejects unsafe paths from programmatic graph parts before emitting files", async () => {
+    const config = configFor(["backend:go:gin:api", "backend:go:echo:worker"]);
+    const result = await generateVirtualProject({
+      config: {
+        ...config,
+        stackParts: config.stackParts?.map((part) =>
+          part.id === "worker" ? { ...part, targetPath: "../outside" } : part,
+        ),
+      },
+      templates: EMBEDDED_TEMPLATES,
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("Invalid target path");
+    expect(result.tree).toBeUndefined();
+  });
+
+  it("rejects relocated JavaScript database packages and wires their default directory", async () => {
+    const specs = ["backend:typescript:hono", "backend.orm:typescript:drizzle"];
+    const result = await generateVirtualProject({
+      config: configFor([...specs, "database:universal:postgres@services/data"]),
+      templates: EMBEDDED_TEMPLATES,
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("packages/db");
+    expect(result.tree).toBeUndefined();
+
+    const output = await generate([...specs, "database:universal:postgres@packages/db"]);
+    const root = JSON.parse(output.get("package.json") ?? "{}") as {
+      workspaces: string[] | { packages: string[] };
+    };
+    const database = JSON.parse(output.get("packages/db/package.json") ?? "{}") as {
+      dependencies: Record<string, string>;
+      devDependencies: Record<string, string>;
+    };
+    expect(Array.isArray(root.workspaces) ? root.workspaces : root.workspaces.packages).toContain(
+      "packages/*",
+    );
+    expect(database.dependencies[`@${configFor(specs).projectName}/env`]).toBe("workspace:*");
+    expect(database.devDependencies[`@${configFor(specs).projectName}/config`]).toBe("workspace:*");
+
+    const native = await generate([
+      "backend:go:gin",
+      "backend:crystal:kemal:audit",
+      "backend.orm:go:gorm",
+      "database:universal:postgres@data/native",
+    ]);
+    expect(native.has("data/native/README.md")).toBe(true);
+    expect(native.has("data/native/package.json")).toBe(false);
+  });
+
+  it("rejects custom JavaScript paths before they can overwrite native applications", async () => {
+    for (const specs of [
+      ["frontend:typescript:react-vite@services/client", "backend:crystal:kemal@apps/web"],
+      ["backend:typescript:hono@services/api", "backend:crystal:kemal@apps/server"],
+      ["mobile:react-native:native-bare@apps/phone", "backend:crystal:kemal@apps/native"],
+    ]) {
+      const result = await generateVirtualProject({
+        config: configFor(specs),
+        templates: EMBEDDED_TEMPLATES,
+      });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain(
+        "because JavaScript workspace generation requires that directory",
+      );
+      expect(result.tree).toBeUndefined();
+    }
+  });
+
+  it("passes every generated frontend origin to Crystal's native launch command", async () => {
+    const specs = [
+      "frontend:dotnet:blazor-webassembly:admin",
+      "frontend:rust:leptos:site",
+      "backend:crystal:kemal:api",
+    ];
+    const config = configFor(specs);
+    const output = await generate(specs);
+    expect(output.get("apps/server/.env.example")).toContain(
+      "CORS_ORIGIN=http://localhost:5173,http://localhost:8080",
+    );
+    expect(getGraphBackendConnections(config)[0]?.devCommand).toContain(
+      "export CORS_ORIGIN=http://localhost:5173,http://localhost:8080",
+    );
+  });
+
   it("starts standalone JavaScript app workspaces alongside native services", async () => {
     for (const packageManager of ["bun", "npm", "pnpm", "yarn"] as const) {
       const result = await generateVirtualProject({
         config: {
-          ...configFor(["frontend:typescript:react-vite", "backend:go:gin"]),
+          ...configFor([
+            "frontend:typescript:react-vite",
+            "backend:go:gin",
+            "appPlatform:typescript:wxt",
+          ]),
           addons: ["opentui", "wxt"],
           packageManager,
         },
@@ -53,6 +156,14 @@ describe("multi-ecosystem project output", () => {
       }
       expect(root.scripts.dev).toContain("bash scripts/native/");
     }
+  });
+
+  it("renders a single non-TypeScript backend graph with the flat root layout", async () => {
+    const output = await generate(["backend:rust:axum"]);
+    expect(output.has("Cargo.toml")).toBe(true);
+    expect(output.has("crates/server/src/main.rs")).toBe(true);
+    expect([...output.keys()].some((path) => path.startsWith("apps/"))).toBe(false);
+    expect(output.has("scripts/dev.sh")).toBe(false);
   });
 
   it("rejects ownerless MSW in a native-only graph before emitting partial output", async () => {
@@ -88,7 +199,13 @@ describe("multi-ecosystem project output", () => {
 
   it("rejects standalone JavaScript app platforms in native-only projects", async () => {
     for (const addon of ["opentui", "wxt"] as const) {
-      const config = { ...configFor(["backend:go:gin"]), addons: [addon] };
+      const config = {
+        ...configFor([
+          "backend:go:gin",
+          ...(addon === "wxt" ? ["appPlatform:typescript:wxt"] : []),
+        ]),
+        addons: [addon],
+      };
       const result = await generateVirtualProject({ config, templates: EMBEDDED_TEMPLATES });
       expect(result.success).toBe(false);
       expect(result.error).toContain(`${addon} requires a generated JavaScript application`);
@@ -156,6 +273,21 @@ describe("multi-ecosystem project output", () => {
       expect(env).toBeDefined();
       expect(env).toMatch(/^CORS_ORIGIN=$/m);
       expect(output.get(`${connection.targetPath}/.env`) ?? "").not.toMatch(/^CORS_ORIGIN=.+$/m);
+    }
+  });
+
+  it("allows every generated frontend origin on PHP without changing other backend defaults", async () => {
+    const output = await generate([
+      "frontend:dotnet:blazor-webassembly:store",
+      "frontend:rust:leptos:admin",
+      "backend:php:slim:catalog",
+      "backend:go:gin:worker",
+    ]);
+    for (const file of [".env.example", ".env"]) {
+      expect(output.get(`services/catalog/${file}`) ?? "").toContain(
+        "CORS_ORIGIN=http://localhost:5173,http://localhost:8080",
+      );
+      expect(output.get(`services/worker/${file}`) ?? "").not.toMatch(/^CORS_ORIGIN=.+$/m);
     }
   });
 
@@ -235,6 +367,30 @@ describe("multi-ecosystem project output", () => {
     expect(tasks[0]?.setup).toContain("poetry install");
     expect(tasks[0]?.dev).toContain("poetry run uvicorn");
   });
+
+  it.each([
+    [["backend:ruby:rails", "backend.orm:ruby:active-record"], "bundle exec rake db:migrate"],
+    [["backend:ruby:sinatra", "backend.auth:ruby:rodauth"], "bundle exec rake db:migrate"],
+    [["backend:php:laravel", "backend.jobQueue:php:laravel-queue"], "composer run db:setup"],
+    [
+      ["backend:crystal:marten", "backend.orm:crystal:marten-orm", "backend.auth:crystal:marten-auth"],
+      "crystal run manage.cr -- migrate && AUTH_PASSWORD=change-me crystal run manage.cr -- seed",
+    ],
+  ])("prepares the database owned by %j during setup", (specs, command) => {
+    const setup = getGraphBackendConnections(
+      configFor(["frontend:typescript:react-vite", ...specs]),
+    )[0]?.setupCommand;
+    expect(setup).toContain(command);
+  });
+
+  it("skips database setup for services without persistence", () => {
+    const setups = ["backend:ruby:sinatra", "backend:php:laravel"].map(
+      (backend) =>
+        getGraphBackendConnections(configFor(["frontend:typescript:react-vite", backend]))[0]
+          ?.setupCommand,
+    );
+    expect(setups.some((setup) => setup?.includes("db:"))).toBe(false);
+  });
 });
 
 it("launches native package scripts through Bash with their paths and assigned ports", async () => {
@@ -295,7 +451,7 @@ it("launches native package scripts through Bash with their paths and assigned p
   }
 });
 
-it("exports distinct gRPC ports when launching named Go, Rust, and Spring services", async () => {
+it("exports distinct gRPC ports when launching named Go, Rust, Elixir, and Spring services", async () => {
   const { mkdtemp, mkdir, writeFile, readFile, rm } = await import("node:fs/promises");
   const { tmpdir } = await import("node:os");
   const { dirname, join } = await import("node:path");
@@ -311,6 +467,10 @@ it("exports distinct gRPC ports when launching named Go, Rust, and Spring servic
       "events.api:rust:tonic",
       "backend:rust:axum:jobs",
       "jobs.api:rust:tonic",
+      "backend:elixir:phoenix:notifications",
+      "notifications.api:elixir:grpc",
+      "backend:elixir:phoenix:chat",
+      "chat.api:elixir:grpc",
       "backend:java:spring-boot:reports",
       "reports.api:java:grpc",
       "backend:java:spring-boot:billing",
@@ -325,7 +485,7 @@ it("exports distinct gRPC ports when launching named Go, Rust, and Spring servic
       await writeFile(join(directory, path), content);
     }
     await mkdir(join(directory, "bin"));
-    for (const tool of ["go", "cargo"]) {
+    for (const tool of ["go", "cargo", "mix"]) {
       await writeFile(
         join(directory, "bin", tool),
         '#!/usr/bin/env bash\nprintf "%s\\n" "${GRPC_PORT:-50051}" >> "$GRAPH_COMMAND_LOG"\n',
@@ -333,7 +493,16 @@ it("exports distinct gRPC ports when launching named Go, Rust, and Spring servic
       );
     }
     const log = join(directory, "ports.log");
-    for (const id of ["api", "worker", "events", "jobs", "reports", "billing"]) {
+    for (const id of [
+      "api",
+      "worker",
+      "events",
+      "jobs",
+      "notifications",
+      "chat",
+      "reports",
+      "billing",
+    ]) {
       await mkdir(join(directory, "services", id), { recursive: true });
       if (id === "reports" || id === "billing") {
         await writeFile(
@@ -364,6 +533,8 @@ it("exports distinct gRPC ports when launching named Go, Rust, and Spring servic
       "50052",
       "50053",
       "50054",
+      "50055",
+      "50056",
       "9090",
       "9091",
     ]);

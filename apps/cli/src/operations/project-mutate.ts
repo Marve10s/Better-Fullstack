@@ -574,6 +574,7 @@ export const addFeatureOperation = defineOperation({
       existingConfig?.javaBuildTool,
       existingConfig?.javaWebFramework,
       existingConfig?.pythonPackageManager,
+      existingConfig ?? undefined,
     );
     return {
       success: true as const,

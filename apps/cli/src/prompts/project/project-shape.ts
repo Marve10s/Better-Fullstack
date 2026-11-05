@@ -1,24 +1,24 @@
-import type { Ecosystem, ProjectConfig, ProjectShape } from "@/types";
-
 import { log } from "@clack/prompts";
 
+import type { Ecosystem, ProjectConfig, ProjectShape } from "@/types";
+
 import { getDefaultConfig } from "@/constants";
-import {
-  ECOSYSTEM_VALUES,
-  getAddonStackPartBinding,
-  parseStackPartSpecs,
-  stackPartsToLegacyProjectConfigPartial,
-} from "@/types";
 import { isSilent } from "@/presentation/context";
 import { exitCancelled } from "@/presentation/errors";
-import { getGitChoice } from "@/prompts/project/git";
+import { isCancel, isGoBack, navigableSelect } from "@/prompts/core/navigable";
 import {
   type MobileEcosystem,
   selectBackendEcosystem,
   selectFrontendEcosystem,
   selectKotlinMobileLibraries,
 } from "@/prompts/ecosystems/multi-ecosystem-composer";
-import { isCancel, isGoBack, navigableSelect } from "@/prompts/core/navigable";
+import { getGitChoice } from "@/prompts/project/git";
+import {
+  ECOSYSTEM_VALUES,
+  getAddonStackPartBinding,
+  parseStackPartSpecs,
+  stackPartsToLegacyProjectConfigPartial,
+} from "@/types";
 
 export type MobilePlatform = Exclude<MobileEcosystem, "none">;
 export type NativeMobilePlatform = Exclude<MobilePlatform, "react-native">;
@@ -77,7 +77,18 @@ const BACKEND_SHAPE_YES_DEFAULTS: Partial<Record<Ecosystem, Partial<ProjectConfi
 export const SHAPE_ECOSYSTEMS = {
   fullstack: ECOSYSTEM_VALUES,
   frontend: ["typescript", "rust", "dotnet"],
-  backend: ["typescript", "go", "rust", "python", "java", "dotnet", "elixir"],
+  backend: [
+    "typescript",
+    "go",
+    "rust",
+    "python",
+    "java",
+    "dotnet",
+    "elixir",
+    "php",
+    "ruby",
+    "crystal",
+  ],
   mobile: ["react-native"],
 } as const satisfies Record<ProjectShape, readonly Ecosystem[]>;
 
@@ -91,11 +102,7 @@ const MOBILE_ONLY_FLAGS: Partial<ProjectConfig> = {
   auth: "none",
 };
 
-export const NATIVE_FRONTENDS = new Set([
-  "native-bare",
-  "native-uniwind",
-  "native-unistyles",
-]);
+export const NATIVE_FRONTENDS = new Set(["native-bare", "native-uniwind", "native-unistyles"]);
 
 const SHAPE_REQUIRED_HALF: Record<"frontend" | "backend", Partial<Record<Ecosystem, string>>> = {
   frontend: { typescript: "frontend", rust: "rustFrontend", dotnet: "dotnetFrontend" },
@@ -104,8 +111,11 @@ const SHAPE_REQUIRED_HALF: Record<"frontend" | "backend", Partial<Record<Ecosyst
     rust: "rustWebFramework",
     go: "goWebFramework",
     python: "pythonWebFramework",
+    crystal: "crystalWebFramework",
     java: "javaWebFramework",
     dotnet: "dotnetWebFramework",
+    ruby: "rubyWebFramework",
+    php: "phpWebFramework",
     elixir: "elixirWebFramework",
   },
 };
@@ -168,7 +178,8 @@ export function shapeFlagsForEcosystem(
  */
 export function shapeControlledFlags(shape: ProjectShape): Record<string, unknown> {
   if (shape === "mobile") return { ...MOBILE_ONLY_FLAGS };
-  const source = shape === "frontend" ? FRONTEND_ONLY_FLAGS : shape === "backend" ? BACKEND_ONLY_FLAGS : {};
+  const source =
+    shape === "frontend" ? FRONTEND_ONLY_FLAGS : shape === "backend" ? BACKEND_ONLY_FLAGS : {};
   return Object.assign({}, ...Object.values(source));
 }
 

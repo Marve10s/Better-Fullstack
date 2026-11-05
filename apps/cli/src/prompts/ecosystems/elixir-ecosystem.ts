@@ -16,6 +16,11 @@ import type {
   ElixirApplicationFramework,
   ElixirDocumentation,
   ElixirClustering,
+  ElixirLogging,
+  ElixirConfig,
+  ElixirMessageQueue,
+  ElixirTemplating,
+  ElixirCli,
   ElixirRealtime,
   ElixirTesting,
   ElixirValidation,
@@ -29,6 +34,13 @@ import {
   createStaticSinglePromptResolution,
   type PromptOption,
 } from "@/prompts/core/prompt-contract";
+import {
+  ElixirConfigSchema,
+  ElixirLoggingSchema,
+  ElixirMessageQueueSchema,
+  ElixirTemplatingSchema,
+  ElixirCliSchema,
+} from "@/types";
 
 function makeChoice<T extends string>(
   message: string,
@@ -120,12 +132,15 @@ const REALTIME_OPTIONS: PromptOption<ElixirRealtime>[] = [
 const JOB_OPTIONS: PromptOption<ElixirJobs>[] = [
   { value: "oban", label: "Oban", hint: "PostgreSQL-backed jobs and workers" },
   { value: "quantum", label: "Quantum", hint: "Cron-like scheduler" },
+  { value: "exq", label: "Exq", hint: "Redis-backed Sidekiq-compatible jobs" },
   { value: "none", label: "None", hint: "No jobs layer" },
 ];
 
 const VALIDATION_OPTIONS: PromptOption<ElixirValidation>[] = [
   { value: "ecto-changesets", label: "Ecto Changesets", hint: "Data validation with Ecto" },
   { value: "nimble-options", label: "NimbleOptions", hint: "Declarative option validation" },
+  { value: "peri", label: "Peri", hint: "Schema-as-data map validation" },
+  { value: "tarams", label: "Tarams", hint: "Request params casting and validation" },
   { value: "none", label: "None", hint: "No extra validation helper" },
 ];
 
@@ -138,6 +153,8 @@ const HTTP_OPTIONS: PromptOption<ElixirHttp>[] = [
 
 const JSON_OPTIONS: PromptOption<ElixirJson>[] = [
   { value: "jason", label: "Jason", hint: "Phoenix default JSON library" },
+  { value: "elixir-json", label: "Elixir JSON", hint: "Built-in JSON module (Elixir 1.18+)" },
+  { value: "jiffy", label: "Jiffy", hint: "NIF-based JSON encoder and decoder" },
   { value: "none", label: "None", hint: "No JSON library" },
 ];
 
@@ -183,6 +200,12 @@ const QUALITY_OPTIONS: PromptOption<ElixirQuality>[] = [
 
 const I18N_OPTIONS: PromptOption<ElixirI18n>[] = [
   { value: "gettext", label: "Gettext", hint: "Canonical Phoenix localization" },
+  { value: "linguist", label: "Linguist", hint: "Compile-time keyword vocabularies" },
+  {
+    value: "ex-cldr-messages",
+    label: "CLDR Messages",
+    hint: "ICU and MessageFormat 2 with CLDR plurals",
+  },
   { value: "none", label: "None", hint: "No localization layer" },
 ];
 
@@ -204,7 +227,52 @@ const DOCUMENTATION_OPTIONS: PromptOption<ElixirDocumentation>[] = [
 
 const CLUSTERING_OPTIONS: PromptOption<ElixirClustering>[] = [
   { value: "libcluster", label: "libcluster", hint: "Automatic BEAM cluster formation" },
+  { value: "dns-cluster", label: "DNSCluster", hint: "DNS-based node discovery" },
+  {
+    value: "distributed-erlang",
+    label: "Distributed Erlang",
+    hint: "Built-in Node.connect to listed peers",
+  },
   { value: "none", label: "None", hint: "No cluster topology" },
+];
+
+const LOGGING_OPTIONS: PromptOption<ElixirLogging>[] = [
+  { value: "logger-json", label: "LoggerJSON", hint: "Structured JSON log lines from Logger" },
+  {
+    value: "logger-file-backend",
+    label: "LoggerFileBackend",
+    hint: "Write Logger output to a rotating file",
+  },
+  { value: "logster", label: "Logster", hint: "One logfmt line per Phoenix request" },
+  { value: "none", label: "None", hint: "Default console Logger" },
+];
+
+const CONFIG_OPTIONS: PromptOption<ElixirConfig>[] = [
+  { value: "dotenvy", label: "Dotenvy", hint: "Typed env vars and .env files in runtime.exs" },
+  { value: "skogsra", label: "Skogsra", hint: "Typed settings module backed by OS env vars" },
+  { value: "confex", label: "Confex", hint: "{:system, ...} tuples resolved at runtime" },
+  { value: "none", label: "None", hint: "Plain config/runtime.exs" },
+];
+
+const MESSAGE_QUEUE_OPTIONS: PromptOption<ElixirMessageQueue>[] = [
+  { value: "amqp", label: "AMQP (RabbitMQ)", hint: "Publish and consume RabbitMQ queues" },
+  { value: "gnat", label: "Gnat (NATS)", hint: "Publish and subscribe to NATS subjects" },
+  { value: "brod", label: "brod (Kafka)", hint: "Produce and fetch Kafka records" },
+  { value: "none", label: "None", hint: "No message broker client" },
+];
+
+const TEMPLATING_OPTIONS: PromptOption<ElixirTemplating>[] = [
+  { value: "eex", label: "EEx", hint: "Built-in templates compiled into functions" },
+  { value: "solid-liquid", label: "Solid", hint: "Liquid templates rendered at runtime" },
+  { value: "bbmustache", label: "bbmustache", hint: "Logic-less Mustache templates" },
+  { value: "none", label: "None", hint: "No text templating module" },
+];
+
+const CLI_OPTIONS: PromptOption<ElixirCli>[] = [
+  { value: "option-parser", label: "OptionParser", hint: "Built-in argument parsing in a Mix task" },
+  { value: "optimus", label: "Optimus", hint: "Declarative options with validation and help" },
+  { value: "owl", label: "Owl", hint: "Boxed terminal output on top of OptionParser" },
+  { value: "none", label: "None", hint: "No command-line entry point" },
 ];
 
 const DEPLOY_OPTIONS: PromptOption<ElixirDeploy>[] = [
@@ -253,6 +321,36 @@ export const resolveElixirDocumentationPrompt = (value?: ElixirDocumentation) =>
   createStaticSinglePromptResolution(DOCUMENTATION_OPTIONS, "none", value);
 export const resolveElixirClusteringPrompt = (value?: ElixirClustering) =>
   createStaticSinglePromptResolution(CLUSTERING_OPTIONS, "none", value);
+export const resolveElixirLoggingPrompt = (value?: string) =>
+  createStaticSinglePromptResolution(
+    LOGGING_OPTIONS,
+    "none",
+    ElixirLoggingSchema.optional().parse(value),
+  );
+export const resolveElixirConfigPrompt = (value?: string) =>
+  createStaticSinglePromptResolution(
+    CONFIG_OPTIONS,
+    "none",
+    ElixirConfigSchema.optional().parse(value),
+  );
+export const resolveElixirMessageQueuePrompt = (value?: string) =>
+  createStaticSinglePromptResolution(
+    MESSAGE_QUEUE_OPTIONS,
+    "none",
+    ElixirMessageQueueSchema.optional().parse(value),
+  );
+export const resolveElixirTemplatingPrompt = (value?: string) =>
+  createStaticSinglePromptResolution(
+    TEMPLATING_OPTIONS,
+    "none",
+    ElixirTemplatingSchema.optional().parse(value),
+  );
+export const resolveElixirCliPrompt = (value?: string) =>
+  createStaticSinglePromptResolution(
+    CLI_OPTIONS,
+    "none",
+    ElixirCliSchema.optional().parse(value),
+  );
 export const resolveElixirDeployPrompt = (value?: ElixirDeploy) =>
   createStaticSinglePromptResolution(DEPLOY_OPTIONS, "none", value);
 export const getElixirWebFrameworkChoice = (value?: ElixirWebFramework) =>
@@ -293,6 +391,16 @@ export const getElixirDocumentationChoice = (value?: ElixirDocumentation) =>
   makeChoice("Select Elixir documentation", DOCUMENTATION_OPTIONS, "none", value);
 export const getElixirClusteringChoice = (value?: ElixirClustering) =>
   makeChoice("Select Elixir clustering", CLUSTERING_OPTIONS, "none", value);
+export const getElixirLoggingChoice = (value?: ElixirLogging) =>
+  makeChoice("Select Elixir logging", LOGGING_OPTIONS, "none", value);
+export const getElixirConfigChoice = (value?: ElixirConfig) =>
+  makeChoice("Select Elixir runtime configuration", CONFIG_OPTIONS, "none", value);
+export const getElixirMessageQueueChoice = (value?: ElixirMessageQueue) =>
+  makeChoice("Select Elixir message broker client", MESSAGE_QUEUE_OPTIONS, "none", value);
+export const getElixirTemplatingChoice = (value?: ElixirTemplating) =>
+  makeChoice("Select Elixir templating", TEMPLATING_OPTIONS, "none", value);
+export const getElixirCliChoice = (value?: ElixirCli) =>
+  makeChoice("Select Elixir command-line tooling", CLI_OPTIONS, "none", value);
 export const getElixirDeployChoice = (value?: ElixirDeploy) =>
   makeChoice("Select Elixir deploy target", DEPLOY_OPTIONS, "none", value);
 

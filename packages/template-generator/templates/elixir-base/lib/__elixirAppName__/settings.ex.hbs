@@ -1,0 +1,31 @@
+defmodule {{elixirModuleName}}.Settings do
+{{#if (eq elixirConfig "dotenvy")}}
+  def greeting, do: fetch(:greeting)
+
+  def max_connections, do: fetch(:max_connections)
+
+  defp fetch(key) do
+    :{{elixirAppName}}
+    |> Application.fetch_env!(:settings)
+    |> Keyword.fetch!(key)
+  end
+{{/if}}
+{{#if (eq elixirConfig "skogsra")}}
+  use Skogsra
+
+  @envdoc "Greeting returned to users."
+  app_env(:greeting, :{{elixirAppName}}, :greeting,
+    default: "Hello",
+    os_env: "APP_GREETING"
+  )
+
+  @envdoc "Maximum number of concurrent connections."
+  app_env(:max_connections, :{{elixirAppName}}, :max_connections,
+    default: 10,
+    os_env: "APP_MAX_CONNECTIONS"
+  )
+{{/if}}
+{{#if (eq elixirConfig "confex")}}
+  use Confex, otp_app: :{{elixirAppName}}
+{{/if}}
+end

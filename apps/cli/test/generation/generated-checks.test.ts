@@ -141,6 +141,33 @@ describe("generated target checks", () => {
     expect(executed).not.toContain("services/go-fiber:go mod tidy");
   });
 
+  it.each([
+    ["ruby", "sinatra", "minitest", "bundle exec rake test"],
+    ["php", "slim", "phpunit", "composer test"],
+  ])("runs the %s test command only when testing is selected", async (ecosystem, framework, testing, command) => {
+    const commandsFor = async (parts: string[]) => {
+      const config = await materializeGraph(parts);
+      const executed: string[] = [];
+      await runGeneratedChecks(config, {
+        commandExists: async () => true,
+        execute: async ({ display }) => {
+          executed.push(display);
+          return { exitCode: 0 };
+        },
+      });
+      return executed;
+    };
+    const backend = `backend:${ecosystem}:${framework}`;
+    expect(await commandsFor(["frontend:typescript:react-vite", backend])).not.toContain(command);
+    expect(
+      await commandsFor([
+        "frontend:typescript:react-vite",
+        backend,
+        `backend.testing:${ecosystem}:${testing}`,
+      ]),
+    ).toContain(command);
+  });
+
   it("fails closed for a missing expected target", async () => {
     const config = await graphProject();
     await fs.remove(path.join(config.projectDir, "services/go-fiber"));

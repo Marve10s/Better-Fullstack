@@ -1,0 +1,19 @@
+require "httparty"
+require "json"
+
+module BetterFullstack
+  module Upstream
+    def self.base_url
+      ENV.fetch("UPSTREAM_URL", "http://127.0.0.1:{{rubyPort}}")
+    end
+
+    def self.health
+      response = HTTParty.get("#{base_url}/health", open_timeout: 2, read_timeout: 5)
+      return [502, { "error" => "upstream_unavailable" }] unless response.success?
+
+      [200, { "upstream" => JSON.parse(response.body) }]
+    rescue HTTParty::Error, SocketError, SystemCallError, Timeout::Error, JSON::ParserError
+      [502, { "error" => "upstream_unavailable" }]
+    end
+  end
+end

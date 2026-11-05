@@ -1,0 +1,40 @@
+{{#if (eq phpLogging "laravel-log")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use Illuminate\Foundation\Testing\TestCase;
+use Monolog\Formatter\JsonFormatter;
+
+final class LoggingTest extends TestCase
+{
+    private string $file;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->file = tempnam(sys_get_temp_dir(), 'log-') ?: throw new \RuntimeException('Cannot create log file.');
+        config([
+            'logging.default' => 'json_file',
+            'logging.channels.json_file' => ['driver' => 'single', 'path' => $this->file, 'formatter' => JsonFormatter::class],
+        ]);
+    }
+
+    protected function tearDown(): void
+    {
+        @unlink($this->file);
+        parent::tearDown();
+    }
+
+    public function testLogsAcceptedGreetingsAsJson(): void
+    {
+        $this->call('POST', '/api/greetings', server: ['CONTENT_TYPE' => 'application/json'], content: '{"name":"Ada","repetitions":2}')->assertOk();
+        $entries = array_map(fn (string $line): array => json_decode($line, true, 8, JSON_THROW_ON_ERROR), array_filter(explode("\n", (string) file_get_contents($this->file))));
+        self::assertCount(1, $entries);
+        self::assertSame('greeting.created', $entries[0]['message']);
+        self::assertSame(['repetitions' => 2], $entries[0]['context']);
+    }
+}
+{{/if}}

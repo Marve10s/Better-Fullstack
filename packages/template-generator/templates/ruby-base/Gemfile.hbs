@@ -1,0 +1,118 @@
+source "https://rubygems.org"
+
+ruby ">= 3.3", "< 5.0"
+
+{{#if (eq rubyWebFramework "sinatra")}}
+gem "sinatra", "4.2.1"
+{{/if}}
+{{#if (eq rubyWebFramework "roda")}}
+gem "roda", "3.109.0"
+{{/if}}
+{{#if (eq rubyWebFramework "grape")}}
+gem "grape", "4.0.1"
+{{/if}}
+{{#if (eq rubyWebFramework "rails")}}
+gem "railties", "8.1.4"
+gem "actionpack", "8.1.4"
+{{/if}}
+{{#if (eq rubyOrm "active-record")}}
+gem "activerecord", "8.1.4"
+{{/if}}
+{{#if (eq rubyOrm "sequel")}}
+gem "sequel", "5.109.0"
+{{/if}}
+{{#if (eq rubyOrm "rom")}}
+gem "rom", "5.4.3"
+gem "rom-sql", "3.7.0"
+{{/if}}
+{{#if (eq rubyAuth "jwt")}}
+gem "jwt", "3.3.0"
+{{/if}}
+{{#if (eq rubyAuth "rodauth")}}
+gem "rodauth", "2.49.0"
+gem "bcrypt", "3.1.22"
+{{/if}}
+{{#if (eq rubyAuth "omniauth")}}
+gem "omniauth", "2.3.1"
+gem "omniauth_openid_connect", "0.8.0"
+gem "rack-session", "2.1.2"
+{{/if}}
+{{#if (or (ne rubyOrm "none") (eq rubyAuth "rodauth"))}}
+gem "sqlite3", "2.10.2"
+{{/if}}
+{{#if (eq rubyValidation "dry-validation")}}
+gem "dry-validation", "1.11.1"
+{{/if}}
+{{#if (eq rubyValidation "active-model")}}
+gem "activemodel", "8.1.4"
+{{/if}}
+{{#if (eq rubyValidation "json-schemer")}}
+gem "json_schemer", "2.5.0"
+{{/if}}
+{{#if (eq rubyCache "redis")}}
+gem "redis", "6.0.0"
+{{/if}}
+{{#if (eq rubyCache "memcached")}}
+gem "dalli", "5.2.2"
+{{/if}}
+{{#if (eq rubyCache "memory")}}
+gem "activesupport", "8.1.4"
+{{/if}}
+{{#if (eq rubyJobQueue "sidekiq")}}
+gem "sidekiq", "8.1.7"
+{{/if}}
+{{#if (eq rubyJobQueue "resque")}}
+gem "resque", "3.2.0"
+{{/if}}
+{{#if (eq rubyJobQueue "solid-queue")}}
+gem "solid_queue", "1.7.0"
+{{/if}}
+{{#if (eq rubyEmail "mail")}}
+gem "mail", "2.9.1"
+{{/if}}
+{{#if (eq rubyEmail "action-mailer")}}
+gem "actionmailer", "8.1.4"
+{{/if}}
+{{#if (eq rubyEmail "resend")}}
+gem "resend", "1.18.0"
+{{/if}}
+{{#if (or (eq rubyLogging "logger") (eq rubyLogging "semantic-logger"))}}
+gem "logger", "1.7.0"
+{{/if}}
+{{#if (eq rubyLogging "semantic-logger")}}
+gem "semantic_logger", "5.1.0"
+{{/if}}
+{{#if (eq rubyLogging "ougai")}}
+gem "ougai", "2.1.0"
+{{/if}}
+{{#if (eq rubyLogging "lograge")}}
+gem "lograge", "0.15.1"
+{{/if}}
+{{#if (eq rubyHttpClient "faraday")}}
+gem "faraday", "2.15.1"
+{{/if}}
+{{#if (eq rubyHttpClient "httparty")}}
+gem "httparty", "0.24.3"
+{{/if}}
+{{#if (eq rubyHttpClient "httpx")}}
+gem "httpx", "1.9.0"
+{{/if}}
+gem "puma", "7.1.0"
+gem "rackup", "2.3.1"
+gem "rake", "13.3.1"
+
+{{#if (ne rubyTesting "none")}}
+
+group :test do
+{{#if (eq rubyTesting "minitest")}}
+  gem "minitest", "6.0.6"
+{{/if}}
+{{#if (eq rubyTesting "rspec")}}
+  gem "rspec", "3.13.2"
+{{/if}}
+{{#if (eq rubyTesting "test-unit")}}
+  gem "test-unit", "3.7.8"
+{{/if}}
+  gem "rack-test", "2.2.0"
+end
+{{/if}}

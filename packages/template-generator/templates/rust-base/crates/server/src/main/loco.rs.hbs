@@ -1,0 +1,15 @@
+{{#if (ne rustOrm "none")}}
+mod database;
+{{/if}}
+{{#if (eq rustApi "jsonrpsee")}}
+mod rpc;
+{{/if}}
+mod app;
+mod controllers;
+
+#[tokio::main]
+async fn main() -> loco_rs::Result<()> {
+    // Loco owns the boot sequence: it loads `config/<env>.yaml`, initializes
+    // logging, builds the Axum router from `App::routes`, and serves it.
+    loco_rs::cli::main::<app::App>().await
+}

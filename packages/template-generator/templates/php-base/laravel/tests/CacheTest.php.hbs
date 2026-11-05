@@ -1,0 +1,38 @@
+{{#if (ne phpCache "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use Illuminate\Foundation\Testing\TestCase;
+
+final class CacheTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+        putenv('CACHE_NAMESPACE=test' . bin2hex(random_bytes(6)));
+{{#if (eq phpCache "predis")}}
+        try {
+            (new \Predis\Client(getenv('REDIS_URL') ?: 'tcp://127.0.0.1:6379'))->ping();
+        } catch (\Predis\PredisException) {
+            self::markTestSkipped('Set REDIS_URL to a running Redis server to run the cache test.');
+        }
+{{/if}}
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('CACHE_NAMESPACE');
+        parent::tearDown();
+    }
+
+    public function testServesTheCachedValueOnTheNextRequest(): void
+    {
+        $first = $this->getJson('/api/cached-time')->assertOk()->json();
+        self::assertFalse($first['cached']);
+        $this->getJson('/api/cached-time')->assertOk()->assertExactJson(['value' => $first['value'], 'cached' => true]);
+    }
+}
+{{/if}}

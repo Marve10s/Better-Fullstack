@@ -1,0 +1,175 @@
+{{#if (eq phpOrm "eloquent")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use App\Entity\Note;
+use Illuminate\Database\Capsule\Manager;
+use Illuminate\Database\Schema\Blueprint;
+
+final readonly class Notes
+{
+    private function __construct(private Manager $database)
+    {
+    }
+
+    public static function open(string $path): self
+    {
+        if ($path !== ':memory:' && !is_file($path)) {
+            if (!is_dir(dirname($path))) {
+                mkdir(dirname($path), 0775, true);
+            }
+            touch($path);
+        }
+        $database = new Manager();
+        $database->addConnection(['driver' => 'sqlite', 'database' => $path, 'foreign_key_constraints' => true]);
+        $database->setAsGlobal();
+        $database->bootEloquent();
+        return new self($database);
+    }
+
+    public function migrate(): void
+    {
+        $schema = $this->database->getConnection()->getSchemaBuilder();
+        if ($schema->hasTable('notes')) {
+            return;
+        }
+        $schema->create('notes', function (Blueprint $table): void {
+            $table->id();
+            $table->string('title', 120);
+            $table->timestamps();
+        });
+    }
+
+    public function all(): array
+    {
+        return Note::query()->orderBy('id')->get()->map(fn (Note $note): array => $note->toArray())->all();
+    }
+
+    public function add(string $title): array
+    {
+        return Note::query()->create(['title' => $title])->toArray();
+    }
+}
+{{else if (eq phpOrm "doctrine")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use App\Entity\Note;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\ORMSetup;
+use Doctrine\ORM\Tools\SchemaTool;
+
+final readonly class Notes
+{
+    private function __construct(private EntityManager $entities)
+    {
+    }
+
+    public static function open(string $path): self
+    {
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0775, true);
+        }
+        $config = ORMSetup::createAttributeMetadataConfig([__DIR__ . '/Entity']);
+        $config->enableNativeLazyObjects(true);
+        $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => $path], $config);
+        return new self(new EntityManager($connection, $config));
+    }
+
+    public function migrate(): void
+    {
+        (new SchemaTool($this->entities))->updateSchema([$this->entities->getClassMetadata(Note::class)]);
+    }
+
+    public function all(): array
+    {
+        $notes = $this->entities->getRepository(Note::class)->findBy([], ['id' => 'ASC']);
+        return array_map(fn (Note $note): array => $note->toArray(), $notes);
+    }
+
+    public function add(string $title): array
+    {
+        $note = new Note($title);
+        $this->entities->persist($note);
+        $this->entities->flush();
+        return $note->toArray();
+    }
+}
+{{else if (eq phpOrm "cycle")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use App\Entity\Note;
+use Cycle\Database\Config\DatabaseConfig;
+use Cycle\Database\Config\SQLite\FileConnectionConfig;
+use Cycle\Database\Config\SQLiteDriverConfig;
+use Cycle\Database\DatabaseManager;
+use Cycle\ORM\EntityManager;
+use Cycle\ORM\Factory;
+use Cycle\ORM\Mapper\Mapper;
+use Cycle\ORM\ORM;
+use Cycle\ORM\Schema;
+
+final readonly class Notes
+{
+    private function __construct(private DatabaseManager $databases, private ORM $orm)
+    {
+    }
+
+    public static function open(string $path): self
+    {
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0775, true);
+        }
+        $databases = new DatabaseManager(new DatabaseConfig([
+            'default' => 'default',
+            'databases' => ['default' => ['connection' => 'sqlite']],
+            'connections' => ['sqlite' => new SQLiteDriverConfig(connection: new FileConnectionConfig(database: $path))],
+        ]));
+        $schema = new Schema([
+            'note' => [
+                Schema::ENTITY => Note::class,
+                Schema::MAPPER => Mapper::class,
+                Schema::DATABASE => 'default',
+                Schema::TABLE => 'notes',
+                Schema::PRIMARY_KEY => 'id',
+                Schema::COLUMNS => ['id' => 'id', 'title' => 'title'],
+                Schema::TYPECAST => ['id' => 'int'],
+                Schema::RELATIONS => [],
+            ],
+        ]);
+        return new self($databases, new ORM(new Factory($databases), $schema));
+    }
+
+    public function migrate(): void
+    {
+        $table = $this->databases->database('default')->table('notes')->getSchema();
+        $table->primary('id');
+        $table->string('title', 120);
+        $table->save();
+    }
+
+    public function all(): array
+    {
+        $notes = $this->orm->getRepository(Note::class)->select()->orderBy('id')->fetchAll();
+        return array_map(fn (Note $note): array => $note->toArray(), $notes);
+    }
+
+    public function add(string $title): array
+    {
+        $note = new Note($title);
+        (new EntityManager($this->orm))->persist($note)->run();
+        return $note->toArray();
+    }
+}
+{{/if}}

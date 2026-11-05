@@ -27,7 +27,7 @@ on:
     outputs:
       summary:
         description: "Markdown smoke-test summary"
-        value: ${{ jobs.smoke.outputs.summary }}
+        value: ${{ jobs.smoke-summary.outputs.summary }}
   push:
     branches: [main]
     paths:
@@ -77,11 +77,13 @@ concurrency:
 
 jobs:
   smoke:
-    name: Smoke Test
+    name: Smoke Test (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-    outputs:
-      summary: ${{ steps.smoke-summary.outputs.summary }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2]
     services:
       postgres:
         image: postgres:16
@@ -122,7 +124,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
@@ -170,9 +172,9 @@ jobs:
           path: |
             node_modules
             ~/.bun/install/cache
-          key: smoke-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
           restore-keys: |
-            smoke-${{ runner.os }}-bun-
+            deps-${{ runner.os }}-bun-
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile
@@ -202,9 +204,15 @@ jobs:
             ECOSYSTEM_FLAG="--ecosystem $SMOKE_ECOSYSTEM"
           fi
 
+          # Split the requested combo count across the 3 matrix shards; the
+          # harness generates count*shards combos from the same seed and each
+          # shard runs its own partition, so coverage is unchanged.
+          SHARD_COUNT=$(( (SMOKE_COUNT + 2) / 3 ))
+
           bun run testing/smoke-test.ts \
             --seed "$SEED" \
-            --count "$SMOKE_COUNT" \
+            --count "$SHARD_COUNT" \
+            --partition ${{ matrix.shard }}/3 \
             $ECOSYSTEM_FLAG \
             $FORCE_FLAGS \
             --output testing/.smoke-output
@@ -216,28 +224,12 @@ jobs:
             cat testing/.smoke-output/summary.md >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Capture Smoke Summary
-        id: smoke-summary
-        if: always()
-        run: |
-          {
-            echo 'summary<<EOF'
-            if [ -f testing/.smoke-output/summary.md ]; then
-              cat testing/.smoke-output/summary.md
-            else
-              echo '## Smoke Test Results'
-              echo
-              echo 'The smoke harness did not produce a summary.'
-            fi
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
-
       - name: Upload Results
         if: always()
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: smoke-results
+          name: smoke-results-${{ matrix.shard }}
           path: |
             testing/.smoke-output/
             !testing/.smoke-output/**/node_modules/**
@@ -253,3 +245,41 @@ jobs:
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
+
+  # The sharded smoke jobs each upload their own summary; combine them so
+  # callers keep receiving one workflow-level summary output.
+  smoke-summary:
+    name: Combine Smoke Summaries
+    needs: smoke
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      summary: ${{ steps.combine.outputs.summary }}
+    steps:
+      - name: Download shard results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: smoke-results-*
+          path: smoke-shards
+
+      - name: Combine summaries
+        id: combine
+        run: |
+          {
+            echo 'summary<<EOF'
+            found=0
+            for file in smoke-shards/smoke-results-*/summary.md; do
+              if [ -f "$file" ]; then
+                cat "$file"
+                echo
+                found=1
+              fi
+            done
+            if [ "$found" = "0" ]; then
+              echo '## Smoke Test Results'
+              echo
+              echo 'The smoke harness did not produce a summary.'
+            fi
+            echo EOF
+          } >> "$GITHUB_OUTPUT"

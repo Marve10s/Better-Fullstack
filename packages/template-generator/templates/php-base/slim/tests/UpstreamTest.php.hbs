@@ -1,0 +1,37 @@
+{{#if (ne phpHttpClient "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Application;
+use App\UpstreamClient;
+use PHPUnit\Framework\TestCase;
+use Slim\Psr7\Factory\ServerRequestFactory;
+
+final class UpstreamTest extends TestCase
+{
+    private static function fetch(string $url): array
+    {
+        $response = Application::create(upstream: new UpstreamClient($url))->handle((new ServerRequestFactory())->createServerRequest('GET', '/api/upstream'));
+        return [$response->getStatusCode(), json_decode((string) $response->getBody(), true, 32, JSON_THROW_ON_ERROR)];
+    }
+
+    public function testReturnsTheUpstreamJson(): void
+    {
+        $fixture = UpstreamFixture::start();
+        try {
+            self::assertSame([200, ['upstreamStatus' => 200, 'data' => ['ok' => true, 'path' => '/fixture']]], self::fetch($fixture->url));
+        } finally {
+            $fixture->stop();
+        }
+    }
+
+    public function testReportsMissingAndUnreachableUpstreams(): void
+    {
+        self::assertSame([503, ['error' => 'upstream_not_configured']], self::fetch(''));
+        self::assertSame([502, ['error' => 'upstream_unavailable']], self::fetch('http://127.0.0.1:1/'));
+    }
+}
+{{/if}}

@@ -118,14 +118,26 @@ function findVirtualFile(directory: VirtualDirectory, path: string): VirtualFile
 // binding's own `__napiBindingTarget` export (ERR_NAPI_BINDING_TARGET_CONFLICT),
 // which crashes `vite dev` inside WebContainers. Native installs are fine, so
 // only the disposable browser copy pins the last working release.
-const BROWSER_RUNTIME_OVERRIDES = { rolldown: "1.2.8" };
+const BROWSER_ROLLDOWN_VERSION = "1.2.8";
+const BROWSER_RUNTIME_OVERRIDES = {
+  rolldown: BROWSER_ROLLDOWN_VERSION,
+  "@napi-rs/wasm-runtime": "1.2.5",
+};
+const BROWSER_RUNTIME_DEV_DEPENDENCIES = {
+  "@rolldown/binding-wasm32-wasi": BROWSER_ROLLDOWN_VERSION,
+};
 
 export function applyBrowserRuntimeOverrides(root: VirtualDirectory): void {
   const packageFile = findVirtualFile(root, "package.json");
   if (!packageFile) return;
 
   const packageJson = JSON.parse(packageFile.content) as {
+    devDependencies?: Record<string, string>;
     overrides?: Record<string, string>;
+  };
+  packageJson.devDependencies = {
+    ...packageJson.devDependencies,
+    ...BROWSER_RUNTIME_DEV_DEPENDENCIES,
   };
   packageJson.overrides = { ...packageJson.overrides, ...BROWSER_RUNTIME_OVERRIDES };
   packageFile.content = `${JSON.stringify(packageJson, null, 2)}\n`;

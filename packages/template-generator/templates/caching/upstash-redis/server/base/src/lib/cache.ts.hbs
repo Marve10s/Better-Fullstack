@@ -1,4 +1,4 @@
-import { Redis } from "@upstash/redis";
+import { Redis, type SetCommandOptions } from "@upstash/redis";
 
 /**
  * Upstash Redis client for serverless caching
@@ -26,21 +26,9 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
 export async function cacheSet<T>(
   key: string,
   value: T,
-  options?: { ex?: number; px?: number; nx?: boolean; xx?: boolean }
-): Promise<"OK" | null> {
-  if (options?.ex) {
-    return redis.set(key, value, { ex: options.ex });
-  }
-  if (options?.px) {
-    return redis.set(key, value, { px: options.px });
-  }
-  if (options?.nx) {
-    return redis.set(key, value, { nx: true });
-  }
-  if (options?.xx) {
-    return redis.set(key, value, { xx: true });
-  }
-  return redis.set(key, value);
+  options?: SetCommandOptions
+): Promise<"OK" | T | null> {
+  return redis.set(key, value, options);
 }
 
 /**
@@ -188,8 +176,8 @@ export const cacheList = {
  * Set operations - useful for unique collections, tags, etc.
  */
 export const cacheSet_ = {
-  async add(key: string, ...members: unknown[]): Promise<number> {
-    return redis.sadd(key, ...members);
+  async add(key: string, member: unknown, ...members: unknown[]): Promise<number> {
+    return redis.sadd(key, member, ...members);
   },
 
   async remove(key: string, ...members: unknown[]): Promise<number> {
@@ -197,7 +185,7 @@ export const cacheSet_ = {
   },
 
   async members<T>(key: string): Promise<T[]> {
-    return redis.smembers<T>(key);
+    return redis.smembers<T[]>(key);
   },
 
   async isMember(key: string, member: unknown): Promise<boolean> {
@@ -220,7 +208,11 @@ export const cacheJson = {
     return result;
   },
 
-  async set(key: string, path: string, value: unknown): Promise<"OK" | null> {
+  async set(
+    key: string,
+    path: string,
+    value: Parameters<typeof redis.json.set>[2]
+  ): Promise<"OK" | null> {
     return redis.json.set(key, path, value);
   },
 

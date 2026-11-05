@@ -411,7 +411,7 @@ asyncio.run(verify(False))
       ]),
     });
     expect(graphOnly.success).toBe(true);
-    expect(getFileContent(graphOnly.tree!.root, "apps/server/src/app/logging_config.py")).toContain(
+    expect(getFileContent(graphOnly.tree!.root, "src/app/logging_config.py")).toContain(
       "import structlog",
     );
 
@@ -425,10 +425,7 @@ asyncio.run(verify(False))
       ]),
     });
     expect(staleFlat.success).toBe(true);
-    const loggingModule = getFileContent(
-      staleFlat.tree!.root,
-      "apps/server/src/app/logging_config.py",
-    );
+    const loggingModule = getFileContent(staleFlat.tree!.root, "src/app/logging_config.py");
     expect(loggingModule).toContain("import structlog");
     expect(loggingModule).not.toContain("loguru");
   });

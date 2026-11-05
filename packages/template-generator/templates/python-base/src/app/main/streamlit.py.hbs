@@ -1,0 +1,27 @@
+"""Main application entry point."""
+# ruff: noqa: I001
+
+
+from dotenv import load_dotenv
+{{#if (eq pythonObservability "signoz")}}
+from app import otel as _otel  # noqa: F401 - importing activates SigNoz tracing
+{{/if}}
+{{#if (ne pythonLogging "none")}}
+from app.logging_config import configure_logging
+{{/if}}
+
+{{#if (eq observability "sentry")}}
+from app.observability import init_sentry
+
+{{/if}}
+import streamlit as st
+
+load_dotenv()
+
+st.set_page_config(page_title="{{projectName}}", page_icon="🐍", layout="wide")
+st.title("{{projectName}}")
+st.caption("Generated with Better Fullstack")
+st.success("Your Streamlit application is ready.")
+
+with st.expander("Next step"):
+    st.write("Replace this starter with your data, charts, forms, or AI workflow.")

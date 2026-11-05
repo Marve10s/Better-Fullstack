@@ -1,33 +1,15 @@
-import type { Frontend, ProjectConfig } from "@better-fullstack/types";
+import type { ProjectConfig } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "@/core/virtual-fs";
 
 import { addPackageDependency } from "@/dependencies/add-deps";
-import { getWebPackagePath, getServerPackagePath } from "@/platform/project-paths";
-
-// Fullstack frontends with built-in servers that use backend=none
-const FULLSTACK_FRONTENDS: Frontend[] = ["fresh", "qwik", "angular", "redwood"];
+import { getServerDependencyTarget } from "@/platform/server-dependency-target";
 
 export function processObservabilityDeps(vfs: VirtualFileSystem, config: ProjectConfig): void {
-  const { observability, backend, frontend } = config;
+  const { observability } = config;
   if (!observability || observability === "none") return;
-  if (backend === "convex") return;
 
-  const serverPath = getServerPackagePath(frontend, backend);
-  const webPath = getWebPackagePath(frontend, backend);
-
-  // Determine target path: self backend targets web, standalone backend targets server,
-  // fullstack frontends (fresh, qwik, etc.) fall back to web
-  const hasFullstackFrontend = frontend.some((f) => FULLSTACK_FRONTENDS.includes(f));
-  const targetPath =
-    backend === "self" && vfs.exists(webPath)
-      ? webPath
-      : backend !== "none" && vfs.exists(serverPath)
-        ? serverPath
-        : hasFullstackFrontend && vfs.exists(webPath)
-          ? webPath
-          : null;
-
+  const targetPath = getServerDependencyTarget(vfs, config);
   if (!targetPath) return;
 
   // Add OpenTelemetry packages

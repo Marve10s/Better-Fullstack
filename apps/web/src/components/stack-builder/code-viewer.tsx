@@ -8,11 +8,11 @@ import {
   CodeBlockBody,
   CodeBlockContent,
   CodeBlockCopyButton,
-  CodeBlockFilename,
   CodeBlockFiles,
   CodeBlockHeader,
   CodeBlockItem,
 } from "@/components/ui/kibo-ui/code-block";
+import { CodeBlockFilename } from "@/components/ui/kibo-ui/code-block/filename";
 import * as m from "@/paraglide/messages";
 
 interface CodeViewerProps {
@@ -58,10 +58,12 @@ export function getLanguage(extension: string, filePath = ""): BundledLanguage {
     yml: "yaml",
     toml: "toml",
     sql: "sql",
+    cr: "crystal",
     rs: "rust",
     go: "go",
     templ: "templ",
     py: "python",
+    php: "php",
     pyi: "python",
     mako: "jinja",
     java: "java",
@@ -76,6 +78,7 @@ export function getLanguage(extension: string, filePath = ""): BundledLanguage {
     targets: "xml",
     xml: "xml",
     razor: "razor",
+    rb: "ruby",
     ex: "elixir",
     exs: "elixir",
     eex: "elixir",

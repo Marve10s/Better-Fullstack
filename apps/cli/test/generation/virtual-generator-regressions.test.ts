@@ -664,7 +664,7 @@ describe("Virtual Generator Regressions", () => {
       const workflow = readTextFromTree(result.tree!, ".github/workflows/ci.yml");
       const rootPackageJson = readJsonFromTree(result.tree!, "package.json");
 
-      expect(workflow).toContain('working-directory: "apps/server"');
+      expect(workflow).not.toContain("working-directory");
       for (const expected of testCase.workflowIncludes) {
         expect(workflow).toContain(expected);
       }
@@ -1751,8 +1751,11 @@ describe("Virtual Generator Regressions", () => {
 
     expect(result.success).toBe(true);
     const dockerfile = readTextFromTree(result.tree!, "Dockerfile");
-    expect(dockerfile).toContain("COPY mix.exs ./");
-    expect(dockerfile).not.toContain("mix.lock*");
+    const copySources = /^COPY ([^\n]+) \.\/$/m.exec(dockerfile)?.[1]?.split(" ") ?? [];
+    expect(copySources.length).toBeGreaterThan(0);
+    for (const files of [["mix.exs"], ["mix.exs", "mix.lock"]]) {
+      expect(files.filter((file) => copySources.some((source) => new Bun.Glob(source).match(file)))).toEqual(files);
+    }
   });
 
   it("copies priv into Elixir Docker builds for every SQL repository adapter", async () => {

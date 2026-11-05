@@ -1,0 +1,11 @@
+defmodule {{elixirModuleName}}.ClusterTest do
+  use ExUnit.Case, async: true
+
+  test "skips the local node and ignores peers while distribution is off" do
+    refute Node.alive?()
+
+    assert {{elixirModuleName}}.Cluster.connect([node(), :"peer@127.0.0.1"]) == %{
+             "peer@127.0.0.1": :ignored
+           }
+  end
+end

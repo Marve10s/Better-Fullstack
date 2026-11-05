@@ -1,0 +1,63 @@
+# Better Fullstack
+
+> Better Fullstack scaffolds fullstack projects from a catalog of Stack Parts across TypeScript, React Native, Rust, Go, Python, Java, Kotlin, .NET, Elixir, PHP, Ruby, and Crystal. It ships as the `create-better-fullstack` CLI, a browser Stack Builder, and an MCP server for coding agents. Use it instead of hand-writing starter files.
+
+This file is for AI agents that want to use Better Fullstack. If you are changing this repository, read [AGENTS.md](AGENTS.md) instead.
+
+## Read the docs
+
+- [Docs index for agents](https://better-fullstack.dev/docs/llms.txt): every documentation page as Markdown.
+- [Full documentation corpus](https://better-fullstack.dev/llms-full.txt): product docs, guides, and blog text in one file.
+- [MCP server](https://better-fullstack.dev/docs/ai/mcp): client setup, resources, and every tool.
+- [AI overview](https://better-fullstack.dev/docs/ai/overview): agent skills, plugin, and CLI rules for agents.
+- [CLI create](https://better-fullstack.dev/docs/cli/create): flags, presets, dry runs, and defaults.
+
+## Set up MCP
+
+One command detects installed coding agents, registers the MCP server, and copies the `scaffold-project` and `add-to-project` skills:
+
+```bash
+npx create-better-fullstack@latest install
+```
+
+To register the stdio server by hand:
+
+```bash
+claude mcp add --scope user better-fullstack -- npx -y create-better-fullstack@latest mcp
+codex mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp
+gemini mcp add --scope user better-fullstack npx -y create-better-fullstack@latest mcp
+code --add-mcp '{"name":"better-fullstack","command":"npx","args":["-y","create-better-fullstack@latest","mcp"]}'
+```
+
+Cursor, Windsurf, Claude Desktop, and other clients that read `mcpServers`:
+
+```json
+{
+  "mcpServers": {
+    "better-fullstack": {
+      "command": "npx",
+      "args": ["-y", "create-better-fullstack@latest", "mcp"]
+    }
+  }
+}
+```
+
+OpenCode, Zed, VS Code, and Codex TOML use other config shapes. The [MCP docs](https://better-fullstack.dev/docs/ai/mcp#manual-setup) list each one.
+
+## Use the MCP tools
+
+1. Call `bfs_get_guidance` first. It returns the current workflow rules and field meanings.
+2. Find options with `bfs_get_schema`, `bfs_search_options`, or `bfs_recommend_stack`.
+3. Validate the stack with `bfs_check_compatibility`.
+4. Preview files with `bfs_plan_project`, then write them with `bfs_create_project`.
+
+For an existing project, start with `bfs_get_project_status`. Changes follow a plan and apply pair, such as `bfs_plan_addition` then `bfs_add_feature`, and apply only with the token the plan returned.
+
+## Use the CLI without MCP
+
+```bash
+npx create-better-fullstack@latest search laravel
+npx create-better-fullstack@latest my-app --frontend tanstack-start --backend hono --database postgres --orm drizzle --auth better-auth --dry-run
+```
+
+`--yes` accepts the defaults and conflicts with core stack flags such as `--frontend` and `--backend`. Pass `none` for optional categories you want off. Add `--no-install --no-git` to avoid side effects.

@@ -1,0 +1,106 @@
+# {{projectName}}
+
+Experimental Ruby {{#if (eq rubyWebFramework "sinatra")}}Sinatra{{/if}}{{#if (eq rubyWebFramework "rails")}}Rails (API-only){{/if}}{{#if (eq rubyWebFramework "roda")}}Roda{{/if}}{{#if (eq rubyWebFramework "grape")}}Grape{{/if}} HTTP service{{#if (eq rubyOrm "active-record")}} with Active Record{{/if}}{{#if (eq rubyOrm "sequel")}} with Sequel{{/if}}{{#if (eq rubyOrm "rom")}} with ROM{{/if}}{{#if (ne rubyOrm "none")}} on SQLite{{/if}}. {{#if (eq rubyAuth "jwt")}}It verifies JWT bearer tokens. {{/if}}{{#if (eq rubyAuth "omniauth")}}It signs users in with OmniAuth OpenID Connect. {{/if}}{{#if (eq rubyAuth "rodauth")}}It manages accounts with Rodauth. {{/if}}This recipe has no {{#if (eq rubyOrm "none")}}database, {{/if}}{{#if (eq rubyAuth "none")}}authentication, {{/if}}{{#if (eq rubyJobQueue "none")}}jobs, {{/if}}{{#if (or (eq rubyOrm "none") (eq rubyAuth "none") (eq rubyJobQueue "none"))}}or {{/if}}deployment adapter. It does not require a TypeScript runtime.
+
+## Setup
+
+Use Ruby 3.4.11 and Bundler 4.0.21. The Gemfile accepts Ruby 3.3 through 4.x. Puma compiles a native extension and needs your platform's compiler toolchain.
+
+```sh
+bundle install
+{{#if (or (ne rubyOrm "none") (eq rubyAuth "rodauth"))}}
+bundle exec rake db:migrate
+{{/if}}
+bundle exec rake build
+{{#if (ne rubyTesting "none")}}
+bundle exec rake test
+{{/if}}
+bundle exec ruby bin/proof
+bundle exec ruby bin/server
+```
+
+`build` checks every Ruby entry point's syntax. {{#if (eq rubyTesting "minitest")}}`test` runs Minitest through Rack::Test. {{/if}}{{#if (eq rubyTesting "rspec")}}`test` runs the RSpec request specs in `spec/` through Rack::Test (`bundle exec rspec` also works). {{/if}}{{#if (eq rubyTesting "test-unit")}}`test` runs Test::Unit through Rack::Test. {{/if}}{{#if (eq rubyTesting "none")}}No test suite is generated. {{/if}} `bin/proof` starts a real Puma process on an available loopback port, parses its JSON response, rejects an invalid request, and stops the process. Commit the generated Gemfile.lock after installation to pin transitive dependencies. No lockfile is fabricated by the generator.
+
+## HTTP contract
+
+- GET `/health` returns `{"status":"ok","service":"{{rubyWebFramework}}"}`.
+- POST `/api/greetings` accepts exactly `{"name":"Ruby"}` and returns `{"greeting":"Hello, Ruby!"}`.
+{{#if (ne rubyOrm "none")}}
+- GET `/api/items` returns `{"items":[{"id":1,"name":"Ruby"}]}` from the database.
+- POST `/api/items` accepts the same `{"name":"Ruby"}` body, stores it, and returns 201 with the created item.
+{{/if}}
+{{#if (ne rubyAuth "none")}}
+- GET `/api/me` returns `{"user":{"id":"..."}}` for an authenticated request and 401 otherwise.
+{{/if}}
+{{#if (ne rubyCache "none")}}
+- GET `/api/cache` returns `{"value":{"computed_at":"..."},"cached":false}` on a miss and the same value with `"cached":true` until the 30-second TTL expires{{#if (ne rubyCache "memory")}}, or 503 `cache_unavailable` when the cache server is unreachable{{/if}}.
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+- GET `/api/upstream` returns the upstream `/health` JSON fetched with the HTTP client, or 502 when the upstream is unreachable.
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+- POST `/api/jobs` accepts the greeting body, enqueues a job, and returns 202 with `{"id":"...","status":"queued"}`. GET `/api/jobs/:id` returns `queued` until a worker runs it, then `{"id":"...","status":"done","greeting":"Hello, Ruby!"}`.
+{{/if}}
+- Blank, non-string, unknown-field, and over-80-character names return 422. Malformed JSON returns 400, non-JSON content returns 415, and bodies over 16 KiB return 413.
+
+The server binds to `127.0.0.1:{{rubyPort}}`. `HOST`, `PORT`, `RACK_ENV`, and `ALLOWED_ORIGIN` are process environment variables. `.env.example` documents values and is not loaded automatically. CORS permits the generated frontend origins `{{rubyWebOrigin}}` by default. Set ALLOWED_ORIGIN to a comma-separated list of trusted frontend origins to override them. Host authorization accepts localhost and loopback addresses. Configure explicit trusted hosts before public hosting.
+
+`http_policy.rb` enforces the host and origin allowlists and answers CORS preflight requests for every framework. `request_body_limit.rb` caps request bodies before the framework reads them, and `name_input.rb` validates the JSON payload{{#if (eq rubyValidation "dry-validation")}} with the dry-validation contract in `name_contract.rb`{{/if}}{{#if (eq rubyValidation "active-model")}} with the Active Model validations in `name_contract.rb`{{/if}}{{#if (eq rubyValidation "json-schemer")}} against the JSON Schemas in `name_contract.rb` (JSONSchemer){{/if}}.{{#if (eq rubyWebFramework "rails")}} Rails runs in API-only mode from a single `app.rb` application; set `SECRET_KEY_BASE` when `RACK_ENV=production`.{{/if}}
+
+{{#if (ne rubyOrm "none")}}
+## Database
+
+`db.rb` opens the SQLite database and runs migrations; `items.rb` holds the {{#if (eq rubyOrm "active-record")}}Active Record model{{/if}}{{#if (eq rubyOrm "sequel")}}Sequel model{{/if}}{{#if (eq rubyOrm "rom")}}ROM relation and repository{{/if}} behind the `Items` repository the routes call. Migrations live in `{{#if (eq rubyOrm "sequel")}}db/migrations{{else}}db/migrate{{/if}}`. Run `bundle exec rake db:migrate` before starting the server. The database file defaults to `db/<RACK_ENV>.sqlite3`; set `DATABASE_PATH` to use another file. Tests and `bin/proof` each migrate their own temporary database and ignore `DATABASE_PATH`. Add a new migration for every schema change.
+
+{{/if}}
+{{#if (eq rubyAuth "jwt")}}
+## Authentication
+
+`auth.rb` is Rack middleware that verifies `Authorization: Bearer <token>` with ruby-jwt. It accepts only HS256 tokens signed with `JWT_SECRET` whose `iss`, `aud`, `exp`, and `iat` claims are valid (`JWT_ISSUER` and `JWT_AUDIENCE` override the expected issuer and audience). The app never signs tokens over HTTP; issue them from your identity provider or, locally, with `bundle exec rake "auth:token[user-1]"`. `JWT_SECRET` is required when `RACK_ENV=production`.
+
+{{/if}}
+{{#if (eq rubyAuth "omniauth")}}
+## Authentication
+
+`auth.rb` mounts OmniAuth with the `openid_connect` strategy (discovery, authorization code flow, and PKCE) behind a signed cookie session. A browser client fetches `GET /auth/csrf`, then submits a form `POST /auth/oidc` with `authenticity_token`; the provider redirects back to `GET /auth/oidc/callback`, which stores the user in the session. `POST /auth/logout` clears it. Set `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI`, and `SESSION_SECRET` (64+ characters); all are required when `RACK_ENV=production`. Tests use OmniAuth test mode, so a full sign-in still needs a real OpenID Connect provider.
+
+{{/if}}
+{{#if (eq rubyAuth "rodauth")}}
+## Authentication
+
+`auth.rb` mounts Rodauth in JSON-only mode with `POST /create-account`, `POST /login`, and `POST /logout` (JSON bodies with `login` and `password`). Accounts and bcrypt password hashes live in the `accounts` table of the SQLite database; `db/auth_migrations` is applied by `bundle exec rake db:migrate`. A signed cookie session keyed by `SESSION_SECRET` (64+ characters, required when `RACK_ENV=production`) carries the login.
+
+{{/if}}
+{{#if (ne rubyCache "none")}}
+## Cache
+
+`cache.rb` wraps {{#if (eq rubyCache "redis")}}a redis-rb client for `REDIS_URL` (default `redis://127.0.0.1:6379/0`) that stores JSON values with an `EX` expiry{{/if}}{{#if (eq rubyCache "memcached")}}a Dalli client for `MEMCACHED_SERVERS` (default `127.0.0.1:11211`, Memcached 1.6+) that stores JSON values with a TTL{{/if}}{{#if (eq rubyCache "memory")}}an Active Support `MemoryStore` capped at 8 MiB. Entries live in one process, so Puma workers do not share them{{/if}}. `Cache.fetch(key, ttl:)` returns the value and whether it came from the cache. {{#if (eq rubyCache "memory")}}No server is needed.{{else}}Start the server before `bundle exec rake test` and `bin/proof`; the cache tests skip when it is unreachable, and the proof fails.{{/if}}
+
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+## Background jobs
+
+`jobs.rb` defines `GreetingJob` and the `Jobs` service the routes call. Run the worker in its own process with `bundle exec ruby bin/worker`. {{#if (eq rubyJobQueue "sidekiq")}}Sidekiq stores jobs and results in Redis at `JOBS_REDIS_URL` (default `redis://127.0.0.1:6379/1`). Use a Redis instance without an eviction policy for jobs. Tests use `Sidekiq::Testing` to drain the queued job in-process.{{/if}}{{#if (eq rubyJobQueue "resque")}}Resque stores jobs and results in Redis at `JOBS_REDIS_URL` (default `redis://127.0.0.1:6379/1`); `bin/worker` polls the queue named by `JOBS_QUEUE` (default `default`). Use a Redis instance without an eviction policy for jobs. Tests enqueue on their own temporary queue and run a Resque worker until it is empty, so they leave application jobs alone.{{/if}}{{#if (eq rubyJobQueue "solid-queue")}}Solid Queue stores jobs in the SQLite database through Active Job; `bundle exec rake db:migrate` creates its tables and the `job_results` table. `bin/worker` starts the Solid Queue supervisor with its default worker and dispatcher. Tests start an in-process Solid Queue worker.{{/if}} Job tests skip when the backend is unreachable, and `bin/proof` starts `bin/worker` and waits for the job result.
+
+{{/if}}
+{{#if (ne rubyEmail "none")}}
+## Email
+
+`mailer.rb` sends a welcome message through {{#if (eq rubyEmail "mail")}}the mail gem over SMTP{{/if}}{{#if (eq rubyEmail "action-mailer")}}an Action Mailer class over SMTP{{/if}}{{#if (eq rubyEmail "resend")}}the Resend API{{/if}}. Send one with `bundle exec rake "email:welcome[you@example.com]"`. {{#if (eq rubyEmail "resend")}}Set `RESEND_API_KEY` and a `MAIL_FROM` address on a domain verified in Resend.{{else}}Set `SMTP_HOST`, `SMTP_PORT`, and optional `SMTP_USERNAME` and `SMTP_PASSWORD` (the default `127.0.0.1:1025` matches local capture tools such as Mailpit).{{/if}} No HTTP route sends email, so the service cannot be used to mail arbitrary addresses. Tests use {{#if (eq rubyEmail "resend")}}a local HTTP server in place of the Resend API{{else}}the library test delivery method{{/if}}, and `bin/proof` delivers a message to a local {{#if (eq rubyEmail "resend")}}HTTP{{else}}SMTP{{/if}} capture server.
+
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+## Upstream HTTP client
+
+`upstream.rb` calls `GET {UPSTREAM_URL}/health` with {{#if (eq rubyHttpClient "faraday")}}a Faraday connection (2-second open and 5-second request timeouts, error-raising middleware){{/if}}{{#if (eq rubyHttpClient "httparty")}}HTTParty (2-second open and 5-second read timeouts){{/if}}{{#if (eq rubyHttpClient "httpx")}}an HTTPX session (2-second connect and 5-second request timeouts){{/if}}. `GET /api/upstream` returns `{"upstream":{...}}` with the parsed response, or 502 `upstream_unavailable` when the upstream fails or times out. `UPSTREAM_URL` defaults to this service (`http://127.0.0.1:{{rubyPort}}`), so the route works out of the box; point it at the API you depend on. The URL comes from the environment only, never from request input. Tests use a local HTTP server as the upstream, and `bin/proof` calls the running service through the client.
+
+{{/if}}
+{{#if (ne rubyLogging "none")}}
+## Request logging
+
+{{#if (eq rubyLogging "lograge")}}Lograge replaces the default Rails request logs with one key=value line per controller request (`method=GET path=/health ... status=200 duration=...`).{{else}}`request_logger.rb` is Rack middleware that logs every request{{#if (eq rubyLogging "logger")}} as a Ruby `Logger` line (`method=GET path=/health status=200 duration_ms=1.2`){{/if}}{{#if (eq rubyLogging "semantic-logger")}} as a Semantic Logger JSON event with `method`, `path`, `status`, and `duration_ms` in its payload{{/if}}{{#if (eq rubyLogging "ougai")}} as an Ougai JSON line with `method`, `path`, `status`, and `duration_ms` fields{{/if}}. `LOG_LEVEL` sets the level (default `info`).{{/if}} Logs go to stdout; set `LOG_PATH` to write them to a file instead.
+
+{{/if}}
+Use Ctrl-C to stop the foreground server. Add future routes in `app.rb`{{#if (eq rubyTesting "rspec")}} and behavior specs in `spec/app_spec.rb`{{/if}}{{#if (or (eq rubyTesting "minitest") (eq rubyTesting "test-unit"))}} and behavior tests in `test/app_test.rb`{{/if}}. Keep Gemfile ownership inside this service when composed with other languages.
+
+This source recipe is experimental. Generation, build, and runtime claims require proof for the exact producer revision and toolchains.

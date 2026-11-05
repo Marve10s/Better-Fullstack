@@ -305,6 +305,11 @@ const ELIXIR_BASE_CONFIG: Partial<ProjectConfig> = {
   elixirApplicationFramework: "none",
   elixirDocumentation: "none",
   elixirClustering: "none",
+  elixirLogging: "none",
+  elixirConfig: "none",
+  elixirMessageQueue: "none",
+  elixirTemplating: "none",
+  elixirCli: "none",
   elixirDeploy: "none",
   elixirLibraries: [],
 };
@@ -1496,6 +1501,44 @@ describe("stack update planner", () => {
     const result = await applyStackUpdate(projectDir, { email: "resend" });
     expect(result.success).toBe(true);
     await expectFileContains(join(projectDir, "apps/server/package.json"), "resend");
+  });
+
+  it.each(["proof-go", "example.com/team/service/v2"])(
+    "preserves the Go module %s when adding a capability in a renamed directory",
+    async (projectName) => {
+      const root = await makeTempRoot("bfs-stack-update-go-renamed-");
+      const projectDir = join(root, "go");
+      await scaffoldGeneratedProject(
+        makeConfig(projectDir, { ...GO_BASE_CONFIG, projectName, goApi: "grpc-go" }),
+      );
+
+      const plan = await planStackUpdate(projectDir, { goLogging: "zap" });
+      expect(plan.success).toBe(true);
+      if (!plan.success) return;
+      expect(plan.manualReviewBlockers).toEqual([]);
+
+      const result = await applyStackUpdate(projectDir, { goLogging: "zap" });
+      expect(result.success).toBe(true);
+      const module = await readFile(join(projectDir, "go.mod"), "utf-8");
+      expect(module).toStartWith(`module ${projectName}\n`);
+      expect(module).toContain("go.uber.org/zap");
+      await expectFileContains(join(projectDir, "cmd/server/main.go"), `${projectName}/proto`);
+    },
+  );
+
+  it("preserves the Elixir application when adding a capability in a directory named elixir", async () => {
+    const root = await makeTempRoot("bfs-stack-update-elixir-renamed-");
+    const projectDir = join(root, "elixir");
+    await scaffoldGeneratedProject(
+      makeConfig(projectDir, { ...ELIXIR_BASE_CONFIG, projectName: "proof-elixir" }),
+    );
+
+    const result = await applyStackUpdate(projectDir, { elixirLogging: "logger-json" });
+    expect(result.success).toBe(true);
+    const mixProject = await readFile(join(projectDir, "mix.exs"), "utf-8");
+    expect(mixProject).toContain("app: :proof_elixir");
+    expect(mixProject).toContain(":logger_json");
+    expect(await pathExists(join(projectDir, "lib/elixir.ex"))).toBe(false);
   });
 
   it("drops none placeholders when adding array-based stack options", async () => {
@@ -2691,25 +2734,25 @@ describe("stack update planner", () => {
         {
           name: "python",
           config: { ...NON_TS_BASE_CONFIG, ecosystem: "python", pythonWebFramework: "fastapi" },
-          manifestPath: "apps/server/pyproject.toml",
+          manifestPath: "pyproject.toml",
           manifestNeedle: '"resend>=2.29.0"',
-          servicePath: "apps/server/src/app/email.py",
+          servicePath: "src/app/email.py",
           serviceNeedle: "resend.Emails.send",
         },
         {
           name: "go",
           config: { ...NON_TS_BASE_CONFIG, ecosystem: "go", goWebFramework: "gin" },
-          manifestPath: "apps/server/go.mod",
+          manifestPath: "go.mod",
           manifestNeedle: "github.com/resend/resend-go/v3 v3.4.1",
-          servicePath: "apps/server/internal/email/resend.go",
+          servicePath: "internal/email/resend.go",
           serviceNeedle: "resend.NewClient",
         },
         {
           name: "rust",
           config: { ...NON_TS_BASE_CONFIG, ecosystem: "rust", rustWebFramework: "axum" },
-          manifestPath: "apps/server/Cargo.toml",
+          manifestPath: "Cargo.toml",
           manifestNeedle: "resend-rs",
-          servicePath: "apps/server/crates/server/src/email.rs",
+          servicePath: "crates/server/src/email.rs",
           serviceNeedle: "Resend::default",
         },
         {
@@ -2720,9 +2763,9 @@ describe("stack update planner", () => {
             javaWebFramework: "spring-boot",
             javaBuildTool: "maven",
           },
-          manifestPath: "apps/server/pom.xml",
+          manifestPath: "pom.xml",
           manifestNeedle: "<artifactId>resend-java</artifactId>",
-          servicePath: "apps/server/src/main/java/com/example/app/service/EmailService.java",
+          servicePath: "src/main/java/com/example/app/service/EmailService.java",
           serviceNeedle: "new Resend",
         },
       ];
@@ -2744,7 +2787,7 @@ describe("stack update planner", () => {
         expect(result.success).toBe(true);
         await expectFileContains(join(projectDir, testCase.manifestPath), testCase.manifestNeedle);
         await expectFileContains(join(projectDir, testCase.servicePath), testCase.serviceNeedle);
-        await expectFileContains(join(projectDir, "apps/server/.env.example"), "RESEND_API_KEY=");
+        await expectFileContains(join(projectDir, ".env.example"), "RESEND_API_KEY=");
       }
     },
     { timeout: 20_000 },
@@ -2762,25 +2805,25 @@ describe("stack update planner", () => {
       {
         name: "python",
         config: { ...NON_TS_BASE_CONFIG, ecosystem: "python", pythonWebFramework: "fastapi" },
-        manifestPath: "apps/server/pyproject.toml",
+        manifestPath: "pyproject.toml",
         manifestNeedle: '"sentry-sdk>=2.59.0"',
-        servicePath: "apps/server/src/app/observability.py",
+        servicePath: "src/app/observability.py",
         serviceNeedle: "sentry_sdk.init",
       },
       {
         name: "go",
         config: { ...NON_TS_BASE_CONFIG, ecosystem: "go", goWebFramework: "gin" },
-        manifestPath: "apps/server/go.mod",
+        manifestPath: "go.mod",
         manifestNeedle: "github.com/getsentry/sentry-go v0.46.2",
-        servicePath: "apps/server/internal/observability/sentry.go",
+        servicePath: "internal/observability/sentry.go",
         serviceNeedle: "sentry.Init",
       },
       {
         name: "rust",
         config: { ...NON_TS_BASE_CONFIG, ecosystem: "rust", rustWebFramework: "axum" },
-        manifestPath: "apps/server/Cargo.toml",
+        manifestPath: "Cargo.toml",
         manifestNeedle: 'sentry = "0.48.1"',
-        servicePath: "apps/server/crates/server/src/observability.rs",
+        servicePath: "crates/server/src/observability.rs",
         serviceNeedle: "sentry::init",
       },
       {
@@ -2791,9 +2834,9 @@ describe("stack update planner", () => {
           javaWebFramework: "spring-boot",
           javaBuildTool: "maven",
         },
-        manifestPath: "apps/server/pom.xml",
+        manifestPath: "pom.xml",
         manifestNeedle: "<artifactId>sentry</artifactId>",
-        servicePath: "apps/server/src/main/java/com/example/app/Application.java",
+        servicePath: "src/main/java/com/example/app/Application.java",
         serviceNeedle: "Sentry.init",
       },
     ];
@@ -2815,7 +2858,7 @@ describe("stack update planner", () => {
       expect(result.success).toBe(true);
       await expectFileContains(join(projectDir, testCase.manifestPath), testCase.manifestNeedle);
       await expectFileContains(join(projectDir, testCase.servicePath), testCase.serviceNeedle);
-      await expectFileContains(join(projectDir, "apps/server/.env.example"), "SENTRY_DSN=");
+      await expectFileContains(join(projectDir, ".env.example"), "SENTRY_DSN=");
     }
   });
 
@@ -3352,10 +3395,8 @@ describe("stack update planner", () => {
 
     expect(plan.proposedConfig.auth).toBe("go-better-auth");
     expect(plan.manualReviewBlockers).toEqual([]);
-    expect(plan.filesToAdd).toContain("apps/server/internal/auth/auth.go");
-    expect(plan.filesToPatch).toEqual(
-      expect.arrayContaining(["apps/server/go.mod", "apps/server/cmd/server/main.go"]),
-    );
+    expect(plan.filesToAdd).toContain("internal/auth/auth.go");
+    expect(plan.filesToPatch).toEqual(expect.arrayContaining(["go.mod", "cmd/server/main.go"]));
 
     const result = await applyStackUpdate(projectDir, { auth: "go-better-auth" });
     expect(result.success).toBe(true);
@@ -3363,13 +3404,10 @@ describe("stack update planner", () => {
     const btsConfig = await readJsonc(join(projectDir, "bts.jsonc"));
     expect(btsConfig.auth).toBe("go-better-auth");
     await expectFileContains(
-      join(projectDir, "apps/server/go.mod"),
+      join(projectDir, "go.mod"),
       "github.com/GoBetterAuth/go-better-auth/v2",
     );
-    await expectFileContains(
-      join(projectDir, "apps/server/internal/auth/auth.go"),
-      "go-better-auth/v2",
-    );
+    await expectFileContains(join(projectDir, "internal/auth/auth.go"), "go-better-auth/v2");
   });
 
   it("applies Elixir auth integrations through the generic auth update field", async () => {
@@ -3383,46 +3421,35 @@ describe("stack update planner", () => {
       {
         name: "guardian",
         update: "guardian",
-        filesToAdd: [
-          "apps/server/lib/app/auth/guardian.ex",
-          "apps/server/lib/app_web/controllers/token_controller.ex",
-        ],
-        filesToPatch: [
-          "apps/server/config/config.exs",
-          "apps/server/lib/app_web/router.ex",
-          "apps/server/mix.exs",
-        ],
+        filesToAdd: ["lib/app/auth/guardian.ex", "lib/app_web/controllers/token_controller.ex"],
+        filesToPatch: ["config/config.exs", "lib/app_web/router.ex", "mix.exs"],
         assertions: [
-          { path: "apps/server/mix.exs", content: ":guardian" },
+          { path: "mix.exs", content: ":guardian" },
           {
-            path: "apps/server/config/config.exs",
+            path: "config/config.exs",
             content: "config :app,\n       App.Auth.Guardian",
           },
-          { path: "apps/server/lib/app/auth/guardian.ex", content: "use Guardian, otp_app: :app" },
+          { path: "lib/app/auth/guardian.ex", content: "use Guardian, otp_app: :app" },
           {
-            path: "apps/server/lib/app_web/controllers/token_controller.ex",
+            path: "lib/app_web/controllers/token_controller.ex",
             content: "Guardian.encode_and_sign",
           },
-          { path: "apps/server/lib/app_web/router.ex", content: 'post "/auth/token"' },
+          { path: "lib/app_web/router.ex", content: 'post "/auth/token"' },
         ],
       },
       {
         name: "ueberauth",
         update: "ueberauth",
-        filesToAdd: ["apps/server/lib/app_web/controllers/oauth_controller.ex"],
-        filesToPatch: [
-          "apps/server/config/config.exs",
-          "apps/server/lib/app_web/router.ex",
-          "apps/server/mix.exs",
-        ],
+        filesToAdd: ["lib/app_web/controllers/oauth_controller.ex"],
+        filesToPatch: ["config/config.exs", "lib/app_web/router.ex", "mix.exs"],
         assertions: [
-          { path: "apps/server/mix.exs", content: ":ueberauth" },
-          { path: "apps/server/config/config.exs", content: "config :ueberauth, Ueberauth" },
+          { path: "mix.exs", content: ":ueberauth" },
+          { path: "config/config.exs", content: "config :ueberauth, Ueberauth" },
           {
-            path: "apps/server/lib/app_web/controllers/oauth_controller.ex",
+            path: "lib/app_web/controllers/oauth_controller.ex",
             content: "plug Ueberauth",
           },
-          { path: "apps/server/lib/app_web/router.ex", content: 'get "/:provider/callback"' },
+          { path: "lib/app_web/router.ex", content: 'get "/:provider/callback"' },
         ],
       },
     ];
@@ -3471,32 +3498,26 @@ describe("stack update planner", () => {
     expect(plan.success, plan.success ? "" : plan.error).toBe(true);
     if (!plan.success) return;
     expect(plan.proposedConfig.elixirOrm).toBe("ecto");
-    expect(plan.filesToAdd).toContain("apps/server/lib/app/catalog.ex");
-    expect(plan.filesToAdd).toContain("apps/server/lib/app/catalog/item.ex");
-    expect(plan.filesToAdd).toContain("apps/server/lib/app_web/controllers/item_controller.ex");
-    expect(plan.filesToPatch).toContain("apps/server/mix.exs");
+    expect(plan.filesToAdd).toContain("lib/app/catalog.ex");
+    expect(plan.filesToAdd).toContain("lib/app/catalog/item.ex");
+    expect(plan.filesToAdd).toContain("lib/app_web/controllers/item_controller.ex");
+    expect(plan.filesToPatch).toContain("mix.exs");
 
     await applyStackUpdate(projectDir, { elixirOrm: "ecto" });
 
     const persisted = await readJsonc(join(projectDir, "bts.jsonc"));
     expect(persisted.elixirOrm).toBe("ecto");
-    await expectFileContains(join(projectDir, "apps/server/mix.exs"), ":ecto");
+    await expectFileContains(join(projectDir, "mix.exs"), ":ecto");
     await expectFileContains(
-      join(projectDir, "apps/server/lib/app/catalog.ex"),
+      join(projectDir, "lib/app/catalog.ex"),
       "Ecto.Changeset.apply_action(:insert)",
     );
-    await expectFileContains(
-      join(projectDir, "apps/server/lib/app/catalog/item.ex"),
-      "use Ecto.Schema",
-    );
+    await expectFileContains(join(projectDir, "lib/app/catalog/item.ex"), "use Ecto.Schema");
 
-    const mix = await readFile(join(projectDir, "apps/server/mix.exs"), "utf-8");
+    const mix = await readFile(join(projectDir, "mix.exs"), "utf-8");
     expect(mix).not.toContain(":ecto_sql");
     expect(mix).not.toContain(":postgrex");
-    const application = await readFile(
-      join(projectDir, "apps/server/lib/app/application.ex"),
-      "utf-8",
-    );
+    const application = await readFile(join(projectDir, "lib/app/application.ex"), "utf-8");
     expect(application).not.toContain("App.Repo");
   });
 
@@ -3520,19 +3541,19 @@ describe("stack update planner", () => {
     expect(plan.success, plan.success ? "" : plan.error).toBe(true);
     if (!plan.success) return;
     expect(plan.proposedConfig.elixirRealtime).toBe("live-view-streams");
-    expect(plan.filesToAdd).toContain("apps/server/lib/app_web/live/item_live/index.ex");
-    expect(plan.filesToPatch).toContain("apps/server/lib/app_web/router.ex");
+    expect(plan.filesToAdd).toContain("lib/app_web/live/item_live/index.ex");
+    expect(plan.filesToPatch).toContain("lib/app_web/router.ex");
 
     await applyStackUpdate(projectDir, { elixirRealtime: "live-view-streams" });
 
     const persisted = await readJsonc(join(projectDir, "bts.jsonc"));
     expect(persisted.elixirRealtime).toBe("live-view-streams");
     await expectFileContains(
-      join(projectDir, "apps/server/lib/app_web/live/item_live/index.ex"),
+      join(projectDir, "lib/app_web/live/item_live/index.ex"),
       "stream(:items",
     );
     await expectFileContains(
-      join(projectDir, "apps/server/lib/app_web/router.ex"),
+      join(projectDir, "lib/app_web/router.ex"),
       'live "/items", ItemLive.Index, :index',
     );
   });
@@ -3545,23 +3566,20 @@ describe("stack update planner", () => {
     const plan = await planStackUpdate(projectDir, { elixirValidation: "nimble-options" });
 
     expect(plan.proposedConfig.elixirValidation).toBe("nimble-options");
-    expect(plan.filesToAdd).toContain("apps/server/lib/app/catalog/item_options.ex");
-    expect(plan.filesToPatch).toContain("apps/server/lib/app/catalog.ex");
-    expect(plan.filesToPatch).toContain("apps/server/mix.exs");
+    expect(plan.filesToAdd).toContain("lib/app/catalog/item_options.ex");
+    expect(plan.filesToPatch).toContain("lib/app/catalog.ex");
+    expect(plan.filesToPatch).toContain("mix.exs");
 
     await applyStackUpdate(projectDir, { elixirValidation: "nimble-options" });
 
     const persisted = await readJsonc(join(projectDir, "bts.jsonc"));
     expect(persisted.elixirValidation).toBe("nimble-options");
-    await expectFileContains(join(projectDir, "apps/server/mix.exs"), ":nimble_options");
+    await expectFileContains(join(projectDir, "mix.exs"), ":nimble_options");
     await expectFileContains(
-      join(projectDir, "apps/server/lib/app/catalog/item_options.ex"),
+      join(projectDir, "lib/app/catalog/item_options.ex"),
       "NimbleOptions.validate(@schema)",
     );
-    await expectFileContains(
-      join(projectDir, "apps/server/lib/app/catalog.ex"),
-      "ItemOptions.validate(attrs)",
-    );
+    await expectFileContains(join(projectDir, "lib/app/catalog.ex"), "ItemOptions.validate(attrs)");
   });
 
   it("applies .NET cloud deploy targets through the generic deploy update field", async () => {
@@ -3575,15 +3593,15 @@ describe("stack update planner", () => {
       {
         name: "azure",
         update: "azure",
-        addedFiles: ["apps/server/Dockerfile", "apps/server/azure.yaml"],
-        expectedFile: "apps/server/azure.yaml",
+        addedFiles: ["Dockerfile", "azure.yaml"],
+        expectedFile: "azure.yaml",
         expectedContent: "host: containerapp",
       },
       {
         name: "aws",
         update: "aws",
-        addedFiles: ["apps/server/Dockerfile", "apps/server/copilot/api/manifest.yml"],
-        expectedFile: "apps/server/copilot/api/manifest.yml",
+        addedFiles: ["Dockerfile", "copilot/api/manifest.yml"],
+        expectedFile: "copilot/api/manifest.yml",
         expectedContent: "type: Load Balanced Web Service",
       },
     ];
@@ -3606,10 +3624,7 @@ describe("stack update planner", () => {
         const persisted = await readJsonc(join(projectDir, "bts.jsonc"));
         expect(persisted.dotnetDeploy).toBe(testCase.update);
         await expectFileContains(join(projectDir, testCase.expectedFile), testCase.expectedContent);
-        await expectFileContains(
-          join(projectDir, "apps/server/Dockerfile"),
-          "ASPNETCORE_URLS=http://+:8080",
-        );
+        await expectFileContains(join(projectDir, "Dockerfile"), "ASPNETCORE_URLS=http://+:8080");
       }),
     );
   });
@@ -3624,30 +3639,21 @@ describe("stack update planner", () => {
     const plan = await planStackUpdate(projectDir, { dotnetOrm: "dapper" });
 
     expect(plan.proposedConfig.dotnetOrm).toBe("dapper");
-    expect(plan.filesToPatch).toContain("apps/server/app.csproj");
-    expect(plan.filesToPatch).toContain("apps/server/Program.cs");
+    expect(plan.filesToPatch).toContain("app.csproj");
+    expect(plan.filesToPatch).toContain("Program.cs");
 
     await applyStackUpdate(projectDir, { dotnetOrm: "dapper" });
 
     const persisted = await readJsonc(join(projectDir, "bts.jsonc"));
     expect(persisted.dotnetOrm).toBe("dapper");
+    await expectFileContains(join(projectDir, "app.csproj"), 'PackageReference Include="Dapper"');
     await expectFileContains(
-      join(projectDir, "apps/server/app.csproj"),
-      'PackageReference Include="Dapper"',
-    );
-    await expectFileContains(
-      join(projectDir, "apps/server/app.csproj"),
+      join(projectDir, "app.csproj"),
       'PackageReference Include="Microsoft.Data.Sqlite"',
     );
-    await expectFileContains(join(projectDir, "apps/server/Program.cs"), "using Dapper;");
-    await expectFileContains(
-      join(projectDir, "apps/server/Program.cs"),
-      "TodoDapper.CreateConnection",
-    );
-    await expectFileContains(
-      join(projectDir, "apps/server/Program.cs"),
-      "QuerySingleAsync<TodoItem>",
-    );
+    await expectFileContains(join(projectDir, "Program.cs"), "using Dapper;");
+    await expectFileContains(join(projectDir, "Program.cs"), "TodoDapper.CreateConnection");
+    await expectFileContains(join(projectDir, "Program.cs"), "QuerySingleAsync<TodoItem>");
   });
 
   it("applies .NET Linq2DB through the generic ORM update field", async () => {
@@ -3660,27 +3666,21 @@ describe("stack update planner", () => {
     const plan = await planStackUpdate(projectDir, { dotnetOrm: "linq2db" });
 
     expect(plan.proposedConfig.dotnetOrm).toBe("linq2db");
-    expect(plan.filesToPatch).toContain("apps/server/app.csproj");
-    expect(plan.filesToPatch).toContain("apps/server/Program.cs");
+    expect(plan.filesToPatch).toContain("app.csproj");
+    expect(plan.filesToPatch).toContain("Program.cs");
 
     await applyStackUpdate(projectDir, { dotnetOrm: "linq2db" });
 
     const persisted = await readJsonc(join(projectDir, "bts.jsonc"));
     expect(persisted.dotnetOrm).toBe("linq2db");
+    await expectFileContains(join(projectDir, "app.csproj"), 'PackageReference Include="linq2db"');
     await expectFileContains(
-      join(projectDir, "apps/server/app.csproj"),
-      'PackageReference Include="linq2db"',
-    );
-    await expectFileContains(
-      join(projectDir, "apps/server/app.csproj"),
+      join(projectDir, "app.csproj"),
       'PackageReference Include="Microsoft.Data.Sqlite"',
     );
-    await expectFileContains(join(projectDir, "apps/server/Program.cs"), "using LinqToDB;");
-    await expectFileContains(
-      join(projectDir, "apps/server/Program.cs"),
-      "TodoLinq2Db.CreateConnection",
-    );
-    await expectFileContains(join(projectDir, "apps/server/Program.cs"), "InsertWithInt32Identity");
+    await expectFileContains(join(projectDir, "Program.cs"), "using LinqToDB;");
+    await expectFileContains(join(projectDir, "Program.cs"), "TodoLinq2Db.CreateConnection");
+    await expectFileContains(join(projectDir, "Program.cs"), "InsertWithInt32Identity");
   });
 
   it("applies .NET MVC through the generic web framework update field", async () => {
@@ -3697,26 +3697,17 @@ describe("stack update planner", () => {
     const plan = await planStackUpdate(projectDir, { dotnetWebFramework: "aspnet-mvc" });
 
     expect(plan.proposedConfig.dotnetWebFramework).toBe("aspnet-mvc");
-    expect(plan.filesToPatch).toContain("apps/server/Program.cs");
+    expect(plan.filesToPatch).toContain("Program.cs");
 
     await applyStackUpdate(projectDir, { dotnetWebFramework: "aspnet-mvc" });
 
     const persisted = await readJsonc(join(projectDir, "bts.jsonc"));
     expect(persisted.dotnetWebFramework).toBe("aspnet-mvc");
-    await expectFileContains(
-      join(projectDir, "apps/server/Program.cs"),
-      "builder.Services.AddControllers();",
-    );
-    await expectFileContains(join(projectDir, "apps/server/Program.cs"), "app.MapControllers();");
-    await expectFileContains(join(projectDir, "apps/server/Program.cs"), "[ApiController]");
-    await expectFileContains(
-      join(projectDir, "apps/server/Program.cs"),
-      "public sealed class TodosController",
-    );
-    await expectFileNotContains(
-      join(projectDir, "apps/server/Program.cs"),
-      'app.MapGet("/api/todos"',
-    );
+    await expectFileContains(join(projectDir, "Program.cs"), "builder.Services.AddControllers();");
+    await expectFileContains(join(projectDir, "Program.cs"), "app.MapControllers();");
+    await expectFileContains(join(projectDir, "Program.cs"), "[ApiController]");
+    await expectFileContains(join(projectDir, "Program.cs"), "public sealed class TodosController");
+    await expectFileNotContains(join(projectDir, "Program.cs"), 'app.MapGet("/api/todos"');
   });
 
   it("applies .NET Blazor through the generic web framework update field", async () => {
@@ -3733,27 +3724,21 @@ describe("stack update planner", () => {
     const plan = await planStackUpdate(projectDir, { dotnetWebFramework: "aspnet-blazor" });
 
     expect(plan.proposedConfig.dotnetWebFramework).toBe("aspnet-blazor");
-    expect(plan.filesToPatch).toContain("apps/server/Program.cs");
-    expect(plan.filesToAdd).toContain("apps/server/Components/App.razor");
-    expect(plan.filesToAdd).toContain("apps/server/Components/Routes.razor");
-    expect(plan.filesToAdd).toContain("apps/server/Components/Pages/Home.razor");
+    expect(plan.filesToPatch).toContain("Program.cs");
+    expect(plan.filesToAdd).toContain("Components/App.razor");
+    expect(plan.filesToAdd).toContain("Components/Routes.razor");
+    expect(plan.filesToAdd).toContain("Components/Pages/Home.razor");
 
     await applyStackUpdate(projectDir, { dotnetWebFramework: "aspnet-blazor" });
 
     const persisted = await readJsonc(join(projectDir, "bts.jsonc"));
     expect(persisted.dotnetWebFramework).toBe("aspnet-blazor");
     await expectFileContains(
-      join(projectDir, "apps/server/Program.cs"),
+      join(projectDir, "Program.cs"),
       "builder.Services.AddRazorComponents()",
     );
-    await expectFileContains(
-      join(projectDir, "apps/server/Program.cs"),
-      "app.MapRazorComponents<App>()",
-    );
-    await expectFileContains(
-      join(projectDir, "apps/server/Components/Pages/Home.razor"),
-      '@page "/"',
-    );
+    await expectFileContains(join(projectDir, "Program.cs"), "app.MapRazorComponents<App>()");
+    await expectFileContains(join(projectDir, "Components/Pages/Home.razor"), '@page "/"');
   });
 
   it("applies .NET auth providers through the generic auth update field", async () => {
@@ -3785,21 +3770,15 @@ describe("stack update planner", () => {
       const plan = await planStackUpdate(projectDir, { dotnetAuth: testCase.update });
 
       expect(plan.proposedConfig.dotnetAuth).toBe(testCase.update);
-      expect(plan.filesToPatch).toContain("apps/server/app.csproj");
-      expect(plan.filesToPatch).toContain("apps/server/Program.cs");
+      expect(plan.filesToPatch).toContain("app.csproj");
+      expect(plan.filesToPatch).toContain("Program.cs");
 
       await applyStackUpdate(projectDir, { dotnetAuth: testCase.update });
 
       const persisted = await readJsonc(join(projectDir, "bts.jsonc"));
       expect(persisted.dotnetAuth).toBe(testCase.update);
-      await expectFileContains(
-        join(projectDir, "apps/server/app.csproj"),
-        testCase.packageReference,
-      );
-      await expectFileContains(
-        join(projectDir, "apps/server/Program.cs"),
-        testCase.expectedContent,
-      );
+      await expectFileContains(join(projectDir, "app.csproj"), testCase.packageReference);
+      await expectFileContains(join(projectDir, "Program.cs"), testCase.expectedContent);
     }
   });
 
@@ -3813,13 +3792,13 @@ describe("stack update planner", () => {
       {
         name: "fly",
         update: "fly",
-        addedFile: "apps/server/fly.toml",
+        addedFile: "fly.toml",
         expectedContent: 'app = "app"',
       },
       {
         name: "gigalixir",
         update: "gigalixir",
-        addedFile: "apps/server/Procfile",
+        addedFile: "Procfile",
         expectedContent: "_build/prod/rel/app/bin/app start",
       },
     ];
@@ -3850,20 +3829,20 @@ describe("stack update planner", () => {
     const plan = await planStackUpdate(projectDir, { elixirCaching: "nebulex" });
 
     expect(plan.proposedConfig.elixirCaching).toBe("nebulex");
-    expect(plan.filesToAdd).toContain("apps/server/lib/app/cache.ex");
-    expect(plan.filesToPatch).toContain("apps/server/config/config.exs");
-    expect(plan.filesToPatch).toContain("apps/server/lib/app/application.ex");
-    expect(plan.filesToPatch).toContain("apps/server/mix.exs");
+    expect(plan.filesToAdd).toContain("lib/app/cache.ex");
+    expect(plan.filesToPatch).toContain("config/config.exs");
+    expect(plan.filesToPatch).toContain("lib/app/application.ex");
+    expect(plan.filesToPatch).toContain("mix.exs");
 
     await applyStackUpdate(projectDir, { elixirCaching: "nebulex" });
 
     const persisted = await readJsonc(join(projectDir, "bts.jsonc"));
     expect(persisted.elixirCaching).toBe("nebulex");
-    await expectFileContains(join(projectDir, "apps/server/mix.exs"), ":nebulex");
-    await expectFileContains(join(projectDir, "apps/server/lib/app/cache.ex"), "use Nebulex.Cache");
-    await expectFileContains(join(projectDir, "apps/server/lib/app/application.ex"), "App.Cache");
+    await expectFileContains(join(projectDir, "mix.exs"), ":nebulex");
+    await expectFileContains(join(projectDir, "lib/app/cache.ex"), "use Nebulex.Cache");
+    await expectFileContains(join(projectDir, "lib/app/application.ex"), "App.Cache");
     await expectFileContains(
-      join(projectDir, "apps/server/config/config.exs"),
+      join(projectDir, "config/config.exs"),
       "config :app,\n       App.Cache",
     );
   });
@@ -3880,12 +3859,12 @@ describe("stack update planner", () => {
         name: "opentelemetry",
         update: "opentelemetry",
         filesToAdd: [],
-        filesToPatch: ["apps/server/lib/app/application.ex", "apps/server/mix.exs"],
+        filesToPatch: ["lib/app/application.ex", "mix.exs"],
         assertions: [
-          { path: "apps/server/mix.exs", content: ":opentelemetry_phoenix" },
-          { path: "apps/server/lib/app/application.ex", content: ":opentelemetry_cowboy.setup()" },
+          { path: "mix.exs", content: ":opentelemetry_phoenix" },
+          { path: "lib/app/application.ex", content: ":opentelemetry_cowboy.setup()" },
           {
-            path: "apps/server/lib/app/application.ex",
+            path: "lib/app/application.ex",
             content: "OpentelemetryPhoenix.setup(adapter: :cowboy2)",
           },
         ],
@@ -3893,19 +3872,19 @@ describe("stack update planner", () => {
       {
         name: "prom-ex",
         update: "prom_ex",
-        filesToAdd: ["apps/server/lib/app/prom_ex.ex"],
+        filesToAdd: ["lib/app/prom_ex.ex"],
         filesToPatch: [
-          "apps/server/config/config.exs",
-          "apps/server/lib/app/application.ex",
-          "apps/server/lib/app_web/endpoint.ex",
-          "apps/server/mix.exs",
+          "config/config.exs",
+          "lib/app/application.ex",
+          "lib/app_web/endpoint.ex",
+          "mix.exs",
         ],
         assertions: [
-          { path: "apps/server/mix.exs", content: ":prom_ex" },
-          { path: "apps/server/config/config.exs", content: "config :app,\n       App.PromEx" },
-          { path: "apps/server/lib/app/application.ex", content: "App.PromEx" },
-          { path: "apps/server/lib/app_web/endpoint.ex", content: "PromEx.Plug" },
-          { path: "apps/server/lib/app/prom_ex.ex", content: "use PromEx, otp_app: :app" },
+          { path: "mix.exs", content: ":prom_ex" },
+          { path: "config/config.exs", content: "config :app,\n       App.PromEx" },
+          { path: "lib/app/application.ex", content: "App.PromEx" },
+          { path: "lib/app_web/endpoint.ex", content: "PromEx.Plug" },
+          { path: "lib/app/prom_ex.ex", content: "use PromEx, otp_app: :app" },
         ],
       },
     ];
@@ -3949,20 +3928,20 @@ describe("stack update planner", () => {
         name: "mox",
         update: "mox",
         filesToAdd: [
-          "apps/server/lib/app/external_service.ex",
-          "apps/server/test/app/external_service_mox_test.exs",
-          "apps/server/test/support/mocks.ex",
+          "lib/app/external_service.ex",
+          "test/app/external_service_mox_test.exs",
+          "test/support/mocks.ex",
         ],
-        filesToPatch: ["apps/server/mix.exs"],
+        filesToPatch: ["mix.exs"],
         assertions: [
-          { path: "apps/server/mix.exs", content: ":mox" },
+          { path: "mix.exs", content: ":mox" },
           {
-            path: "apps/server/lib/app/external_service.ex",
+            path: "lib/app/external_service.ex",
             content: "@callback fetch_status()",
           },
-          { path: "apps/server/test/support/mocks.ex", content: "Mox.defmock" },
+          { path: "test/support/mocks.ex", content: "Mox.defmock" },
           {
-            path: "apps/server/test/app/external_service_mox_test.exs",
+            path: "test/app/external_service_mox_test.exs",
             content: "setup :verify_on_exit!",
           },
         ],
@@ -3970,13 +3949,13 @@ describe("stack update planner", () => {
       {
         name: "bypass",
         update: "bypass",
-        filesToAdd: ["apps/server/test/app/bypass_test.exs"],
-        filesToPatch: ["apps/server/mix.exs"],
+        filesToAdd: ["test/app/bypass_test.exs"],
+        filesToPatch: ["mix.exs"],
         assertions: [
-          { path: "apps/server/mix.exs", content: ":bypass" },
-          { path: "apps/server/test/app/bypass_test.exs", content: "Bypass.open()" },
+          { path: "mix.exs", content: ":bypass" },
+          { path: "test/app/bypass_test.exs", content: "Bypass.open()" },
           {
-            path: "apps/server/test/app/bypass_test.exs",
+            path: "test/app/bypass_test.exs",
             content: "Bypass.expect_once",
           },
         ],
@@ -3984,21 +3963,17 @@ describe("stack update planner", () => {
       {
         name: "wallaby",
         update: "wallaby",
-        filesToAdd: ["apps/server/test/app_web/features/home_feature_test.exs"],
-        filesToPatch: [
-          "apps/server/config/test.exs",
-          "apps/server/mix.exs",
-          "apps/server/test/test_helper.exs",
-        ],
+        filesToAdd: ["test/app_web/features/home_feature_test.exs"],
+        filesToPatch: ["config/test.exs", "mix.exs", "test/test_helper.exs"],
         assertions: [
-          { path: "apps/server/mix.exs", content: ":wallaby" },
-          { path: "apps/server/config/test.exs", content: "server: true" },
+          { path: "mix.exs", content: ":wallaby" },
+          { path: "config/test.exs", content: "server: true" },
           {
-            path: "apps/server/test/test_helper.exs",
+            path: "test/test_helper.exs",
             content: "Application.ensure_all_started(:wallaby)",
           },
           {
-            path: "apps/server/test/app_web/features/home_feature_test.exs",
+            path: "test/app_web/features/home_feature_test.exs",
             content: "use Wallaby.Feature",
           },
         ],

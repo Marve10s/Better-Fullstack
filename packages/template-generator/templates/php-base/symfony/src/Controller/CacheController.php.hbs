@@ -1,0 +1,26 @@
+{{#if (ne phpCache "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use App\CachedClock;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[AsController]
+final readonly class CacheController
+{
+    public function __construct(private CachedClock $clock)
+    {
+    }
+
+    #[Route('/api/cached-time', methods: ['GET'])]
+    public function cachedTime(): JsonResponse
+    {
+        return new JsonResponse($this->clock->read());
+    }
+}
+{{/if}}

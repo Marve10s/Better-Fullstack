@@ -12,7 +12,7 @@ export const redis = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379"
  * identical to the Upstash Redis client (which auto-serializes for you).
  */
 function serialize(value: unknown): string {
-  return typeof value === "string" ? value : JSON.stringify(value);
+  return JSON.stringify(value);
 }
 
 function deserialize<T>(value: string | null): T | null {
@@ -48,18 +48,18 @@ export async function cacheSet<T>(
   options?: { ex?: number; px?: number; nx?: boolean; xx?: boolean }
 ): Promise<"OK" | null> {
   const serialized = serialize(value);
-  if (options?.ex) {
-    return redis.set(key, serialized, "EX", options.ex);
-  }
-  if (options?.px) {
-    return redis.set(key, serialized, "PX", options.px);
-  }
   if (options?.nx) {
+    if (options.ex) return redis.set(key, serialized, "EX", options.ex, "NX");
+    if (options.px) return redis.set(key, serialized, "PX", options.px, "NX");
     return redis.set(key, serialized, "NX");
   }
   if (options?.xx) {
+    if (options.ex) return redis.set(key, serialized, "EX", options.ex, "XX");
+    if (options.px) return redis.set(key, serialized, "PX", options.px, "XX");
     return redis.set(key, serialized, "XX");
   }
+  if (options?.ex) return redis.set(key, serialized, "EX", options.ex);
+  if (options?.px) return redis.set(key, serialized, "PX", options.px);
   return redis.set(key, serialized);
 }
 

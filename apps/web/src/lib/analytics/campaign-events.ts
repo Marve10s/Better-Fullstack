@@ -1,8 +1,5 @@
-import {
-  isBrowserTelemetryEnabled,
-  sanitizeProductProperties,
-  trackProductEvent,
-} from "@/lib/analytics/product-analytics";
+import { isBrowserTelemetryEnabled, trackProductEvent } from "@/lib/analytics/product-analytics";
+import { sanitizeProductProperties } from "@/lib/analytics/product-properties";
 import { normalizeCampaignSlug } from "@/lib/campaign/campaign";
 
 export type CampaignEvent =

@@ -1,0 +1,87 @@
+<?php
+
+declare(strict_types=1);
+
+{{#if (ne phpCache "none")}}
+use App\CachedClock;
+{{/if}}
+use App\GreetingEndpoint;
+{{#if (ne phpJobQueue "none")}}
+use App\JobQueue;
+{{/if}}
+{{#if (ne phpAuth "none")}}
+use App\Http\Middleware\RequireBearerToken;
+{{/if}}
+{{#if (ne phpHttpClient "none")}}
+use App\UpstreamClient;
+{{/if}}
+{{#if (eq phpOrm "eloquent")}}
+use App\Models\Note;
+use App\NoteInput;
+{{/if}}
+use Illuminate\Http\Request;
+{{#if (eq phpCache "laravel-cache")}}
+use Illuminate\Support\Facades\Cache;
+{{/if}}
+{{#if (eq phpLogging "laravel-log")}}
+use Illuminate\Support\Facades\Log;
+{{/if}}
+use Illuminate\Support\Facades\Route;
+
+Route::get('/health', fn () => response()->json(['status' => 'ok', 'framework' => 'laravel']));
+
+Route::post('/api/greetings', function (Request $request) {
+    [$status, $body] = GreetingEndpoint::respond((string) $request->header('Content-Type', ''), $request->getContent());
+{{#if (eq phpLogging "laravel-log")}}
+    if ($status === 200) {
+        Log::info('greeting.created', ['repetitions' => $body['repetitions']]);
+    }
+{{/if}}
+    return response()->json($body, $status);
+});
+{{#if (eq phpOrm "eloquent")}}
+
+Route::get('/api/notes', fn () => response()->json(['notes' => Note::query()->orderBy('id')->get()]));
+
+Route::post('/api/notes', function (Request $request) {
+    if (strlen($request->getContent()) > GreetingEndpoint::MAX_BODY_BYTES) {
+        return response()->json(['error' => 'payload_too_large'], 413);
+    }
+    try {
+        $title = NoteInput::titleFromJson($request->getContent());
+    } catch (JsonException) {
+        return response()->json(['error' => 'invalid_json'], 400);
+    } catch (InvalidArgumentException $error) {
+        return response()->json(['error' => 'validation_failed', 'message' => $error->getMessage()], 422);
+    }
+    return response()->json(Note::query()->create(['title' => $title]), 201);
+});
+{{/if}}
+{{#if (ne phpAuth "none")}}
+
+Route::get('/api/me', fn (Request $request) => response()->json(['subject' => $request->attributes->get('subject')]))
+    ->middleware(RequireBearerToken::class);
+{{/if}}
+{{#if (eq phpCache "laravel-cache")}}
+
+Route::get('/api/cached-time', fn () => response()->json((new CachedClock(Cache::store('file'), getenv('CACHE_NAMESPACE') ?: 'app'))->read()));
+{{else if (ne phpCache "none")}}
+
+Route::get('/api/cached-time', fn () => response()->json(CachedClock::fromEnvironment(base_path())->read()));
+{{/if}}
+{{#if (ne phpJobQueue "none")}}
+
+Route::post('/api/jobs', fn () => response()->json(['id' => JobQueue::fromEnvironment(base_path())->dispatch(), 'status' => 'queued'], 202));
+
+Route::get('/api/jobs/{id}', function (string $id) {
+    $status = JobQueue::fromEnvironment(base_path())->status($id);
+    return $status === null ? response()->json(['error' => 'not_found'], 404) : response()->json($status);
+});
+{{/if}}
+{{#if (ne phpHttpClient "none")}}
+
+Route::get('/api/upstream', function () {
+    [$status, $body] = UpstreamClient::fromEnvironment()->fetch();
+    return response()->json($body, $status);
+});
+{{/if}}

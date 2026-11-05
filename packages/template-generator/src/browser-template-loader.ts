@@ -2,10 +2,7 @@ import type { ProjectConfig, StackPartEcosystem } from "@better-fullstack/types"
 
 import { stackGraphToLegacyProjectConfigForEcosystem } from "@better-fullstack/types";
 
-import {
-  TEMPLATE_FAMILY_LOADERS,
-  type TemplateFamily,
-} from "@/template-families.generated";
+import { TEMPLATE_FAMILY_LOADERS, type TemplateFamily } from "@/template-families.generated";
 
 type ProjectEcosystem = ProjectConfig["ecosystem"];
 
@@ -15,7 +12,10 @@ const PROJECT_ECOSYSTEMS = new Set<ProjectEcosystem>([
   "rust",
   "python",
   "go",
+  "crystal",
   "java",
+  "ruby",
+  "php",
   "elixir",
   "dotnet",
 ]);
@@ -24,7 +24,10 @@ const ECOSYSTEM_TEMPLATE_FAMILY: Partial<Record<StackPartEcosystem, TemplateFami
   rust: "rust-base",
   python: "python-base",
   go: "go-base",
+  crystal: "crystal-base",
   java: "java-base",
+  ruby: "ruby-base",
+  php: "php-base",
   elixir: "elixir-base",
   dotnet: "dotnet-base",
 };
@@ -70,6 +73,7 @@ function addLegacyTemplateFamilies(families: Set<TemplateFamily>, config: Projec
   if (hasSelection(config.logging)) families.add("logging");
   if (hasSelection(config.observability)) families.add("observability");
   if (hasSelection(config.rateLimit)) families.add("rate-limit");
+  if (hasSelection(config.caching)) families.add("caching");
   if (hasSelection(config.featureFlags)) families.add("feature-flags");
   if (hasSelection(config.integrations)) families.add("integrations");
   if (hasSelection(config.ecommerce)) families.add("ecommerce");

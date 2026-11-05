@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Environment;
+use App\Kernel;
+use Symfony\Component\HttpFoundation\Request;
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+Environment::load(dirname(__DIR__) . '/.env');
+$kernel = new Kernel(getenv('APP_ENV') ?: 'prod', filter_var(getenv('APP_DEBUG') ?: false, FILTER_VALIDATE_BOOL));
+$request = Request::createFromGlobals();
+$response = $kernel->handle($request);
+$response->send();
+$kernel->terminate($request, $response);

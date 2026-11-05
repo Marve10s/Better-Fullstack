@@ -3,6 +3,9 @@ defmodule {{elixirModuleName}}.Catalog do
 {{#if (eq elixirValidation "nimble-options")}}
   alias {{elixirModuleName}}.Catalog.ItemOptions
 {{/if}}
+{{#if (or (eq elixirValidation "peri") (eq elixirValidation "tarams"))}}
+  alias {{elixirModuleName}}.Catalog.ItemParams
+{{/if}}
 {{#if (or (eq elixirOrm "ecto-sql") (or (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3")))}}
   alias {{elixirModuleName}}.Repo
 {{/if}}
@@ -27,8 +30,8 @@ defmodule {{elixirModuleName}}.Catalog do
 {{/if}}
 
   def create_item(attrs) do
-{{#if (eq elixirValidation "nimble-options")}}
-    with {:ok, attrs} <- ItemOptions.validate(attrs) do
+{{#if (or (eq elixirValidation "nimble-options") (eq elixirValidation "peri") (eq elixirValidation "tarams"))}}
+    with {:ok, attrs} <- {{#if (eq elixirValidation "nimble-options")}}ItemOptions{{else}}ItemParams{{/if}}.validate(attrs) do
 {{#if (or (eq elixirOrm "ecto-sql") (or (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3")))}}
       %Item{}
       |> Item.changeset(attrs)

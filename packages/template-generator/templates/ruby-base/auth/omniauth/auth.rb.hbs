@@ -1,0 +1,88 @@
+require "json"
+require "omniauth"
+require "omniauth_openid_connect"
+require "rack/session"
+
+module BetterFullstack
+  class Auth
+    CURRENT_USER = "better_fullstack.current_user"
+    PROVIDER = :oidc
+
+    def self.setting(name, development_default)
+      ENV.fetch(name) do
+        raise KeyError, "#{name} is required when RACK_ENV=production" if ENV["RACK_ENV"] == "production"
+
+        development_default
+      end
+    end
+
+    def self.session_secret
+      setting("SESSION_SECRET", "development-only-session-secret-change-me-" * 2)
+    end
+
+    def initialize(app)
+      routes = Routes.new(app)
+      @stack = Rack::Builder.new do
+        use Rack::Session::Cookie,
+            key: "better_fullstack.session",
+            secret: Auth.session_secret,
+            same_site: :lax,
+            httponly: true,
+            secure: ENV["RACK_ENV"] == "production"
+        use OmniAuth::Builder do
+          provider :openid_connect,
+                   name: PROVIDER,
+                   issuer: Auth.setting("OIDC_ISSUER", "https://issuer.example.com"),
+                   discovery: true,
+                   scope: [:openid, :email, :profile],
+                   response_type: :code,
+                   pkce: true,
+                   client_options: {
+                     identifier: Auth.setting("OIDC_CLIENT_ID", "development-client"),
+                     secret: Auth.setting("OIDC_CLIENT_SECRET", "development-secret"),
+                     redirect_uri: Auth.setting("OIDC_REDIRECT_URI", "http://localhost:{{rubyPort}}/auth/oidc/callback")
+                   }
+        end
+        run routes
+      end.to_app
+    end
+
+    def call(env)
+      @stack.call(env)
+    end
+
+    class Routes
+      def initialize(app)
+        @app = app
+      end
+
+      def call(env)
+        request = Rack::Request.new(env)
+        session = env["rack.session"]
+        case [request.request_method, request.path_info]
+        in ["GET", "/auth/csrf"]
+          json(200, csrf_token: Rack::Protection::AuthenticityToken.token(session))
+        in ["GET", "/auth/oidc/callback"]
+          identity = env["omniauth.auth"]
+          session["user"] = { "id" => identity.uid, "email" => identity.info.email }
+          json(200, user: session["user"])
+        in ["GET", "/auth/failure"]
+          json(401, error: request.params.fetch("message", "authentication_failed"))
+        in ["POST", "/auth/logout"]
+          session.clear
+          json(200, signed_out: true)
+        else
+          env[CURRENT_USER] = session["user"]
+          @app.call(env)
+        end
+      end
+
+      private
+
+      def json(status, value)
+        body = JSON.generate(value)
+        [status, { "content-type" => "application/json", "content-length" => body.bytesize.to_s }, [body]]
+      end
+    end
+  end
+end

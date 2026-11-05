@@ -1,0 +1,35 @@
+{{#if useEffectHttpApi}}
+import { HttpApiBuilder, HttpServer } from "@effect/platform";
+import { env } from "@{{projectName}}/env/server";
+import { Layer } from "effect";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { logger } from "hono/logger";
+
+import { HealthService, HealthServiceLive } from "./health";
+import { Api, HealthHandlersLive } from "./http-api";
+
+export function createApp(healthLayer: Layer.Layer<HealthService> = HealthServiceLive) {
+	const apiLive = HttpApiBuilder.api(Api).pipe(
+		Layer.provide(HealthHandlersLive),
+		Layer.provide(healthLayer)
+	);
+	const { handler, dispose } = HttpApiBuilder.toWebHandler(
+		Layer.mergeAll(apiLive, HttpServer.layerContext)
+	);
+	const app = new Hono();
+
+	app.use(logger());
+	app.use(
+		"/*",
+		cors({
+			origin: env.CORS_ORIGIN,
+			allowMethods: ["GET", "POST", "OPTIONS"],
+		})
+	);
+	app.get("/", (c) => handler(new Request(new URL("/health", c.req.url).toString(), c.req.raw)));
+	app.all("*", (c) => handler(c.req.raw));
+
+	return { app, dispose };
+}
+{{/if}}

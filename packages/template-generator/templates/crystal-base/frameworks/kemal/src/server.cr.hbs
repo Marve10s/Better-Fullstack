@@ -1,0 +1,161 @@
+require "./greeting"
+{{#if (ne crystalOrm "none")}}
+require "./greeting_store"
+{{/if}}
+require "kemal"
+{{#if (eq crystalAuth "jwt")}}
+require "./token_auth"
+{{/if}}
+{{#if (ne crystalCache "none")}}
+require "./cached_clock"
+{{/if}}
+{{#if (ne crystalJobs "none")}}
+require "./greeting_jobs"
+{{/if}}
+{{#if (eq crystalAuth "kemal-session")}}
+require "kemal-session"
+require "./auth_credentials"
+{{/if}}
+
+port_value = ENV.fetch("PORT", "3000")
+port = port_value.to_i?
+unless port && (1..65535).includes?(port) && port.to_s == port_value
+  STDERR.puts "PORT must be an integer between 1 and 65535"
+  exit 2
+end
+
+Kemal.config.host_binding = ENV.fetch("HOST", "127.0.0.1")
+Kemal.config.port = port
+Kemal.config.env = ENV.fetch("KEMAL_ENV", "production")
+Kemal.config.max_request_body_size = 4096
+Kemal.config.shutdown_timeout = 2.seconds
+
+{{#if (eq crystalAuth "kemal-session")}}
+Kemal::Session.config do |config|
+  config.secret = ENV.fetch("SESSION_SECRET") { Random::Secure.hex(32) }
+  config.cookie_name = "app_session"
+  config.secure = ENV.fetch("SESSION_SECURE", "true") == "true"
+  config.timeout = 2.hours
+end
+
+{{/if}}
+before_all do |env|
+  env.response.content_type = "application/json"
+  if origin = env.request.headers["Origin"]?
+    if ENV.fetch("CORS_ORIGIN", "").split(",").map(&.strip).includes?(origin)
+      env.response.headers["Access-Control-Allow-Origin"] = origin
+      env.response.headers["Vary"] = "Origin"
+    end
+  end
+end
+
+get "/health" do
+  {status: "ok"}.to_json
+end
+
+get "/api/hello" do |env|
+  begin
+    Greeting.response(env.params.query["name"]? || "World")
+  rescue ex : ArgumentError
+    env.response.status_code = 422
+    {error: ex.message}.to_json
+  end
+end
+
+post "/api/echo" do |env|
+  begin
+    payload = JSON.parse(env.params.raw_body)
+    name = payload.as_h["name"]?.try(&.as_s?)
+    raise ArgumentError.new("name must be a string") unless name
+    Greeting.response(name)
+  rescue ex : JSON::ParseException
+    env.response.status_code = 400
+    {error: "invalid JSON"}.to_json
+  rescue ex : TypeCastError
+    env.response.status_code = 422
+    {error: "JSON object required"}.to_json
+  rescue ex : ArgumentError
+    env.response.status_code = 422
+    {error: ex.message}.to_json
+  end
+end
+
+{{#if (ne crystalOrm "none")}}
+get "/api/greetings" do |env|
+  result = GreetingStore.list
+  env.response.status_code = result.status
+  result.body
+end
+
+post "/api/greetings" do |env|
+  result = GreetingStore.create(env.params.raw_body)
+  env.response.status_code = result.status
+  result.body
+end
+
+{{/if}}
+{{#if (eq crystalAuth "jwt")}}
+post "/api/auth/login" do |env|
+  result = TokenAuth.login(env.params.raw_body)
+  env.response.status_code = result.status
+  result.body
+end
+
+get "/api/me" do |env|
+  result = TokenAuth.current_user(env.request.headers["Authorization"]?)
+  env.response.status_code = result.status
+  result.body
+end
+
+{{/if}}
+{{#if (eq crystalAuth "kemal-session")}}
+post "/api/auth/login" do |env|
+  if username = AuthCredentials.authenticate(env.params.raw_body)
+    env.session.reset
+    env.session.string("username", username)
+    {username: username}.to_json
+  else
+    env.response.status_code = 401
+    {error: "unauthorized"}.to_json
+  end
+end
+
+get "/api/me" do |env|
+  if username = env.session.string?("username")
+    {username: username}.to_json
+  else
+    env.response.status_code = 401
+    {error: "unauthorized"}.to_json
+  end
+end
+
+post "/api/auth/logout" do |env|
+  env.session.destroy
+  env.response.status_code = 204
+  nil
+end
+
+{{/if}}
+{{#if (ne crystalCache "none")}}
+get "/api/cached-time" do |env|
+  result = CachedClock.fetch
+  env.response.status_code = result.status
+  result.body
+end
+
+{{/if}}
+{{#if (ne crystalJobs "none")}}
+post "/api/jobs" do |env|
+  result = GreetingJobs.enqueue(env.params.raw_body)
+  env.response.status_code = result.status
+  result.body
+end
+
+get "/api/jobs" do |env|
+  result = GreetingJobs.status(env.params.query["id"]?)
+  env.response.status_code = result.status
+  result.body
+end
+
+{{/if}}
+Kemal.run(args: nil)

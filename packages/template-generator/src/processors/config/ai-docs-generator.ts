@@ -1,12 +1,17 @@
 import {
   formatStackPartSpec,
   getCapabilityInventory,
+  getCrystalCommands,
+  getOptionMetadata,
   legacyProjectConfigToStackParts,
   type AiDocs,
   type ProjectConfig,
 } from "@better-fullstack/types";
 
 import type { VirtualFileSystem } from "@/core/virtual-fs";
+
+import { getGraphBackendConnections } from "@/graph/graph-backend";
+import { getGraphProjectTasks } from "@/graph/graph-project";
 
 const JAVA_GROUP_ID = "com.example";
 const JAVA_RESERVED_WORDS = new Set([
@@ -73,6 +78,16 @@ const JAVA_RESERVED_WORDS = new Set([
 export function processAiDocs(vfs: VirtualFileSystem, config: ProjectConfig): void {
   if (!config.aiDocs || config.aiDocs.length === 0) return;
 
+  if (config.ecosystem === "crystal" && !config.stackParts?.some(part => part.ecosystem !== "crystal" && ["backend", "frontend", "mobile"].includes(part.role))) {
+    const commands = getCrystalCommands(config);
+    const crystalSteps = ["shards install", commands.migrate, commands.seed, commands.build, commands.test, commands.proof].filter(Boolean).join(", then ");
+    for (const docType of config.aiDocs) {
+      const filename = getFilename(docType);
+      if (filename) vfs.writeFile(filename, `# Crystal project\n\nUse Crystal 1.22.1 and Shards 0.20.0 with the HTTP framework pinned in shard.yml. Run ${crystalSteps}. Read README.md for the bounded HTTP contract and native environment variables. Keep dependencies in shard.yml and commit shard.lock after installation. This experimental recipe has no recorded build or runtime receipt. Do not add JavaScript dependencies to this native service.\n`);
+    }
+    return;
+  }
+
   for (const docType of config.aiDocs) {
     if (docType === "none") continue;
 
@@ -98,10 +113,26 @@ function getFilename(docType: AiDocs): string {
 }
 
 function generateContent(config: ProjectConfig, docType: AiDocs): string {
-  if (docType === "cursorrules") {
-    return generateCursorRules(config);
+  if (config.ecosystem === "php" && !config.stackParts?.length) {
+    return `# PHP application guidance\n\nComposer owns dependencies and scripts. Read PHP.md before changing routes. Keep strict types, validate JSON at the HTTP boundary, and ${config.phpTesting === "none" ? "no test runner is generated, so keep bin/proof-http.php aligned with real behavior. Run composer install --no-interaction, composer run build and composer run proof:http" : `keep ${config.phpTesting === "pest" ? "Pest" : config.phpTesting === "codeception" ? "Codeception" : "PHPUnit"} request tests aligned with real behavior. Run composer install --no-interaction, composer run build, composer test and composer run proof:http`} from the PHP service directory. The HTTP proof starts and stops its own process. Never claim runtime verification from generated files alone. ${config.phpOrm && config.phpOrm !== "none" ? `The ${config.phpOrm} integration persists notes in SQLite; run composer run db:setup before composer run dev.` : "No database or migration adapter is generated."} ${config.phpAuth && config.phpAuth !== "none" ? `The ${config.phpAuth} integration verifies HS256 bearer tokens on GET /api/me; it does not issue or store credentials.` : "No auth adapter is generated."} No deployment adapter is generated.\n`;
   }
-  return generateMarkdownDoc(config, docType);
+  const content =
+    docType === "cursorrules" ? generateCursorRules(config) : generateMarkdownDoc(config, docType);
+  const phpServices = (config.stackParts ?? []).filter(
+    (part) =>
+      part.role === "backend" &&
+      part.ecosystem === "php" &&
+      !part.ownerPartId &&
+      part.source !== "provided",
+  );
+  if (phpServices.length === 0) return content;
+  const guidance = phpServices
+    .map((part) => {
+      const directory = part.targetPath ?? "apps/server";
+      return `- Read ${directory}/PHP.md. Run composer install --no-interaction, composer run build, composer test and composer run proof:http from ${directory}. Composer owns this service; keep TypeScript dependency changes outside it.`;
+    })
+    .join("\n");
+  return `${content}\n## PHP service ownership\n\n${guidance}\n`;
 }
 
 function sanitizeJavaPackageSuffix(projectName: string): string {
@@ -279,6 +310,25 @@ function generateTechStackSection(config: ProjectConfig): string {
     }
   }
 
+  if (config.ecosystem === "ruby") {
+    lines.push(`- Experimental Ruby ${rubyFrameworkLabel(config)} HTTP recipe; Bundler owns Gemfile and Gemfile.lock; Puma serves JSON routes; ${rubyTestingLabel(config) ? `${rubyTestingLabel(config)}/Rack tests cover request validation.` : "No test suite is generated."}`);
+    const orm = rubyOrmLabel(config);
+    if (orm) lines.push(`- Database: ${orm} on SQLite with versioned migrations (\`bundle exec rake db:migrate\`)`);
+    if (config.rubyAuth && config.rubyAuth !== "none") lines.push(`- Auth: ${getOptionMetadata("rubyAuth", config.rubyAuth)?.label ?? config.rubyAuth}`);
+    const validation = rubyOptionLabel(config, "rubyValidation");
+    if (validation) lines.push(`- Validation: ${validation} in name_contract.rb`);
+    const cache = rubyOptionLabel(config, "rubyCache");
+    if (cache) lines.push(`- Cache: ${cache} in cache.rb behind GET /api/cache`);
+    const jobs = rubyOptionLabel(config, "rubyJobQueue");
+    if (jobs) lines.push(`- Background jobs: ${jobs} in jobs.rb; run the worker with \`bundle exec ruby bin/worker\``);
+    const email = rubyOptionLabel(config, "rubyEmail");
+    if (email) lines.push(`- Email: ${email} in mailer.rb; send a test message with \`bundle exec rake "email:welcome[you@example.com]"\``);
+    const logging = rubyOptionLabel(config, "rubyLogging");
+    if (logging) lines.push(`- Request logging: ${logging}`);
+    const httpClient = rubyOptionLabel(config, "rubyHttpClient");
+    if (httpClient) lines.push(`- HTTP client: ${httpClient} in upstream.rb behind GET /api/upstream`);
+  }
+
   if (config.ecosystem === "rust") {
     if (config.rustWebFramework !== "none")
       lines.push(`- Web Framework: ${config.rustWebFramework}`);
@@ -404,6 +454,8 @@ function generateStructureSection(config: ProjectConfig): string {
       );
     }
     lines.push("```");
+  } else if (config.ecosystem === "ruby") {
+    lines.push("Gemfile, app.rb, config.ru, bin/server, bin/proof, Rakefile, test/app_test.rb");
   } else if (config.ecosystem === "python") {
     lines.push("```");
     lines.push(`${config.projectName}/`);
@@ -466,8 +518,69 @@ function generateStructureSection(config: ProjectConfig): string {
   return lines.join("\n");
 }
 
+function rubyFrameworkLabel(config: ProjectConfig) {
+  return getOptionMetadata("rubyWebFramework", config.rubyWebFramework ?? "sinatra")?.label ?? "Sinatra";
+}
+
+const RUBY_AUTH_GUIDANCE = {
+  jwt: "JWT bearer tokens: auth.rb verifies HS256 tokens (issuer, audience, expiry) from JWT_SECRET and exposes the subject at GET /api/me. Never add an endpoint that signs caller-supplied claims; `bundle exec rake auth:token[subject]` prints a development token.",
+  omniauth: "OmniAuth OpenID Connect: auth.rb mounts the oidc strategy with discovery and PKCE, a cookie session, GET /auth/csrf for the request-phase token, the callback, and POST /auth/logout. Configure OIDC_ISSUER, OIDC_CLIENT_ID, OIDC_CLIENT_SECRET, OIDC_REDIRECT_URI, and SESSION_SECRET; a real provider is required for an end-to-end sign-in.",
+  rodauth: "Rodauth JSON accounts: auth.rb mounts create-account, login, and logout with accounts in SQLite (db/auth_migrations, run by `bundle exec rake db:migrate`). SESSION_SECRET signs the session cookie.",
+} as const;
+
+function rubyAuthGuidance(config: ProjectConfig) {
+  return config.rubyAuth && config.rubyAuth !== "none" ? RUBY_AUTH_GUIDANCE[config.rubyAuth] : undefined;
+}
+
+function rubyTestingLabel(config: ProjectConfig) {
+  const testing = config.rubyTesting ?? "minitest";
+  return testing === "none" ? undefined : getOptionMetadata("rubyTesting", testing)?.label;
+}
+
+function rubyOptionLabel(
+  config: ProjectConfig,
+  category:
+    | "rubyValidation"
+    | "rubyCache"
+    | "rubyJobQueue"
+    | "rubyEmail"
+    | "rubyLogging"
+    | "rubyHttpClient",
+) {
+  const value = config[category];
+  return value && value !== "none" ? getOptionMetadata(category, value)?.label : undefined;
+}
+
+function rubyOrmLabel(config: ProjectConfig) {
+  return config.rubyOrm && config.rubyOrm !== "none"
+    ? getOptionMetadata("rubyOrm", config.rubyOrm)?.label
+    : undefined;
+}
+
 function generateCommandsSection(config: ProjectConfig): string {
   const lines: string[] = ["\n## Common Commands\n"];
+
+  const rubyConnections = getGraphBackendConnections(config).filter(
+    (connection) => connection.ecosystem === "ruby",
+  );
+  if (rubyConnections.length > 0) {
+    lines.push(
+      "Each service owns its native manifest, environment, and tests. Run native commands from that service directory.",
+    );
+    for (const task of getGraphProjectTasks(config)) {
+      if (task.setup) lines.push(`- Install ${task.label}: \`${task.setup}\``);
+      if (task.dev) lines.push(`- Start ${task.label}: \`${task.dev}\``);
+    }
+    for (const service of rubyConnections) {
+      lines.push(
+        `- Check Ruby syntax: \`${service.checkCommand}\``,
+        ...(service.testCommand ? [`- Run Rack request tests: \`${service.testCommand}\``] : []),
+        `- Prove live HTTP and shutdown: \`cd ${service.targetPath} && bundle exec ruby bin/proof\``,
+      );
+    }
+    lines.push(`Ruby services use Bundler, ${[...new Set(rubyConnections.map((service) => getOptionMetadata("rubyWebFramework", service.toolId)?.label ?? service.toolId))].join(", ")}, and Puma. Do not add TypeScript dependencies to them. Ruby remains experimental until a current revision-matched runtime receipt proves the recipe.`);
+    return lines.join("\n");
+  }
 
   if (config.ecosystem === "typescript") {
     const pm = config.packageManager;
@@ -523,6 +636,15 @@ function generateCommandsSection(config: ProjectConfig): string {
       lines.push(`- \`${pythonRun}ruff check .\` - Run linter`);
       lines.push(`- \`${pythonRun}ruff format .\` - Format code`);
     }
+  } else if (config.ecosystem === "ruby") {
+    lines.push(
+      "- `bundle install` - Install native dependencies",
+      ...(rubyOrmLabel(config) || config.rubyAuth === "rodauth" ? ["- `bundle exec rake db:migrate` - Apply database migrations"] : []),
+      "- `bundle exec rake build` - Check Ruby syntax",
+      ...(rubyTestingLabel(config) ? [`- \`bundle exec rake test\` - Run ${rubyTestingLabel(config)}/Rack integration tests`] : []),
+      "- `bundle exec ruby bin/proof` - Exercise real HTTP and shutdown",
+      "- `bundle exec ruby bin/server` - Start Puma",
+    );
   } else if (config.ecosystem === "go") {
     lines.push(`- \`go mod tidy\` - Install dependencies`);
     lines.push(`- \`go run cmd/server/main.go\` - Start server`);
@@ -624,6 +746,23 @@ function generateCursorRules(config: ProjectConfig): string {
     if (config.pythonLogging && config.pythonLogging !== "none") {
       rules.push(`Logging: ${config.pythonLogging}, configured in src/app/logging_config.py`);
     }
+  } else if (config.ecosystem === "ruby") {
+    rules.push(`Keep Ruby routes in app.rb, shared Rack host, origin, and body policies in http_policy.rb and request_body_limit.rb, and ${config.rubyTesting === "rspec" ? "RSpec coverage in spec/app_spec.rb" : config.rubyTesting === "none" ? "no generated test suite" : `${rubyTestingLabel(config)} coverage in test/app_test.rb`}. Bundler owns native dependencies. Environment variables are read from the process; .env.example is documentation. Run bundle exec rake and bundle exec ruby bin/proof before claiming runtime verification.`);
+    const orm = rubyOrmLabel(config);
+    rules.push(orm ? `Persistence uses ${orm} on SQLite: connection and migrator in db.rb, the Items repository in items.rb, migrations under db/. DATABASE_PATH overrides the SQLite file. Change the schema with a new migration, never by editing an applied one.` : "No database adapter is generated.");
+    rules.push(rubyAuthGuidance(config) ?? "No auth adapter is generated.");
+    const validation = rubyOptionLabel(config, "rubyValidation");
+    if (validation) rules.push(`Request payload rules live in name_contract.rb and use ${validation}. Keep the 422 error codes name_must_be_a_string and name_length_must_be_1_to_80 stable; the tests assert them.`);
+    const cache = rubyOptionLabel(config, "rubyCache");
+    if (cache) rules.push(`Caching uses ${cache} through Cache.fetch(key, ttl:) in cache.rb. Always pass a TTL, keep cached values JSON-serializable, and return 503 instead of failing the request when the cache server is down.`);
+    const jobs = rubyOptionLabel(config, "rubyJobQueue");
+    if (jobs) rules.push(`Background jobs use ${jobs}: GreetingJob and the Jobs service live in jobs.rb, and bin/worker runs them in a separate process. Keep job arguments JSON-serializable and jobs idempotent.`);
+    const email = rubyOptionLabel(config, "rubyEmail");
+    if (email) rules.push(`Email uses ${email} through Mailer.deliver_welcome in mailer.rb. Never expose an endpoint that sends mail to arbitrary addresses, and keep credentials in the process environment.`);
+    const logging = rubyOptionLabel(config, "rubyLogging");
+    if (logging) rules.push(config.rubyLogging === "lograge" ? "Request logs come from Lograge, configured in the Rails application in app.rb; keep one line per request." : `Request logging uses ${logging} in request_logger.rb, mounted as the outermost Rack middleware. Never log request bodies or credentials.`);
+    const httpClient = rubyOptionLabel(config, "rubyHttpClient");
+    if (httpClient) rules.push(`Outbound HTTP uses ${httpClient} in upstream.rb. Keep explicit timeouts, read the upstream base URL from UPSTREAM_URL, and never build request URLs from user input.`);
   } else if (config.ecosystem === "go") {
     rules.push(`You are working on a Go project.`);
     if (config.goWebFramework !== "none") rules.push(`Web framework: ${config.goWebFramework}`);

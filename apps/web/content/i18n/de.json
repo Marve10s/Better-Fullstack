@@ -154,7 +154,7 @@
         "title": "Next.js AI CLI Agent Workbench",
         "description": "Erstellen Sie eine Next.js-App mit AI CLI, MCP, Skills, Better Auth, Drizzle, SQLite und Agentendokumentation mit Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "AI Werkzeuge",
+        "category": "KI-Tools",
         "tags": ["nextjs", "ai-cli", "mcp", "agents"],
         "keywords": [
           "nextjs ai cli starter",
@@ -171,7 +171,7 @@
         "title": "Go CLI mit Bubble Tea",
         "description": "Erstellen Sie eine Go-Terminalanwendung mit Bubble Tea unter Verwendung des Go CLI-Projektgerüsts von Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Gehen",
+        "category": "Go",
         "tags": ["go", "cli", "bubbletea"],
         "keywords": [
           "go bubble tea starter",
@@ -188,7 +188,7 @@
         "title": "Echo mit SQLC",
         "description": "Erstellen Sie ein Go API-Projekt mit Echo, SQLC, Zap-Protokollierung und dem Go-Projektgerüst von Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Gehen",
+        "category": "Go",
         "tags": ["echo", "sqlc", "go", "api"],
         "keywords": [
           "echo sqlc starter",
@@ -205,7 +205,7 @@
         "title": "Gin mit PostgreSQL und GORM",
         "description": "Erstellen Sie ein Go-API-Projekt mit Gin, PostgreSQL, GORM, Zap-Protokollierung und einer sauberen Better Fullstack-Projektstruktur.",
         "updated": "2026-05-12",
-        "category": "Gehen",
+        "category": "Go",
         "tags": ["gin", "postgres", "gorm", "go"],
         "keywords": [
           "gin postgres starter",
@@ -222,7 +222,7 @@
         "title": "Go gRPC-Dienst",
         "description": "Erstellen Sie ein Go-Backend mit Gin, gRPC-Go, GORM, Zap-Protokollierung und dem Go-Dienstgerüst von Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Gehen",
+        "category": "Go",
         "tags": ["go", "grpc", "gin", "gorm"],
         "keywords": [
           "go grpc starter",
@@ -239,7 +239,7 @@
         "title": "Fullstack-App-Starterhandbücher",
         "description": "Praktische Better Fullstack-Anleitungen für TypeScript-, React Native-, Rust-, Python-, Go-, Java- und AI-Starterprojekte.",
         "updated": "2026-07-30",
-        "category": "Führer",
+        "category": "Leitfäden",
         "tags": ["fullstack", "scaffolding", "starters"],
         "keywords": [
           "fullstack app starter",
@@ -293,7 +293,7 @@
         "title": "Erstellen Sie eine AI Agent-App",
         "description": "Erstellen Sie eine AI Agenten-App mit Next.js, AI-CLI-Workflow-Dokumenten, MCP, Skills, Better Auth, Drizzle, SQLite, Tailwind CSS und shadcn/ui.",
         "updated": "2026-05-21",
-        "category": "Packungen",
+        "category": "Pakete",
         "tags": ["ai-agent", "nextjs", "mcp", "ai-cli", "skills"],
         "keywords": [
           "create ai agent app",
@@ -310,7 +310,7 @@
         "title": "Erstellen Sie ein internes Tool",
         "description": "Erstellen Sie ein internes Tool mit TanStack Router, Hono, Drizzle, PostgreSQL, Better Auth, tRPC, Tailwind CSS und shadcn/ui.",
         "updated": "2026-05-21",
-        "category": "Packungen",
+        "category": "Pakete",
         "tags": ["internal-tool", "tanstack-router", "hono", "drizzle", "trpc"],
         "keywords": [
           "create internal tool",
@@ -327,7 +327,7 @@
         "title": "Erstellen Sie ein Java API",
         "description": "Erstellen Sie ein Java API mit Spring Boot, Spring Security, Spring Data JPA, Flyway, Gradle, JUnit 5 und Testcontainers.",
         "updated": "2026-05-21",
-        "category": "Packungen",
+        "category": "Pakete",
         "tags": ["java", "spring-boot", "spring-security", "jpa", "testcontainers"],
         "keywords": [
           "create java api",
@@ -344,7 +344,7 @@
         "title": "Erstellen Sie eine mobile App",
         "description": "Erstellen Sie eine mobile App mit Expo, React Native und Uniwind mit dem Mobile-App-Paket Better Fullstack.",
         "updated": "2026-05-21",
-        "category": "Packungen",
+        "category": "Pakete",
         "tags": ["mobile", "expo", "react-native", "uniwind", "typescript"],
         "keywords": [
           "create mobile app",
@@ -361,7 +361,7 @@
         "title": "Erstellen Sie ein REST API",
         "description": "Erstellen Sie ein REST API mit FastAPI, PostgreSQL, SQLAlchemy, Pydantic und Ruff unter Verwendung des Pakets Better Fullstack REST API.",
         "updated": "2026-05-21",
-        "category": "Packungen",
+        "category": "Pakete",
         "tags": ["rest-api", "fastapi", "python", "sqlalchemy", "pydantic"],
         "keywords": [
           "create rest api",
@@ -378,7 +378,7 @@
         "title": "Erstellen Sie ein Rust-Backend",
         "description": "Erstellen Sie ein Rust-Backend mit Axum, SeaORM, PostgreSQL, Ablaufverfolgung und strukturierter Fehlerbehandlung mit Better Fullstack.",
         "updated": "2026-05-21",
-        "category": "Packungen",
+        "category": "Pakete",
         "tags": ["rust", "axum", "seaorm", "postgres", "backend"],
         "keywords": [
           "create rust backend",
@@ -395,7 +395,7 @@
         "title": "Erstellen Sie eine SaaS-App",
         "description": "Erfahren Sie, wie Sie eine SaaS-App mit Next.js, Better Auth, Stripe, PostgreSQL, Drizzle, React Email, Tailwind CSS und shadcn/ui mit Better Fullstack erstellen.",
         "updated": "2026-05-21",
-        "category": "Packungen",
+        "category": "Pakete",
         "tags": ["saas", "nextjs", "stripe", "better-auth", "drizzle"],
         "keywords": [
           "create saas app",
@@ -413,7 +413,7 @@
         "title": "Better Fullstack Starterpakete",
         "description": "SEO-orientierte Starterpakete für SaaS-Apps, AI Agent-Apps, REST APIs, Java APIs, Rust-Backends, mobile Apps und interne Tools.",
         "updated": "2026-05-21",
-        "category": "Packungen",
+        "category": "Pakete",
         "tags": ["starter-packs", "fullstack", "scaffolding"],
         "keywords": [
           "app starter packs",
@@ -498,7 +498,7 @@
         "title": "Fullstack Rust mit Axum und Leptos",
         "description": "Erstellen Sie eine Fullstack-Rust-App mit Axum, Leptos, SeaORM und dem Rust-Projektgerüst von Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Rost",
+        "category": "Rust",
         "tags": ["rust", "axum", "leptos", "seaorm"],
         "keywords": [
           "fullstack rust starter",
@@ -515,7 +515,7 @@
         "title": "Axum mit PostgreSQL und SeaORM",
         "description": "Erstellen Sie ein Rust API-Projekt mit Axum, PostgreSQL, SeaORM, Ablaufverfolgung und strukturierter Fehlerbehandlung mit Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Rost",
+        "category": "Rust",
         "tags": ["axum", "postgres", "seaorm", "tracing"],
         "keywords": [
           "axum postgres starter",
@@ -532,7 +532,7 @@
         "title": "Rust CLI mit Ratatui",
         "description": "Erstellen Sie eine Rust-Terminal-UI-App mit Ratatui unter Verwendung des Rust-CLI-Projektgerüsts von Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Rost",
+        "category": "Rust",
         "tags": ["rust", "cli", "ratatui"],
         "keywords": [
           "rust ratatui starter",
@@ -549,7 +549,7 @@
         "title": "Rust gRPC-Dienst mit Tonic und SQLx",
         "description": "Erstellen Sie einen Rust gRPC-Dienst mit Axum, Tonic, SQLx, Ablaufverfolgung und strukturierter Fehlerbehandlung mit Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Rost",
+        "category": "Rust",
         "tags": ["rust", "tonic", "grpc", "sqlx"],
         "keywords": [
           "rust grpc starter",

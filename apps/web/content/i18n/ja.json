@@ -171,7 +171,7 @@
         "title": "Bubble Tea を使った Go CLI",
         "description": "Better Fullstack の Go CLI プロジェクト スキャフォールディングを使用して、Bubble Tea で Go ターミナル アプリケーションを作成します。",
         "updated": "2026-05-12",
-        "category": "行く",
+        "category": "Go",
         "tags": ["go", "cli", "bubbletea"],
         "keywords": [
           "go bubble tea starter",
@@ -188,7 +188,7 @@
         "title": "SQLC を使った Echo",
         "description": "Echo、SQLC、Zap ロギング、および Better Fullstack の Go プロジェクト スキャフォールディングを使用して Go API プロジェクトを作成します。",
         "updated": "2026-05-12",
-        "category": "行く",
+        "category": "Go",
         "tags": ["echo", "sqlc", "go", "api"],
         "keywords": [
           "echo sqlc starter",
@@ -205,7 +205,7 @@
         "title": "PostgreSQL と GORM を使用した Gin",
         "description": "Gin、PostgreSQL、GORM、Zap ロギング、およびクリーンな Better Fullstack プロジェクト構造を使用して Go API プロジェクトを作成します。",
         "updated": "2026-05-12",
-        "category": "行く",
+        "category": "Go",
         "tags": ["gin", "postgres", "gorm", "go"],
         "keywords": [
           "gin postgres starter",
@@ -222,7 +222,7 @@
         "title": "Go gRPC サービス",
         "description": "Gin、gRPC-Go、GORM、Zap ロギング、および Better Fullstack の Go サービス スキャフォールディングを使用して Go バックエンドを作成します。",
         "updated": "2026-05-12",
-        "category": "行く",
+        "category": "Go",
         "tags": ["go", "grpc", "gin", "gorm"],
         "keywords": [
           "go grpc starter",
@@ -259,7 +259,7 @@
         "title": "Spring Boot と PostgreSQL および JPA",
         "description": "Better Fullstack を使用して、Spring Boot、PostgreSQL、Maven、JPA、JUnit 5、およびオプションの Spring ライブラリを含む Java API プロジェクトを作成します。",
         "updated": "2026-05-12",
-        "category": "ジャワ",
+        "category": "Java",
         "tags": ["spring-boot", "postgres", "jpa", "java"],
         "keywords": [
           "spring boot postgres starter",
@@ -276,7 +276,7 @@
         "title": "安全な Spring Boot API",
         "description": "Spring Boot、Spring Security、Spring Data JPA、Flyway、Gradle、JUnit 5、および Testcontainers を使用して、安全な Java API を作成します。",
         "updated": "2026-05-12",
-        "category": "ジャワ",
+        "category": "Java",
         "tags": ["spring-boot", "spring-security", "jpa", "testcontainers"],
         "keywords": [
           "spring security api starter",
@@ -430,7 +430,7 @@
         "title": "Django REST API スターター",
         "description": "Better Fullstack を使用して、Django、Django REST Framework、SQLAlchemy、Pydantic、Ruff を備えた Python バックエンドを作成します。",
         "updated": "2026-05-12",
-        "category": "パイソン",
+        "category": "Python",
         "tags": ["django", "django-rest-framework", "python", "api"],
         "keywords": [
           "django rest api starter",
@@ -447,7 +447,7 @@
         "title": "LangChain を使った FastAPI AI エージェント",
         "description": "Better Fullstack を使用して、FastAPI、LangChain、SQLModel、Pydantic、および Ruff を使用して Python AI API を作成します。",
         "updated": "2026-05-12",
-        "category": "パイソン",
+        "category": "Python",
         "tags": ["fastapi", "langchain", "ai", "sqlmodel"],
         "keywords": [
           "fastapi langchain starter",
@@ -464,7 +464,7 @@
         "title": "FastAPI と PostgreSQL および SQLAlchemy",
         "description": "Better Fullstack を使用して、FastAPI、PostgreSQL、SQLAlchemy、Pydantic、および Ruff を含む Python API プロジェクトを作成します。",
         "updated": "2026-05-12",
-        "category": "パイソン",
+        "category": "Python",
         "tags": ["fastapi", "postgres", "sqlalchemy", "pydantic"],
         "keywords": [
           "fastapi postgres starter",
@@ -498,7 +498,7 @@
         "title": "Axum および Leptos を使用したフルスタック Rust",
         "description": "Axum、Leptos、SeaORM、Better Fullstack の Rust プロジェクト スキャフォールディングを使用してフルスタック Rust アプリを作成します。",
         "updated": "2026-05-12",
-        "category": "さび",
+        "category": "Rust",
         "tags": ["rust", "axum", "leptos", "seaorm"],
         "keywords": [
           "fullstack rust starter",
@@ -515,7 +515,7 @@
         "title": "Axum と PostgreSQL および SeaORM",
         "description": "Axum、PostgreSQL、SeaORM、トレース、Better Fullstack を使用した構造化エラー処理を備えた Rust API プロジェクトを作成します。",
         "updated": "2026-05-12",
-        "category": "さび",
+        "category": "Rust",
         "tags": ["axum", "postgres", "seaorm", "tracing"],
         "keywords": [
           "axum postgres starter",
@@ -532,7 +532,7 @@
         "title": "Ratatui を使った Rust CLI",
         "description": "Better Fullstack の Rust CLI プロジェクト スキャフォールディングを使用して、Ratatui で Rust ターミナル UI アプリを作成します。",
         "updated": "2026-05-12",
-        "category": "さび",
+        "category": "Rust",
         "tags": ["rust", "cli", "ratatui"],
         "keywords": [
           "rust ratatui starter",
@@ -549,7 +549,7 @@
         "title": "Tonic および SQLx を使用した Rust gRPC サービス",
         "description": "Axum、Tonic、SQLx、トレース、Better Fullstack を使用した構造化エラー処理を備えた Rust gRPC サービスを作成します。",
         "updated": "2026-05-12",
-        "category": "さび",
+        "category": "Rust",
         "tags": ["rust", "tonic", "grpc", "sqlx"],
         "keywords": [
           "rust grpc starter",

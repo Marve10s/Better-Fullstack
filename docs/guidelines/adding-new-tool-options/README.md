@@ -21,17 +21,18 @@ Paths below are relative to the repository root. Edit only the layers affected b
 | --- | --- | --- |
 | Input and persisted config | `packages/types/src/config/schemas.ts` | Accepted values agree across create input, project config, and saved config. |
 | Metadata and CLI flags | `packages/types/src/catalog/option-metadata.ts`, `packages/types/src/catalog/cli-flags.ts` | Stable IDs, aliases, labels, category order, selection mode, and public flags. |
-| Graph ownership | `packages/types/src/stack/stack-graph.ts` | Registered tool, correct role/owner, provided capabilities, and reversible legacy projection. |
-| Compatibility | `packages/types/src/stack/compatibility.ts`, `packages/types/src/capabilities/` | Shared reasons and constraints agree with what generation can produce. |
+| Graph ownership | `packages/types/src/stack/stack-graph.ts`, `GRAPH_SCOPED_PART_GROUPS` in `packages/types/src/stack/stack-translation.ts` | Registered tool, correct role/owner, provided capabilities, and reversible legacy projection. Owner-scoped keys bind to their backend; test flat edits with more than one owner. |
+| Compatibility | `packages/types/src/stack/compatibility.ts`, ecosystem siblings such as `php-compatibility.ts`, `ruby-compatibility.ts`, and `platform/crystal-project.ts`, `packages/types/src/capabilities/` | Shared reasons and constraints agree with what generation can produce. |
 | Templates and routing | `packages/template-generator/templates/`, `src/template-handlers/`, `src/generator.ts` | Real generated behavior for every advertised frontend/backend family. Generator `src/` paths are package-relative. |
 | Dependencies and environment | Generator `src/dependencies/add-deps.ts`, `src/processors/dependencies/`, `src/processors/config/env-vars.ts` | Dependencies, scripts, adapters, and server/client environment boundaries agree. |
-| CLI | `apps/cli/src/run.ts`, `src/prompts/`, `src/config/` | Explicit flags and interactive selection produce the same config; CLI `src/` paths are package-relative. |
+| CLI | `apps/cli/src/run.ts`, `src/prompts/`, `src/config/`, `CONFIG_SCOPE_REGISTRY` in `src/prompts/core/config-scope.ts` | Explicit flags and interactive selection produce the same config, and core, full, and custom setup scopes ask the new prompt; CLI `src/` paths are package-relative. |
 | MCP | `apps/cli/src/operations/`, `apps/cli/src/mcp/` | Shared operation schemas and handlers; do not create a parallel tool contract in the transport. |
 | Saved config and commands | `apps/cli/src/config/bts-config.ts`, `apps/cli/src/lifecycle/generate-reproducible-command.ts` | Read/write and reproduced commands retain the selection. |
 | Builder and URLs | `apps/web/src/lib/stack/constant.ts`, `packages/types/src/stack/stack-translation.ts`, `apps/web/src/lib/builder/preview-config.ts` | Builder choices, defaults, URL keys, commands, and previews round-trip. |
 | Icons and links | `apps/web/src/lib/stack/tech-icons.ts`, `apps/web/src/lib/stack/tech-resource-links.ts` | Existing icon system and verified resource links. |
-| User guidance | CLI `helpers/core/post-installation.ts`, generator `processors/config/` | Setup, README, and agent instructions name actual generated commands and remaining setup. |
+| User guidance | CLI `helpers/core/post-installation.ts`, generator `processors/config/`, generator `src/graph/graph-backend.ts` | Setup, README, and agent instructions name actual generated commands and remaining setup. Composed setup comes from each backend's `setupCommand`, so put migrations and seeds there. |
 | Evidence | `packages/types/src/capabilities/capability-inventory.ts` | Honest maturity, owner, limitation, and verification scope. |
+| Launch radar | `apps/web/src/lib/content/launch-radar.ts` | When announcing new options, list their IDs and ecosystem categories so the displayed counts include them, and set `LAUNCH_RADAR_RELEASE_ID` for the release. |
 
 A new value in an existing category often needs no new dispatch code. Inspect dynamic routing
 before adding another branch. Use an existing option in the same role and ecosystem as the trace.
@@ -52,6 +53,9 @@ before adding another branch. Use an existing option in the same role and ecosys
 - For a new ecosystem, trace generator dispatch, native manifest ownership, generated commands,
   toolchain checks, and composed-project support. Do not translate TypeScript workspace assumptions
   into a native ecosystem without checking its existing patterns.
+- A new ecosystem also needs `EcosystemSchema`, the category order in `option-metadata.ts`,
+  `ECOSYSTEM_TEMPLATE_FAMILY` in `packages/template-generator/src/browser-template-loader.ts`, `OPTION_DISPLAY_ORDER` in
+  `apps/web/src/lib/stack/option-order.ts`, and a `CONFIG_SCOPE_REGISTRY` entry.
 
 ## Generator constraints
 
@@ -84,7 +88,7 @@ Current examples live in `apps/cli/test/features/`, `apps/cli/test/ecosystems/`,
 nearby tests instead of copying a second API reference from documentation.
 
 Rebuild changed workspace producers before testing consumers of their built output. Run relevant
-package checks, CLI/builder parity, and `bun run test:release` for stack/generator changes.
+package checks, CLI/builder parity, `bun run test`, and `bun run test:release` for stack/generator changes.
 Use `bun run --cwd apps/web validate:tech-links` when adding icons or links.
 
 Snapshots prove output changes, not runtime correctness. Exercise generated routes, commands,

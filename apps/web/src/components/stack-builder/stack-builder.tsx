@@ -24,6 +24,7 @@ import {
   type StackPartRole,
 } from "@better-fullstack/types";
 import {
+  getEcosystemDefaultStackSelection,
   patchGraphScopedSelections,
   projectGraphScopedSelections,
   usesVirtualNoneStackSelection as usesVirtualNoneSelection,
@@ -146,7 +147,9 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -178,6 +181,7 @@ import {
   composerUsesJavaScript,
   getComposerReviewParts,
   getComposerEditorSpecs,
+  getComposerParts,
   hasComposerApplication,
   reconcileComposerSpecs,
 } from "@/lib/builder/composer-graph";
@@ -194,12 +198,7 @@ import {
 } from "@/lib/i18n/builder-copy";
 import { cn } from "@/lib/platform/utils";
 import { getStackRunSupport } from "@/lib/project/run-support";
-import {
-  DEFAULT_STACK,
-  ECOSYSTEMS,
-  type StackState,
-  TECH_OPTIONS,
-} from "@/lib/stack/constant";
+import { DEFAULT_STACK, ECOSYSTEMS, type StackState, TECH_OPTIONS } from "@/lib/stack/constant";
 import { buildPresetStack } from "@/lib/stack/preset-stack";
 import { useStackState } from "@/lib/stack/stack-url-state";
 import {
@@ -232,7 +231,7 @@ export function buildRandomStack(stack: StackState): Partial<StackState> {
     const compatibleOptions = visibleOptions.filter(
       (option) => getDisabledReason(workingStack, categoryKey, option.id) === null,
     );
-    const options = compatibleOptions.length > 0 ? compatibleOptions : visibleOptions;
+    const options = compatibleOptions;
     if (options.length === 0) continue;
     const catKey = getStackKeyForCategory(categoryKey);
     if (getToolingCategoryForUi(categoryKey) === "codeQuality") {
@@ -325,7 +324,16 @@ type GraphMobileEcosystem = Extract<
 >;
 type GraphBackendEcosystem = Extract<
   StackPartEcosystem,
-  "typescript" | "rust" | "python" | "go" | "java" | "elixir" | "dotnet"
+  | "typescript"
+  | "rust"
+  | "python"
+  | "go"
+  | "java"
+  | "elixir"
+  | "dotnet"
+  | "php"
+  | "ruby"
+  | "crystal"
 >;
 type GraphSelection = {
   rootIds?: Partial<Record<ComposerRole, string>>;
@@ -350,7 +358,7 @@ type GraphBackendConfig = {
   ecosystem: GraphBackendEcosystem;
   label: string;
   frameworkCategory: keyof typeof TECH_OPTIONS;
-  ormCategory: keyof typeof TECH_OPTIONS;
+  ormCategory?: keyof typeof TECH_OPTIONS;
   apiCategory?: keyof typeof TECH_OPTIONS;
   authCategory?: keyof typeof TECH_OPTIONS;
 };
@@ -649,6 +657,13 @@ const APP_PLATFORM_OPTION_GROUPS = [
 
 const GRAPH_BACKEND_CONFIGS: GraphBackendConfig[] = [
   {
+    ecosystem: "ruby",
+    label: "Ruby",
+    frameworkCategory: "rubyWebFramework",
+    ormCategory: "rubyOrm",
+    authCategory: "rubyAuth",
+  },
+  {
     ecosystem: "typescript",
     label: "TypeScript",
     frameworkCategory: "backend",
@@ -681,11 +696,25 @@ const GRAPH_BACKEND_CONFIGS: GraphBackendConfig[] = [
     authCategory: "pythonAuth",
   },
   {
+    ecosystem: "crystal",
+    label: "Crystal",
+    frameworkCategory: "crystalWebFramework",
+    ormCategory: "crystalOrm",
+    authCategory: "crystalAuth",
+  },
+  {
     ecosystem: "java",
     label: "Java",
     frameworkCategory: "javaWebFramework",
     ormCategory: "javaOrm",
     authCategory: "javaAuth",
+  },
+  {
+    ecosystem: "php",
+    label: "PHP",
+    frameworkCategory: "phpWebFramework",
+    ormCategory: "phpOrm",
+    authCategory: "phpAuth",
   },
   {
     ecosystem: "elixir",
@@ -734,6 +763,36 @@ const BUILDER_ECOSYSTEMS = ECOSYSTEMS.flatMap((ecosystem) =>
       ]
     : [ecosystem],
 );
+
+type BuilderEcosystemId = (typeof BUILDER_ECOSYSTEMS)[number]["id"];
+
+const BUILDER_LANGUAGE_SECTIONS = [
+  { id: "web", label: () => m.builderLanguageSectionWeb() },
+  { id: "mobile", label: () => m.builderLanguageSectionMobile() },
+  { id: "backend", label: () => m.builderLanguageSectionBackend() },
+] as const;
+
+const BUILDER_LANGUAGE_SECTION_BY_ECOSYSTEM = {
+  typescript: "web",
+  "react-native": "mobile",
+  rust: "backend",
+  python: "backend",
+  go: "backend",
+  crystal: "backend",
+  java: "backend",
+  kotlin: "backend",
+  ruby: "backend",
+  php: "backend",
+  elixir: "backend",
+  dotnet: "backend",
+} satisfies Record<BuilderEcosystemId, (typeof BUILDER_LANGUAGE_SECTIONS)[number]["id"]>;
+
+const BUILDER_LANGUAGE_GROUPS = BUILDER_LANGUAGE_SECTIONS.map((section) => ({
+  ...section,
+  ecosystems: BUILDER_ECOSYSTEMS.filter(
+    (ecosystem) => BUILDER_LANGUAGE_SECTION_BY_ECOSYSTEM[ecosystem.id] === section.id,
+  ),
+}));
 
 const GRAPH_FRONTEND_CONFIG_BY_ECOSYSTEM = Object.fromEntries(
   GRAPH_FRONTEND_CONFIGS.map((config) => [config.ecosystem, config]),
@@ -956,6 +1015,7 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "caching",
     "search",
   ],
+  crystal: ["crystalTesting", "crystalValidation", "crystalCache", "crystalJobs"],
   java: [
     "javaBuildTool",
     "javaApi",
@@ -966,6 +1026,24 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "observability",
     "caching",
     "search",
+  ],
+  ruby: [
+    "rubyTesting",
+    "rubyValidation",
+    "rubyCache",
+    "rubyJobQueue",
+    "rubyEmail",
+    "rubyLogging",
+    "rubyHttpClient",
+  ],
+  php: [
+    "phpTesting",
+    "phpValidation",
+    "phpCache",
+    "phpJobQueue",
+    "phpEmail",
+    "phpLogging",
+    "phpHttpClient",
   ],
   elixir: [
     "elixirRealtime",
@@ -983,6 +1061,11 @@ const GRAPH_BACKEND_ADVANCED_CATEGORY_ORDER_BY_ECOSYSTEM = {
     "elixirApplicationFramework",
     "elixirDocumentation",
     "elixirClustering",
+    "elixirLogging",
+    "elixirConfig",
+    "elixirMessageQueue",
+    "elixirTemplating",
+    "elixirCli",
     "elixirDeploy",
     "elixirLibraries",
   ],
@@ -1097,7 +1180,9 @@ function getSoloBackendSelection(stack: StackState): GraphSelection {
     : "typescript";
   const backendConfig = GRAPH_BACKEND_CONFIG_BY_ECOSYSTEM[currentEcosystem];
   const backendValue = stack[getStackKeyForCategory(backendConfig.frameworkCategory)];
-  const ormValue = stack[getStackKeyForCategory(backendConfig.ormCategory)];
+  const ormValue = backendConfig.ormCategory
+    ? stack[getStackKeyForCategory(backendConfig.ormCategory)]
+    : "none";
   const apiValue = backendConfig.apiCategory
     ? stack[getStackKeyForCategory(backendConfig.apiCategory)]
     : "none";
@@ -1118,7 +1203,7 @@ function getSoloBackendSelection(stack: StackState): GraphSelection {
         ? stack.rustFrontend
         : frontendEcosystem === "dotnet"
           ? (stack.dotnetFrontend ?? "none")
-          : getSelectedOptionId(stack.webFrontend, "tanstack-router"),
+          : getSelectedOptionId(stack.webFrontend),
     mobileEcosystem:
       (stack.swiftMobile ?? "none") !== "none"
         ? "swift"
@@ -1240,6 +1325,12 @@ function graphSelectionToSpecs(selection: GraphSelection): string[] {
   return specs;
 }
 
+export function getInitialComposerSpecs(stack: StackState): string[] {
+  return stack.stackPartSpecs.length > 0
+    ? stack.stackPartSpecs
+    : graphSelectionToSpecs(getGraphSelection(stack));
+}
+
 function getGraphBackendAdvancedCategoryOrder(
   ecosystem: GraphBackendEcosystem,
 ): readonly (keyof typeof TECH_OPTIONS)[] {
@@ -1327,7 +1418,7 @@ function stackPatchFromGraphSpecs(specs: string[]): Partial<StackState> {
       const backendOrm = selectedParts.find(
         (part) => part.role === "orm" && part.ownerPartId === backend.id,
       );
-      if (backendOrm) {
+      if (backendOrm && backendConfig.ormCategory) {
         (patch as Record<string, unknown>)[getStackKeyForCategory(backendConfig.ormCategory)] =
           backendOrm.toolId;
       }
@@ -2356,10 +2447,14 @@ function CreationModeComposer({
     "mobile",
     mobileConfig.ecosystem,
   );
+  const composerParts = getComposerParts(
+    stack.stackPartSpecs.length > 0 ? stack.stackPartSpecs : graphSelectionToSpecs(graphSelection),
+  );
   const allBackendOptions = getGraphToolOptions(
     backendConfig.frameworkCategory,
     "backend",
     graphSelection.backendEcosystem,
+    { parts: composerParts },
   );
   const backendOptions = isKotlinBackendSelection(
     graphSelection.backendEcosystem,
@@ -2369,13 +2464,22 @@ function CreationModeComposer({
         (option) => !isKotlinIncompatibleOption("javaWebFramework", option.id),
       )
     : allBackendOptions;
-  const databaseOptions = getGraphToolOptions("database", "database", "universal");
-  const allBackendOrmOptions = getGraphToolOptions(
-    backendConfig.ormCategory,
-    "orm",
-    graphSelection.backendEcosystem,
-    backendCapabilityContext,
+  const databaseParts = getComposerParts(
+    stack.stackPartSpecs.length > 0 ? stack.stackPartSpecs : graphSelectionToSpecs(graphSelection),
   );
+  const databaseOptions = getGraphToolOptions("database", "database", "universal", {
+    parts: databaseParts,
+    primaryToolIdsByRole,
+    primaryEcosystemsByRole: { backend: graphSelection.backendEcosystem },
+  });
+  const allBackendOrmOptions = backendConfig.ormCategory
+    ? getGraphToolOptions(
+        backendConfig.ormCategory,
+        "orm",
+        graphSelection.backendEcosystem,
+        backendCapabilityContext,
+      )
+    : [];
   // The Kotlin scaffold only has Kotlin sources for Spring Data JPA -
   // jOOQ/MyBatis are Java-only (mirrors the spring-boot-only framework filter).
   const backendOrmOptions = filterKotlinBackendCapabilityOptions(
@@ -2525,6 +2629,22 @@ function CreationModeComposer({
     );
   };
 
+  const reconcileBackendDatabase = (selection: GraphSelection) => {
+    if (
+      !["php", "ruby", "crystal"].includes(selection.backendEcosystem) ||
+      selection.backend === "none"
+    )
+      return selection.database;
+    const hasOtherDatabaseBackend = getComposerParts(stack.stackPartSpecs).some(
+      (part) =>
+        part.role === "backend" &&
+        part.source !== "provided" &&
+        part.id !== selection.rootIds?.backend &&
+        !["php", "ruby", "crystal"].includes(part.ecosystem),
+    );
+    return hasOtherDatabaseBackend ? selection.database : "none";
+  };
+
   const reconcileBackendCapabilities = (
     selection: GraphSelection,
     config: GraphBackendConfig,
@@ -2536,21 +2656,25 @@ function CreationModeComposer({
     const ormOptions = filterKotlinBackendCapabilityOptions(
       selection,
       "orm",
-      getGraphToolOptions(
-        config.ormCategory,
-        "orm",
-        config.ecosystem,
-        getBackendContextForSelection(selection),
-      ),
+      config.ormCategory
+        ? getGraphToolOptions(
+            config.ormCategory,
+            "orm",
+            config.ecosystem,
+            getBackendContextForSelection(selection),
+          )
+        : [],
     );
-    const defaultBackendOrm = getDefaultGraphTool(
-      config.ormCategory,
-      "orm",
-      config.ecosystem,
-      "none",
-      {},
-      getBackendContextForSelection(selection),
-    );
+    const defaultBackendOrm = config.ormCategory
+      ? getDefaultGraphTool(
+          config.ormCategory,
+          "orm",
+          config.ecosystem,
+          "none",
+          {},
+          getBackendContextForSelection(selection),
+        )
+      : "none";
     const backendOrm = ormOptions.some((option) => option.id === selection.backendOrm)
       ? selection.backendOrm
       : ormOptions.some((option) => option.id === defaultBackendOrm)
@@ -2944,6 +3068,7 @@ function CreationModeComposer({
                       backendEcosystem: config.ecosystem,
                       backendLanguage: config.javaLanguage,
                       backend,
+                      database: reconcileBackendDatabase(nextSelection),
                       ...reconcileBackendCapabilities(nextSelection, config),
                     });
                   },
@@ -2969,6 +3094,7 @@ function CreationModeComposer({
                 };
                 updateGraphSelection({
                   backend,
+                  database: reconcileBackendDatabase(nextSelection),
                   ...reconcileBackendCapabilities(nextSelection, backendConfig),
                 });
               }}
@@ -3005,21 +3131,25 @@ function CreationModeComposer({
                 testIdPrefix: "multi-database-dbSetup",
               })}
 
-            {graphSelection.backend !== "none" && backendOrmOptions.length > 0 && (
-              <GraphOptionGroup
-                label={m.builderOrmGroup({ ecosystem: backendLabel })}
-                options={backendOrmOptions}
-                selectedId={graphSelection.backendOrm}
-                dense
-                testIdPrefix="multi-backend-orm"
-                evidenceEcosystem={backendConfig.ecosystem}
-                evidenceCategory={backendConfig.ormCategory}
-                onSelect={(backendOrm) => {
-                  const nextSelection: GraphSelection = { ...graphSelection, backendOrm };
-                  updateGraphSelection(reconcileBackendCapabilities(nextSelection, backendConfig));
-                }}
-              />
-            )}
+            {graphSelection.backend !== "none" &&
+              backendConfig.ormCategory &&
+              backendOrmOptions.length > 0 && (
+                <GraphOptionGroup
+                  label={m.builderOrmGroup({ ecosystem: backendLabel })}
+                  options={backendOrmOptions}
+                  selectedId={graphSelection.backendOrm}
+                  dense
+                  testIdPrefix="multi-backend-orm"
+                  evidenceEcosystem={backendConfig.ecosystem}
+                  evidenceCategory={backendConfig.ormCategory}
+                  onSelect={(backendOrm) => {
+                    const nextSelection: GraphSelection = { ...graphSelection, backendOrm };
+                    updateGraphSelection(
+                      reconcileBackendCapabilities(nextSelection, backendConfig),
+                    );
+                  }}
+                />
+              )}
 
             {graphSelection.backend !== "none" &&
               backendConfig.apiCategory &&
@@ -3831,7 +3961,6 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     () => new Set(),
   );
   const packageManagerLabel = getLocalizedCategoryDisplayName("packageManager", "Package manager");
-  const reducedMotion = useReducedMotion();
   // Saved stacks live inside Presets: both are places to load a stack from.
   const isLibraryView = viewMode === "presets" || viewMode === "saved";
   const isFinalMultiStep = multiActiveStepIndex >= multiSteps.length - 1;
@@ -4206,10 +4335,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   };
 
   const enableMultiMode = () => {
-    const specs =
-      stack.stackPartSpecs.length > 0
-        ? stack.stackPartSpecs
-        : graphSelectionToSpecs(getGraphSelection(stack));
+    const specs = getInitialComposerSpecs(stack);
     setStack((current) => ({
       ...stackPatchFromGraphSpecs(specs),
       projectName: current.projectName,
@@ -4232,10 +4358,9 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
   };
 
   const activeEcosystem = BUILDER_ECOSYSTEMS.find((eco) => isEcosystemActive(eco.id));
+  const languageSelectionsRef = useRef(new Map<BuilderEcosystemId, StackState>());
+  const reducedMotion = useReducedMotion();
 
-  // Swapping a whole language's options under the cursor reads as a blink. A view
-  // transition keeps the old screen up until the new one has rendered, then
-  // dissolves between the two. Without support, or with reduced motion, it just swaps.
   const withContentDissolve = (update: () => void) => {
     if (reducedMotion || typeof document.startViewTransition !== "function") {
       startTransition(update);
@@ -4244,22 +4369,25 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
     document.startViewTransition(() => flushSync(update));
   };
 
-  const selectEcosystem = (ecosystemId: string) => {
+  const selectEcosystem = (ecosystemId: BuilderEcosystemId) => {
     if (isEcosystemActive(ecosystemId)) return;
     const isKotlin = ecosystemId === "kotlin";
+    if (activeEcosystem) languageSelectionsRef.current.set(activeEcosystem.id, stack);
+    const rememberedSelection = languageSelectionsRef.current.get(ecosystemId);
     withContentDissolve(() => {
-      // Fresh defaults per ecosystem: carrying the previous selection through
+      // Each ecosystem restores its own last picks or defaults: carrying the previous selection through
       // the compat engine persists zeroed fields (e.g. react-native nulls
       // webFrontend, hiding the Run tab back on TS) and stale
       // foreign-ecosystem params in the URL.
       setStack({
-        ...DEFAULT_STACK,
+        ...(rememberedSelection ??
+          getEcosystemDefaultStackSelection(isKotlin ? "java" : ecosystemId)),
         projectName: stack.projectName,
         packageManager: stack.packageManager,
         git: stack.git,
         install: stack.install,
         yolo: stack.yolo,
-        ecosystem: (isKotlin ? "java" : ecosystemId) as Ecosystem,
+        ecosystem: isKotlin ? "java" : ecosystemId,
         ...(isKotlin ? { javaLanguage: "kotlin" as const } : {}),
         stackMode: "solo",
         stackPartSpecs: [],
@@ -4800,8 +4928,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
               )}
             >
               {/* One bar for brand, languages, the stack views and its actions. It is a single row
-                  from xl up and wraps into two rows below that; phones get a language menu in
-                  place of the icon strip. */}
+                  from xl up and wraps into two rows below that. */}
               <div className="relative flex shrink-0 flex-wrap items-center gap-x-2 gap-y-2 border-b border-border/60 bg-fd-background px-3 py-2 [view-transition-name:builder-bar] sm:px-4 xl:flex-nowrap xl:gap-x-3">
                 <RouterLink to="/" aria-label={m.navHome()} className="flex shrink-0 items-center">
                   <img
@@ -4825,11 +4952,16 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                     render={
                       <button
                         type="button"
-                        aria-label={m.navLanguage()}
-                        className="flex h-8 min-w-0 cursor-pointer items-center gap-1.5 rounded-full border border-border/50 bg-muted/25 px-2.5 md:hidden"
+                        data-testid="ecosystem-menu"
+                        aria-label={`${m.builderLanguagePickerLabel()}: ${activeEcosystem?.name ?? m.navMultiEcosystem()}`}
+                        className="group flex h-8 min-w-0 shrink-0 cursor-pointer items-center gap-2 rounded-full border border-border bg-card pr-2.5 pl-3 shadow-xs transition-colors hover:border-foreground/30 data-[popup-open]:border-foreground/40"
                       />
                     }
                   >
+                    <span className="font-mono text-[11px] tracking-wide text-muted-foreground uppercase">
+                      {m.builderLanguagePickerLabel()}
+                    </span>
+                    <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
                     {activeEcosystem ? (
                       <TechIcon
                         techId={activeEcosystem.id}
@@ -4840,75 +4972,97 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                     ) : (
                       <Layers3 className="size-4 shrink-0" aria-hidden />
                     )}
-                    <span className="truncate font-mono text-[11px] font-semibold uppercase tracking-wide">
+                    <span className="truncate font-mono text-[11px] font-semibold tracking-wide uppercase">
                       {activeEcosystem?.name ?? m.navMultiEcosystem()}
                     </span>
-                    <ChevronDown className="size-3 shrink-0 text-muted-foreground" aria-hidden />
+                    <ChevronDown
+                      className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 ease-out group-data-[popup-open]:rotate-180"
+                      aria-hidden
+                    />
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-52 bg-fd-background">
-                    {BUILDER_ECOSYSTEMS.map((eco) => (
-                      <DropdownMenuItem key={eco.id} onClick={() => selectEcosystem(eco.id)}>
-                        <TechIcon
-                          techId={eco.id}
-                          icon={eco.icon}
-                          name={eco.name}
-                          className="size-4"
-                        />
-                        <span className="flex-1">{eco.name}</span>
-                        {isEcosystemActive(eco.id) && <Check className="size-3.5" />}
-                      </DropdownMenuItem>
-                    ))}
+                  <DropdownMenuContent
+                    align="start"
+                    className="w-[min(28rem,calc(100vw-1.5rem))] bg-fd-background p-1.5"
+                  >
+                    <div className="grid grid-cols-2 gap-x-1">
+                      {BUILDER_LANGUAGE_GROUPS.map((group) => (
+                        <DropdownMenuGroup
+                          key={group.id}
+                          className={cn(group.ecosystems.length > 1 && "col-span-2")}
+                        >
+                          <DropdownMenuLabel className="pt-2 pb-1">
+                            {group.label()}
+                          </DropdownMenuLabel>
+                          <div
+                            className={cn(
+                              "grid gap-1",
+                              group.ecosystems.length > 1 && "grid-cols-2",
+                            )}
+                          >
+                            {group.ecosystems.map((eco) => {
+                              const isActive = isEcosystemActive(eco.id);
+                              return (
+                                <DropdownMenuItem
+                                  key={eco.id}
+                                  data-testid={`ecosystem-${eco.id}`}
+                                  onClick={() => selectEcosystem(eco.id)}
+                                  className={cn(
+                                    "h-9 rounded-lg bg-muted/40 px-2.5 text-sm text-foreground focus:bg-muted",
+                                    isActive && "bg-brand/15 font-semibold focus:bg-brand/20",
+                                  )}
+                                >
+                                  <TechIcon
+                                    techId={eco.id}
+                                    icon={eco.icon}
+                                    name={eco.name}
+                                    className="size-4"
+                                  />
+                                  <span className="min-w-0 flex-1 truncate">{eco.name}</span>
+                                  <Check
+                                    className={cn(
+                                      "size-3.5 text-foreground dark:text-brand",
+                                      !isActive && "invisible",
+                                    )}
+                                    aria-hidden
+                                  />
+                                </DropdownMenuItem>
+                              );
+                            })}
+                          </div>
+                        </DropdownMenuGroup>
+                      ))}
+                    </div>
+                    <DropdownMenuItem
+                      data-testid="ecosystem-menu-multi"
+                      onClick={() => {
+                        if (!isMultiMode) withContentDissolve(enableMultiMode);
+                      }}
+                      className={cn(
+                        "mt-2 items-start gap-2.5 rounded-lg bg-muted/40 px-2.5 py-2 text-foreground focus:bg-muted",
+                        isMultiMode && "bg-brand/15 focus:bg-brand/20",
+                      )}
+                    >
+                      <Layers3 className="mt-0.5 size-4" aria-hidden />
+                      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                        <span
+                          className={cn("text-sm", isMultiMode ? "font-semibold" : "font-medium")}
+                        >
+                          {m.navMultiEcosystem()}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {m.builderLanguageMultiDescription()}
+                        </span>
+                      </span>
+                      <Check
+                        className={cn(
+                          "mt-0.5 size-3.5 text-foreground dark:text-brand",
+                          !isMultiMode && "invisible",
+                        )}
+                        aria-hidden
+                      />
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-
-                <div className="hidden items-center rounded-full border border-border/50 bg-muted/25 p-0.5 md:flex">
-                  {BUILDER_ECOSYSTEMS.map((eco) => {
-                    const isActive = isEcosystemActive(eco.id);
-                    return (
-                      <BarTip key={eco.id} label={eco.name}>
-                        <button
-                          type="button"
-                          data-testid={`ecosystem-${eco.id}`}
-                          aria-pressed={isActive}
-                          aria-label={eco.name}
-                          onClick={() => selectEcosystem(eco.id)}
-                          className={cn(
-                            "relative flex h-7 cursor-pointer items-center gap-1.5 rounded-full px-2 transition-opacity",
-                            !isActive && "opacity-55 hover:opacity-100",
-                          )}
-                        >
-                          {isActive && (
-                            <motion.span
-                              layoutId="builder-language-pill"
-                              className="absolute inset-0 rounded-full bg-background shadow-sm"
-                              transition={{ type: "spring", bounce: 0.18, duration: 0.45 }}
-                            />
-                          )}
-                          <TechIcon
-                            techId={eco.id}
-                            icon={eco.icon}
-                            name={eco.name}
-                            className="relative size-4"
-                          />
-                          <AnimatePresence initial={false}>
-                            {isActive && (
-                              <motion.span
-                                key="label"
-                                initial={{ width: 0, opacity: 0 }}
-                                animate={{ width: "auto", opacity: 1 }}
-                                exit={{ width: 0, opacity: 0 }}
-                                transition={{ duration: 0.25, ease: "easeOut" }}
-                                className="relative overflow-hidden whitespace-nowrap font-mono text-[11px] font-semibold uppercase tracking-wide"
-                              >
-                                {eco.name}
-                              </motion.span>
-                            )}
-                          </AnimatePresence>
-                        </button>
-                      </BarTip>
-                    );
-                  })}
-                </div>
 
                 {/* Several languages at once is a different way to build, not a tenth language. */}
                 <BarTip label={m.navMultiEcosystem()}>
@@ -5435,9 +5589,7 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                   {index > 0 && " · "}
                                   <span
                                     className={
-                                      item.picked
-                                        ? "text-foreground/80"
-                                        : "text-muted-foreground"
+                                      item.picked ? "text-foreground/80" : "text-muted-foreground"
                                     }
                                   >
                                     {item.label}
@@ -5636,7 +5788,10 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                           ) ? (
                                                             <motion.div
                                                               key={tech.id}
-                                                              initial={{ opacity: 0, scale: 0.97 }}
+                                                              initial={{
+                                                                opacity: 0,
+                                                                scale: 0.97,
+                                                              }}
                                                               animate={{ opacity: 1, scale: 1 }}
                                                               exit={{ opacity: 0, scale: 0.97 }}
                                                               transition={{ duration: 0.2 }}
@@ -5766,7 +5921,10 @@ const StackBuilderInner = ({ initialStack }: { initialStack?: StackState }) => {
                                                         {!isSectionCollapsed("shadcnBase") && (
                                                           <motion.div
                                                             initial={{ height: 0, opacity: 0 }}
-                                                            animate={{ height: "auto", opacity: 1 }}
+                                                            animate={{
+                                                              height: "auto",
+                                                              opacity: 1,
+                                                            }}
                                                             exit={{ height: 0, opacity: 0 }}
                                                             transition={{
                                                               duration: 0.25,

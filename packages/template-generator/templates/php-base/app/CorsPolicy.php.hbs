@@ -1,0 +1,30 @@
+{{#if (ne phpWebFramework "slim")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+final readonly class CorsPolicy
+{
+    private array $origins;
+
+    public function __construct(string $configuredOrigins)
+    {
+        $this->origins = array_map('trim', explode(',', $configuredOrigins));
+    }
+
+    public function headersFor(string $origin): array
+    {
+        if ($origin === '' || !in_array($origin, $this->origins, true)) {
+            return [];
+        }
+        return [
+            'Access-Control-Allow-Origin' => $origin,
+            'Access-Control-Allow-Methods' => 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers' => 'Content-Type{{#if (ne phpAuth "none")}}, Authorization{{/if}}',
+            'Vary' => 'Origin',
+        ];
+    }
+}
+{{/if}}

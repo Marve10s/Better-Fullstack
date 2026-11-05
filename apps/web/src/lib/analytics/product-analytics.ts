@@ -1,8 +1,3 @@
-import {
-  sanitizeTelemetryStackDimension,
-  TELEMETRY_STACK_DIMENSION_KEYS,
-} from "@better-fullstack/types/telemetry";
-
 type ProductValue = string | string[] | number | boolean | null | undefined;
 
 export type ProductAnalyticsProperties = Record<string, ProductValue>;
@@ -18,6 +13,7 @@ export const BROWSER_TELEMETRY_DISABLED_KEY = "better-fullstack-telemetry-disabl
 const BROWSER_TELEMETRY_CHANGE_EVENT = "better-fullstack:telemetry-change";
 const IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9_.:+,-]{0,99}$/;
 const KEY = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
+const PAGE_ID = /^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,255}$/;
 const ALLOWED_PROPERTY_KEYS = new Set([
   "page_id",
   "page_view_id",
@@ -169,40 +165,42 @@ function anonymousId(): string | null {
   }
 }
 
-/**
- * Retain only bounded product identifiers and numeric counters. This browser
- * path never sends project names, filenames, source edits, runtime output,
- * prompts, URLs, env values, or raw errors.
- */
-export function sanitizeProductProperties(
-  properties: ProductAnalyticsProperties = {},
+export const PAGE_PROPERTY_KEYS = new Set([
+  "page_id",
+  "page_view_id",
+  "device",
+  "active_ms",
+  "elapsed_ms",
+  "scroll_px",
+  "scroll_percent",
+  "max_scroll_percent",
+  "viewport_height",
+  "scroll_surface",
+  "end_reason",
+]);
+
+export function isProductPropertyKey(key: string): boolean {
+  return KEY.test(key) && !BLOCKED_KEYS.has(key.toLowerCase());
+}
+
+export function sanitizeAllowedProperty(key: string, value: ProductValue): ProductValue {
+  if (key === "page_id" && typeof value === "string" && PAGE_ID.test(value)) return value;
+  if (!ALLOWED_PROPERTY_KEYS.has(key)) return undefined;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+    return Math.min(Math.round(value), 86_400_000);
+  }
+  if (typeof value === "string" && IDENTIFIER.test(value)) return value;
+  return undefined;
+}
+
+function sanitizePageProperties(
+  properties: ProductAnalyticsProperties,
 ): ProductAnalyticsProperties {
   const safe: ProductAnalyticsProperties = {};
   for (const [key, value] of Object.entries(properties)) {
-    if (!KEY.test(key) || BLOCKED_KEYS.has(key.toLowerCase())) continue;
-    const dimension = sanitizeTelemetryStackDimension(key, value);
-    if (dimension !== undefined) {
-      safe[key] = dimension;
-      continue;
-    }
-    if ((TELEMETRY_STACK_DIMENSION_KEYS as readonly string[]).includes(key)) continue;
-    if (
-      key === "page_id" &&
-      typeof value === "string" &&
-      /^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,255}$/.test(value)
-    ) {
-      safe[key] = value;
-      continue;
-    }
-    if (!ALLOWED_PROPERTY_KEYS.has(key)) {
-      continue;
-    }
-    if (typeof value === "boolean") safe[key] = value;
-    else if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
-      safe[key] = Math.min(Math.round(value), 86_400_000);
-    } else if (typeof value === "string" && IDENTIFIER.test(value)) {
-      safe[key] = value;
-    }
+    const allowed = sanitizeAllowedProperty(key, value);
+    if (allowed !== undefined) safe[key] = allowed;
   }
   return safe;
 }
@@ -210,7 +208,7 @@ export function sanitizeProductProperties(
 export function trackProductEvent(
   action: string,
   status: "started" | "succeeded" | "failed" | "cancelled",
-  properties: ProductAnalyticsProperties = {},
+  input: ProductAnalyticsProperties = {},
 ): void {
   const endpoint = ingestUrl();
   if (!endpoint || !isBrowserTelemetryEnabled() || !IDENTIFIER.test(action)) return;
@@ -218,27 +216,40 @@ export function trackProductEvent(
   if (!machineId) return;
 
   const success = status === "succeeded" ? true : status === "failed" ? false : undefined;
+  const properties = { ...pageContext, ...input };
 
-  const payload = JSON.stringify({
-    ...sanitizeProductProperties({ ...pageContext, ...properties }),
-    eventId: crypto.randomUUID(),
-    eventType: "web_action",
-    source: "web-builder",
-    client: "web",
-    action,
-    status,
-    success,
-    machineId,
-    platform: "browser",
-    executionRuntime: "browser",
-  });
+  const send = (safe: ProductAnalyticsProperties) => {
+    if (!isBrowserTelemetryEnabled()) return;
+    const payload = JSON.stringify({
+      ...safe,
+      eventId: crypto.randomUUID(),
+      eventType: "web_action",
+      source: "web-builder",
+      client: "web",
+      action,
+      status,
+      success,
+      machineId,
+      platform: "browser",
+      executionRuntime: "browser",
+    });
 
-  // Fire-and-forget by design: analytics must never block builder behavior.
-  void fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: payload,
-    keepalive: true,
-    credentials: "omit",
-  }).catch(() => undefined);
+    // Fire-and-forget by design: analytics must never block builder behavior.
+    void fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: true,
+      credentials: "omit",
+    }).catch(() => undefined);
+  };
+
+  if (Object.keys(properties).every((key) => PAGE_PROPERTY_KEYS.has(key))) {
+    send(sanitizePageProperties(properties));
+    return;
+  }
+  void import("@/lib/analytics/product-properties").then(
+    ({ sanitizeProductProperties }) => send(sanitizeProductProperties(properties)),
+    () => undefined,
+  );
 }

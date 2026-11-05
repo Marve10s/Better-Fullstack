@@ -1,0 +1,24 @@
+Marten.configure do |config|
+  config.secret_key = ENV.fetch("MARTEN_SECRET_KEY") { Random::Secure.hex(32) }
+  config.host = AppConfig.host
+  config.port = AppConfig.port
+  config.allowed_hosts = ENV.fetch("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",").map(&.strip).reject(&.empty?)
+  config.request_max_body_size = AppConfig::MAX_BODY_BYTES
+{{#if (eq crystalOrm "marten-orm")}}
+  config.installed_apps = [Greetings::App{{#if (eq crystalAuth "marten-auth")}}, Accounts::App{{/if}}] of Marten::Apps::Config.class
+  config.database do |db|
+    db.backend = :sqlite
+    db.name = ENV.fetch("DATABASE_PATH", "development.sqlite3")
+  end
+{{else}}
+  config.installed_apps = [] of Marten::Apps::Config.class
+{{/if}}
+{{#if (eq crystalAuth "marten-auth")}}
+  config.middleware = [Marten::Middleware::Session, MartenAuth::Middleware, CorsMiddleware] of Marten::Middleware.class
+  config.auth.user_model = Accounts::User
+  config.sessions.cookie_secure = ENV.fetch("SESSION_SECURE", "true") == "true"
+  config.sessions.cookie_http_only = true
+{{else}}
+  config.middleware = [CorsMiddleware] of Marten::Middleware.class
+{{/if}}
+end

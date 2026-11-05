@@ -1,0 +1,17 @@
+{{#if (eq elixirApi "grpc")}}
+syntax = "proto3";
+
+package {{elixirAppName}}.rpc;
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloReply {
+  string message = 1;
+}
+
+service Greeter {
+  rpc SayHello(HelloRequest) returns (HelloReply);
+}
+{{/if}}

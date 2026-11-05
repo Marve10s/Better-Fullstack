@@ -21,6 +21,11 @@ import Footer from "@/components/home/footer";
 import { useTheme } from "@/lib/content/theme";
 import { cn } from "@/lib/platform/utils";
 import {
+  MCP_RESOURCE_COUNT,
+  MCP_TOOL_COUNT,
+  OPTION_ENTRY_COUNT,
+} from "@/lib/project/project-stats";
+import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_OG_IMAGE_HEIGHT,
   DEFAULT_OG_IMAGE_URL,
@@ -338,9 +343,9 @@ const TIPS: readonly TipId[] = [
 ] as const;
 
 const STATS = [
-  { id: "tools", value: 7 },
-  { id: "resources", value: 3 },
-  { id: "options", value: 677 },
+  { id: "tools", value: MCP_TOOL_COUNT },
+  { id: "resources", value: MCP_RESOURCE_COUNT },
+  { id: "options", value: OPTION_ENTRY_COUNT },
 ] as const;
 
 const numberFlowTiming = { duration: 900, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" } as const;
@@ -535,10 +540,7 @@ function StatCell({
       )}
     >
       <div className="font-mono text-3xl font-black tabular-nums sm:text-4xl">
-        <NumberFlow
-          value={inView ? stat.value : 0}
-          transformTiming={numberFlowTiming}
-        />
+        <NumberFlow value={inView ? stat.value : 0} transformTiming={numberFlowTiming} />
       </div>
       <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         {getStatLabel(stat.id)}

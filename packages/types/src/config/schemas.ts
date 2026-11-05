@@ -2,10 +2,62 @@ import { z } from "zod";
 
 import { PRESET_ALIAS_IDS, PRESET_IDS } from "@/catalog/preset-ids";
 
+export const RubyWebFrameworkSchema = z
+  .enum(["sinatra", "rails", "roda", "grape", "none"])
+  .describe("Ruby HTTP framework");
+
+export const RubyOrmSchema = z
+  .enum(["active-record", "sequel", "rom", "none"])
+  .describe("Ruby ORM / database layer (SQLite-backed)");
+
+export const RubyAuthSchema = z
+  .enum(["jwt", "omniauth", "rodauth", "none"])
+  .describe("Ruby authentication");
+
+export const RubyTestingSchema = z
+  .enum(["minitest", "rspec", "test-unit", "none"])
+  .describe("Ruby test framework");
+
+export const RubyValidationSchema = z
+  .enum(["dry-validation", "active-model", "json-schemer", "none"])
+  .describe("Ruby request validation");
+
+export const RubyCacheSchema = z
+  .enum(["redis", "memcached", "memory", "none"])
+  .describe("Ruby cache store");
+
+export const RubyJobQueueSchema = z
+  .enum(["sidekiq", "resque", "solid-queue", "none"])
+  .describe("Ruby background job queue");
+
+export const RubyEmailSchema = z
+  .enum(["mail", "action-mailer", "resend", "none"])
+  .describe("Ruby email delivery");
+
+export const RubyLoggingSchema = z
+  .enum(["logger", "semantic-logger", "ougai", "lograge", "none"])
+  .describe("Ruby request logging");
+
+export const RubyHttpClientSchema = z
+  .enum(["faraday", "httparty", "httpx", "none"])
+  .describe("Ruby HTTP client");
+
 export const EcosystemSchema = z
-  .enum(["typescript", "react-native", "rust", "python", "go", "java", "elixir", "dotnet"])
+  .enum([
+    "typescript",
+    "react-native",
+    "rust",
+    "python",
+    "go",
+    "java",
+    "elixir",
+    "dotnet",
+    "php",
+    "ruby",
+    "crystal",
+  ])
   .describe(
-    "Language ecosystem (typescript, react-native, rust, python, go, java, elixir, or dotnet)",
+    "Language ecosystem (typescript, react-native, rust, python, go, java, elixir, dotnet, php, ruby, or crystal)",
   );
 
 export const StackPartEcosystemSchema = z
@@ -97,6 +149,7 @@ export const StackPartRoleSchema = z
     "server",
     "packageManager",
     "messageQueue",
+    "runtimeConfig",
   ])
   .describe("Role a selected tool plays in the stack graph");
 
@@ -239,6 +292,7 @@ export const AddonsSchema = z
     "shadcn-lint",
     "opentui",
     "wxt",
+    "plasmo",
     "msw",
     "storybook",
     "swr",
@@ -272,6 +326,7 @@ export const APP_PLATFORM_ADDON_VALUES = [
   "electron",
   "capacitor",
   "wxt",
+  "plasmo",
   "opentui",
 ] as const;
 
@@ -851,6 +906,34 @@ export const GoProtoToolingSchema = z.enum(["buf", "none"]).describe("Go Protoco
 export const GoDISchema = z.enum(["fx", "none"]).describe("Go dependency injection library");
 
 // Java ecosystem schemas
+export const CrystalWebFrameworkSchema = z
+  .enum(["kemal", "lucky", "athena", "marten", "none"])
+  .describe("Experimental Crystal HTTP framework");
+
+export const CrystalOrmSchema = z
+  .enum(["crystal-db", "avram", "marten-orm", "none"])
+  .describe("Experimental Crystal database layer");
+
+export const CrystalAuthSchema = z
+  .enum(["jwt", "kemal-session", "marten-auth", "none"])
+  .describe("Experimental Crystal authentication");
+
+export const CrystalTestingSchema = z
+  .enum(["spec", "spectator", "spec-kemal", "none"])
+  .describe("Experimental Crystal test tooling");
+
+export const CrystalValidationSchema = z
+  .enum(["athena-validator", "active-model", "marten-schema", "none"])
+  .describe("Experimental Crystal input validation");
+
+export const CrystalCacheSchema = z
+  .enum(["memory", "file", "redis", "none"])
+  .describe("Experimental Crystal cache store");
+
+export const CrystalJobsSchema = z
+  .enum(["sidekiq", "mosquito", "tasker", "none"])
+  .describe("Experimental Crystal background jobs");
+
 export const JavaLanguageSchema = z
   .enum(["java", "kotlin"])
   .describe("JVM language variant for the Java ecosystem (java or kotlin)");
@@ -1006,6 +1089,46 @@ export const DotnetLibrariesSchema = z
   .describe(".NET application libraries");
 
 // Elixir ecosystem schemas
+export const PhpWebFrameworkSchema = z
+  .enum(["slim", "laravel", "symfony", "none"])
+  .describe("PHP HTTP framework");
+
+export const PhpOrmSchema = z
+  .enum(["eloquent", "doctrine", "cycle", "none"])
+  .describe("PHP ORM / database layer");
+
+export const PhpAuthSchema = z
+  .enum(["firebase-jwt", "lcobucci-jwt", "symfony-security", "none"])
+  .describe("PHP authentication");
+
+export const PhpTestingSchema = z
+  .enum(["phpunit", "pest", "codeception", "none"])
+  .describe("PHP test runner");
+
+export const PhpValidationSchema = z
+  .enum(["symfony-validator", "respect-validation", "laravel-validation", "none"])
+  .describe("PHP validation library");
+
+export const PhpCacheSchema = z
+  .enum(["symfony-cache", "laminas-cache", "predis", "laravel-cache", "none"])
+  .describe("PHP cache library");
+
+export const PhpJobQueueSchema = z
+  .enum(["symfony-messenger", "enqueue-fs", "laravel-queue", "none"])
+  .describe("PHP background job queue");
+
+export const PhpEmailSchema = z
+  .enum(["symfony-mailer", "phpmailer", "laravel-mail", "none"])
+  .describe("PHP email library");
+
+export const PhpLoggingSchema = z
+  .enum(["monolog", "laravel-log", "symfony-monolog", "none"])
+  .describe("PHP logging");
+
+export const PhpHttpClientSchema = z
+  .enum(["guzzle", "symfony-http-client", "httplug-curl", "none"])
+  .describe("PHP HTTP client");
+
 export const ElixirWebFrameworkSchema = z
   .enum(["phoenix", "phoenix-live-view", "none"])
   .describe("Elixir web framework");
@@ -1031,18 +1154,20 @@ export const ElixirRealtimeSchema = z
   .describe("Elixir realtime feature");
 
 export const ElixirJobsSchema = z
-  .enum(["oban", "quantum", "none"])
+  .enum(["oban", "quantum", "exq", "none"])
   .describe("Elixir jobs and scheduling");
 
 export const ElixirValidationSchema = z
-  .enum(["ecto-changesets", "nimble-options", "none"])
+  .enum(["ecto-changesets", "nimble-options", "peri", "tarams", "none"])
   .describe("Elixir validation and data contracts");
 
 export const ElixirHttpSchema = z
   .enum(["req", "finch", "tesla", "none"])
   .describe("Elixir HTTP client");
 
-export const ElixirJsonSchema = z.enum(["jason", "none"]).describe("Elixir JSON library");
+export const ElixirJsonSchema = z
+  .enum(["jason", "elixir-json", "jiffy", "none"])
+  .describe("Elixir JSON library");
 
 export const ElixirEmailSchema = z
   .enum(["swoosh", "bamboo", "none"])
@@ -1064,7 +1189,9 @@ export const ElixirQualitySchema = z
   .enum(["credo", "dialyxir", "sobelow", "excoveralls", "mix_audit", "none"])
   .describe("Elixir code quality tool");
 
-export const ElixirI18nSchema = z.enum(["gettext", "none"]).describe("Elixir localization");
+export const ElixirI18nSchema = z
+  .enum(["gettext", "linguist", "ex-cldr-messages", "none"])
+  .describe("Elixir localization");
 
 export const ElixirHttpServerSchema = z
   .enum(["bandit", "cowboy", "none"])
@@ -1079,8 +1206,28 @@ export const ElixirDocumentationSchema = z
   .describe("Elixir documentation tooling");
 
 export const ElixirClusteringSchema = z
-  .enum(["libcluster", "none"])
+  .enum(["libcluster", "dns-cluster", "distributed-erlang", "none"])
   .describe("Elixir clustering library");
+
+export const ElixirLoggingSchema = z
+  .enum(["logger-json", "logger-file-backend", "logster", "none"])
+  .describe("Elixir structured logging or log backend");
+
+export const ElixirConfigSchema = z
+  .enum(["dotenvy", "skogsra", "confex", "none"])
+  .describe("Elixir runtime configuration library");
+
+export const ElixirMessageQueueSchema = z
+  .enum(["amqp", "gnat", "brod", "none"])
+  .describe("Elixir message broker client");
+
+export const ElixirTemplatingSchema = z
+  .enum(["eex", "solid-liquid", "bbmustache", "none"])
+  .describe("Elixir text templating engine");
+
+export const ElixirCliSchema = z
+  .enum(["option-parser", "optimus", "owl", "none"])
+  .describe("Elixir command-line tooling");
 
 export const ElixirDeploySchema = z
   .enum(["docker", "fly", "gigalixir", "mix-release", "none"])
@@ -1352,6 +1499,13 @@ const STACK_CONFIG_FIELDS = {
   goProtoTooling: GoProtoToolingSchema,
   goDI: GoDISchema,
   // Java ecosystem options
+  crystalWebFramework: CrystalWebFrameworkSchema.default("none"),
+  crystalOrm: CrystalOrmSchema.default("none"),
+  crystalAuth: CrystalAuthSchema.default("none"),
+  crystalTesting: CrystalTestingSchema.default("spec"),
+  crystalValidation: CrystalValidationSchema.default("none"),
+  crystalCache: CrystalCacheSchema.default("none"),
+  crystalJobs: CrystalJobsSchema.default("none"),
   javaLanguage: JavaLanguageSchema.optional(),
   javaWebFramework: JavaWebFrameworkSchema,
   javaBuildTool: JavaBuildToolSchema,
@@ -1377,6 +1531,26 @@ const STACK_CONFIG_FIELDS = {
   dotnetDeploy: DotnetDeploySchema,
   dotnetLibraries: z.array(DotnetLibrariesSchema).describe(".NET application libraries"),
   // Elixir ecosystem options
+  rubyWebFramework: RubyWebFrameworkSchema.optional(),
+  rubyOrm: RubyOrmSchema.optional(),
+  rubyAuth: RubyAuthSchema.optional(),
+  rubyTesting: RubyTestingSchema.optional(),
+  rubyValidation: RubyValidationSchema.optional(),
+  rubyCache: RubyCacheSchema.optional(),
+  rubyJobQueue: RubyJobQueueSchema.optional(),
+  rubyEmail: RubyEmailSchema.optional(),
+  rubyLogging: RubyLoggingSchema.optional(),
+  rubyHttpClient: RubyHttpClientSchema.optional(),
+  phpWebFramework: PhpWebFrameworkSchema.default("none"),
+  phpOrm: PhpOrmSchema.default("none"),
+  phpAuth: PhpAuthSchema.default("none"),
+  phpTesting: PhpTestingSchema.default("phpunit"),
+  phpValidation: PhpValidationSchema.default("none"),
+  phpCache: PhpCacheSchema.default("none"),
+  phpJobQueue: PhpJobQueueSchema.default("none"),
+  phpEmail: PhpEmailSchema.default("none"),
+  phpLogging: PhpLoggingSchema.default("none"),
+  phpHttpClient: PhpHttpClientSchema.default("none"),
   elixirWebFramework: ElixirWebFrameworkSchema,
   elixirOrm: ElixirOrmSchema,
   elixirAuth: ElixirAuthSchema,
@@ -1396,6 +1570,11 @@ const STACK_CONFIG_FIELDS = {
   elixirApplicationFramework: ElixirApplicationFrameworkSchema,
   elixirDocumentation: ElixirDocumentationSchema,
   elixirClustering: ElixirClusteringSchema,
+  elixirLogging: ElixirLoggingSchema,
+  elixirConfig: ElixirConfigSchema,
+  elixirMessageQueue: ElixirMessageQueueSchema,
+  elixirTemplating: ElixirTemplatingSchema,
+  elixirCli: ElixirCliSchema,
   elixirDeploy: ElixirDeploySchema,
   elixirLibraries: z.array(ElixirLibrariesSchema).describe("Elixir libraries"),
   // AI documentation files
@@ -1439,7 +1618,9 @@ export const CreateInputSchema = z.object({
   part: z
     .array(z.string())
     .optional()
-    .describe("Stack graph part binding, e.g. frontend:typescript:next or backend.orm:go:gorm"),
+    .describe(
+      "Stack graph binding role:ecosystem:tool[:id][@relative-path], e.g. frontend:typescript:next or backend:crystal:kemal:reports@services/reports",
+    ),
 });
 
 export const AddInputSchema = CreateInputSchema.omit({
@@ -1641,6 +1822,13 @@ export const GO_TEMPLATING_VALUES = GoTemplatingSchema.options;
 export const GO_PROTO_TOOLING_VALUES = GoProtoToolingSchema.options;
 export const GO_DI_VALUES = GoDISchema.options;
 export const JAVA_LANGUAGE_VALUES = JavaLanguageSchema.options;
+export const CRYSTAL_WEB_FRAMEWORK_VALUES = CrystalWebFrameworkSchema.options;
+export const CRYSTAL_ORM_VALUES = CrystalOrmSchema.options;
+export const CRYSTAL_AUTH_VALUES = CrystalAuthSchema.options;
+export const CRYSTAL_TESTING_VALUES = CrystalTestingSchema.options;
+export const CRYSTAL_VALIDATION_VALUES = CrystalValidationSchema.options;
+export const CRYSTAL_CACHE_VALUES = CrystalCacheSchema.options;
+export const CRYSTAL_JOBS_VALUES = CrystalJobsSchema.options;
 export const JAVA_WEB_FRAMEWORK_VALUES = JavaWebFrameworkSchema.options;
 export const JAVA_BUILD_TOOL_VALUES = JavaBuildToolSchema.options;
 export const JAVA_ORM_VALUES = JavaOrmSchema.options;
@@ -1661,6 +1849,16 @@ export const DOTNET_VALIDATION_VALUES = DotnetValidationSchema.options;
 export const DOTNET_CACHING_VALUES = DotnetCachingSchema.options;
 export const DOTNET_DEPLOY_VALUES = DotnetDeploySchema.options;
 export const DOTNET_LIBRARIES_VALUES = DotnetLibrariesSchema.options;
+export const PHP_WEB_FRAMEWORK_VALUES = PhpWebFrameworkSchema.options;
+export const PHP_ORM_VALUES = PhpOrmSchema.options;
+export const PHP_AUTH_VALUES = PhpAuthSchema.options;
+export const PHP_TESTING_VALUES = PhpTestingSchema.options;
+export const PHP_VALIDATION_VALUES = PhpValidationSchema.options;
+export const PHP_CACHE_VALUES = PhpCacheSchema.options;
+export const PHP_JOB_QUEUE_VALUES = PhpJobQueueSchema.options;
+export const PHP_EMAIL_VALUES = PhpEmailSchema.options;
+export const PHP_LOGGING_VALUES = PhpLoggingSchema.options;
+export const PHP_HTTP_CLIENT_VALUES = PhpHttpClientSchema.options;
 export const ELIXIR_WEB_FRAMEWORK_VALUES = ElixirWebFrameworkSchema.options;
 export const ELIXIR_ORM_VALUES = ElixirOrmSchema.options;
 export const ELIXIR_AUTH_VALUES = ElixirAuthSchema.options;
@@ -1681,6 +1879,11 @@ export const ELIXIR_HTTP_SERVER_VALUES = ElixirHttpServerSchema.options;
 export const ELIXIR_APPLICATION_FRAMEWORK_VALUES = ElixirApplicationFrameworkSchema.options;
 export const ELIXIR_DOCUMENTATION_VALUES = ElixirDocumentationSchema.options;
 export const ELIXIR_CLUSTERING_VALUES = ElixirClusteringSchema.options;
+export const ELIXIR_LOGGING_VALUES = ElixirLoggingSchema.options;
+export const ELIXIR_CONFIG_VALUES = ElixirConfigSchema.options;
+export const ELIXIR_MESSAGE_QUEUE_VALUES = ElixirMessageQueueSchema.options;
+export const ELIXIR_TEMPLATING_VALUES = ElixirTemplatingSchema.options;
+export const ELIXIR_CLI_VALUES = ElixirCliSchema.options;
 export const ELIXIR_DEPLOY_VALUES = ElixirDeploySchema.options;
 export const AI_DOCS_VALUES = AiDocsSchema.options;
 export const SHADCN_BASE_VALUES = ShadcnBaseSchema.options;
@@ -1690,3 +1893,14 @@ export const SHADCN_COLOR_THEME_VALUES = ShadcnColorThemeSchema.options;
 export const SHADCN_BASE_COLOR_VALUES = ShadcnBaseColorSchema.options;
 export const SHADCN_FONT_VALUES = ShadcnFontSchema.options;
 export const SHADCN_RADIUS_VALUES = ShadcnRadiusSchema.options;
+
+export const RUBY_WEB_FRAMEWORK_VALUES = RubyWebFrameworkSchema.options;
+export const RUBY_ORM_VALUES = RubyOrmSchema.options;
+export const RUBY_AUTH_VALUES = RubyAuthSchema.options;
+export const RUBY_TESTING_VALUES = RubyTestingSchema.options;
+export const RUBY_VALIDATION_VALUES = RubyValidationSchema.options;
+export const RUBY_CACHE_VALUES = RubyCacheSchema.options;
+export const RUBY_JOB_QUEUE_VALUES = RubyJobQueueSchema.options;
+export const RUBY_EMAIL_VALUES = RubyEmailSchema.options;
+export const RUBY_LOGGING_VALUES = RubyLoggingSchema.options;
+export const RUBY_HTTP_CLIENT_VALUES = RubyHttpClientSchema.options;

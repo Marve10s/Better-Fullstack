@@ -85,25 +85,32 @@ After editing `src/post-process/*.ts` files, only the build steps are needed (sk
 ### Quick reference
 
 ```bash
-bun run test              # CLI unit tests
-bun run test:all          # All tests across the monorepo
+bun run test              # Every package test suite (turbo test)
 bun run lint              # Lint all packages (turbo lint)
 bun run check             # Format + lint (oxfmt + oxlint)
+bun run test:release      # Release lane: snapshots, CLI/builder parity, workflow guards
 ```
 
 ### CLI tests
 
+From the repo root:
+
 ```bash
-bun run test:cli          # Unit tests
-bun run test --watch      # Watch mode (from apps/cli/)
-bun run test:coverage     # With coverage report
-bun run test:ci           # CI mode (bail after 5 failures)
+bun run test:cli          # CLI test suite
 bun run test:e2e          # End-to-end tests
+```
+
+From `apps/cli`:
+
+```bash
+bun run test:watch        # Watch mode
+bun run test:coverage     # With coverage report
+bun run test:ci           # Bail after 5 failures
 ```
 
 ### Matrix tests
 
-Test combinations of frontends, backends, databases, etc:
+Test combinations of frontends, backends, databases, etc. Run these from `apps/cli`:
 
 ```bash
 bun run test:matrix       # Batched mode

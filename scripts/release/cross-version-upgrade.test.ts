@@ -26,6 +26,8 @@ const SOURCE_VERSION = "2.0.0";
 const SOURCE_SHA = "a".repeat(40);
 const TARGET_VERSION = "3.0.0";
 const TARGET_SHA = "b".repeat(40);
+const STALE_WORKSPACE_CASE_ID = "rust";
+const STALE_WORKSPACE_MARKER = "stale-workspace.marker";
 
 function digest(bytes: Uint8Array, algorithm: "sha1" | "sha256" | "sha512") {
   return createHash(algorithm)
@@ -79,6 +81,10 @@ function sourceBundle(createdAt: string): UpgradeFixtureBundle {
         "bts.jsonc",
         `${JSON.stringify({ version: SOURCE_VERSION, ecosystem: id })}\n`,
       );
+      const staleWorkspace =
+        id === STALE_WORKSPACE_CASE_ID
+          ? [fixtureFile(STALE_WORKSPACE_MARKER, "typescript\n")]
+          : [];
       const manifest = fixtureFile(
         "bts.lock.json",
         `${JSON.stringify({
@@ -100,9 +106,14 @@ function sourceBundle(createdAt: string): UpgradeFixtureBundle {
         command: [`create-better-fullstack@${SOURCE_VERSION}`, `fixture-${id}`],
         configSha256: config.sha256,
         ecosystem: id,
-        files: [user, config, manifest, managedUserEdit, managed].sort(
-          (left, right) => left.path.localeCompare(right.path),
-        ),
+        files: [
+          user,
+          config,
+          manifest,
+          managedUserEdit,
+          managed,
+          ...staleWorkspace,
+        ].sort((left, right) => left.path.localeCompare(right.path)),
         id,
         lifecycle,
         manifestSha256: manifest.sha256,
@@ -122,7 +133,7 @@ function sourceBundle(createdAt: string): UpgradeFixtureBundle {
 }
 
 const FAKE_CLI = `
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const args = process.argv.slice(2);
@@ -130,8 +141,25 @@ const action = args[0];
 const projectDir = action === "recovery" ? args[args.indexOf("--project-dir") + 1] : args[1];
 const token = "c".repeat(64);
 const recoveryId = "123e4567-e89b-42d3-a456-426614174000";
+const staleWorkspaceMarker = join(projectDir, "${STALE_WORKSPACE_MARKER}");
+const recordsStaleWorkspace = await access(staleWorkspaceMarker).then(() => true, () => false);
 
-if (action === "update" && !args.includes("--apply")) {
+if (action === "update" && !args.includes("--apply") && recordsStaleWorkspace) {
+  console.log(JSON.stringify({
+    ok: false,
+    error: "bts.jsonc records a TypeScript workspace that was never scaffolded. Run doctor --fix to repair the config, then plan again.",
+  }));
+  process.exit(1);
+} else if (action === "doctor" && args.includes("--apply")) {
+  if (args[args.indexOf("--review-token") + 1] !== token) {
+    console.log(JSON.stringify({ ok: false, error: "invalid review token" }));
+    process.exit(1);
+  }
+  await rm(staleWorkspaceMarker);
+  console.log(JSON.stringify({ success: true, fix: { changed: true, applied: true } }));
+} else if (action === "doctor") {
+  console.log(JSON.stringify({ success: true, fix: { changed: true, reviewToken: token } }));
+} else if (action === "update" && !args.includes("--apply")) {
   const editable = await readFile(join(projectDir, "y-managed.ts"), "utf8");
   const hasUserEdit = editable.includes("Better Fullstack cross-version user edit");
   console.log(JSON.stringify({
@@ -141,7 +169,7 @@ if (action === "update" && !args.includes("--apply")) {
     files: [{ path: "y-managed.ts" }, { path: "z-managed.ts" }],
     manual: [],
     reviewToken: token,
-    summary: { drift: 1, userEdited: hasUserEdit ? 1 : 0 },
+    summary: { drift: 1, unchanged: 3, userEdited: hasUserEdit ? 1 : 0 },
     userEdited: hasUserEdit ? ["y-managed.ts"] : [],
     lifecycle: {
       provenance: {
@@ -294,6 +322,11 @@ describe("cross-version upgrade qualification", () => {
       expect(report.evidenceType).toBe(CROSS_VERSION_UPGRADE_EVIDENCE_TYPE);
       expect(report.overallSuccess).toBe(true);
       expect(report.recoveredCaseCount).toBe(8);
+      expect(
+        report.cases
+          .filter((entry) => entry.configRepaired)
+          .map((entry) => entry.id),
+      ).toEqual([STALE_WORKSPACE_CASE_ID]);
       expect(
         report.cases.every(
           (entry) => entry.userEdit?.protectedAs === "user-edited",

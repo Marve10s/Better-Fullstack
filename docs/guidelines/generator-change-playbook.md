@@ -35,6 +35,8 @@ post-processing. Rebuild affected producers before testing built consumers. Foll
   generator. Verify affected auth recipes before changing them.
 - Better Auth packages, including `@better-auth/core`, form one synchronized family in the
   dependency update policy. Move them together; npm installs a second core when they split.
+- Composed native backends need their database setup and seeding in the composed setup command,
+  and must omit test commands when testing is `none`. Check `src/graph/graph-backend.ts`.
 - Existing-project updates compare against the formatted create-time scaffold baseline. Keep
   raw-template fixtures explicit so formatter changes do not masquerade as user edits.
 
@@ -46,7 +48,7 @@ post-processing. Rebuild affected producers before testing built consumers. Foll
   handles CRLF and trailing whitespace; review intentional diffs rather than accepting bulk churn.
 - `apps/cli/test/recommendations/cli-builder-sync.test.ts` must fail on parsing gaps and missing
   schema/prompt/builder values. Do not hide options such as explicit `none` behind unexplained skips.
-- Run `bun run test:release` for release-sensitive generator changes. That lane must build its own
+- Run `bun run test` and `bun run test:release` for release-sensitive generator changes. That lane must build its own
   prerequisites from a clean checkout.
 - Root scratch ignore rules must not hide nested tracked tests: `/test/` and `test/` differ.
 

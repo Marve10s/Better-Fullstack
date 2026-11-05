@@ -1,3 +1,8 @@
+import {
+  CRYSTAL_PROJECT_DEFAULTS,
+  getCrystalSelectionIssue,
+  getPhpRecipeIssue,
+} from "@better-fullstack/types";
 import { log } from "@clack/prompts";
 
 import type {
@@ -42,9 +47,34 @@ import type {
   ElixirApplicationFramework,
   ElixirDocumentation,
   ElixirClustering,
+  ElixirLogging,
+  ElixirConfig,
+  ElixirMessageQueue,
+  ElixirTemplating,
+  ElixirCli,
   ElixirRealtime,
   ElixirTesting,
   ElixirValidation,
+  RubyWebFramework,
+  RubyOrm,
+  RubyAuth,
+  RubyTesting,
+  RubyValidation,
+  RubyCache,
+  RubyJobQueue,
+  RubyEmail,
+  RubyLogging,
+  RubyHttpClient,
+  PhpWebFramework,
+  PhpOrm,
+  PhpAuth,
+  PhpTesting,
+  PhpValidation,
+  PhpCache,
+  PhpJobQueue,
+  PhpEmail,
+  PhpLogging,
+  PhpHttpClient,
   ElixirWebFramework,
   I18n,
   Database,
@@ -202,6 +232,7 @@ import { getShadcnOptions, type ShadcnOptions } from "@/prompts/developer/shadcn
 import { getTestingChoice } from "@/prompts/developer/testing";
 import { getUILibraryChoice } from "@/prompts/developer/ui-library";
 import { getValidationChoice } from "@/prompts/developer/validation";
+import { getCrystalAuthChoice, getCrystalTestingChoice, getCrystalValidationChoice, getCrystalCacheChoice, getCrystalJobsChoice, getCrystalOrmChoice, getCrystalWebFrameworkChoice } from "@/prompts/ecosystems/crystal-ecosystem";
 import {
   getDotnetApiChoice,
   getDotnetAuthChoice,
@@ -235,6 +266,11 @@ import {
   getElixirApplicationFrameworkChoice,
   getElixirDocumentationChoice,
   getElixirClusteringChoice,
+  getElixirLoggingChoice,
+  getElixirConfigChoice,
+  getElixirMessageQueueChoice,
+  getElixirTemplatingChoice,
+  getElixirCliChoice,
   getElixirRealtimeChoice,
   getElixirTestingChoice,
   getElixirValidationChoice,
@@ -276,6 +312,18 @@ import {
   getCompositionModeChoice,
 } from "@/prompts/ecosystems/multi-ecosystem-composer";
 import {
+  getPhpAuthChoice,
+  getPhpOrmChoice,
+  getPhpTestingChoice,
+  getPhpValidationChoice,
+  getPhpCacheChoice,
+  getPhpJobQueueChoice,
+  getPhpEmailChoice,
+  getPhpLoggingChoice,
+  getPhpHttpClientChoice,
+  getPhpWebFrameworkChoice,
+} from "@/prompts/ecosystems/php-ecosystem";
+import {
   getPythonAiChoice,
   getPythonApiChoice,
   getPythonAuthChoice,
@@ -299,6 +347,18 @@ import {
   getPythonValidationChoice,
   getPythonWebFrameworkChoice,
 } from "@/prompts/ecosystems/python-ecosystem";
+import {
+  getRubyAuthChoice,
+  getRubyOrmChoice,
+  getRubyTestingChoice,
+  getRubyValidationChoice,
+  getRubyCacheChoice,
+  getRubyJobQueueChoice,
+  getRubyEmailChoice,
+  getRubyLoggingChoice,
+  getRubyHttpClientChoice,
+  getRubyWebFrameworkChoice,
+} from "@/prompts/ecosystems/ruby-ecosystem";
 import {
   getRustApiChoice,
   getRustCliChoice,
@@ -458,6 +518,13 @@ type PromptGroupResults = {
   goProtoTooling: GoProtoTooling;
   goDI: GoDI;
   // Java ecosystem
+  crystalWebFramework: ProjectConfig["crystalWebFramework"];
+  crystalOrm: ProjectConfig["crystalOrm"];
+  crystalAuth: ProjectConfig["crystalAuth"];
+  crystalTesting: ProjectConfig["crystalTesting"];
+  crystalValidation: ProjectConfig["crystalValidation"];
+  crystalCache: ProjectConfig["crystalCache"];
+  crystalJobs: ProjectConfig["crystalJobs"];
   javaWebFramework: JavaWebFramework;
   javaLanguage: JavaLanguage;
   javaBuildTool: JavaBuildTool;
@@ -481,6 +548,26 @@ type PromptGroupResults = {
   dotnetDeploy: DotnetDeploy;
   dotnetLibraries: DotnetLibraries[];
   // Elixir ecosystem
+  rubyWebFramework: RubyWebFramework;
+  rubyOrm: RubyOrm;
+  rubyAuth: RubyAuth;
+  rubyTesting: RubyTesting;
+  rubyValidation: RubyValidation;
+  rubyCache: RubyCache;
+  rubyJobQueue: RubyJobQueue;
+  rubyEmail: RubyEmail;
+  rubyLogging: RubyLogging;
+  rubyHttpClient: RubyHttpClient;
+  phpWebFramework: PhpWebFramework;
+  phpOrm: PhpOrm;
+  phpAuth: PhpAuth;
+  phpTesting: PhpTesting;
+  phpValidation: PhpValidation;
+  phpCache: PhpCache;
+  phpJobQueue: PhpJobQueue;
+  phpEmail: PhpEmail;
+  phpLogging: PhpLogging;
+  phpHttpClient: PhpHttpClient;
   elixirWebFramework: ElixirWebFramework;
   elixirOrm: ElixirOrm;
   elixirAuth: ElixirAuth;
@@ -500,6 +587,11 @@ type PromptGroupResults = {
   elixirApplicationFramework: ElixirApplicationFramework;
   elixirDocumentation: ElixirDocumentation;
   elixirClustering: ElixirClustering;
+  elixirLogging: ElixirLogging;
+  elixirConfig: ElixirConfig;
+  elixirMessageQueue: ElixirMessageQueue;
+  elixirTemplating: ElixirTemplating;
+  elixirCli: ElixirCli;
   elixirDeploy: ElixirDeploy;
   elixirLibraries: ElixirLibraries[];
   // Keep at end
@@ -641,6 +733,13 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   goTemplating: true,
   goProtoTooling: true,
   goDI: true,
+  crystalWebFramework: true,
+  crystalOrm: true,
+  crystalAuth: true,
+  crystalTesting: true,
+  crystalValidation: true,
+  crystalCache: true,
+  crystalJobs: true,
   javaWebFramework: true,
   javaLanguage: true,
   javaBuildTool: true,
@@ -662,6 +761,26 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   dotnetCaching: true,
   dotnetDeploy: true,
   dotnetLibraries: true,
+  rubyWebFramework: true,
+  rubyOrm: true,
+  rubyAuth: true,
+  rubyTesting: true,
+  rubyValidation: true,
+  rubyCache: true,
+  rubyJobQueue: true,
+  rubyEmail: true,
+  rubyLogging: true,
+  rubyHttpClient: true,
+  phpWebFramework: true,
+  phpOrm: true,
+  phpAuth: true,
+  phpTesting: true,
+  phpValidation: true,
+  phpCache: true,
+  phpJobQueue: true,
+  phpEmail: true,
+  phpLogging: true,
+  phpHttpClient: true,
   elixirWebFramework: true,
   elixirOrm: true,
   elixirAuth: true,
@@ -681,6 +800,11 @@ const CONFIG_PROMPT_ENTRY_KEY_MAP = {
   elixirApplicationFramework: true,
   elixirDocumentation: true,
   elixirClustering: true,
+  elixirLogging: true,
+  elixirConfig: true,
+  elixirMessageQueue: true,
+  elixirTemplating: true,
+  elixirCli: true,
   elixirDeploy: true,
   elixirLibraries: true,
   aiDocs: true,
@@ -702,7 +826,17 @@ export function hasStackPromptFlags(flags: Partial<ProjectConfig>) {
   });
 }
 
-const SERVER_ECOSYSTEMS = new Set<Ecosystem>(["rust", "python", "go", "java", "dotnet", "elixir"]);
+const SERVER_ECOSYSTEMS = new Set<Ecosystem>([
+  "rust",
+  "python",
+  "go",
+  "java",
+  "dotnet",
+  "elixir",
+  "php",
+  "ruby",
+  "crystal",
+]);
 
 export function resolveDatabaseFlagForEcosystem(
   ecosystem: Ecosystem | undefined,
@@ -884,6 +1018,53 @@ function scopedPrompt<K extends PromptGroupKey>(
 ) {
   return (opts: { results: Partial<PromptGroupResults> }) => {
     if (
+      (key === "rubyWebFramework" ||
+        key === "rubyOrm" ||
+        key === "rubyAuth" ||
+        key === "rubyTesting" ||
+        key === "rubyValidation" ||
+        key === "rubyCache" ||
+        key === "rubyJobQueue" ||
+        key === "rubyEmail" ||
+        key === "rubyLogging" ||
+        key === "rubyHttpClient") &&
+      opts.results.ecosystem !== "ruby"
+    )
+      return Promise.resolve("none" as PromptGroupResults[K]);
+    if (
+      opts.results.ecosystem === "ruby" &&
+      !CONFIG_SCOPE_META_KEYS.has(key) &&
+      ![
+        "rubyWebFramework",
+        "rubyOrm",
+        "rubyAuth",
+        "rubyTesting",
+        "rubyValidation",
+        "rubyCache",
+        "rubyJobQueue",
+        "rubyEmail",
+        "rubyLogging",
+        "rubyHttpClient",
+        "aiDocs",
+        "git",
+        "install",
+        "packageManager",
+        "workspaceShape",
+      ].includes(key)
+    ) {
+      const supplied = flags[key as keyof ProjectConfig];
+      const value =
+        supplied ??
+        (key === "javaLanguage"
+          ? "java"
+          : key === "shadcnOptions" || key === "astroIntegration"
+            ? undefined
+            : Array.isArray(getDefaultPromptValue(key as ConfigPromptKey))
+              ? []
+              : "none");
+      return Promise.resolve(value as PromptGroupResults[K]);
+    }
+    if (
       !CONFIG_SCOPE_META_KEYS.has(key) &&
       !shouldAskConfigPromptKey(
         opts.results.ecosystem,
@@ -906,6 +1087,8 @@ export async function gatherConfig(
   relativePath: string,
   shape?: ProjectShape,
 ) {
+  const phpIssue = getPhpRecipeIssue(inputFlags);
+  if (phpIssue) return exitWithError(phpIssue);
   const shapeResolution = shape
     ? await resolveProjectShape(shape, inputFlags, projectName, projectDir, relativePath)
     : undefined;
@@ -924,7 +1107,21 @@ export async function gatherConfig(
   const shouldPromptForScope = !hasStackPromptFlags(flags);
   const promptEntries = {
     // Ecosystem choice first
-    ecosystem: () => getEcosystemChoice(flags.ecosystem, flags.auth),
+    ecosystem: async () => {
+      const ecosystem = await getEcosystemChoice(flags.ecosystem, flags.auth);
+      if (ecosystem === "crystal") {
+        const issue = getCrystalSelectionIssue({
+          ...CRYSTAL_PROJECT_DEFAULTS,
+          ...flags,
+          ecosystem,
+        });
+        if (issue) throw new Error(issue);
+        const { crystalWebFramework: _frameworkDefault, crystalAuth: _crystalAuthDefault, crystalTesting: _crystalTestingDefault, crystalValidation: _crystalValidationDefault, crystalCache: _crystalCacheDefault, crystalJobs: _crystalJobsDefault, crystalOrm: _crystalOrmDefault, ...nativeDefaults } =
+          CRYSTAL_PROJECT_DEFAULTS;
+        Object.assign(flags, { ...nativeDefaults, ...flags });
+      }
+      return ecosystem;
+    },
     configScope: () => (shouldPromptForScope ? getConfigScopeChoice() : Promise.resolve("full")),
     configSections: ({ results }) => {
       if (!shouldPromptForScope || results.configScope !== "custom") {
@@ -1193,6 +1390,7 @@ export async function gatherConfig(
         results.runtime,
         results.database,
         results.serverDeploy,
+        results.webDeploy,
       );
     },
     fileUpload: ({ results }) => {
@@ -1628,6 +1826,34 @@ export async function gatherConfig(
       return getGoDIChoice(flags.goDI);
     },
     // Java ecosystem prompts (skip if not Java)
+    crystalWebFramework: ({ results }) =>
+      results.ecosystem === "crystal"
+        ? getCrystalWebFrameworkChoice(flags.crystalWebFramework)
+        : Promise.resolve("none" as const),
+    crystalOrm: ({ results }) =>
+      results.ecosystem === "crystal"
+        ? getCrystalOrmChoice(flags.crystalOrm, results)
+        : Promise.resolve("none" as const),
+    crystalAuth: ({ results }) =>
+      results.ecosystem === "crystal"
+        ? getCrystalAuthChoice(flags.crystalAuth, results)
+        : Promise.resolve("none" as const),
+    crystalTesting: ({ results }) =>
+      results.ecosystem === "crystal"
+        ? getCrystalTestingChoice(flags.crystalTesting, results)
+        : Promise.resolve("none" as const),
+    crystalValidation: ({ results }) =>
+      results.ecosystem === "crystal"
+        ? getCrystalValidationChoice(flags.crystalValidation, results)
+        : Promise.resolve("none" as const),
+    crystalCache: ({ results }) =>
+      results.ecosystem === "crystal"
+        ? getCrystalCacheChoice(flags.crystalCache, results)
+        : Promise.resolve("none" as const),
+    crystalJobs: ({ results }) =>
+      results.ecosystem === "crystal"
+        ? getCrystalJobsChoice(flags.crystalJobs, results)
+        : Promise.resolve("none" as const),
     javaWebFramework: ({ results }) => {
       if (results.ecosystem !== "java") return Promise.resolve("none" as JavaWebFramework);
       return getJavaWebFrameworkChoice(flags.javaWebFramework);
@@ -1779,6 +2005,86 @@ export async function gatherConfig(
       return getDotnetLibrariesChoice(flags.dotnetLibraries);
     },
     // Elixir ecosystem prompts (skip if not Elixir)
+    rubyWebFramework: ({ results }) =>
+      results.ecosystem === "ruby"
+        ? getRubyWebFrameworkChoice(flags.rubyWebFramework)
+        : Promise.resolve("none" as const),
+    rubyOrm: ({ results }) =>
+      results.ecosystem === "ruby"
+        ? getRubyOrmChoice(flags.rubyOrm)
+        : Promise.resolve("none" as const),
+    rubyAuth: ({ results }) =>
+      results.ecosystem === "ruby"
+        ? getRubyAuthChoice(flags.rubyAuth)
+        : Promise.resolve("none" as const),
+    rubyTesting: ({ results }) =>
+      results.ecosystem === "ruby"
+        ? getRubyTestingChoice(flags.rubyTesting)
+        : Promise.resolve("none" as const),
+    rubyValidation: ({ results }) =>
+      results.ecosystem === "ruby"
+        ? getRubyValidationChoice(flags.rubyValidation)
+        : Promise.resolve("none" as const),
+    rubyCache: ({ results }) =>
+      results.ecosystem === "ruby"
+        ? getRubyCacheChoice(flags.rubyCache)
+        : Promise.resolve("none" as const),
+    rubyJobQueue: ({ results }) =>
+      results.ecosystem === "ruby"
+        ? getRubyJobQueueChoice(flags.rubyJobQueue, results.rubyWebFramework, results.rubyOrm)
+        : Promise.resolve("none" as const),
+    rubyEmail: ({ results }) =>
+      results.ecosystem === "ruby"
+        ? getRubyEmailChoice(flags.rubyEmail, results.rubyWebFramework)
+        : Promise.resolve("none" as const),
+    rubyLogging: ({ results }) =>
+      results.ecosystem === "ruby"
+        ? getRubyLoggingChoice(flags.rubyLogging, results.rubyWebFramework)
+        : Promise.resolve("none" as const),
+    rubyHttpClient: ({ results }) =>
+      results.ecosystem === "ruby"
+        ? getRubyHttpClientChoice(flags.rubyHttpClient)
+        : Promise.resolve("none" as const),
+    phpWebFramework: ({ results }) =>
+      results.ecosystem === "php"
+        ? getPhpWebFrameworkChoice(flags.phpWebFramework)
+        : Promise.resolve("none" as const),
+    phpOrm: ({ results }) =>
+      results.ecosystem === "php"
+        ? getPhpOrmChoice(flags.phpOrm, results.phpWebFramework)
+        : Promise.resolve("none" as const),
+    phpAuth: ({ results }) =>
+      results.ecosystem === "php"
+        ? getPhpAuthChoice(flags.phpAuth, results.phpWebFramework)
+        : Promise.resolve("none" as const),
+    phpTesting: ({ results }) =>
+      results.ecosystem === "php"
+        ? getPhpTestingChoice(flags.phpTesting)
+        : Promise.resolve("none" as const),
+    phpValidation: ({ results }) =>
+      results.ecosystem === "php"
+        ? getPhpValidationChoice(flags.phpValidation, results.phpWebFramework)
+        : Promise.resolve("none" as const),
+    phpCache: ({ results }) =>
+      results.ecosystem === "php"
+        ? getPhpCacheChoice(flags.phpCache, results.phpWebFramework)
+        : Promise.resolve("none" as const),
+    phpJobQueue: ({ results }) =>
+      results.ecosystem === "php"
+        ? getPhpJobQueueChoice(flags.phpJobQueue, results.phpWebFramework)
+        : Promise.resolve("none" as const),
+    phpEmail: ({ results }) =>
+      results.ecosystem === "php"
+        ? getPhpEmailChoice(flags.phpEmail, results.phpWebFramework)
+        : Promise.resolve("none" as const),
+    phpLogging: ({ results }) =>
+      results.ecosystem === "php"
+        ? getPhpLoggingChoice(flags.phpLogging, results.phpWebFramework)
+        : Promise.resolve("none" as const),
+    phpHttpClient: ({ results }) =>
+      results.ecosystem === "php"
+        ? getPhpHttpClientChoice(flags.phpHttpClient, results.phpWebFramework)
+        : Promise.resolve("none" as const),
     elixirWebFramework: ({ results }) => {
       if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirWebFramework);
       return getElixirWebFrameworkChoice(flags.elixirWebFramework);
@@ -1857,6 +2163,26 @@ export async function gatherConfig(
       if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirClustering);
       return getElixirClusteringChoice(flags.elixirClustering);
     },
+    elixirLogging: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirLogging);
+      return getElixirLoggingChoice(flags.elixirLogging);
+    },
+    elixirConfig: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirConfig);
+      return getElixirConfigChoice(flags.elixirConfig);
+    },
+    elixirMessageQueue: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirMessageQueue);
+      return getElixirMessageQueueChoice(flags.elixirMessageQueue);
+    },
+    elixirTemplating: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirTemplating);
+      return getElixirTemplatingChoice(flags.elixirTemplating);
+    },
+    elixirCli: ({ results }) => {
+      if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirCli);
+      return getElixirCliChoice(flags.elixirCli);
+    },
     elixirDeploy: ({ results }) => {
       if (results.ecosystem !== "elixir") return Promise.resolve("none" as ElixirDeploy);
       return getElixirDeployChoice(flags.elixirDeploy);
@@ -1878,7 +2204,10 @@ export async function gatherConfig(
         results.ecosystem === "go" ||
         results.ecosystem === "java" ||
         results.ecosystem === "dotnet" ||
-        results.ecosystem === "elixir"
+        results.ecosystem === "ruby" ||
+        results.ecosystem === "elixir" ||
+        results.ecosystem === "php" ||
+        results.ecosystem === "crystal"
       )
         return Promise.resolve(flags.packageManager ?? getUserPkgManager());
       return getPackageManagerChoice(flags.packageManager);
@@ -2018,6 +2347,13 @@ export async function gatherConfig(
     goProtoTooling: result.goProtoTooling,
     goDI: result.goDI,
     // Java ecosystem options
+    crystalWebFramework: result.crystalWebFramework,
+    crystalOrm: result.crystalOrm,
+    crystalAuth: result.crystalAuth,
+    crystalTesting: result.crystalTesting,
+    crystalValidation: result.crystalValidation,
+    crystalCache: result.crystalCache,
+    crystalJobs: result.crystalJobs,
     javaWebFramework: result.javaWebFramework,
     javaLanguage: result.javaLanguage,
     javaBuildTool: result.javaBuildTool,
@@ -2041,6 +2377,26 @@ export async function gatherConfig(
     dotnetDeploy: result.dotnetDeploy,
     dotnetLibraries: result.dotnetLibraries,
     // Elixir ecosystem options
+    rubyWebFramework: result.rubyWebFramework,
+    rubyOrm: result.rubyOrm,
+    rubyAuth: result.rubyAuth,
+    rubyTesting: result.rubyTesting,
+    rubyValidation: result.rubyValidation,
+    rubyCache: result.rubyCache,
+    rubyJobQueue: result.rubyJobQueue,
+    rubyEmail: result.rubyEmail,
+    rubyLogging: result.rubyLogging,
+    rubyHttpClient: result.rubyHttpClient,
+    phpWebFramework: result.phpWebFramework,
+    phpOrm: result.phpOrm,
+    phpAuth: result.phpAuth,
+    phpTesting: result.phpTesting,
+    phpValidation: result.phpValidation,
+    phpCache: result.phpCache,
+    phpJobQueue: result.phpJobQueue,
+    phpEmail: result.phpEmail,
+    phpLogging: result.phpLogging,
+    phpHttpClient: result.phpHttpClient,
     elixirWebFramework: result.elixirWebFramework,
     elixirOrm: result.elixirOrm,
     elixirAuth: result.elixirAuth,
@@ -2060,6 +2416,11 @@ export async function gatherConfig(
     elixirApplicationFramework: result.elixirApplicationFramework,
     elixirDocumentation: result.elixirDocumentation,
     elixirClustering: result.elixirClustering,
+    elixirLogging: result.elixirLogging,
+    elixirConfig: result.elixirConfig,
+    elixirMessageQueue: result.elixirMessageQueue,
+    elixirTemplating: result.elixirTemplating,
+    elixirCli: result.elixirCli,
     elixirDeploy: result.elixirDeploy,
     elixirLibraries: result.elixirLibraries,
     // AI documentation files

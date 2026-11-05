@@ -1,0 +1,392 @@
+RSpec.describe BetterFullstack::App do
+  let(:app) { BetterFullstack::App }
+
+  before do
+    header "Host", "localhost"
+{{#if (ne rubyOrm "none")}}
+    BetterFullstack::Items.delete_all
+{{/if}}
+{{#if (eq rubyAuth "rodauth")}}
+    BetterFullstack::Auth::DB[:accounts].delete
+{{/if}}
+  end
+
+  def body
+    JSON.parse(last_response.body)
+  end
+
+  def post_json(value)
+    post "/api/greetings", JSON.generate(value), "CONTENT_TYPE" => "application/json"
+  end
+
+  it "reports health" do
+    get "/health"
+    expect(last_response.status).to eq(200)
+    expect(body).to eq("status" => "ok", "service" => "{{rubyWebFramework}}")
+  end
+
+  it "trims the validated name" do
+    post_json("name" => "  Ruby  ")
+    expect(last_response.status).to eq(200)
+    expect(body).to eq("greeting" => "Hello, Ruby!")
+  end
+{{#if (ne rubyLogging "none")}}
+
+  it "logs each request" do
+    get "/health"
+{{#if (eq rubyLogging "semantic-logger")}}
+    SemanticLogger.flush
+{{/if}}
+    lines = File.readlines(ENV.fetch("LOG_PATH"))
+{{#if (or (eq rubyLogging "logger") (eq rubyLogging "lograge"))}}
+    expect(lines).to include(a_string_matching(/method=GET path=\/health .*status=200/))
+{{else}}
+    entries = lines.filter_map { |line| JSON.parse(line) if line.start_with?("{") }
+    expect(entries.map { |entry| {{#if (eq rubyLogging "semantic-logger")}}entry.fetch("payload", {}){{else}}entry{{/if}}.values_at("method", "path", "status") }).to include(["GET", "/health", 200])
+{{/if}}
+  end
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+
+  describe "upstream HTTP client" do
+    it "fetches the upstream health" do
+      get "/api/upstream"
+      expect(last_response.status).to eq(200)
+      expect(body).to eq("upstream" => { "status" => "ok" })
+      expect(UPSTREAM.requests.pop.fetch("request")).to eq("GET /health HTTP/1.1")
+    end
+
+    it "returns 502 when the upstream is unreachable" do
+      closed = TCPServer.new("127.0.0.1", 0)
+      port = closed.addr[1]
+      closed.close
+      previous = ENV["UPSTREAM_URL"]
+      ENV["UPSTREAM_URL"] = "http://127.0.0.1:#{port}"
+      get "/api/upstream"
+      expect(last_response.status).to eq(502)
+      expect(body).to eq("error" => "upstream_unavailable")
+    ensure
+      ENV["UPSTREAM_URL"] = previous
+    end
+  end
+{{/if}}
+
+  it "rejects invalid request shapes" do
+    [nil, [], {}, { "name" => 2 }, { "name" => " " }, { "name" => "a" * 81 }, { "name" => "Ruby", "admin" => true }].each do |value|
+      post_json(value)
+      expect(last_response.status).to eq(422)
+      expect(body).to have_key("error")
+    end
+  end
+
+  it "reports which validation rule failed" do
+    [
+      [[], "name_must_be_a_string"],
+      [{ "name" => 2 }, "name_must_be_a_string"],
+      [{ "name" => "Ruby", "admin" => true }, "name_must_be_a_string"],
+      [{ "name" => " " }, "name_length_must_be_1_to_80"],
+      [{ "name" => "a" * 81 }, "name_length_must_be_1_to_80"]
+    ].each do |value, error|
+      post_json(value)
+      expect(body).to eq("error" => error)
+    end
+  end
+{{#if (ne rubyCache "none")}}
+
+  describe "cache" do
+    before do
+      skip "Start the cache server to run cache specs" unless BetterFullstack::Cache.available?
+    end
+
+    it "serves the second read from the cache" do
+      BetterFullstack::Cache.delete(BetterFullstack::Cache::KEY)
+      get "/api/cache"
+      first = body
+      get "/api/cache"
+      expect([first.fetch("cached"), body.fetch("cached")]).to eq([false, true])
+      expect(body.fetch("value")).to eq(first.fetch("value"))
+    end
+
+    it "expires entries after their TTL" do
+      key = "better-fullstack:expiry-test"
+      BetterFullstack::Cache.delete(key)
+      BetterFullstack::Cache.fetch(key, ttl: 1) { "first" }
+      sleep 2.1
+      expect(BetterFullstack::Cache.fetch(key, ttl: 1) { "second" }).to eq(["second", false])
+    end
+  end
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+
+  describe "background jobs" do
+    def run_queued_jobs
+{{#if (eq rubyJobQueue "sidekiq")}}
+      BetterFullstack::Jobs::GreetingJob.drain
+{{/if}}
+{{#if (eq rubyJobQueue "resque")}}
+      Resque::Worker.new(BetterFullstack::Jobs::QUEUE).work(0)
+      Resque.remove_queue(BetterFullstack::Jobs::QUEUE)
+{{/if}}
+{{#if (eq rubyJobQueue "solid-queue")}}
+      worker = SolidQueue::Worker.new(queues: "*", threads: 1, polling_interval: 0.05)
+      worker.start
+      deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 10
+      sleep 0.05 while SolidQueue::Job.where(finished_at: nil).exists? && Process.clock_gettime(Process::CLOCK_MONOTONIC) < deadline
+      worker.stop
+{{/if}}
+    end
+
+    it "runs an enqueued job on the queue" do
+      skip "Start the job queue backend to run job specs" unless BetterFullstack::Jobs.available?
+      post "/api/jobs", JSON.generate(name: "Ruby"), "CONTENT_TYPE" => "application/json"
+      expect(last_response.status).to eq(202)
+      id = body.fetch("id")
+      get "/api/jobs/#{id}"
+      expect(body.fetch("status")).to eq("queued")
+      run_queued_jobs
+      get "/api/jobs/#{id}"
+      expect(body).to eq("id" => id, "status" => "done", "greeting" => "Hello, Ruby!")
+    end
+
+    it "does not enqueue invalid jobs" do
+      post "/api/jobs", JSON.generate(name: " "), "CONTENT_TYPE" => "application/json"
+      expect(last_response.status).to eq(422)
+    end
+  end
+{{/if}}
+{{#if (ne rubyEmail "none")}}
+
+  describe "welcome email" do
+    it "is delivered" do
+{{#if (eq rubyEmail "resend")}}
+      expect(BetterFullstack::Mailer.deliver_welcome("ruby@example.com")).to eq("email_test")
+      request = RESEND_API.requests.pop
+      expect(request.fetch("request")).to eq("POST /emails HTTP/1.1")
+      expect(request.fetch("authorization")).to eq("Bearer re_test_key")
+      expect(request.fetch("body").values_at("to", "subject")).to eq([["ruby@example.com"], "Welcome"])
+{{else}}
+      deliveries = {{#if (eq rubyEmail "mail")}}Mail::TestMailer.deliveries{{else}}ActionMailer::Base.deliveries{{/if}}
+      deliveries.clear
+      BetterFullstack::Mailer.deliver_welcome("ruby@example.com")
+      expect(deliveries.map { |message| [message.to, message.subject] }).to eq([[["ruby@example.com"], "Welcome"]])
+{{/if}}
+    end
+
+    it "rejects invalid recipients" do
+      expect { BetterFullstack::Mailer.deliver_welcome("not-an-address") }.to raise_error(ArgumentError)
+    end
+  end
+{{/if}}
+{{#if (ne rubyOrm "none")}}
+
+  describe "items" do
+    it "persists and lists items" do
+      post "/api/items", JSON.generate(name: "  Ruby  "), "CONTENT_TYPE" => "application/json"
+      expect(last_response.status).to eq(201)
+      created = body
+      expect(created).to include("name" => "Ruby", "id" => an_instance_of(Integer))
+      get "/api/items"
+      expect(last_response.status).to eq(200)
+      expect(body.fetch("items")).to eq([created])
+    end
+
+    it "does not persist invalid items" do
+      post "/api/items", JSON.generate(name: " "), "CONTENT_TYPE" => "application/json"
+      expect(last_response.status).to eq(422)
+      get "/api/items"
+      expect(body.fetch("items")).to eq([])
+    end
+  end
+{{/if}}
+{{#if (eq rubyAuth "jwt")}}
+
+  describe "JWT authentication" do
+    it "requires a valid token for the current user" do
+      get "/api/me"
+      expect(last_response.status).to eq(401)
+      header "Authorization", "Bearer #{BetterFullstack::Auth.issue("user-1")}"
+      get "/api/me"
+      expect(last_response.status).to eq(200)
+      expect(body).to eq("user" => { "id" => "user-1" })
+    end
+
+    it "rejects forged, expired, foreign, unsigned, and malformed tokens" do
+      now = Time.now.to_i
+      claims = { sub: "user-1", iss: BetterFullstack::Auth::ISSUER, aud: BetterFullstack::Auth::AUDIENCE, iat: now, exp: now + 60 }
+      [
+        JWT.encode(claims, "wrong-secret", "HS256"),
+        JWT.encode(claims.merge(exp: now - 1), BetterFullstack::Auth.secret, "HS256"),
+        JWT.encode(claims.merge(aud: "another-api"), BetterFullstack::Auth.secret, "HS256"),
+        JWT.encode(claims, nil, "none"),
+        "not-a-token"
+      ].each do |token|
+        header "Authorization", "Bearer #{token}"
+        get "/api/me"
+        expect(last_response.status).to eq(401)
+      end
+    end
+  end
+{{/if}}
+{{#if (eq rubyAuth "rodauth")}}
+
+  describe "Rodauth accounts" do
+    def auth_json(path, value)
+      post path, JSON.generate(value), "CONTENT_TYPE" => "application/json", "HTTP_ACCEPT" => "application/json"
+    end
+
+    it "creates an account, signs out, and signs back in" do
+      credentials = { "login" => "ruby@example.com", "password" => "correct horse battery staple" }
+      get "/api/me"
+      expect(last_response.status).to eq(401)
+      auth_json "/create-account", credentials
+      expect(last_response.status).to eq(200)
+      get "/api/me"
+      expect(last_response.status).to eq(200)
+      expect(body.dig("user", "id")).not_to be_nil
+      auth_json "/logout", {}
+      expect(last_response.status).to eq(200)
+      get "/api/me"
+      expect(last_response.status).to eq(401)
+      auth_json "/login", credentials.merge("password" => "wrong password")
+      expect(last_response.status).to eq(401)
+      auth_json "/login", credentials
+      expect(last_response.status).to eq(200)
+      get "/api/me"
+      expect(last_response.status).to eq(200)
+    end
+  end
+{{/if}}
+{{#if (eq rubyAuth "omniauth")}}
+
+  describe "OmniAuth OpenID Connect" do
+    it "requires the session CSRF token to start sign-in" do
+      get "/api/me"
+      expect(last_response.status).to eq(401)
+      post "/auth/oidc"
+      expect(last_response.status).to eq(302)
+      expect(last_response.headers["location"]).to include("/auth/failure")
+    end
+
+    it "establishes and clears a session from the callback" do
+      OmniAuth.config.test_mode = true
+      OmniAuth.config.mock_auth[:oidc] = OmniAuth::AuthHash.new(provider: "oidc", uid: "user-1", info: { email: "ruby@example.com" })
+      get "/auth/csrf"
+      post "/auth/oidc", authenticity_token: body.fetch("csrf_token")
+      expect(last_response.status).to eq(302)
+      expect(last_response.headers["location"]).to include("/auth/oidc/callback")
+      get "/auth/oidc/callback"
+      expect(last_response.status).to eq(200)
+      get "/api/me"
+      expect(body).to eq("user" => { "id" => "user-1", "email" => "ruby@example.com" })
+      post "/auth/logout"
+      get "/api/me"
+      expect(last_response.status).to eq(401)
+    ensure
+      OmniAuth.config.test_mode = false
+    end
+  end
+{{/if}}
+
+  it "rejects malformed JSON" do
+    post "/api/greetings", "{", "CONTENT_TYPE" => "application/json"
+    expect(last_response.status).to eq(400)
+    expect(body.fetch("error")).to eq("invalid_json")
+  end
+
+  it "rejects an empty JSON body" do
+    post "/api/greetings", "", "CONTENT_TYPE" => "application/json"
+    expect(last_response.status).to eq(400)
+    expect(body.fetch("error")).to eq("invalid_json")
+  end
+
+  it "rejects non-JSON content types" do
+    post "/api/greetings", "name=Ruby"
+    expect(last_response.status).to eq(415)
+  end
+
+  it "limits the body size" do
+    post_json("name" => "a" * 16_384)
+    expect(last_response.status).to eq(413)
+  end
+
+  it "keeps CORS headers on oversized JSON only for trusted origins" do
+    BetterFullstack::HttpPolicy.allowed_origins.each do |origin|
+      header "Origin", origin
+      post_json("name" => "a" * 16_384)
+      expect(last_response.status).to eq(413)
+      expect(body.fetch("error")).to eq("body_too_large")
+      expect(last_response.headers["access-control-allow-origin"]).to eq(origin)
+      expect(last_response.headers["vary"]).to eq("Origin")
+    end
+    header "Origin", "https://untrusted.example"
+    post_json("name" => "a" * 16_384)
+    expect(last_response.status).to eq(413)
+    expect(last_response.headers["access-control-allow-origin"]).to be_nil
+  end
+
+  it "returns JSON for unknown routes" do
+    get "/missing"
+    expect(last_response.status).to eq(404)
+    expect(body.fetch("error")).to eq("not_found")
+  end
+
+  it "rejects an oversized form before reading its declared input" do
+    input = StringIO.new("name=" + "a" * 1_048_576)
+    env = Rack::MockRequest.env_for("/api/greetings", method: "POST")
+    env["HTTP_HOST"] = "localhost"
+    env["CONTENT_TYPE"] = "application/x-www-form-urlencoded"
+    env["CONTENT_LENGTH"] = input.size.to_s
+    env["rack.input"] = input
+    status, _, response_body = app.call(env)
+    expect(status).to eq(413)
+    expect(JSON.parse(response_body.to_a.join).fetch("error")).to eq("body_too_large")
+    expect(input.pos).to eq(0)
+    response_body.close if response_body.respond_to?(:close)
+  end
+
+  it "bounds an oversized form without a declared length" do
+    input = StringIO.new("name=" + "a" * 1_048_576)
+    env = Rack::MockRequest.env_for("/api/greetings", method: "POST")
+    env["HTTP_HOST"] = "localhost"
+    env["CONTENT_TYPE"] = "application/x-www-form-urlencoded"
+    env.delete("CONTENT_LENGTH")
+    env["rack.input"] = input
+    status, _, response_body = app.call(env)
+    expect(status).to eq(413)
+    expect(JSON.parse(response_body.to_a.join).fetch("error")).to eq("body_too_large")
+    expect(input.pos).to be <= 16_385
+    response_body.close if response_body.respond_to?(:close)
+  end
+
+  it "accepts multiple trusted frontend origins" do
+    previous = ENV["ALLOWED_ORIGIN"]
+    ENV["ALLOWED_ORIGIN"] = "http://localhost:5173,http://localhost:8080"
+    BetterFullstack::HttpPolicy.allowed_origins.each do |origin|
+      header "Origin", origin
+      get "/health"
+      expect(last_response.status).to eq(200)
+      expect(last_response.headers["access-control-allow-origin"]).to eq(origin)
+    end
+    header "Origin", "http://localhost:9999"
+    get "/health"
+    expect(last_response.status).to eq(403)
+  ensure
+    ENV["ALLOWED_ORIGIN"] = previous
+  end
+
+  it "pins the CORS origin" do
+    header "Origin", BetterFullstack::HttpPolicy.allowed_origins.first
+    options "/api/greetings"
+    expect(last_response.status).to eq(204)
+    expect(last_response.headers["access-control-allow-origin"]).to eq(BetterFullstack::HttpPolicy.allowed_origins.first)
+    header "Origin", "https://untrusted.example"
+    post_json("name" => "Ruby")
+    expect(last_response.status).to eq(403)
+  end
+
+  it "rejects unrecognized hosts" do
+    header "Host", "untrusted.example"
+    get "/health"
+    expect(last_response.status).to eq(403)
+  end
+end

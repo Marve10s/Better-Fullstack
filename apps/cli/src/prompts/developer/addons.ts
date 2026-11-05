@@ -13,6 +13,12 @@ import {
   type Frontend,
   FrontendSchema,
   getToolingCapability,
+  getToolingCapabilities,
+  getSelectedBrowserExtensions,
+  getBrowserExtensionSelectionIssue,
+  getBrowserExtensionRecipeIssue,
+  toolingOverlayStackParts,
+  isBrowserExtension,
   getCodeQualitySelectionIssue,
   getReplacedCodeQualityTools,
   getShadcnLintFrontendIssue,
@@ -35,6 +41,13 @@ function validateCapability(
   api?: API,
   context: Partial<ProjectConfig> = { ecosystem: "typescript" },
 ) {
+  if (isBrowserExtension(toolId)) {
+    const stackParts = context.stackParts?.length
+      ? [...context.stackParts, ...toolingOverlayStackParts([toolId])]
+      : undefined;
+    const reason = getBrowserExtensionRecipeIssue({ ...context, addons: [toolId], stackParts });
+    return reason ? { isCompatible: false, reason } : { isCompatible: true };
+  }
   return validateAddonCompatibility(
     toolId,
     frontends,
@@ -94,6 +107,7 @@ type CapabilityPromptContext = {
   api?: API;
   config: Partial<ProjectConfig>;
   additionsOnly: boolean;
+  ownerRole?: "root" | "frontend" | "backend";
 };
 
 export function getCompatibleSelections(
@@ -102,6 +116,14 @@ export function getCompatibleSelections(
   selected: readonly Addons[],
 ) {
   return getToolingSelectionOptions(category).filter((selection) => {
+    if (context.ownerRole && selection.toolIds.some((toolId) => {
+      const ownerRole = getToolingCapability(toolId)?.ownerRole ?? "root";
+      return ownerRole !== context.ownerRole;
+    })) return false;
+    if (selection.toolIds.some(isBrowserExtension) && getBrowserExtensionSelectionIssue(
+      [...getSelectedBrowserExtensions(context.config), ...selected, ...selection.toolIds],
+      context.config.workspaceShape,
+    )) return false;
     if (category === "codeQuality" && selection.id === "none") return false;
     if (
       selection.id === "shadcn-lint" &&
@@ -220,7 +242,16 @@ export async function promptCapabilities(
                 : [];
               return getCodeQualitySelectionIssue([...retained, ...requested]);
             }
-          : undefined,
+          : category.id === "appPlatforms"
+            ? (selectionIds) => {
+                const requested = options.filter((option) => selectionIds.includes(option.id)).flatMap((option) => option.toolIds);
+                return getBrowserExtensionSelectionIssue([
+                  ...getSelectedBrowserExtensions(context.config),
+                  ...(context.additionsOnly ? context.existing : []),
+                  ...requested,
+                ], context.config.workspaceShape) ?? undefined;
+              }
+            : undefined,
     });
     if (isCancel(response)) return exitCancelled("Operation cancelled");
 
@@ -281,7 +312,9 @@ export async function getCapabilityPartSpecsToAdd(config: Partial<ProjectConfig>
   const parts = (
     config.stackParts?.length ? config.stackParts : legacyProjectConfigToStackParts(config)
   ).filter((part) => part.source !== "provided");
-  const rootCategories = TOOLING_CATEGORIES.filter((category) => !category.ownerRole);
+  const rootCategories = TOOLING_CATEGORIES.filter((category) =>
+    getToolingCapabilities(category.id).some((capability) => !capability.ownerRole),
+  );
   const rootExisting = parts.flatMap((part) => {
     const capability = getToolingCapability(part.toolId);
     return capability && capability.role === part.role && !part.ownerPartId
@@ -314,6 +347,7 @@ export async function getCapabilityPartSpecsToAdd(config: Partial<ProjectConfig>
       api: config.api,
       config,
       additionsOnly: true,
+      ownerRole: "root",
     },
     rootCategories,
   );
@@ -338,7 +372,7 @@ export async function getCapabilityPartSpecsToAdd(config: Partial<ProjectConfig>
   ];
   for (const owner of ownerGroups) {
     const categories = TOOLING_CATEGORIES.filter(
-      (category) => category.ownerRole === owner.ownerRole,
+      (category) => getToolingCapabilities(category.id).some((capability) => capability.ownerRole === owner.ownerRole),
     );
     const existing = parts.flatMap((part) => {
       const capability = getToolingCapability(part.toolId);
@@ -356,6 +390,7 @@ export async function getCapabilityPartSpecsToAdd(config: Partial<ProjectConfig>
         api: config.api,
         config,
         additionsOnly: true,
+        ownerRole: owner.ownerRole,
       },
       categories,
       owner.part.toolId,

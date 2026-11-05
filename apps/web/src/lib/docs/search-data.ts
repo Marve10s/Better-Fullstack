@@ -19,5 +19,8 @@ export function loadSearchSections(): Promise<SearchSection[]> {
     ),
   );
   sectionsPromises.set(locale, promise);
+  promise.catch(() => {
+    if (sectionsPromises.get(locale) === promise) sectionsPromises.delete(locale);
+  });
   return promise;
 }

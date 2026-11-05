@@ -1,0 +1,12 @@
+{{#if (and (ne phpJobQueue "none") (ne phpJobQueue "laravel-queue"))}}
+<?php
+
+declare(strict_types=1);
+
+use App\Environment;
+use App\JobQueue;
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+Environment::load(dirname(__DIR__) . '/.env');
+JobQueue::fromEnvironment(dirname(__DIR__))->work(in_array('--stop-when-empty', $argv, true));
+{{/if}}

@@ -118,4 +118,4 @@ Choose tests that prove the changed boundary:
 - generated output tests for files and baseline behavior;
 - smoke presets when runtime evidence matters.
 
-Release-sensitive lifecycle changes require `bun run test:release`.
+Release-sensitive lifecycle changes require `bun run test` and `bun run test:release`.

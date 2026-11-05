@@ -1,3 +1,4 @@
+{{#if (eq elixirJobs "oban")}}
 defmodule {{elixirModuleName}}.Workers.SampleWorker do
   use Oban.Worker, queue: :default, max_attempts: 3
 
@@ -8,3 +9,18 @@ defmodule {{elixirModuleName}}.Workers.SampleWorker do
     :ok
   end
 end
+{{/if}}
+{{#if (eq elixirJobs "exq")}}
+defmodule {{elixirModuleName}}.Workers.SampleWorker do
+  require Logger
+
+  def enqueue(name) when is_binary(name) do
+    Exq.enqueue(Exq, "default", __MODULE__, [name])
+  end
+
+  def perform(name) do
+    Logger.info("Processed Exq job for #{name}")
+    {:ok, "Hello, #{name}"}
+  end
+end
+{{/if}}

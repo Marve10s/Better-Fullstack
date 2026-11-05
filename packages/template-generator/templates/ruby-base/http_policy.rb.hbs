@@ -1,0 +1,51 @@
+require "json"
+
+module BetterFullstack
+  class HttpPolicy
+    PERMITTED_HOSTS = ["localhost", "127.0.0.1", "::1"].freeze
+    DEFAULT_ORIGINS = "{{rubyWebOrigin}}"
+
+    def self.allowed_origins
+      ENV.fetch("ALLOWED_ORIGIN", DEFAULT_ORIGINS).split(",").map(&:strip).reject(&:empty?)
+    end
+
+    def initialize(app)
+      @app = app
+    end
+
+    def call(env)
+      return reject(403, "host_not_allowed") unless PERMITTED_HOSTS.include?(host(env))
+
+      origin = env["HTTP_ORIGIN"]
+      return reject(403, "origin_not_allowed") if origin && !self.class.allowed_origins.include?(origin)
+
+      status, headers, body = env["REQUEST_METHOD"] == "OPTIONS" ? preflight : @app.call(env)
+      if origin
+        headers["access-control-allow-origin"] = origin
+        headers["vary"] = "Origin"
+{{#if (or (eq rubyAuth "rodauth") (eq rubyAuth "omniauth"))}}
+        headers["access-control-allow-credentials"] = "true"
+{{/if}}
+      end
+      [status, headers, body]
+    end
+
+    private
+
+    def host(env)
+      value = env["HTTP_HOST"] || env["SERVER_NAME"].to_s
+      return value[1...value.index("]")] if value.start_with?("[")
+
+      value.split(":").first
+    end
+
+    def preflight
+      [204, { "access-control-allow-methods" => "GET, POST, OPTIONS", "access-control-allow-headers" => "Content-Type, Authorization" }, []]
+    end
+
+    def reject(status, error)
+      body = JSON.generate(error: error)
+      [status, { "content-type" => "application/json", "content-length" => body.bytesize.to_s }, [body]]
+    end
+  end
+end

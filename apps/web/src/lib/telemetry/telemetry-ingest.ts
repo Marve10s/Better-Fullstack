@@ -140,6 +140,12 @@ export async function handleTelemetryIngest(
       (!page || envelope.eventType !== "web_action"))
   )
     return new Response(null, { status: 400, headers });
+  if (
+    envelope.eventType === "command_used" &&
+    envelope.action === "mcp" &&
+    envelope.status === "started"
+  )
+    return new Response(null, { status: 204, headers });
   try {
     await capturePosthog([posthogEvent(body, { eventId, timestamp: Date.now(), page })], {
       host,

@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use App\GreetingEndpoint;
+{{#if (eq phpLogging "symfony-monolog")}}
+use Psr\Log\LoggerInterface;
+{{/if}}
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Attribute\Route;
+
+final class ApiController
+{
+{{#if (eq phpLogging "symfony-monolog")}}
+    public function __construct(private readonly LoggerInterface $logger)
+    {
+    }
+
+{{/if}}
+    #[Route('/health', methods: ['GET'])]
+    public function health(): JsonResponse
+    {
+        return new JsonResponse(['status' => 'ok', 'framework' => 'symfony']);
+    }
+
+    #[Route('/api/greetings', methods: ['POST'])]
+    public function greet(Request $request): JsonResponse
+    {
+        [$status, $body] = GreetingEndpoint::respond((string) $request->headers->get('Content-Type', ''), $request->getContent());
+{{#if (eq phpLogging "symfony-monolog")}}
+        if ($status === 200) {
+            $this->logger->info('greeting.created', ['repetitions' => $body['repetitions']]);
+        }
+{{/if}}
+        return new JsonResponse($body, $status);
+    }
+}

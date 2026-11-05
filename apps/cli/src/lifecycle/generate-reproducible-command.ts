@@ -1,3 +1,5 @@
+import { getRubyRecipeIssue } from "@better-fullstack/types";
+
 import type { ProjectConfig, StackPartRole } from "@/types";
 
 import {
@@ -7,6 +9,8 @@ import {
   isToolingOverlayOnly,
   legacyProjectConfigToStackParts,
   projectStackPartSettingsToProjectConfig,
+  serializeGoCliFlags,
+  toolingRequiresJavaScriptWorkspace,
 } from "@/types";
 
 function getBaseCommand(packageManager: ProjectConfig["packageManager"]) {
@@ -65,8 +69,13 @@ function appendAddonsNoneFlag(flags: string[], config: ProjectConfig) {
 
 function appendCapabilityPartFlags(flags: string[], config: ProjectConfig) {
   const parts = legacyProjectConfigToStackParts(config, "selected");
+  const hasJavaScriptWorkspace =
+    config.ecosystem === "typescript" ||
+    config.ecosystem === "react-native" ||
+    hasJavaScriptWorkspaceRoot(config.stackParts ?? []);
   for (const part of parts) {
     if (part.source === "provided" || part.toolId === "none") continue;
+    if (!hasJavaScriptWorkspace && toolingRequiresJavaScriptWorkspace(part.toolId)) continue;
     const binding = getAddonStackPartBinding(part.toolId);
     if (!binding || binding.role !== part.role || binding.ecosystem !== part.ecosystem) continue;
     flags.push(`--part ${formatStackPartSpec(part, parts)}`);
@@ -933,6 +942,51 @@ function appendGraphExtraFlags(flags: string[], config: ProjectConfig) {
     appendChangedGraphStringFlag(
       flags,
       config,
+      "logging",
+      "elixir",
+      "elixir-logging",
+      config.elixirLogging,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "runtimeConfig",
+      "elixir",
+      "elixir-config",
+      config.elixirConfig,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "messageQueue",
+      "elixir",
+      "elixir-message-queue",
+      config.elixirMessageQueue,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "templating",
+      "elixir",
+      "elixir-templating",
+      config.elixirTemplating,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
+      "cli",
+      "elixir",
+      "elixir-cli",
+      config.elixirCli,
+      "none",
+    );
+    appendChangedGraphStringFlag(
+      flags,
+      config,
       "deploy",
       "elixir",
       "elixir-deploy",
@@ -1122,24 +1176,7 @@ function getGoFlags(config: ProjectConfig) {
   const flags = ["--ecosystem go"];
 
   flags.push(`--database ${config.database}`);
-  flags.push(`--go-web-framework ${config.goWebFramework}`);
-  flags.push(`--go-orm ${config.goOrm}`);
-  flags.push(`--go-api ${config.goApi}`);
-  flags.push(`--go-cli ${config.goCli}`);
-  flags.push(`--go-logging ${config.goLogging}`);
-  flags.push(`--go-auth ${config.goAuth}`);
-  flags.push(formatArrayFlag("go-testing", config.goTesting));
-  flags.push(`--go-realtime ${config.goRealtime}`);
-  flags.push(`--go-message-queue ${config.goMessageQueue}`);
-  flags.push(`--go-caching ${config.goCaching}`);
-  flags.push(`--go-config ${config.goConfig}`);
-  flags.push(`--go-observability ${config.goObservability}`);
-  flags.push(`--go-validation ${config.goValidation ?? "none"}`);
-  flags.push(`--go-quality ${config.goQuality ?? "none"}`);
-  flags.push(`--go-migrations ${config.goMigrations ?? "none"}`);
-  flags.push(`--go-templating ${config.goTemplating ?? "none"}`);
-  flags.push(`--go-proto-tooling ${config.goProtoTooling ?? "none"}`);
-  flags.push(`--go-di ${config.goDI ?? "none"}`);
+  flags.push(...serializeGoCliFlags(config));
   flags.push(`--auth ${config.auth}`);
   appendSharedNonTypeScriptFlags(flags, config);
 
@@ -1219,6 +1256,11 @@ function getElixirFlags(config: ProjectConfig) {
   flags.push(`--elixir-application-framework ${config.elixirApplicationFramework}`);
   flags.push(`--elixir-documentation ${config.elixirDocumentation}`);
   flags.push(`--elixir-clustering ${config.elixirClustering}`);
+  flags.push(`--elixir-logging ${config.elixirLogging}`);
+  flags.push(`--elixir-config ${config.elixirConfig}`);
+  flags.push(`--elixir-message-queue ${config.elixirMessageQueue}`);
+  flags.push(`--elixir-templating ${config.elixirTemplating}`);
+  flags.push(`--elixir-cli ${config.elixirCli}`);
   flags.push(`--elixir-deploy ${config.elixirDeploy}`);
   flags.push(formatArrayFlag("elixir-libraries", config.elixirLibraries));
 
@@ -1256,11 +1298,54 @@ export function generateReproducibleCommand(config: ProjectConfig) {
     case "go":
       flags = getGoFlags(config);
       break;
+    case "crystal":
+      flags = ["--ecosystem crystal", `--crystal-web-framework ${config.crystalWebFramework}`, `--crystal-orm ${config.crystalOrm}`, `--crystal-auth ${config.crystalAuth}`, `--crystal-testing ${config.crystalTesting}`, `--crystal-validation ${config.crystalValidation}`, `--crystal-cache ${config.crystalCache}`, `--crystal-jobs ${config.crystalJobs}`, "--addons none", "--examples none"];
+      appendCommonFlags(flags, config);
+      break;
     case "java":
       flags = getJavaFlags(config);
       break;
     case "dotnet":
       flags = getDotnetFlags(config);
+      break;
+    case "ruby": {
+      const issue = getRubyRecipeIssue(config);
+      if (issue) throw new Error(issue);
+      flags = [
+        "--ecosystem ruby",
+        `--ruby-web-framework ${config.rubyWebFramework}`,
+        `--ruby-orm ${config.rubyOrm ?? "none"}`,
+        `--ruby-auth ${config.rubyAuth ?? "none"}`,
+        `--ruby-testing ${config.rubyTesting ?? "minitest"}`,
+        `--ruby-validation ${config.rubyValidation ?? "none"}`,
+        `--ruby-cache ${config.rubyCache ?? "none"}`,
+        `--ruby-job-queue ${config.rubyJobQueue ?? "none"}`,
+        `--ruby-email ${config.rubyEmail ?? "none"}`,
+        `--ruby-logging ${config.rubyLogging ?? "logger"}`,
+        `--ruby-http-client ${config.rubyHttpClient ?? "none"}`,
+        "--database none",
+        "--addons none",
+        "--examples none",
+      ];
+      appendCommonFlags(flags, config);
+      break;
+    }
+    case "php":
+      flags = [
+        "--ecosystem php",
+        `--php-web-framework ${config.phpWebFramework}`,
+        `--php-orm ${config.phpOrm ?? "none"}`,
+        `--php-auth ${config.phpAuth ?? "none"}`,
+        `--php-testing ${config.phpTesting ?? "phpunit"}`,
+        `--php-validation ${config.phpValidation ?? "none"}`,
+        `--php-cache ${config.phpCache ?? "none"}`,
+        `--php-job-queue ${config.phpJobQueue ?? "none"}`,
+        `--php-email ${config.phpEmail ?? "none"}`,
+        `--php-logging ${config.phpLogging ?? "none"}`,
+        `--php-http-client ${config.phpHttpClient ?? "none"}`,
+        "--database none",
+      ];
+      appendCommonFlags(flags, config);
       break;
     case "elixir":
       flags = getElixirFlags(config);

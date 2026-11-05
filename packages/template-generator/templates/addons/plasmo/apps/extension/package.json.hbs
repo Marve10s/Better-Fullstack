@@ -1,0 +1,22 @@
+{
+  "name": "extension",
+  "displayName": "{{projectName}} page title",
+  "description": "{{projectName}} example.com page title extension",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "plasmo dev --target chrome-mv3",
+    "build": "plasmo build --target chrome-mv3",
+    "check-types": "tsc --noEmit"
+  },
+  "manifest": {
+    "name": "{{projectName}} page title",
+    "permissions": [],
+    "host_permissions": [],
+    "content_security_policy": {
+      "extension_pages": "script-src 'self'; object-src 'self'"
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

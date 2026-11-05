@@ -1,0 +1,8 @@
+defmodule Mix.Tasks.{{elixirModuleName}}.Greet do
+  use Mix.Task
+
+  @shortdoc "Print a greeting from {{elixirModuleName}}.CLI"
+
+  @impl Mix.Task
+  def run(argv), do: {{elixirModuleName}}.CLI.main(argv)
+end

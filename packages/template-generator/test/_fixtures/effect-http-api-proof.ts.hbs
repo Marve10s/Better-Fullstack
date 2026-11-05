@@ -1,0 +1,119 @@
+import assert from "node:assert/strict";
+import { HttpServer } from "@effect/platform";
+{{#if (eq runtime "bun")}}
+import { BunHttpServer } from "@effect/platform-bun";
+{{else}}
+import { NodeHttpServer } from "@effect/platform-node";
+import { createServer } from "node:http";
+{{/if}}
+import { Effect, Layer, ManagedRuntime } from "effect";
+
+const corsOrigin = "http://localhost:3001";
+process.env.CORS_ORIGIN = corsOrigin;
+process.env.NODE_ENV = "test";
+
+const { HealthResponse, HealthService, HealthUnavailable } = await import("./src/health");
+const { createApp } = await import("./src/app");
+const { makeServer } = await import("./src/server");
+
+assert.equal(process.argv[2], "{{runtime}}");
+{{#if (eq runtime "bun")}}
+assert.ok(process.versions.bun, "Run the Bun proof under Bun");
+{{else}}
+assert.equal(process.versions.bun, undefined, "Run the Node proof under Node.js");
+{{/if}}
+
+const live = createApp();
+try {
+  const response = await live.app.request("/health");
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { status: "ok" });
+} finally {
+  await live.dispose();
+}
+
+for (const unavailable of [false, true]) {
+  let acquired = 0;
+  let released = 0;
+  const check = unavailable
+    ? Effect.fail(new HealthUnavailable({ message: "The health dependency is unavailable" }))
+    : Effect.succeed(HealthResponse.make({ status: "ok" }));
+  const healthLayer = Layer.scoped(HealthService, Effect.acquireRelease(
+    Effect.sync(() => {
+      acquired += 1;
+      return { check };
+    }),
+    () => Effect.sync(() => { released += 1; }),
+  ));
+  const runtime = ManagedRuntime.make(makeServer(healthLayer).pipe(
+{{#if (eq runtime "bun")}}
+    Layer.provideMerge(BunHttpServer.layer({ port: 0, hostname: "127.0.0.1" })),
+{{else}}
+    Layer.provideMerge(NodeHttpServer.layer(createServer, { port: 0, host: "127.0.0.1" })),
+{{/if}}
+  ));
+  let baseUrl: string | undefined;
+  try {
+    const address = await runtime.runPromise(HttpServer.addressWith((address) => Effect.succeed(address)));
+    assert.equal(address._tag, "TcpAddress");
+    if (address._tag !== "TcpAddress") throw new Error("Expected a TCP proof server");
+    baseUrl = `http://127.0.0.1:${address.port}`;
+    for (const path of ["/health", "/"]) {
+      const response: Response = await fetch(`${baseUrl}${path}`, {
+        headers: { origin: corsOrigin },
+        signal: AbortSignal.timeout(5000),
+      });
+      assert.equal(response.status, unavailable ? 503 : 200);
+      assert.match(response.headers.get("content-type") ?? "", /application\/json/);
+      assert.equal(response.headers.get("access-control-allow-origin"), corsOrigin);
+      assert.deepEqual(await response.json(), unavailable
+        ? { _tag: "HealthUnavailable", message: "The health dependency is unavailable" }
+        : { status: "ok" });
+    }
+    const extension = await fetch(`${baseUrl}/proof/echo`, {
+      method: "POST",
+      headers: { origin: corsOrigin, "content-type": "application/json" },
+      body: JSON.stringify({ message: "hello Effect" }),
+      signal: AbortSignal.timeout(5000),
+    });
+    assert.equal(extension.status, 200);
+    assert.equal(extension.headers.get("access-control-allow-origin"), corsOrigin);
+    assert.deepEqual(await extension.json(), { echoed: "HELLO EFFECT" });
+    const invalidPayload = await fetch(`${baseUrl}/proof/echo`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ message: 42 }),
+      signal: AbortSignal.timeout(5000),
+    });
+    assert.equal(invalidPayload.status, 400);
+    await invalidPayload.arrayBuffer();
+    const extensionPreflight = await fetch(`${baseUrl}/proof/echo`, {
+      method: "OPTIONS",
+      headers: { origin: corsOrigin, "access-control-request-method": "POST" },
+      signal: AbortSignal.timeout(5000),
+    });
+    assert.equal(extensionPreflight.status, 204);
+    assert.equal(extensionPreflight.headers.get("access-control-allow-origin"), corsOrigin);
+    await extensionPreflight.arrayBuffer();
+    const missing = await fetch(`${baseUrl}/missing`, { signal: AbortSignal.timeout(5000) });
+    assert.equal(missing.status, 404);
+    await missing.arrayBuffer();
+    const preflight = await fetch(`${baseUrl}/health`, {
+      method: "OPTIONS",
+      headers: { origin: corsOrigin, "access-control-request-method": "GET" },
+      signal: AbortSignal.timeout(5000),
+    });
+    assert.equal(preflight.status, 204);
+    await preflight.arrayBuffer();
+    assert.equal(acquired, 1);
+    assert.equal(released, 0);
+  } finally {
+    await runtime.dispose();
+  }
+  await runtime.dispose();
+  assert.equal(released, 1, "The HttpApi health layer must finalize exactly once");
+  assert.ok(baseUrl);
+  await assert.rejects(fetch(`${baseUrl}/health`, { signal: AbortSignal.timeout(1000) }));
+}
+
+console.log("Effect HttpApi {{runtime}} proof passed: health, typed 503, root alias, schema-only POST extension, payload validation, CORS, 404, scoped service disposal, and server shutdown");

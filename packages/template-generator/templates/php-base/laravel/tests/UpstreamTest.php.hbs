@@ -1,0 +1,41 @@
+{{#if (ne phpHttpClient "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use Illuminate\Foundation\Testing\TestCase;
+
+final class UpstreamTest extends TestCase
+{
+    protected function tearDown(): void
+    {
+        putenv('UPSTREAM_URL');
+        parent::tearDown();
+    }
+
+    private function fetch(string $url): array
+    {
+        putenv('UPSTREAM_URL=' . $url);
+        $response = $this->getJson('/api/upstream');
+        return [$response->getStatusCode(), $response->json()];
+    }
+
+    public function testReturnsTheUpstreamJson(): void
+    {
+        $fixture = UpstreamFixture::start();
+        try {
+            self::assertSame([200, ['upstreamStatus' => 200, 'data' => ['ok' => true, 'path' => '/fixture']]], $this->fetch($fixture->url));
+        } finally {
+            $fixture->stop();
+        }
+    }
+
+    public function testReportsMissingAndUnreachableUpstreams(): void
+    {
+        self::assertSame([503, ['error' => 'upstream_not_configured']], $this->fetch(''));
+        self::assertSame([502, ['error' => 'upstream_unavailable']], $this->fetch('http://127.0.0.1:1/'));
+    }
+}
+{{/if}}

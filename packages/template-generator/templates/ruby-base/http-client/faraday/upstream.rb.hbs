@@ -1,0 +1,19 @@
+require "faraday"
+require "json"
+
+module BetterFullstack
+  module Upstream
+    def self.base_url
+      ENV.fetch("UPSTREAM_URL", "http://127.0.0.1:{{rubyPort}}")
+    end
+
+    def self.health
+      connection = Faraday.new(url: base_url, request: { open_timeout: 2, timeout: 5 }) do |builder|
+        builder.response :raise_error
+      end
+      [200, { "upstream" => JSON.parse(connection.get("/health").body) }]
+    rescue Faraday::Error, JSON::ParserError
+      [502, { "error" => "upstream_unavailable" }]
+    end
+  end
+end

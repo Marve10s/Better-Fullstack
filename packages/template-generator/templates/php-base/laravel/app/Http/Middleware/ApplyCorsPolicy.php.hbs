@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Middleware;
+
+use App\CorsPolicy;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+final class ApplyCorsPolicy
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        $response = $request->isMethod('OPTIONS') ? response()->noContent() : $next($request);
+        $policy = new CorsPolicy((string) config('cors.allowed_origins', ''));
+        foreach ($policy->headersFor((string) $request->headers->get('Origin', '')) as $name => $value) {
+            $response->headers->set($name, $value);
+        }
+        return $response;
+    }
+}

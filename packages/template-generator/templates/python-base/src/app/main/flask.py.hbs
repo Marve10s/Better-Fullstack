@@ -1,0 +1,123 @@
+"""Main application entry point."""
+# ruff: noqa: I001
+
+import os
+
+from dotenv import load_dotenv
+{{#if (eq pythonObservability "signoz")}}
+from app import otel as _otel  # noqa: F401 - importing activates SigNoz tracing
+{{/if}}
+{{#if (ne pythonLogging "none")}}
+from app.logging_config import DevServerRequestHandler, RequestLoggingMiddleware, configure_logging
+{{/if}}
+
+{{#if (eq observability "sentry")}}
+from app.observability import init_sentry
+
+{{/if}}
+from flask import Flask, jsonify{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, request{{/if}}
+from flask_cors import CORS
+{{#if (eq pythonGraphql "ariadne")}}
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+{{/if}}
+{{#if (eq pythonValidation "pydantic")}}
+from app.settings import get_settings
+{{/if}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
+from app.auth import create_access_token, verify_token
+{{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+from strawberry.flask.views import GraphQLView
+
+from app.graphql_schema import schema as graphql_schema
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+from ariadne.wsgi import GraphQL
+
+from app.ariadne_schema import schema as ariadne_schema
+{{/if}}
+{{#if (eq pythonObservability "prometheus-client")}}
+from app.metrics import render_metrics
+{{/if}}
+
+load_dotenv()
+{{#if (ne pythonLogging "none")}}
+configure_logging()
+{{/if}}
+
+{{#if (eq pythonValidation "pydantic")}}
+settings = get_settings()
+
+app = Flask(__name__)
+app.config["APP_NAME"] = settings.app_name
+{{else}}
+app = Flask(__name__)
+{{/if}}
+CORS(app, origins=os.getenv("CORS_ORIGIN") or "*")
+{{#if (eq pythonGraphql "strawberry")}}
+app.add_url_rule("/graphql", view_func=GraphQLView.as_view("graphql_view", schema=graphql_schema))
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {"/graphql": GraphQL(ariadne_schema, debug=True)})
+{{/if}}
+{{#if (ne pythonLogging "none")}}
+app.wsgi_app = RequestLoggingMiddleware(app.wsgi_app)  # type: ignore[method-assign]
+{{/if}}
+
+
+@app.route("/")
+def root():
+    """Root endpoint."""
+    return jsonify({"message": "Welcome to {{projectName}}!"})
+
+
+@app.route("/health")
+def health():
+    """Health check endpoint."""
+    return jsonify({"status": "healthy"})
+
+{{#if (eq pythonObservability "prometheus-client")}}
+
+@app.route("/metrics")
+def metrics():
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return payload, 200, {"Content-Type": content_type}
+
+{{/if}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
+
+@app.route("/auth/token", methods=["POST"])
+def auth_token():
+    """Create an access token."""
+    data = request.get_json(silent=True) or {}
+    username = data.get("username", "")
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
+    token = create_access_token(data={"sub": username})
+    return jsonify({"access_token": token, "token_type": "bearer"})
+
+
+@app.route("/auth/me")
+def auth_me():
+    """Get current authenticated user from Bearer token."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return jsonify({"error": "Missing or invalid authorization header"}), 401
+    token = auth_header.removeprefix("Bearer ")
+    payload = verify_token(token)
+    if payload is None:
+        return jsonify({"error": "Invalid or expired token"}), 401
+    return jsonify({"username": payload.get("sub"), "token_data": payload})
+{{/if}}
+
+
+if __name__ == "__main__":
+    app.run(
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "8000")),
+        debug=os.getenv("DEBUG", "true").lower() == "true",
+{{#if (ne pythonLogging "none")}}
+        request_handler=DevServerRequestHandler,
+{{/if}}
+    )

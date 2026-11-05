@@ -1,0 +1,14 @@
+{{#if (eq phpJobQueue "symfony-messenger")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+final readonly class ProcessJob
+{
+    public function __construct(public string $id)
+    {
+    }
+}
+{{/if}}

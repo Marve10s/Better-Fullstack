@@ -1,0 +1,52 @@
+{{#if (ne phpCache "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Application;
+use App\CachedClock;
+use PHPUnit\Framework\TestCase;
+use Slim\Psr7\Factory\ServerRequestFactory;
+
+final class CacheTest extends TestCase
+{
+{{#if (ne phpCache "predis")}}
+    private string $root;
+
+{{/if}}
+    protected function setUp(): void
+    {
+        putenv('CACHE_NAMESPACE=test' . bin2hex(random_bytes(6)));
+{{#if (eq phpCache "predis")}}
+        try {
+            (new \Predis\Client(getenv('REDIS_URL') ?: 'tcp://127.0.0.1:6379'))->ping();
+        } catch (\Predis\PredisException) {
+            self::markTestSkipped('Set REDIS_URL to a running Redis server to run the cache test.');
+        }
+{{else}}
+        $this->root = sys_get_temp_dir() . '/cache-' . bin2hex(random_bytes(6));
+{{/if}}
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('CACHE_NAMESPACE');
+    }
+
+    public function testServesTheCachedValueOnTheNextRequest(): void
+    {
+{{#if (eq phpCache "predis")}}
+        $app = Application::create(clock: CachedClock::fromEnvironment(''));
+{{else}}
+        $app = Application::create(clock: CachedClock::fromEnvironment($this->root));
+{{/if}}
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/cached-time');
+        $first = json_decode((string) $app->handle($request)->getBody(), true, 32, JSON_THROW_ON_ERROR);
+        self::assertFalse($first['cached']);
+        $second = json_decode((string) $app->handle($request)->getBody(), true, 32, JSON_THROW_ON_ERROR);
+        self::assertSame(['value' => $first['value'], 'cached' => true], $second);
+    }
+}
+{{/if}}

@@ -1,0 +1,47 @@
+{{#if (or (eq rubyEmail "mail") (eq rubyEmail "action-mailer"))}}
+require "socket"
+
+module BetterFullstack
+  class SmtpCapture
+    attr_reader :port, :messages
+
+    def initialize
+      @server = TCPServer.new("127.0.0.1", 0)
+      @port = @server.addr[1]
+      @messages = Queue.new
+      @thread = Thread.new { loop { serve(@server.accept) } }
+    end
+
+    def close
+      @thread.kill
+      @server.close
+    end
+
+    private
+
+    def serve(client)
+      client.write("220 localhost ESMTP\r\n")
+      message = nil
+      while (line = client.gets)
+        if message
+          next message << line unless line == ".\r\n"
+
+          @messages << message
+          message = nil
+          client.write("250 OK\r\n")
+        elsif line.start_with?("DATA")
+          message = +""
+          client.write("354 End data with <CR><LF>.<CR><LF>\r\n")
+        elsif line.start_with?("QUIT")
+          client.write("221 Bye\r\n")
+          break
+        else
+          client.write("250 OK\r\n")
+        end
+      end
+    ensure
+      client.close
+    end
+  end
+end
+{{/if}}

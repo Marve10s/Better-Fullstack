@@ -2,6 +2,7 @@ import {
   analyzeStackCompatibility,
   createCliDefaultProjectConfigBase,
   parseStackPartSpecs,
+  stackGraphToLegacyProjectConfigForEcosystem,
   type ProjectConfig,
 } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
@@ -11,6 +12,7 @@ import {
   getMcpGraphPreview,
   validateMcpProjectConfigCompatibility,
 } from "@/mcp";
+import { buildProjectConfig } from "@/operations/stack-helpers";
 
 function makeProjectConfig(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
   return {
@@ -269,5 +271,22 @@ describe("MCP graph preview", () => {
       ]),
     );
     expect(preview.stackPartSpecs).not.toContain("frontend.ui:typescript:none");
+  });
+});
+
+describe("MCP graph input with flat capability selections", () => {
+  it.each([
+    ["php", "slim", { phpAuth: "firebase-jwt", phpCache: "predis" }],
+    ["ruby", "sinatra", { rubyAuth: "jwt", rubyCache: "memory" }],
+    ["elixir", "phoenix", { elixirLogging: "logger-json", elixirConfig: "dotenvy" }],
+    ["crystal", "kemal", { crystalOrm: "crystal-db", crystalAuth: "jwt" }],
+  ] as const)("binds %s selections to the graph service", (ecosystem, framework, selections) => {
+    const config = buildProjectConfig({
+      part: ["frontend:typescript:react-vite", `backend:${ecosystem}:${framework}`],
+      ...selections,
+    });
+    expect(stackGraphToLegacyProjectConfigForEcosystem(config, ecosystem)).toMatchObject(
+      selections,
+    );
   });
 });

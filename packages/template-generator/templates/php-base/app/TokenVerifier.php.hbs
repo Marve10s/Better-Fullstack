@@ -1,0 +1,115 @@
+{{#if (eq phpAuth "lcobucci-jwt")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use DateTimeImmutable;
+use Lcobucci\Clock\SystemClock;
+use Lcobucci\JWT\Encoding\ChainedFormatter;
+use Lcobucci\JWT\Encoding\JoseEncoder;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Token\Builder;
+use Lcobucci\JWT\Token\Parser;
+use Lcobucci\JWT\UnencryptedToken;
+use Lcobucci\JWT\Validation\Constraint\IssuedBy;
+use Lcobucci\JWT\Validation\Constraint\PermittedFor;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
+use Lcobucci\JWT\Validation\Constraint\StrictValidAt;
+use Lcobucci\JWT\Validation\Validator;
+use Throwable;
+
+final readonly class TokenVerifier
+{
+    public function __construct(private string $secret, private string $issuer, private string $audience)
+    {
+    }
+
+    public static function fromEnvironment(): self
+    {
+        return new self((string) getenv('JWT_SECRET'), getenv('JWT_ISSUER') ?: 'better-fullstack', getenv('JWT_AUDIENCE') ?: 'api');
+    }
+
+    public function subject(string $authorization): ?string
+    {
+        if (strlen($this->secret) < 32 || !preg_match('/^Bearer\s+(\S+)$/', $authorization, $match)) {
+            return null;
+        }
+        try {
+            $token = (new Parser(new JoseEncoder()))->parse($match[1]);
+            $valid = $token instanceof UnencryptedToken && (new Validator())->validate(
+                $token,
+                new SignedWith(new Sha256(), InMemory::plainText($this->secret)),
+                new IssuedBy($this->issuer),
+                new PermittedFor($this->audience),
+                new StrictValidAt(SystemClock::fromUTC()),
+            );
+        } catch (Throwable) {
+            return null;
+        }
+        $subject = $valid ? $token->claims()->get('sub') : null;
+        return is_string($subject) && $subject !== '' ? $subject : null;
+    }
+
+    public function issue(string $subject, int $lifetime = 900): string
+    {
+        $now = new DateTimeImmutable();
+        return (new Builder(new JoseEncoder(), ChainedFormatter::default()))
+            ->issuedBy($this->issuer)
+            ->permittedFor($this->audience)
+            ->relatedTo($subject)
+            ->issuedAt($now)
+            ->canOnlyBeUsedAfter($now)
+            ->expiresAt($now->modify("+{$lifetime} seconds"))
+            ->getToken(new Sha256(), InMemory::plainText($this->secret))
+            ->toString();
+    }
+}
+{{else if (ne phpAuth "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use Throwable;
+
+final readonly class TokenVerifier
+{
+    public function __construct(private string $secret, private string $issuer, private string $audience)
+    {
+    }
+
+    public static function fromEnvironment(): self
+    {
+        return new self((string) getenv('JWT_SECRET'), getenv('JWT_ISSUER') ?: 'better-fullstack', getenv('JWT_AUDIENCE') ?: 'api');
+    }
+
+    public function subject(string $authorization): ?string
+    {
+        if (strlen($this->secret) < 32 || !preg_match('/^Bearer\s+(\S+)$/', $authorization, $match)) {
+            return null;
+        }
+        try {
+            $claims = JWT::decode($match[1], new Key($this->secret, 'HS256'));
+        } catch (Throwable) {
+            return null;
+        }
+        $audience = (array) ($claims->aud ?? []);
+        if (($claims->iss ?? null) !== $this->issuer || !in_array($this->audience, $audience, true) || !isset($claims->exp)) {
+            return null;
+        }
+        return is_string($claims->sub ?? null) && $claims->sub !== '' ? $claims->sub : null;
+    }
+
+    public function issue(string $subject, int $lifetime = 900): string
+    {
+        $now = time();
+        return JWT::encode(['iss' => $this->issuer, 'aud' => $this->audience, 'sub' => $subject, 'iat' => $now, 'nbf' => $now, 'exp' => $now + $lifetime], $this->secret, 'HS256');
+    }
+}
+{{/if}}

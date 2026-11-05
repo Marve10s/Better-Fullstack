@@ -1,0 +1,434 @@
+{{#if (or (eq rubyTesting "minitest") (eq rubyTesting "test-unit"))}}
+ENV["RACK_ENV"] = "test"
+{{#if (or (ne rubyOrm "none") (eq rubyAuth "rodauth"))}}
+
+require "tmpdir"
+ENV["DATABASE_PATH"] = File.join(Dir.mktmpdir, "test.sqlite3")
+{{/if}}
+{{#if (eq rubyJobQueue "resque")}}
+
+require "securerandom"
+ENV["JOBS_QUEUE"] = "test-#{SecureRandom.hex(4)}"
+{{/if}}
+{{#if (ne rubyOrm "none")}}
+
+require_relative "../db"
+BetterFullstack::Database.migrate!
+{{/if}}
+{{#if (eq rubyAuth "rodauth")}}
+
+require_relative "../auth"
+BetterFullstack::Auth.migrate!
+{{/if}}
+{{#if (eq rubyEmail "resend")}}
+
+require_relative "../support/http_capture"
+RESEND_API = BetterFullstack::HttpCapture.new({ id: "email_test" })
+ENV["RESEND_BASE_URL"] = RESEND_API.url
+ENV["RESEND_API_KEY"] = "re_test_key"
+{{/if}}
+{{#if (ne rubyLogging "none")}}
+
+require "tmpdir"
+ENV["LOG_PATH"] = File.join(Dir.mktmpdir, "requests.log")
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+
+require_relative "../support/http_capture"
+UPSTREAM = BetterFullstack::HttpCapture.new({ status: "ok" })
+ENV["UPSTREAM_URL"] = UPSTREAM.url.chomp("/")
+{{/if}}
+
+{{#if (eq rubyTesting "test-unit")}}
+require "test/unit"
+{{else}}
+require "minitest/autorun"
+{{/if}}
+require "rack/test"
+require_relative "../app"
+{{#if (ne rubyEmail "none")}}
+require_relative "../mailer"
+{{/if}}
+{{#if (eq rubyJobQueue "sidekiq")}}
+require "sidekiq/testing"
+{{/if}}
+
+class AppTest < {{#if (eq rubyTesting "test-unit")}}Test::Unit::TestCase{{else}}Minitest::Test{{/if}}
+  include Rack::Test::Methods
+
+  def app
+    BetterFullstack::App
+  end
+
+  def setup
+    header "Host", "localhost"
+{{#if (ne rubyOrm "none")}}
+    BetterFullstack::Items.delete_all
+{{/if}}
+{{#if (eq rubyAuth "rodauth")}}
+    BetterFullstack::Auth::DB[:accounts].delete
+{{/if}}
+  end
+
+  def post_json(value)
+    post "/api/greetings", JSON.generate(value), "CONTENT_TYPE" => "application/json"
+  end
+
+  def test_health
+    get "/health"
+    assert_equal 200, last_response.status
+    assert_equal({ "status" => "ok", "service" => "{{rubyWebFramework}}" }, JSON.parse(last_response.body))
+  end
+
+  def test_greeting_trims_the_validated_name
+    post_json("name" => "  Ruby  ")
+    assert_equal 200, last_response.status
+    assert_equal({ "greeting" => "Hello, Ruby!" }, JSON.parse(last_response.body))
+  end
+
+{{#if (ne rubyLogging "none")}}
+  def test_requests_are_logged
+    get "/health"
+{{#if (eq rubyLogging "semantic-logger")}}
+    SemanticLogger.flush
+{{/if}}
+    lines = File.readlines(ENV.fetch("LOG_PATH"))
+{{#if (or (eq rubyLogging "logger") (eq rubyLogging "lograge"))}}
+    assert lines.any? { |line| line.match?(/method=GET path=\/health .*status=200/) }
+{{else}}
+    entries = lines.filter_map { |line| JSON.parse(line) if line.start_with?("{") }
+    assert entries.any? { |entry| {{#if (eq rubyLogging "semantic-logger")}}entry.fetch("payload", {}){{else}}entry{{/if}}.values_at("method", "path", "status") == ["GET", "/health", 200] }
+{{/if}}
+  end
+
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+  def test_upstream_health_is_fetched_with_the_http_client
+    get "/api/upstream"
+    assert_equal 200, last_response.status
+    assert_equal({ "upstream" => { "status" => "ok" } }, JSON.parse(last_response.body))
+    assert_equal "GET /health HTTP/1.1", UPSTREAM.requests.pop.fetch("request")
+  end
+
+  def test_unreachable_upstream_returns_502
+    closed = TCPServer.new("127.0.0.1", 0)
+    port = closed.addr[1]
+    closed.close
+    previous = ENV["UPSTREAM_URL"]
+    ENV["UPSTREAM_URL"] = "http://127.0.0.1:#{port}"
+    get "/api/upstream"
+    assert_equal({ "error" => "upstream_unavailable" }, JSON.parse(last_response.body))
+    assert_equal 502, last_response.status
+  ensure
+    ENV["UPSTREAM_URL"] = previous
+  end
+
+{{/if}}
+  def test_invalid_request_shapes
+    [nil, [], {}, { "name" => 2 }, { "name" => " " }, { "name" => "a" * 81 }, { "name" => "Ruby", "admin" => true }].each do |value|
+      post_json(value)
+      assert_equal 422, last_response.status
+      assert JSON.parse(last_response.body).key?("error")
+    end
+  end
+
+  def test_validation_error_codes
+    [
+      [[], "name_must_be_a_string"],
+      [{ "name" => 2 }, "name_must_be_a_string"],
+      [{ "name" => "Ruby", "admin" => true }, "name_must_be_a_string"],
+      [{ "name" => " " }, "name_length_must_be_1_to_80"],
+      [{ "name" => "a" * 81 }, "name_length_must_be_1_to_80"]
+    ].each do |value, error|
+      post_json(value)
+      assert_equal({ "error" => error }, JSON.parse(last_response.body))
+    end
+  end
+
+{{#if (ne rubyCache "none")}}
+  def test_cache_serves_the_second_read_from_the_cache
+    {{#if (eq rubyTesting "test-unit")}}omit{{else}}skip{{/if}} "Start the cache server to run cache tests" unless BetterFullstack::Cache.available?
+    BetterFullstack::Cache.delete(BetterFullstack::Cache::KEY)
+    get "/api/cache"
+    first = JSON.parse(last_response.body)
+    get "/api/cache"
+    second = JSON.parse(last_response.body)
+    assert_equal [false, true], [first.fetch("cached"), second.fetch("cached")]
+    assert_equal first.fetch("value"), second.fetch("value")
+  end
+
+  def test_cache_entries_expire
+    {{#if (eq rubyTesting "test-unit")}}omit{{else}}skip{{/if}} "Start the cache server to run cache tests" unless BetterFullstack::Cache.available?
+    key = "better-fullstack:expiry-test"
+    BetterFullstack::Cache.delete(key)
+    BetterFullstack::Cache.fetch(key, ttl: 1) { "first" }
+    sleep 2.1
+    assert_equal ["second", false], BetterFullstack::Cache.fetch(key, ttl: 1) { "second" }
+  end
+
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+  def run_queued_jobs
+{{#if (eq rubyJobQueue "sidekiq")}}
+    BetterFullstack::Jobs::GreetingJob.drain
+{{/if}}
+{{#if (eq rubyJobQueue "resque")}}
+    Resque::Worker.new(BetterFullstack::Jobs::QUEUE).work(0)
+    Resque.remove_queue(BetterFullstack::Jobs::QUEUE)
+{{/if}}
+{{#if (eq rubyJobQueue "solid-queue")}}
+    worker = SolidQueue::Worker.new(queues: "*", threads: 1, polling_interval: 0.05)
+    worker.start
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 10
+    sleep 0.05 while SolidQueue::Job.where(finished_at: nil).exists? && Process.clock_gettime(Process::CLOCK_MONOTONIC) < deadline
+    worker.stop
+{{/if}}
+  end
+
+  def test_jobs_run_on_the_queue
+    {{#if (eq rubyTesting "test-unit")}}omit{{else}}skip{{/if}} "Start the job queue backend to run job tests" unless BetterFullstack::Jobs.available?
+    post "/api/jobs", JSON.generate(name: "Ruby"), "CONTENT_TYPE" => "application/json"
+    assert_equal 202, last_response.status
+    id = JSON.parse(last_response.body).fetch("id")
+    get "/api/jobs/#{id}"
+    assert_equal "queued", JSON.parse(last_response.body).fetch("status")
+    run_queued_jobs
+    get "/api/jobs/#{id}"
+    assert_equal({ "id" => id, "status" => "done", "greeting" => "Hello, Ruby!" }, JSON.parse(last_response.body))
+  end
+
+  def test_invalid_jobs_are_not_enqueued
+    post "/api/jobs", JSON.generate(name: " "), "CONTENT_TYPE" => "application/json"
+    assert_equal 422, last_response.status
+  end
+
+{{/if}}
+{{#if (ne rubyEmail "none")}}
+  def test_welcome_email_is_delivered
+{{#if (eq rubyEmail "resend")}}
+    assert_equal "email_test", BetterFullstack::Mailer.deliver_welcome("ruby@example.com")
+    request = RESEND_API.requests.pop
+    assert_equal "POST /emails HTTP/1.1", request.fetch("request")
+    assert_equal "Bearer re_test_key", request.fetch("authorization")
+    assert_equal [["ruby@example.com"], "Welcome"], request.fetch("body").values_at("to", "subject")
+{{else}}
+    deliveries = {{#if (eq rubyEmail "mail")}}Mail::TestMailer.deliveries{{else}}ActionMailer::Base.deliveries{{/if}}
+    deliveries.clear
+    BetterFullstack::Mailer.deliver_welcome("ruby@example.com")
+    assert_equal [[["ruby@example.com"], "Welcome"]], deliveries.map { |message| [message.to, message.subject] }
+{{/if}}
+  end
+
+  def test_welcome_email_rejects_invalid_recipients
+    assert_raises(ArgumentError) { BetterFullstack::Mailer.deliver_welcome("not-an-address") }
+  end
+
+{{/if}}
+
+{{#if (ne rubyOrm "none")}}
+  def test_items_are_persisted_and_listed
+    post "/api/items", JSON.generate(name: "  Ruby  "), "CONTENT_TYPE" => "application/json"
+    assert_equal 201, last_response.status
+    created = JSON.parse(last_response.body)
+    assert_equal "Ruby", created.fetch("name")
+    assert_kind_of Integer, created.fetch("id")
+    get "/api/items"
+    assert_equal 200, last_response.status
+    assert_equal [created], JSON.parse(last_response.body).fetch("items")
+  end
+
+  def test_invalid_items_are_not_persisted
+    post "/api/items", JSON.generate(name: " "), "CONTENT_TYPE" => "application/json"
+    assert_equal 422, last_response.status
+    get "/api/items"
+    assert_equal [], JSON.parse(last_response.body).fetch("items")
+  end
+
+{{/if}}
+{{#if (eq rubyAuth "jwt")}}
+  def test_current_user_requires_a_valid_token
+    get "/api/me"
+    assert_equal 401, last_response.status
+    header "Authorization", "Bearer #{BetterFullstack::Auth.issue("user-1")}"
+    get "/api/me"
+    assert_equal 200, last_response.status
+    assert_equal({ "user" => { "id" => "user-1" } }, JSON.parse(last_response.body))
+  end
+
+  def test_rejected_tokens
+    now = Time.now.to_i
+    claims = { sub: "user-1", iss: BetterFullstack::Auth::ISSUER, aud: BetterFullstack::Auth::AUDIENCE, iat: now, exp: now + 60 }
+    [
+      JWT.encode(claims, "wrong-secret", "HS256"),
+      JWT.encode(claims.merge(exp: now - 1), BetterFullstack::Auth.secret, "HS256"),
+      JWT.encode(claims.merge(aud: "another-api"), BetterFullstack::Auth.secret, "HS256"),
+      JWT.encode(claims, nil, "none"),
+      "not-a-token"
+    ].each do |token|
+      header "Authorization", "Bearer #{token}"
+      get "/api/me"
+      assert_equal 401, last_response.status
+    end
+  end
+
+{{/if}}
+{{#if (eq rubyAuth "rodauth")}}
+  def auth_json(path, value)
+    post path, JSON.generate(value), "CONTENT_TYPE" => "application/json", "HTTP_ACCEPT" => "application/json"
+  end
+
+  def test_account_lifecycle
+    credentials = { "login" => "ruby@example.com", "password" => "correct horse battery staple" }
+    get "/api/me"
+    assert_equal 401, last_response.status
+    auth_json "/create-account", credentials
+    assert_equal 200, last_response.status
+    get "/api/me"
+    assert_equal 200, last_response.status
+    assert JSON.parse(last_response.body).dig("user", "id")
+    auth_json "/logout", {}
+    assert_equal 200, last_response.status
+    get "/api/me"
+    assert_equal 401, last_response.status
+    auth_json "/login", credentials.merge("password" => "wrong password")
+    assert_equal 401, last_response.status
+    auth_json "/login", credentials
+    assert_equal 200, last_response.status
+    get "/api/me"
+    assert_equal 200, last_response.status
+  end
+
+{{/if}}
+{{#if (eq rubyAuth "omniauth")}}
+  def test_oidc_sign_in_requires_the_session_csrf_token
+    get "/api/me"
+    assert_equal 401, last_response.status
+    post "/auth/oidc"
+    assert_equal 302, last_response.status
+    assert_match "/auth/failure", last_response.headers["location"]
+  end
+
+  def test_oidc_callback_establishes_and_clears_a_session
+    OmniAuth.config.test_mode = true
+    OmniAuth.config.mock_auth[:oidc] = OmniAuth::AuthHash.new(provider: "oidc", uid: "user-1", info: { email: "ruby@example.com" })
+    get "/auth/csrf"
+    token = JSON.parse(last_response.body).fetch("csrf_token")
+    post "/auth/oidc", authenticity_token: token
+    assert_equal 302, last_response.status
+    assert_match "/auth/oidc/callback", last_response.headers["location"]
+    get "/auth/oidc/callback"
+    assert_equal 200, last_response.status
+    get "/api/me"
+    assert_equal({ "user" => { "id" => "user-1", "email" => "ruby@example.com" } }, JSON.parse(last_response.body))
+    post "/auth/logout"
+    get "/api/me"
+    assert_equal 401, last_response.status
+  ensure
+    OmniAuth.config.test_mode = false
+  end
+
+{{/if}}
+  def test_malformed_json
+    post "/api/greetings", "{", "CONTENT_TYPE" => "application/json"
+    assert_equal 400, last_response.status
+    assert_equal "invalid_json", JSON.parse(last_response.body).fetch("error")
+  end
+
+  def test_empty_json_body
+    post "/api/greetings", "", "CONTENT_TYPE" => "application/json"
+    assert_equal 400, last_response.status
+    assert_equal "invalid_json", JSON.parse(last_response.body).fetch("error")
+  end
+
+  def test_non_json_content_type
+    post "/api/greetings", "name=Ruby"
+    assert_equal 415, last_response.status
+  end
+
+  def test_body_size_limit
+    post_json("name" => "a" * 16_384)
+    assert_equal 413, last_response.status
+  end
+
+  def test_oversized_json_keeps_cors_headers_only_for_trusted_origins
+    BetterFullstack::HttpPolicy.allowed_origins.each do |origin|
+      header "Origin", origin
+      post_json("name" => "a" * 16_384)
+      assert_equal 413, last_response.status
+      assert_equal "body_too_large", JSON.parse(last_response.body).fetch("error")
+      assert_equal origin, last_response.headers["access-control-allow-origin"]
+      assert_equal "Origin", last_response.headers["vary"]
+    end
+    header "Origin", "https://untrusted.example"
+    post_json("name" => "a" * 16_384)
+    assert_equal 413, last_response.status
+    assert_nil last_response.headers["access-control-allow-origin"]
+  end
+
+  def test_unknown_route
+    get "/missing"
+    assert_equal 404, last_response.status
+    assert_equal "not_found", JSON.parse(last_response.body).fetch("error")
+  end
+
+  def test_oversized_form_is_rejected_before_reading_declared_input
+    input = StringIO.new("name=" + "a" * 1_048_576)
+    env = Rack::MockRequest.env_for("/api/greetings", method: "POST")
+    env["HTTP_HOST"] = "localhost"
+    env["CONTENT_TYPE"] = "application/x-www-form-urlencoded"
+    env["CONTENT_LENGTH"] = input.size.to_s
+    env["rack.input"] = input
+    status, _, body = app.call(env)
+    assert_equal 413, status
+    assert_equal "body_too_large", JSON.parse(body.to_a.join).fetch("error")
+    assert_equal 0, input.pos
+    body.close if body.respond_to?(:close)
+  end
+
+  def test_oversized_form_without_a_declared_length_is_bounded
+    input = StringIO.new("name=" + "a" * 1_048_576)
+    env = Rack::MockRequest.env_for("/api/greetings", method: "POST")
+    env["HTTP_HOST"] = "localhost"
+    env["CONTENT_TYPE"] = "application/x-www-form-urlencoded"
+    env.delete("CONTENT_LENGTH")
+    env["rack.input"] = input
+    status, _, body = app.call(env)
+    assert_equal 413, status
+    assert_equal "body_too_large", JSON.parse(body.to_a.join).fetch("error")
+    assert_operator input.pos, :<=, 16_385
+    body.close if body.respond_to?(:close)
+  end
+
+  def test_multiple_trusted_frontend_origins
+    previous = ENV["ALLOWED_ORIGIN"]
+    ENV["ALLOWED_ORIGIN"] = "http://localhost:5173,http://localhost:8080"
+    BetterFullstack::HttpPolicy.allowed_origins.each do |origin|
+      header "Origin", origin
+      get "/health"
+      assert_equal 200, last_response.status
+      assert_equal origin, last_response.headers["access-control-allow-origin"]
+    end
+    header "Origin", "http://localhost:9999"
+    get "/health"
+    assert_equal 403, last_response.status
+  ensure
+    ENV["ALLOWED_ORIGIN"] = previous
+  end
+
+  def test_cors_origin_is_pinned
+    header "Origin", BetterFullstack::HttpPolicy.allowed_origins.first
+    options "/api/greetings"
+    assert_equal 204, last_response.status
+    assert_equal BetterFullstack::HttpPolicy.allowed_origins.first, last_response.headers["access-control-allow-origin"]
+    header "Origin", "https://untrusted.example"
+    post_json("name" => "Ruby")
+    assert_equal 403, last_response.status
+  end
+
+  def test_unrecognized_host_is_rejected
+    header "Host", "untrusted.example"
+    get "/health"
+    assert_equal 403, last_response.status
+  end
+end
+{{/if}}

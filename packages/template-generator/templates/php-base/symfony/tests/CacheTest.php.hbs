@@ -1,0 +1,47 @@
+{{#if (ne phpCache "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Kernel;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+
+final class CacheTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        putenv('CACHE_NAMESPACE=test' . bin2hex(random_bytes(6)));
+{{#if (eq phpCache "predis")}}
+        try {
+            (new \Predis\Client(getenv('REDIS_URL') ?: 'tcp://127.0.0.1:6379'))->ping();
+        } catch (\Predis\PredisException) {
+            self::markTestSkipped('Set REDIS_URL to a running Redis server to run the cache test.');
+        }
+{{/if}}
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('CACHE_NAMESPACE');
+    }
+
+    private function cachedTime(): array
+    {
+        $kernel = new Kernel('test', false);
+        $response = $kernel->handle(Request::create('/api/cached-time'));
+        $kernel->shutdown();
+        self::assertSame(200, $response->getStatusCode());
+        return json_decode((string) $response->getContent(), true, 32, JSON_THROW_ON_ERROR);
+    }
+
+    public function testServesTheCachedValueOnTheNextRequest(): void
+    {
+        $first = $this->cachedTime();
+        self::assertFalse($first['cached']);
+        self::assertSame(['value' => $first['value'], 'cached' => true], $this->cachedTime());
+    }
+}
+{{/if}}

@@ -289,6 +289,11 @@ const ELIXIR_SECTIONS: readonly BuilderSectionDef[] = [
     "elixirJobs",
     "elixirEmail",
     "elixirClustering",
+    "elixirLogging",
+    "elixirConfig",
+    "elixirMessageQueue",
+    "elixirTemplating",
+    "elixirCli",
   ]),
   section("libraries", "Libraries & Utilities", [
     "elixirValidation",
@@ -312,8 +317,26 @@ export const SECTIONS_BY_ECOSYSTEM: Record<Ecosystem, readonly BuilderSectionDef
   rust: RUST_SECTIONS,
   python: PYTHON_SECTIONS,
   go: GO_SECTIONS,
+  crystal: [section("frameworkBuild", "Framework & Build", ["crystalWebFramework", "crystalOrm", "crystalAuth", "crystalTesting", "crystalValidation", "crystalCache", "crystalJobs"]), section("deployScaffold", "Deploy & Scaffold", ["aiDocs", "git", "install"])],
   java: JAVA_SECTIONS,
   dotnet: DOTNET_SECTIONS,
+  ruby: [
+    section("frameworkBuild", "Framework & Build", ["rubyWebFramework"]),
+    section("data", "Data & Storage", ["rubyOrm", "rubyCache"]),
+    section("services", "Auth & Services", ["rubyAuth", "rubyJobQueue", "rubyEmail"]),
+    section("libraries", "Libraries & Utilities", ["rubyValidation", "rubyHttpClient"]),
+    section("qualityTesting", "Quality & Testing", ["rubyTesting"]),
+    section("observability", "Observability & Analytics", ["rubyLogging"]),
+    section("deployScaffold", "Deploy & Scaffold", ["aiDocs", "git", "install"]),
+  ],
+  php: [
+    section("backend", "PHP HTTP application", ["phpWebFramework"]),
+    section("data", "Data & Storage", ["phpOrm", "phpCache"]),
+    section("services", "Auth & Services", ["phpAuth", "phpJobQueue", "phpEmail", "phpHttpClient"]),
+    section("qualityTesting", "Quality & Testing", ["phpTesting", "phpValidation"]),
+    section("observability", "Observability & Analytics", ["phpLogging"]),
+    section("deployScaffold", "Scaffold", ["aiDocs", "git", "install"]),
+  ],
   elixir: ELIXIR_SECTIONS,
 };
 

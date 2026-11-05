@@ -91,20 +91,22 @@ describe("preflight validation", () => {
     expect(result.warnings).toHaveLength(0);
   });
 
-  describe("standalone server features (search, file storage, job queue)", () => {
+  describe("server features (search, file storage, job queue)", () => {
     const features = [
-      { key: "search", value: "meilisearch", ruleId: "search-no-server" },
-      { key: "fileStorage", value: "s3", ruleId: "file-storage-no-server" },
-      { key: "jobQueue", value: "bullmq", ruleId: "job-queue-no-server" },
+      { key: "search", value: "meilisearch", ruleId: "search-no-server", runsOnSelf: false },
+      { key: "fileStorage", value: "s3", ruleId: "file-storage-no-server", runsOnSelf: false },
+      { key: "jobQueue", value: "bullmq", ruleId: "job-queue-no-server", runsOnSelf: true },
     ] as const;
 
-    for (const { key, value, ruleId } of features) {
+    for (const { key, value, ruleId, runsOnSelf } of features) {
       test(`${key} warns with convex backend`, () => {
         expect(ruleIds(config({ [key]: value, backend: "convex" }))).toContain(ruleId);
       });
 
-      test(`${key} warns with self backend`, () => {
-        expect(ruleIds(config({ [key]: value, backend: "self" }))).toContain(ruleId);
+      test(`${key} ${runsOnSelf ? "passes" : "warns"} with self backend`, () => {
+        const ids = ruleIds(config({ [key]: value, backend: "self" }));
+        if (runsOnSelf) expect(ids).not.toContain(ruleId);
+        else expect(ids).toContain(ruleId);
       });
 
       test(`${key} warns with no backend`, () => {

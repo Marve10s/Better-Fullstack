@@ -1,3 +1,8 @@
+import {
+  getCrystalSelectionIssue,
+  getPhpRecipeIssue,
+  getRubyRecipeIssue,
+} from "@better-fullstack/types";
 import consola from "consola";
 import pc from "picocolors";
 
@@ -44,6 +49,7 @@ import {
 import { exitWithError } from "@/presentation/errors";
 import {
   formatStackGraphIssue,
+  getBrowserExtensionRecipeIssue,
   getDisabledReason,
   getCodeQualitySelectionIssue,
   getDatabaseOrmIncompatibility,
@@ -268,6 +274,12 @@ function getEcosystemBackend(cfg: Partial<ProjectConfig>) {
       return cfg.dotnetWebFramework && cfg.dotnetWebFramework !== "none"
         ? cfg.dotnetWebFramework
         : undefined;
+    case "ruby":
+      return cfg.rubyWebFramework && cfg.rubyWebFramework !== "none"
+        ? cfg.rubyWebFramework
+        : undefined;
+    case "php":
+      return cfg.phpWebFramework !== "none" ? cfg.phpWebFramework : undefined;
     case "elixir":
       return cfg.elixirWebFramework && cfg.elixirWebFramework !== "none"
         ? cfg.elixirWebFramework
@@ -399,7 +411,9 @@ function validateBackendNoneConstraints(
   );
   const hasEcosystemBackend = getEcosystemBackend(config) !== undefined;
 
-  if (backend !== "none" || hasGraphBackend || hasEcosystemBackend) {
+  const usesTypeScriptBackendField =
+    !config.ecosystem || config.ecosystem === "typescript" || config.ecosystem === "react-native";
+  if (backend !== "none" || hasGraphBackend || hasEcosystemBackend || !usesTypeScriptBackendField) {
     return;
   }
 
@@ -784,6 +798,11 @@ function validateElixirConstraints(config: Partial<ProjectConfig>) {
         value: config.elixirTesting === "wallaby" ? config.elixirTesting : "none",
         message: "Wallaby browser tests require Phoenix.",
       },
+      {
+        flag: "elixir-logging",
+        value: config.elixirLogging === "logster" ? config.elixirLogging : "none",
+        message: "Logster request logging requires Phoenix.",
+      },
     ];
 
     for (const selection of phoenixOnlySelections) {
@@ -867,6 +886,17 @@ function validateElixirConstraints(config: Partial<ProjectConfig>) {
         "elixir-orm": config.elixirOrm ?? "none",
       },
       suggestions: ["Use --elixir-orm ecto-sql", "Use --elixir-testing none"],
+    });
+  }
+
+  if (["peri", "tarams"].includes(config.elixirValidation ?? "none") && !hasEcto) {
+    incompatibilityError({
+      message: "Peri and Tarams require Ecto.",
+      provided: {
+        "elixir-validation": config.elixirValidation ?? "none",
+        "elixir-orm": config.elixirOrm ?? "none",
+      },
+      suggestions: ["Use --elixir-orm ecto", "Use --elixir-validation none"],
     });
   }
 
@@ -1537,6 +1567,14 @@ export function validateFullConfig(
   options: CLIInput,
   partial = false,
 ) {
+  const crystalIssue = getCrystalSelectionIssue(config);
+  if (crystalIssue) exitWithError(crystalIssue);
+  const rubyIssue = getRubyRecipeIssue(config);
+  if (rubyIssue) exitWithError(rubyIssue);
+  const phpIssue = getPhpRecipeIssue(config);
+  if (phpIssue) exitWithError(phpIssue);
+  const browserExtensionIssue = getBrowserExtensionRecipeIssue(config);
+  if (browserExtensionIssue) throw new Error(browserExtensionIssue);
   validateCodeQualityConstraints(config, partial);
   if (config.stackParts && !isToolingOverlayOnly(config.stackParts) && !options.yolo) {
     const graphValidation = validateStackParts(config.stackParts);
@@ -1690,6 +1728,7 @@ export function validateFullConfig(
       addonConfig.goApi,
       addonConfig.javaApi,
       hasVitePlusWorkspaceRoot(config.stackParts),
+      config,
     );
     config.addons = [...new Set(config.addons)];
   }
@@ -1728,6 +1767,12 @@ export function validateFullConfig(
 
 export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>) {
   try {
+    const crystalIssue = getCrystalSelectionIssue(config);
+    if (crystalIssue) throw new Error(crystalIssue);
+    const rubyIssue = getRubyRecipeIssue(config);
+    if (rubyIssue) throw new Error(rubyIssue);
+    const phpIssue = getPhpRecipeIssue(config);
+    if (phpIssue) throw new Error(phpIssue);
     validateCodeQualityConstraints(config);
     if (config.stackParts) {
       const graphValidation = validateStackParts(config.stackParts);
@@ -1739,6 +1784,8 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
     validateIntegrationsConstraints(config);
     validateJobQueueConstraints(config);
     validateVectorDbConstraints(config);
+    const browserExtensionIssue = getBrowserExtensionRecipeIssue(config);
+    if (browserExtensionIssue) throw new Error(browserExtensionIssue);
     validateContainerAddonConstraints(config);
     const authIssue = getAuthSelectionIssue(config);
     if (authIssue) throw new Error(authIssue);
@@ -1788,6 +1835,7 @@ export function validateConfigForProgrammaticUse(config: Partial<ProjectConfig>)
         addonConfig.goApi,
         addonConfig.javaApi,
         hasVitePlusWorkspaceRoot(config.stackParts),
+        config,
       );
     }
 

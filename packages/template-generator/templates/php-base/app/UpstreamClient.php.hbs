@@ -1,0 +1,64 @@
+{{#if (ne phpHttpClient "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+{{#if (eq phpHttpClient "guzzle")}}
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+{{else if (eq phpHttpClient "symfony-http-client")}}
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+{{else}}
+use Http\Client\Curl\Client;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Psr\Http\Client\ClientExceptionInterface;
+{{/if}}
+use JsonException;
+
+final readonly class UpstreamClient
+{
+    public const int TIMEOUT_SECONDS = 5;
+
+    public function __construct(private string $url)
+    {
+    }
+
+    public static function fromEnvironment(): self
+    {
+        return new self((string) getenv('UPSTREAM_URL'));
+    }
+
+    public function fetch(): array
+    {
+        if (filter_var($this->url, FILTER_VALIDATE_URL) === false || !in_array(parse_url($this->url, PHP_URL_SCHEME), ['http', 'https'], true)) {
+            return [503, ['error' => 'upstream_not_configured']];
+        }
+        try {
+{{#if (eq phpHttpClient "guzzle")}}
+            $response = (new Client(['timeout' => self::TIMEOUT_SECONDS]))->get($this->url, ['http_errors' => false]);
+            [$status, $body] = [$response->getStatusCode(), (string) $response->getBody()];
+        } catch (GuzzleException) {
+{{else if (eq phpHttpClient "symfony-http-client")}}
+            $response = HttpClient::create(['timeout' => self::TIMEOUT_SECONDS, 'max_duration' => self::TIMEOUT_SECONDS])->request('GET', $this->url);
+            [$status, $body] = [$response->getStatusCode(), $response->getContent(false)];
+        } catch (TransportExceptionInterface) {
+{{else}}
+            $factory = new Psr17Factory();
+            $client = new Client($factory, $factory, [CURLOPT_CONNECTTIMEOUT => self::TIMEOUT_SECONDS, CURLOPT_TIMEOUT => self::TIMEOUT_SECONDS]);
+            $response = $client->sendRequest($factory->createRequest('GET', $this->url));
+            [$status, $body] = [$response->getStatusCode(), (string) $response->getBody()];
+        } catch (ClientExceptionInterface) {
+{{/if}}
+            return [502, ['error' => 'upstream_unavailable']];
+        }
+        try {
+            return [200, ['upstreamStatus' => $status, 'data' => json_decode($body, true, 32, JSON_THROW_ON_ERROR)]];
+        } catch (JsonException) {
+            return [502, ['error' => 'upstream_invalid_json', 'upstreamStatus' => $status]];
+        }
+    }
+}
+{{/if}}

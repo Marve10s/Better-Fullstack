@@ -50,7 +50,6 @@ yarn.lock
 .smoke-e2e
 .smoke-output
 .smoke-manifest.json
-testing/.release-guard/
 testing/.published-package/
 reports/
 artifacts/demos/

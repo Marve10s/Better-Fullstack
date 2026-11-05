@@ -1,7 +1,7 @@
 import type { ProjectConfig } from "@better-fullstack/types";
 
+import { transformFilename } from "@/core/template-processor";
 import type { VirtualFileSystem } from "@/core/virtual-fs";
-
 import { renderTemplateTree, type TemplateData } from "@/template-handlers/core/utils";
 
 export async function processRustBaseTemplate(
@@ -43,11 +43,25 @@ export async function processRustBaseTemplate(
   // handler self-contained so it type-checks before that schema change lands.
   const hasLoco = config.rustWebFramework === "loco";
 
+  const serverEntryDir = "crates/server/src/main/";
+  const serverEntry = `${prefix}${serverEntryDir}${config.rustWebFramework ?? "none"}.rs.hbs`;
+  const selectedServerEntry = templates.has(serverEntry)
+    ? serverEntry
+    : `${prefix}${serverEntryDir}none.rs.hbs`;
+
   renderTemplateTree(vfs, templates, {
     prefix,
     targetPath,
     context: renderConfig,
+    outputPath: (relativePath) =>
+      relativePath.startsWith(serverEntryDir)
+        ? "crates/server/src/main.rs"
+        : transformFilename(relativePath),
     skip: (templatePath) => {
+      if (templatePath.includes(serverEntryDir) && templatePath !== selectedServerEntry) {
+        return true;
+      }
+
       // A Rust frontend can be paired with a backend from another ecosystem. In
       // that shape this workspace is a client-only app and must not contain an
       // empty, unbuildable server crate.

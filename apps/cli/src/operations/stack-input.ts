@@ -12,7 +12,6 @@ export const MCP_PLAN_CREATE_SCHEMA = {
     verify: true,
     git: true,
     install: true,
-    workspaceShape: true,
     directoryConflict: true,
     renderTitle: true,
     disableAnalytics: true,
@@ -23,7 +22,11 @@ export const MCP_PLAN_CREATE_SCHEMA = {
   packageManager: PackageManagerSchema.optional().describe("Package manager (default: bun)"),
 };
 
-const { addons: _createOnlyAddonsAlias, ...MCP_STACK_UPDATE_BASE_SCHEMA } = MCP_PLAN_CREATE_SCHEMA;
+const {
+  addons: _createOnlyAddonsAlias,
+  workspaceShape: _createOnlyWorkspaceShape,
+  ...MCP_STACK_UPDATE_BASE_SCHEMA
+} = MCP_PLAN_CREATE_SCHEMA;
 
 export const MCP_STACK_UPDATE_SCHEMA = {
   ...MCP_STACK_UPDATE_BASE_SCHEMA,

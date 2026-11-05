@@ -4,7 +4,11 @@ import {
 } from "@better-fullstack/project-lifecycle/transaction";
 import { EMBEDDED_TEMPLATES, generateVirtualProject } from "@better-fullstack/template-generator";
 import { writeTreeToFilesystem } from "@better-fullstack/template-generator/fs-writer";
-import { createCliDefaultProjectConfigBase, type ProjectConfig } from "@better-fullstack/types";
+import {
+  createCliDefaultProjectConfigBase,
+  legacyProjectConfigToStackParts,
+  type ProjectConfig,
+} from "@better-fullstack/types";
 import { afterAll, describe, expect, it } from "bun:test";
 import {
   chmod,
@@ -31,7 +35,8 @@ import {
   quotePosixShellArgument,
   toJsonPlan,
 } from "@/commands/lifecycle/update";
-import { buildBtsConfigForPersistence, writeBtsConfig } from "@/config/bts-config";
+import { buildBtsConfigForPersistence, readBtsConfig, writeBtsConfig } from "@/config/bts-config";
+import { applyConfigDriftRepair, planConfigDriftRepair } from "@/config/config-drift-repair";
 import {
   applyScaffoldUpgrade,
   getUpgradePlanDigest,
@@ -280,6 +285,75 @@ describe("scaffold-upgrade engine", () => {
     }
   });
 
+  it("keeps a fresh Rust project on its own ecosystem when the inert TypeScript defaults are present", async () => {
+    const dir = await makeTempDir();
+    const flatConfig = makeConfig(dir, {
+      ecosystem: "rust",
+      rustWebFramework: "axum",
+      rustOrm: "sea-orm",
+      backend: "none",
+      api: "none",
+      orm: "none",
+      addons: ["turborepo"],
+    });
+    await scaffoldWithBaseline(dir, {
+      ...flatConfig,
+      stackParts: legacyProjectConfigToStackParts(flatConfig, "selected"),
+    });
+
+    const persisted = await readBtsConfig(dir);
+    expect(persisted?.ecosystem).toBe("rust");
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    expect(plan.unchanged.length).toBeGreaterThan(5);
+    expect(plan.newFiles).toEqual([]);
+    expect(plan.removed).toEqual([]);
+  });
+
+  it("fails closed on a never-scaffolded TypeScript workspace until doctor repairs the config", async () => {
+    const dir = await makeTempDir();
+    const flatConfig = makeConfig(dir, {
+      ecosystem: "rust",
+      rustWebFramework: "axum",
+      rustOrm: "sea-orm",
+      backend: "none",
+      api: "none",
+      orm: "none",
+    });
+    await scaffoldWithBaseline(dir, flatConfig);
+    await writeBtsConfig({
+      ...flatConfig,
+      stackParts: [
+        ...legacyProjectConfigToStackParts(flatConfig, "selected"),
+        ...legacyProjectConfigToStackParts(
+          { ecosystem: "typescript", frontend: ["tanstack-router"], addons: ["turborepo"] },
+          "selected",
+        ),
+      ],
+    });
+    expect((await readBtsConfig(dir))?.ecosystem).toBe("typescript");
+
+    const blocked = await planScaffoldUpgrade(dir);
+    expect(blocked.success).toBe(false);
+    expect(blocked.success ? "" : blocked.error).toContain("never scaffolded");
+
+    const repair = await planConfigDriftRepair(dir);
+    expect(repair.success && repair.changed).toBe(true);
+    const applied = await applyConfigDriftRepair(
+      dir,
+      repair.success ? repair.reviewToken : undefined,
+    );
+    expect(applied.success).toBe(true);
+    expect((await readBtsConfig(dir))?.ecosystem).toBe("rust");
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    expect(plan.unchanged.length).toBeGreaterThan(5);
+    expect(plan.newFiles).toEqual([]);
+    expect(plan.removed).toEqual([]);
+  });
+
   it("reports no drift on an untouched fresh project", async () => {
     const dir = await makeTempDir();
     await scaffoldWithBaseline(dir, makeConfig(dir));
@@ -448,77 +522,6 @@ describe("scaffold-upgrade engine", () => {
     await recoverProjectTransaction(dir, applied.recoveryId!);
     await expect(readFile(join(dir, currentPath))).rejects.toThrow();
     expect(await readFile(join(dir, previousPath))).toEqual(before);
-  });
-
-  it("keeps a legacy root .NET layout buildable by requiring a manual layout migration", async () => {
-    const dir = await makeTempDir();
-    const config = makeConfig(dir, {
-      frontend: ["none"],
-      backend: "none",
-      runtime: "none",
-      api: "none",
-      database: "sqlite",
-      orm: "none",
-      ecosystem: "dotnet",
-      dotnetWebFramework: "aspnet-minimal",
-      dotnetOrm: "ef-core",
-      dotnetAuth: "none",
-      dotnetApi: "minimal-api",
-      dotnetTesting: ["xunit"],
-      dotnetJobQueue: "none",
-      dotnetRealtime: "none",
-      dotnetObservability: ["health-checks"],
-      dotnetValidation: "none",
-      dotnetCaching: "none",
-      dotnetDeploy: "none",
-      dotnetLibraries: [],
-    });
-    await scaffoldWithBaseline(dir, config);
-
-    const manifest = await readScaffoldManifest(dir);
-    expect(manifest).not.toBeNull();
-    const serverPaths = Object.keys(manifest!.hashes)
-      .filter((filePath) => filePath.startsWith("apps/server/"))
-      .sort();
-    expect(serverPaths).toContain("apps/server/Program.cs");
-
-    for (const serverPath of serverPaths) {
-      const rootPath = serverPath.slice("apps/server/".length);
-      // oxlint-disable-next-line no-await-in-loop -- fixture paths are relocated deterministically
-      await mkdir(dirname(join(dir, rootPath)), { recursive: true });
-      // oxlint-disable-next-line no-await-in-loop -- fixture paths are relocated deterministically
-      await cp(join(dir, serverPath), join(dir, rootPath), { force: true });
-      manifest!.hashes[rootPath] = manifest!.hashes[serverPath]!;
-      delete manifest!.hashes[serverPath];
-      if (manifest!.modes?.[serverPath] !== undefined) {
-        manifest!.modes[rootPath] = manifest!.modes[serverPath];
-        delete manifest!.modes[serverPath];
-      }
-      if (manifest!.baselines?.[serverPath] !== undefined) {
-        manifest!.baselines[rootPath] = manifest!.baselines[serverPath];
-        delete manifest!.baselines[serverPath];
-      }
-    }
-    await rm(join(dir, "apps"), { force: true, recursive: true });
-    await writeScaffoldManifest(dir, manifest!);
-    const rootProgramBefore = await readFile(join(dir, "Program.cs"));
-
-    const plan = await planScaffoldUpgrade(dir);
-    assertSuccess(plan);
-    const serverEntries = plan.files.filter((file) => file.path.startsWith("apps/server/"));
-    expect(serverEntries.length).toBeGreaterThan(0);
-    expect(serverEntries.every((file) => file.category === "manual")).toBe(true);
-    expect(serverEntries.every((file) => file.reason?.includes("migrate") === true)).toBe(true);
-    expect(plan.actionable.some((filePath) => filePath.startsWith("apps/server/"))).toBe(false);
-    expect(plan.newFiles.some((filePath) => filePath.startsWith("apps/server/"))).toBe(false);
-
-    const applied = await applyAcknowledged(dir);
-    assertSuccess(applied);
-    expect(applied.applied.added.some((filePath) => filePath.startsWith("apps/server/"))).toBe(
-      false,
-    );
-    expect(await readFile(join(dir, "Program.cs"))).toEqual(rootProgramBefore);
-    await expect(readFile(join(dir, "apps/server/Program.cs"))).rejects.toThrow();
   });
 
   it("flags a conflict when both the template and the local copy changed", async () => {
@@ -794,6 +797,45 @@ describe("scaffold-upgrade engine", () => {
     expect(plan.actionable).not.toContain("package.json");
   });
 
+  it("preserves a Go module and imports when updating in a renamed directory", async () => {
+    const root = await makeTempDir();
+    const dir = join(root, "go");
+    const config = makeConfig(dir, {
+      projectName: "proof-go",
+      ecosystem: "go",
+      frontend: [],
+      backend: "none",
+      runtime: "none",
+      api: "none",
+      orm: "none",
+      database: "none",
+      goWebFramework: "gin",
+      goOrm: "gorm",
+      goApi: "grpc-go",
+    });
+    await scaffoldWithBaseline(dir, config);
+    const modulePath = join(dir, "go.mod");
+    const currentModule = await readFile(modulePath, "utf-8");
+    const oldModule = currentModule.replace("go 1.25.0", "go 1.24.0");
+    expect(oldModule).not.toBe(currentModule);
+    await writeFile(modulePath, oldModule);
+    const manifest = await readScaffoldManifest(dir);
+    expect(manifest).not.toBeNull();
+    manifest!.hashes["go.mod"] = hashContent(oldModule);
+    await writeScaffoldManifest(dir, manifest!);
+    const mainPath = join(dir, "cmd/server/main.go");
+    const mainBefore = await readFile(mainPath, "utf-8");
+
+    const plan = await planScaffoldUpgrade(dir);
+    assertSuccess(plan);
+    expect(plan.drift).toContain("go.mod");
+    expect(plan.unchanged).toContain("cmd/server/main.go");
+    const applied = await applyAcknowledged(dir);
+    assertSuccess(applied);
+    expect(await readFile(modulePath, "utf-8")).toBe(currentModule);
+    expect(await readFile(mainPath, "utf-8")).toBe(mainBefore);
+  });
+
   it("appends template-added env keys to an edited .env.example, keeping user keys", async () => {
     const dir = await makeTempDir();
     const config = makeConfig(dir, {
@@ -810,7 +852,7 @@ describe("scaffold-upgrade engine", () => {
     } as Partial<ProjectConfig>);
     await scaffoldWithBaseline(dir, config);
 
-    const target = "apps/server/.env.example";
+    const target = ".env.example";
     const envPath = join(dir, target);
     const render = await readFile(envPath, "utf-8");
     const lines = render.split("\n");
@@ -855,7 +897,7 @@ describe("scaffold-upgrade engine", () => {
     } as Partial<ProjectConfig>);
     await scaffoldWithBaseline(dir, config);
 
-    const target = "apps/server/.env.example";
+    const target = ".env.example";
     const envPath = join(dir, target);
     const render = await readFile(envPath, "utf-8");
     const lines = render.split("\n");

@@ -5,8 +5,9 @@ import path from "node:path";
 
 import type { BetterTStackConfig, ProjectConfig } from "@/types";
 
-import { formatStackPartSpec, legacyProjectConfigToStackParts } from "@/types";
 import { readBtsConfig } from "@/config/bts-config";
+import { readScaffoldManifestResult } from "@/lifecycle/scaffold-manifest";
+import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
 import {
   configForGeneratedTarget,
   discoverGeneratedCheckTargets,
@@ -15,8 +16,7 @@ import {
   type GeneratedCheckResult,
   type GeneratedCheckTarget,
 } from "@/project/generated-checks";
-import { getLatestCLIVersion } from "@/platform/get-latest-cli-version";
-import { readScaffoldManifestResult } from "@/lifecycle/scaffold-manifest";
+import { formatStackPartSpec, legacyProjectConfigToStackParts } from "@/types";
 
 export type ProjectCheckStatus = "pass" | "warn" | "fail";
 
@@ -227,6 +227,37 @@ async function checkNativeTargetDependencies(
         ),
       ];
     }
+    case "ruby":
+      return [
+        await expectedFileCheck(target, "Gemfile", "fail", "Generated Bundler manifest is missing"),
+        await expectedFileCheck(
+          target,
+          "Gemfile.lock",
+          "warn",
+          "Run bundle install to resolve dependencies",
+        ),
+      ];
+    case "php":
+      return [
+        await expectedFileCheck(
+          target,
+          "composer.json",
+          "fail",
+          "Generated Composer manifest is missing",
+        ),
+        await expectedFileCheck(
+          target,
+          "composer.lock",
+          "warn",
+          "Run composer install to resolve dependencies",
+        ),
+        await expectedFileCheck(
+          target,
+          "vendor/autoload.php",
+          "warn",
+          "Run composer install to install dependencies",
+        ),
+      ];
     case "elixir":
       return [
         await expectedFileCheck(

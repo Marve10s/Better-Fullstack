@@ -1,0 +1,55 @@
+defmodule {{elixirModuleName}}.SettingsTest do
+  use ExUnit.Case, async: false
+
+  alias {{elixirModuleName}}.Settings
+{{#if (eq elixirConfig "dotenvy")}}
+
+  test "runtime config exposes typed settings" do
+    assert is_binary(Settings.greeting())
+    assert is_integer(Settings.max_connections())
+  end
+
+  test "dotenvy casts environment values" do
+    Dotenvy.source!([%{"APP_MAX_CONNECTIONS" => "25"}])
+
+    assert Dotenvy.env!("APP_MAX_CONNECTIONS", :integer, 10) == 25
+  end
+{{/if}}
+{{#if (eq elixirConfig "skogsra")}}
+
+  setup do
+    on_exit(fn ->
+      System.delete_env("APP_MAX_CONNECTIONS")
+      Settings.reload_max_connections()
+    end)
+  end
+
+  test "reads and casts the OS environment" do
+    System.put_env("APP_MAX_CONNECTIONS", "25")
+    Settings.reload_max_connections()
+
+    assert Settings.max_connections!() == 25
+  end
+
+  test "falls back to the default" do
+    System.delete_env("APP_MAX_CONNECTIONS")
+    Settings.reload_max_connections()
+
+    assert Settings.max_connections!() == 10
+  end
+{{/if}}
+{{#if (eq elixirConfig "confex")}}
+
+  setup do
+    on_exit(fn -> System.delete_env("APP_MAX_CONNECTIONS") end)
+  end
+
+  test "resolves system tuples on every read" do
+    System.delete_env("APP_MAX_CONNECTIONS")
+    assert Settings.config()[:max_connections] == 10
+
+    System.put_env("APP_MAX_CONNECTIONS", "25")
+    assert Settings.config()[:max_connections] == 25
+  end
+{{/if}}
+end

@@ -1,8 +1,8 @@
+import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 import type { Backend, Ecosystem, Email } from "@/types";
 
 import { DEFAULT_CONFIG } from "@/constants";
 import { exitCancelled } from "@/presentation/errors";
-import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
 
 const EMAIL_PROMPT_OPTIONS = [
@@ -53,8 +53,8 @@ const EMAIL_PROMPT_OPTIONS = [
   },
 ];
 
-const NON_TYPESCRIPT_EMAIL_PROMPT_OPTIONS = EMAIL_PROMPT_OPTIONS.filter((option) =>
-  option.value === "resend" || option.value === "none"
+const NON_TYPESCRIPT_EMAIL_PROMPT_OPTIONS = EMAIL_PROMPT_OPTIONS.filter(
+  (option) => option.value === "resend" || option.value === "none",
 );
 
 type EmailPromptContext = {
@@ -67,7 +67,11 @@ type EmailPromptContext = {
 export function resolveEmailPrompt(
   context: EmailPromptContext = {},
 ): PromptSingleResolution<Email> {
-  if (context.ecosystem === "react-native" || context.ecosystem === "elixir") {
+  if (
+    context.ecosystem === "react-native" ||
+    context.ecosystem === "elixir" ||
+    context.ecosystem === "php"
+  ) {
     return {
       shouldPrompt: false,
       mode: "single",

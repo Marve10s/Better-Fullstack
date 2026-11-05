@@ -1,3 +1,160 @@
+import type { CrystalSelection } from "@/types";
+import { resolveApiPrompt } from "@/prompts/architecture/api";
+import { resolveBackendPrompt } from "@/prompts/architecture/backend";
+import { resolveFrontendPrompt } from "@/prompts/architecture/frontend";
+import {
+  resolveMobileDeepLinkingPrompt,
+  resolveMobileLibrariesPrompt,
+  resolveMobileNavigationPrompt,
+  resolveMobileOTAPrompt,
+  resolveMobilePushPrompt,
+  resolveMobileStoragePrompt,
+  resolveMobileTestingPrompt,
+  resolveMobileUIPrompt,
+} from "@/prompts/architecture/mobile";
+import { resolveRuntimePrompt } from "@/prompts/architecture/runtime";
+import { type PromptResolution } from "@/prompts/core/prompt-contract";
+import { resolveCachingPrompt } from "@/prompts/data/caching";
+import { resolveDatabasePrompt } from "@/prompts/data/database";
+import { resolveDBSetupPrompt } from "@/prompts/data/database-setup";
+import { resolveFileUploadPrompt } from "@/prompts/data/file-upload";
+import { resolveORMPrompt } from "@/prompts/data/orm";
+import { resolveAstroIntegrationPrompt } from "@/prompts/developer/astro-integration";
+import { resolveCSSFrameworkPrompt } from "@/prompts/developer/css-framework";
+import { resolveFormsPrompt } from "@/prompts/developer/forms";
+import { resolveTestingPrompt } from "@/prompts/developer/testing";
+import { resolveUILibraryPrompt } from "@/prompts/developer/ui-library";
+import { resolveValidationPrompt } from "@/prompts/developer/validation";
+import { resolveCrystalAuthPrompt, resolveCrystalTestingPrompt, resolveCrystalValidationPrompt, resolveCrystalCachePrompt, resolveCrystalJobsPrompt, resolveCrystalOrmPrompt, resolveCrystalWebFrameworkPrompt } from "@/prompts/ecosystems/crystal-ecosystem";
+import {
+  resolveDotnetApiPrompt,
+  resolveDotnetAuthPrompt,
+  resolveDotnetCachingPrompt,
+  resolveDotnetDeployPrompt,
+  resolveDotnetJobQueuePrompt,
+  resolveDotnetLibrariesPrompt,
+  resolveDotnetObservabilityPrompt,
+  resolveDotnetOrmPrompt,
+  resolveDotnetRealtimePrompt,
+  resolveDotnetTestingPrompt,
+  resolveDotnetWebFrameworkPrompt,
+} from "@/prompts/ecosystems/dotnet-ecosystem";
+import {
+  resolveElixirApiPrompt,
+  resolveElixirAuthPrompt,
+  resolveElixirCachingPrompt,
+  resolveElixirDeployPrompt,
+  resolveElixirEmailPrompt,
+  resolveElixirHttpPrompt,
+  resolveElixirJobsPrompt,
+  resolveElixirJsonPrompt,
+  resolveElixirObservabilityPrompt,
+  resolveElixirOrmPrompt,
+  resolveElixirQualityPrompt,
+  resolveElixirI18nPrompt,
+  resolveElixirHttpServerPrompt,
+  resolveElixirApplicationFrameworkPrompt,
+  resolveElixirDocumentationPrompt,
+  resolveElixirClusteringPrompt,
+  resolveElixirLoggingPrompt,
+  resolveElixirConfigPrompt,
+  resolveElixirMessageQueuePrompt,
+  resolveElixirTemplatingPrompt,
+  resolveElixirCliPrompt,
+  resolveElixirRealtimePrompt,
+  resolveElixirTestingPrompt,
+  resolveElixirValidationPrompt,
+  resolveElixirWebFrameworkPrompt,
+} from "@/prompts/ecosystems/elixir-ecosystem";
+import {
+  resolveGoApiPrompt,
+  resolveGoAuthPrompt,
+  resolveGoCliPrompt,
+  resolveGoDIPrompt,
+  resolveGoLoggingPrompt,
+  resolveGoMigrationsPrompt,
+  resolveGoOrmPrompt,
+  resolveGoProtoToolingPrompt,
+  resolveGoQualityPrompt,
+  resolveGoTemplatingPrompt,
+  resolveGoValidationPrompt,
+  resolveGoWebFrameworkPrompt,
+} from "@/prompts/ecosystems/go-ecosystem";
+import {
+  resolveJavaAuthPrompt,
+  resolveJavaBuildToolPrompt,
+  resolveJavaLibrariesPrompt,
+  resolveJavaOrmPrompt,
+  resolveJavaTestingLibrariesPrompt,
+  resolveJavaWebFrameworkPrompt,
+} from "@/prompts/ecosystems/java-ecosystem";
+import {
+  resolvePhpAuthPrompt,
+  resolvePhpOrmPrompt,
+  resolvePhpTestingPrompt,
+  resolvePhpValidationPrompt,
+  resolvePhpCachePrompt,
+  resolvePhpJobQueuePrompt,
+  resolvePhpEmailPrompt,
+  resolvePhpLoggingPrompt,
+  resolvePhpHttpClientPrompt,
+  resolvePhpWebFrameworkPrompt,
+} from "@/prompts/ecosystems/php-ecosystem";
+import {
+  resolvePythonAiPrompt,
+  resolvePythonApiPrompt,
+  resolvePythonAuthPrompt,
+  resolvePythonCloudSdkPrompt,
+  resolvePythonDataPrompt,
+  resolvePythonGraphqlPrompt,
+  resolvePythonHttpClientPrompt,
+  resolvePythonMediaPrompt,
+  resolvePythonMessageQueuePrompt,
+  resolvePythonOrmPrompt,
+  resolvePythonQualityPrompt,
+  resolvePythonPackageManagerPrompt,
+  resolvePythonServerPrompt,
+  resolvePythonTaskQueuePrompt,
+  resolvePythonValidationPrompt,
+  resolvePythonWebFrameworkPrompt,
+} from "@/prompts/ecosystems/python-ecosystem";
+import {
+  resolveRubyAuthPrompt,
+  resolveRubyOrmPrompt,
+  resolveRubyTestingPrompt,
+  resolveRubyValidationPrompt,
+  resolveRubyCachePrompt,
+  resolveRubyJobQueuePrompt,
+  resolveRubyEmailPrompt,
+  resolveRubyLoggingPrompt,
+  resolveRubyHttpClientPrompt,
+  resolveRubyWebFrameworkPrompt,
+} from "@/prompts/ecosystems/ruby-ecosystem";
+import {
+  resolveRustApiPrompt,
+  resolveRustCachingPrompt,
+  resolveRustCliPrompt,
+  resolveRustErrorHandlingPrompt,
+  resolveRustFrontendPrompt,
+  resolveRustLibrariesPrompt,
+  resolveRustLoggingPrompt,
+  resolveRustOrmPrompt,
+  resolveRustWebFrameworkPrompt,
+} from "@/prompts/ecosystems/rust-ecosystem";
+import { resolveAIPrompt } from "@/prompts/services/ai";
+import { resolveAnimationPrompt } from "@/prompts/services/animation";
+import { resolveAuthPrompt } from "@/prompts/services/auth";
+import { resolveBotProtectionPrompt } from "@/prompts/services/bot-protection";
+import { resolveCMSPrompt } from "@/prompts/services/cms";
+import { resolveEmailPrompt } from "@/prompts/services/email";
+import { resolveJobQueuePrompt } from "@/prompts/services/job-queue";
+import { resolveLoggingPrompt } from "@/prompts/services/logging";
+import { resolveObservabilityPrompt } from "@/prompts/services/observability";
+import { resolvePaymentsPrompt } from "@/prompts/services/payments";
+import { resolveRateLimitPrompt } from "@/prompts/services/rate-limit";
+import { resolveRealtimePrompt } from "@/prompts/services/realtime";
+import { resolveStateManagementPrompt } from "@/prompts/services/state-management";
+import { resolveWebMcpPrompt } from "@/prompts/services/web-mcp";
 import {
   AI_VALUES,
   ANIMATION_VALUES,
@@ -37,9 +194,34 @@ import {
   ELIXIR_APPLICATION_FRAMEWORK_VALUES,
   ELIXIR_DOCUMENTATION_VALUES,
   ELIXIR_CLUSTERING_VALUES,
+  ELIXIR_LOGGING_VALUES,
+  ELIXIR_CONFIG_VALUES,
+  ELIXIR_MESSAGE_QUEUE_VALUES,
+  ELIXIR_TEMPLATING_VALUES,
+  ELIXIR_CLI_VALUES,
   ELIXIR_REALTIME_VALUES,
   ELIXIR_TESTING_VALUES,
   ELIXIR_VALIDATION_VALUES,
+  RUBY_WEB_FRAMEWORK_VALUES,
+  RUBY_ORM_VALUES,
+  RUBY_AUTH_VALUES,
+  RUBY_TESTING_VALUES,
+  RUBY_VALIDATION_VALUES,
+  RUBY_CACHE_VALUES,
+  RUBY_JOB_QUEUE_VALUES,
+  RUBY_EMAIL_VALUES,
+  RUBY_LOGGING_VALUES,
+  RUBY_HTTP_CLIENT_VALUES,
+  RubyAuthSchema,
+  RubyOrmSchema,
+  RubyTestingSchema,
+  RubyValidationSchema,
+  RubyCacheSchema,
+  RubyJobQueueSchema,
+  RubyEmailSchema,
+  RubyLoggingSchema,
+  RubyHttpClientSchema,
+  RubyWebFrameworkSchema,
   ELIXIR_WEB_FRAMEWORK_VALUES,
   EMAIL_VALUES,
   FILE_UPLOAD_VALUES,
@@ -57,6 +239,13 @@ import {
   GO_AUTH_VALUES,
   GO_CLI_VALUES,
   GO_DI_VALUES,
+  CRYSTAL_WEB_FRAMEWORK_VALUES,
+  CRYSTAL_ORM_VALUES,
+  CRYSTAL_AUTH_VALUES,
+  CRYSTAL_TESTING_VALUES,
+  CRYSTAL_VALIDATION_VALUES,
+  CRYSTAL_CACHE_VALUES,
+  CRYSTAL_JOBS_VALUES,
   GO_LOGGING_VALUES,
   GO_MIGRATIONS_VALUES,
   GO_ORM_VALUES,
@@ -76,6 +265,16 @@ import {
   OBSERVABILITY_VALUES,
   ORM_VALUES,
   PAYMENTS_VALUES,
+  PhpAuthSchema,
+  PhpOrmSchema,
+  PhpTestingSchema,
+  PhpValidationSchema,
+  PhpCacheSchema,
+  PhpJobQueueSchema,
+  PhpEmailSchema,
+  PhpLoggingSchema,
+  PhpHttpClientSchema,
+  PhpWebFrameworkSchema,
   PYTHON_AI_VALUES,
   PYTHON_API_VALUES,
   PYTHON_AUTH_VALUES,
@@ -111,132 +310,6 @@ import {
   VALIDATION_VALUES,
   WEB_MCP_VALUES,
 } from "@/types";
-import { resolveAIPrompt } from "@/prompts/services/ai";
-import { resolveAnimationPrompt } from "@/prompts/services/animation";
-import { resolveWebMcpPrompt } from "@/prompts/services/web-mcp";
-import { resolveApiPrompt } from "@/prompts/architecture/api";
-import { resolveAstroIntegrationPrompt } from "@/prompts/developer/astro-integration";
-import { resolveAuthPrompt } from "@/prompts/services/auth";
-import { resolveBackendPrompt } from "@/prompts/architecture/backend";
-import { resolveBotProtectionPrompt } from "@/prompts/services/bot-protection";
-import { resolveCachingPrompt } from "@/prompts/data/caching";
-import { resolveCMSPrompt } from "@/prompts/services/cms";
-import { resolveCSSFrameworkPrompt } from "@/prompts/developer/css-framework";
-import { resolveDatabasePrompt } from "@/prompts/data/database";
-import { resolveDBSetupPrompt } from "@/prompts/data/database-setup";
-import {
-  resolveDotnetApiPrompt,
-  resolveDotnetAuthPrompt,
-  resolveDotnetCachingPrompt,
-  resolveDotnetDeployPrompt,
-  resolveDotnetJobQueuePrompt,
-  resolveDotnetLibrariesPrompt,
-  resolveDotnetObservabilityPrompt,
-  resolveDotnetOrmPrompt,
-  resolveDotnetRealtimePrompt,
-  resolveDotnetTestingPrompt,
-  resolveDotnetWebFrameworkPrompt,
-} from "@/prompts/ecosystems/dotnet-ecosystem";
-import {
-  resolveElixirApiPrompt,
-  resolveElixirAuthPrompt,
-  resolveElixirCachingPrompt,
-  resolveElixirDeployPrompt,
-  resolveElixirEmailPrompt,
-  resolveElixirHttpPrompt,
-  resolveElixirJobsPrompt,
-  resolveElixirJsonPrompt,
-  resolveElixirObservabilityPrompt,
-  resolveElixirOrmPrompt,
-  resolveElixirQualityPrompt,
-  resolveElixirI18nPrompt,
-  resolveElixirHttpServerPrompt,
-  resolveElixirApplicationFrameworkPrompt,
-  resolveElixirDocumentationPrompt,
-  resolveElixirClusteringPrompt,
-  resolveElixirRealtimePrompt,
-  resolveElixirTestingPrompt,
-  resolveElixirValidationPrompt,
-  resolveElixirWebFrameworkPrompt,
-} from "@/prompts/ecosystems/elixir-ecosystem";
-import { resolveEmailPrompt } from "@/prompts/services/email";
-import { resolveFileUploadPrompt } from "@/prompts/data/file-upload";
-import { resolveFormsPrompt } from "@/prompts/developer/forms";
-import { resolveFrontendPrompt } from "@/prompts/architecture/frontend";
-import {
-  resolveGoApiPrompt,
-  resolveGoAuthPrompt,
-  resolveGoCliPrompt,
-  resolveGoDIPrompt,
-  resolveGoLoggingPrompt,
-  resolveGoMigrationsPrompt,
-  resolveGoOrmPrompt,
-  resolveGoProtoToolingPrompt,
-  resolveGoQualityPrompt,
-  resolveGoTemplatingPrompt,
-  resolveGoValidationPrompt,
-  resolveGoWebFrameworkPrompt,
-} from "@/prompts/ecosystems/go-ecosystem";
-import {
-  resolveJavaAuthPrompt,
-  resolveJavaBuildToolPrompt,
-  resolveJavaLibrariesPrompt,
-  resolveJavaOrmPrompt,
-  resolveJavaTestingLibrariesPrompt,
-  resolveJavaWebFrameworkPrompt,
-} from "@/prompts/ecosystems/java-ecosystem";
-import { resolveJobQueuePrompt } from "@/prompts/services/job-queue";
-import { resolveLoggingPrompt } from "@/prompts/services/logging";
-import {
-  resolveMobileDeepLinkingPrompt,
-  resolveMobileLibrariesPrompt,
-  resolveMobileNavigationPrompt,
-  resolveMobileOTAPrompt,
-  resolveMobilePushPrompt,
-  resolveMobileStoragePrompt,
-  resolveMobileTestingPrompt,
-  resolveMobileUIPrompt,
-} from "@/prompts/architecture/mobile";
-import { resolveObservabilityPrompt } from "@/prompts/services/observability";
-import { resolveORMPrompt } from "@/prompts/data/orm";
-import { resolvePaymentsPrompt } from "@/prompts/services/payments";
-import { type PromptResolution } from "@/prompts/core/prompt-contract";
-import {
-  resolvePythonAiPrompt,
-  resolvePythonApiPrompt,
-  resolvePythonAuthPrompt,
-  resolvePythonCloudSdkPrompt,
-  resolvePythonDataPrompt,
-  resolvePythonGraphqlPrompt,
-  resolvePythonHttpClientPrompt,
-  resolvePythonMediaPrompt,
-  resolvePythonMessageQueuePrompt,
-  resolvePythonOrmPrompt,
-  resolvePythonQualityPrompt,
-  resolvePythonPackageManagerPrompt,
-  resolvePythonServerPrompt,
-  resolvePythonTaskQueuePrompt,
-  resolvePythonValidationPrompt,
-  resolvePythonWebFrameworkPrompt,
-} from "@/prompts/ecosystems/python-ecosystem";
-import { resolveRateLimitPrompt } from "@/prompts/services/rate-limit";
-import { resolveRealtimePrompt } from "@/prompts/services/realtime";
-import { resolveRuntimePrompt } from "@/prompts/architecture/runtime";
-import {
-  resolveRustApiPrompt,
-  resolveRustCachingPrompt,
-  resolveRustCliPrompt,
-  resolveRustErrorHandlingPrompt,
-  resolveRustFrontendPrompt,
-  resolveRustLibrariesPrompt,
-  resolveRustLoggingPrompt,
-  resolveRustOrmPrompt,
-  resolveRustWebFrameworkPrompt,
-} from "@/prompts/ecosystems/rust-ecosystem";
-import { resolveStateManagementPrompt } from "@/prompts/services/state-management";
-import { resolveTestingPrompt } from "@/prompts/developer/testing";
-import { resolveUILibraryPrompt } from "@/prompts/developer/ui-library";
-import { resolveValidationPrompt } from "@/prompts/developer/validation";
 
 type SingleOrMultiValue = string | string[];
 
@@ -371,7 +444,10 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   jobQueue: {
     schemaValues: JOB_QUEUE_VALUES,
     resolve: resolveJobQueuePrompt,
-    coverageContexts: [{ backend: "hono", runtime: "bun", database: "postgres" }, { backend: "none" }],
+    coverageContexts: [
+      { backend: "hono", runtime: "bun", database: "postgres" },
+      { backend: "none" },
+    ],
   },
   logging: {
     schemaValues: LOGGING_VALUES,
@@ -666,6 +742,47 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
     resolve: ({ value }: { value?: string } = {}) => resolveGoDIPrompt(value as any),
     coverageContexts: [{}],
   },
+  crystalWebFramework: {
+    schemaValues: CRYSTAL_WEB_FRAMEWORK_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveCrystalWebFrameworkPrompt(value),
+    coverageContexts: [{}],
+  },
+  crystalOrm: {
+    schemaValues: CRYSTAL_ORM_VALUES,
+    resolve: ({ value, ...selection }: { value?: string } & CrystalSelection = {}) =>
+      resolveCrystalOrmPrompt(value, selection),
+    coverageContexts: [{ crystalWebFramework: "kemal" }, { crystalWebFramework: "lucky" }, { crystalWebFramework: "marten" }],
+  },
+  crystalAuth: {
+    schemaValues: CRYSTAL_AUTH_VALUES,
+    resolve: ({ value, ...selection }: { value?: string } & CrystalSelection = {}) =>
+      resolveCrystalAuthPrompt(value, selection),
+    coverageContexts: [{ crystalWebFramework: "kemal" }, { crystalWebFramework: "lucky" }, { crystalWebFramework: "marten", crystalOrm: "marten-orm" }],
+  },
+  crystalTesting: {
+    schemaValues: CRYSTAL_TESTING_VALUES,
+    resolve: ({ value, ...selection }: { value?: string } & CrystalSelection = {}) =>
+      resolveCrystalTestingPrompt(value, selection),
+    coverageContexts: [{ crystalWebFramework: "kemal" }, { crystalWebFramework: "lucky" }],
+  },
+  crystalValidation: {
+    schemaValues: CRYSTAL_VALIDATION_VALUES,
+    resolve: ({ value, ...selection }: { value?: string } & CrystalSelection = {}) =>
+      resolveCrystalValidationPrompt(value, selection),
+    coverageContexts: [{ crystalWebFramework: "kemal" }, { crystalWebFramework: "marten" }],
+  },
+  crystalCache: {
+    schemaValues: CRYSTAL_CACHE_VALUES,
+    resolve: ({ value, ...selection }: { value?: string } & CrystalSelection = {}) =>
+      resolveCrystalCachePrompt(value, selection),
+    coverageContexts: [{ crystalWebFramework: "kemal" }],
+  },
+  crystalJobs: {
+    schemaValues: CRYSTAL_JOBS_VALUES,
+    resolve: ({ value, ...selection }: { value?: string } & CrystalSelection = {}) =>
+      resolveCrystalJobsPrompt(value, selection),
+    coverageContexts: [{ crystalWebFramework: "kemal" }],
+  },
   javaWebFramework: {
     schemaValues: JAVA_WEB_FRAMEWORK_VALUES,
     resolve: ({ value }: { value?: string } = {}) => resolveJavaWebFrameworkPrompt(value as any),
@@ -752,6 +869,201 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
     schemaValues: DOTNET_LIBRARIES_VALUES,
     resolve: ({ value }: { value?: string[] } = {}) => resolveDotnetLibrariesPrompt(value as any),
     coverageContexts: [{}, { value: ["none"] }],
+  },
+  rubyWebFramework: {
+    schemaValues: RUBY_WEB_FRAMEWORK_VALUES,
+    resolve: ({ value, allowNone }: { value?: string; allowNone?: boolean } = {}) =>
+      resolveRubyWebFrameworkPrompt(
+        value === undefined ? undefined : RubyWebFrameworkSchema.parse(value),
+        allowNone,
+      ),
+    coverageContexts: [{}, { allowNone: true }],
+  },
+  rubyOrm: {
+    schemaValues: RUBY_ORM_VALUES,
+    resolve: ({ value }: { value?: string } = {}) =>
+      resolveRubyOrmPrompt(value === undefined ? undefined : RubyOrmSchema.parse(value)),
+    coverageContexts: [{}],
+  },
+  rubyAuth: {
+    schemaValues: RUBY_AUTH_VALUES,
+    resolve: ({ value }: { value?: string } = {}) =>
+      resolveRubyAuthPrompt(value === undefined ? undefined : RubyAuthSchema.parse(value)),
+    coverageContexts: [{}],
+  },
+  rubyTesting: {
+    schemaValues: RUBY_TESTING_VALUES,
+    resolve: ({ value }: { value?: string } = {}) =>
+      resolveRubyTestingPrompt(value === undefined ? undefined : RubyTestingSchema.parse(value)),
+    coverageContexts: [{}],
+  },
+  rubyValidation: {
+    schemaValues: RUBY_VALIDATION_VALUES,
+    resolve: ({ value }: { value?: string } = {}) =>
+      resolveRubyValidationPrompt(
+        value === undefined ? undefined : RubyValidationSchema.parse(value),
+      ),
+    coverageContexts: [{}],
+  },
+  rubyCache: {
+    schemaValues: RUBY_CACHE_VALUES,
+    resolve: ({ value }: { value?: string } = {}) =>
+      resolveRubyCachePrompt(value === undefined ? undefined : RubyCacheSchema.parse(value)),
+    coverageContexts: [{}],
+  },
+  rubyJobQueue: {
+    schemaValues: RUBY_JOB_QUEUE_VALUES,
+    coverageContexts: [{}, { rubyWebFramework: "rails", rubyOrm: "active-record" }],
+    resolve: ({
+      value,
+      rubyWebFramework,
+      rubyOrm,
+    }: { value?: string; rubyWebFramework?: string; rubyOrm?: string } = {}) =>
+      resolveRubyJobQueuePrompt(
+        value === undefined ? undefined : RubyJobQueueSchema.parse(value),
+        rubyWebFramework === undefined ? undefined : RubyWebFrameworkSchema.parse(rubyWebFramework),
+        rubyOrm === undefined ? undefined : RubyOrmSchema.parse(rubyOrm),
+      ),
+  },
+  rubyEmail: {
+    schemaValues: RUBY_EMAIL_VALUES,
+    coverageContexts: [{}, { rubyWebFramework: "rails" }],
+    resolve: ({ value, rubyWebFramework }: { value?: string; rubyWebFramework?: string } = {}) =>
+      resolveRubyEmailPrompt(
+        value === undefined ? undefined : RubyEmailSchema.parse(value),
+        rubyWebFramework === undefined ? undefined : RubyWebFrameworkSchema.parse(rubyWebFramework),
+      ),
+  },
+  rubyLogging: {
+    schemaValues: RUBY_LOGGING_VALUES,
+    coverageContexts: [{}, { rubyWebFramework: "rails" }],
+    resolve: ({ value, rubyWebFramework }: { value?: string; rubyWebFramework?: string } = {}) =>
+      resolveRubyLoggingPrompt(
+        value === undefined ? undefined : RubyLoggingSchema.parse(value),
+        rubyWebFramework === undefined ? undefined : RubyWebFrameworkSchema.parse(rubyWebFramework),
+      ),
+  },
+  rubyHttpClient: {
+    schemaValues: RUBY_HTTP_CLIENT_VALUES,
+    resolve: ({ value }: { value?: string } = {}) =>
+      resolveRubyHttpClientPrompt(value === undefined ? undefined : RubyHttpClientSchema.parse(value)),
+    coverageContexts: [{}],
+  },
+  phpWebFramework: {
+    schemaValues: PhpWebFrameworkSchema.options,
+    coverageContexts: [{}],
+    resolve: ({ value }: { value?: string } = {}) =>
+      resolvePhpWebFrameworkPrompt(
+        value === undefined ? undefined : PhpWebFrameworkSchema.parse(value),
+      ),
+  },
+  phpOrm: {
+    schemaValues: PhpOrmSchema.options,
+    coverageContexts: [{}, { phpWebFramework: "laravel" }, { phpWebFramework: "symfony" }],
+    resolve: ({ value, phpWebFramework }: { value?: string; phpWebFramework?: string } = {}) =>
+      resolvePhpOrmPrompt(
+        value === undefined ? undefined : PhpOrmSchema.parse(value),
+        phpWebFramework === undefined ? undefined : PhpWebFrameworkSchema.parse(phpWebFramework),
+      ),
+  },
+  phpTesting: {
+    schemaValues: PhpTestingSchema.options,
+    coverageContexts: [{}],
+    resolve: ({ value }: { value?: string } = {}) =>
+      resolvePhpTestingPrompt(value === undefined ? undefined : PhpTestingSchema.parse(value)),
+  },
+  phpAuth: {
+    schemaValues: PhpAuthSchema.options,
+    coverageContexts: [{}, { phpWebFramework: "slim" }, { phpWebFramework: "symfony" }],
+    resolve: ({ value, phpWebFramework }: { value?: string; phpWebFramework?: string } = {}) =>
+      resolvePhpAuthPrompt(
+        value === undefined ? undefined : PhpAuthSchema.parse(value),
+        phpWebFramework === undefined ? undefined : PhpWebFrameworkSchema.parse(phpWebFramework),
+      ),
+  },
+  phpValidation: {
+    schemaValues: PhpValidationSchema.options,
+    coverageContexts: [
+      {},
+      { phpWebFramework: "slim" },
+      { phpWebFramework: "laravel" },
+      { phpWebFramework: "symfony" },
+    ],
+    resolve: ({ value, phpWebFramework }: { value?: string; phpWebFramework?: string } = {}) =>
+      resolvePhpValidationPrompt(
+        value === undefined ? undefined : PhpValidationSchema.parse(value),
+        phpWebFramework === undefined ? undefined : PhpWebFrameworkSchema.parse(phpWebFramework),
+      ),
+  },
+  phpCache: {
+    schemaValues: PhpCacheSchema.options,
+    coverageContexts: [
+      {},
+      { phpWebFramework: "slim" },
+      { phpWebFramework: "laravel" },
+      { phpWebFramework: "symfony" },
+    ],
+    resolve: ({ value, phpWebFramework }: { value?: string; phpWebFramework?: string } = {}) =>
+      resolvePhpCachePrompt(
+        value === undefined ? undefined : PhpCacheSchema.parse(value),
+        phpWebFramework === undefined ? undefined : PhpWebFrameworkSchema.parse(phpWebFramework),
+      ),
+  },
+  phpJobQueue: {
+    schemaValues: PhpJobQueueSchema.options,
+    coverageContexts: [
+      {},
+      { phpWebFramework: "slim" },
+      { phpWebFramework: "laravel" },
+      { phpWebFramework: "symfony" },
+    ],
+    resolve: ({ value, phpWebFramework }: { value?: string; phpWebFramework?: string } = {}) =>
+      resolvePhpJobQueuePrompt(
+        value === undefined ? undefined : PhpJobQueueSchema.parse(value),
+        phpWebFramework === undefined ? undefined : PhpWebFrameworkSchema.parse(phpWebFramework),
+      ),
+  },
+  phpEmail: {
+    schemaValues: PhpEmailSchema.options,
+    coverageContexts: [
+      {},
+      { phpWebFramework: "slim" },
+      { phpWebFramework: "laravel" },
+      { phpWebFramework: "symfony" },
+    ],
+    resolve: ({ value, phpWebFramework }: { value?: string; phpWebFramework?: string } = {}) =>
+      resolvePhpEmailPrompt(
+        value === undefined ? undefined : PhpEmailSchema.parse(value),
+        phpWebFramework === undefined ? undefined : PhpWebFrameworkSchema.parse(phpWebFramework),
+      ),
+  },
+  phpLogging: {
+    schemaValues: PhpLoggingSchema.options,
+    coverageContexts: [
+      {},
+      { phpWebFramework: "slim" },
+      { phpWebFramework: "laravel" },
+      { phpWebFramework: "symfony" },
+    ],
+    resolve: ({ value, phpWebFramework }: { value?: string; phpWebFramework?: string } = {}) =>
+      resolvePhpLoggingPrompt(
+        value === undefined ? undefined : PhpLoggingSchema.parse(value),
+        phpWebFramework === undefined ? undefined : PhpWebFrameworkSchema.parse(phpWebFramework),
+      ),
+  },
+  phpHttpClient: {
+    schemaValues: PhpHttpClientSchema.options,
+    coverageContexts: [
+      {},
+      { phpWebFramework: "slim" },
+      { phpWebFramework: "laravel" },
+      { phpWebFramework: "symfony" },
+    ],
+    resolve: ({ value, phpWebFramework }: { value?: string; phpWebFramework?: string } = {}) =>
+      resolvePhpHttpClientPrompt(
+        value === undefined ? undefined : PhpHttpClientSchema.parse(value),
+        phpWebFramework === undefined ? undefined : PhpWebFrameworkSchema.parse(phpWebFramework),
+      ),
   },
   elixirWebFramework: {
     schemaValues: ELIXIR_WEB_FRAMEWORK_VALUES,
@@ -847,6 +1159,31 @@ export const PROMPT_RESOLVER_REGISTRY: ResolverRegistry = {
   elixirClustering: {
     schemaValues: ELIXIR_CLUSTERING_VALUES,
     resolve: ({ value }: { value?: string } = {}) => resolveElixirClusteringPrompt(value as any),
+    coverageContexts: [{}],
+  },
+  elixirLogging: {
+    schemaValues: ELIXIR_LOGGING_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirLoggingPrompt(value),
+    coverageContexts: [{}],
+  },
+  elixirConfig: {
+    schemaValues: ELIXIR_CONFIG_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirConfigPrompt(value),
+    coverageContexts: [{}],
+  },
+  elixirMessageQueue: {
+    schemaValues: ELIXIR_MESSAGE_QUEUE_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirMessageQueuePrompt(value),
+    coverageContexts: [{}],
+  },
+  elixirTemplating: {
+    schemaValues: ELIXIR_TEMPLATING_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirTemplatingPrompt(value),
+    coverageContexts: [{}],
+  },
+  elixirCli: {
+    schemaValues: ELIXIR_CLI_VALUES,
+    resolve: ({ value }: { value?: string } = {}) => resolveElixirCliPrompt(value),
     coverageContexts: [{}],
   },
   elixirDeploy: {

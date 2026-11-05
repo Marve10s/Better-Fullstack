@@ -10,7 +10,7 @@ import type {
 import {
   EVIDENCE_SCHEMA_VERSION,
   type SmokeEvidenceEnvelope,
-} from "@scripts/verified-combinations/evidence";
+} from "@scripts/evidence/smoke-evidence";
 import { ensureBuiltCliBinary } from "@testing/lib/cli-binary";
 import {
   formatCliScaffoldFailure,
@@ -446,7 +446,12 @@ if (args.majorDeps) {
     console.log();
   }
 } else if (args.preset) {
-  combos = getPresetCombos(args.preset);
+  combos = getPresetCombos(
+    args.preset,
+    args.partitionIndex !== undefined && args.partitionTotal
+      ? { index: args.partitionIndex, total: args.partitionTotal }
+      : undefined,
+  );
   const flags = [
     args.devCheck && "dev-check",
     args.strict && "strict",

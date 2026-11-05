@@ -1,0 +1,59 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\EventSubscriber;
+
+use App\CorsPolicy;
+use App\GreetingEndpoint;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\KernelEvents;
+
+final readonly class HttpContractSubscriber implements EventSubscriberInterface
+{
+    private CorsPolicy $cors;
+
+    public function __construct(#[Autowire(param: 'app.cors_origin')] ?string $corsOrigin)
+    {
+        $this->cors = new CorsPolicy($corsOrigin ?? '');
+    }
+
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::REQUEST => ['answerPreflight', 256],
+            KernelEvents::EXCEPTION => 'renderJsonError',
+            KernelEvents::RESPONSE => 'applyCors',
+        ];
+    }
+
+    public function answerPreflight(RequestEvent $event): void
+    {
+        if ($event->isMainRequest() && $event->getRequest()->isMethod('OPTIONS')) {
+            $event->setResponse(new Response(null, 204));
+        }
+    }
+
+    public function renderJsonError(ExceptionEvent $event): void
+    {
+        $error = $event->getThrowable();
+        $status = $error instanceof HttpExceptionInterface ? $error->getStatusCode() : 500;
+        $headers = $error instanceof HttpExceptionInterface ? $error->getHeaders() : [];
+        $event->setResponse(new JsonResponse(['error' => GreetingEndpoint::errorFor($status)], $status, $headers));
+    }
+
+    public function applyCors(ResponseEvent $event): void
+    {
+        $origin = (string) $event->getRequest()->headers->get('Origin', '');
+        foreach ($this->cors->headersFor($origin) as $name => $value) {
+            $event->getResponse()->headers->set($name, $value);
+        }
+    }
+}

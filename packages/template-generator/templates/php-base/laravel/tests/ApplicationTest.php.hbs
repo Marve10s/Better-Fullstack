@@ -1,0 +1,61 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Testing\TestResponse;
+
+final class ApplicationTest extends TestCase
+{
+    private function sendGreeting(string $body, string $contentType = 'application/json'): TestResponse
+    {
+        return $this->call('POST', '/api/greetings', server: ['CONTENT_TYPE' => $contentType], content: $body);
+    }
+
+    public function testReturnsParsedGreeting(): void
+    {
+        $this->sendGreeting('{"name":" Ada ","repetitions":2}')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/json')
+            ->assertExactJson(['message' => 'Hello, Ada! Hello, Ada!', 'repetitions' => 2]);
+    }
+
+    public function testRejectsInvalidBodies(): void
+    {
+        foreach (['{"name":""}', '{"name":7}', '{"name":"Ada","repetitions":"2"}', '{"name":"Ada","repetitions":6}', '{"name":"Ada","unknown":true}', '[]', 'null'] as $body) {
+            $this->sendGreeting($body)->assertStatus(422)->assertJsonPath('error', 'validation_failed');
+        }
+    }
+
+    public function testRejectsMalformedJsonWrongMediaTypeAndLargeBodies(): void
+    {
+        $this->sendGreeting('{', 'text/plain')->assertStatus(415);
+        $this->sendGreeting('{')->assertStatus(400)->assertJsonPath('error', 'invalid_json');
+        $body = str_pad('{"name":"Ada"}', 4096);
+        $this->sendGreeting($body)->assertOk();
+        $this->sendGreeting($body . ' ')->assertStatus(413)->assertJsonPath('error', 'payload_too_large');
+    }
+
+    public function testHealthAndMissingRoute(): void
+    {
+        $this->get('/health')->assertExactJson(['status' => 'ok', 'framework' => 'laravel']);
+        $this->get('/missing')->assertNotFound()->assertExactJson(['error' => 'not_found']);
+    }
+
+    public function testCorsAllowsEachConfiguredOriginAndRejectsOthers(): void
+    {
+        config(['cors.allowed_origins' => 'http://localhost:5173, http://localhost:8080']);
+        foreach (['http://localhost:5173', 'http://localhost:8080'] as $origin) {
+            foreach (['GET', 'OPTIONS'] as $method) {
+                $this->call($method, '/health', server: ['HTTP_ORIGIN' => $origin])
+                    ->assertHeader('Access-Control-Allow-Origin', $origin)
+                    ->assertHeader('Vary', 'Origin');
+            }
+        }
+        foreach (['http://localhost:51730', 'http://localhost:8080.evil', 'https://other.example'] as $origin) {
+            $this->call('GET', '/health', server: ['HTTP_ORIGIN' => $origin])->assertHeaderMissing('Access-Control-Allow-Origin');
+        }
+    }
+}

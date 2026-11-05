@@ -1,0 +1,200 @@
+{{#if (ne crystalWebFramework "none")}}
+require "http/client"
+require "json"
+require "socket"
+{{#if (or (eq crystalOrm "avram") (eq crystalJobs "sidekiq") (eq crystalJobs "mosquito"))}}
+require "random/secure"
+{{/if}}
+{{#if (eq crystalOrm "avram")}}
+require "uri"
+{{/if}}
+
+server_env = {"HOST" => "127.0.0.1", "KEMAL_ENV" => "production", "CORS_ORIGIN" => "http://localhost:5173,http://localhost:8080"}
+{{#if (ne crystalAuth "none")}}
+server_env["AUTH_USERNAME"] = "{{#if (eq crystalAuth "marten-auth")}}proof@example.com{{else}}proof{{/if}}"
+server_env["AUTH_PASSWORD"] = "proof-password"
+{{/if}}
+{{#if (or (eq crystalOrm "crystal-db") (eq crystalOrm "marten-orm"))}}
+database_path = File.tempname("proof", ".sqlite3")
+{{/if}}
+{{#if (eq crystalCache "file")}}
+server_env["CACHE_DIR"] = File.tempname("proof-cache")
+{{/if}}
+{{#if (eq crystalOrm "crystal-db")}}
+server_env["DATABASE_URL"] = "sqlite3://#{database_path}"
+{{/if}}
+{{#if (eq crystalOrm "marten-orm")}}
+server_env["DATABASE_PATH"] = database_path
+raise "migration failed" unless Process.run("crystal", ["run", "manage.cr", "--", "migrate"], env: server_env, output: Process::Redirect::Inherit, error: Process::Redirect::Inherit).success?
+{{#if (eq crystalAuth "marten-auth")}}
+raise "seed failed" unless Process.run("crystal", ["run", "manage.cr", "--", "seed"], env: server_env, output: Process::Redirect::Inherit, error: Process::Redirect::Inherit).success?
+{{/if}}
+{{/if}}
+{{#if (eq crystalOrm "avram")}}
+database_uri = URI.parse(ENV.fetch("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/{{shardName}}_development"))
+database_uri.path = "/bfs_proof_#{Random::Secure.hex(8)}"
+server_env["DATABASE_URL"] = database_uri.to_s
+at_exit do
+  raise "proof database cleanup failed" unless Process.run("crystal", ["run", "scripts/db_migrate.cr", "--", "drop"], env: server_env, output: Process::Redirect::Inherit, error: Process::Redirect::Inherit).success?
+end
+raise "migration failed" unless Process.run("crystal", ["run", "scripts/db_migrate.cr"], env: server_env, output: Process::Redirect::Inherit, error: Process::Redirect::Inherit).success?
+{{/if}}
+
+{{#if (or (eq crystalJobs "sidekiq") (eq crystalJobs "mosquito"))}}
+server_env["JOBS_QUEUE"] = "bfs-proof-#{Random::Secure.hex(8)}"
+{{/if}}
+
+probe = TCPServer.new("127.0.0.1", 0)
+port = probe.local_address.port
+probe.close
+
+invalid_output = IO::Memory.new
+invalid_process = Process.new("./bin/server", env: {"PORT" => "invalid"}, output: invalid_output, error: invalid_output)
+invalid_exited = Channel(Process::Status).new(1)
+spawn { invalid_exited.send(invalid_process.wait) }
+select
+when invalid = invalid_exited.receive
+  raise "invalid PORT did not exit 2" unless invalid.exit_code == 2
+when timeout(5.seconds)
+  invalid_process.signal(Signal::KILL)
+  select
+  when invalid_exited.receive
+  when timeout(5.seconds)
+    raise "invalid PORT process could not be reaped"
+  end
+  raise "invalid PORT did not fail before binding"
+end
+raise "invalid PORT diagnostic missing" unless invalid_output.to_s.includes?("PORT must be an integer")
+
+process = Process.new("./bin/server", env: server_env.merge({"PORT" => port.to_s}), output: Process::Redirect::Inherit, error: Process::Redirect::Inherit)
+{{#if (or (eq crystalJobs "sidekiq") (eq crystalJobs "mosquito"))}}
+worker = Process.new("./bin/worker", env: server_env, output: Process::Redirect::Inherit, error: Process::Redirect::Inherit)
+{{/if}}
+exited = Channel(Process::Status).new(1)
+spawn { exited.send(process.wait) }
+finished = false
+
+begin
+  client = HTTP::Client.new("127.0.0.1", port)
+  client.connect_timeout = 1.second
+  client.read_timeout = 2.seconds
+  deadline = Time.instant + 15.seconds
+  loop do
+    begin
+      health = client.get("/health")
+      break if health.status_code == 200 && JSON.parse(health.body)["status"].as_s == "ok"
+    rescue IO::Error | Socket::Error
+    end
+    raise "server did not become ready" if Time.instant >= deadline
+    sleep 100.milliseconds
+  end
+
+  valid = client.get("/api/hello?name=Crystal", HTTP::Headers{"Origin" => "http://localhost:5173"})
+  raise "valid greeting failed" unless valid.status_code == 200 && JSON.parse(valid.body)["message"].as_s == "Hello, Crystal!"
+  raise "CORS origin failed" unless valid.headers["Access-Control-Allow-Origin"]? == "http://localhost:5173"
+  raise "content type failed" unless valid.headers["Content-Type"].starts_with?("application/json")
+  second_origin = client.get("/health", HTTP::Headers{"Origin" => "http://localhost:8080"})
+  raise "second CORS origin failed" unless second_origin.headers["Access-Control-Allow-Origin"]? == "http://localhost:8080"
+  ["http://localhost:9999", "http://localhost:51730"].each do |origin|
+    rejected = client.get("/health", HTTP::Headers{"Origin" => origin})
+    raise "untrusted CORS origin accepted" unless rejected.headers["Access-Control-Allow-Origin"]?.nil?
+  end
+
+  invalid_name = client.get("/api/hello?name=%20%20")
+  raise "invalid name accepted" unless invalid_name.status_code == 422 && JSON.parse(invalid_name.body)["error"].as_s.includes?("name")
+
+  headers = HTTP::Headers{"Content-Type" => "application/json"}
+  echoed = client.post("/api/echo", headers, %({"name":"Crystal"}))
+  raise "POST greeting failed" unless echoed.status_code == 200 && JSON.parse(echoed.body)["message"].as_s == "Hello, Crystal!"
+  malformed = client.post("/api/echo", headers, "{")
+  raise "malformed JSON accepted" unless malformed.status_code == 400 && JSON.parse(malformed.body)["error"].as_s == "invalid JSON"
+  wrong_type = client.post("/api/echo", headers, %({"name":12}))
+  raise "non-string name accepted" unless wrong_type.status_code == 422
+{{#if (ne crystalOrm "none")}}
+  stored = client.post("/api/greetings", headers, %({"name":"Proof"}))
+  raise "greeting was not stored" unless stored.status_code == 201 && JSON.parse(stored.body)["name"].as_s == "Proof"
+  listed = client.get("/api/greetings")
+  raise "stored greeting missing" unless listed.status_code == 200 && JSON.parse(listed.body)["greetings"].as_a.map(&.as_s).includes?("Proof")
+  rejected_greeting = client.post("/api/greetings", headers, %({"name":"  "}))
+  raise "invalid greeting stored" unless rejected_greeting.status_code == 422
+{{/if}}
+{{#if (ne crystalAuth "none")}}
+  username = server_env["AUTH_USERNAME"]
+  rejected_login = client.post("/api/auth/login", headers, {username: username, password: "wrong"}.to_json)
+  raise "wrong password accepted" unless rejected_login.status_code == 401
+  raise "anonymous user accepted" unless client.get("/api/me").status_code == 401
+  login = client.post("/api/auth/login", headers, {username: username, password: "proof-password"}.to_json)
+  raise "sign-in failed" unless login.status_code == 200
+{{#if (eq crystalAuth "jwt")}}
+  auth_headers = HTTP::Headers{"Authorization" => "Bearer #{JSON.parse(login.body)["token"].as_s}"}
+  raise "tampered token accepted" unless client.get("/api/me", HTTP::Headers{"Authorization" => "Bearer #{JSON.parse(login.body)["token"].as_s}x"}).status_code == 401
+{{else}}
+  auth_headers = login.cookies.add_request_headers(HTTP::Headers.new)
+{{/if}}
+  me = client.get("/api/me", auth_headers)
+  raise "signed-in user missing" unless me.status_code == 200 && JSON.parse(me.body)["username"].as_s == username
+{{#if (ne crystalAuth "jwt")}}
+  logout = client.post("/api/auth/logout", auth_headers)
+  raise "sign-out failed" unless logout.status_code == 204
+  signed_out = {{#if (eq crystalAuth "kemal-session")}}auth_headers{{else}}logout.cookies.add_request_headers(HTTP::Headers.new){{/if}}
+  raise "signed-out session accepted" unless client.get("/api/me", signed_out).status_code == 401
+{{/if}}
+{{/if}}
+{{#if (ne crystalJobs "none")}}
+  raise "invalid job accepted" unless client.post("/api/jobs", headers, %({"name":"  "})).status_code == 422
+  queued = client.post("/api/jobs", headers, %({"name":"Proof"}))
+  raise "job enqueue failed: #{queued.status_code}" unless queued.status_code == 202
+  job_id = JSON.parse(queued.body)["id"].as_s
+  job_deadline = Time.instant + 15.seconds
+  loop do
+    job = JSON.parse(client.get("/api/jobs?id=#{job_id}").body)
+    break if job["status"].as_s == "done" && job["message"].as_s == "Hello, Proof!"
+    raise "job did not finish" if Time.instant >= job_deadline
+    sleep 100.milliseconds
+  end
+{{/if}}
+{{#if (ne crystalCache "none")}}
+  cached = client.get("/api/cached-time")
+  raise "cached time failed: #{cached.status_code}" unless cached.status_code == 200 && JSON.parse(cached.body)["cached_at"].as_s?
+  raise "cached time changed before expiry" unless client.get("/api/cached-time").body == cached.body
+{{/if}}
+  oversized = client.post("/api/echo", headers, %({"name":"#{"x" * 5000}"}))
+  raise "oversized body accepted" unless oversized.status_code == {{#if (eq crystalWebFramework "marten")}}400{{else}}413{{/if}}
+  client.close
+
+  process.signal(Signal::TERM)
+  select
+  when status = exited.receive
+    finished = true
+    raise "shutdown failed" unless status.success?
+  when timeout(5.seconds)
+    raise "server failed to shut down after SIGTERM"
+  end
+
+  begin
+    TCPServer.open("127.0.0.1", port) { }
+  rescue ex : Socket::Error
+    raise "listener remained open: #{ex.message}"
+  end
+  puts ({proof: "crystal-{{crystalWebFramework}}-http-v1", success: true, assertions: ["invalid-port", "health-json", "hello-json", "cors", "cors-allowlist", "content-type", "blank-name-422", "post-json", "malformed-json-400", "wrong-type-422", "body-limit-{{#if (eq crystalWebFramework "marten")}}400{{else}}413{{/if}}", "sigterm-exit", "port-released"{{#if (ne crystalOrm "none")}}, "{{crystalOrm}}-persisted-greeting"{{/if}}{{#if (ne crystalAuth "none")}}, "{{crystalAuth}}-current-user"{{/if}}{{#if (ne crystalCache "none")}}, "{{crystalCache}}-cached-time"{{/if}}{{#if (ne crystalJobs "none")}}, "{{crystalJobs}}-job-done"{{/if}}]}).to_json
+ensure
+{{#if (or (eq crystalJobs "sidekiq") (eq crystalJobs "mosquito"))}}
+  if worker.exists?
+    worker.signal(Signal::TERM)
+    worker.wait
+  end
+{{/if}}
+  unless finished
+    if process.exists?
+      process.signal(Signal::KILL)
+    end
+    select
+    when exited.receive
+    when timeout(5.seconds)
+    end
+  end
+end
+{{#if (or (eq crystalOrm "crystal-db") (eq crystalOrm "marten-orm"))}}
+File.delete?(database_path)
+{{/if}}
+{{/if}}

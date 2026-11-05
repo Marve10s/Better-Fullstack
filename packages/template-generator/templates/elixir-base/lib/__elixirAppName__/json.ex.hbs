@@ -1,0 +1,7 @@
+defmodule {{elixirModuleName}}.JSON do
+  def encode!(data), do: data |> encode_to_iodata!() |> IO.iodata_to_binary()
+
+  def encode_to_iodata!(data), do: :jiffy.encode(data, [:use_nil])
+
+  def decode!(data), do: :jiffy.decode(data, [:return_maps, :use_nil])
+end

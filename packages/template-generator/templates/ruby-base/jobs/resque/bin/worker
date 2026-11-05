@@ -1,0 +1,5 @@
+require "bundler/setup"
+require_relative "../jobs"
+
+worker = Resque::Worker.new(BetterFullstack::Jobs::QUEUE)
+worker.work(Float(ENV.fetch("WORKER_POLL_INTERVAL", "1")))

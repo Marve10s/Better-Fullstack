@@ -5,8 +5,11 @@ export type BuilderSearchPreferences = Record<string, string>;
 type SearchStorage = Pick<Storage, "getItem" | "setItem">;
 
 function getBrowserStorage(): SearchStorage | null {
-  if (typeof window === "undefined" || typeof window.localStorage === "undefined") return null;
-  return window.localStorage;
+  try {
+    return typeof window === "undefined" ? null : (window.localStorage ?? null);
+  } catch {
+    return null;
+  }
 }
 
 export function parseBuilderSearchPreferences(raw: string | null): BuilderSearchPreferences {
@@ -31,7 +34,11 @@ export function loadBuilderSearchPreferences(
   storage: SearchStorage | null = getBrowserStorage(),
 ): BuilderSearchPreferences {
   if (!storage) return {};
-  return parseBuilderSearchPreferences(storage.getItem(BUILDER_SEARCH_STORAGE_KEY));
+  try {
+    return parseBuilderSearchPreferences(storage.getItem(BUILDER_SEARCH_STORAGE_KEY));
+  } catch {
+    return {};
+  }
 }
 
 export function saveBuilderSearchPreferences(
@@ -39,7 +46,11 @@ export function saveBuilderSearchPreferences(
   storage: SearchStorage | null = getBrowserStorage(),
 ) {
   if (!storage) return;
-  storage.setItem(BUILDER_SEARCH_STORAGE_KEY, JSON.stringify(preferences));
+  try {
+    storage.setItem(BUILDER_SEARCH_STORAGE_KEY, JSON.stringify(preferences));
+  } catch {
+    return;
+  }
 }
 
 export function getBuilderSearchScope(ecosystem: string, javaLanguage: string) {

@@ -15,15 +15,17 @@ import {
   ELIXIR_QUALITY_VALUES,
   ELIXIR_TESTING_VALUES,
 } from "@better-fullstack/types";
-import { describe, expect, it } from "bun:test";
-
-import { createVirtual } from "@/index";
 import {
   getVirtualTreeFileContent,
   hasVirtualFile,
   listVirtualTreeFilePaths,
   listVirtualTreeFiles,
 } from "@test/support/virtual-tree-utils";
+import { describe, expect, it } from "bun:test";
+
+import { validateFullConfig } from "@/config/config-validation";
+import { createVirtual } from "@/index";
+import { runWithContext } from "@/presentation/context";
 
 const base = {
   ecosystem: "elixir" as const,
@@ -36,6 +38,54 @@ const base = {
 };
 
 describe("Elixir library expansion", () => {
+  it("routes Fly gRPC over TLS and HTTP/2 without replacing Phoenix", async () => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "elixir-fly-grpc",
+      elixirApi: "grpc",
+      elixirDeploy: "fly",
+      elixirOrm: "none",
+      elixirAuth: "none",
+    });
+    expect(result.success).toBe(true);
+    const tree = result.tree!;
+    const fly = Bun.TOML.parse(getVirtualTreeFileContent(tree, "fly.toml") ?? "");
+    expect(fly.http_service).toMatchObject({ internal_port: 4000 });
+    expect(fly.env).toMatchObject({ GRPC_PORT: "50051" });
+    expect(fly.services).toEqual([
+      expect.objectContaining({
+        internal_port: 50051,
+        protocol: "tcp",
+        ports: [{ port: 50051, handlers: ["tls", "http"], http_options: { h2_backend: true } }],
+      }),
+    ]);
+    expect(getVirtualTreeFileContent(tree, "config/runtime.exs")).toContain(
+      "adapter_opts: [ip: {0, 0, 0, 0, 0, 0, 0, 0}, ipv6_v6only: false]",
+    );
+    expect(getVirtualTreeFileContent(tree, "README.md")).toContain(".fly.dev:50051");
+  });
+
+  it.each(["none", "docker", "fly", "gigalixir", "mix-release"] as const)(
+    "documents Docker only when the %s clustered release generates it",
+    async (elixirDeploy) => {
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-cluster-docs",
+        elixirWebFramework: "none",
+        elixirApi: "none",
+        elixirRealtime: "none",
+        elixirOrm: "none",
+        elixirClustering: "libcluster",
+        elixirDeploy,
+      });
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      expect((getVirtualTreeFileContent(tree, "README.md") ?? "").includes("docker build -t")).toBe(
+        hasVirtualFile(tree.root, "Dockerfile"),
+      );
+    },
+  );
+
   it("exposes all twenty roadmap additions through canonical schemas", () => {
     expect(ELIXIR_I18N_VALUES).toContain("gettext");
     expect(ELIXIR_HTTP_SERVER_VALUES).toContain("bandit");
@@ -171,9 +221,7 @@ describe("Elixir library expansion", () => {
       "lib/elixir_tesla_opentelemetry/application.ex",
     );
     expect(application).toContain(":opentelemetry_cowboy.setup()");
-    expect(application).toContain(
-      "OpentelemetryPhoenix.setup(adapter: :cowboy2)",
-    );
+    expect(application).toContain("OpentelemetryPhoenix.setup(adapter: :cowboy2)");
 
     const banditResult = await createVirtual({
       ...base,
@@ -203,9 +251,7 @@ describe("Elixir library expansion", () => {
       "lib/elixir_bandit_opentelemetry/application.ex",
     );
     expect(banditApplication).toContain("OpentelemetryBandit.setup()");
-    expect(banditApplication).toContain(
-      "OpentelemetryPhoenix.setup(adapter: :bandit)",
-    );
+    expect(banditApplication).toContain("OpentelemetryPhoenix.setup(adapter: :bandit)");
   });
 
   it("includes Rustler sources and toolchains in deploy images", async () => {
@@ -296,7 +342,7 @@ describe("Elixir library expansion", () => {
     expect(dockerfile).toContain("ENV DATABASE_PATH=/data/elixir_sqlite_release.db");
     expect(dockerfile).toContain('VOLUME ["/data"]');
     const fly = getVirtualTreeFileContent(tree, "fly.toml");
-    expect(fly).toContain('[mounts]');
+    expect(fly).toContain("[mounts]");
     expect(fly).toContain('destination = "/data"');
   });
 
@@ -373,7 +419,10 @@ describe("Elixir library expansion", () => {
     });
 
     expect(withAuth.success).toBe(true);
-    const router = getVirtualTreeFileContent(withAuth.tree!, "lib/elixir_session_json_web/router.ex");
+    const router = getVirtualTreeFileContent(
+      withAuth.tree!,
+      "lib/elixir_session_json_web/router.ex",
+    );
     const sessionActions = [...(router ?? "").matchAll(/UserSessionController, :(\w+)/g)].map(
       (match) => match[1],
     );
@@ -425,16 +474,41 @@ describe("Elixir library expansion", () => {
       const tree = result.tree!;
       const paths = listVirtualTreeFilePaths(tree).map((path) => path.replace(/^\/+/, ""));
       const sources = [
-        ...(getVirtualTreeFileContent(tree, "Dockerfile") ?? "").matchAll(/^COPY (?!--)(.+) \S+$/gm),
+        ...(getVirtualTreeFileContent(tree, "Dockerfile") ?? "").matchAll(
+          /^COPY (?!--)(.+) \S+$/gm,
+        ),
       ].flatMap((match) => match[1].split(" "));
       expect(sources).toContain("lib");
+      expect(sources).toContain("rel");
       const missing = sources.filter(
-        (source) => !paths.some((path) => path === source || path.startsWith(`${source}/`)),
+        (source) =>
+          !paths.some((path) => new Bun.Glob(source).match(path) || path.startsWith(`${source}/`)),
       );
       expect(missing).toEqual([]);
     },
   );
 
+  it("configures host discovery in a headless release without a database or observability provider", async () => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "cluster-worker",
+      elixirWebFramework: "none",
+      elixirOrm: "none",
+      elixirApi: "none",
+      elixirRealtime: "none",
+      elixirClustering: "libcluster",
+      elixirDeploy: "mix-release",
+      elixirObservability: "none",
+    });
+    expect(result.success).toBe(true);
+    const runtime = getVirtualTreeFileContent(result.tree!, "config/runtime.exs");
+    expect(runtime).toContain('System.get_env("CLUSTER_HOSTS", "")');
+    expect(runtime).toContain(":cluster_topologies, cluster_topologies");
+    expect(runtime).not.toContain("Web.Endpoint");
+    const environment = getVirtualTreeFileContent(result.tree!, "rel/env.sh.eex");
+    expect(environment).toContain("Set RELEASE_COOKIE");
+    expect(environment).toContain("RELEASE_DISTRIBUTION");
+  });
 
   it("serves and boots the LiveView client only for LiveView projects", async () => {
     const liveView = await createVirtual({
@@ -568,6 +642,200 @@ describe("Elixir library expansion", () => {
     ).toEqual([]);
   });
 
+  it("supervises Exq outside tests and enqueues through Exq.Mock in tests", async () => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "elixir-exq-jobs",
+      elixirWebFramework: "none",
+      elixirRealtime: "none",
+      elixirOrm: "none",
+      elixirAuth: "none",
+      elixirApi: "none",
+      elixirHttpServer: "none",
+      elixirI18n: "none",
+      elixirJobs: "exq",
+      elixirDeploy: "fly",
+    });
+    const withOban = await createVirtual({
+      ...base,
+      projectName: "elixir-oban-worker",
+      elixirOrm: "ecto-sql",
+      elixirAuth: "none",
+      elixirJobs: "oban",
+    });
+
+    expect(result.success).toBe(true);
+    const tree = result.tree!;
+    expect(getVirtualTreeFileContent(tree, "mix.exs")).toContain('{:exq, "~> 0.25"}');
+    expect(getVirtualTreeFileContent(tree, "lib/elixir_exq_jobs/application.ex")).toContain(
+      "Supervisor.start_link(children ++ exq_children, opts)",
+    );
+    expect(getVirtualTreeFileContent(tree, "config/runtime.exs")).toContain(
+      'config :exq, url: System.get_env("REDIS_URL", "redis://localhost:6379")',
+    );
+    const testConfig = getVirtualTreeFileContent(tree, "config/test.exs");
+    expect(testConfig).toContain("config :elixir_exq_jobs, :start_exq, false");
+    expect(testConfig).toContain("config :exq, queue_adapter: Exq.Adapters.Queue.Mock");
+    expect(getVirtualTreeFileContent(tree, "test/test_helper.exs")).toContain(
+      "Exq.Mock.start_link(mode: :fake)",
+    );
+    expect(
+      getVirtualTreeFileContent(tree, "lib/elixir_exq_jobs/workers/sample_worker.ex"),
+    ).toContain('Exq.enqueue(Exq, "default", __MODULE__, [name])');
+    expect(hasVirtualFile(tree.root, "test/elixir_exq_jobs/workers/sample_worker_test.exs")).toBe(
+      true,
+    );
+    expect(getVirtualTreeFileContent(tree, ".env.example")).toContain("REDIS_URL=");
+
+    expect(withOban.success).toBe(true);
+    expect(
+      hasVirtualFile(withOban.tree!.root, "test/elixir_oban_worker/workers/sample_worker_test.exs"),
+    ).toBe(false);
+    expect(
+      getVirtualTreeFileContent(withOban.tree!, "lib/elixir_oban_worker/workers/sample_worker.ex"),
+    ).toContain("use Oban.Worker");
+  });
+
+  it.each([
+    ["peri", "{:peri,", "defschema :item"],
+    ["tarams", "{:tarams,", "Tarams.cast(attrs, @schema)"],
+  ] as const)(
+    "validates item input with %s before the catalog writes it",
+    async (elixirValidation, dependency, validation) => {
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-item-params",
+        elixirOrm: "ecto_sqlite3",
+        elixirAuth: "none",
+        elixirValidation,
+      });
+
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      expect(getVirtualTreeFileContent(tree, "mix.exs")).toContain(dependency);
+      expect(
+        getVirtualTreeFileContent(tree, "lib/elixir_item_params/catalog/item_params.ex"),
+      ).toContain(validation);
+      expect(getVirtualTreeFileContent(tree, "lib/elixir_item_params/catalog.ex")).toContain(
+        "with {:ok, attrs} <- ItemParams.validate(attrs) do",
+      );
+      expect(
+        getVirtualTreeFileContent(
+          tree,
+          "lib/elixir_item_params_web/controllers/item_controller.ex",
+        ),
+      ).toContain("|> put_status(:unprocessable_entity)");
+      expect(hasVirtualFile(tree.root, "lib/elixir_item_params/catalog/item_options.ex")).toBe(
+        false,
+      );
+    },
+  );
+
+  it.each([
+    ["jason", "Jason", false],
+    ["elixir-json", "JSON", false],
+    ["jiffy", "ElixirJsonLib.JSON", true],
+  ] as const)(
+    "routes Phoenix encoding and request parsing through %s",
+    async (elixirJson, module, hasAdapter) => {
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-json-lib",
+        elixirOrm: "none",
+        elixirAuth: "none",
+        elixirJson,
+      });
+
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      expect(getVirtualTreeFileContent(tree, "config/config.exs")).toContain(
+        `config :phoenix, :json_library, ${module}\n`,
+      );
+      expect(getVirtualTreeFileContent(tree, "lib/elixir_json_lib_web/endpoint.ex")).toContain(
+        `json_decoder: ${module}\n`,
+      );
+      expect(hasVirtualFile(tree.root, "lib/elixir_json_lib/json.ex")).toBe(hasAdapter);
+      expect(hasVirtualFile(tree.root, "test/elixir_json_lib/json_test.exs")).toBe(hasAdapter);
+      const mix = getVirtualTreeFileContent(tree, "mix.exs");
+      expect(mix?.includes("{:jiffy,")).toBe(hasAdapter);
+      expect(mix).toContain(
+        elixirJson === "elixir-json" ? 'elixir: "~> 1.18"' : 'elixir: "~> 1.17"',
+      );
+    },
+  );
+
+  it.each([
+    ["linguist", "{:linguist,", "use Linguist.Vocabulary"],
+    [
+      "ex-cldr-messages",
+      "{:ex_cldr_messages,",
+      "providers: [Cldr.Number, Cldr.List, Cldr.Message]",
+    ],
+  ] as const)(
+    "generates a %s translation module for plain Elixir apps",
+    async (elixirI18n, dependency, setup) => {
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-i18n-lib",
+        elixirWebFramework: "none",
+        elixirRealtime: "none",
+        elixirOrm: "none",
+        elixirAuth: "none",
+        elixirApi: "none",
+        elixirHttpServer: "none",
+        elixirI18n,
+      });
+
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      expect(getVirtualTreeFileContent(tree, "mix.exs")).toContain(dependency);
+      expect(getVirtualTreeFileContent(tree, "lib/elixir_i18n_lib/i18n.ex")).toContain(setup);
+      expect(getVirtualTreeFileContent(tree, "test/elixir_i18n_lib/i18n_test.exs")).toContain(
+        'I18n.t!("fr", "greeting", name: "Ada") == "Bonjour, Ada !"',
+      );
+      expect(hasVirtualFile(tree.root, "lib/elixir_i18n_lib_web/gettext.ex")).toBe(false);
+    },
+  );
+
+  it.each([
+    ["dns-cluster", "DNSCluster,", "DNS_CLUSTER_QUERY=", "CLUSTER_HOSTS="],
+    ["distributed-erlang", "ElixirClusterLib.Cluster", "CLUSTER_HOSTS=", "DNS_CLUSTER_QUERY="],
+  ] as const)(
+    "supervises %s discovery with a release cookie guard",
+    async (elixirClustering, child, presentEnv, absentEnv) => {
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-cluster-lib",
+        elixirWebFramework: "none",
+        elixirRealtime: "none",
+        elixirOrm: "none",
+        elixirAuth: "none",
+        elixirApi: "none",
+        elixirHttpServer: "none",
+        elixirI18n: "none",
+        elixirClustering,
+      });
+
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      expect(getVirtualTreeFileContent(tree, "lib/elixir_cluster_lib/application.ex")).toContain(
+        child,
+      );
+      expect(getVirtualTreeFileContent(tree, "rel/env.sh.eex")).toContain(
+        'if [ -z "${RELEASE_COOKIE:-}" ]; then',
+      );
+      const env = getVirtualTreeFileContent(tree, ".env.example");
+      expect(env).toContain(presentEnv);
+      expect(env).not.toContain(absentEnv);
+      expect(hasVirtualFile(tree.root, "lib/elixir_cluster_lib/cluster.ex")).toBe(
+        elixirClustering === "distributed-erlang",
+      );
+      expect(getVirtualTreeFileContent(tree, "mix.exs")?.includes("{:dns_cluster,")).toBe(
+        elixirClustering === "dns-cluster",
+      );
+    },
+  );
+
   it("keeps one Fly machine running only when Oban runs inside the app", async () => {
     const withOban = await createVirtual({
       ...base,
@@ -687,4 +955,274 @@ describe("Elixir library expansion", () => {
       expect(mix.includes('{:phoenix_live_view, "~> 1.0"}')).toBe(hasHeex);
     },
   );
+
+  it.each([
+    ["logger-json", "none", '{:logger_json, "~> 7.0"}', "LoggerJSON.Formatters.Basic"],
+    [
+      "logger-file-backend",
+      "none",
+      '{:logger_file_backend, "~> 0.1"}',
+      "config :logger, :file_log",
+    ],
+    ["logster", "phoenix", '{:logster, "~> 1.1"}', "config :phoenix, :logger, false"],
+  ] as const)(
+    "wires %s logging into config with a generated test",
+    async (elixirLogging, elixirWebFramework, dependency, configLine) => {
+      const hasPhoenix = elixirWebFramework !== "none";
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-logging",
+        elixirWebFramework,
+        elixirRealtime: "none",
+        elixirOrm: "none",
+        elixirAuth: "none",
+        elixirApi: hasPhoenix ? "rest" : "none",
+        elixirHttpServer: hasPhoenix ? "bandit" : "none",
+        elixirI18n: "none",
+        elixirLogging,
+      });
+
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      expect(getVirtualTreeFileContent(tree, "mix.exs")).toContain(dependency);
+      expect(getVirtualTreeFileContent(tree, "config/config.exs")).toContain(configLine);
+      expect(hasVirtualFile(tree.root, "test/elixir_logging/logging_test.exs")).toBe(true);
+      expect(
+        getVirtualTreeFileContent(tree, "lib/elixir_logging/application.ex")?.includes(
+          "LoggerBackends.add({LoggerFileBackend, :file_log})",
+        ),
+      ).toBe(elixirLogging === "logger-file-backend");
+      expect(
+        getVirtualTreeFileContent(tree, "lib/elixir_logging_web/endpoint.ex")?.includes(
+          "plug Logster.Plugs.Logger",
+        ) ?? false,
+      ).toBe(elixirLogging === "logster");
+    },
+  );
+
+  it.each(["peri", "tarams"] as const)("rejects %s without Ecto", (elixirValidation) => {
+    const input = {
+      ecosystem: "elixir" as const,
+      elixirWebFramework: "none" as const,
+      elixirOrm: "none" as const,
+      elixirValidation,
+    };
+    expect(() =>
+      runWithContext({ silent: true }, () =>
+        validateFullConfig(input, new Set(Object.keys(input)), {} as never),
+      ),
+    ).toThrow("Peri and Tarams require Ecto");
+  });
+
+  it.each(["eex", "solid-liquid", "bbmustache"] as const)(
+    "copies %s templates into release images without a SQL ORM",
+    async (elixirTemplating) => {
+      for (const elixirOrm of ["none", "ecto"] as const) {
+        const result = await createVirtual({
+          ...base,
+          projectName: "elixir-docker-templates",
+          elixirWebFramework: "none",
+          elixirRealtime: "none",
+          elixirHttpServer: "none",
+          elixirOrm,
+          elixirAuth: "none",
+          elixirApi: "none",
+          elixirTemplating,
+          elixirDeploy: "docker",
+        });
+        expect(result.success).toBe(true);
+        expect(getVirtualTreeFileContent(result.tree!, "Dockerfile")).toContain("COPY priv priv");
+        expect(
+          getVirtualTreeFileContent(result.tree!, "mix.exs")?.includes(":runtime_tools, :eex"),
+        ).toBe(elixirTemplating === "eex");
+        expect(
+          listVirtualTreeFilePaths(result.tree!).some((path) => path.startsWith("priv/templates/")),
+        ).toBe(true);
+      }
+    },
+  );
+
+  it("rejects Logster without Phoenix", () => {
+    const input = {
+      ecosystem: "elixir" as const,
+      elixirWebFramework: "none" as const,
+      elixirLogging: "logster" as const,
+    };
+    expect(() =>
+      runWithContext({ silent: true }, () =>
+        validateFullConfig(
+          input,
+          new Set(["ecosystem", "elixirWebFramework", "elixirLogging"]),
+          {} as never,
+        ),
+      ),
+    ).toThrow("Logster request logging requires Phoenix");
+  });
+
+  it.each([
+    [
+      "dotenvy",
+      '{:dotenvy, "~> 1.2"}',
+      "config/runtime.exs",
+      'env!("APP_MAX_CONNECTIONS", :integer, 10)',
+    ],
+    [
+      "skogsra",
+      '{:skogsra, "~> 2.5"}',
+      "lib/elixir_config/settings.ex",
+      "app_env(:max_connections",
+    ],
+    [
+      "confex",
+      '{:confex, "~> 3.5"}',
+      "config/config.exs",
+      '{:system, :integer, "APP_MAX_CONNECTIONS", 10}',
+    ],
+  ] as const)(
+    "reads typed settings through %s",
+    async (elixirConfig, dependency, path, snippet) => {
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-config",
+        elixirWebFramework: "none",
+        elixirRealtime: "none",
+        elixirOrm: "none",
+        elixirAuth: "none",
+        elixirApi: "none",
+        elixirHttpServer: "none",
+        elixirI18n: "none",
+        elixirConfig,
+      });
+
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      expect(getVirtualTreeFileContent(tree, "mix.exs")).toContain(dependency);
+      expect(getVirtualTreeFileContent(tree, path)).toContain(snippet);
+      expect(hasVirtualFile(tree.root, "lib/elixir_config/settings.ex")).toBe(true);
+      expect(hasVirtualFile(tree.root, "test/elixir_config/settings_test.exs")).toBe(true);
+      expect(getVirtualTreeFileContent(tree, ".env.example")).toContain("APP_MAX_CONNECTIONS=10");
+    },
+  );
+
+  it.each([
+    [
+      "amqp",
+      '{:amqp, "~> 4.3"}',
+      "AMQP.Queue.declare(channel, @queue, durable: true)",
+      "RABBITMQ_URL=",
+    ],
+    ["gnat", '{:gnat, "~> 1.18"}', "Gnat.sub(gnat, self(), @subject)", "NATS_URL="],
+    ["brod", '{:brod, "~> 4.7"}', ":brod.produce_sync_offset(@client, @topic, 0", "KAFKA_BROKERS="],
+  ] as const)(
+    "round-trips a message through %s behind a tagged broker test",
+    async (elixirMessageQueue, dependency, snippet, envLine) => {
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-mq",
+        elixirWebFramework: "none",
+        elixirRealtime: "none",
+        elixirOrm: "none",
+        elixirAuth: "none",
+        elixirApi: "none",
+        elixirHttpServer: "none",
+        elixirI18n: "none",
+        elixirMessageQueue,
+      });
+
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      expect(getVirtualTreeFileContent(tree, "mix.exs")).toContain(dependency);
+      expect(getVirtualTreeFileContent(tree, "lib/elixir_mq/message_queue.ex")).toContain(snippet);
+      expect(getVirtualTreeFileContent(tree, "test/elixir_mq/message_queue_test.exs")).toContain(
+        "@moduletag :message_queue",
+      );
+      expect(getVirtualTreeFileContent(tree, "test/test_helper.exs")).toContain(
+        "ExUnit.start(exclude: [:message_queue])",
+      );
+      expect(getVirtualTreeFileContent(tree, ".env.example")).toContain(envLine);
+    },
+  );
+
+  it.each([
+    ["eex", "priv/templates/welcome.eex", "EEx.function_from_file", null],
+    ["solid-liquid", "priv/templates/welcome.liquid", "Solid.render", '{:solid, "~> 1.3"}'],
+    [
+      "bbmustache",
+      "priv/templates/welcome.mustache",
+      ":bbmustache.render",
+      '{:bbmustache, "~> 1.12"}',
+    ],
+  ] as const)(
+    "renders the welcome template with %s",
+    async (elixirTemplating, templateFile, renderCall, dependency) => {
+      const result = await createVirtual({
+        ...base,
+        projectName: "elixir-templates",
+        elixirWebFramework: "none",
+        elixirRealtime: "none",
+        elixirOrm: "none",
+        elixirAuth: "none",
+        elixirApi: "none",
+        elixirHttpServer: "none",
+        elixirI18n: "none",
+        elixirTemplating,
+      });
+
+      expect(result.success).toBe(true);
+      const tree = result.tree!;
+      const templateFiles = listVirtualTreeFilePaths(tree).filter((path) =>
+        path.startsWith("priv/templates/"),
+      );
+      expect(templateFiles).toEqual([templateFile]);
+      expect(getVirtualTreeFileContent(tree, "lib/elixir_templates/templates.ex")).toContain(
+        renderCall,
+      );
+      expect(hasVirtualFile(tree.root, "test/elixir_templates/templates_test.exs")).toBe(true);
+      const mix = getVirtualTreeFileContent(tree, "mix.exs") ?? "";
+      if (dependency) expect(mix).toContain(dependency);
+      expect(mix.includes("{:solid,") || mix.includes("{:bbmustache,")).toBe(dependency !== null);
+    },
+  );
+
+  it.each([
+    ["option-parser", "OptionParser.parse(argv", null],
+    ["optimus", "Optimus.parse(spec(), argv)", '{:optimus, "~> 0.6"}'],
+    ["owl", "Owl.Box.new(", '{:owl, "~> 0.13"}'],
+  ] as const)("adds a greet Mix task backed by %s", async (elixirCli, parser, dependency) => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "elixir-cli",
+      elixirWebFramework: "none",
+      elixirRealtime: "none",
+      elixirOrm: "none",
+      elixirAuth: "none",
+      elixirApi: "none",
+      elixirHttpServer: "none",
+      elixirI18n: "none",
+      elixirCli,
+    });
+
+    expect(result.success).toBe(true);
+    const tree = result.tree!;
+    expect(getVirtualTreeFileContent(tree, "lib/elixir_cli/cli.ex")).toContain(parser);
+    expect(getVirtualTreeFileContent(tree, "lib/mix/tasks/elixir_cli.greet.ex")).toContain(
+      "defmodule Mix.Tasks.ElixirCli.Greet do",
+    );
+    expect(hasVirtualFile(tree.root, "test/elixir_cli/cli_test.exs")).toBe(true);
+    const mix = getVirtualTreeFileContent(tree, "mix.exs") ?? "";
+    expect(mix.includes("{:optimus,") || mix.includes("{:owl,")).toBe(dependency !== null);
+    if (dependency) expect(mix).toContain(dependency);
+  });
+
+  it("omits the greet task when no CLI is selected", async () => {
+    const result = await createVirtual({
+      ...base,
+      projectName: "elixir-no-cli",
+      elixirCli: "none",
+    });
+
+    expect(result.success).toBe(true);
+    expect(hasVirtualFile(result.tree!.root, "lib/mix/tasks/elixir_no_cli.greet.ex")).toBe(false);
+    expect(hasVirtualFile(result.tree!.root, "lib/elixir_no_cli/cli.ex")).toBe(false);
+  });
 });

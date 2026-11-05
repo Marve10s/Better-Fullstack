@@ -1,0 +1,11 @@
+{{#if (ne phpAuth "none")}}
+<?php
+
+declare(strict_types=1);
+
+return [
+    'secret' => env('JWT_SECRET', ''),
+    'issuer' => env('JWT_ISSUER', 'better-fullstack'),
+    'audience' => env('JWT_AUDIENCE', 'api'),
+];
+{{/if}}

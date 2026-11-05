@@ -36,12 +36,14 @@ describe("release workflow contract", () => {
     expect(validateReleaseWorkflow(release, requiredCi)).toEqual([]);
   });
 
-  test("pull requests need only successful lint", async () => {
+  test("pull requests need successful lint and tests", async () => {
     const { requiredCi } = await fixtures();
     const ciJobs = jobs(requiredCi);
     const github = { event_name: "pull_request" };
-    expect(evaluateCondition(ciJobs.lint.if, { github })).toBe(true);
-    for (const job of ["release-guard", "test", "web-build"]) {
+    for (const job of ["lint", "test"]) {
+      expect(evaluateCondition(ciJobs[job].if, { github })).toBe(true);
+    }
+    for (const job of ["release-guard", "web-build"]) {
       expect(evaluateCondition(ciJobs[job].if, { github })).toBe(false);
     }
 
@@ -49,12 +51,16 @@ describe("release workflow contract", () => {
       (step) => step.name === "Require successful checks",
     );
     expect(gate).toBeDefined();
-    for (const result of ["success", "failure", "cancelled", "skipped"]) {
-      const needs = Object.fromEntries(
-        ["release-guard", "test", "web-build"].map((job) => [job, { result: "skipped" }]),
-      );
-      needs.lint = { result };
-      expect(evaluateCondition(gate?.if, { github, needs })).toBe(result !== "success");
+    for (const required of ["lint", "test"]) {
+      for (const result of ["success", "failure", "cancelled", "skipped"]) {
+        const needs = Object.fromEntries(
+          ["release-guard", "web-build"].map((job) => [job, { result: "skipped" }]),
+        );
+        needs.lint = { result: "success" };
+        needs.test = { result: "success" };
+        needs[required] = { result };
+        expect(evaluateCondition(gate?.if, { github, needs })).toBe(result !== "success");
+      }
     }
   });
 

@@ -41,7 +41,7 @@ Use a granular npm access token with read/write access scoped only to the four p
 Run:
 
 ```bash
-bun run test:workflow-security
+bun run build:core && bun test scripts/validation/validate-preview-workflows.test.ts && bun run scripts/validation/validate-preview-workflows.ts
 ```
 
 The validator is also part of `bun run test:release`. It rejects a privileged-trigger job that checks out a PR head while holding a secret/write permission, cache restoration in such a job, secrets or write permissions in the untrusted build, checkout in the npm job, OIDC permission, missing same-repository/current-head/trusted-association reauthorization, loose artifact run binding or identity checks, shortened-SHA versions, write-all permissions, unchecked retagging, and publication without lifecycle scripts disabled.

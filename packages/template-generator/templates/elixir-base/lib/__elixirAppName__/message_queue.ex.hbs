@@ -1,0 +1,152 @@
+defmodule {{elixirModuleName}}.MessageQueue do
+{{#if (eq elixirMessageQueue "amqp")}}
+  @queue "{{elixirAppName}}.greetings"
+
+  def url, do: System.get_env("RABBITMQ_URL", "amqp://guest:guest@localhost:5672")
+
+  def publish(payload) do
+    with_channel(fn channel ->
+      {:ok, _} = AMQP.Queue.declare(channel, @queue, durable: true)
+      AMQP.Basic.publish(channel, "", @queue, payload)
+    end)
+  end
+
+  def round_trip(payload) do
+    with_channel(fn channel ->
+      {:ok, %{queue: queue}} = AMQP.Queue.declare(channel, "", exclusive: true, auto_delete: true)
+      :ok = AMQP.Basic.publish(channel, "", queue, payload)
+      receive_one(channel, queue, 40)
+    end)
+  end
+
+  defp with_channel(fun) do
+    {:ok, connection} = AMQP.Connection.open(url())
+
+    try do
+      {:ok, channel} = AMQP.Channel.open(connection)
+      fun.(channel)
+    after
+      AMQP.Connection.close(connection)
+    end
+  end
+
+  defp receive_one(_channel, _queue, 0), do: {:error, :timeout}
+
+  defp receive_one(channel, queue, attempts) do
+    case AMQP.Basic.get(channel, queue, no_ack: true) do
+      {:ok, body, _meta} ->
+        {:ok, body}
+
+      {:empty, _meta} ->
+        Process.sleep(50)
+        receive_one(channel, queue, attempts - 1)
+    end
+  end
+{{/if}}
+{{#if (eq elixirMessageQueue "gnat")}}
+  @subject "{{elixirAppName}}.greetings"
+
+  def url, do: System.get_env("NATS_URL", "nats://localhost:4222")
+
+  def publish(payload) do
+    with_connection(fn gnat -> Gnat.pub(gnat, @subject, payload) end)
+  end
+
+  def round_trip(payload) do
+    with_connection(fn gnat ->
+      {:ok, _subscription} = Gnat.sub(gnat, self(), @subject)
+      :ok = Gnat.pub(gnat, @subject, payload)
+
+      receive do
+        {:msg, %{topic: @subject, body: body}} -> {:ok, body}
+      after
+        2_000 -> {:error, :timeout}
+      end
+    end)
+  end
+
+  defp with_connection(fun) do
+    uri = URI.parse(url())
+    {:ok, gnat} = Gnat.start_link(%{host: uri.host, port: uri.port || 4222})
+
+    try do
+      fun.(gnat)
+    after
+      Gnat.stop(gnat)
+    end
+  end
+{{/if}}
+{{#if (eq elixirMessageQueue "brod")}}
+  require Record
+
+  Record.defrecordp(
+    :kafka_message,
+    Record.extract(:kafka_message, from_lib: "kafka_protocol/include/kpro_public.hrl")
+  )
+
+  @topic "{{elixirAppName}}.greetings"
+  @client :{{elixirAppName}}_kafka
+
+  def brokers do
+    System.get_env("KAFKA_BROKERS", "localhost:9092")
+    |> String.split(",", trim: true)
+    |> Enum.map(fn broker ->
+      [host, port] = String.split(String.trim(broker), ":")
+      {String.to_charlist(host), String.to_integer(port)}
+    end)
+  end
+
+  def publish(payload) do
+    with_client(fn -> produce(payload, 20) end)
+  end
+
+  def round_trip(payload) do
+    with_client(fn ->
+      with {:ok, offset} <- produce(payload, 20),
+           {:ok, {_high_watermark, [message | _]}} <- :brod.fetch(brokers(), @topic, 0, offset) do
+        {:ok, kafka_message(message, :value)}
+      end
+    end)
+  end
+
+  defp with_client(fun) do
+    hosts = brokers()
+    :ok = ensure_topic(hosts)
+    :ok = :brod.start_client(hosts, @client, auto_start_producers: true)
+
+    try do
+      fun.()
+    after
+      :brod.stop_client(@client)
+    end
+  end
+
+  defp ensure_topic(hosts) do
+    topic = %{
+      name: @topic,
+      num_partitions: 1,
+      replication_factor: 1,
+      assignments: [],
+      configs: []
+    }
+
+    case :brod.create_topics(hosts, [topic], %{timeout: 5_000}) do
+      :ok -> :ok
+      {:error, reason} -> if reason =~ "already exists", do: :ok, else: {:error, reason}
+    end
+  end
+
+  defp produce(_payload, 0), do: {:error, :timeout}
+
+  defp produce(payload, attempts) do
+    case :brod.produce_sync_offset(@client, @topic, 0, "", payload) do
+      {:ok, offset} ->
+        {:ok, offset}
+
+      {:error, _reason} ->
+        Process.sleep(250)
+        produce(payload, attempts - 1)
+    end
+  end
+{{/if}}
+end

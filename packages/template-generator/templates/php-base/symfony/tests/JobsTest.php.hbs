@@ -1,0 +1,50 @@
+{{#if (ne phpJobQueue "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\JobQueue;
+use App\Kernel;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+final class JobsTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        putenv('QUEUE_PATH=' . sys_get_temp_dir() . '/jobs-' . bin2hex(random_bytes(6)));
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('QUEUE_PATH');
+    }
+
+    private function handle(Request $request): Response
+    {
+        $kernel = new Kernel('test', false);
+        $response = $kernel->handle($request);
+        $kernel->shutdown();
+        return $response;
+    }
+
+    private function jobStatus(string $id): Response
+    {
+        return $this->handle(Request::create('/api/jobs/' . $id));
+    }
+
+    public function testWorkerProcessesAQueuedJob(): void
+    {
+        $queued = $this->handle(Request::create('/api/jobs', 'POST'));
+        self::assertSame(202, $queued->getStatusCode());
+        $id = json_decode((string) $queued->getContent(), true, 8, JSON_THROW_ON_ERROR)['id'];
+        self::assertSame(['id' => $id, 'status' => 'queued'], json_decode((string) $this->jobStatus($id)->getContent(), true, 8, JSON_THROW_ON_ERROR));
+        JobQueue::fromEnvironment('')->work(true);
+        self::assertSame('done', json_decode((string) $this->jobStatus($id)->getContent(), true, 8, JSON_THROW_ON_ERROR)['status']);
+        self::assertSame(404, $this->jobStatus(str_repeat('0', 32))->getStatusCode());
+    }
+}
+{{/if}}

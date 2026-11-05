@@ -1,0 +1,39 @@
+{{#if (or (eq rubyEmail "resend") (ne rubyHttpClient "none"))}}
+require "json"
+require "socket"
+
+module BetterFullstack
+  class HttpCapture
+    attr_reader :url, :requests
+
+    def initialize(response)
+      @server = TCPServer.new("127.0.0.1", 0)
+      @url = "http://127.0.0.1:#{@server.addr[1]}/"
+      @requests = Queue.new
+      @response = JSON.generate(response)
+      @thread = Thread.new { loop { serve(@server.accept) } }
+    end
+
+    def close
+      @thread.kill
+      @server.close
+    end
+
+    private
+
+    def serve(client)
+      request_line = client.gets.to_s.strip
+      headers = {}
+      while (line = client.gets) && line != "\r\n"
+        name, value = line.split(":", 2)
+        headers[name.downcase] = value.strip
+      end
+      body = client.read(Integer(headers.fetch("content-length", "0"), 10))
+      @requests << { "request" => request_line, "authorization" => headers["authorization"], "body" => body.empty? ? nil : JSON.parse(body) }
+      client.write("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: #{@response.bytesize}\r\nConnection: close\r\n\r\n#{@response}")
+    ensure
+      client.close
+    end
+  end
+end
+{{/if}}

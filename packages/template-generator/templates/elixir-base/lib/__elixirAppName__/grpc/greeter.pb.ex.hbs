@@ -1,0 +1,23 @@
+{{#if (eq elixirApi "grpc")}}
+defmodule {{elixirModuleName}}.Rpc.HelloRequest do
+  use Protobuf, syntax: :proto3
+
+  field :name, 1, type: :string
+end
+
+defmodule {{elixirModuleName}}.Rpc.HelloReply do
+  use Protobuf, syntax: :proto3
+
+  field :message, 1, type: :string
+end
+
+defmodule {{elixirModuleName}}.Rpc.Greeter.Service do
+  use GRPC.Service, name: "{{elixirAppName}}.rpc.Greeter"
+
+  rpc :SayHello, {{elixirModuleName}}.Rpc.HelloRequest, {{elixirModuleName}}.Rpc.HelloReply
+end
+
+defmodule {{elixirModuleName}}.Rpc.Greeter.Stub do
+  use GRPC.Stub, service: {{elixirModuleName}}.Rpc.Greeter.Service
+end
+{{/if}}

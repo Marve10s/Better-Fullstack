@@ -1,0 +1,40 @@
+{{#if (eq phpLogging "symfony-monolog")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Kernel;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+
+final class LoggingTest extends TestCase
+{
+    private string $file;
+
+    protected function setUp(): void
+    {
+        $this->file = tempnam(sys_get_temp_dir(), 'log-') ?: throw new \RuntimeException('Cannot create log file.');
+        putenv('LOG_PATH=' . $this->file);
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('LOG_PATH');
+        @unlink($this->file);
+    }
+
+    public function testLogsAcceptedGreetingsAsJson(): void
+    {
+        $kernel = new Kernel('test', false);
+        $response = $kernel->handle(Request::create('/api/greetings', 'POST', server: ['CONTENT_TYPE' => 'application/json'], content: '{"name":"Ada","repetitions":2}'));
+        $kernel->shutdown();
+        self::assertSame(200, $response->getStatusCode());
+        $entries = array_map(fn (string $line): array => json_decode($line, true, 8, JSON_THROW_ON_ERROR), array_filter(explode("\n", (string) file_get_contents($this->file))));
+        $greetings = array_values(array_filter($entries, fn (array $entry): bool => $entry['message'] === 'greeting.created'));
+        self::assertCount(1, $greetings);
+        self::assertSame(['repetitions' => 2], $greetings[0]['context']);
+    }
+}
+{{/if}}

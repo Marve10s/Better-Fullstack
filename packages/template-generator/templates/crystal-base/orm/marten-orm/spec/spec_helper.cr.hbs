@@ -1,0 +1,12 @@
+ENV["MARTEN_ENV"] = "test"
+
+require "spec"
+require "../src/project"
+require "marten/spec"
+{{#if (eq crystalAuth "marten-auth")}}
+require "marten_auth/spec"
+{{/if}}
+require "../src/apps/greetings/migrations/**"
+{{#if (eq crystalAuth "marten-auth")}}
+require "../src/apps/accounts/migrations/**"
+{{/if}}

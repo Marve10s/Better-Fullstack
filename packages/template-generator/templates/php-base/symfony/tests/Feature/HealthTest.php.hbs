@@ -1,0 +1,17 @@
+{{#if (eq phpTesting "pest")}}
+<?php
+
+declare(strict_types=1);
+
+use App\Kernel;
+use Symfony\Component\HttpFoundation\Request;
+
+it('reports health as JSON', function (): void {
+    $kernel = new Kernel('test', false);
+    $response = $kernel->handle(Request::create('/health'));
+    $kernel->shutdown();
+
+    expect($response->getStatusCode())->toBe(200)
+        ->and(json_decode((string) $response->getContent(), true, 32, JSON_THROW_ON_ERROR))->toBe(['status' => 'ok', 'framework' => 'symfony']);
+});
+{{/if}}

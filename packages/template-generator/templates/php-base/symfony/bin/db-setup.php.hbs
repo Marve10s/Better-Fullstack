@@ -1,0 +1,24 @@
+{{#if (eq phpOrm "doctrine")}}
+<?php
+
+declare(strict_types=1);
+
+use App\Environment;
+use App\Kernel;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\SchemaTool;
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+Environment::load(dirname(__DIR__) . '/.env');
+$kernel = new Kernel(getenv('APP_ENV') ?: 'prod', false);
+$kernel->boot();
+$entities = $kernel->getContainer()->get('doctrine.orm.entity_manager');
+assert($entities instanceof EntityManagerInterface);
+$path = $entities->getConnection()->getParams()['path'] ?? '';
+if (is_string($path) && $path !== '' && !is_dir(dirname($path))) {
+    mkdir(dirname($path), 0775, true);
+}
+(new SchemaTool($entities))->updateSchema($entities->getMetadataFactory()->getAllMetadata());
+$kernel->shutdown();
+echo "Database schema is ready.\n";
+{{/if}}

@@ -85,7 +85,6 @@ jobs:
 
   test:
     name: Test
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -125,8 +124,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends zsh fish
 
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
+
       - name: Run Turbo Tests
         run: bun run test
+
+      - name: Run Script Tests
+        run: bun run test:scripts
 
   web-build:
     name: Web Build
@@ -191,9 +201,9 @@ jobs:
       - name: Require successful checks
         if: >-
           needs.lint.result != 'success' ||
+          needs.test.result != 'success' ||
           (github.event_name == 'push' &&
           (needs['release-guard'].result != 'success' ||
-          needs.test.result != 'success' ||
           needs['web-build'].result != 'success'))
         run: |
           echo 'All required checks must pass.' >&2

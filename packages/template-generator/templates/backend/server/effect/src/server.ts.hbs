@@ -1,0 +1,26 @@
+{{#if useEffectHttpApi}}
+import { HttpApp, HttpServer } from "@effect/platform";
+import { Effect, Layer } from "effect";
+{{#if (and (eq observability "signoz") (ne runtime "node"))}}
+import { withTracing } from "./lib/tracing";
+{{/if}}
+
+import { createApp } from "./app";
+import { HealthService, HealthServiceLive } from "./health";
+
+export const makeServer = (healthLayer: Layer.Layer<HealthService> = HealthServiceLive) =>
+	Layer.scopedDiscard(
+		Effect.gen(function* () {
+			const { app } = yield* Effect.acquireRelease(
+				Effect.sync(() => createApp(healthLayer)),
+				({ dispose }) => Effect.promise(dispose)
+			);
+{{#if (and (eq observability "signoz") (ne runtime "node"))}}
+			const fetch = withTracing((request: Request) => Promise.resolve(app.fetch(request)));
+{{else}}
+			const fetch = (request: Request) => Promise.resolve(app.fetch(request));
+{{/if}}
+			yield* HttpServer.serveEffect(HttpApp.fromWebHandler(fetch));
+		})
+	);
+{{/if}}

@@ -1,0 +1,89 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Kernel;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+final class ApplicationTest extends TestCase
+{
+    private function handle(Request $request, string $corsOrigin = ''): Response
+    {
+        $previous = getenv('CORS_ORIGIN');
+        putenv('CORS_ORIGIN=' . $corsOrigin);
+        $_SERVER['CORS_ORIGIN'] = $corsOrigin;
+        try {
+            $kernel = new Kernel('test', false);
+            $response = $kernel->handle($request);
+            $kernel->shutdown();
+            return $response;
+        } finally {
+            putenv($previous === false ? 'CORS_ORIGIN' : 'CORS_ORIGIN=' . $previous);
+            unset($_SERVER['CORS_ORIGIN']);
+        }
+    }
+
+    private function postJson(string $body, string $contentType = 'application/json'): Response
+    {
+        return $this->handle(Request::create('/api/greetings', 'POST', server: ['CONTENT_TYPE' => $contentType], content: $body));
+    }
+
+    private static function decode(Response $response): mixed
+    {
+        return json_decode((string) $response->getContent(), true, 32, JSON_THROW_ON_ERROR);
+    }
+
+    public function testReturnsParsedGreeting(): void
+    {
+        $response = $this->postJson('{"name":" Ada ","repetitions":2}');
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('application/json', $response->headers->get('Content-Type'));
+        self::assertSame(['message' => 'Hello, Ada! Hello, Ada!', 'repetitions' => 2], self::decode($response));
+    }
+
+    public function testRejectsInvalidBodies(): void
+    {
+        foreach (['{"name":""}', '{"name":7}', '{"name":"Ada","repetitions":"2"}', '{"name":"Ada","repetitions":6}', '{"name":"Ada","unknown":true}', '[]', 'null'] as $body) {
+            $response = $this->postJson($body);
+            self::assertSame(422, $response->getStatusCode(), $body);
+            self::assertSame('validation_failed', self::decode($response)['error']);
+        }
+    }
+
+    public function testRejectsMalformedJsonWrongMediaTypeAndLargeBodies(): void
+    {
+        self::assertSame(415, $this->postJson('{', 'text/plain')->getStatusCode());
+        self::assertSame(400, $this->postJson('{')->getStatusCode());
+        $body = str_pad('{"name":"Ada"}', 4096);
+        self::assertSame(200, $this->postJson($body)->getStatusCode());
+        self::assertSame(413, $this->postJson($body . ' ')->getStatusCode());
+    }
+
+    public function testHealthAndMissingRoute(): void
+    {
+        self::assertSame(['status' => 'ok', 'framework' => 'symfony'], self::decode($this->handle(Request::create('/health'))));
+        $missing = $this->handle(Request::create('/missing'));
+        self::assertSame(404, $missing->getStatusCode());
+        self::assertSame(['error' => 'not_found'], self::decode($missing));
+    }
+
+    public function testCorsAllowsEachConfiguredOriginAndRejectsOthers(): void
+    {
+        $configured = 'http://localhost:5173, http://localhost:8080';
+        foreach (['http://localhost:5173', 'http://localhost:8080'] as $origin) {
+            foreach (['GET', 'OPTIONS'] as $method) {
+                $response = $this->handle(Request::create('/health', $method, server: ['HTTP_ORIGIN' => $origin]), $configured);
+                self::assertSame($origin, $response->headers->get('Access-Control-Allow-Origin'));
+                self::assertSame('Origin', $response->headers->get('Vary'));
+            }
+        }
+        foreach (['http://localhost:51730', 'http://localhost:8080.evil', 'https://other.example'] as $origin) {
+            $response = $this->handle(Request::create('/health', server: ['HTTP_ORIGIN' => $origin]), $configured);
+            self::assertNull($response->headers->get('Access-Control-Allow-Origin'));
+        }
+    }
+}

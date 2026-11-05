@@ -1,0 +1,32 @@
+{{#if (eq phpLogging "monolog")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Application;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
+use PHPUnit\Framework\TestCase;
+use Slim\Psr7\Factory\ServerRequestFactory;
+use Slim\Psr7\Factory\StreamFactory;
+
+final class LoggingTest extends TestCase
+{
+    public function testLogsAcceptedGreetingsWithoutTheName(): void
+    {
+        $handler = new TestHandler();
+        $app = Application::create(logger: new Logger('test', [$handler]));
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/greetings')
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody((new StreamFactory())->createStream('{"name":"Ada","repetitions":2}'));
+        self::assertSame(200, $app->handle($request)->getStatusCode());
+        self::assertTrue($handler->hasInfoThatContains('greeting.created'));
+        self::assertSame(['repetitions' => 2], $handler->getRecords()[0]->context);
+        $invalid = $request->withBody((new StreamFactory())->createStream('{"name":""}'));
+        self::assertSame(422, $app->handle($invalid)->getStatusCode());
+        self::assertCount(1, $handler->getRecords());
+    }
+}
+{{/if}}

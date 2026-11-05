@@ -140,7 +140,7 @@ At minimum, cover:
 - compatibility parity between graph and legacy entrypoints;
 - reproducible command and builder URL round trips.
 
-For release-sensitive graph changes, run `bun run test:release`.
+For release-sensitive graph changes, run `bun run test` and `bun run test:release`.
 
 ## Review Traps
 

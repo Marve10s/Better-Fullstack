@@ -46,6 +46,7 @@ import { getAstroIntegrationChoice } from "@/prompts/developer/astro-integration
 import { getCSSFrameworkChoice } from "@/prompts/developer/css-framework";
 import { getShadcnOptions, type ShadcnOptions } from "@/prompts/developer/shadcn-options";
 import { getUILibraryChoice } from "@/prompts/developer/ui-library";
+import { getCrystalAuthChoice, getCrystalTestingChoice, getCrystalValidationChoice, getCrystalCacheChoice, getCrystalJobsChoice, getCrystalOrmChoice, getCrystalWebFrameworkChoice } from "@/prompts/ecosystems/crystal-ecosystem";
 import {
   getDotnetApiChoice,
   getDotnetAuthChoice,
@@ -78,6 +79,11 @@ import {
   getElixirApplicationFrameworkChoice,
   getElixirDocumentationChoice,
   getElixirClusteringChoice,
+  getElixirLoggingChoice,
+  getElixirConfigChoice,
+  getElixirMessageQueueChoice,
+  getElixirTemplatingChoice,
+  getElixirCliChoice,
   getElixirRealtimeChoice,
   getElixirTestingChoice,
   getElixirValidationChoice,
@@ -115,6 +121,18 @@ import {
   getJavaWebFrameworkChoice,
 } from "@/prompts/ecosystems/java-ecosystem";
 import {
+  getPhpAuthChoice,
+  getPhpOrmChoice,
+  getPhpTestingChoice,
+  getPhpValidationChoice,
+  getPhpCacheChoice,
+  getPhpJobQueueChoice,
+  getPhpEmailChoice,
+  getPhpLoggingChoice,
+  getPhpHttpClientChoice,
+  getPhpWebFrameworkChoice,
+} from "@/prompts/ecosystems/php-ecosystem";
+import {
   getPythonAiChoice,
   getPythonAuthChoice,
   getPythonGraphqlChoice,
@@ -137,6 +155,18 @@ import {
   getPythonValidationChoice,
   getPythonWebFrameworkChoice,
 } from "@/prompts/ecosystems/python-ecosystem";
+import {
+  getRubyAuthChoice,
+  getRubyOrmChoice,
+  getRubyTestingChoice,
+  getRubyValidationChoice,
+  getRubyCacheChoice,
+  getRubyJobQueueChoice,
+  getRubyEmailChoice,
+  getRubyLoggingChoice,
+  getRubyHttpClientChoice,
+  getRubyWebFrameworkChoice,
+} from "@/prompts/ecosystems/ruby-ecosystem";
 import {
   getRustApiChoice,
   getRustAuthChoice,
@@ -184,7 +214,16 @@ import {
 type CompositionMode = "single" | "multi";
 export type BackendEcosystem = Extract<
   Ecosystem,
-  "typescript" | "go" | "rust" | "python" | "java" | "dotnet" | "elixir"
+  | "typescript"
+  | "go"
+  | "rust"
+  | "python"
+  | "java"
+  | "dotnet"
+  | "elixir"
+  | "php"
+  | "ruby"
+  | "crystal"
 >;
 export type FrontendEcosystem = "typescript" | "rust" | "dotnet";
 export type MobileEcosystem = "none" | "react-native" | "kotlin" | "swift" | "dart";
@@ -233,8 +272,11 @@ export async function selectBackendEcosystem(
       { value: "go", label: "Go", hint: "Gin, Echo, Fiber, Chi" },
       { value: "rust", label: "Rust", hint: "Axum, Actix Web, Rocket" },
       { value: "python", label: "Python", hint: "FastAPI, Django, Flask" },
+      { value: "crystal", label: "Crystal", hint: "Experimental native HTTP service" },
       { value: "java", label: "Java / Kotlin", hint: "Spring Boot, Ktor, Quarkus" },
       { value: "dotnet", label: ".NET", hint: "ASP.NET Core, EF Core, SignalR" },
+      { value: "ruby", label: "Ruby", hint: "Experimental Sinatra, Rails, Roda, or Grape JSON service" },
+      { value: "php", label: "PHP", hint: "Slim, Laravel or Symfony with Composer" },
       { value: "elixir", label: "Elixir", hint: "Phoenix, LiveView" },
     ],
     initialValue,
@@ -671,7 +713,14 @@ export async function gatherMultiEcosystemConfig(
       backend === "none"
         ? "none"
         : await scopedPromptValue("typescript", "jobQueue", configScope, backendSections, () =>
-            getJobQueueChoice(flags.jobQueue, backend, runtime, database, flags.serverDeploy),
+            getJobQueueChoice(
+              flags.jobQueue,
+              backend,
+              runtime,
+              database,
+              flags.serverDeploy,
+              webDeploy,
+            ),
           );
     const caching =
       backend === "none"
@@ -1226,6 +1275,35 @@ export async function gatherMultiEcosystemConfig(
       stackPartSpecs.push(`backend.messageQueue:python:${pythonMessageQueue}`);
   }
 
+  if (backendEcosystem === "crystal") {
+    const framework = promptValue(await getCrystalWebFrameworkChoice(flags.crystalWebFramework));
+    if (framework !== "none") stackPartSpecs.push(`backend:crystal:${framework}`);
+    const crystalOrm = promptValue(await getCrystalOrmChoice(flags.crystalOrm, { crystalWebFramework: framework }));
+    if (crystalOrm !== "none") stackPartSpecs.push(`backend.orm:crystal:${crystalOrm}`);
+    const crystalAuth = promptValue(
+      await getCrystalAuthChoice(flags.crystalAuth, { crystalWebFramework: framework, crystalOrm }),
+    );
+    if (crystalAuth !== "none") stackPartSpecs.push(`backend.auth:crystal:${crystalAuth}`);
+    const crystalTesting = promptValue(
+      await getCrystalTestingChoice(flags.crystalTesting, { crystalWebFramework: framework }),
+    );
+    if (framework !== "none" && crystalTesting !== "none")
+      stackPartSpecs.push(`backend.testing:crystal:${crystalTesting}`);
+    const crystalValidation = promptValue(
+      await getCrystalValidationChoice(flags.crystalValidation, { crystalWebFramework: framework }),
+    );
+    if (framework !== "none" && crystalValidation !== "none")
+      stackPartSpecs.push(`backend.validation:crystal:${crystalValidation}`);
+    const crystalCache = promptValue(
+      await getCrystalCacheChoice(flags.crystalCache, { crystalWebFramework: framework }),
+    );
+    if (crystalCache !== "none") stackPartSpecs.push(`backend.caching:crystal:${crystalCache}`);
+    const crystalJobs = promptValue(
+      await getCrystalJobsChoice(flags.crystalJobs, { crystalWebFramework: framework, crystalCache }),
+    );
+    if (crystalJobs !== "none") stackPartSpecs.push(`backend.jobQueue:crystal:${crystalJobs}`);
+  }
+
   if (backendEcosystem === "java") {
     const javaWebFramework = promptValue(await getJavaWebFrameworkChoice(flags.javaWebFramework));
     const javaLanguage =
@@ -1415,6 +1493,124 @@ export async function gatherMultiEcosystemConfig(
     }
   }
 
+  if (backendEcosystem === "ruby") {
+    const rubyWebFramework = promptValue(await getRubyWebFrameworkChoice(flags.rubyWebFramework));
+    const rubyOrm =
+      rubyWebFramework === "none" ? "none" : promptValue(await getRubyOrmChoice(flags.rubyOrm));
+    const rubyAuth =
+      rubyWebFramework === "none" ? "none" : promptValue(await getRubyAuthChoice(flags.rubyAuth));
+    const rubyTesting =
+      rubyWebFramework === "none"
+        ? "none"
+        : promptValue(await getRubyTestingChoice(flags.rubyTesting));
+    const rubyValidation =
+      rubyWebFramework === "none"
+        ? "none"
+        : promptValue(await getRubyValidationChoice(flags.rubyValidation));
+    const rubyCache =
+      rubyWebFramework === "none" ? "none" : promptValue(await getRubyCacheChoice(flags.rubyCache));
+    const rubyJobQueue =
+      rubyWebFramework === "none"
+        ? "none"
+        : promptValue(await getRubyJobQueueChoice(flags.rubyJobQueue, rubyWebFramework, rubyOrm));
+    const rubyEmail =
+      rubyWebFramework === "none"
+        ? "none"
+        : promptValue(await getRubyEmailChoice(flags.rubyEmail, rubyWebFramework));
+    const rubyLogging =
+      rubyWebFramework === "none"
+        ? "none"
+        : promptValue(await getRubyLoggingChoice(flags.rubyLogging, rubyWebFramework));
+    const rubyHttpClient =
+      rubyWebFramework === "none"
+        ? "none"
+        : promptValue(await getRubyHttpClientChoice(flags.rubyHttpClient));
+    Object.assign(backendChoices, {
+      rubyWebFramework,
+      rubyOrm,
+      rubyAuth,
+      rubyTesting,
+      rubyValidation,
+      rubyCache,
+      rubyJobQueue,
+      rubyEmail,
+      rubyLogging,
+      rubyHttpClient,
+    });
+    if (rubyWebFramework !== "none") stackPartSpecs.push(`backend:ruby:${rubyWebFramework}`);
+    if (rubyOrm !== "none") stackPartSpecs.push(`backend.orm:ruby:${rubyOrm}`);
+    if (rubyAuth !== "none") stackPartSpecs.push(`backend.auth:ruby:${rubyAuth}`);
+    if (rubyTesting !== "none") stackPartSpecs.push(`backend.testing:ruby:${rubyTesting}`);
+    if (rubyValidation !== "none")
+      stackPartSpecs.push(`backend.validation:ruby:${rubyValidation}`);
+    if (rubyCache !== "none") stackPartSpecs.push(`backend.caching:ruby:${rubyCache}`);
+    if (rubyJobQueue !== "none") stackPartSpecs.push(`backend.jobQueue:ruby:${rubyJobQueue}`);
+    if (rubyEmail !== "none") stackPartSpecs.push(`backend.email:ruby:${rubyEmail}`);
+    if (rubyLogging !== "none") stackPartSpecs.push(`backend.logging:ruby:${rubyLogging}`);
+    if (rubyHttpClient !== "none")
+      stackPartSpecs.push(`backend.httpClient:ruby:${rubyHttpClient}`);
+  }
+
+  if (backendEcosystem === "php") {
+    const phpWebFramework = promptValue(await getPhpWebFrameworkChoice(flags.phpWebFramework));
+    const phpOrm =
+      phpWebFramework === "none"
+        ? "none"
+        : promptValue(await getPhpOrmChoice(flags.phpOrm, phpWebFramework));
+    const phpAuth =
+      phpWebFramework === "none"
+        ? "none"
+        : promptValue(await getPhpAuthChoice(flags.phpAuth, phpWebFramework));
+    const phpTesting =
+      phpWebFramework === "none" ? "none" : promptValue(await getPhpTestingChoice(flags.phpTesting));
+    const phpValidation =
+      phpWebFramework === "none"
+        ? "none"
+        : promptValue(await getPhpValidationChoice(flags.phpValidation, phpWebFramework));
+    const phpCache =
+      phpWebFramework === "none"
+        ? "none"
+        : promptValue(await getPhpCacheChoice(flags.phpCache, phpWebFramework));
+    const phpJobQueue =
+      phpWebFramework === "none"
+        ? "none"
+        : promptValue(await getPhpJobQueueChoice(flags.phpJobQueue, phpWebFramework));
+    const phpEmail =
+      phpWebFramework === "none"
+        ? "none"
+        : promptValue(await getPhpEmailChoice(flags.phpEmail, phpWebFramework));
+    const phpLogging =
+      phpWebFramework === "none"
+        ? "none"
+        : promptValue(await getPhpLoggingChoice(flags.phpLogging, phpWebFramework));
+    const phpHttpClient =
+      phpWebFramework === "none"
+        ? "none"
+        : promptValue(await getPhpHttpClientChoice(flags.phpHttpClient, phpWebFramework));
+    Object.assign(backendChoices, {
+      phpWebFramework,
+      phpOrm,
+      phpAuth,
+      phpTesting,
+      phpValidation,
+      phpCache,
+      phpJobQueue,
+      phpEmail,
+      phpLogging,
+      phpHttpClient,
+    });
+    if (phpWebFramework !== "none") stackPartSpecs.push(`backend:php:${phpWebFramework}`);
+    if (phpOrm !== "none") stackPartSpecs.push(`backend.orm:php:${phpOrm}`);
+    if (phpAuth !== "none") stackPartSpecs.push(`backend.auth:php:${phpAuth}`);
+    if (phpTesting !== "none") stackPartSpecs.push(`backend.testing:php:${phpTesting}`);
+    if (phpValidation !== "none") stackPartSpecs.push(`backend.validation:php:${phpValidation}`);
+    if (phpCache !== "none") stackPartSpecs.push(`backend.caching:php:${phpCache}`);
+    if (phpJobQueue !== "none") stackPartSpecs.push(`backend.jobQueue:php:${phpJobQueue}`);
+    if (phpEmail !== "none") stackPartSpecs.push(`backend.email:php:${phpEmail}`);
+    if (phpLogging !== "none") stackPartSpecs.push(`backend.logging:php:${phpLogging}`);
+    if (phpHttpClient !== "none") stackPartSpecs.push(`backend.httpClient:php:${phpHttpClient}`);
+  }
+
   if (backendEcosystem === "elixir") {
     const elixirWebFramework = promptValue(
       await getElixirWebFrameworkChoice(flags.elixirWebFramework),
@@ -1532,6 +1728,36 @@ export async function gatherMultiEcosystemConfig(
         : await scopedPromptValue("elixir", "elixirClustering", configScope, backendSections, () =>
             getElixirClusteringChoice(flags.elixirClustering),
           );
+    const elixirLogging =
+      elixirWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("elixir", "elixirLogging", configScope, backendSections, () =>
+            getElixirLoggingChoice(flags.elixirLogging),
+          );
+    const elixirConfig =
+      elixirWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("elixir", "elixirConfig", configScope, backendSections, () =>
+            getElixirConfigChoice(flags.elixirConfig),
+          );
+    const elixirMessageQueue =
+      elixirWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("elixir", "elixirMessageQueue", configScope, backendSections, () =>
+            getElixirMessageQueueChoice(flags.elixirMessageQueue),
+          );
+    const elixirTemplating =
+      elixirWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("elixir", "elixirTemplating", configScope, backendSections, () =>
+            getElixirTemplatingChoice(flags.elixirTemplating),
+          );
+    const elixirCli =
+      elixirWebFramework === "none"
+        ? "none"
+        : await scopedPromptValue("elixir", "elixirCli", configScope, backendSections, () =>
+            getElixirCliChoice(flags.elixirCli),
+          );
     const elixirDeploy =
       elixirWebFramework === "none"
         ? "none"
@@ -1564,6 +1790,11 @@ export async function gatherMultiEcosystemConfig(
       elixirApplicationFramework,
       elixirDocumentation,
       elixirClustering,
+      elixirLogging,
+      elixirConfig,
+      elixirMessageQueue,
+      elixirTemplating,
+      elixirCli,
       elixirDeploy,
       elixirLibraries,
     });
@@ -1595,6 +1826,21 @@ export async function gatherMultiEcosystemConfig(
     }
     if (elixirClustering !== "none") {
       stackPartSpecs.push(`backend.config:elixir:${elixirClustering}`);
+    }
+    if (elixirLogging !== "none") {
+      stackPartSpecs.push(`backend.logging:elixir:${elixirLogging}`);
+    }
+    if (elixirConfig !== "none") {
+      stackPartSpecs.push(`backend.runtimeConfig:elixir:${elixirConfig}`);
+    }
+    if (elixirMessageQueue !== "none") {
+      stackPartSpecs.push(`backend.messageQueue:elixir:${elixirMessageQueue}`);
+    }
+    if (elixirTemplating !== "none") {
+      stackPartSpecs.push(`backend.templating:elixir:${elixirTemplating}`);
+    }
+    if (elixirCli !== "none") {
+      stackPartSpecs.push(`backend.cli:elixir:${elixirCli}`);
     }
     if (elixirDeploy !== "none") stackPartSpecs.push(`backend.deploy:elixir:${elixirDeploy}`);
     for (const library of elixirLibraries) {

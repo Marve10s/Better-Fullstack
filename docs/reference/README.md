@@ -1,8 +1,8 @@
 # Reference
 
-Keep references that support current implementation, release checks, or operations. Product priority
-lives in the [roadmap](../next-updates-roadmap.md); reusable engineering rules live in guidelines.
-Completed plans, retired tooling notes, and superseded research are available through Git history.
+Keep references that support current implementation, release checks, or operations. Reusable
+engineering rules live in guidelines. Retired tooling notes and superseded research are available
+through Git history.
 
 - `capability-evidence-inventory.md` - evidence levels, runtime recipes, freshness, quarantine, and maintenance cost
 - `existing-project-mutation-audit.md` - mutation boundaries checked by the release guard

@@ -1192,6 +1192,18 @@ describe("graph capability editing", () => {
     expect(config.stackParts?.find((part) => part.id === "worker")?.toolId).toBe("gin");
   });
 
+  it("binds a flat PHP capability edit to the PHP service", () => {
+    const selection: StackSelectionInput = {
+      ...DEFAULT_SELECTION,
+      stackMode: "multi",
+      stackPartSpecs: ["frontend:typescript:react-vite", "backend:php:slim"],
+      appPlatforms: [],
+    };
+    expect(patchGraphScopedSelections(selection, { phpCache: "predis" }).stackPartSpecs).toContain(
+      "backend.caching:php:predis",
+    );
+  });
+
   it("removes an explicitly selected optional capability", () => {
     const selection: StackSelectionInput = {
       ...DEFAULT_SELECTION,

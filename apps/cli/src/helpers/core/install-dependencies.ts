@@ -148,6 +148,32 @@ export async function runCargoBuild({
   }
 }
 
+export async function runDotnetRestore({
+  projectDir,
+}: {
+  projectDir: string;
+}): Promise<SetupStepResult> {
+  const s = spinner();
+  const step = "dotnet restore";
+
+  try {
+    s.start("Running dotnet restore...");
+
+    await $({
+      cwd: projectDir,
+      stderr: ["inherit", "pipe"],
+    })`dotnet restore`;
+
+    s.stop(".NET dependencies restored successfully");
+    return { step, success: true };
+  } catch (error) {
+    s.stop(pc.red("dotnet restore failed"));
+    const errorMessage = toErrorMessage(error);
+    consola.error(pc.red(`dotnet restore error: ${errorMessage}`));
+    return toStepFailure(step, error, errorMessage);
+  }
+}
+
 export async function runUvSync({ projectDir }: { projectDir: string }): Promise<SetupStepResult> {
   const s = spinner();
   const step = "uv sync --extra dev (Python dependencies)";
@@ -314,5 +340,55 @@ export async function runMixCompile({
     const errorMessage = toErrorMessage(error);
     consola.error(pc.red(`Mix error: ${errorMessage}`));
     return toStepFailure(step, error, errorMessage);
+  }
+}
+
+export async function runShardsInstall({
+  projectDir,
+}: {
+  projectDir: string;
+}): Promise<SetupStepResult> {
+  const step = "Install Crystal shards";
+  if (!(await commandExists("crystal")) || !(await commandExists("shards"))) {
+    return {
+      step,
+      success: false,
+      errorMessage:
+        "Install Crystal 1.22.1 and Shards 0.20.0 from https://crystal-lang.org/install/",
+    };
+  }
+  try {
+    await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`shards install`;
+    return { step, success: true };
+  } catch (error) {
+    return toStepFailure(step, error, toErrorMessage(error));
+  }
+}
+
+export async function runBundleInstall({
+  projectDir,
+}: {
+  projectDir: string;
+}): Promise<SetupStepResult> {
+  const step = "bundle install";
+  try {
+    await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`bundle install`;
+    return { step, success: true };
+  } catch (error) {
+    return toStepFailure(step, error, toErrorMessage(error));
+  }
+}
+
+export async function runComposerInstall({
+  projectDir,
+}: {
+  projectDir: string;
+}): Promise<SetupStepResult> {
+  const step = "composer install";
+  try {
+    await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`composer install --no-interaction`;
+    return { step, success: true };
+  } catch (error) {
+    return toStepFailure(step, error, toErrorMessage(error));
   }
 }

@@ -1,0 +1,155 @@
+require "action_controller/railtie"
+{{#if (eq rubyLogging "lograge")}}
+require "lograge"
+{{/if}}
+require "json"
+require "securerandom"
+{{#if (ne rubyAuth "none")}}
+require_relative "auth"
+{{/if}}
+{{#if (ne rubyCache "none")}}
+require_relative "cache"
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+require_relative "jobs"
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+require_relative "upstream"
+{{/if}}
+require_relative "http_policy"
+{{#if (ne rubyOrm "none")}}
+require_relative "items"
+{{/if}}
+require_relative "name_input"
+require_relative "request_body_limit"
+{{#if (and (ne rubyLogging "none") (ne rubyLogging "lograge"))}}
+require_relative "request_logger"
+{{/if}}
+
+module BetterFullstack
+  class Application < Rails::Application
+    config.load_defaults 8.1
+    config.api_only = true
+    config.eager_load = false
+    config.root = __dir__
+    config.hosts.clear
+{{#if (eq rubyJobQueue "solid-queue")}}
+    config.active_job.queue_adapter = :solid_queue
+{{/if}}
+{{#if (eq rubyLogging "lograge")}}
+    config.logger = ActiveSupport::Logger.new(ENV["LOG_PATH"] || (Rails.env.test? ? File::NULL : $stdout))
+    config.lograge.enabled = true
+    config.lograge.formatter = Lograge::Formatters::KeyValue.new
+{{else}}
+    config.logger = ActiveSupport::Logger.new(Rails.env.test? ? File::NULL : $stdout)
+{{/if}}
+    config.secret_key_base = ENV.fetch("SECRET_KEY_BASE") { Rails.env.production? ? nil : SecureRandom.hex(64) }
+{{#if (ne rubyAuth "none")}}
+    config.middleware.insert_before 0, Auth
+{{/if}}
+    config.middleware.insert_before 0, HttpPolicy
+    config.middleware.insert_before 0, RequestBodyLimit, -> { HttpPolicy.allowed_origins }
+{{#if (and (ne rubyLogging "none") (ne rubyLogging "lograge"))}}
+    config.middleware.insert_before 0, RequestLogger
+{{/if}}
+  end
+
+  class ApiController < ActionController::API
+    rescue_from StandardError do
+      render json: { error: "internal_server_error" }, status: 500
+    end
+
+    def health
+      render json: { status: "ok", service: "rails" }
+    end
+
+    def greeting
+      name = NameInput.parse(request.media_type, request.body)
+      return render json: { error: name.error }, status: name.status if name.is_a?(NameInput::Invalid)
+
+      render json: { greeting: "Hello, #{name}!" }
+    end
+{{#if (ne rubyCache "none")}}
+
+    def cached_value
+      status_code, body = Cache.demo
+      render json: body, status: status_code
+    end
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+
+    def upstream
+      status_code, body = Upstream.health
+      render json: body, status: status_code
+    end
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+
+    def create_job
+      name = NameInput.parse(request.media_type, request.body)
+      return render json: { error: name.error }, status: name.status if name.is_a?(NameInput::Invalid)
+
+      status_code, body = Jobs.create(name)
+      render json: body, status: status_code
+    end
+
+    def show_job
+      status_code, body = Jobs.find(params[:id])
+      render json: body, status: status_code
+    end
+{{/if}}
+{{#if (ne rubyOrm "none")}}
+
+    def items
+      render json: { items: Items.all }
+    end
+
+    def create_item
+      name = NameInput.parse(request.media_type, request.body)
+      return render json: { error: name.error }, status: name.status if name.is_a?(NameInput::Invalid)
+
+      render json: Items.create(name), status: 201
+    end
+{{/if}}
+
+{{#if (ne rubyAuth "none")}}
+    def me
+      user = request.env[Auth::CURRENT_USER]
+      return render json: { error: "unauthorized" }, status: 401 unless user
+
+      render json: { user: user }
+    end
+
+{{/if}}
+    def not_found
+      render json: { error: "not_found" }, status: 404
+    end
+  end
+
+  Application.initialize!
+  Application.routes.draw do
+    get "health", to: "better_fullstack/api#health"
+    post "api/greetings", to: "better_fullstack/api#greeting"
+{{#if (ne rubyCache "none")}}
+    get "api/cache", to: "better_fullstack/api#cached_value"
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+    get "api/upstream", to: "better_fullstack/api#upstream"
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+    post "api/jobs", to: "better_fullstack/api#create_job"
+    get "api/jobs/:id", to: "better_fullstack/api#show_job"
+{{/if}}
+{{#if (ne rubyOrm "none")}}
+    get "api/items", to: "better_fullstack/api#items"
+    post "api/items", to: "better_fullstack/api#create_item"
+{{/if}}
+{{#if (ne rubyAuth "none")}}
+    get "api/me", to: "better_fullstack/api#me"
+{{/if}}
+    match "/", to: "better_fullstack/api#not_found", via: :all
+    match "*path", to: "better_fullstack/api#not_found", via: :all
+  end
+
+  App = Application.instance
+end

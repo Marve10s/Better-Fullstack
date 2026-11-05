@@ -1,0 +1,43 @@
+{{#if (or (eq phpEmail "symfony-mailer") (eq phpEmail "phpmailer"))}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\WelcomeMailer;
+use PHPUnit\Framework\TestCase;
+{{#if (eq phpEmail "symfony-mailer")}}
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Mailer\EventListener\MessageLoggerListener;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\Transport;
+use Symfony\Component\Mime\Email;
+{{/if}}
+
+final class MailTest extends TestCase
+{
+    public function testComposesTheWelcomeEmail(): void
+    {
+{{#if (eq phpEmail "symfony-mailer")}}
+        $events = new EventDispatcher();
+        $logger = new MessageLoggerListener();
+        $events->addSubscriber($logger);
+        (new WelcomeMailer(new Mailer(Transport::fromDsn('null://null', $events)), 'hello@example.com'))->send('ada@example.com');
+        $messages = $logger->getEvents()->getMessages();
+        self::assertCount(1, $messages);
+        self::assertInstanceOf(Email::class, $messages[0]);
+        self::assertSame('ada@example.com', $messages[0]->getTo()[0]->getAddress());
+        self::assertSame(WelcomeMailer::SUBJECT, $messages[0]->getSubject());
+        self::assertSame(WelcomeMailer::body(), $messages[0]->getTextBody());
+{{else}}
+        $mail = (new WelcomeMailer('127.0.0.1', 1025, '', '', '', 'hello@example.com'))->compose('ada@example.com');
+        self::assertTrue($mail->preSend());
+        $mime = $mail->getSentMIMEMessage();
+        self::assertStringContainsString('To: ada@example.com', $mime);
+        self::assertStringContainsString('Subject: ' . WelcomeMailer::SUBJECT, $mime);
+        self::assertStringContainsString(trim(WelcomeMailer::body()), $mime);
+{{/if}}
+    }
+}
+{{/if}}

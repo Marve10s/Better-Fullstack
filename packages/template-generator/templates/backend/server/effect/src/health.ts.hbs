@@ -1,0 +1,21 @@
+{{#if useEffectHttpApi}}
+import { Context, Effect, Layer, Schema } from "effect";
+
+export const HealthResponse = Schema.Struct({ status: Schema.Literal("ok") });
+
+export class HealthUnavailable extends Schema.TaggedError<HealthUnavailable>()(
+	"HealthUnavailable",
+	{ message: Schema.String }
+) {}
+
+export class HealthService extends Context.Tag("HealthService")<
+	HealthService,
+	{
+		readonly check: Effect.Effect<typeof HealthResponse.Type, HealthUnavailable>;
+	}
+>() {}
+
+export const HealthServiceLive = Layer.succeed(HealthService, {
+	check: Effect.succeed(HealthResponse.make({ status: "ok" })),
+});
+{{/if}}

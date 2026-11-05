@@ -5,6 +5,7 @@ import CombinationsSection from "@/components/home/combinations-section";
 import ContributorsSection from "@/components/home/contributors-section";
 import FeaturesSection from "@/components/home/features-section";
 import Footer from "@/components/home/footer";
+import { HERO_SCENE_PRELOAD_SCRIPT } from "@/components/home/hero-scene";
 import HeroSection from "@/components/home/hero-section";
 import LaunchRadarStrip from "@/components/home/launch-radar-strip";
 import TestimonialsSection from "@/components/home/testimonials-section";
@@ -45,6 +46,7 @@ export const Route = createFileRoute("/")({
         { name: "twitter:image:alt", content: DEFAULT_OG_IMAGE_ALT },
       ],
       links: [{ rel: "canonical", href: canonicalUrl("/") }],
+      scripts: [{ children: HERO_SCENE_PRELOAD_SCRIPT }],
     };
   },
   component: HomePage,

@@ -17,11 +17,16 @@ import fs from "fs-extra";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { readBtsConfig } from "@/config/bts-config";
+import {
+  readBtsConfig,
+  recordsUnscaffoldedJavaScriptWorkspace,
+  UNSCAFFOLDED_JAVASCRIPT_WORKSPACE_ERROR,
+} from "@/config/bts-config";
 import {
   configFromBtsConfig,
   formatGeneratedTree,
   generateTree,
+  inferProjectName,
   mergeEnvExample,
   mergePackageJson,
   mergePnpmWorkspace,
@@ -52,10 +57,6 @@ import { formatCode } from "@/platform/file-formatter";
 
 const BINARY_FILE_MARKER = "[Binary file]";
 const EXECUTABLE_FILE_NAMES = new Set(["mvnw", "gradlew"]);
-const DOTNET_SERVER_ROOT = "apps/server/";
-const DOTNET_LAYOUT_MIGRATION_REASON =
-  "generated .NET layout moved from the project root to apps/server; migrate the existing application manually before adopting current template paths";
-
 function isConservativeFile(relPath: string): boolean {
   const name = path.basename(relPath);
   return (
@@ -74,25 +75,6 @@ function isStructuredMergeFile(relPath: string): boolean {
 
 function isSkippableDoc(relPath: string): boolean {
   return path.basename(relPath).toLowerCase() === "readme.md";
-}
-
-function isLegacyDotnetRootLayoutMigration(
-  baselinePaths: readonly string[],
-  renderPaths: readonly string[],
-): boolean {
-  const hasRootProject = baselinePaths.some(
-    (filePath) => filePath.endsWith(".csproj") && !filePath.includes("/"),
-  );
-  const hasServerProject = renderPaths.some((filePath) => {
-    if (!filePath.startsWith(DOTNET_SERVER_ROOT) || !filePath.endsWith(".csproj")) return false;
-    return !filePath.slice(DOTNET_SERVER_ROOT.length).includes("/");
-  });
-  return (
-    baselinePaths.includes("Program.cs") &&
-    hasRootProject &&
-    renderPaths.includes(`${DOTNET_SERVER_ROOT}Program.cs`) &&
-    hasServerProject
-  );
 }
 
 export type UpgradeCategory =
@@ -315,14 +297,6 @@ async function validatePlanWritePaths(plan: UpgradePlan): Promise<void> {
   for (const relativePath of [...plan.actionable, SCAFFOLD_MANIFEST_FILE]) {
     await validateWritePath(plan.projectRealpath, relativePath);
   }
-}
-
-async function inferProjectName(projectDir: string): Promise<string> {
-  const packageJson = await fs.readJson(path.join(projectDir, "package.json")).catch(() => null);
-  if (packageJson && typeof packageJson.name === "string" && packageJson.name.trim()) {
-    return packageJson.name.trim();
-  }
-  return path.basename(projectDir);
 }
 
 async function computeRenderHashes(tree: VirtualFileTree): Promise<Map<string, string>> {
@@ -685,6 +659,16 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
   if (!configHashBefore) {
     return { success: false, projectDir, error: `No bts.jsonc found in ${projectDir}.` };
   }
+  const manifestResult = await readScaffoldManifestResult(projectDir);
+  const manifest = manifestResult.status === "valid" ? manifestResult.manifest : null;
+  const persisted = await readBtsConfig(projectDir);
+  if (
+    manifest &&
+    persisted &&
+    recordsUnscaffoldedJavaScriptWorkspace(persisted.stackParts, manifest.hashes)
+  ) {
+    return { success: false, projectDir, error: UNSCAFFOLDED_JAVASCRIPT_WORKSPACE_ERROR };
+  }
   const rendered = await renderCurrentProject(projectDir);
   if ("error" in rendered) {
     return { success: false, projectDir, error: rendered.error };
@@ -692,31 +676,16 @@ export async function planScaffoldUpgrade(projectDirInput: string): Promise<Upgr
 
   const { tree, renderHashes } = rendered;
   const renderFiles = treeToFileMap(tree);
-  const manifestResult = await readScaffoldManifestResult(projectDir);
-  const manifest = manifestResult.status === "valid" ? manifestResult.manifest : null;
   const baseline = manifest?.hashes ?? {};
   const hasBaseline = manifest !== null;
 
   const familyVersions = await collectDivergedFamilyVersions(projectDir, manifest?.baselines ?? {});
   const files: UpgradeFileEntry[] = [];
   const renderPaths = [...renderHashes.keys()].sort();
-  const legacyDotnetLayoutMigration = isLegacyDotnetRootLayoutMigration(
-    Object.keys(baseline),
-    renderPaths,
-  );
 
   for (const filePath of renderPaths) {
     const renderHash = renderHashes.get(filePath) as string;
     const fullPath = path.join(projectDir, filePath);
-
-    if (legacyDotnetLayoutMigration && filePath.startsWith(DOTNET_SERVER_ROOT)) {
-      files.push({
-        path: filePath,
-        category: "manual",
-        reason: DOTNET_LAYOUT_MIGRATION_REASON,
-      });
-      continue;
-    }
 
     if (!(await fs.pathExists(fullPath))) {
       if (baseline[filePath] !== undefined) {

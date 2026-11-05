@@ -45,6 +45,7 @@ const HIGHLIGHT_KEYS_BY_ECOSYSTEM: Record<string, readonly (keyof StackState)[]>
   rust: ["rustWebFramework", "rustFrontend", "rustOrm", "rustApi", "rustCli"],
   python: ["pythonWebFramework", "pythonOrm", "pythonAi", "pythonApi", "pythonTaskQueue"],
   go: ["goWebFramework", "goOrm", "goApi", "goCli"],
+  crystal: ["crystalWebFramework", "crystalOrm", "crystalAuth", "crystalTesting", "crystalValidation", "crystalCache", "crystalJobs"],
   java: [
     "javaWebFramework",
     "javaBuildTool",
@@ -54,6 +55,7 @@ const HIGHLIGHT_KEYS_BY_ECOSYSTEM: Record<string, readonly (keyof StackState)[]>
     "javaTestingLibraries",
   ],
   dotnet: ["dotnetWebFramework", "dotnetOrm", "dotnetAuth", "dotnetApi", "dotnetLibraries"],
+  ruby: ["rubyWebFramework", "rubyOrm", "rubyAuth", "rubyTesting"],
   elixir: [
     "elixirWebFramework",
     "elixirOrm",

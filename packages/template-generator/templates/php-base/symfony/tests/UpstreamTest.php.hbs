@@ -1,0 +1,44 @@
+{{#if (ne phpHttpClient "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Kernel;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+
+final class UpstreamTest extends TestCase
+{
+    protected function tearDown(): void
+    {
+        putenv('UPSTREAM_URL');
+    }
+
+    private static function fetch(string $url): array
+    {
+        putenv('UPSTREAM_URL=' . $url);
+        $kernel = new Kernel('test', false);
+        $response = $kernel->handle(Request::create('/api/upstream'));
+        $kernel->shutdown();
+        return [$response->getStatusCode(), json_decode((string) $response->getContent(), true, 32, JSON_THROW_ON_ERROR)];
+    }
+
+    public function testReturnsTheUpstreamJson(): void
+    {
+        $fixture = UpstreamFixture::start();
+        try {
+            self::assertSame([200, ['upstreamStatus' => 200, 'data' => ['ok' => true, 'path' => '/fixture']]], self::fetch($fixture->url));
+        } finally {
+            $fixture->stop();
+        }
+    }
+
+    public function testReportsMissingAndUnreachableUpstreams(): void
+    {
+        self::assertSame([503, ['error' => 'upstream_not_configured']], self::fetch(''));
+        self::assertSame([502, ['error' => 'upstream_unavailable']], self::fetch('http://127.0.0.1:1/'));
+    }
+}
+{{/if}}

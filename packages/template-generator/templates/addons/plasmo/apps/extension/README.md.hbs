@@ -1,0 +1,22 @@
+# {{projectName}} browser extension
+
+This independent Plasmo application targets Chrome Manifest V3. It belongs at `apps/extension` in a monorepo with a JavaScript application. Choose either WXT or Plasmo because both use that directory.
+
+Use Node.js 24 LTS for Plasmo's build process and Bun to install dependencies. Plasmo 0.90.5 includes React 19 scaffolding. Keep the extension's declared React and React DOM versions literal because Plasmo reads their major version before bundling. Do not replace them with workspace catalog references.
+
+From this directory:
+
+```sh
+bun run check-types
+bun run build
+```
+
+Load `build/chrome-mv3-prod` through Chrome's **Load unpacked** action at `chrome://extensions` with Developer mode enabled. Open `https://example.com/`, reload the page after installing the extension, open the popup, and press **Read page title**. The popup sends a request to the top-frame content script. The content script bounds the document title and asks the service worker to format a response. The popup displays that response. An unsupported page shows a visible no-receiver error.
+
+The content script matches only `https://example.com/*`. No `tabs`, `activeTab`, `scripting`, `storage`, or broad host permission is needed for this flow. Requests and responses validate unknown input and bound text lengths. All scripts, CSS, and icons ship in the bundle. No remote code or backend connection is used.
+
+For local extension development, run `bun run dev` and load `build/chrome-mv3-dev`. Development output includes Plasmo's reload tooling. Distribute only the production directory after inspecting its manifest and packaged files.
+
+Source generation checks do not prove the built artifact or browser interaction. Verify the production manifest, load the extension, exercise the button on example.com, then confirm another site shows the visible error. Inspect the extension service worker for errors.
+
+See the [Plasmo documentation](https://docs.plasmo.com/) and [Chrome messaging documentation](https://developer.chrome.com/docs/extensions/develop/concepts/messaging).

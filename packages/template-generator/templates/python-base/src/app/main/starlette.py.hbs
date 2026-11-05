@@ -1,0 +1,89 @@
+"""Main application entry point."""
+# ruff: noqa: I001
+
+import os
+
+from dotenv import load_dotenv
+{{#if (eq pythonObservability "signoz")}}
+from app import otel as _otel  # noqa: F401 - importing activates SigNoz tracing
+{{/if}}
+{{#if (ne pythonLogging "none")}}
+from app.logging_config import RequestLoggingMiddleware, configure_logging
+{{/if}}
+
+{{#if (eq observability "sentry")}}
+from app.observability import init_sentry
+
+{{/if}}
+from starlette.applications import Starlette
+from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
+from starlette.requests import Request
+from starlette.responses import JSONResponse{{#if (eq pythonObservability "prometheus-client")}}, Response{{/if}}
+from starlette.routing import Route
+{{#if (eq pythonObservability "prometheus-client")}}
+from app.metrics import render_metrics
+{{/if}}
+
+load_dotenv()
+{{#if (ne pythonLogging "none")}}
+configure_logging()
+{{/if}}
+
+
+async def index(request: Request) -> JSONResponse:
+    """Root endpoint."""
+    return JSONResponse({"message": "Hello from Starlette!"})
+
+
+async def health(request: Request) -> JSONResponse:
+    """Health check endpoint."""
+    return JSONResponse({"status": "ok"})
+{{#if (eq pythonObservability "prometheus-client")}}
+
+
+async def metrics(request: Request) -> Response:
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return Response(payload, media_type=content_type)
+{{/if}}
+
+
+middleware = [
+{{#if (ne pythonLogging "none")}}
+    # First in the list runs outermost, so CORS preflight replies are logged too.
+    Middleware(RequestLoggingMiddleware),
+{{/if}}
+    Middleware(
+        CORSMiddleware,
+        allow_origins=[os.getenv("CORS_ORIGIN") or "*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    ),
+]
+
+app = Starlette(
+    routes=[
+        Route("/", index),
+        Route("/health", health),
+{{#if (eq pythonObservability "prometheus-client")}}
+        Route("/metrics", metrics),
+{{/if}}
+    ],
+    middleware=middleware,
+)
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+{{#if (ne pythonLogging "none")}}
+    uvicorn.run(
+        app,
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "8000")),
+        log_config=None,
+    )
+{{else}}
+    uvicorn.run(app, host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", "8000")))
+{{/if}}

@@ -2,6 +2,7 @@ import type { ProjectConfig } from "@better-fullstack/types/types";
 
 import { ProjectConfigSchema } from "@better-fullstack/types/schemas";
 import {
+  createCrystalStackSelection,
   normalizeStackSelection as normalizeStackStateSelections,
   stackSelectionToProjectConfig,
   type StackSelectionInput,
@@ -10,22 +11,23 @@ import {
 import { DEFAULT_STACK, type StackState } from "@/lib/stack/stack-defaults";
 
 function normalizeInputStack(input: Partial<StackState>): StackState {
+  const defaults = input.ecosystem === "crystal" ? createCrystalStackSelection() : DEFAULT_STACK;
   return normalizeStackStateSelections({
-    ...DEFAULT_STACK,
+    ...defaults,
     ...input,
-    webFrontend: input.webFrontend ?? DEFAULT_STACK.webFrontend,
-    nativeFrontend: input.nativeFrontend ?? DEFAULT_STACK.nativeFrontend,
-    codeQuality: input.codeQuality ?? DEFAULT_STACK.codeQuality,
-    documentation: input.documentation ?? DEFAULT_STACK.documentation,
-    appPlatforms: input.appPlatforms ?? DEFAULT_STACK.appPlatforms,
-    examples: input.examples ?? DEFAULT_STACK.examples,
-    aiDocs: input.aiDocs ?? DEFAULT_STACK.aiDocs,
-    javaLibraries: input.javaLibraries ?? DEFAULT_STACK.javaLibraries,
-    javaTestingLibraries: input.javaTestingLibraries ?? DEFAULT_STACK.javaTestingLibraries,
-    mobileLibraries: input.mobileLibraries ?? DEFAULT_STACK.mobileLibraries,
+    webFrontend: input.webFrontend ?? defaults.webFrontend,
+    nativeFrontend: input.nativeFrontend ?? defaults.nativeFrontend,
+    codeQuality: input.codeQuality ?? defaults.codeQuality,
+    documentation: input.documentation ?? defaults.documentation,
+    appPlatforms: input.appPlatforms ?? defaults.appPlatforms,
+    examples: input.examples ?? defaults.examples,
+    aiDocs: input.aiDocs ?? defaults.aiDocs,
+    javaLibraries: input.javaLibraries ?? defaults.javaLibraries,
+    javaTestingLibraries: input.javaTestingLibraries ?? defaults.javaTestingLibraries,
+    mobileLibraries: input.mobileLibraries ?? defaults.mobileLibraries,
     kotlinMobileLibraries:
-      input.kotlinMobileLibraries ?? DEFAULT_STACK.kotlinMobileLibraries,
-    dotnetLibraries: input.dotnetLibraries ?? DEFAULT_STACK.dotnetLibraries,
+      input.kotlinMobileLibraries ?? defaults.kotlinMobileLibraries,
+    dotnetLibraries: input.dotnetLibraries ?? defaults.dotnetLibraries,
   });
 }
 

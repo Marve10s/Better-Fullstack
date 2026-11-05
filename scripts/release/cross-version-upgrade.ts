@@ -46,6 +46,7 @@ type UpdatePlanJson = {
     };
   };
   manual?: Array<{ path?: string }>;
+  fix?: { changed?: boolean; reviewToken?: string; success?: boolean };
   ok?: boolean;
   recoveryId?: string;
   reviewToken?: string;
@@ -67,6 +68,7 @@ type CrossVersionCaseResult = {
     verified: boolean;
   };
   categories: Record<string, number>;
+  configRepaired: boolean;
   ecosystem: string;
   error?: string;
   id: string;
@@ -146,6 +148,44 @@ function parseJson(stdout: string, label: string): UpdatePlanJson {
     return JSON.parse(stdout) as UpdatePlanJson;
   } catch {
     throw new Error(`${label} did not return one JSON document`);
+  }
+}
+
+const CONFIG_REPAIR_REQUIRED = "never scaffolded";
+
+async function planUpdateWithConfigRepair(
+  cliPath: string,
+  projectDir: string,
+): Promise<{ plan: UpdatePlanJson; configRepaired: boolean }> {
+  try {
+    return {
+      plan: await runCliJson(cliPath, ["update", projectDir, "--json"], "ok"),
+      configRepaired: false,
+    };
+  } catch (error) {
+    if (!String(error).includes(CONFIG_REPAIR_REQUIRED)) throw error;
+  }
+  const repair = await runCliJson(cliPath, ["doctor", projectDir, "--fix", "--json"], "success");
+  const reviewToken = repair.fix?.reviewToken;
+  if (!repair.fix?.changed || !reviewToken) {
+    throw new Error("The source config needs repair but doctor produced no repair plan");
+  }
+  await runCliJson(
+    cliPath,
+    ["doctor", projectDir, "--fix", "--apply", "--review-token", reviewToken, "--json"],
+    "success",
+  );
+  return {
+    plan: await runCliJson(cliPath, ["update", projectDir, "--json"], "ok"),
+    configRepaired: true,
+  };
+}
+
+function assertPlanMatchesBaseline(plan: UpdatePlanJson): void {
+  if ((plan.summary?.unchanged ?? 0) === 0) {
+    throw new Error(
+      "Update plan matched no baseline files; the re-rendered project does not correspond to the fixture",
+    );
   }
 }
 
@@ -321,7 +361,7 @@ async function verifyBuild(fixture: UpgradeFixtureCase, projectDir: string, cliP
     steps: result.steps.map((step) => ({
       skipped: step.skipped === true,
       step: step.step,
-      stderr: typeof step.stderr === "string" ? step.stderr.slice(0, 400) : undefined,
+      stderr: typeof step.stderr === "string" ? step.stderr.slice(-1200) : undefined,
       success: step.success,
     })),
     verified: true,
@@ -389,6 +429,7 @@ export async function runCrossVersionUpgradeQualification(options: {
       if (!projectDir) throw new Error(`Materialized fixture ${fixtureCase.id} is missing`);
       let caseActionable = 0;
       let caseCategories: Record<string, number> = {};
+      let caseConfigRepaired = false;
       let caseRecoveredExactly = false;
       let caseBuild: CrossVersionCaseResult["build"] = {
         passed: false,
@@ -398,8 +439,11 @@ export async function runCrossVersionUpgradeQualification(options: {
       try {
         // The first plan identifies files actually managed by this source-to-target update.
         // oxlint-disable-next-line no-await-in-loop -- each fixture receives an isolated lifecycle
-        const initialPlan = await runCliJson(cliPath, ["update", projectDir, "--json"], "ok");
+        const initial = await planUpdateWithConfigRepair(cliPath, projectDir);
+        const initialPlan = initial.plan;
+        caseConfigRepaired = initial.configRepaired;
         assertPlanIdentity(initialPlan, fixture.release.version, targetManifest.releaseVersion);
+        assertPlanMatchesBaseline(initialPlan);
         // oxlint-disable-next-line no-await-in-loop
         const userEdit = await injectManagedUserEdit(projectDir, managedPlanPaths(initialPlan));
         // oxlint-disable-next-line no-await-in-loop
@@ -411,6 +455,7 @@ export async function runCrossVersionUpgradeQualification(options: {
           // oxlint-disable-next-line no-await-in-loop
           plan = await runCliJson(cliPath, ["update", projectDir, "--json"], "ok");
           assertPlanIdentity(plan, fixture.release.version, targetManifest.releaseVersion);
+          assertPlanMatchesBaseline(plan);
         }
         const protectedAs = userEdit ? protectedCategory(plan, userEdit.path) : null;
         const actionable = plan.actionable ?? [];
@@ -473,6 +518,7 @@ export async function runCrossVersionUpgradeQualification(options: {
           actionable: caseActionable,
           build: caseBuild,
           categories: caseCategories,
+          configRepaired: caseConfigRepaired,
           ecosystem: fixtureCase.ecosystem,
           id: fixtureCase.id,
           recoveredExactly: caseRecoveredExactly,
@@ -484,6 +530,7 @@ export async function runCrossVersionUpgradeQualification(options: {
           actionable: caseActionable,
           build: caseBuild,
           categories: caseCategories,
+          configRepaired: caseConfigRepaired,
           ecosystem: fixtureCase.ecosystem,
           error: boundedError(error, [root, dirname(resolve(options.sourceFixturePath))]),
           id: fixtureCase.id,

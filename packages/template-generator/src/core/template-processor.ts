@@ -438,6 +438,17 @@ Handlebars.registerHelper("shadcnFontIsMono", function (this: ProjectConfig) {
   return font === "jetbrains-mono" || font === "geist-mono";
 });
 
+Handlebars.registerHelper(
+  "rustLog",
+  function (this: ProjectConfig, level: string, options: Handlebars.HelperOptions) {
+    const message = options.fn(this);
+    const logging = (options.data?.root as ProjectConfig | undefined)?.rustLogging;
+    if (logging === "tracing") return `tracing::${level}!(${message});`;
+    if (logging === "env-logger") return `log::${level}!(${message});`;
+    return `${level === "error" || level === "warn" ? "eprintln" : "println"}!(${message});`;
+  },
+);
+
 export function processTemplateString(
   content: string,
   context: ProjectConfig,

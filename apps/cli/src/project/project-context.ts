@@ -8,10 +8,10 @@ import {
 import fs from "fs-extra";
 import path from "node:path";
 
-import { readRecipeRecords } from "@/recipes/records";
 import { readBtsConfig } from "@/config/bts-config";
 import { getCurrentLifecycleVersions } from "@/lifecycle/scaffold-manifest";
 import { getProjectUpdateSupport } from "@/lifecycle/update-support";
+import { readRecipeRecords } from "@/recipes/records";
 
 export const PROJECT_CONTEXT_SCHEMA_VERSION = 1 as const;
 
@@ -31,6 +31,11 @@ const VERSION_FILES = [
   "pom.xml",
   "build.gradle",
   "build.gradle.kts",
+  "Gemfile",
+  "Gemfile.lock",
+  ".ruby-version",
+  "composer.json",
+  "composer.lock",
   "mix.exs",
   "mix.lock",
 ] as const;

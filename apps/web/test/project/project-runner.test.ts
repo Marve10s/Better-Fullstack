@@ -139,13 +139,14 @@ describe("project runner", () => {
     expect(hasDependencyManifestChanges(files, { "package.json": "{}" })).toBe(true);
   });
 
-  it("pins rolldown for the disposable browser install and keeps existing overrides", () => {
+  it("pins rolldown and its wasm runtime for the disposable browser install and keeps existing overrides", () => {
     const packageFile = {
       type: "file" as const,
       path: "package.json",
       name: "package.json",
       extension: "json",
-      content: '{"name":"demo","overrides":{"left-pad":"1.0.0"},"scripts":{"dev":"vite"}}',
+      content:
+        '{"name":"demo","devDependencies":{"vite":"^8.3.2"},"overrides":{"left-pad":"1.0.0"},"scripts":{"dev":"vite"}}',
     };
     const tree: VirtualDirectory = {
       type: "directory",
@@ -158,7 +159,12 @@ describe("project runner", () => {
 
     expect(JSON.parse(packageFile.content)).toEqual({
       name: "demo",
-      overrides: { "left-pad": "1.0.0", rolldown: "1.2.8" },
+      devDependencies: { vite: "^8.3.2", "@rolldown/binding-wasm32-wasi": "1.2.8" },
+      overrides: {
+        "left-pad": "1.0.0",
+        rolldown: "1.2.8",
+        "@napi-rs/wasm-runtime": "1.2.5",
+      },
       scripts: { dev: "vite" },
     });
   });

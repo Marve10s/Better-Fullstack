@@ -1,0 +1,116 @@
+require "grape"
+require "json"
+{{#if (ne rubyAuth "none")}}
+require_relative "auth"
+{{/if}}
+{{#if (ne rubyCache "none")}}
+require_relative "cache"
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+require_relative "jobs"
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+require_relative "upstream"
+{{/if}}
+require_relative "http_policy"
+{{#if (ne rubyOrm "none")}}
+require_relative "items"
+{{/if}}
+require_relative "name_input"
+require_relative "request_body_limit"
+{{#if (and (ne rubyLogging "none") (ne rubyLogging "lograge"))}}
+require_relative "request_logger"
+{{/if}}
+
+module BetterFullstack
+  class Api < Grape::API
+    format :json
+    content_type :json, "application/json"
+    default_format :json
+    parser :json, nil
+
+    rescue_from :all do
+      error!({ error: "internal_server_error" }, 500)
+    end
+
+    get "/health" do
+      { status: "ok", service: "grape" }
+    end
+
+    post "/api/greetings" do
+      name = NameInput.parse(request.media_type, env["rack.input"])
+      error!({ error: name.error }, name.status) if name.is_a?(NameInput::Invalid)
+      status 200
+      { greeting: "Hello, #{name}!" }
+    end
+{{#if (ne rubyCache "none")}}
+
+    get "/api/cache" do
+      status_code, body = Cache.demo
+      status status_code
+      body
+    end
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+
+    get "/api/upstream" do
+      status_code, body = Upstream.health
+      status status_code
+      body
+    end
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+
+    post "/api/jobs" do
+      name = NameInput.parse(request.media_type, env["rack.input"])
+      error!({ error: name.error }, name.status) if name.is_a?(NameInput::Invalid)
+      status_code, body = Jobs.create(name)
+      status status_code
+      body
+    end
+
+    get "/api/jobs/:id" do
+      status_code, body = Jobs.find(params[:id])
+      status status_code
+      body
+    end
+{{/if}}
+{{#if (ne rubyOrm "none")}}
+
+    get "/api/items" do
+      { items: Items.all }
+    end
+
+    post "/api/items" do
+      name = NameInput.parse(request.media_type, env["rack.input"])
+      error!({ error: name.error }, name.status) if name.is_a?(NameInput::Invalid)
+      status 201
+      Items.create(name)
+    end
+{{/if}}
+
+{{#if (ne rubyAuth "none")}}
+    get "/api/me" do
+      user = env[Auth::CURRENT_USER]
+      error!({ error: "unauthorized" }, 401) unless user
+      { user: user }
+    end
+
+{{/if}}
+    route :any, "*path" do
+      error!({ error: "not_found" }, 404)
+    end
+  end
+
+  App = Rack::Builder.app do
+{{#if (and (ne rubyLogging "none") (ne rubyLogging "lograge"))}}
+    use RequestLogger
+{{/if}}
+    use RequestBodyLimit, -> { HttpPolicy.allowed_origins }
+    use HttpPolicy
+{{#if (ne rubyAuth "none")}}
+    use Auth
+{{/if}}
+    run Api
+  end
+end

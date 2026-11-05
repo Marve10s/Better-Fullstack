@@ -1,8 +1,35 @@
 import { createCliDefaultProjectConfigBase, type ProjectConfig } from "@better-fullstack/types";
 import { buildCommand, formatNameFromFingerprint } from "@testing/lib/generate-combos/render";
+import { makeBaseConfig } from "@testing/lib/presets";
 import { describe, expect, it } from "bun:test";
 
 describe("smoke combo command rendering", () => {
+  it("preserves all sampled Ruby selections in the smoke command", () => {
+    const config: ProjectConfig = {
+      ...makeBaseConfig("ruby-smoke", "ruby"),
+      rubyWebFramework: "rails",
+      rubyOrm: "active-record",
+      rubyAuth: "rodauth",
+      rubyTesting: "rspec",
+      rubyValidation: "dry-validation",
+      rubyCache: "memory",
+      rubyJobQueue: "solid-queue",
+      rubyEmail: "action-mailer",
+      rubyLogging: "lograge",
+      rubyHttpClient: "faraday",
+    };
+
+    expect(buildCommand("ruby-smoke", config)).toContain(
+      "--ruby-web-framework rails --ruby-orm active-record --ruby-auth rodauth --ruby-testing rspec --ruby-validation dry-validation --ruby-cache memory --ruby-job-queue solid-queue --ruby-email action-mailer --ruby-logging lograge --ruby-http-client faraday",
+    );
+  });
+
+  it("keeps disabled Ruby integrations explicit in preset commands", () => {
+    expect(buildCommand("ruby-smoke", makeBaseConfig("ruby-smoke", "ruby"))).toContain(
+      "--ruby-validation none --ruby-cache none --ruby-job-queue none --ruby-email none --ruby-logging none --ruby-http-client none",
+    );
+  });
+
   it("keeps generated names safe for Phoenix test database identifiers", () => {
     const name = formatNameFromFingerprint({
       ecosystem: "elixir",
@@ -131,13 +158,18 @@ describe("smoke combo command rendering", () => {
       elixirApplicationFramework: "ash",
       elixirDocumentation: "ex_doc",
       elixirClustering: "libcluster",
+      elixirLogging: "logger-json",
+      elixirConfig: "dotenvy",
+      elixirMessageQueue: "amqp",
+      elixirTemplating: "eex",
+      elixirCli: "optimus",
       elixirDeploy: "none",
       git: false,
       install: false,
     };
 
     expect(buildCommand("elixir-smoke", config)).toContain(
-      "--elixir-web-framework phoenix --elixir-orm ecto-sql --elixir-auth none --elixir-api rest --elixir-realtime channels --elixir-jobs none --elixir-validation ecto-changesets --elixir-http req --elixir-json jason --elixir-email none --elixir-caching none --elixir-observability telemetry --elixir-testing ex_unit --elixir-quality credo --elixir-i18n gettext --elixir-http-server bandit --elixir-application-framework ash --elixir-documentation ex_doc --elixir-clustering libcluster --elixir-deploy none",
+      "--elixir-web-framework phoenix --elixir-orm ecto-sql --elixir-auth none --elixir-api rest --elixir-realtime channels --elixir-jobs none --elixir-validation ecto-changesets --elixir-http req --elixir-json jason --elixir-email none --elixir-caching none --elixir-observability telemetry --elixir-testing ex_unit --elixir-quality credo --elixir-i18n gettext --elixir-http-server bandit --elixir-application-framework ash --elixir-documentation ex_doc --elixir-clustering libcluster --elixir-logging logger-json --elixir-config dotenvy --elixir-message-queue amqp --elixir-templating eex --elixir-cli optimus --elixir-deploy none",
     );
   });
 

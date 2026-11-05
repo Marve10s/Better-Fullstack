@@ -41,6 +41,14 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     configDisplay.push(`${pc.blue("Project Name:")} ${config.projectName}`);
   }
 
+  if (config.ecosystem === "crystal") configDisplay.push(`${pc.blue("Crystal HTTP framework:")} ${config.crystalWebFramework ?? "kemal"}`);
+  if (config.ecosystem === "crystal") configDisplay.push(`${pc.blue("Crystal database layer:")} ${config.crystalOrm ?? "none"}`);
+  if (config.ecosystem === "crystal") configDisplay.push(`${pc.blue("Crystal auth:")} ${config.crystalAuth ?? "none"}`);
+  if (config.ecosystem === "crystal") configDisplay.push(`${pc.blue("Crystal testing:")} ${config.crystalTesting ?? "spec"}`);
+  if (config.ecosystem === "crystal") configDisplay.push(`${pc.blue("Crystal validation:")} ${config.crystalValidation ?? "none"}`);
+  if (config.ecosystem === "crystal") configDisplay.push(`${pc.blue("Crystal cache:")} ${config.crystalCache ?? "none"}`);
+  if (config.ecosystem === "crystal") configDisplay.push(`${pc.blue("Crystal background jobs:")} ${config.crystalJobs ?? "none"}`);
+
   if (config.frontend !== undefined) {
     const frontend = Array.isArray(config.frontend) ? config.frontend : [config.frontend];
     const frontendText =
@@ -248,6 +256,21 @@ export function displayConfig(config: Partial<ProjectConfig>) {
     }
     if (config.elixirClustering && config.elixirClustering !== "none") {
       configDisplay.push(`${pc.blue("Elixir Clustering:")} ${String(config.elixirClustering)}`);
+    }
+    if (config.elixirLogging && config.elixirLogging !== "none") {
+      configDisplay.push(`${pc.blue("Elixir Logging:")} ${String(config.elixirLogging)}`);
+    }
+    if (config.elixirConfig && config.elixirConfig !== "none") {
+      configDisplay.push(`${pc.blue("Elixir Config:")} ${String(config.elixirConfig)}`);
+    }
+    if (config.elixirMessageQueue && config.elixirMessageQueue !== "none") {
+      configDisplay.push(`${pc.blue("Elixir Message Queue:")} ${String(config.elixirMessageQueue)}`);
+    }
+    if (config.elixirTemplating && config.elixirTemplating !== "none") {
+      configDisplay.push(`${pc.blue("Elixir Templating:")} ${String(config.elixirTemplating)}`);
+    }
+    if (config.elixirCli && config.elixirCli !== "none") {
+      configDisplay.push(`${pc.blue("Elixir CLI:")} ${String(config.elixirCli)}`);
     }
     if (config.elixirDeploy && config.elixirDeploy !== "none") {
       configDisplay.push(`${pc.blue("Elixir Deploy:")} ${String(config.elixirDeploy)}`);

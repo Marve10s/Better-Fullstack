@@ -63,18 +63,53 @@ export const NEW_OPTION_IDS_BY_CATEGORY = {
   elixirOrm: ["myxql", "ecto_sqlite3"],
   elixirAuth: ["pow"],
   elixirApi: ["open_api_spex"],
+  elixirJobs: ["exq"],
+  elixirValidation: ["peri", "tarams"],
+  elixirJson: ["elixir-json", "jiffy"],
   elixirHttp: ["tesla"],
   elixirEmail: ["bamboo"],
   elixirCaching: ["redix"],
   elixirObservability: ["sentry"],
   elixirTesting: ["stream_data", "ex_machina"],
   elixirQuality: ["excoveralls", "mix_audit"],
-  elixirI18n: ["gettext"],
+  elixirI18n: ["gettext", "linguist", "ex-cldr-messages"],
   elixirHttpServer: ["bandit", "cowboy"],
   elixirApplicationFramework: ["ash"],
   elixirDocumentation: ["ex_doc"],
-  elixirClustering: ["libcluster"],
+  elixirClustering: ["libcluster", "dns-cluster", "distributed-erlang"],
+  elixirLogging: ["logger-json", "logger-file-backend", "logster"],
+  elixirConfig: ["dotenvy", "skogsra", "confex"],
+  elixirMessageQueue: ["amqp", "gnat", "brod"],
+  elixirTemplating: ["eex", "solid-liquid", "bbmustache"],
+  elixirCli: ["option-parser", "optimus", "owl"],
   elixirLibraries: ["ex_aws", "floki", "rustler"],
+  phpWebFramework: ["slim", "laravel", "symfony"],
+  phpOrm: ["eloquent", "doctrine", "cycle"],
+  phpTesting: ["phpunit", "pest", "codeception"],
+  phpValidation: ["symfony-validator", "respect-validation", "laravel-validation"],
+  phpCache: ["symfony-cache", "laminas-cache", "predis", "laravel-cache"],
+  phpJobQueue: ["symfony-messenger", "enqueue-fs", "laravel-queue"],
+  phpEmail: ["symfony-mailer", "phpmailer", "laravel-mail"],
+  phpLogging: ["monolog", "laravel-log", "symfony-monolog"],
+  phpHttpClient: ["guzzle", "symfony-http-client", "httplug-curl"],
+  phpAuth: ["firebase-jwt", "lcobucci-jwt", "symfony-security"],
+  rubyWebFramework: ["sinatra", "rails", "roda", "grape"],
+  rubyTesting: ["minitest", "rspec", "test-unit"],
+  rubyValidation: ["dry-validation", "active-model", "json-schemer"],
+  rubyCache: ["redis", "memcached", "memory"],
+  rubyJobQueue: ["sidekiq", "resque", "solid-queue"],
+  rubyEmail: ["mail", "action-mailer", "resend"],
+  rubyLogging: ["logger", "semantic-logger", "ougai", "lograge"],
+  rubyHttpClient: ["faraday", "httparty", "httpx"],
+  rubyAuth: ["jwt", "omniauth", "rodauth"],
+  rubyOrm: ["active-record", "sequel", "rom"],
+  crystalWebFramework: ["kemal", "lucky", "athena", "marten"],
+  crystalOrm: ["crystal-db", "avram", "marten-orm"],
+  crystalAuth: ["jwt", "kemal-session", "marten-auth"],
+  crystalTesting: ["spec", "spectator", "spec-kemal"],
+  crystalValidation: ["athena-validator", "active-model", "marten-schema"],
+  crystalCache: ["memory", "file", "redis"],
+  crystalJobs: ["sidekiq", "mosquito", "tasker"],
   pythonWebFramework: ["aiohttp", "streamlit"],
   pythonOrm: ["pymongo"],
   pythonAi: ["pytorch", "transformers", "scikit-learn", "tensorflow", "mcp"],
@@ -141,7 +176,17 @@ const NEW_OPTION_LOOKUP = new Map<string, ReadonlySet<string>>(
 );
 
 export type LaunchRadarGroup = {
-  id: "typescript" | "rust" | "python" | "go" | "java" | "elixir" | "dotnet";
+  id:
+    | "typescript"
+    | "rust"
+    | "python"
+    | "go"
+    | "java"
+    | "elixir"
+    | "dotnet"
+    | "php"
+    | "ruby"
+    | "crystal";
   name: string;
   count: number;
   accent: string;
@@ -217,6 +262,9 @@ const ELIXIR_CATEGORIES = [
   "elixirOrm",
   "elixirAuth",
   "elixirApi",
+  "elixirJobs",
+  "elixirValidation",
+  "elixirJson",
   "elixirHttp",
   "elixirEmail",
   "elixirCaching",
@@ -228,9 +276,48 @@ const ELIXIR_CATEGORIES = [
   "elixirApplicationFramework",
   "elixirDocumentation",
   "elixirClustering",
+  "elixirLogging",
+  "elixirConfig",
+  "elixirMessageQueue",
+  "elixirTemplating",
+  "elixirCli",
   "elixirLibraries",
 ] as const;
 const DOTNET_CATEGORIES = ["dotnetLibraries"] as const;
+
+const PHP_CATEGORIES = [
+  "phpWebFramework",
+  "phpOrm",
+  "phpTesting",
+  "phpValidation",
+  "phpCache",
+  "phpJobQueue",
+  "phpEmail",
+  "phpLogging",
+  "phpHttpClient",
+  "phpAuth",
+] as const;
+const RUBY_CATEGORIES = [
+  "rubyWebFramework",
+  "rubyTesting",
+  "rubyValidation",
+  "rubyCache",
+  "rubyJobQueue",
+  "rubyEmail",
+  "rubyLogging",
+  "rubyHttpClient",
+  "rubyAuth",
+  "rubyOrm",
+] as const;
+const CRYSTAL_CATEGORIES = [
+  "crystalWebFramework",
+  "crystalOrm",
+  "crystalAuth",
+  "crystalTesting",
+  "crystalValidation",
+  "crystalCache",
+  "crystalJobs",
+] as const;
 
 export const LAUNCH_RADAR_GROUPS: readonly LaunchRadarGroup[] = [
   {
@@ -324,6 +411,36 @@ export const LAUNCH_RADAR_GROUPS: readonly LaunchRadarGroup[] = [
       "mongodb-driver",
     ],
   },
+  {
+    id: "php",
+    name: "PHP",
+    count: countCategories(PHP_CATEGORIES),
+    accent: "#777BB4",
+    description:
+      "PHP frameworks with database access, authentication, tests, validation, caching, background jobs, email, logging, and HTTP clients.",
+    categories: PHP_CATEGORIES,
+    featuredOptionIds: ["laravel", "symfony", "doctrine", "pest", "guzzle", "monolog"],
+  },
+  {
+    id: "ruby",
+    name: "Ruby",
+    count: countCategories(RUBY_CATEGORIES),
+    accent: "#CC342D",
+    description:
+      "Rails, Sinatra, Roda, and Grape with database access, authentication, tests, validation, caching, jobs, email, logging, and HTTP clients.",
+    categories: RUBY_CATEGORIES,
+    featuredOptionIds: ["rails", "roda", "grape", "rspec", "sidekiq", "faraday"],
+  },
+  {
+    id: "crystal",
+    name: "Crystal",
+    count: countCategories(CRYSTAL_CATEGORIES),
+    accent: "#94A3B8",
+    description:
+      "Kemal, Lucky, Athena, and Marten with database access, authentication, specs, validation, caching, and background jobs.",
+    categories: CRYSTAL_CATEGORIES,
+    featuredOptionIds: ["lucky", "athena", "marten", "avram", "spectator", "mosquito"],
+  },
 ];
 
 export const LAUNCH_RADAR_TOTAL = LAUNCH_RADAR_GROUPS.reduce(
@@ -332,6 +449,24 @@ export const LAUNCH_RADAR_TOTAL = LAUNCH_RADAR_GROUPS.reduce(
 );
 
 const FEATURED_OPTION_LABELS: Readonly<Record<string, string>> = {
+  laravel: "Laravel",
+  symfony: "Symfony",
+  doctrine: "Doctrine ORM",
+  pest: "Pest",
+  guzzle: "Guzzle",
+  monolog: "Monolog",
+  rails: "Rails",
+  roda: "Roda",
+  grape: "Grape",
+  rspec: "RSpec",
+  sidekiq: "Sidekiq",
+  faraday: "Faraday",
+  lucky: "Lucky",
+  athena: "Athena",
+  marten: "Marten",
+  avram: "Avram (PostgreSQL)",
+  spectator: "Spectator",
+  mosquito: "Mosquito",
   vue: "Vue",
   electron: "Electron",
   "expo-camera": "Expo Camera",

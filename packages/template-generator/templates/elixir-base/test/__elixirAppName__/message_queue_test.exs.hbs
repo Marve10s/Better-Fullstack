@@ -1,0 +1,13 @@
+defmodule {{elixirModuleName}}.MessageQueueTest do
+  use ExUnit.Case, async: false
+
+  @moduletag :message_queue
+
+  alias {{elixirModuleName}}.MessageQueue
+
+  test "a published message is received back from the broker" do
+    payload = "hello-#{System.unique_integer([:positive])}"
+
+    assert {:ok, ^payload} = MessageQueue.round_trip(payload)
+  end
+end

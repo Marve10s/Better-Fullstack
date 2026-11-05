@@ -1,5 +1,5 @@
-import type { Backend, Ecosystem, Observability } from "@/types";
 import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
+import type { Backend, Ecosystem, Observability } from "@/types";
 
 import { exitCancelled } from "@/presentation/errors";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
@@ -61,7 +61,11 @@ type ObservabilityPromptContext = {
 export function resolveObservabilityPrompt(
   context: ObservabilityPromptContext = {},
 ): PromptSingleResolution<Observability> {
-  if (context.ecosystem === "react-native" || context.ecosystem === "elixir") {
+  if (
+    context.ecosystem === "react-native" ||
+    context.ecosystem === "elixir" ||
+    context.ecosystem === "php"
+  ) {
     return {
       shouldPrompt: false,
       mode: "single",
@@ -125,7 +129,12 @@ export async function getObservabilityChoice(
   ecosystem?: Ecosystem,
   javaLanguage?: string,
 ) {
-  const resolution = resolveObservabilityPrompt({ observability, backend, ecosystem, javaLanguage });
+  const resolution = resolveObservabilityPrompt({
+    observability,
+    backend,
+    ecosystem,
+    javaLanguage,
+  });
   if (!resolution.shouldPrompt) {
     return resolution.autoValue ?? "none";
   }

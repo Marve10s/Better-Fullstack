@@ -213,7 +213,9 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
   },
   typescript: {
     pinnedVersion: "^6.0.3",
-    reason: "TypeScript 7 currently breaks generated database package type portability (TS2883).",
+    holdLatestChannel: true,
+    reason:
+      "TypeScript 7 lacks the classic compiler API required by generated tsdown builds and breaks database package type portability (TS2883).",
   },
   turbo: {
     pinnedVersion: "2.10.11",
@@ -301,9 +303,9 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     reason: "Keep the router plugin on the latest reviewed installable release.",
   },
   "@tanstack/solid-router": {
-    pinnedVersion: "1.170.38",
+    pinnedVersion: "1.170.43",
     holdLatestChannel: true,
-    reason: "The upstream latest tag depends on an unpublished @tanstack/router-core release.",
+    reason: "Match the exact Solid Router release that @tanstack/solid-start 1.169 depends on.",
   },
   "@tanstack/solid-router-devtools": {
     pinnedVersion: "1.167.0",
@@ -380,6 +382,11 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     pinnedVersion: "1.6.22",
     reason:
       "Keep the Better Auth family on the reviewed 1.6 schema until the 1.7 account identity migration is implemented.",
+  },
+  "@opentelemetry/api": {
+    pinnedVersion: "^1.9.1",
+    reason:
+      "Keep the floor the pinned SDK 0.220 and 2.9 packages accept; Fresh's Deno build only resolves @fresh/core's ^1.9.0 import against a caret range.",
   },
   "@opentelemetry/sdk-node": {
     pinnedVersion: "0.220.0",

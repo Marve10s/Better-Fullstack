@@ -4,6 +4,7 @@ import {
   commandOutput,
   gotoAppPage,
   openBuilder,
+  selectEcosystem,
   visibleTestId,
 } from "@test/e2e/test-helpers";
 
@@ -55,17 +56,17 @@ test.describe("Builder parity", () => {
   test("run tab only shows for browser-runnable TypeScript stacks", async ({ page }) => {
     await expect(visibleTestId(page, "tab-run")).toBeVisible();
 
-    await clickVisibleTestId(page, "ecosystem-python");
+    await selectEcosystem(page, "python");
     await expect(page.getByTestId("tab-run")).toHaveCount(0);
 
-    await clickVisibleTestId(page, "ecosystem-typescript");
+    await selectEcosystem(page, "typescript");
     await expect(visibleTestId(page, "tab-run")).toBeVisible();
   });
 
   test("python ecosystem exposes multi-select pythonAi and updates the command", async ({
     page,
   }) => {
-    await clickVisibleTestId(page, "ecosystem-python");
+    await selectEcosystem(page, "python");
     await expect(visibleTestId(page, "category-pythonAi")).toBeVisible();
     await clickVisibleTestId(page, "option-pythonAi-langchain");
     await clickVisibleTestId(page, "option-pythonAi-openai-sdk");
@@ -73,10 +74,32 @@ test.describe("Builder parity", () => {
     await expect(commandOutput(page)).toContainText("--python-ai langchain openai-sdk");
   });
 
+  test("the language menu can switch to multi-ecosystem mode", async ({ page }) => {
+    await clickVisibleTestId(page, "ecosystem-menu");
+    await clickVisibleTestId(page, "ecosystem-menu-multi");
+
+    await expect(visibleTestId(page, "stack-mode-multi")).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("switching languages keeps each language's last picks", async ({ page }) => {
+    await clickVisibleTestId(page, "option-backend-fastify");
+    await expect(commandOutput(page)).toContainText("--backend fastify");
+
+    await selectEcosystem(page, "python");
+    await clickVisibleTestId(page, "option-pythonAi-langchain");
+    await expect(commandOutput(page)).toContainText("--python-ai langchain");
+
+    await selectEcosystem(page, "typescript");
+    await expect(commandOutput(page)).toContainText("--backend fastify");
+
+    await selectEcosystem(page, "python");
+    await expect(commandOutput(page)).toContainText("--python-ai langchain");
+  });
+
   test("rust ecosystem exposes multi-select rustLibraries and updates the command", async ({
     page,
   }) => {
-    await clickVisibleTestId(page, "ecosystem-rust");
+    await selectEcosystem(page, "rust");
     await expect(visibleTestId(page, "category-rustLibraries")).toBeVisible();
     await clickVisibleTestId(page, "option-rustLibraries-validator");
     await clickVisibleTestId(page, "option-rustLibraries-mockall");
@@ -98,7 +121,7 @@ test.describe("Builder parity", () => {
   });
 
   test("go auth renders as one section while staying ecosystem-filtered", async ({ page }) => {
-    await clickVisibleTestId(page, "ecosystem-go");
+    await selectEcosystem(page, "go");
 
     await expect(visibleTestId(page, "category-goAuth")).toBeVisible();
     await expect(page.getByTestId("category-auth")).toHaveCount(0);
@@ -116,7 +139,7 @@ test.describe("Builder parity", () => {
   test("Kotlin is a first-class solo ecosystem choice backed by the Java generator", async ({
     page,
   }) => {
-    await clickVisibleTestId(page, "ecosystem-kotlin");
+    await selectEcosystem(page, "kotlin");
 
     await expect(commandOutput(page)).toContainText("--ecosystem java");
     await expect(commandOutput(page)).toContainText("--java-language kotlin");

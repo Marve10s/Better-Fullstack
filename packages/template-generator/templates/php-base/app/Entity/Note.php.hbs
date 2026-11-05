@@ -1,0 +1,68 @@
+{{#if (eq phpOrm "doctrine")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'notes')]
+class Note
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    public function __construct(#[ORM\Column(length: 120)] private string $title)
+    {
+    }
+
+    public function toArray(): array
+    {
+        return ['id' => $this->id, 'title' => $this->title];
+    }
+}
+{{else if (eq phpOrm "cycle")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Entity;
+
+class Note
+{
+    public ?int $id = null;
+
+    public function __construct(public string $title)
+    {
+    }
+
+    public function toArray(): array
+    {
+        return ['id' => $this->id, 'title' => $this->title];
+    }
+}
+{{else if (and (eq phpOrm "eloquent") (eq phpWebFramework "slim"))}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Entity;
+
+use Illuminate\Database\Eloquent\Model;
+
+final class Note extends Model
+{
+    protected $table = 'notes';
+
+    protected $fillable = ['title'];
+
+    public function toArray(): array
+    {
+        return ['id' => $this->getKey(), 'title' => $this->getAttribute('title')];
+    }
+}
+{{/if}}

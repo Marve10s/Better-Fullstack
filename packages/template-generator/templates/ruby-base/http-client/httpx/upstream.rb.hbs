@@ -1,0 +1,18 @@
+require "httpx"
+require "json"
+
+module BetterFullstack
+  module Upstream
+    def self.base_url
+      ENV.fetch("UPSTREAM_URL", "http://127.0.0.1:{{rubyPort}}")
+    end
+
+    def self.health
+      response = HTTPX.with(timeout: { connect_timeout: 2, request_timeout: 5 }).get("#{base_url}/health")
+      response.raise_for_status
+      [200, { "upstream" => JSON.parse(response.to_s) }]
+    rescue HTTPX::Error, SystemCallError, JSON::ParserError
+      [502, { "error" => "upstream_unavailable" }]
+    end
+  end
+end

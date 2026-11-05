@@ -6,6 +6,39 @@ type TechResourceLinks = {
 type LinkMap = Record<string, TechResourceLinks>;
 
 const BASE_LINKS: LinkMap = {
+  ruby: {
+    docsUrl: "https://www.ruby-lang.org/en/documentation/",
+    githubUrl: "https://github.com/ruby/ruby",
+  },
+  sinatra: {
+    docsUrl: "https://sinatrarb.com/intro.html",
+    githubUrl: "https://github.com/sinatra/sinatra",
+  },
+  rails: {
+    docsUrl: "https://guides.rubyonrails.org/api_app.html",
+    githubUrl: "https://github.com/rails/rails",
+  },
+  roda: {
+    docsUrl: "https://roda.jeremyevans.net/documentation.html",
+    githubUrl: "https://github.com/jeremyevans/roda",
+  },
+  grape: {
+    docsUrl: "https://www.ruby-grape.org/",
+    githubUrl: "https://github.com/ruby-grape/grape",
+  },
+  php: { docsUrl: "https://www.php.net/manual/en/", githubUrl: "https://github.com/php/php-src" },
+  slim: {
+    docsUrl: "https://www.slimframework.com/docs/v4/",
+    githubUrl: "https://github.com/slimphp/Slim",
+  },
+  laravel: {
+    docsUrl: "https://laravel.com/docs/13.x",
+    githubUrl: "https://github.com/laravel/framework",
+  },
+  symfony: {
+    docsUrl: "https://symfony.com/doc/current/index.html",
+    githubUrl: "https://github.com/symfony/symfony",
+  },
   enabled: {
     docsUrl: "https://developer.chrome.com/docs/ai/webmcp",
     githubUrl: "https://github.com/webmachinelearning/webmcp",
@@ -721,6 +754,11 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/pqina/filepond",
   },
   uppy: { docsUrl: "https://uppy.io/docs/", githubUrl: "https://github.com/transloadit/uppy" },
+  crystal: { docsUrl: "https://crystal-lang.org/reference/1.22/", githubUrl: "https://github.com/crystal-lang/crystal" },
+  kemal: { docsUrl: "https://kemalcr.com/guide/", githubUrl: "https://github.com/kemalcr/kemal" },
+  lucky: { docsUrl: "https://luckyframework.org/guides/getting-started/why-lucky", githubUrl: "https://github.com/luckyframework/lucky" },
+  athena: { docsUrl: "https://athenaframework.org/", githubUrl: "https://github.com/athena-framework/framework" },
+  marten: { docsUrl: "https://martenframework.com/docs", githubUrl: "https://github.com/martenframework/marten" },
   java: {
     docsUrl: "https://dev.java/learn/",
     githubUrl: "https://github.com/openjdk/jdk",
@@ -1156,6 +1194,7 @@ const BASE_LINKS: LinkMap = {
   pwa: { docsUrl: "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps" },
   tauri: { docsUrl: "https://tauri.app/start/", githubUrl: "https://github.com/tauri-apps/tauri" },
   wxt: { docsUrl: "https://wxt.dev/", githubUrl: "https://github.com/wxt-dev/wxt" },
+  plasmo: { docsUrl: "https://docs.plasmo.com/", githubUrl: "https://github.com/PlasmoHQ/plasmo" },
   opentui: { docsUrl: "https://opentui.org/", githubUrl: "https://github.com/sst/opentui" },
   mcp: {
     docsUrl: "https://modelcontextprotocol.io/introduction",
@@ -2288,6 +2327,302 @@ const CATEGORY_LINKS: LinkMap = {
     docsUrl: "https://hexdocs.pm/phoenix_live_view/",
     githubUrl: "https://github.com/phoenixframework/phoenix_live_view",
   },
+  "phpOrm:eloquent": {
+    docsUrl: "https://laravel.com/docs/13.x/eloquent",
+    githubUrl: "https://github.com/illuminate/database",
+  },
+  "phpOrm:doctrine": {
+    docsUrl: "https://www.doctrine-project.org/projects/doctrine-orm/en/current/index.html",
+    githubUrl: "https://github.com/doctrine/orm",
+  },
+  "phpAuth:firebase-jwt": {
+    docsUrl: "https://github.com/firebase/php-jwt#readme",
+    githubUrl: "https://github.com/firebase/php-jwt",
+  },
+  "phpAuth:lcobucci-jwt": {
+    docsUrl: "https://lcobucci-jwt.readthedocs.io/en/stable/",
+    githubUrl: "https://github.com/lcobucci/jwt",
+  },
+  "phpAuth:symfony-security": {
+    docsUrl: "https://symfony.com/doc/current/security/access_token.html",
+    githubUrl: "https://github.com/symfony/security-bundle",
+  },
+  "phpTesting:phpunit": {
+    docsUrl: "https://docs.phpunit.de/en/13.4/",
+    githubUrl: "https://github.com/sebastianbergmann/phpunit",
+  },
+  "phpTesting:pest": {
+    docsUrl: "https://pestphp.com/docs/installation",
+    githubUrl: "https://github.com/pestphp/pest",
+  },
+  "phpTesting:codeception": {
+    docsUrl: "https://codeception.com/docs/UnitTests",
+    githubUrl: "https://github.com/Codeception/Codeception",
+  },
+  "phpValidation:symfony-validator": {
+    docsUrl: "https://symfony.com/doc/current/validation.html",
+    githubUrl: "https://github.com/symfony/validator",
+  },
+  "phpValidation:respect-validation": {
+    docsUrl: "https://respect-validation.readthedocs.io/",
+    githubUrl: "https://github.com/Respect/Validation",
+  },
+  "phpValidation:laravel-validation": {
+    docsUrl: "https://laravel.com/docs/13.x/validation",
+    githubUrl: "https://github.com/illuminate/validation",
+  },
+  "phpCache:symfony-cache": {
+    docsUrl: "https://symfony.com/doc/current/components/cache.html",
+    githubUrl: "https://github.com/symfony/cache",
+  },
+  "phpCache:laminas-cache": {
+    docsUrl: "https://docs.laminas.dev/laminas-cache/",
+    githubUrl: "https://github.com/laminas/laminas-cache",
+  },
+  "phpCache:predis": {
+    docsUrl: "https://github.com/predis/predis#readme",
+    githubUrl: "https://github.com/predis/predis",
+  },
+  "phpCache:laravel-cache": {
+    docsUrl: "https://laravel.com/docs/13.x/cache",
+    githubUrl: "https://github.com/illuminate/cache",
+  },
+  "phpJobQueue:symfony-messenger": {
+    docsUrl: "https://symfony.com/doc/current/messenger.html",
+    githubUrl: "https://github.com/symfony/messenger",
+  },
+  "phpJobQueue:enqueue-fs": {
+    docsUrl: "https://php-enqueue.github.io/transport/filesystem/",
+    githubUrl: "https://github.com/php-enqueue/fs",
+  },
+  "phpJobQueue:laravel-queue": {
+    docsUrl: "https://laravel.com/docs/13.x/queues",
+    githubUrl: "https://github.com/illuminate/queue",
+  },
+  "phpEmail:symfony-mailer": {
+    docsUrl: "https://symfony.com/doc/current/mailer.html",
+    githubUrl: "https://github.com/symfony/mailer",
+  },
+  "phpEmail:phpmailer": {
+    docsUrl: "https://github.com/PHPMailer/PHPMailer#readme",
+    githubUrl: "https://github.com/PHPMailer/PHPMailer",
+  },
+  "phpEmail:laravel-mail": {
+    docsUrl: "https://laravel.com/docs/13.x/mail",
+    githubUrl: "https://github.com/illuminate/mail",
+  },
+  "phpLogging:monolog": {
+    docsUrl: "https://seldaek.github.io/monolog/",
+    githubUrl: "https://github.com/Seldaek/monolog",
+  },
+  "phpLogging:laravel-log": {
+    docsUrl: "https://laravel.com/docs/13.x/logging",
+    githubUrl: "https://github.com/illuminate/log",
+  },
+  "phpLogging:symfony-monolog": {
+    docsUrl: "https://symfony.com/doc/current/logging.html",
+    githubUrl: "https://github.com/symfony/monolog-bundle",
+  },
+  "phpHttpClient:guzzle": {
+    docsUrl: "https://docs.guzzlephp.org/",
+    githubUrl: "https://github.com/guzzle/guzzle",
+  },
+  "phpHttpClient:symfony-http-client": {
+    docsUrl: "https://symfony.com/doc/current/http_client.html",
+    githubUrl: "https://github.com/symfony/http-client",
+  },
+  "phpHttpClient:httplug-curl": {
+    docsUrl: "https://docs.php-http.org/en/latest/clients/curl-client.html",
+    githubUrl: "https://github.com/php-http/curl-client",
+  },
+  "phpOrm:cycle": {
+    docsUrl: "https://cycle-orm.dev/docs/intro-about/current/en",
+    githubUrl: "https://github.com/cycle/orm",
+  },
+  "rubyTesting:minitest": {
+    docsUrl: "https://docs.seattlerb.org/minitest/",
+    githubUrl: "https://github.com/minitest/minitest",
+  },
+  "rubyTesting:rspec": {
+    docsUrl: "https://rspec.info/documentation/",
+    githubUrl: "https://github.com/rspec/rspec",
+  },
+  "rubyTesting:test-unit": {
+    docsUrl: "https://test-unit.github.io/",
+    githubUrl: "https://github.com/test-unit/test-unit",
+  },
+  "rubyValidation:dry-validation": {
+    docsUrl: "https://dry-rb.org/gems/dry-validation/",
+    githubUrl: "https://github.com/dry-rb/dry-validation",
+  },
+  "rubyValidation:active-model": {
+    docsUrl: "https://guides.rubyonrails.org/active_model_basics.html",
+    githubUrl: "https://github.com/rails/rails/tree/main/activemodel",
+  },
+  "rubyValidation:json-schemer": {
+    docsUrl: "https://github.com/davishmcclurg/json_schemer#readme",
+    githubUrl: "https://github.com/davishmcclurg/json_schemer",
+  },
+  "rubyCache:redis": {
+    docsUrl: "https://redis.io/docs/latest/develop/clients/ruby/",
+    githubUrl: "https://github.com/redis/redis-rb",
+  },
+  "rubyCache:memcached": {
+    docsUrl: "https://github.com/petergoldstein/dalli#readme",
+    githubUrl: "https://github.com/petergoldstein/dalli",
+  },
+  "rubyCache:memory": {
+    docsUrl: "https://guides.rubyonrails.org/caching_with_rails.html#activesupport-cache-memorystore",
+    githubUrl: "https://github.com/rails/rails/tree/main/activesupport",
+  },
+  "rubyJobQueue:sidekiq": {
+    docsUrl: "https://github.com/sidekiq/sidekiq/wiki",
+    githubUrl: "https://github.com/sidekiq/sidekiq",
+  },
+  "rubyJobQueue:resque": {
+    docsUrl: "https://github.com/resque/resque#readme",
+    githubUrl: "https://github.com/resque/resque",
+  },
+  "rubyJobQueue:solid-queue": {
+    docsUrl: "https://github.com/rails/solid_queue#readme",
+    githubUrl: "https://github.com/rails/solid_queue",
+  },
+  "rubyEmail:mail": {
+    docsUrl: "https://github.com/mikel/mail#readme",
+    githubUrl: "https://github.com/mikel/mail",
+  },
+  "rubyEmail:action-mailer": {
+    docsUrl: "https://guides.rubyonrails.org/action_mailer_basics.html",
+    githubUrl: "https://github.com/rails/rails/tree/main/actionmailer",
+  },
+  "rubyEmail:resend": {
+    docsUrl: "https://resend.com/docs/send-with-ruby",
+    githubUrl: "https://github.com/resend/resend-ruby",
+  },
+  "rubyLogging:logger": {
+    docsUrl: "https://ruby.github.io/logger/",
+    githubUrl: "https://github.com/ruby/logger",
+  },
+  "rubyLogging:semantic-logger": {
+    docsUrl: "https://logger.rocketjob.io/",
+    githubUrl: "https://github.com/reidmorrison/semantic_logger",
+  },
+  "rubyLogging:ougai": {
+    docsUrl: "https://github.com/tilfin/ougai#readme",
+    githubUrl: "https://github.com/tilfin/ougai",
+  },
+  "rubyLogging:lograge": {
+    docsUrl: "https://github.com/roidrage/lograge#readme",
+    githubUrl: "https://github.com/roidrage/lograge",
+  },
+  "rubyHttpClient:faraday": {
+    docsUrl: "https://lostisland.github.io/faraday/",
+    githubUrl: "https://github.com/lostisland/faraday",
+  },
+  "rubyHttpClient:httparty": {
+    docsUrl: "https://github.com/jnunemaker/httparty#readme",
+    githubUrl: "https://github.com/jnunemaker/httparty",
+  },
+  "rubyHttpClient:httpx": {
+    docsUrl: "https://honeyryderchuck.gitlab.io/httpx/",
+    githubUrl: "https://gitlab.com/os85/httpx",
+  },
+  "rubyAuth:jwt": {
+    docsUrl: "https://github.com/jwt/ruby-jwt#readme",
+    githubUrl: "https://github.com/jwt/ruby-jwt",
+  },
+  "rubyAuth:omniauth": {
+    docsUrl: "https://github.com/omniauth/omniauth/wiki",
+    githubUrl: "https://github.com/omniauth/omniauth_openid_connect",
+  },
+  "rubyAuth:rodauth": {
+    docsUrl: "https://rodauth.jeremyevans.net/documentation.html",
+    githubUrl: "https://github.com/jeremyevans/rodauth",
+  },
+  "rubyOrm:active-record": {
+    docsUrl: "https://guides.rubyonrails.org/active_record_basics.html",
+    githubUrl: "https://github.com/rails/rails/tree/main/activerecord",
+  },
+  "rubyOrm:sequel": {
+    docsUrl: "https://sequel.jeremyevans.net/documentation.html",
+    githubUrl: "https://github.com/jeremyevans/sequel",
+  },
+  "rubyOrm:rom": {
+    docsUrl: "https://rom-rb.org/learn/",
+    githubUrl: "https://github.com/rom-rb/rom",
+  },
+  "crystalOrm:crystal-db": {
+    docsUrl: "https://crystal-lang.org/reference/1.22/database/",
+    githubUrl: "https://github.com/crystal-lang/crystal-db",
+  },
+  "crystalOrm:avram": {
+    docsUrl: "https://luckyframework.org/guides/database/intro-to-avram-and-orms",
+    githubUrl: "https://github.com/luckyframework/avram",
+  },
+  "crystalOrm:marten-orm": {
+    docsUrl: "https://martenframework.com/docs/models-and-databases",
+    githubUrl: "https://github.com/martenframework/marten",
+  },
+  "crystalAuth:jwt": {
+    docsUrl: "https://github.com/crystal-community/jwt#readme",
+    githubUrl: "https://github.com/crystal-community/jwt",
+  },
+  "crystalAuth:kemal-session": {
+    docsUrl: "https://github.com/kemalcr/kemal-session#readme",
+    githubUrl: "https://github.com/kemalcr/kemal-session",
+  },
+  "crystalAuth:marten-auth": {
+    docsUrl: "https://martenframework.com/docs/authentication",
+    githubUrl: "https://github.com/martenframework/marten-auth",
+  },
+  "crystalTesting:spec": {
+    docsUrl: "https://crystal-lang.org/reference/latest/guides/testing.html",
+    githubUrl: "https://github.com/crystal-lang/crystal",
+  },
+  "crystalTesting:spectator": {
+    docsUrl: "https://gitlab.com/arctic-fox/spectator/-/wikis/home",
+    githubUrl: "https://gitlab.com/arctic-fox/spectator",
+  },
+  "crystalTesting:spec-kemal": {
+    docsUrl: "https://github.com/kemalcr/spec-kemal#readme",
+    githubUrl: "https://github.com/kemalcr/spec-kemal",
+  },
+  "crystalValidation:athena-validator": {
+    docsUrl: "https://athenaframework.org/Validator/",
+    githubUrl: "https://github.com/athena-framework/validator",
+  },
+  "crystalValidation:active-model": {
+    docsUrl: "https://github.com/spider-gazelle/active-model#readme",
+    githubUrl: "https://github.com/spider-gazelle/active-model",
+  },
+  "crystalValidation:marten-schema": {
+    docsUrl: "https://martenframework.com/docs/schemas",
+    githubUrl: "https://github.com/martenframework/marten",
+  },
+  "crystalCache:memory": {
+    docsUrl: "https://github.com/crystal-cache/cache#readme",
+    githubUrl: "https://github.com/crystal-cache/cache",
+  },
+  "crystalCache:file": {
+    docsUrl: "https://github.com/crystal-cache/cache#readme",
+    githubUrl: "https://github.com/crystal-cache/cache",
+  },
+  "crystalCache:redis": {
+    docsUrl: "https://github.com/crystal-cache/redis_cache_store#readme",
+    githubUrl: "https://github.com/crystal-cache/redis_cache_store",
+  },
+  "crystalJobs:sidekiq": {
+    docsUrl: "https://github.com/hugopl/sidekiq.cr/wiki",
+    githubUrl: "https://github.com/hugopl/sidekiq.cr",
+  },
+  "crystalJobs:mosquito": {
+    docsUrl: "https://mosquito-cr.github.io/manual/",
+    githubUrl: "https://github.com/mosquito-cr/mosquito",
+  },
+  "crystalJobs:tasker": {
+    docsUrl: "https://github.com/spider-gazelle/tasker#readme",
+    githubUrl: "https://github.com/spider-gazelle/tasker",
+  },
   "elixirOrm:ecto-sql": {
     docsUrl: "https://hexdocs.pm/ecto_sql/",
     githubUrl: "https://github.com/elixir-ecto/ecto_sql",
@@ -2344,6 +2679,10 @@ const CATEGORY_LINKS: LinkMap = {
     docsUrl: "https://hexdocs.pm/quantum/",
     githubUrl: "https://github.com/quantum-elixir/quantum-core",
   },
+  "elixirJobs:exq": {
+    docsUrl: "https://hexdocs.pm/exq/",
+    githubUrl: "https://github.com/akira/exq",
+  },
   "elixirValidation:ecto-changesets": {
     docsUrl: "https://hexdocs.pm/ecto/Ecto.Changeset.html",
     githubUrl: "https://github.com/elixir-ecto/ecto",
@@ -2351,6 +2690,14 @@ const CATEGORY_LINKS: LinkMap = {
   "elixirValidation:nimble-options": {
     docsUrl: "https://hexdocs.pm/nimble_options/",
     githubUrl: "https://github.com/dashbitco/nimble_options",
+  },
+  "elixirValidation:peri": {
+    docsUrl: "https://hexdocs.pm/peri/",
+    githubUrl: "https://github.com/zoedsoupe/peri",
+  },
+  "elixirValidation:tarams": {
+    docsUrl: "https://hexdocs.pm/tarams/",
+    githubUrl: "https://github.com/bluzky/tarams",
   },
   "elixirHttp:req": {
     docsUrl: "https://hexdocs.pm/req/",
@@ -2367,6 +2714,14 @@ const CATEGORY_LINKS: LinkMap = {
   "elixirJson:jason": {
     docsUrl: "https://hexdocs.pm/jason/",
     githubUrl: "https://github.com/michalmuskala/jason",
+  },
+  "elixirJson:elixir-json": {
+    docsUrl: "https://hexdocs.pm/elixir/JSON.html",
+    githubUrl: "https://github.com/elixir-lang/elixir",
+  },
+  "elixirJson:jiffy": {
+    docsUrl: "https://hexdocs.pm/jiffy/",
+    githubUrl: "https://github.com/davisp/jiffy",
   },
   "elixirEmail:swoosh": {
     docsUrl: "https://hexdocs.pm/swoosh/",
@@ -2445,6 +2800,14 @@ const CATEGORY_LINKS: LinkMap = {
     docsUrl: "https://hexdocs.pm/gettext/",
     githubUrl: "https://github.com/elixir-gettext/gettext",
   },
+  "elixirI18n:linguist": {
+    docsUrl: "https://hexdocs.pm/linguist/",
+    githubUrl: "https://github.com/change/linguist",
+  },
+  "elixirI18n:ex-cldr-messages": {
+    docsUrl: "https://hexdocs.pm/ex_cldr_messages/",
+    githubUrl: "https://github.com/elixir-cldr/cldr_messages",
+  },
   "elixirHttpServer:bandit": {
     docsUrl: "https://hexdocs.pm/bandit/",
     githubUrl: "https://github.com/mtrudel/bandit",
@@ -2464,6 +2827,74 @@ const CATEGORY_LINKS: LinkMap = {
   "elixirClustering:libcluster": {
     docsUrl: "https://hexdocs.pm/libcluster/",
     githubUrl: "https://github.com/bitwalker/libcluster",
+  },
+  "elixirClustering:dns-cluster": {
+    docsUrl: "https://hexdocs.pm/dns_cluster/",
+    githubUrl: "https://github.com/phoenixframework/dns_cluster",
+  },
+  "elixirClustering:distributed-erlang": {
+    docsUrl: "https://hexdocs.pm/elixir/Node.html",
+    githubUrl: "https://github.com/elixir-lang/elixir",
+  },
+  "elixirLogging:logger-json": {
+    docsUrl: "https://hexdocs.pm/logger_json/",
+    githubUrl: "https://github.com/Nebo15/logger_json",
+  },
+  "elixirLogging:logger-file-backend": {
+    docsUrl: "https://hexdocs.pm/logger_file_backend/",
+    githubUrl: "https://github.com/onkel-dirtus/logger_file_backend",
+  },
+  "elixirLogging:logster": {
+    docsUrl: "https://hexdocs.pm/logster/1.1.1/",
+    githubUrl: "https://github.com/navinpeiris/logster",
+  },
+  "elixirConfig:dotenvy": {
+    docsUrl: "https://hexdocs.pm/dotenvy/",
+    githubUrl: "https://github.com/fireproofsocks/dotenvy",
+  },
+  "elixirConfig:skogsra": {
+    docsUrl: "https://hexdocs.pm/skogsra/",
+    githubUrl: "https://github.com/gmtprime/skogsra",
+  },
+  "elixirConfig:confex": {
+    docsUrl: "https://hexdocs.pm/confex/",
+    githubUrl: "https://github.com/Nebo15/confex",
+  },
+  "elixirMessageQueue:amqp": {
+    docsUrl: "https://hexdocs.pm/amqp/",
+    githubUrl: "https://github.com/pma/amqp",
+  },
+  "elixirMessageQueue:gnat": {
+    docsUrl: "https://hexdocs.pm/gnat/",
+    githubUrl: "https://github.com/nats-io/nats.ex",
+  },
+  "elixirMessageQueue:brod": {
+    docsUrl: "https://hexdocs.pm/brod/",
+    githubUrl: "https://github.com/kafka4beam/brod",
+  },
+  "elixirTemplating:eex": {
+    docsUrl: "https://hexdocs.pm/eex/EEx.html",
+    githubUrl: "https://github.com/elixir-lang/elixir",
+  },
+  "elixirTemplating:solid-liquid": {
+    docsUrl: "https://hexdocs.pm/solid/",
+    githubUrl: "https://github.com/edgurgel/solid",
+  },
+  "elixirTemplating:bbmustache": {
+    docsUrl: "https://hexdocs.pm/bbmustache/",
+    githubUrl: "https://github.com/soranoba/bbmustache",
+  },
+  "elixirCli:option-parser": {
+    docsUrl: "https://hexdocs.pm/elixir/OptionParser.html",
+    githubUrl: "https://github.com/elixir-lang/elixir",
+  },
+  "elixirCli:optimus": {
+    docsUrl: "https://hexdocs.pm/optimus/",
+    githubUrl: "https://github.com/savonarola/optimus",
+  },
+  "elixirCli:owl": {
+    docsUrl: "https://hexdocs.pm/owl/",
+    githubUrl: "https://github.com/fuelen/owl",
   },
   "elixirLibraries:ex_aws": {
     docsUrl: "https://hexdocs.pm/ex_aws/",

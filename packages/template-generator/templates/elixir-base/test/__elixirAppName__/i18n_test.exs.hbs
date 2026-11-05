@@ -1,0 +1,18 @@
+defmodule {{elixirModuleName}}.I18nTest do
+  use ExUnit.Case, async: true
+
+  alias {{elixirModuleName}}.I18n
+
+  test "translates the greeting for each locale" do
+    assert I18n.t!("en", "greeting", name: "Ada") == "Hello, Ada!"
+    assert I18n.t!("fr", "greeting", name: "Ada") == "Bonjour, Ada !"
+  end
+{{#if (eq elixirI18n "ex-cldr-messages")}}
+
+  test "selects plural forms from CLDR rules" do
+    assert I18n.t!("en", "items", count: 1) == "1 item"
+    assert I18n.t!("en", "items", count: 1042) == "1,042 items"
+    assert I18n.t!("fr", "items", count: 1042) == "1\u202F042 articles"
+  end
+{{/if}}
+end

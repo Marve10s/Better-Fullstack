@@ -262,8 +262,8 @@ describe("CLI Interaction Tests", () => {
       expect(result.exitCode).toBe(0);
       expect(result.stdout).not.toContain("UI library");
       expect(existsSync(join(dir, "bts.jsonc"))).toBe(true);
-      expect(existsSync(join(dir, "apps", "server", "go.mod"))).toBe(true);
-      expect(existsSync(join(dir, "apps", "web"))).toBe(false);
+      expect(existsSync(join(dir, "go.mod"))).toBe(true);
+      expect(existsSync(join(dir, "apps"))).toBe(false);
     });
   });
 

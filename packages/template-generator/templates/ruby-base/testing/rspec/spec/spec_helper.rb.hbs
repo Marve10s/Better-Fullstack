@@ -1,0 +1,55 @@
+ENV["RACK_ENV"] = "test"
+{{#if (or (ne rubyOrm "none") (eq rubyAuth "rodauth"))}}
+
+require "tmpdir"
+ENV["DATABASE_PATH"] = File.join(Dir.mktmpdir, "test.sqlite3")
+{{/if}}
+{{#if (eq rubyJobQueue "resque")}}
+
+require "securerandom"
+ENV["JOBS_QUEUE"] = "test-#{SecureRandom.hex(4)}"
+{{/if}}
+{{#if (ne rubyOrm "none")}}
+
+require_relative "../db"
+BetterFullstack::Database.migrate!
+{{/if}}
+{{#if (eq rubyAuth "rodauth")}}
+
+require_relative "../auth"
+BetterFullstack::Auth.migrate!
+{{/if}}
+{{#if (eq rubyEmail "resend")}}
+
+require_relative "../support/http_capture"
+RESEND_API = BetterFullstack::HttpCapture.new({ id: "email_test" })
+ENV["RESEND_BASE_URL"] = RESEND_API.url
+ENV["RESEND_API_KEY"] = "re_test_key"
+{{/if}}
+{{#if (ne rubyLogging "none")}}
+
+require "tmpdir"
+ENV["LOG_PATH"] = File.join(Dir.mktmpdir, "requests.log")
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+
+require_relative "../support/http_capture"
+UPSTREAM = BetterFullstack::HttpCapture.new({ status: "ok" })
+ENV["UPSTREAM_URL"] = UPSTREAM.url.chomp("/")
+{{/if}}
+
+require "rack/test"
+require_relative "../app"
+{{#if (ne rubyEmail "none")}}
+require_relative "../mailer"
+{{/if}}
+{{#if (eq rubyJobQueue "sidekiq")}}
+require "sidekiq/testing"
+{{/if}}
+
+RSpec.configure do |config|
+  config.include Rack::Test::Methods
+  config.disable_monkey_patching!
+  config.expect_with(:rspec) { |expectations| expectations.syntax = :expect }
+  config.order = :random
+end

@@ -1,0 +1,27 @@
+{{#if (ne phpHttpClient "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use App\UpstreamClient;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[AsController]
+final readonly class UpstreamController
+{
+    public function __construct(private UpstreamClient $upstream)
+    {
+    }
+
+    #[Route('/api/upstream', methods: ['GET'])]
+    public function fetch(): JsonResponse
+    {
+        [$status, $body] = $this->upstream->fetch();
+        return new JsonResponse($body, $status);
+    }
+}
+{{/if}}

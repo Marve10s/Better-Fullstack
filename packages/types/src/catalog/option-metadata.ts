@@ -40,9 +40,34 @@ import {
   ELIXIR_APPLICATION_FRAMEWORK_VALUES,
   ELIXIR_DOCUMENTATION_VALUES,
   ELIXIR_CLUSTERING_VALUES,
+  ELIXIR_LOGGING_VALUES,
+  ELIXIR_CONFIG_VALUES,
+  ELIXIR_MESSAGE_QUEUE_VALUES,
+  ELIXIR_TEMPLATING_VALUES,
+  ELIXIR_CLI_VALUES,
   ELIXIR_REALTIME_VALUES,
   ELIXIR_TESTING_VALUES,
   ELIXIR_VALIDATION_VALUES,
+  RUBY_WEB_FRAMEWORK_VALUES,
+  RUBY_ORM_VALUES,
+  RUBY_AUTH_VALUES,
+  RUBY_TESTING_VALUES,
+  RUBY_VALIDATION_VALUES,
+  RUBY_CACHE_VALUES,
+  RUBY_JOB_QUEUE_VALUES,
+  RUBY_EMAIL_VALUES,
+  RUBY_LOGGING_VALUES,
+  RUBY_HTTP_CLIENT_VALUES,
+  PHP_WEB_FRAMEWORK_VALUES,
+  PHP_ORM_VALUES,
+  PHP_AUTH_VALUES,
+  PHP_TESTING_VALUES,
+  PHP_VALIDATION_VALUES,
+  PHP_CACHE_VALUES,
+  PHP_JOB_QUEUE_VALUES,
+  PHP_EMAIL_VALUES,
+  PHP_LOGGING_VALUES,
+  PHP_HTTP_CLIENT_VALUES,
   ELIXIR_WEB_FRAMEWORK_VALUES,
   I18N_VALUES,
   CMS_VALUES,
@@ -96,6 +121,13 @@ import {
   JAVA_LIBRARIES_VALUES,
   JAVA_ORM_VALUES,
   JAVA_TESTING_LIBRARIES_VALUES,
+  CRYSTAL_WEB_FRAMEWORK_VALUES,
+  CRYSTAL_ORM_VALUES,
+  CRYSTAL_AUTH_VALUES,
+  CRYSTAL_TESTING_VALUES,
+  CRYSTAL_VALIDATION_VALUES,
+  CRYSTAL_CACHE_VALUES,
+  CRYSTAL_JOBS_VALUES,
   JAVA_WEB_FRAMEWORK_VALUES,
   JOB_QUEUE_VALUES,
   LOGGING_VALUES,
@@ -175,7 +207,10 @@ export type OptionCategoryEcosystem =
   | "go"
   | "java"
   | "dotnet"
-  | "elixir";
+  | "elixir"
+  | "ruby"
+  | "php"
+  | "crystal";
 
 export const TYPESCRIPT_CATEGORY_ORDER = [
   "webFrontend",
@@ -415,6 +450,22 @@ export const DOTNET_CATEGORY_ORDER = [
   "install",
 ] as const satisfies readonly OptionCategory[];
 
+export const PHP_CATEGORY_ORDER = [
+  "phpWebFramework",
+  "phpOrm",
+  "phpAuth",
+  "phpTesting",
+  "phpValidation",
+  "phpCache",
+  "phpJobQueue",
+  "phpEmail",
+  "phpLogging",
+  "phpHttpClient",
+  "aiDocs",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
 export const ELIXIR_CATEGORY_ORDER = [
   "elixirWebFramework",
   "elixirOrm",
@@ -435,8 +486,29 @@ export const ELIXIR_CATEGORY_ORDER = [
   "elixirApplicationFramework",
   "elixirDocumentation",
   "elixirClustering",
+  "elixirLogging",
+  "elixirConfig",
+  "elixirMessageQueue",
+  "elixirTemplating",
+  "elixirCli",
   "elixirDeploy",
   "elixirLibraries",
+  "aiDocs",
+  "git",
+  "install",
+] as const satisfies readonly OptionCategory[];
+
+export const RUBY_CATEGORY_ORDER = [
+  "rubyWebFramework",
+  "rubyOrm",
+  "rubyAuth",
+  "rubyTesting",
+  "rubyValidation",
+  "rubyCache",
+  "rubyJobQueue",
+  "rubyEmail",
+  "rubyLogging",
+  "rubyHttpClient",
   "aiDocs",
   "git",
   "install",
@@ -449,8 +521,17 @@ export const CATEGORY_ORDER = [
     ...RUST_CATEGORY_ORDER,
     ...PYTHON_CATEGORY_ORDER,
     ...GO_CATEGORY_ORDER,
+    "crystalWebFramework",
+    "crystalOrm",
+    "crystalAuth",
+    "crystalTesting",
+    "crystalValidation",
+    "crystalCache",
+    "crystalJobs",
     ...JAVA_CATEGORY_ORDER,
     ...DOTNET_CATEGORY_ORDER,
+    ...RUBY_CATEGORY_ORDER,
+    ...PHP_CATEGORY_ORDER,
     ...ELIXIR_CATEGORY_ORDER,
   ]),
 ] as OptionCategory[];
@@ -467,10 +548,16 @@ export function getCategoryOrderForEcosystem(
       return PYTHON_CATEGORY_ORDER;
     case "go":
       return GO_CATEGORY_ORDER;
+    case "crystal":
+      return ["crystalWebFramework", "crystalOrm", "crystalAuth", "crystalTesting", "crystalValidation", "crystalCache", "crystalJobs", "aiDocs", "git", "install"];
     case "java":
       return JAVA_CATEGORY_ORDER;
     case "dotnet":
       return DOTNET_CATEGORY_ORDER;
+    case "ruby":
+      return RUBY_CATEGORY_ORDER;
+    case "php":
+      return PHP_CATEGORY_ORDER;
     case "elixir":
       return ELIXIR_CATEGORY_ORDER;
     case "typescript":
@@ -826,6 +913,34 @@ const CATEGORY_DEFINITIONS = {
   goProtoTooling: { values: GO_PROTO_TOOLING_VALUES, displayName: "Go Protobuf Tooling" },
   goDI: { values: GO_DI_VALUES, displayName: "Go Dependency Injection" },
   javaLanguage: { values: JAVA_LANGUAGE_VALUES, displayName: "Java Language" },
+  crystalWebFramework: {
+    values: CRYSTAL_WEB_FRAMEWORK_VALUES,
+    displayName: "Crystal HTTP framework",
+  },
+  crystalOrm: {
+    values: CRYSTAL_ORM_VALUES,
+    displayName: "Crystal ORM / Database",
+  },
+  crystalAuth: {
+    values: CRYSTAL_AUTH_VALUES,
+    displayName: "Crystal Auth",
+  },
+  crystalTesting: {
+    values: CRYSTAL_TESTING_VALUES,
+    displayName: "Crystal Testing",
+  },
+  crystalValidation: {
+    values: CRYSTAL_VALIDATION_VALUES,
+    displayName: "Crystal Validation",
+  },
+  crystalCache: {
+    values: CRYSTAL_CACHE_VALUES,
+    displayName: "Crystal Cache",
+  },
+  crystalJobs: {
+    values: CRYSTAL_JOBS_VALUES,
+    displayName: "Crystal Background Jobs",
+  },
   javaWebFramework: { values: JAVA_WEB_FRAMEWORK_VALUES, displayName: "Java Web Framework" },
   javaBuildTool: { values: JAVA_BUILD_TOOL_VALUES, displayName: "Java Build Tool" },
   javaOrm: { values: JAVA_ORM_VALUES, displayName: "Java ORM / Database" },
@@ -866,6 +981,26 @@ const CATEGORY_DEFINITIONS = {
     selectionMode: "multiple",
     displayName: ".NET Libraries",
   },
+  rubyWebFramework: { values: RUBY_WEB_FRAMEWORK_VALUES, displayName: "Ruby web framework" },
+  rubyOrm: { values: RUBY_ORM_VALUES, displayName: "Ruby ORM / Database" },
+  rubyAuth: { values: RUBY_AUTH_VALUES, displayName: "Ruby Auth" },
+  rubyTesting: { values: RUBY_TESTING_VALUES, displayName: "Ruby Testing" },
+  rubyValidation: { values: RUBY_VALIDATION_VALUES, displayName: "Ruby Validation" },
+  rubyCache: { values: RUBY_CACHE_VALUES, displayName: "Ruby Cache" },
+  rubyJobQueue: { values: RUBY_JOB_QUEUE_VALUES, displayName: "Ruby Job Queue" },
+  rubyEmail: { values: RUBY_EMAIL_VALUES, displayName: "Ruby Email" },
+  rubyLogging: { values: RUBY_LOGGING_VALUES, displayName: "Ruby Logging" },
+  rubyHttpClient: { values: RUBY_HTTP_CLIENT_VALUES, displayName: "Ruby HTTP Client" },
+  phpWebFramework: { values: PHP_WEB_FRAMEWORK_VALUES, displayName: "PHP web framework" },
+  phpOrm: { values: PHP_ORM_VALUES, displayName: "PHP ORM / Database" },
+  phpAuth: { values: PHP_AUTH_VALUES, displayName: "PHP Auth" },
+  phpTesting: { values: PHP_TESTING_VALUES, displayName: "PHP Testing" },
+  phpValidation: { values: PHP_VALIDATION_VALUES, displayName: "PHP Validation" },
+  phpCache: { values: PHP_CACHE_VALUES, displayName: "PHP Cache" },
+  phpJobQueue: { values: PHP_JOB_QUEUE_VALUES, displayName: "PHP Background Jobs" },
+  phpEmail: { values: PHP_EMAIL_VALUES, displayName: "PHP Email" },
+  phpLogging: { values: PHP_LOGGING_VALUES, displayName: "PHP Logging" },
+  phpHttpClient: { values: PHP_HTTP_CLIENT_VALUES, displayName: "PHP HTTP Client" },
   elixirWebFramework: { values: ELIXIR_WEB_FRAMEWORK_VALUES, displayName: "Elixir Web Framework" },
   elixirOrm: { values: ELIXIR_ORM_VALUES, displayName: "Elixir ORM / Database" },
   elixirAuth: { values: ELIXIR_AUTH_VALUES, displayName: "Elixir Auth" },
@@ -888,6 +1023,11 @@ const CATEGORY_DEFINITIONS = {
   },
   elixirDocumentation: { values: ELIXIR_DOCUMENTATION_VALUES, displayName: "Elixir Documentation" },
   elixirClustering: { values: ELIXIR_CLUSTERING_VALUES, displayName: "Elixir Clustering" },
+  elixirLogging: { values: ELIXIR_LOGGING_VALUES, displayName: "Elixir Logging" },
+  elixirConfig: { values: ELIXIR_CONFIG_VALUES, displayName: "Elixir Config" },
+  elixirMessageQueue: { values: ELIXIR_MESSAGE_QUEUE_VALUES, displayName: "Elixir Message Queue" },
+  elixirTemplating: { values: ELIXIR_TEMPLATING_VALUES, displayName: "Elixir Templating" },
+  elixirCli: { values: ELIXIR_CLI_VALUES, displayName: "Elixir CLI" },
   elixirDeploy: { values: ELIXIR_DEPLOY_VALUES, displayName: "Elixir Deploy" },
   elixirLibraries: {
     values: ELIXIR_LIBRARIES_VALUES,
@@ -898,6 +1038,7 @@ const CATEGORY_DEFINITIONS = {
 
 const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<string, string>>>> = {
   api: {
+    "ts-rest": "ts-rest",
     trpc: "tRPC",
     orpc: "oRPC",
     "graphql-yoga": "GraphQL Yoga",
@@ -905,6 +1046,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     openapi: "OpenAPI",
   },
   webFrontend: {
+    "solid-start": "SolidStart",
     next: "Next.js",
     vinext: "Vinext",
     "react-vite": "React + Vite",
@@ -1188,6 +1330,7 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     electron: "Electron",
     capacitor: "Capacitor",
     wxt: "WXT",
+    plasmo: "Plasmo",
     opentui: "OpenTUI",
   },
   appPlatforms: {
@@ -1620,6 +1763,13 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     java: "Java",
     kotlin: "Kotlin",
   },
+  crystalWebFramework: { kemal: "Kemal", lucky: "Lucky", athena: "Athena", marten: "Marten", none: "None" },
+  crystalOrm: { "crystal-db": "crystal-db (SQLite)", avram: "Avram (PostgreSQL)", "marten-orm": "Marten ORM (SQLite)", none: "None" },
+  crystalAuth: { jwt: "JWT bearer tokens", "kemal-session": "Kemal Session", "marten-auth": "Marten Auth", none: "None" },
+  crystalTesting: { spec: "Crystal Spec", spectator: "Spectator", "spec-kemal": "spec-kemal", none: "None" },
+  crystalValidation: { "athena-validator": "Athena Validator", "active-model": "ActiveModel", "marten-schema": "Marten Schema", none: "None" },
+  crystalCache: { memory: "Memory store", file: "File store", redis: "Redis", none: "None" },
+  crystalJobs: { sidekiq: "Sidekiq.cr", mosquito: "Mosquito", tasker: "Tasker (in-process)", none: "None" },
   javaWebFramework: {
     "spring-boot": "Spring Boot",
     ktor: "Ktor",
@@ -1773,6 +1923,64 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
     refit: "Refit",
     "fluent-email": "FluentEmail",
   },
+  rubyWebFramework: { sinatra: "Sinatra", rails: "Rails", roda: "Roda", grape: "Grape" },
+  rubyOrm: { "active-record": "Active Record", sequel: "Sequel", rom: "ROM" },
+  rubyAuth: { jwt: "JWT (ruby-jwt)", omniauth: "OmniAuth OIDC", rodauth: "Rodauth" },
+  rubyTesting: { minitest: "Minitest", rspec: "RSpec", "test-unit": "Test::Unit" },
+  rubyValidation: {
+    "dry-validation": "dry-validation",
+    "active-model": "Active Model Validations",
+    "json-schemer": "JSONSchemer",
+  },
+  rubyCache: { redis: "Redis", memcached: "Memcached (Dalli)", memory: "Active Support MemoryStore" },
+  rubyJobQueue: { sidekiq: "Sidekiq", resque: "Resque", "solid-queue": "Solid Queue" },
+  rubyEmail: { mail: "Mail", "action-mailer": "Action Mailer", resend: "Resend" },
+  rubyLogging: {
+    logger: "Ruby Logger",
+    "semantic-logger": "Semantic Logger",
+    ougai: "Ougai",
+    lograge: "Lograge",
+  },
+  rubyHttpClient: { faraday: "Faraday", httparty: "HTTParty", httpx: "HTTPX" },
+  phpWebFramework: { slim: "Slim", laravel: "Laravel", symfony: "Symfony" },
+  phpOrm: { eloquent: "Eloquent", doctrine: "Doctrine ORM", cycle: "Cycle ORM" },
+  phpAuth: {
+    "firebase-jwt": "Firebase JWT",
+    "lcobucci-jwt": "lcobucci/jwt",
+    "symfony-security": "Symfony Security",
+  },
+  phpTesting: { phpunit: "PHPUnit", pest: "Pest", codeception: "Codeception" },
+  phpValidation: {
+    "symfony-validator": "Symfony Validator",
+    "respect-validation": "Respect\\Validation",
+    "laravel-validation": "Laravel Validation",
+  },
+  phpCache: {
+    "symfony-cache": "Symfony Cache",
+    "laminas-cache": "Laminas Cache",
+    predis: "Predis",
+    "laravel-cache": "Laravel Cache",
+  },
+  phpJobQueue: {
+    "symfony-messenger": "Symfony Messenger",
+    "enqueue-fs": "Enqueue (filesystem)",
+    "laravel-queue": "Laravel Queue",
+  },
+  phpEmail: {
+    "symfony-mailer": "Symfony Mailer",
+    phpmailer: "PHPMailer",
+    "laravel-mail": "Laravel Mail",
+  },
+  phpLogging: {
+    monolog: "Monolog",
+    "laravel-log": "Laravel logging",
+    "symfony-monolog": "Symfony MonologBundle",
+  },
+  phpHttpClient: {
+    guzzle: "Guzzle",
+    "symfony-http-client": "Symfony HttpClient",
+    "httplug-curl": "PHP-HTTP cURL client",
+  },
   elixirWebFramework: {
     phoenix: "Phoenix",
     "phoenix-live-view": "Phoenix LiveView",
@@ -1811,10 +2019,13 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   elixirJobs: {
     oban: "Oban",
     quantum: "Quantum",
+    exq: "Exq",
   },
   elixirValidation: {
     "ecto-changesets": "Ecto Changesets",
     "nimble-options": "NimbleOptions",
+    peri: "Peri",
+    tarams: "Tarams",
   },
   elixirHttp: {
     req: "Req",
@@ -1823,6 +2034,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   elixirJson: {
     jason: "Jason",
+    "elixir-json": "Elixir JSON",
+    jiffy: "Jiffy",
   },
   elixirEmail: {
     swoosh: "Swoosh",
@@ -1856,6 +2069,8 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   elixirI18n: {
     gettext: "Gettext",
+    linguist: "Linguist",
+    "ex-cldr-messages": "CLDR Messages",
   },
   elixirHttpServer: {
     bandit: "Bandit",
@@ -1869,12 +2084,56 @@ const EXACT_LABEL_OVERRIDES: Partial<Record<OptionCategory, Partial<Record<strin
   },
   elixirClustering: {
     libcluster: "libcluster",
+    "dns-cluster": "DNSCluster",
+    "distributed-erlang": "Distributed Erlang",
+  },
+  elixirLogging: {
+    "logger-json": "LoggerJSON",
+    "logger-file-backend": "LoggerFileBackend",
+    logster: "Logster",
+  },
+  elixirConfig: {
+    dotenvy: "Dotenvy",
+    skogsra: "Skogsra",
+    confex: "Confex",
+  },
+  elixirMessageQueue: {
+    amqp: "AMQP (RabbitMQ)",
+    gnat: "Gnat (NATS)",
+    brod: "brod (Kafka)",
+  },
+  elixirTemplating: {
+    eex: "EEx",
+    "solid-liquid": "Solid (Liquid)",
+    bbmustache: "bbmustache",
+  },
+  elixirCli: {
+    "option-parser": "OptionParser",
+    optimus: "Optimus",
+    owl: "Owl",
   },
   elixirDeploy: {
     docker: "Docker",
     fly: "Fly.io",
     gigalixir: "Gigalixir",
     "mix-release": "Mix Release",
+  },
+  packageManager: {
+    npm: "npm",
+    pnpm: "pnpm",
+  },
+  toolchainProfile: {
+    "vite-plus": "Vite+",
+  },
+  codeQualityProfile: {
+    "eslint-prettier": "ESLint + Prettier",
+    "shadcn-lint": "shadcn/lint",
+  },
+  codeGeneration: {
+    "openapi-typescript": "openapi-typescript",
+  },
+  developerEnvironment: {
+    devcontainer: "DevContainer",
   },
 };
 
@@ -1916,6 +2175,21 @@ const TOKEN_LABELS: Record<string, string> = {
   ses: "SES",
   sql: "SQL",
   ui: "UI",
+  adonisjs: "AdonisJS",
+  eslint: "ESLint",
+  github: "GitHub",
+  gsap: "GSAP",
+  mcp: "MCP",
+  mobx: "MobX",
+  msw: "MSW",
+  mysql: "MySQL",
+  openapi: "OpenAPI",
+  partykit: "PartyKit",
+  posthog: "PostHog",
+  revenuecat: "RevenueCat",
+  swr: "SWR",
+  tanstack: "TanStack",
+  typescript: "TypeScript",
 };
 
 function toStartCaseToken(token: string): string {

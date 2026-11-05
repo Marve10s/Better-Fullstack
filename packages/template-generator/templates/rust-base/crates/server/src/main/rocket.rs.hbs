@@ -1,0 +1,364 @@
+{{#if (ne rustOrm "none")}}
+mod database;
+{{/if}}
+{{#if (eq rustApi "jsonrpsee")}}
+mod rpc;
+{{/if}}
+use rocket::{get, routes, serde::json::Json};
+use rocket_cors::CorsOptions;
+use serde::Serialize;
+{{#if (ne rustErrorHandling "none")}}
+mod error;
+{{/if}}
+{{#if (ne rustCaching "none")}}
+mod cache;
+{{/if}}
+{{#if (ne rustAuth "none")}}
+mod auth;
+{{/if}}
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+mod realtime;
+{{/if}}
+{{#if (ne rustMessageQueue "none")}}
+mod messaging;
+{{/if}}
+{{#if (ne rustObservability "none")}}
+mod otel;
+{{/if}}
+{{#if (ne rustTemplating "none")}}
+mod templating;
+{{/if}}
+{{#if (eq email "resend")}}
+mod email;
+{{/if}}
+{{#if (eq observability "sentry")}}
+mod observability;
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+mod upstash_cache;
+{{/if}}
+{{#if (eq search "meilisearch")}}
+mod meilisearch;
+{{/if}}
+{{#if (eq rustLogging "tracing")}}
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+{{/if}}
+{{#if (eq rustOrm "sea-orm")}}
+use sea_orm::{Database, DatabaseConnection};
+use std::sync::Arc;
+{{/if}}
+{{#if (eq rustOrm "sqlx")}}
+use sqlx::postgres::PgPoolOptions;
+use sqlx::PgPool;
+{{/if}}
+{{#if (eq rustOrm "diesel")}}
+use diesel_async::pooled_connection::deadpool::Pool;
+use diesel_async::pooled_connection::AsyncDieselConnectionManager;
+use diesel_async::AsyncPgConnection;
+{{/if}}
+{{#if (eq rustApi "tonic")}}
+
+mod grpc;
+{{/if}}
+{{#if (eq rustApi "async-graphql")}}
+use async_graphql::http::GraphiQLSource;
+use async_graphql_rocket::{GraphQLQuery, GraphQLRequest as GqlRequest, GraphQLResponse as GqlResponse};
+use rocket::response::content::RawHtml;
+
+mod graphql;
+{{/if}}
+
+#[derive(Serialize)]
+struct HealthResponse {
+    status: &'static str,
+    message: &'static str,
+{{#if (or (eq rustOrm "sea-orm") (eq rustOrm "sqlx") (eq rustOrm "diesel"))}}
+    database: &'static str,
+{{/if}}
+}
+
+{{#if (eq rustOrm "sea-orm")}}
+pub struct AppState {
+    pub db: Arc<DatabaseConnection>,
+}
+
+#[get("/health")]
+async fn health(state: &rocket::State<AppState>) -> Json<HealthResponse> {
+    let db_status = if state.db.ping().await.is_ok() {
+        "connected"
+    } else {
+        "disconnected"
+    };
+    Json(HealthResponse {
+        status: "ok",
+        message: "Server is running",
+        database: db_status,
+    })
+}
+{{else if (eq rustOrm "sqlx")}}
+pub struct AppState {
+    pub db: PgPool,
+}
+
+#[get("/health")]
+async fn health(state: &rocket::State<AppState>) -> Json<HealthResponse> {
+    let db_status = if state.db.acquire().await.is_ok() {
+        "connected"
+    } else {
+        "disconnected"
+    };
+    Json(HealthResponse {
+        status: "ok",
+        message: "Server is running",
+        database: db_status,
+    })
+}
+{{else if (eq rustOrm "diesel")}}
+pub struct AppState {
+    pub pool: Pool<AsyncPgConnection>,
+}
+
+#[get("/health")]
+async fn health(state: &rocket::State<AppState>) -> Json<HealthResponse> {
+    let db_status = match state.pool.get().await {
+        Ok(_) => "connected",
+        Err(_) => "disconnected",
+    };
+    Json(HealthResponse {
+        status: "ok",
+        message: "Server is running",
+        database: db_status,
+    })
+}
+{{else}}
+#[get("/health")]
+fn health() -> Json<HealthResponse> {
+    Json(HealthResponse {
+        status: "ok",
+        message: "Server is running",
+    })
+}
+{{/if}}
+
+{{#if (eq rustApi "async-graphql")}}
+#[rocket::get("/graphql?<query..>")]
+async fn graphql_query(
+    schema: &rocket::State<graphql::GraphQLSchema>,
+    query: GraphQLQuery,
+) -> GqlResponse {
+    query.execute(schema.inner()).await
+}
+
+#[rocket::post("/graphql", data = "<request>", format = "application/json")]
+async fn graphql_mutation(
+    schema: &rocket::State<graphql::GraphQLSchema>,
+    request: GqlRequest,
+) -> GqlResponse {
+    request.execute(schema.inner()).await
+}
+
+#[rocket::get("/graphiql")]
+fn graphiql() -> RawHtml<String> {
+    RawHtml(
+        GraphiQLSource::build()
+            .endpoint("/graphql")
+            .finish(),
+    )
+}
+{{/if}}
+
+#[rocket::launch]
+async fn rocket() -> _ {
+    // Load environment variables
+    dotenvy::dotenv().ok();
+{{#if (eq rustApi "jsonrpsee")}}
+
+    // Start JSON-RPC on a dedicated port alongside the HTTP server
+    let rpc_host = std::env::var("JSONRPC_HOST")
+        .or_else(|_| std::env::var("HOST"))
+        .unwrap_or_else(|_| "127.0.0.1".to_string());
+    let rpc_port = std::env::var("JSONRPC_PORT").unwrap_or_else(|_| "9944".to_string());
+    let rpc_address = format!("{rpc_host}:{rpc_port}")
+        .parse()
+        .expect("JSONRPC_PORT must be a valid port");
+    let rpc_server = rpc::start(rpc_address)
+        .await
+        .expect("failed to start the JSON-RPC server");
+    // Keep the handle owned by a long-lived task for Rocket's lifetime.
+    rocket::tokio::spawn(async move {
+        rpc_server.stopped().await;
+    });
+{{/if}}
+{{#if (eq rustObservability "metrics")}}
+
+    // Install the Prometheus metrics recorder and HTTP exporter
+    otel::install_metrics().expect("failed to install the metrics exporter");
+{{/if}}
+{{#if (or (eq rustOrm "mongodb") (eq rustOrm "rusqlite") (eq rustOrm "tokio-postgres"))}}
+
+    // Connect the selected database driver at startup
+    let _database = database::connect()
+        .await
+        .expect("failed to connect the selected database");
+{{/if}}
+{{#if (eq observability "sentry")}}
+    let _sentry_guard = observability::init_sentry();
+{{/if}}
+{{#if (eq rustErrorHandling "eyre")}}
+
+    // Install color-eyre error handler
+    color_eyre::install().expect("Failed to install color-eyre");
+{{/if}}
+
+{{#if (eq rustLogging "tracing")}}
+    // Initialize tracing
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+{{else if (eq rustLogging "env-logger")}}
+    // Initialize logging
+    env_logger::init();
+{{/if}}
+
+    // Configure CORS: pinned to `CORS_ORIGIN` when set, permissive otherwise.
+    let cors = match std::env::var("CORS_ORIGIN") {
+        Ok(origin) if !origin.is_empty() => CorsOptions::default()
+            .allowed_origins(rocket_cors::AllowedOrigins::some_exact(&[origin])),
+        _ => CorsOptions::default(),
+    }
+    .to_cors()
+    .expect("CORS configuration failed");
+
+{{#if (eq rustCaching "moka")}}
+    // Initialize Moka in-memory cache
+    let _cache = cache::create_cache::<String>();
+    {{#rustLog "info"}}"Moka in-memory cache initialized"{{/rustLog}}
+{{/if}}
+{{#if (eq rustCaching "redis")}}
+    // Initialize Redis client
+    let _redis_client = cache::create_redis_client();
+    {{#rustLog "info"}}"Redis client initialized"{{/rustLog}}
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+    // Initialize Upstash Redis client helper
+    let _upstash_client = upstash_cache::create_client()
+        .expect("Failed to create Upstash Redis client");
+    {{#rustLog "info"}}"Upstash Redis client initialized"{{/rustLog}}
+{{/if}}
+{{#if (eq search "meilisearch")}}
+    // Initialize Meilisearch client helper
+    let _meilisearch_client = meilisearch::create_client()
+        .expect("Failed to create Meilisearch client");
+    {{#rustLog "info"}}"Meilisearch client initialized"{{/rustLog}}
+{{/if}}
+{{#if (eq rustAuth "oauth2")}}
+    // Initialize OAuth2 client
+    let oauth2_client = auth::create_oauth2_client();
+    let (_authorization_url, _csrf_token) = auth::authorize_url(&oauth2_client);
+    {{#rustLog "info"}}"OAuth2 client initialized"{{/rustLog}}
+{{/if}}
+
+{{#if (eq rustOrm "sea-orm")}}
+    // Initialize database connection
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+    {{#rustLog "info"}}"Connecting to database..."{{/rustLog}}
+    let db = Database::connect(&database_url).await.expect("Failed to connect to database");
+    {{#rustLog "info"}}"Database connected successfully"{{/rustLog}}
+
+    let state = AppState { db: Arc::new(db) };
+
+{{#if (eq rustApi "async-graphql")}}
+    let schema = graphql::build_schema(state.db.clone());
+    {{#rustLog "info"}}"GraphQL endpoint: /graphql"{{/rustLog}}
+    {{#rustLog "info"}}"GraphiQL IDE: /graphiql"{{/rustLog}}
+
+    rocket::build()
+        .manage(state)
+        .manage(schema)
+        .mount("/", routes![health, graphql_query, graphql_mutation, graphiql])
+        .attach(cors)
+{{else}}
+    rocket::build()
+        .manage(state)
+        .mount("/", routes![health])
+        .attach(cors)
+{{/if}}
+{{else if (eq rustOrm "sqlx")}}
+    // Initialize database connection pool
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+    {{#rustLog "info"}}"Connecting to database..."{{/rustLog}}
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&database_url)
+        .await
+        .expect("Failed to connect to database");
+    {{#rustLog "info"}}"Database connected successfully"{{/rustLog}}
+
+    let state = AppState { db: pool.clone() };
+
+{{#if (eq rustApi "async-graphql")}}
+    let schema = graphql::build_schema(pool);
+    {{#rustLog "info"}}"GraphQL endpoint: /graphql"{{/rustLog}}
+    {{#rustLog "info"}}"GraphiQL IDE: /graphiql"{{/rustLog}}
+
+    rocket::build()
+        .manage(state)
+        .manage(schema)
+        .mount("/", routes![health, graphql_query, graphql_mutation, graphiql])
+        .attach(cors)
+{{else}}
+    rocket::build()
+        .manage(state)
+        .mount("/", routes![health])
+        .attach(cors)
+{{/if}}
+{{else if (eq rustOrm "diesel")}}
+    // Initialize database connection pool
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+    {{#rustLog "info"}}"Connecting to database..."{{/rustLog}}
+    let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(&database_url);
+    let pool = Pool::builder(manager).build().expect("Failed to create database pool");
+    {{#rustLog "info"}}"Database pool created successfully"{{/rustLog}}
+
+    let state = AppState { pool: pool.clone() };
+
+{{#if (eq rustApi "async-graphql")}}
+    let schema = graphql::build_schema(pool);
+    {{#rustLog "info"}}"GraphQL endpoint: /graphql"{{/rustLog}}
+    {{#rustLog "info"}}"GraphiQL IDE: /graphiql"{{/rustLog}}
+
+    rocket::build()
+        .manage(state)
+        .manage(schema)
+        .mount("/", routes![health, graphql_query, graphql_mutation, graphiql])
+        .attach(cors)
+{{else}}
+    rocket::build()
+        .manage(state)
+        .mount("/", routes![health])
+        .attach(cors)
+{{/if}}
+{{else}}
+{{#if (eq rustApi "async-graphql")}}
+    let schema = graphql::build_schema();
+    {{#rustLog "info"}}"GraphQL endpoint: /graphql"{{/rustLog}}
+    {{#rustLog "info"}}"GraphiQL IDE: /graphiql"{{/rustLog}}
+
+    rocket::build()
+        .manage(schema)
+        .mount("/", routes![health, graphql_query, graphql_mutation, graphiql])
+        .attach(cors)
+{{else}}
+    rocket::build()
+        .mount("/", routes![health])
+        .attach(cors)
+{{/if}}
+{{/if}}
+}

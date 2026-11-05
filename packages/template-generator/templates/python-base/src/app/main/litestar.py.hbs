@@ -1,0 +1,122 @@
+"""Main application entry point."""
+# ruff: noqa: I001
+
+import os
+
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
+from typing import Annotated
+
+{{/if}}
+from dotenv import load_dotenv
+{{#if (eq pythonObservability "signoz")}}
+from app import otel as _otel  # noqa: F401 - importing activates SigNoz tracing
+{{/if}}
+{{#if (ne pythonLogging "none")}}
+from app.logging_config import RequestLoggingMiddleware, configure_logging
+{{/if}}
+
+{{#if (eq observability "sentry")}}
+from app.observability import init_sentry
+
+{{/if}}
+from litestar import Litestar, {{#if (eq pythonObservability "prometheus-client")}}Response, {{/if}}get{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, post{{/if}}{{#if (eq pythonGraphql "ariadne")}}, asgi{{/if}}
+from litestar.config.cors import CORSConfig
+{{#if (eq pythonObservability "prometheus-client")}}
+from app.metrics import render_metrics
+{{/if}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
+from litestar.exceptions import HTTPException
+from litestar.params import Parameter
+
+from app.auth import create_access_token, verify_token
+{{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+from strawberry.litestar import make_graphql_controller
+
+from app.graphql_schema import schema as graphql_schema
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+from ariadne.asgi import GraphQL
+from litestar.types import Receive, Scope, Send
+
+from app.ariadne_schema import schema as ariadne_schema
+{{/if}}
+
+load_dotenv()
+
+
+@get("/")
+async def index() -> dict[str, str]:
+    """Root endpoint."""
+    return {"message": "Hello from Litestar!"}
+
+
+@get("/health")
+async def health() -> dict[str, str]:
+    """Health check endpoint."""
+    return {"status": "ok"}
+{{#if (eq pythonObservability "prometheus-client")}}
+
+
+@get("/metrics")
+async def metrics() -> Response:
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return Response(content=payload, media_type=content_type)
+{{/if}}
+
+
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
+
+@post("/auth/token")
+async def auth_token(data: dict) -> dict:
+    """Create an access token."""
+    username = data.get("username", "")
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required")
+    token = create_access_token(data={"sub": username})
+    return {"access_token": token, "token_type": "bearer"}
+
+
+@get("/auth/me")
+async def auth_me(
+    authorization: Annotated[str, Parameter(header="Authorization")] = "",
+) -> dict:
+    """Get current authenticated user from Bearer token."""
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+    token = authorization.removeprefix("Bearer ")
+    payload = verify_token(token)
+    if payload is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return {"username": payload.get("sub"), "token_data": payload}
+{{/if}}
+
+
+cors_config = CORSConfig(allow_origins=[os.getenv("CORS_ORIGIN") or "*"])
+{{#if (eq pythonGraphql "strawberry")}}
+GraphQLController = make_graphql_controller(graphql_schema, path="/graphql")
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+ariadne_app = GraphQL(ariadne_schema, debug=True)
+
+
+@asgi("/graphql", is_mount=True, copy_scope=True)
+async def graphql(scope: Scope, receive: Receive, send: Send) -> None:
+    """Mount Ariadne's ASGI GraphQL app."""
+    await ariadne_app(scope, receive, send)
+{{/if}}
+app = Litestar(
+    route_handlers=[index, health{{#if (eq pythonObservability "prometheus-client")}}, metrics{{/if}}{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}, auth_token, auth_me{{/if}}{{#if (eq pythonGraphql "strawberry")}}, GraphQLController{{/if}}{{#if (eq pythonGraphql "ariadne")}}, graphql{{/if}}],
+    cors_config=cors_config,
+{{#if (ne pythonLogging "none")}}
+    # `litestar run` lets Uvicorn configure its loggers after this module loads.
+    on_startup=[configure_logging],
+{{/if}}
+)
+{{#if (ne pythonLogging "none")}}
+# Wrap the whole app rather than its routes, so CORS preflights and 404s are logged too.
+app.asgi_handler = RequestLoggingMiddleware(app.asgi_handler)
+# Litestar configures logging while it builds the app; route its loggers afterwards.
+configure_logging()
+{{/if}}

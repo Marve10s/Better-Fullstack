@@ -1,0 +1,260 @@
+<?php
+
+declare(strict_types=1);
+
+function requireProof(bool $condition, string $message): void
+{
+    if (!$condition) throw new RuntimeException($message);
+}
+
+function requestProof(string $url, string $method = 'GET', ?string $body = null, string $origin = 'http://localhost:5173'{{#if (ne phpAuth "none")}}, ?string $authorization = null{{/if}}): array
+{
+    $context = stream_context_create(['http' => [
+        'method' => $method,
+        'header' => "Content-Type: application/json\r\nOrigin: " . $origin . "\r\n"{{#if (ne phpAuth "none")}} . ($authorization === null ? '' : 'Authorization: ' . $authorization . "\r\n"){{/if}},
+        'content' => $body ?? '',
+        'ignore_errors' => true,
+        'timeout' => 1,
+    ]]);
+    $response = @file_get_contents($url, false, $context);
+    $headers = http_get_last_response_headers() ?? [];
+    if ($response === false || !preg_match('/^HTTP\/\S+ (\d+)/', $headers[0] ?? '', $match)) {
+        throw new RuntimeException('HTTP request failed: ' . $url);
+    }
+    requireProof(count(array_filter($headers, fn (string $header): bool => str_starts_with(strtolower($header), 'content-type: application/json'))) === 1, 'Expected JSON response');
+    return [(int) $match[1], json_decode($response, true, 32, JSON_THROW_ON_ERROR), $headers];
+}
+
+{{#if (ne phpEmail "none")}}
+function receiveProofMail($server): string
+{
+    $client = @stream_socket_accept($server, 10);
+    requireProof(is_resource($client), 'The mailer did not connect to the SMTP sink.');
+    stream_set_timeout($client, 10);
+    fwrite($client, "220 proof ESMTP\r\n");
+    $message = '';
+    $inData = false;
+    while (($line = fgets($client)) !== false) {
+        if ($inData) {
+            if ($line === ".\r\n") {
+                $inData = false;
+                fwrite($client, "250 queued\r\n");
+            } else {
+                $message .= $line;
+            }
+            continue;
+        }
+        $command = strtoupper(substr(trim($line), 0, 4));
+        if ($command === 'QUIT') {
+            fwrite($client, "221 bye\r\n");
+            break;
+        }
+        fwrite($client, match ($command) {
+            'EHLO' => "250-proof\r\n250 8BITMIME\r\n",
+            'DATA' => "354 end with .\r\n",
+            default => "250 ok\r\n",
+        });
+        $inData = $command === 'DATA';
+    }
+    fclose($client);
+    return $message;
+}
+
+{{/if}}
+$root = dirname(__DIR__);
+requireProof(is_file($root . '/composer.lock') && is_file($root . '/vendor/autoload.php'), 'Run composer install before HTTP proof.');
+$socket = stream_socket_server('tcp://127.0.0.1:0', $socketError, $socketMessage);
+requireProof(is_resource($socket), 'Cannot reserve a local port.');
+$address = stream_socket_get_name($socket, false);
+fclose($socket);
+requireProof(is_string($address), 'Cannot read local address.');
+$log = tempnam(sys_get_temp_dir(), 'bfs-php-http-');
+requireProof(is_string($log), 'Cannot create server log.');
+{{#if (or (ne phpOrm "none") (eq phpJobQueue "laravel-queue"))}}
+$database = tempnam(sys_get_temp_dir(), 'bfs-php-db-');
+requireProof(is_string($database), 'Cannot create proof database.');
+{{#if (eq phpWebFramework "laravel")}}
+$serverEnv = array_merge(getenv(), ['CORS_ORIGIN' => 'http://localhost:5173,http://localhost:8080', 'DB_CONNECTION' => 'sqlite', 'DB_DATABASE' => $database]);
+$setup = proc_open([PHP_BINARY, 'artisan', 'migrate', '--force', '--no-interaction'], [0 => ['pipe', 'r'], 1 => ['file', $log, 'a'], 2 => ['file', $log, 'a']], $setupPipes, $root, $serverEnv);
+{{else}}
+$serverEnv = array_merge(getenv(), ['CORS_ORIGIN' => 'http://localhost:5173,http://localhost:8080', 'DATABASE_PATH' => $database]);
+$setup = proc_open([PHP_BINARY, 'bin/db-setup.php'], [0 => ['pipe', 'r'], 1 => ['file', $log, 'a'], 2 => ['file', $log, 'a']], $setupPipes, $root, $serverEnv);
+{{/if}}
+requireProof(is_resource($setup), 'Cannot start database setup.');
+fclose($setupPipes[0]);
+requireProof(proc_close($setup) === 0, 'Database setup failed: ' . file_get_contents($log));
+{{else}}
+$serverEnv = array_merge(getenv(), ['CORS_ORIGIN' => 'http://localhost:5173,http://localhost:8080']);
+{{/if}}
+{{#if (eq phpLogging "laravel-log")}}
+$serverEnv = array_merge($serverEnv, ['LOG_CHANNEL' => 'stderr', 'LOG_STDERR_FORMATTER' => 'Monolog\\Formatter\\JsonFormatter']);
+{{/if}}
+{{#if (ne phpJobQueue "none")}}
+$queuePath = sys_get_temp_dir() . '/bfs-php-queue-' . bin2hex(random_bytes(6));
+$serverEnv['QUEUE_PATH'] = $queuePath;
+{{/if}}
+{{#if (ne phpCache "none")}}
+$serverEnv['CACHE_NAMESPACE'] = 'proof' . bin2hex(random_bytes(6));
+{{/if}}
+{{#if (ne phpAuth "none")}}
+require $root . '/vendor/autoload.php';
+$proofSecret = bin2hex(random_bytes(32));
+$serverEnv = array_merge($serverEnv, ['JWT_SECRET' => $proofSecret, 'JWT_ISSUER' => 'better-fullstack', 'JWT_AUDIENCE' => 'api']);
+$proofTokens = new App\TokenVerifier($proofSecret, 'better-fullstack', 'api');
+{{/if}}
+{{#if (ne phpHttpClient "none")}}
+$upstreamSocket = stream_socket_server('tcp://127.0.0.1:0');
+requireProof(is_resource($upstreamSocket), 'Cannot reserve an upstream port.');
+$upstreamAddress = stream_socket_get_name($upstreamSocket, false);
+fclose($upstreamSocket);
+$upstreamRouter = tempnam(sys_get_temp_dir(), 'bfs-php-upstream-');
+requireProof(is_string($upstreamAddress) && is_string($upstreamRouter), 'Cannot prepare the upstream fixture.');
+file_put_contents($upstreamRouter, '<?php header("Content-Type: application/json"); echo json_encode(["ok" => true, "path" => parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH)]);');
+$upstream = proc_open([PHP_BINARY, '-S', $upstreamAddress, $upstreamRouter], [0 => ['pipe', 'r'], 1 => ['file', $log, 'a'], 2 => ['file', $log, 'a']], $upstreamPipes, $root);
+requireProof(is_resource($upstream), 'Cannot launch the upstream fixture.');
+fclose($upstreamPipes[0]);
+$serverEnv['UPSTREAM_URL'] = 'http://' . $upstreamAddress . '/proof';
+{{/if}}
+$process = proc_open([PHP_BINARY, '-S', $address, '-t', 'public', 'public/index.php'], [0 => ['pipe', 'r'], 1 => ['file', $log, 'a'], 2 => ['file', $log, 'a']], $pipes, $root, $serverEnv);
+requireProof(is_resource($process), 'Cannot launch server.');
+fclose($pipes[0]);
+$failure = null;
+try {
+    $deadline = microtime(true) + 10;
+    $ready = false;
+    do {
+        requireProof(proc_get_status($process)['running'], 'Server exited before readiness.');
+        try {
+            [$status, $health] = requestProof('http://' . $address . '/health');
+            $ready = $status === 200 && $health === ['status' => 'ok', 'framework' => '{{phpWebFramework}}'];
+        } catch (Throwable) {
+            usleep(50000);
+        }
+    } while (!$ready && microtime(true) < $deadline);
+    requireProof($ready, 'Health did not become ready.');
+    [$status, $body, $headers] = requestProof('http://' . $address . '/api/greetings', 'POST', '{"name":"Ada","repetitions":2}');
+    requireProof($status === 200 && $body === ['message' => 'Hello, Ada! Hello, Ada!', 'repetitions' => 2], 'Parsed greeting mismatch.');
+    requireProof(in_array('Access-Control-Allow-Origin: http://localhost:5173', $headers, true), 'CORS origin mismatch.');
+{{#if (ne phpLogging "none")}}
+    requireProof(str_contains((string) file_get_contents($log), '"message":"greeting.created"'), 'Greeting log entry missing.');
+{{/if}}
+    foreach (['http://localhost:8080', 'http://localhost:51730', 'https://other.example'] as $origin) {
+        [$status, $body, $headers] = requestProof('http://' . $address . '/health', 'GET', null, $origin);
+        requireProof($status === 200, 'CORS health request failed.');
+        $corsHeaders = array_values(array_filter($headers, fn (string $header): bool => str_starts_with(strtolower($header), 'access-control-allow-origin:')));
+        $expected = $origin === 'http://localhost:8080' ? ['Access-Control-Allow-Origin: ' . $origin] : [];
+        requireProof($corsHeaders === $expected, 'CORS allowlist mismatch.');
+    }
+    [$status, $body] = requestProof('http://' . $address . '/api/greetings', 'POST', '{"name":"Ada","repetitions":0}');
+    requireProof($status === 422 && $body['error'] === 'validation_failed', 'Invalid request accepted.');
+    [$status, $body] = requestProof('http://' . $address . '/api/greetings', 'POST', '{');
+    requireProof($status === 400 && $body['error'] === 'invalid_json', 'Malformed JSON accepted.');
+    [$status, $body] = requestProof('http://' . $address . '/api/greetings', 'POST', str_repeat(' ', 8192));
+    requireProof($status === 413 && $body['error'] === 'payload_too_large', 'Oversized request accepted.');
+    [$status, $body] = requestProof('http://' . $address . '/missing');
+    requireProof($status === 404 && $body['error'] === 'not_found', 'Missing route mismatch.');
+{{#if (ne phpAuth "none")}}
+    $preflight = stream_context_create(['http' => [
+        'method' => 'OPTIONS',
+        'header' => "Origin: http://localhost:5173\r\nAccess-Control-Request-Method: GET\r\nAccess-Control-Request-Headers: authorization\r\n",
+        'ignore_errors' => true,
+        'timeout' => 1,
+    ]]);
+    $preflightBody = file_get_contents('http://' . $address . '/api/me', false, $preflight);
+    $preflightHeaders = http_get_last_response_headers() ?? [];
+    requireProof($preflightBody === '' && preg_match('/^HTTP\/\S+ 204/', $preflightHeaders[0] ?? '') === 1, 'Bearer preflight failed.');
+    requireProof(in_array('access-control-allow-origin: http://localhost:5173', array_map('strtolower', $preflightHeaders), true), 'Bearer preflight origin mismatch.');
+    $allowedHeaders = array_values(array_filter($preflightHeaders, fn (string $header): bool => str_starts_with(strtolower($header), 'access-control-allow-headers:')));
+    requireProof(count($allowedHeaders) === 1 && in_array('authorization', array_map('trim', explode(',', strtolower(explode(':', $allowedHeaders[0], 2)[1]))), true), 'Bearer preflight did not allow Authorization.');
+    [$status, $body] = requestProof('http://' . $address . '/api/me', 'GET', null, 'http://localhost:5173', 'Bearer ' . $proofTokens->issue('proof-user'));
+    requireProof($status === 200 && $body === ['subject' => 'proof-user'], 'Signed token was not accepted.');
+    [$status, $body] = requestProof('http://' . $address . '/api/me');
+    requireProof($status === 401 && $body['error'] === 'unauthorized', 'Missing token accepted.');
+    [$status, $body] = requestProof('http://' . $address . '/api/me', 'GET', null, 'http://localhost:5173', 'Bearer ' . (new App\TokenVerifier(bin2hex(random_bytes(32)), 'better-fullstack', 'api'))->issue('proof-user'));
+    requireProof($status === 401, 'Foreign token accepted.');
+{{/if}}
+{{#if (ne phpOrm "none")}}
+    [$status, $body] = requestProof('http://' . $address . '/api/notes', 'POST', '{"title":"Proof note"}');
+    requireProof($status === 201 && $body['title'] === 'Proof note' && is_int($body['id']), 'Note was not created.');
+    [$status, $body] = requestProof('http://' . $address . '/api/notes');
+    requireProof($status === 200 && $body === ['notes' => [['id' => $body['notes'][0]['id'] ?? null, 'title' => 'Proof note']]], 'Stored note mismatch.');
+    [$status, $body] = requestProof('http://' . $address . '/api/notes', 'POST', '{"title":""}');
+    requireProof($status === 422, 'Invalid note accepted.');
+{{/if}}
+{{#if (ne phpJobQueue "none")}}
+    [$status, $job] = requestProof('http://' . $address . '/api/jobs', 'POST');
+    requireProof($status === 202 && $job['status'] === 'queued' && is_string($job['id']), 'Job was not queued.');
+    [$status, $body] = requestProof('http://' . $address . '/api/jobs/' . $job['id']);
+    requireProof($status === 200 && $body === ['id' => $job['id'], 'status' => 'queued'], 'Queued job status mismatch.');
+    $worker = proc_open([PHP_BINARY, {{#if (eq phpJobQueue "laravel-queue")}}'artisan', 'queue:work'{{else}}'bin/queue-work.php'{{/if}}, '--stop-when-empty'], [0 => ['pipe', 'r'], 1 => ['file', $log, 'a'], 2 => ['file', $log, 'a']], $workerPipes, $root, $serverEnv);
+    requireProof(is_resource($worker), 'Cannot start the queue worker.');
+    fclose($workerPipes[0]);
+    requireProof(proc_close($worker) === 0, 'Queue worker failed.');
+    [$status, $body] = requestProof('http://' . $address . '/api/jobs/' . $job['id']);
+    requireProof($status === 200 && $body['status'] === 'done', 'Worker did not process the job.');
+    [$status] = requestProof('http://' . $address . '/api/jobs/' . str_repeat('0', 32));
+    requireProof($status === 404, 'Unknown job was found.');
+{{/if}}
+{{#if (ne phpEmail "none")}}
+    $smtp = stream_socket_server('tcp://127.0.0.1:0');
+    requireProof(is_resource($smtp), 'Cannot open the SMTP sink.');
+    $smtpPort = (int) substr(strrchr((string) stream_socket_get_name($smtp, false), ':'), 1);
+{{#if (eq phpEmail "symfony-mailer")}}
+    $mailEnv = ['MAILER_DSN' => 'smtp://127.0.0.1:' . $smtpPort];
+{{else if (eq phpEmail "phpmailer")}}
+    $mailEnv = ['MAIL_HOST' => '127.0.0.1', 'MAIL_PORT' => (string) $smtpPort];
+{{else}}
+    $mailEnv = ['MAIL_MAILER' => 'smtp', 'MAIL_HOST' => '127.0.0.1', 'MAIL_PORT' => (string) $smtpPort];
+{{/if}}
+    $sender = proc_open([PHP_BINARY, {{#if (eq phpEmail "laravel-mail")}}'artisan', 'mail:send'{{else}}'bin/send-mail.php'{{/if}}, 'proof@example.com'], [0 => ['pipe', 'r'], 1 => ['file', $log, 'a'], 2 => ['file', $log, 'a']], $senderPipes, $root, array_merge($serverEnv, $mailEnv));
+    requireProof(is_resource($sender), 'Cannot start the mail command.');
+    fclose($senderPipes[0]);
+    $mail = receiveProofMail($smtp);
+    fclose($smtp);
+    requireProof(proc_close($sender) === 0, 'Mail command failed.');
+    requireProof(str_contains($mail, 'proof@example.com') && str_contains($mail, 'Subject: Welcome to'), 'Delivered email mismatch.');
+{{/if}}
+{{#if (ne phpHttpClient "none")}}
+    [$status, $body] = requestProof('http://' . $address . '/api/upstream');
+    requireProof($status === 200 && $body === ['upstreamStatus' => 200, 'data' => ['ok' => true, 'path' => '/proof']], 'Upstream response mismatch.');
+{{/if}}
+{{#if (ne phpCache "none")}}
+    [$status, $first] = requestProof('http://' . $address . '/api/cached-time');
+    requireProof($status === 200 && $first['cached'] === false && is_string($first['value']), 'Cache miss mismatch{{#if (eq phpCache "predis")}}; set REDIS_URL to a running Redis server{{/if}}.');
+    [$status, $second] = requestProof('http://' . $address . '/api/cached-time');
+    requireProof($status === 200 && $second === ['value' => $first['value'], 'cached' => true], 'Cached value was not reused.');
+{{/if}}
+} catch (Throwable $error) {
+    $failure = $error->getMessage();
+} finally {
+    proc_terminate($process);
+    $deadline = microtime(true) + 2;
+    while (proc_get_status($process)['running'] && microtime(true) < $deadline) usleep(20000);
+    if (proc_get_status($process)['running']) proc_terminate($process, 9);
+    proc_close($process);
+{{#if (ne phpHttpClient "none")}}
+    proc_terminate($upstream);
+    proc_close($upstream);
+    unlink($upstreamRouter);
+{{/if}}
+    $probe = @stream_socket_client('tcp://' . $address, $probeError, $probeMessage, 0.2);
+    if (is_resource($probe)) {
+        fclose($probe);
+        $failure = $failure ?? 'Server still accepts connections after shutdown.';
+    }
+    if ($failure !== null) fwrite(STDERR, $failure . "\n" . file_get_contents($log));
+    unlink($log);
+{{#if (or (ne phpOrm "none") (eq phpJobQueue "laravel-queue"))}}
+    unlink($database);
+{{/if}}
+{{#if (ne phpJobQueue "none")}}
+    if (is_dir($queuePath)) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($queuePath, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST) as $entry) {
+            $entry->isDir() ? rmdir($entry->getPathname()) : unlink($entry->getPathname());
+        }
+        rmdir($queuePath);
+    }
+{{/if}}
+}
+if ($failure !== null) exit(1);
+echo json_encode(['php' => PHP_VERSION, 'assertions' => ['health', 'parsed-greeting', 'validation-rejection', 'malformed-json', 'oversized-body', 'missing-route', {{#if (ne phpOrm "none")}}'orm-persistence', {{/if}}{{#if (ne phpAuth "none")}}'bearer-preflight', 'bearer-auth', {{/if}}{{#if (ne phpCache "none")}}'cache', {{/if}}{{#if (ne phpJobQueue "none")}}'background-job', {{/if}}{{#if (ne phpEmail "none")}}'smtp-email', {{/if}}{{#if (ne phpLogging "none")}}'json-log', {{/if}}{{#if (ne phpHttpClient "none")}}'http-client', {{/if}}'cors', 'cors-allowlist', 'shutdown'], 'success' => true], JSON_THROW_ON_ERROR) . "\n";

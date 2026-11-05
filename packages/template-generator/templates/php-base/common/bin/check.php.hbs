@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+$root = dirname(__DIR__);
+foreach ([{{#if (eq phpWebFramework "laravel")}}'app', 'bootstrap', 'config', {{#if (or (ne phpOrm "none") (eq phpJobQueue "laravel-queue"))}}'database', {{/if}}'routes', {{else}}'src', {{/if}}'public', 'bin'{{#if (ne phpTesting "none")}}, 'tests'{{/if}}] as $directory) {
+    $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root . '/' . $directory, FilesystemIterator::SKIP_DOTS));
+    foreach ($files as $file) {
+        if (!$file->isFile() || $file->getExtension() !== 'php') continue;
+        $process = proc_open([PHP_BINARY, '-l', $file->getPathname()], [STDIN, STDOUT, STDERR], $pipes, $root);
+        if (!is_resource($process) || proc_close($process) !== 0) exit(1);
+    }
+}

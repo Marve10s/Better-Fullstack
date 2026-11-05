@@ -5,6 +5,8 @@ import {
   parseImportedBtsConfigText,
   resolveImportedProjectName,
 } from "@/lib/builder/existing-project-import";
+import { stackStateToProjectConfig } from "@/lib/builder/preview-config";
+import { generateStackCommand } from "@/lib/stack/stack-utils";
 
 const TARGET_VERSION = "2.6.1";
 
@@ -132,7 +134,7 @@ describe("existing project config import", () => {
     ]);
   });
 
-  it("rejects graph fields that the builder command cannot round-trip", () => {
+  it("preserves custom service paths through import, command, and preview", () => {
     const parts = parseStackPartSpecs(["backend:go:gin:catalog"]).map((part) => ({
       ...part,
       targetPath: "services/catalog-api",
@@ -142,12 +144,32 @@ describe("existing project config import", () => {
       targetVersion: TARGET_VERSION,
     });
 
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.stack.stackPartSpecs).toEqual(["backend:go:gin:catalog@services/catalog-api"]);
+    expect(generateStackCommand(result.stack)).toContain(
+      "backend:go:gin:catalog@services/catalog-api",
+    );
+    expect(stackStateToProjectConfig(result.stack).stackParts).toContainEqual(
+      expect.objectContaining({ id: "catalog", targetPath: "services/catalog-api" }),
+    );
+  });
+
+  it("rejects graph settings that the builder command cannot round-trip", () => {
+    const parts = parseStackPartSpecs(["frontend:typescript:astro"]).map((part) => ({
+      ...part,
+      settings: { astroIntegration: "react" },
+    }));
+    const result = parseImportedBtsConfigText(configText(parts), {
+      targetVersion: TARGET_VERSION,
+    });
+
     expect(result.success).toBe(false);
     expect(result.diagnostics).toContainEqual(
       expect.objectContaining({
         severity: "error",
         code: "GRAPH_FIELDS_NOT_ROUND_TRIPPABLE",
-        message: expect.stringContaining("targetPath"),
+        message: expect.stringContaining("settings"),
       }),
     );
   });

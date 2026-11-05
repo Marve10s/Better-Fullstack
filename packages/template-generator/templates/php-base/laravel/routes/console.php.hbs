@@ -1,0 +1,18 @@
+{{#if (eq phpEmail "laravel-mail")}}
+<?php
+
+declare(strict_types=1);
+
+use App\WelcomeMailer;
+use Illuminate\Support\Facades\Artisan;
+
+Artisan::command('mail:send {to}', function (string $to) {
+    if (filter_var($to, FILTER_VALIDATE_EMAIL) === false) {
+        $this->error('Pass a valid recipient email address.');
+        return 1;
+    }
+    (new WelcomeMailer())->send($to);
+    $this->info("Sent a welcome email to {$to}.");
+    return 0;
+});
+{{/if}}

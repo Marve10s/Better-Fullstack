@@ -86,6 +86,15 @@ export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): str
       typeof fingerprint.goProtoTooling === "string" ? fingerprint.goProtoTooling : undefined,
       typeof fingerprint.goDI === "string" ? fingerprint.goDI : undefined,
     ],
+    crystal: [
+      typeof fingerprint.crystalWebFramework === "string" ? fingerprint.crystalWebFramework : undefined,
+      typeof fingerprint.crystalOrm === "string" ? fingerprint.crystalOrm : undefined,
+      typeof fingerprint.crystalAuth === "string" ? fingerprint.crystalAuth : undefined,
+      typeof fingerprint.crystalTesting === "string" ? fingerprint.crystalTesting : undefined,
+      typeof fingerprint.crystalValidation === "string" ? fingerprint.crystalValidation : undefined,
+      typeof fingerprint.crystalCache === "string" ? fingerprint.crystalCache : undefined,
+      typeof fingerprint.crystalJobs === "string" ? fingerprint.crystalJobs : undefined,
+    ],
     java: [
       typeof fingerprint.javaWebFramework === "string" ? fingerprint.javaWebFramework : undefined,
       typeof fingerprint.javaBuildTool === "string" ? fingerprint.javaBuildTool : undefined,
@@ -97,6 +106,18 @@ export function formatNameFromFingerprint(fingerprint: TemplateFingerprint): str
       Array.isArray(fingerprint.javaTestingLibraries)
         ? fingerprint.javaTestingLibraries.filter((value) => value !== "none").join("-")
         : undefined,
+    ],
+    php: [
+      typeof fingerprint.phpWebFramework === "string" ? fingerprint.phpWebFramework : undefined,
+      typeof fingerprint.phpOrm === "string" ? fingerprint.phpOrm : undefined,
+      typeof fingerprint.phpAuth === "string" ? fingerprint.phpAuth : undefined,
+      typeof fingerprint.phpTesting === "string" ? fingerprint.phpTesting : undefined,
+      typeof fingerprint.phpValidation === "string" ? fingerprint.phpValidation : undefined,
+      typeof fingerprint.phpCache === "string" ? fingerprint.phpCache : undefined,
+      typeof fingerprint.phpJobQueue === "string" ? fingerprint.phpJobQueue : undefined,
+      typeof fingerprint.phpEmail === "string" ? fingerprint.phpEmail : undefined,
+      typeof fingerprint.phpLogging === "string" ? fingerprint.phpLogging : undefined,
+      typeof fingerprint.phpHttpClient === "string" ? fingerprint.phpHttpClient : undefined,
     ],
     elixir: [
       typeof fingerprint.elixirWebFramework === "string"
@@ -309,6 +330,11 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     ["elixir-application-framework", config.elixirApplicationFramework],
     ["elixir-documentation", config.elixirDocumentation],
     ["elixir-clustering", config.elixirClustering],
+    ["elixir-logging", config.elixirLogging],
+    ["elixir-config", config.elixirConfig],
+    ["elixir-message-queue", config.elixirMessageQueue],
+    ["elixir-templating", config.elixirTemplating],
+    ["elixir-cli", config.elixirCli],
     ["elixir-deploy", config.elixirDeploy],
     ["elixir-libraries", withExplicitNone(config.elixirLibraries)],
   ];
@@ -362,8 +388,41 @@ export function buildCommand(name: string, config: ProjectConfig): string {
     case "go":
       orderedFlags.push(...sharedServiceFlags, ...goFlags);
       break;
+    case "crystal":
+      orderedFlags.push(["crystal-web-framework", config.crystalWebFramework]);
+      orderedFlags.push(["crystal-orm", config.crystalOrm]);
+      orderedFlags.push(["crystal-auth", config.crystalAuth]);
+      orderedFlags.push(["crystal-testing", config.crystalTesting]);
+      orderedFlags.push(["crystal-validation", config.crystalValidation]);
+      orderedFlags.push(["crystal-cache", config.crystalCache]);
+      orderedFlags.push(["crystal-jobs", config.crystalJobs]);
+      break;
     case "java":
       orderedFlags.push(...sharedServiceFlags, ...javaFlags);
+      break;
+    case "ruby":
+      orderedFlags.push(["ruby-web-framework", config.rubyWebFramework]);
+      orderedFlags.push(["ruby-orm", config.rubyOrm ?? "none"]);
+      orderedFlags.push(["ruby-auth", config.rubyAuth ?? "none"]);
+      orderedFlags.push(["ruby-testing", config.rubyTesting ?? "minitest"]);
+      orderedFlags.push(["ruby-validation", config.rubyValidation]);
+      orderedFlags.push(["ruby-cache", config.rubyCache]);
+      orderedFlags.push(["ruby-job-queue", config.rubyJobQueue]);
+      orderedFlags.push(["ruby-email", config.rubyEmail]);
+      orderedFlags.push(["ruby-logging", config.rubyLogging]);
+      orderedFlags.push(["ruby-http-client", config.rubyHttpClient]);
+      break;
+    case "php":
+      orderedFlags.push(["php-web-framework", config.phpWebFramework]);
+      orderedFlags.push(["php-orm", config.phpOrm]);
+      orderedFlags.push(["php-auth", config.phpAuth]);
+      orderedFlags.push(["php-testing", config.phpTesting]);
+      orderedFlags.push(["php-validation", config.phpValidation]);
+      orderedFlags.push(["php-cache", config.phpCache]);
+      orderedFlags.push(["php-job-queue", config.phpJobQueue]);
+      orderedFlags.push(["php-email", config.phpEmail]);
+      orderedFlags.push(["php-logging", config.phpLogging]);
+      orderedFlags.push(["php-http-client", config.phpHttpClient]);
       break;
     case "elixir":
       orderedFlags.push(...elixirFlags);

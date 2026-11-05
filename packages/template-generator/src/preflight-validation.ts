@@ -144,8 +144,8 @@ const PREFLIGHT_RULES: readonly PreflightRule[] = [
   serverFeature("search-no-server", "search", "Search"),
   serverFeature("vector-db-no-server", "vectorDb", "Vector database"),
   serverFeature("file-storage-no-server", "fileStorage", "File Storage"),
-  serverFeature("job-queue-no-server", "jobQueue", "Job Queue"),
 
+  backendFeature("job-queue-no-server", "jobQueue", "Job Queue"),
   backendFeature("email-no-backend", "email", "Email"),
   backendFeature("logging-no-backend", "logging", "Logging"),
   backendFeature("observability-no-backend", "observability", "Observability"),

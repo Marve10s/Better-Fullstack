@@ -1,0 +1,73 @@
+{{#if (ne phpAuth "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Application;
+use App\TokenVerifier;
+use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
+use Slim\Psr7\Factory\ServerRequestFactory;
+
+final class AuthTest extends TestCase
+{
+    private const string SECRET = 'test-secret-with-at-least-32-bytes!';
+
+    private static function me(TokenVerifier $tokens, ?string $authorization): ResponseInterface
+    {
+        $request = (new ServerRequestFactory())->createServerRequest('GET', '/api/me');
+        if ($authorization !== null) {
+            $request = $request->withHeader('Authorization', $authorization);
+        }
+        return Application::create(tokens: $tokens)->handle($request);
+    }
+
+    public function testAllowsBearerAuthorizationInPreflight(): void
+    {
+        $request = (new ServerRequestFactory())->createServerRequest('OPTIONS', '/api/me')
+            ->withHeader('Origin', 'http://localhost:5173')
+            ->withHeader('Access-Control-Request-Method', 'GET')
+            ->withHeader('Access-Control-Request-Headers', 'authorization');
+        $response = Application::create(corsOrigin: 'http://localhost:5173', tokens: new TokenVerifier(self::SECRET, 'issuer', 'api'))->handle($request);
+        self::assertSame(204, $response->getStatusCode());
+        self::assertSame('http://localhost:5173', $response->getHeaderLine('Access-Control-Allow-Origin'));
+        self::assertContains('authorization', array_map('trim', explode(',', strtolower($response->getHeaderLine('Access-Control-Allow-Headers')))));
+    }
+
+    public function testAcceptsASignedTokenForTheConfiguredAudience(): void
+    {
+        $tokens = new TokenVerifier(self::SECRET, 'issuer', 'api');
+        $response = self::me($tokens, 'Bearer ' . $tokens->issue('ada'));
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame(['subject' => 'ada'], json_decode((string) $response->getBody(), true, 32, JSON_THROW_ON_ERROR));
+    }
+
+    public function testRejectsMissingTamperedForeignAndExpiredTokens(): void
+    {
+        $tokens = new TokenVerifier(self::SECRET, 'issuer', 'api');
+        $token = $tokens->issue('ada');
+        $rejected = [
+            null,
+            $token,
+            'Bearer ' . $token . 'x',
+            'Bearer ' . (new TokenVerifier(self::SECRET, 'issuer', 'other'))->issue('ada'),
+            'Bearer ' . (new TokenVerifier(str_repeat('x', 32), 'issuer', 'api'))->issue('ada'),
+            'Bearer ' . $tokens->issue('ada', -60),
+        ];
+        foreach ($rejected as $authorization) {
+            $response = self::me($tokens, $authorization);
+            self::assertSame(401, $response->getStatusCode(), (string) $authorization);
+            self::assertSame('Bearer', $response->getHeaderLine('WWW-Authenticate'));
+        }
+    }
+
+    public function testRejectsEveryTokenWhenTheSecretIsTooShort(): void
+    {
+        $tokens = new TokenVerifier(self::SECRET, 'issuer', 'api');
+        $unconfigured = new TokenVerifier('', 'issuer', 'api');
+        self::assertSame(401, self::me($unconfigured, 'Bearer ' . $tokens->issue('ada'))->getStatusCode());
+    }
+}
+{{/if}}

@@ -1,3 +1,44 @@
+{{#if useEffectHttpApi}}
+{{#if (eq serverDeploy "netlify")}}
+import { createApp } from "./app";
+{{#if (eq observability "signoz")}}
+import { withTracing } from "./lib/tracing";
+{{/if}}
+
+const fetch = async (request: Request) => {
+	const { app, dispose } = createApp();
+	try {
+		return await app.fetch(request);
+	} finally {
+		await dispose();
+	}
+};
+
+export default { fetch: {{#if (eq observability "signoz")}}withTracing(fetch){{else}}fetch{{/if}} };
+{{else}}
+import { HttpServer } from "@effect/platform";
+{{#if (eq runtime "bun")}}
+import { BunHttpServer, BunRuntime } from "@effect/platform-bun";
+{{else}}
+import { NodeHttpServer, NodeRuntime } from "@effect/platform-node";
+import { createServer } from "node:http";
+{{/if}}
+import { Layer } from "effect";
+
+import { makeServer } from "./server";
+
+const ServerLive = makeServer().pipe(
+	HttpServer.withLogAddress,
+{{#if (eq runtime "bun")}}
+	Layer.provide(BunHttpServer.layer({ port: 3000 }))
+{{else}}
+	Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 }))
+{{/if}}
+);
+
+Layer.launch(ServerLive).pipe({{#if (eq runtime "bun")}}BunRuntime{{else}}NodeRuntime{{/if}}.runMain);
+{{/if}}
+{{else}}
 {{#if (and (eq observability "signoz") (or (ne runtime "node") (eq serverDeploy "netlify")))}}
 import { withTracing } from "./lib/tracing";
 {{/if}}
@@ -234,5 +275,6 @@ serve(
 export default { fetch: withTracing(app.fetch) };
 {{else}}
 export default app;
+{{/if}}
 {{/if}}
 {{/if}}

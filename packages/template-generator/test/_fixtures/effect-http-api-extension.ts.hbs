@@ -1,0 +1,20 @@
+import { HttpApiBuilder, HttpApiEndpoint, HttpApiGroup } from "@effect/platform";
+import { Effect, Layer, Schema } from "effect";
+
+import { Api as BaseApi, HealthHandlersLive as BaseHealthHandlersLive } from "./http-api-base";
+
+export const Api = BaseApi.add(
+  HttpApiGroup.make("extension").add(
+    HttpApiEndpoint.post("echo", "/proof/echo")
+      .setPayload(Schema.Struct({ message: Schema.String }))
+      .addSuccess(Schema.Struct({ echoed: Schema.String })),
+  ),
+);
+
+const ExtensionHandlersLive = HttpApiBuilder.group(Api, "extension", (handlers) =>
+  handlers.handle("echo", ({ payload }) =>
+    Effect.succeed({ echoed: payload.message.toUpperCase() }),
+  ),
+);
+
+export const HealthHandlersLive = Layer.merge(BaseHealthHandlersLive, ExtensionHandlersLive);

@@ -302,7 +302,7 @@ describe("applyDependencyVersionChannel", () => {
     expect(await collectPackageJsonPaths(projectDir)).toEqual([livePackagePath]);
   });
 
-  it("rewrites npm semver dependencies for latest and preserves range prefixes", async () => {
+  it("rewrites latest dependencies with range prefixes except compatibility holds", async () => {
     const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "bfs-version-channel-"));
 
     await fs.writeJson(
@@ -333,7 +333,7 @@ describe("applyDependencyVersionChannel", () => {
         next: "16.2.0",
         react: "19.3.0",
         tailwindcss: "4.3.0",
-        typescript: "5.9.4",
+        typescript: "7.0.2",
       };
 
       return new Response(
@@ -343,6 +343,7 @@ describe("applyDependencyVersionChannel", () => {
           },
           versions: {
             [versionsByPackage[packageName]!]: {},
+            ...(packageName === "typescript" ? { "6.0.3": {} } : {}),
           },
         }),
         {
@@ -360,7 +361,7 @@ describe("applyDependencyVersionChannel", () => {
     expect(packageJson.dependencies.react).toBe("^19.3.0");
     expect(packageJson.dependencies.tailwindcss).toBe("^4.3.0");
     expect(packageJson.dependencies["@repo/config"]).toBe("workspace:*");
-    expect(packageJson.devDependencies.typescript).toBe("^5.9.4");
+    expect(packageJson.devDependencies.typescript).toBe("6.0.3");
     expect(packageJson.devDependencies["local-package"]).toBe("file:../local-package");
     expect(requestedPackages.sort()).toEqual(["next", "react", "tailwindcss", "typescript"]);
   });

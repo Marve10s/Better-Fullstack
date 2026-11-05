@@ -1,0 +1,46 @@
+{{#if (ne phpHttpClient "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use RuntimeException;
+
+final class UpstreamFixture
+{
+    private function __construct(public readonly string $url, private readonly mixed $process, private readonly string $router)
+    {
+    }
+
+    public static function start(): self
+    {
+        $socket = stream_socket_server('tcp://127.0.0.1:0');
+        $address = is_resource($socket) ? stream_socket_get_name($socket, false) : false;
+        if (is_resource($socket)) fclose($socket);
+        $router = tempnam(sys_get_temp_dir(), 'upstream-');
+        if (!is_string($address) || !is_string($router)) throw new RuntimeException('Cannot prepare the upstream fixture.');
+        file_put_contents($router, '<?php header("Content-Type: application/json"); echo json_encode(["ok" => true, "path" => parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH)]);');
+        $process = proc_open([PHP_BINARY, '-S', $address, $router], [0 => ['pipe', 'r'], 1 => ['file', self::nullDevice(), 'a'], 2 => ['file', self::nullDevice(), 'a']], $pipes);
+        if (!is_resource($process)) throw new RuntimeException('Cannot start the upstream fixture.');
+        fclose($pipes[0]);
+        $deadline = microtime(true) + 5;
+        while (!is_resource($probe = @stream_socket_client('tcp://' . $address, $code, $message, 0.1)) && microtime(true) < $deadline) usleep(20000);
+        if (!is_resource($probe)) throw new RuntimeException('Upstream fixture did not start.');
+        fclose($probe);
+        return new self('http://' . $address . '/fixture', $process, $router);
+    }
+
+    private static function nullDevice(): string
+    {
+        return PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null';
+    }
+
+    public function stop(): void
+    {
+        proc_terminate($this->process);
+        proc_close($this->process);
+        @unlink($this->router);
+    }
+}
+{{/if}}

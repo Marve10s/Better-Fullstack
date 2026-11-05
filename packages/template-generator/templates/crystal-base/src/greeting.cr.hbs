@@ -1,0 +1,20 @@
+require "json"
+{{#if (ne crystalValidation "none")}}
+require "./greeting_input"
+{{/if}}
+
+module Greeting
+  def self.name(value : String) : String
+{{#if (eq crystalValidation "none")}}
+    name = value.strip
+    raise ArgumentError.new("name must contain 1 to 80 characters") if name.empty? || name.size > 80
+    name
+{{else}}
+    GreetingInput.validate!(value.strip)
+{{/if}}
+  end
+
+  def self.response(value : String) : String
+    {message: "Hello, #{name(value)}!"}.to_json
+  end
+end

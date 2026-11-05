@@ -5,6 +5,8 @@ import type { ProjectConfig } from "@/types";
 import { generateReproducibleCommand } from "@/lifecycle/generate-reproducible-command";
 import {
   createCliDefaultProjectConfigBase,
+  DEFAULT_STACK_SELECTION,
+  generateStackSelectionCommand,
   mergeProjectConfigSettingsIntoStackParts,
   parseStackPartSpecs,
 } from "@/types";
@@ -156,6 +158,17 @@ describe("generateReproducibleCommand", () => {
     expect(command).toContain("--frontend astro");
     expect(command).toContain("--astro-integration react");
   });
+
+  it.each(["rust", "go", "python", "java", "dotnet", "elixir"] as const)(
+    "keeps JavaScript workspace tooling out of %s commands",
+    (ecosystem) => {
+      const command = generateReproducibleCommand(
+        makeConfig({ ...createCliDefaultProjectConfigBase(), ecosystem, addons: ["turborepo"] }),
+      );
+
+      expect(command).not.toContain("workspaceRunner:universal:turborepo");
+    },
+  );
 
   it("generates a Python command with explicit none selections", () => {
     const config = makeConfig({
@@ -1135,4 +1148,38 @@ describe("generateReproducibleCommand", () => {
     expect(command).toContain("--part workspaceTooling:universal:turborepo");
     expect(command).not.toContain("--addons none");
   });
+});
+
+describe("Go command array contracts", () => {
+  const cases = [
+    { name: "empty", values: [], builder: "none", replay: "none" },
+    { name: "explicit none", values: ["none"], builder: "none", replay: "none" },
+    { name: "multiple libraries", values: ["testify", "gomock"], builder: "testify gomock", replay: "testify gomock" },
+    { name: "none alongside a library", values: ["none", "testify"], builder: "testify", replay: "testify" },
+    { name: "duplicate libraries", values: ["testify", "testify"], builder: "testify", replay: "testify testify" },
+  ] as const;
+
+  for (const scenario of cases) {
+    it(`preserves builder and replay behavior for ${scenario.name}`, () => {
+      const builder = generateStackSelectionCommand({
+        ...DEFAULT_STACK_SELECTION,
+        ecosystem: "go",
+        goTesting: [...scenario.values],
+        goLogging: "logrus",
+        goApi: "none",
+      });
+      const replay = generateReproducibleCommand(makeConfig({
+        ecosystem: "go",
+        goTesting: [...scenario.values],
+        goLogging: "logrus",
+        goApi: "none",
+      }));
+      expect(builder.match(/--go-testing ([\s\S]*?)(?= --|$)/)?.[1]).toBe(scenario.builder);
+      expect(replay.match(/--go-testing ([\s\S]*?)(?= --|$)/)?.[1]).toBe(scenario.replay);
+      for (const command of [builder, replay]) {
+        expect(command).toContain("--go-logging logrus");
+        expect(command).toContain("--go-api none");
+      }
+    });
+  }
 });

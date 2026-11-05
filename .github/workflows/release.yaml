@@ -89,6 +89,24 @@ jobs:
         with:
           dotnet-version: 10.0.100
 
+      - name: Setup pinned Crystal and Shards
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: "1.22.1"
+          shards: "0.20.0"
+      - name: Setup pinned Ruby and Bundler
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4.11"
+          bundler: "4.0.21"
+      - name: Setup pinned PHP and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5.12"
+          extensions: dom, filter, json, libxml, mbstring, xmlwriter
+          coverage: none
+          tools: composer:2.10.3
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
         env:
@@ -131,6 +149,22 @@ jobs:
           PROOF_DIR: ${{ runner.temp }}/generated-project-proof
           BTS_TELEMETRY: 0
         run: bun run testing/generated-project-proof.ts --output "$PROOF_DIR"
+
+      - name: Run native Crystal HTTP proof
+        env:
+          PROOF_DIR: ${{ runner.temp }}/crystal-runtime-proof
+          BTS_TELEMETRY: 0
+        run: bun run testing/crystal-runtime-proof.ts --output "$PROOF_DIR"
+      - name: Run native Ruby HTTP proof
+        env:
+          PROOF_DIR: ${{ runner.temp }}/ruby-runtime-proof
+          BTS_TELEMETRY: 0
+        run: bun run testing/ruby-runtime-proof.ts --output "$PROOF_DIR"
+      - name: Run native PHP HTTP proof
+        env:
+          PHP_PROOF_DIR: ${{ runner.temp }}/php-runtime-proof
+          BTS_TELEMETRY: 0
+        run: bun run testing/php-runtime-proof.ts --output "$PHP_PROOF_DIR"
 
       - name: Capture executable upgrade fixtures from exact package artifacts
         env:

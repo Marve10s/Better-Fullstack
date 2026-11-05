@@ -1,0 +1,10 @@
+defmodule {{elixirModuleName}}.JSONTest do
+  use ExUnit.Case, async: true
+
+  test "round-trips maps through Jiffy" do
+    encoded = {{elixirModuleName}}.JSON.encode!(%{name: "Ada", tags: ["math"], note: nil})
+
+    assert %{"name" => "Ada", "tags" => ["math"], "note" => nil} =
+             {{elixirModuleName}}.JSON.decode!(encoded)
+  end
+end

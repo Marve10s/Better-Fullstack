@@ -1,7 +1,7 @@
+import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 import type { Backend, Ecosystem, Search } from "@/types";
 
 import { exitCancelled } from "@/presentation/errors";
-import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
 
 const SEARCH_PROMPT_OPTIONS = [
@@ -78,7 +78,11 @@ type SearchPromptContext = {
 export function resolveSearchPrompt(
   context: SearchPromptContext = {},
 ): PromptSingleResolution<Search> {
-  if (context.ecosystem === "react-native" || context.ecosystem === "elixir") {
+  if (
+    context.ecosystem === "react-native" ||
+    context.ecosystem === "elixir" ||
+    context.ecosystem === "php"
+  ) {
     return {
       shouldPrompt: false,
       mode: "single",

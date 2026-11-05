@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
 
-import { TECH_OPTIONS } from "@/lib/stack/constant";
 import {
   hasSeenLaunchRadar,
   isLaunchRadarNewOption,
@@ -9,6 +8,7 @@ import {
   markLaunchRadarSeen,
   NEW_OPTION_IDS_BY_CATEGORY,
 } from "@/lib/content/launch-radar";
+import { TECH_OPTIONS } from "@/lib/stack/constant";
 
 function createStorage(initial: Record<string, string> = {}) {
   const values = new Map(Object.entries(initial));
@@ -19,17 +19,44 @@ function createStorage(initial: Record<string, string> = {}) {
 }
 
 describe("launch radar release manifest", () => {
-  test("tracks all 164 additions without count drift", () => {
-    expect(LAUNCH_RADAR_TOTAL).toBe(164);
+  test("tracks all 273 additions without count drift", () => {
+    expect(LAUNCH_RADAR_TOTAL).toBe(273);
     expect(LAUNCH_RADAR_GROUPS.map((group) => [group.id, group.count])).toEqual([
       ["typescript", 43],
       ["rust", 20],
       ["python", 20],
       ["go", 20],
       ["java", 20],
-      ["elixir", 21],
+      ["elixir", 45],
       ["dotnet", 20],
+      ["php", 31],
+      ["ruby", 32],
+      ["crystal", 22],
     ]);
+  });
+
+  test("includes the PHP, Ruby, Crystal and expanded Elixir choices", () => {
+    for (const [category, optionIds] of Object.entries(TECH_OPTIONS)) {
+      if (!/^(php|ruby|crystal)/.test(category)) continue;
+      for (const { id } of optionIds) {
+        if (id !== "none")
+          expect(isLaunchRadarNewOption(category, id), `${category}:${id}`).toBe(true);
+      }
+    }
+
+    for (const [category, optionId] of [
+      ["elixirJobs", "exq"],
+      ["elixirValidation", "peri"],
+      ["elixirValidation", "tarams"],
+      ["elixirJson", "elixir-json"],
+      ["elixirJson", "jiffy"],
+      ["elixirI18n", "linguist"],
+      ["elixirI18n", "ex-cldr-messages"],
+      ["elixirClustering", "dns-cluster"],
+      ["elixirClustering", "distributed-erlang"],
+    ]) {
+      expect(isLaunchRadarNewOption(category, optionId), `${category}:${optionId}`).toBe(true);
+    }
   });
 
   test("only references options that exist in the builder", () => {

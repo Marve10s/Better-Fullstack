@@ -1,0 +1,18 @@
+{{#if (and (ne phpEmail "none") (ne phpEmail "laravel-mail"))}}
+<?php
+
+declare(strict_types=1);
+
+use App\Environment;
+use App\WelcomeMailer;
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+Environment::load(dirname(__DIR__) . '/.env');
+$to = $argv[1] ?? '';
+if (filter_var($to, FILTER_VALIDATE_EMAIL) === false) {
+    fwrite(STDERR, "Usage: composer run mail:send -- <recipient@example.com>\n");
+    exit(1);
+}
+WelcomeMailer::fromEnvironment()->send($to);
+echo "Sent a welcome email to {$to}.\n";
+{{/if}}

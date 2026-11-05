@@ -64,12 +64,21 @@ export async function processBackendTemplates(
   }
 
   processTemplatesFromPrefix(vfs, templates, "backend/server/base", "apps/server", config);
+  const backendContext = {
+    ...config,
+    useEffectHttpApi:
+      config.backend === "effect" &&
+      config.api === "none" &&
+      config.auth === "none" &&
+      (config.runtime === "bun" || config.runtime === "node") &&
+      ["none", "netlify", "docker", "fly", "railway", "render"].includes(config.serverDeploy),
+  };
   processTemplatesFromPrefix(
     vfs,
     templates,
     `backend/server/${config.backend}`,
     "apps/server",
-    config,
+    backendContext,
   );
 }
 

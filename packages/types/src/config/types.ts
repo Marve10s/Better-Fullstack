@@ -65,6 +65,16 @@ import type {
   SearchSchema,
   VectorDbSchema,
   FileStorageSchema,
+  RubyWebFrameworkSchema,
+  RubyOrmSchema,
+  RubyAuthSchema,
+  RubyTestingSchema,
+  RubyValidationSchema,
+  RubyCacheSchema,
+  RubyJobQueueSchema,
+  RubyEmailSchema,
+  RubyLoggingSchema,
+  RubyHttpClientSchema,
   EcosystemSchema,
   RustWebFrameworkSchema,
   RustFrontendSchema,
@@ -125,6 +135,13 @@ import type {
   GoTemplatingSchema,
   GoProtoToolingSchema,
   GoDISchema,
+  CrystalWebFrameworkSchema,
+  CrystalOrmSchema,
+  CrystalAuthSchema,
+  CrystalTestingSchema,
+  CrystalValidationSchema,
+  CrystalCacheSchema,
+  CrystalJobsSchema,
   JavaLanguageSchema,
   JavaWebFrameworkSchema,
   JavaBuildToolSchema,
@@ -146,6 +163,16 @@ import type {
   DotnetCachingSchema,
   DotnetDeploySchema,
   DotnetLibrariesSchema,
+  PhpWebFrameworkSchema,
+  PhpOrmSchema,
+  PhpAuthSchema,
+  PhpTestingSchema,
+  PhpValidationSchema,
+  PhpCacheSchema,
+  PhpJobQueueSchema,
+  PhpEmailSchema,
+  PhpLoggingSchema,
+  PhpHttpClientSchema,
   ElixirWebFrameworkSchema,
   ElixirOrmSchema,
   ElixirAuthSchema,
@@ -166,6 +193,11 @@ import type {
   ElixirApplicationFrameworkSchema,
   ElixirDocumentationSchema,
   ElixirClusteringSchema,
+  ElixirLoggingSchema,
+  ElixirConfigSchema,
+  ElixirMessageQueueSchema,
+  ElixirTemplatingSchema,
+  ElixirCliSchema,
   ElixirDeploySchema,
   AiDocsSchema,
   ShadcnBaseSchema,
@@ -299,6 +331,13 @@ export type GoMigrations = z.infer<typeof GoMigrationsSchema>;
 export type GoTemplating = z.infer<typeof GoTemplatingSchema>;
 export type GoProtoTooling = z.infer<typeof GoProtoToolingSchema>;
 export type GoDI = z.infer<typeof GoDISchema>;
+export type CrystalWebFramework = z.infer<typeof CrystalWebFrameworkSchema>;
+export type CrystalOrm = z.infer<typeof CrystalOrmSchema>;
+export type CrystalAuth = z.infer<typeof CrystalAuthSchema>;
+export type CrystalTesting = z.infer<typeof CrystalTestingSchema>;
+export type CrystalValidation = z.infer<typeof CrystalValidationSchema>;
+export type CrystalCache = z.infer<typeof CrystalCacheSchema>;
+export type CrystalJobs = z.infer<typeof CrystalJobsSchema>;
 export type JavaLanguage = z.infer<typeof JavaLanguageSchema>;
 export type JavaWebFramework = z.infer<typeof JavaWebFrameworkSchema>;
 export type JavaBuildTool = z.infer<typeof JavaBuildToolSchema>;
@@ -320,6 +359,16 @@ export type DotnetValidation = z.infer<typeof DotnetValidationSchema>;
 export type DotnetCaching = z.infer<typeof DotnetCachingSchema>;
 export type DotnetDeploy = z.infer<typeof DotnetDeploySchema>;
 export type DotnetLibraries = z.infer<typeof DotnetLibrariesSchema>;
+export type PhpWebFramework = z.infer<typeof PhpWebFrameworkSchema>;
+export type PhpOrm = z.infer<typeof PhpOrmSchema>;
+export type PhpAuth = z.infer<typeof PhpAuthSchema>;
+export type PhpTesting = z.infer<typeof PhpTestingSchema>;
+export type PhpValidation = z.infer<typeof PhpValidationSchema>;
+export type PhpCache = z.infer<typeof PhpCacheSchema>;
+export type PhpJobQueue = z.infer<typeof PhpJobQueueSchema>;
+export type PhpEmail = z.infer<typeof PhpEmailSchema>;
+export type PhpLogging = z.infer<typeof PhpLoggingSchema>;
+export type PhpHttpClient = z.infer<typeof PhpHttpClientSchema>;
 export type ElixirWebFramework = z.infer<typeof ElixirWebFrameworkSchema>;
 export type ElixirOrm = z.infer<typeof ElixirOrmSchema>;
 export type ElixirAuth = z.infer<typeof ElixirAuthSchema>;
@@ -340,6 +389,11 @@ export type ElixirHttpServer = z.infer<typeof ElixirHttpServerSchema>;
 export type ElixirApplicationFramework = z.infer<typeof ElixirApplicationFrameworkSchema>;
 export type ElixirDocumentation = z.infer<typeof ElixirDocumentationSchema>;
 export type ElixirClustering = z.infer<typeof ElixirClusteringSchema>;
+export type ElixirLogging = z.infer<typeof ElixirLoggingSchema>;
+export type ElixirConfig = z.infer<typeof ElixirConfigSchema>;
+export type ElixirMessageQueue = z.infer<typeof ElixirMessageQueueSchema>;
+export type ElixirTemplating = z.infer<typeof ElixirTemplatingSchema>;
+export type ElixirCli = z.infer<typeof ElixirCliSchema>;
 export type ElixirDeploy = z.infer<typeof ElixirDeploySchema>;
 export type AiDocs = z.infer<typeof AiDocsSchema>;
 export type ShadcnBase = z.infer<typeof ShadcnBaseSchema>;
@@ -383,3 +437,14 @@ export type NativeFrontend = Extract<
   Frontend,
   "native-bare" | "native-uniwind" | "native-unistyles" | "none"
 >;
+
+export type RubyWebFramework = z.infer<typeof RubyWebFrameworkSchema>;
+export type RubyOrm = z.infer<typeof RubyOrmSchema>;
+export type RubyAuth = z.infer<typeof RubyAuthSchema>;
+export type RubyTesting = z.infer<typeof RubyTestingSchema>;
+export type RubyValidation = z.infer<typeof RubyValidationSchema>;
+export type RubyCache = z.infer<typeof RubyCacheSchema>;
+export type RubyJobQueue = z.infer<typeof RubyJobQueueSchema>;
+export type RubyEmail = z.infer<typeof RubyEmailSchema>;
+export type RubyLogging = z.infer<typeof RubyLoggingSchema>;
+export type RubyHttpClient = z.infer<typeof RubyHttpClientSchema>;

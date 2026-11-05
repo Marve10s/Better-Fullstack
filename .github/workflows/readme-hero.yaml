@@ -1,0 +1,56 @@
+name: README Hero
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - "scripts/readme/**"
+      - ".github/workflows/readme-hero.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: readme-hero
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    name: Publish README hero
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+
+      - name: Render hero with current npm stats
+        run: bun run scripts/readme/render-hero.ts --out "$RUNNER_TEMP/readme-assets"
+
+      - name: Publish to the readme-assets branch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          out="$RUNNER_TEMP/readme-assets"
+          if git fetch --quiet --depth 1 origin readme-assets \
+            && git show FETCH_HEAD:hero-dark.svg | cmp -s - "$out/hero-dark.svg" \
+            && git show FETCH_HEAD:hero-light.svg | cmp -s - "$out/hero-light.svg"; then
+            echo "README hero is unchanged"
+            exit 0
+          fi
+          cd "$out"
+          git init --quiet --initial-branch readme-assets
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add hero-dark.svg hero-light.svg
+          git commit --quiet --message "Update README hero"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" readme-assets

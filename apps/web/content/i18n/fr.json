@@ -154,7 +154,7 @@
         "title": "Atelier d'agent AI CLI Next.js",
         "description": "Créez une application Next.js avec AI CLI, MCP, Skills, Better Auth, Drizzle, SQLite et la documentation de l'agent à l'aide de Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "AI Outils",
+        "category": "Outils d'IA",
         "tags": ["nextjs", "ai-cli", "mcp", "agents"],
         "keywords": [
           "nextjs ai cli starter",
@@ -171,7 +171,7 @@
         "title": "Go CLI avec Bubble Tea",
         "description": "Créez une application de terminal Go avec Bubble Tea à l'aide de l'échafaudage de projet Go CLI de Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Aller",
+        "category": "Go",
         "tags": ["go", "cli", "bubbletea"],
         "keywords": [
           "go bubble tea starter",
@@ -188,7 +188,7 @@
         "title": "Echo avec SQLC",
         "description": "Créez un projet Go API avec Echo, SQLC, la journalisation Zap et l'échafaudage de projet Go de Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Aller",
+        "category": "Go",
         "tags": ["echo", "sqlc", "go", "api"],
         "keywords": [
           "echo sqlc starter",
@@ -205,7 +205,7 @@
         "title": "Gin avec PostgreSQL et GORM",
         "description": "Créez un projet Go API avec Gin, PostgreSQL, GORM, la journalisation Zap et une structure de projet Better Fullstack propre.",
         "updated": "2026-05-12",
-        "category": "Aller",
+        "category": "Go",
         "tags": ["gin", "postgres", "gorm", "go"],
         "keywords": [
           "gin postgres starter",
@@ -222,7 +222,7 @@
         "title": "Service Go gRPC",
         "description": "Créez un backend Go avec Gin, gRPC-Go, GORM, la journalisation Zap et l'échafaudage de service Go de Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Aller",
+        "category": "Go",
         "tags": ["go", "grpc", "gin", "gorm"],
         "keywords": [
           "go grpc starter",
@@ -498,7 +498,7 @@
         "title": "Fullstack Rust avec Axum et Leptos",
         "description": "Créez une application Rust fullstack avec Axum, Leptos, SeaORM et l'échafaudage de projet Rust de Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Rouiller",
+        "category": "Rust",
         "tags": ["rust", "axum", "leptos", "seaorm"],
         "keywords": [
           "fullstack rust starter",
@@ -515,7 +515,7 @@
         "title": "Axum avec PostgreSQL et SeaORM",
         "description": "Créez un projet Rust API avec Axum, PostgreSQL, SeaORM, traçage et gestion structurée des erreurs à l'aide de Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Rouiller",
+        "category": "Rust",
         "tags": ["axum", "postgres", "seaorm", "tracing"],
         "keywords": [
           "axum postgres starter",
@@ -532,7 +532,7 @@
         "title": "Rust CLI avec Ratatui",
         "description": "Créez une application d'interface utilisateur de terminal Rust avec Ratatui à l'aide de l'échafaudage de projet Rust CLI de Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Rouiller",
+        "category": "Rust",
         "tags": ["rust", "cli", "ratatui"],
         "keywords": [
           "rust ratatui starter",
@@ -549,7 +549,7 @@
         "title": "Service Rust gRPC avec Tonic et SQLx",
         "description": "Créez un service Rust gRPC avec Axum, Tonic, SQLx, le traçage et la gestion structurée des erreurs à l'aide de Better Fullstack.",
         "updated": "2026-05-12",
-        "category": "Rouiller",
+        "category": "Rust",
         "tags": ["rust", "tonic", "grpc", "sqlx"],
         "keywords": [
           "rust grpc starter",

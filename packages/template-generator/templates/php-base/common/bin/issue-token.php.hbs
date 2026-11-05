@@ -1,0 +1,17 @@
+{{#if (ne phpAuth "none")}}
+<?php
+
+declare(strict_types=1);
+
+use App\Environment;
+use App\TokenVerifier;
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+Environment::load(dirname(__DIR__) . '/.env');
+$subject = $argv[1] ?? '';
+if ($subject === '' || strlen((string) getenv('JWT_SECRET')) < 32) {
+    fwrite(STDERR, "Usage: JWT_SECRET=<32+ bytes> composer run token:issue -- <subject>\n");
+    exit(1);
+}
+echo TokenVerifier::fromEnvironment()->issue($subject), "\n";
+{{/if}}

@@ -31,6 +31,43 @@ describe("smoke combo generation", () => {
     }
   });
 
+  it("samples plain Elixir tooling and Redis jobs without PostgreSQL", () => {
+    const combos = generateBatch(
+      {
+        count: 400,
+        ecosystems: ["elixir"],
+        installMode: "no-install",
+        rng: createSeededRandom(seedFromString("plain-elixir-tooling")),
+      },
+      { fingerprintKeys: new Set(), legacyNames: new Set(), historyCount: 0 },
+    );
+    const plain = combos.filter((combo) => combo.config.elixirWebFramework === "none");
+    expect(plain.length).toBeGreaterThan(0);
+    for (const key of [
+      "elixirLogging",
+      "elixirConfig",
+      "elixirMessageQueue",
+      "elixirTemplating",
+      "elixirCli",
+      "elixirJson",
+      "elixirClustering",
+      "elixirDeploy",
+    ] as const) {
+      expect(plain.some((combo) => combo.config[key] !== "none")).toBe(true);
+    }
+    for (const orm of ["none", "ecto", "myxql", "ecto_sqlite3"] as const) {
+      for (const job of ["exq", "quantum"] as const) {
+        expect(
+          combos.some((combo) => combo.config.elixirOrm === orm && combo.config.elixirJobs === job),
+        ).toBe(true);
+      }
+    }
+    for (const { config } of combos) {
+      if (config.elixirJobs === "oban") expect(config.elixirOrm).toBe("ecto-sql");
+      if (config.elixirLogging === "logster") expect(config.elixirWebFramework).not.toBe("none");
+    }
+  });
+
   it("forces TypeScript categories away from none", () => {
     const combos = generateBatch(
       {

@@ -1,0 +1,115 @@
+require "json"
+require "sinatra/base"
+{{#if (ne rubyAuth "none")}}
+require_relative "auth"
+{{/if}}
+{{#if (ne rubyCache "none")}}
+require_relative "cache"
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+require_relative "jobs"
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+require_relative "upstream"
+{{/if}}
+require_relative "http_policy"
+{{#if (ne rubyOrm "none")}}
+require_relative "items"
+{{/if}}
+require_relative "name_input"
+require_relative "request_body_limit"
+{{#if (and (ne rubyLogging "none") (ne rubyLogging "lograge"))}}
+require_relative "request_logger"
+{{/if}}
+
+module BetterFullstack
+  class App < Sinatra::Base
+{{#if (and (ne rubyLogging "none") (ne rubyLogging "lograge"))}}
+    use RequestLogger
+{{/if}}
+    use RequestBodyLimit, -> { HttpPolicy.allowed_origins }
+    use HttpPolicy
+{{#if (ne rubyAuth "none")}}
+    use Auth
+{{/if}}
+    set :show_exceptions, false
+    set :raise_errors, false
+    set :dump_errors, false
+    set :host_authorization, { permitted_hosts: HttpPolicy::PERMITTED_HOSTS }
+    set :protection, except: [:http_origin]
+
+    helpers do
+      def json_response(status_code, value)
+        status status_code
+        content_type :json
+        JSON.generate(value)
+      end
+    end
+
+    before do
+      content_type :json
+    end
+
+    get "/health" do
+      json_response(200, status: "ok", service: "sinatra")
+    end
+
+    post "/api/greetings" do
+      name = NameInput.parse(request.media_type, request.body)
+      halt json_response(name.status, error: name.error) if name.is_a?(NameInput::Invalid)
+      json_response(200, greeting: "Hello, #{name}!")
+    end
+{{#if (ne rubyCache "none")}}
+
+    get "/api/cache" do
+      json_response(*Cache.demo)
+    end
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+
+    get "/api/upstream" do
+      json_response(*Upstream.health)
+    end
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+
+    post "/api/jobs" do
+      name = NameInput.parse(request.media_type, request.body)
+      halt json_response(name.status, error: name.error) if name.is_a?(NameInput::Invalid)
+      json_response(*Jobs.create(name))
+    end
+
+    get "/api/jobs/:id" do
+      json_response(*Jobs.find(params["id"]))
+    end
+{{/if}}
+{{#if (ne rubyOrm "none")}}
+
+    get "/api/items" do
+      json_response(200, items: Items.all)
+    end
+
+    post "/api/items" do
+      name = NameInput.parse(request.media_type, request.body)
+      halt json_response(name.status, error: name.error) if name.is_a?(NameInput::Invalid)
+      json_response(201, Items.create(name))
+    end
+{{/if}}
+
+{{#if (ne rubyAuth "none")}}
+    get "/api/me" do
+      user = request.env[Auth::CURRENT_USER]
+      halt json_response(401, error: "unauthorized") unless user
+      json_response(200, user: user)
+    end
+
+{{/if}}
+    not_found do
+      json_response(404, error: "not_found")
+    end
+
+    error do
+      json_response(500, error: "internal_server_error")
+    end
+  end
+end

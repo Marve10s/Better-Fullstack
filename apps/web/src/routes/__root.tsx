@@ -2,8 +2,8 @@ import { Outlet, HeadContent, Scripts, createRootRoute, Link } from "@tanstack/r
 import { Analytics, type BeforeSendEvent } from "@vercel/analytics/react";
 import { lazy, Suspense, type ReactNode, useEffect, useSyncExternalStore } from "react";
 
-import geistSansUrl from "@/assets/fonts/Geist-Variable.woff2";
-import geistMonoUrl from "@/assets/fonts/GeistMono-Variable.woff2";
+import geistSansUrl from "@/assets/fonts/Geist-Variable-latin.woff2";
+import geistMonoUrl from "@/assets/fonts/GeistMono-Variable-latin.woff2";
 import { PageAnalytics } from "@/components/analytics/page-analytics";
 import { Navbar } from "@/components/navbar";
 import Providers from "@/components/providers";

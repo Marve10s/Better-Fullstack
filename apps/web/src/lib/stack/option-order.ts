@@ -1,4 +1,4 @@
-// Generated from registry popularity (npm, crates.io, PyPI, NuGet and Hex downloads; GitHub stars
+// Ordered by registry popularity (npm, crates.io, PyPI, NuGet and Hex downloads; GitHub stars
 // for Go, Java and hosted tools), September 2026. Opt-outs stay last. Categories with no fair
 // metric keep their source order and are left out.
 export const OPTION_DISPLAY_ORDER: Readonly<Record<string, readonly string[]>> = {
@@ -22,7 +22,7 @@ export const OPTION_DISPLAY_ORDER: Readonly<Record<string, readonly string[]>> =
   animation: ["framer-motion", "lottie", "react-spring", "gsap", "auto-animate", "none"],
   api: ["trpc", "apollo-server", "graphql-yoga", "orpc", "openapi", "ts-rest", "garph", "none"],
   apiGateway: ["kong", "none"],
-  appShells: ["electron", "pwa", "capacitor", "tauri", "opentui", "wxt"],
+  appShells: ["electron", "pwa", "capacitor", "tauri", "opentui", "wxt", "plasmo"],
   astroIntegration: ["react", "vue", "solid", "svelte", "none"],
   auth: [
     "supabase-auth",
@@ -108,9 +108,18 @@ export const OPTION_DISPLAY_ORDER: Readonly<Record<string, readonly string[]>> =
   elixirLibraries: ["ex_aws", "floki", "rustler", "broadway", "nx", "none"],
   elixirObservability: ["telemetry", "opentelemetry", "sentry", "prom_ex", "none"],
   elixirOrm: ["ecto", "ecto-sql", "myxql", "ecto_sqlite3", "none"],
+  rubyOrm: ["active-record", "sequel", "rom", "none"],
+  rubyAuth: ["jwt", "omniauth", "rodauth", "none"],
+  rubyTesting: ["minitest", "rspec", "test-unit", "none"],
+  rubyValidation: ["dry-validation", "active-model", "json-schemer", "none"],
+  rubyCache: ["redis", "memcached", "memory", "none"],
+  rubyJobQueue: ["sidekiq", "resque", "solid-queue", "none"],
+  rubyEmail: ["mail", "action-mailer", "resend", "none"],
+  rubyLogging: ["logger", "semantic-logger", "ougai", "lograge", "none"],
+  rubyHttpClient: ["faraday", "httparty", "httpx", "none"],
   elixirQuality: ["credo", "dialyxir", "excoveralls", "sobelow", "mix_audit", "none"],
   elixirTesting: ["ex_unit", "ex_machina", "wallaby", "mox", "bypass", "stream_data", "none"],
-  elixirValidation: ["nimble-options", "ecto-changesets", "none"],
+  elixirValidation: ["nimble-options", "ecto-changesets", "peri", "tarams", "none"],
   email: [
     "nodemailer",
     "resend",
@@ -221,6 +230,13 @@ export const OPTION_DISPLAY_ORDER: Readonly<Record<string, readonly string[]>> =
     "jqwik",
     "none",
   ],
+  crystalWebFramework: ["kemal", "lucky", "athena", "marten", "none"],
+  crystalOrm: ["crystal-db", "avram", "marten-orm", "none"],
+  crystalAuth: ["jwt", "kemal-session", "marten-auth", "none"],
+  crystalTesting: ["spec", "spectator", "spec-kemal", "none"],
+  crystalValidation: ["athena-validator", "active-model", "marten-schema", "none"],
+  crystalCache: ["memory", "file", "redis", "none"],
+  crystalJobs: ["sidekiq", "mosquito", "tasker", "none"],
   javaWebFramework: ["spring-boot", "quarkus", "ktor", "micronaut", "none"],
   jobQueue: [
     "bullmq",

@@ -4,6 +4,7 @@ import {
   CAPABILITY_EVIDENCE_SCHEMA_VERSION,
   CAPABILITY_RECEIPT_SCHEMA_VERSION,
   GOLDEN_RUNTIME_RECIPES,
+  EcosystemSchema,
   OPTION_CATEGORY_METADATA,
   getCapabilityInventory,
   getCapabilityMaintenanceCosts,
@@ -43,16 +44,7 @@ function receipt(overrides: Partial<CapabilityEvidenceReceipt> = {}): Capability
 describe("capability inventory", () => {
   it("gives every public option an owner, maturity, freshness, and limitation", () => {
     const records = getCapabilityInventory();
-    const expected = [
-      "typescript",
-      "react-native",
-      "rust",
-      "python",
-      "go",
-      "java",
-      "dotnet",
-      "elixir",
-    ].reduce(
+    const expected = EcosystemSchema.options.reduce(
       (total, ecosystem) =>
         total +
         getCategoryOrderForEcosystem(ecosystem).reduce(
@@ -77,6 +69,18 @@ describe("capability inventory", () => {
           record.lastVerifiedVersion === null,
       ),
     ).toBe(true);
+  });
+
+  it("keeps the unexecuted PHP recipe experimental", () => {
+    const php = getCapabilityInventory().find(
+      (record) => record.ecosystem === "php" && record.optionId === "slim",
+    );
+    expect(php).toMatchObject({
+      maturity: "experimental",
+      freshness: "unverified",
+      evidenceLevel: "listed",
+      lastVerifiedVersion: null,
+    });
   });
 
   it("promotes only options covered by current passing recipe receipts", () => {
@@ -179,6 +183,54 @@ describe("capability inventory", () => {
       evidenceLevel: "listed",
       freshness: "quarantined",
       limitation: "The runtime recipe is failing.",
+    });
+  });
+
+  it("preserves hidden quarantine maturity for experimental Ruby", () => {
+    const quarantine: CapabilityQuarantineEntry[] = [
+      {
+        ecosystem: "ruby",
+        category: "rubyWebFramework",
+        optionId: "sinatra",
+        reason: "Native recipe failed",
+        maintenanceOwner: "@runtime-owner",
+        restorationRecipeId: "ruby-sinatra",
+        visibility: "hidden",
+      },
+    ];
+    expect(
+      getCapabilityInventory({ quarantine }).some(
+        (record) => record.id === "ruby:rubyWebFramework:sinatra",
+      ),
+    ).toBe(false);
+    expect(
+      getCapabilityInventory({ quarantine, includeHidden: true }).find(
+        (record) => record.id === "ruby:rubyWebFramework:sinatra",
+      ),
+    ).toMatchObject({ maturity: "quarantined", freshness: "quarantined", public: false });
+  });
+
+  it("preserves Crystal quarantine metadata ahead of its experimental defaults", () => {
+    const quarantine: CapabilityQuarantineEntry[] = [
+      {
+        ecosystem: "crystal",
+        category: "crystalWebFramework",
+        optionId: "kemal",
+        reason: "The Crystal runtime recipe is failing.",
+        maintenanceOwner: "@runtime-owner",
+        restorationRecipeId: "crystal-kemal",
+        visibility: "hidden",
+      },
+    ];
+    expect(
+      getCapabilityInventory({ quarantine, includeHidden: true }).find(
+        (record) => record.id === "crystal:crystalWebFramework:kemal",
+      ),
+    ).toMatchObject({
+      maturity: "quarantined",
+      freshness: "quarantined",
+      public: false,
+      limitation: "The Crystal runtime recipe is failing.",
     });
   });
 

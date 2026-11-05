@@ -4,8 +4,8 @@ import path from "node:path";
 
 import type { ProjectConfig, StackPart, StackPartEcosystem } from "@/types";
 
-import { stackGraphToLegacyProjectConfigForEcosystem } from "@/types";
 import { commandExists } from "@/platform/command-exists";
+import { getCrystalCompilerFlags, stackGraphToLegacyProjectConfigForEcosystem } from "@/types";
 
 export type GeneratedCheckCommand = {
   command: string;
@@ -120,6 +120,12 @@ async function ecosystemManifestExists(
       return fs.pathExists(path.join(dir, "Cargo.toml"));
     case "python":
       return fs.pathExists(path.join(dir, "pyproject.toml"));
+    case "crystal":
+      return fs.pathExists(path.join(dir, "shard.yml"));
+    case "ruby":
+      return fs.pathExists(path.join(dir, "Gemfile"));
+    case "php":
+      return fs.pathExists(path.join(dir, "composer.json"));
     case "elixir":
       return fs.pathExists(path.join(dir, "mix.exs"));
     case "java": {
@@ -270,6 +276,8 @@ export function configForGeneratedTarget(
     "python",
     "go",
     "java",
+    "ruby",
+    "php",
     "elixir",
     "dotnet",
   ]);
@@ -447,6 +455,42 @@ async function commandsForTarget(
       };
     case "python":
       return pythonCommands(config, target);
+    case "crystal": {
+      const crystalFlags = getCrystalCompilerFlags(target.toolId);
+      return {
+        toolchain: "Crystal + Shards",
+        required: ["crystal", "shards"],
+        commands: [
+          display("shards", ["install"]),
+          display("shards", ["build", "--release", ...crystalFlags]),
+          display("crystal", ["spec", ...crystalFlags]),
+        ],
+      };
+    }
+    case "ruby": {
+      const { rubyTesting } = configForGeneratedTarget(config, target);
+      return {
+        toolchain: "Ruby + Bundler",
+        required: ["ruby", "bundle"],
+        commands: [
+          display("bundle", ["check"]),
+          display("bundle", ["exec", "rake", "build"]),
+          ...(rubyTesting === "none" ? [] : [display("bundle", ["exec", "rake", "test"])]),
+        ],
+      };
+    }
+    case "php": {
+      const { phpTesting } = configForGeneratedTarget(config, target);
+      return {
+        toolchain: "PHP + Composer",
+        required: ["php", "composer"],
+        commands: [
+          display("composer", ["install", "--no-interaction"]),
+          display("composer", ["run", "build"]),
+          ...(phpTesting === "none" ? [] : [display("composer", ["test"])]),
+        ],
+      };
+    }
     case "elixir":
       return {
         toolchain: "mix",

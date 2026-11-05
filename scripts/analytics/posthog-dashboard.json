@@ -7,6 +7,22 @@
   ],
   "insights": [
     {
+      "name": "Product activity in the last 30 days",
+      "description": "Custom event counts, not unique visitors. CLI/MCP creations and web ZIP downloads are distinct outcomes; builder views are not created projects.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT countIf(event = 'page_viewed') AS page_views,\ncountIf(event = 'builder_viewed') AS builder_views,\ncountIf(event = 'project_created' AND properties.success = true) AS successful_cli_mcp_creations,\ncountIf(event = 'builder_zip_downloaded' AND properties.status = 'succeeded') AS successful_web_downloads\nFROM events WHERE timestamp >= now() - INTERVAL 30 DAY"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    },
+    {
       "name": "Project creation by month",
       "description": "Successful CLI/MCP creation and browser ZIP downloads are separate columns. Old events without success stay in an unknown-outcome column. Copied commands and previews are not created projects.",
       "query": {
@@ -158,6 +174,38 @@
         "source": {
           "kind": "HogQLQuery",
           "query": "SELECT toStartOfMonth(timestamp) AS month, count() AS events,\ncountIf(properties.historical_import = true) AS imported_events,\ncountIf(event = 'page_viewed') AS pageviews\nFROM events WHERE timestamp >= now() - INTERVAL 365 DAY GROUP BY month ORDER BY month DESC LIMIT 13"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    },
+    {
+      "name": "Command activity by action and status",
+      "description": "Last 30 days. Start and outcome events are separate records, not separate command runs. Historical MCP startup events can inflate counts; new startup events are discarded.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT properties.action AS action, properties.status AS status, count() AS events\nFROM events WHERE timestamp >= now() - INTERVAL 30 DAY AND event = 'command_used'\nGROUP BY action, status ORDER BY events DESC LIMIT 100"
+        },
+        "display": "ActionsTable"
+      },
+      "tags": [
+        "better-fullstack",
+        "analytics-v2"
+      ]
+    },
+    {
+      "name": "Daily event volume by type",
+      "description": "Last 30 days, event-time counts for investigating spikes. This is project data, not billable organization usage; use PostHog Billing to check the allowance.",
+      "query": {
+        "kind": "DataVisualizationNode",
+        "source": {
+          "kind": "HogQLQuery",
+          "query": "SELECT toStartOfDay(timestamp) AS day, event, count() AS events\nFROM events WHERE timestamp >= now() - INTERVAL 30 DAY\nGROUP BY day, event ORDER BY day DESC, events DESC LIMIT 10000"
         },
         "display": "ActionsTable"
       },

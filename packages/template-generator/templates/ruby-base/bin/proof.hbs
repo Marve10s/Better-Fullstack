@@ -1,0 +1,227 @@
+require "bundler/setup"
+require "json"
+require "net/http"
+require "rbconfig"
+require "securerandom"
+require "socket"
+require "tempfile"
+require "timeout"
+
+listener = TCPServer.new("127.0.0.1", 0)
+port = listener.addr[1]
+listener.close
+log = Tempfile.new("{{rubyWebFramework}}-proof")
+root = File.expand_path("..", __dir__)
+environment = { "HOST" => "127.0.0.1", "PORT" => port.to_s, "RACK_ENV" => "production", "ALLOWED_ORIGIN" => "http://localhost:5173,http://localhost:8080", "SECRET_KEY_BASE" => SecureRandom.hex(64) }
+{{#if (or (ne rubyOrm "none") (eq rubyAuth "rodauth"))}}
+database = Tempfile.new(["proof", ".sqlite3"])
+environment["DATABASE_PATH"] = database.path
+{{/if}}
+{{#if (ne rubyLogging "none")}}
+request_log = Tempfile.new(["requests", ".log"])
+environment.merge!("LOG_PATH" => request_log.path, "LOG_LEVEL" => "info")
+{{/if}}
+{{#if (or (eq rubyJobQueue "resque") (eq rubyJobQueue "sidekiq"))}}
+environment["JOBS_QUEUE"] = "proof-#{SecureRandom.hex(4)}"
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+environment["UPSTREAM_URL"] = "http://127.0.0.1:#{port}"
+{{/if}}
+{{#if (eq rubyAuth "jwt")}}
+environment["JWT_SECRET"] = SecureRandom.hex(32)
+{{/if}}
+{{#if (or (eq rubyAuth "rodauth") (eq rubyAuth "omniauth"))}}
+environment["SESSION_SECRET"] = SecureRandom.hex(64)
+{{/if}}
+{{#if (eq rubyAuth "omniauth")}}
+environment.merge!("OIDC_ISSUER" => "https://issuer.example.com", "OIDC_CLIENT_ID" => "proof-client", "OIDC_CLIENT_SECRET" => "proof-secret", "OIDC_REDIRECT_URI" => "http://127.0.0.1:#{port}/auth/oidc/callback")
+{{/if}}
+pid = nil
+{{#if (ne rubyJobQueue "none")}}
+worker = nil
+{{/if}}
+
+begin
+{{#if (ne rubyOrm "none")}}
+  migrated = system(environment, RbConfig.ruby, "-r", "./db", "-e", "BetterFullstack::Database.migrate!", chdir: root, out: log, err: log)
+  raise "Database migration failed" unless migrated
+{{/if}}
+{{#if (eq rubyAuth "rodauth")}}
+  migrated = system(environment, RbConfig.ruby, "-r", "./auth", "-e", "BetterFullstack::Auth.migrate!", chdir: root, out: log, err: log)
+  raise "Account migration failed" unless migrated
+{{/if}}
+  pid = Process.spawn(
+    environment,
+    RbConfig.ruby, File.expand_path("server", __dir__),
+    chdir: root, out: log, err: log, pgroup: true
+  )
+  http = Net::HTTP.new("127.0.0.1", port, nil)
+  http.open_timeout = 1
+  http.read_timeout = 2
+  deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 20
+  health = nil
+  loop do
+    raise "Server exited before readiness" if Process.waitpid(pid, Process::WNOHANG)
+    begin
+      health = http.get("/health")
+      break if health.code == "200"
+    rescue SystemCallError, IOError, Net::OpenTimeout, Net::ReadTimeout
+    end
+    raise "Server readiness timed out" if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+    sleep 0.1
+  end
+  raise "Unexpected health response" unless JSON.parse(health.body) == { "status" => "ok", "service" => "{{rubyWebFramework}}" }
+  ["http://localhost:5173", "http://localhost:8080"].each do |origin|
+    response = http.get("/health", "Origin" => origin)
+    raise "Frontend origin rejected" unless response.code == "200" && response["access-control-allow-origin"] == origin
+{{#if (or (eq rubyAuth "rodauth") (eq rubyAuth "omniauth"))}}
+    raise "Frontend credentials were not allowed" unless response["access-control-allow-credentials"] == "true"
+    response = http.options("/api/me", "Origin" => origin, "Access-Control-Request-Method" => "GET")
+    raise "Credentialed preflight rejected" unless response.code == "204" && response["access-control-allow-origin"] == origin && response["access-control-allow-credentials"] == "true"
+{{/if}}
+    response = http.post("/api/greetings", JSON.generate(name: "Ruby"), "Content-Type" => "application/json", "Origin" => origin)
+    raise "Frontend POST rejected" unless response.code == "200" && JSON.parse(response.body) == { "greeting" => "Hello, Ruby!" }
+    response = http.post("/api/greetings", JSON.generate(name: "a" * 16_384), "Content-Type" => "application/json", "Origin" => origin)
+    raise "Oversized response lost frontend access" unless response.code == "413" && response["access-control-allow-origin"] == origin && response["vary"] == "Origin" && JSON.parse(response.body).fetch("error") == "body_too_large"
+  end
+  response = http.get("/health", "Origin" => "http://localhost:9999")
+  raise "Untrusted frontend accepted" unless response.code == "403"
+  response = http.post("/api/greetings", JSON.generate(name: "Ruby"), "Content-Type" => "application/json")
+  raise "Valid request failed" unless response.code == "200" && JSON.parse(response.body) == { "greeting" => "Hello, Ruby!" }
+  response = http.post("/api/greetings", JSON.generate(name: " "), "Content-Type" => "application/json")
+  raise "Invalid request was accepted" unless response.code == "422" && JSON.parse(response.body).fetch("error") == "name_length_must_be_1_to_80"
+{{#if (ne rubyHttpClient "none")}}
+  response = http.get("/api/upstream")
+  raise "Upstream call failed: #{response.body}" unless response.code == "200" && JSON.parse(response.body) == { "upstream" => { "status" => "ok", "service" => "{{rubyWebFramework}}" } }
+{{/if}}
+{{#if (ne rubyCache "none")}}
+  first = http.get("/api/cache")
+  raise "Cache read failed; start the cache server: #{first.body}" unless first.code == "200"
+  second = http.get("/api/cache")
+  raise "Second read did not hit the cache" unless second.code == "200" && JSON.parse(second.body) == { "value" => JSON.parse(first.body).fetch("value"), "cached" => true }
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+  worker = Process.spawn(environment, RbConfig.ruby, File.expand_path("worker", __dir__), chdir: root, out: log, err: log, pgroup: true)
+  response = http.post("/api/jobs", JSON.generate(name: "Ruby"), "Content-Type" => "application/json")
+  raise "Job was not enqueued; start the job queue backend: #{response.body}" unless response.code == "202"
+  job_id = JSON.parse(response.body).fetch("id")
+  deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 30
+  job = nil
+  loop do
+    job = JSON.parse(http.get("/api/jobs/#{job_id}").body)
+    break if job["status"] == "done"
+    raise "Worker exited before running the job" if Process.waitpid(worker, Process::WNOHANG)
+    raise "Worker did not run the job in time" if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+    sleep 0.2
+  end
+  raise "Job result was wrong" unless job == { "id" => job_id, "status" => "done", "greeting" => "Hello, Ruby!" }
+{{#if (eq rubyJobQueue "resque")}}
+  system(environment, RbConfig.ruby, "-r", "./jobs", "-e", "Resque.remove_queue(BetterFullstack::Jobs::QUEUE)", chdir: root, out: log, err: log)
+{{/if}}
+{{#if (eq rubyJobQueue "sidekiq")}}
+  system(environment, RbConfig.ruby, "-r", "./jobs", "-r", "sidekiq/api", "-e", "Sidekiq::Queue.new(BetterFullstack::Jobs::QUEUE).clear", chdir: root, out: log, err: log)
+{{/if}}
+{{/if}}
+{{#if (or (eq rubyEmail "mail") (eq rubyEmail "action-mailer"))}}
+  require_relative "../support/smtp_capture"
+  smtp = BetterFullstack::SmtpCapture.new
+  sent = system(environment.merge("SMTP_HOST" => "127.0.0.1", "SMTP_PORT" => smtp.port.to_s), RbConfig.ruby, "-r", "./mailer", "-e", "BetterFullstack::Mailer.deliver_welcome(ARGV.fetch(0))", "proof@example.com", chdir: root, out: log, err: log)
+  raise "Welcome email was not sent" unless sent
+  message = Timeout.timeout(5) { smtp.messages.pop }
+  raise "SMTP server received the wrong message" unless message.include?("To: proof@example.com") && message.include?("Subject: Welcome")
+  smtp.close
+{{/if}}
+{{#if (eq rubyEmail "resend")}}
+  require_relative "../support/http_capture"
+  resend = BetterFullstack::HttpCapture.new({ id: "email_proof" })
+  sent = system(environment.merge("RESEND_BASE_URL" => resend.url, "RESEND_API_KEY" => "re_proof_key"), RbConfig.ruby, "-r", "./mailer", "-e", "BetterFullstack::Mailer.deliver_welcome(ARGV.fetch(0))", "proof@example.com", chdir: root, out: log, err: log)
+  raise "Welcome email was not sent" unless sent
+  request = Timeout.timeout(5) { resend.requests.pop }
+  raise "Resend API received the wrong request" unless request.fetch("request").start_with?("POST /emails ") && request.fetch("authorization") == "Bearer re_proof_key" && request.fetch("body").fetch("to") == ["proof@example.com"]
+  resend.close
+{{/if}}
+  response = http.post("/api/greetings", "", "Content-Type" => "application/json")
+  raise "Empty JSON request was not rejected" unless response.code == "400" && JSON.parse(response.body).fetch("error") == "invalid_json"
+{{#if (ne rubyOrm "none")}}
+  response = http.post("/api/items", JSON.generate(name: "Ruby"), "Content-Type" => "application/json")
+  raise "Item was not persisted" unless response.code == "201" && JSON.parse(response.body).fetch("name") == "Ruby"
+  created = JSON.parse(response.body)
+  response = http.get("/api/items")
+  raise "Persisted item was not listed" unless response.code == "200" && JSON.parse(response.body).fetch("items").include?(created)
+{{/if}}
+{{#if (ne rubyAuth "none")}}
+  response = http.get("/api/me")
+  raise "Anonymous request was authenticated" unless response.code == "401"
+{{/if}}
+{{#if (eq rubyAuth "jwt")}}
+  ENV["JWT_SECRET"] = environment["JWT_SECRET"]
+  require_relative "../auth"
+  response = http.get("/api/me", "Authorization" => "Bearer #{BetterFullstack::Auth.issue("proof-user")}")
+  raise "Signed token was rejected" unless response.code == "200" && JSON.parse(response.body).dig("user", "id") == "proof-user"
+  response = http.get("/api/me", "Authorization" => "Bearer #{BetterFullstack::Auth.issue("proof-user")}x")
+  raise "Tampered token was accepted" unless response.code == "401"
+{{/if}}
+{{#if (eq rubyAuth "rodauth")}}
+  response = http.post("/create-account", JSON.generate(login: "proof@example.com", password: "correct horse battery staple"), "Content-Type" => "application/json", "Accept" => "application/json")
+  raise "Account creation failed" unless response.code == "200"
+  cookie = response.get_fields("set-cookie").map { |value| value.split(";").first }.join("; ")
+  response = http.get("/api/me", "Cookie" => cookie)
+  raise "Session was not authenticated" unless response.code == "200" && JSON.parse(response.body).dig("user", "id")
+  response = http.post("/login", JSON.generate(login: "proof@example.com", password: "wrong password"), "Content-Type" => "application/json", "Accept" => "application/json")
+  raise "Wrong password was accepted" unless response.code == "401"
+{{/if}}
+{{#if (eq rubyAuth "omniauth")}}
+  response = http.get("/auth/csrf")
+  raise "CSRF token was not issued" unless response.code == "200" && !JSON.parse(response.body).fetch("csrf_token").empty?
+  response = http.post("/auth/oidc", "")
+  raise "Sign-in without a CSRF token was not rejected" unless response.code == "302" && response["location"].include?("/auth/failure")
+{{/if}}
+{{#if (ne rubyLogging "none")}}
+  deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 5
+  until File.read(request_log.path).match?({{#if (or (eq rubyLogging "logger") (eq rubyLogging "lograge"))}}/method=POST path=\/api\/greetings .*status=200/{{else}}/"path":"\/api\/greetings","status":200/{{/if}})
+    raise "Request was not logged" if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+    sleep 0.1
+  end
+{{/if}}
+  puts JSON.generate(health: "passed", parsed_response: "passed", invalid_request: "passed", frontend_origins: "passed", empty_json: "passed"{{#if (ne rubyOrm "none")}}, persistence: "passed"{{/if}}{{#if (ne rubyAuth "none")}}, authentication: "passed"{{/if}}{{#if (ne rubyCache "none")}}, cache: "passed"{{/if}}{{#if (ne rubyJobQueue "none")}}, background_job: "passed"{{/if}}{{#if (ne rubyEmail "none")}}, email: "passed"{{/if}}{{#if (ne rubyLogging "none")}}, request_logging: "passed"{{/if}}{{#if (ne rubyHttpClient "none")}}, upstream_http: "passed"{{/if}})
+rescue StandardError => error
+  log.rewind
+  warn log.read
+  raise error
+ensure
+{{#if (ne rubyJobQueue "none")}}
+  if worker
+    begin
+      Process.kill("TERM", -worker)
+      begin
+        Timeout.timeout(15) { Process.wait(worker) }
+      rescue Timeout::Error
+        Process.kill("KILL", -worker)
+        Process.wait(worker)
+        raise "Worker did not shut down after TERM"
+      end
+    rescue Errno::ESRCH, Errno::ECHILD
+    end
+  end
+{{/if}}
+  if pid
+    begin
+      Process.kill("TERM", -pid)
+      begin
+        Timeout.timeout(10) { Process.wait(pid) }
+      rescue Timeout::Error
+        Process.kill("KILL", -pid)
+        Process.wait(pid)
+        raise "Server did not shut down after TERM"
+      end
+    rescue Errno::ESRCH, Errno::ECHILD
+    end
+  end
+  log.close!
+{{#if (ne rubyLogging "none")}}
+  request_log.close!
+{{/if}}
+{{#if (or (ne rubyOrm "none") (eq rubyAuth "rodauth"))}}
+  database.close!
+{{/if}}
+end

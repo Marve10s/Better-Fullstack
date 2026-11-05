@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use RuntimeException;
+
+final class Environment
+{
+    public static function load(string $file): void
+    {
+        if (!is_file($file)) return;
+        $values = parse_ini_file($file, false, INI_SCANNER_RAW);
+        if ($values === false) throw new RuntimeException('Cannot parse .env.');
+        foreach ([{{#if (eq phpWebFramework "symfony")}}'APP_ENV', 'APP_DEBUG', {{/if}}'HOST', 'PORT', 'CORS_ORIGIN'{{#if (and (ne phpOrm "none") (ne phpWebFramework "laravel"))}}, 'DATABASE_PATH'{{/if}}{{#if (ne phpAuth "none")}}, 'JWT_SECRET', 'JWT_ISSUER', 'JWT_AUDIENCE'{{/if}}{{#if (ne phpCache "none")}}, 'CACHE_NAMESPACE'{{/if}}{{#if (eq phpCache "predis")}}, 'REDIS_URL'{{/if}}{{#if (ne phpJobQueue "none")}}, 'QUEUE_PATH'{{/if}}{{#if (ne phpHttpClient "none")}}, 'UPSTREAM_URL'{{/if}}{{#if (eq phpLogging "monolog")}}, 'LOG_LEVEL'{{else if (eq phpLogging "symfony-monolog")}}, 'LOG_PATH'{{/if}}{{#if (eq phpEmail "symfony-mailer")}}, 'MAILER_DSN', 'MAIL_FROM_ADDRESS'{{else if (eq phpEmail "phpmailer")}}, 'MAIL_HOST', 'MAIL_PORT', 'MAIL_USERNAME', 'MAIL_PASSWORD', 'MAIL_ENCRYPTION', 'MAIL_FROM_ADDRESS'{{/if}}] as $key) {
+            if (getenv($key) === false && isset($values[$key]) && is_string($values[$key])) {
+                putenv($key . '=' . $values[$key]);
+            }
+        }
+    }
+}

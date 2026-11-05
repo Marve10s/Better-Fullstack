@@ -1758,6 +1758,56 @@ describe("compatibility issue helpers", () => {
     ).toBe("Wallaby browser tests require Phoenix");
   });
 
+  it("clears only Phoenix-bound Elixir localization when Phoenix is removed", () => {
+    const plainElixir = {
+      ...DEFAULT_STACK_SELECTION,
+      ecosystem: "elixir" as const,
+      elixirWebFramework: "none" as const,
+      elixirApi: "none" as const,
+      elixirRealtime: "none" as const,
+      elixirHttpServer: "none" as const,
+      elixirOrm: "none" as const,
+    };
+
+    const withGettext = analyzeStackCompatibility({ ...plainElixir, elixirI18n: "gettext" });
+    expect(withGettext.adjustedStack?.elixirI18n).toBe("none");
+
+    const withLogster = analyzeStackCompatibility({ ...plainElixir, elixirLogging: "logster" });
+    expect(withLogster.adjustedStack?.elixirLogging).toBe("none");
+    const withLoggerJson = analyzeStackCompatibility({
+      ...plainElixir,
+      elixirLogging: "logger-json",
+    });
+    expect(withLoggerJson.adjustedStack?.elixirLogging ?? "logger-json").toBe("logger-json");
+
+    const withLinguist = analyzeStackCompatibility({ ...plainElixir, elixirI18n: "linguist" });
+    expect(withLinguist.adjustedStack?.elixirI18n ?? "linguist").toBe("linguist");
+    expect(withLinguist.changes).not.toContainEqual(
+      expect.objectContaining({ message: expect.stringContaining("Internationalization") }),
+    );
+  });
+
+  it.each(["peri", "tarams"] as const)("requires Ecto for %s validation", (elixirValidation) => {
+    for (const elixirWebFramework of ["none", "phoenix"] as const) {
+      const withoutEcto = {
+        ...DEFAULT_STACK_SELECTION,
+        ecosystem: "elixir" as const,
+        elixirWebFramework,
+        elixirOrm: "none" as const,
+        elixirValidation,
+      };
+      expect(getDisabledReason(withoutEcto, "elixirValidation", elixirValidation)).toBe(
+        "Peri and Tarams require Ecto",
+      );
+      expect(analyzeStackCompatibility(withoutEcto).adjustedStack?.elixirValidation).toBe("none");
+      for (const elixirOrm of ["ecto", "ecto-sql", "myxql", "ecto_sqlite3"] as const) {
+        expect(
+          getDisabledReason({ ...withoutEcto, elixirOrm }, "elixirValidation", elixirValidation),
+        ).toBeNull();
+      }
+    }
+  });
+
   it("routes Elixir context disabled reasons through graph checks", () => {
     const plainElixir = {
       ...DEFAULT_STACK_SELECTION,
@@ -1793,6 +1843,14 @@ describe("compatibility issue helpers", () => {
     expect(getDisabledReason(plainElixir, "elixirI18n", "gettext")).toBe(
       "Elixir Internationalization requires Phoenix",
     );
+    expect(getDisabledReason(plainElixir, "elixirI18n", "linguist")).toBeNull();
+    expect(getDisabledReason(plainElixir, "elixirI18n", "ex-cldr-messages")).toBeNull();
+    expect(getDisabledReason(plainElixir, "elixirLogging", "logster")).toBe(
+      "Logster request logging requires Phoenix",
+    );
+    expect(getDisabledReason(plainElixir, "elixirLogging", "logger-json")).toBeNull();
+    expect(getDisabledReason(plainElixir, "elixirLogging", "logger-file-backend")).toBeNull();
+    expect(getDisabledReason(phoenixBase, "elixirLogging", "logster")).toBeNull();
     expect(getDisabledReason(plainElixir, "elixirHttpServer", "bandit")).toBe(
       "HTTP server adapters require Phoenix",
     );
@@ -2008,6 +2066,59 @@ describe("compatibility issue helpers", () => {
         "salvo",
       ),
     ).toBe("tower-sessions requires the generated Axum middleware stack");
+  });
+});
+
+describe("UI library fallback", () => {
+  it("switches to Tailwind when an unsupported UI library falls back to daisyUI", () => {
+    const result = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["astro"],
+      astroIntegration: "vue",
+      api: "none",
+      uiLibrary: "mantine",
+      cssFramework: "scss",
+    });
+
+    expect(result.adjustedStack?.uiLibrary).toBe("daisyui");
+    expect(result.adjustedStack?.cssFramework).toBe("tailwind");
+  });
+
+  it("offers React UI libraries on Vinext", () => {
+    const stack = {
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["vinext"],
+      backend: "self-vinext",
+      runtime: "none",
+      cssFramework: "tailwind",
+    };
+
+    expect(getDisabledReason(stack, "uiLibrary", "shadcn-ui")).toBeNull();
+    expect(getDisabledReason(stack, "uiLibrary", "headless-ui")).toBeNull();
+  });
+});
+
+describe("API fallback", () => {
+  it("drops API-specific add-ons when a frontend change replaces the API", () => {
+    const graphql = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["nuxt"],
+      backend: "hono",
+      api: "garph",
+      appPlatforms: ["turborepo", "apollo-client"],
+    });
+    expect(graphql.adjustedStack?.api).not.toBe("garph");
+    expect(graphql.adjustedStack?.appPlatforms).not.toContain("apollo-client");
+
+    const openapi = analyzeStackCompatibility({
+      ...DEFAULT_STACK_SELECTION,
+      webFrontend: ["angular"],
+      backend: "hono",
+      api: "openapi",
+      appPlatforms: ["turborepo", "openapi-typescript"],
+    });
+    expect(openapi.adjustedStack?.api).not.toBe("openapi");
+    expect(openapi.adjustedStack?.appPlatforms).not.toContain("openapi-typescript");
   });
 });
 

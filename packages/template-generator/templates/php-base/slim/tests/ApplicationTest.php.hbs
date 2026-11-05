@@ -1,0 +1,105 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Application;
+use PHPUnit\Framework\TestCase;
+use Slim\Psr7\Factory\ServerRequestFactory;
+use Slim\Psr7\Factory\StreamFactory;
+
+final class ApplicationTest extends TestCase
+{
+    public function testReturnsParsedGreeting(): void
+    {
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/greetings')
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody((new StreamFactory())->createStream('{"name":" Ada ","repetitions":2}'));
+        $response = Application::create()->handle($request);
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('application/json', $response->getHeaderLine('Content-Type'));
+        self::assertSame(['message' => 'Hello, Ada! Hello, Ada!', 'repetitions' => 2], json_decode((string) $response->getBody(), true, 32, JSON_THROW_ON_ERROR));
+    }
+
+    public function testRejectsInvalidBodies(): void
+    {
+        foreach (['{"name":""}', '{"name":7}', '{"name":"Ada","repetitions":"2"}', '{"name":"Ada","repetitions":6}', '{"name":"Ada","repetitions":null}', '{"name":"Ada","unknown":true}', '[]', 'null'] as $body) {
+            $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/greetings')
+                ->withHeader('Content-Type', 'application/json')
+                ->withBody((new StreamFactory())->createStream($body));
+            $response = Application::create()->handle($request);
+            self::assertSame(422, $response->getStatusCode(), $body);
+            self::assertSame('validation_failed', json_decode((string) $response->getBody(), true, 32, JSON_THROW_ON_ERROR)['error']);
+        }
+    }
+
+    public function testRejectsMalformedJsonAndWrongMediaType(): void
+    {
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/greetings')
+            ->withBody((new StreamFactory())->createStream('{'));
+        self::assertSame(415, Application::create()->handle($request)->getStatusCode());
+        self::assertSame(400, Application::create()->handle($request->withHeader('Content-Type', 'application/json'))->getStatusCode());
+    }
+
+    public function testHealthAndMissingRoute(): void
+    {
+        $factory = new ServerRequestFactory();
+        $health = Application::create()->handle($factory->createServerRequest('GET', '/health'));
+        self::assertSame(['status' => 'ok', 'framework' => 'slim'], json_decode((string) $health->getBody(), true, 32, JSON_THROW_ON_ERROR));
+        self::assertSame(404, Application::create()->handle($factory->createServerRequest('GET', '/missing'))->getStatusCode());
+    }
+
+    public function testRejectsLargeStreamWithoutReadingTheWholeBody(): void
+    {
+        $resource = fopen('php://temp', 'w+');
+        self::assertNotFalse($resource);
+        self::assertTrue(ftruncate($resource, 8_388_608));
+        $stream = (new StreamFactory())->createStreamFromResource($resource);
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/greetings')
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody($stream);
+        $response = Application::create()->handle($request);
+        self::assertSame(413, $response->getStatusCode());
+        self::assertSame('payload_too_large', json_decode((string) $response->getBody(), true, 32, JSON_THROW_ON_ERROR)['error']);
+        self::assertLessThanOrEqual(4097, $stream->tell());
+        $stream->close();
+    }
+
+    public function testAcceptsExactlyTheBodyLimit(): void
+    {
+        $body = str_pad('{"name":"Ada"}', 4096);
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/greetings')
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody((new StreamFactory())->createStream($body));
+        self::assertSame(200, Application::create()->handle($request)->getStatusCode());
+        $oversized = $request->withBody((new StreamFactory())->createStream($body . ' '));
+        self::assertSame(413, Application::create()->handle($oversized)->getStatusCode());
+    }
+
+    public function testCorsAllowsEachConfiguredOriginAndRejectsOthers(): void
+    {
+        $app = Application::create('http://localhost:5173, http://localhost:8080');
+        $factory = new ServerRequestFactory();
+        foreach (['http://localhost:5173', 'http://localhost:8080'] as $origin) {
+            foreach (['GET', 'OPTIONS'] as $method) {
+                $request = $factory->createServerRequest($method, '/health')->withHeader('Origin', $origin);
+                $response = $app->handle($request);
+                self::assertSame($origin, $response->getHeaderLine('Access-Control-Allow-Origin'));
+                self::assertSame('Origin', $response->getHeaderLine('Vary'));
+            }
+        }
+        foreach (['', 'http://localhost:51730', 'http://localhost:8080.evil', 'https://other.example'] as $origin) {
+            $request = $factory->createServerRequest('GET', '/health')->withHeader('Origin', $origin);
+            self::assertSame('', $app->handle($request)->getHeaderLine('Access-Control-Allow-Origin'));
+        }
+    }
+
+    public function testCorsIsPinnedToConfiguredOrigin(): void
+    {
+        $request = (new ServerRequestFactory())->createServerRequest('OPTIONS', '/api/greetings')->withHeader('Origin', 'http://localhost:5173');
+        $app = Application::create('http://localhost:5173');
+        self::assertSame('http://localhost:5173', $app->handle($request)->getHeaderLine('Access-Control-Allow-Origin'));
+        self::assertSame('', $app->handle($request->withHeader('Origin', 'https://other.example'))->getHeaderLine('Access-Control-Allow-Origin'));
+    }
+}

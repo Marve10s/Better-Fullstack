@@ -49,8 +49,11 @@ defmodule {{elixirModuleName}}Web.Endpoint do
 
 {{/if}}
   plug Plug.RequestId
+{{#if (eq elixirLogging "logster")}}
+  plug Logster.Plugs.Logger
+{{/if}}
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
-  plug Plug.Parsers, parsers: [:urlencoded, :multipart, :json], pass: ["*/*"], json_decoder: Jason
+  plug Plug.Parsers, parsers: [:urlencoded, :multipart, :json], pass: ["*/*"], json_decoder: {{#if (eq elixirJson "elixir-json")}}JSON{{else if (eq elixirJson "jiffy")}}{{elixirModuleName}}.JSON{{else}}Jason{{/if}}
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options

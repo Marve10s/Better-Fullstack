@@ -1,0 +1,43 @@
+{{#if (ne phpWebFramework "slim")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use InvalidArgumentException;
+use JsonException;
+
+final class GreetingEndpoint
+{
+    public const int MAX_BODY_BYTES = 4096;
+
+    public static function respond(string $contentType, string $body): array
+    {
+        if (strtolower(trim(explode(';', $contentType)[0])) !== 'application/json') {
+            return [415, ['error' => 'unsupported_media_type']];
+        }
+        if (strlen($body) > self::MAX_BODY_BYTES) {
+            return [413, ['error' => 'payload_too_large']];
+        }
+        try {
+            $greeting = Greeting::fromJson($body);
+        } catch (JsonException) {
+            return [400, ['error' => 'invalid_json']];
+        } catch (InvalidArgumentException $error) {
+            return [422, ['error' => 'validation_failed', 'message' => $error->getMessage()]];
+        }
+        return [200, ['message' => $greeting->message(), 'repetitions' => $greeting->repetitions]];
+    }
+
+    public static function errorFor(int $status): string
+    {
+        return match ($status) {
+            401 => 'unauthorized',
+            404 => 'not_found',
+            405 => 'method_not_allowed',
+            default => 'internal_error',
+        };
+    }
+}
+{{/if}}

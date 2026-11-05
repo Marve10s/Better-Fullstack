@@ -7,6 +7,7 @@ import {
   TbCheck,
   TbDatabase,
   TbFileZip,
+  TbKey,
   TbLayoutBottombar,
   TbLink,
   TbPackage,
@@ -21,6 +22,7 @@ import {
 } from "react-icons/tb";
 
 const releaseIcons: Record<string, IconType[]> = {
+  "v2.8.1": [TbServer, TbKey, TbPlugConnected, TbPuzzle, TbTerminal2],
   "v2.8.0": [TbTerminal2, TbServer, TbDatabase, TbShieldCheck, TbBook],
   "v2.7.0": [TbStack2, TbArrowsExchange, TbServer, TbShieldCheck, TbBook],
   "v2.6.8": [TbPalette, TbLayoutBottombar, TbPackage, TbPuzzle, TbPlugConnected],

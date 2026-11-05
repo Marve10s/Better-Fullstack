@@ -1,6 +1,8 @@
 import {
+  getCrystalCommands,
   getLocalWebDevPort,
   getRoleTargetPath,
+  getStandaloneBackendEcosystem,
   type ProjectConfig,
   type StackPart,
 } from "@better-fullstack/types";
@@ -56,9 +58,23 @@ const BACKEND_LABELS: Record<string, string> = {
   "aspnet-minimal": ".NET ASP.NET Core Minimal APIs",
   "aspnet-mvc": ".NET ASP.NET Core MVC",
   "aspnet-blazor": ".NET ASP.NET Core Blazor",
+  kemal: "Crystal Kemal",
+  lucky: "Crystal Lucky",
+  athena: "Crystal Athena",
+  marten: "Crystal Marten",
+  sinatra: "Ruby Sinatra",
+  rails: "Ruby on Rails",
+  roda: "Ruby Roda",
+  grape: "Ruby Grape",
+  slim: "PHP Slim",
   phoenix: "Elixir Phoenix",
   "phoenix-live-view": "Elixir Phoenix LiveView",
 };
+
+function shellDirectory(value: string, alwaysQuote = false) {
+  if (!alwaysQuote && /^[a-zA-Z0-9_./-]+$/.test(value)) return value;
+  return `'${value.replaceAll("'", "'\\''")}'`;
+}
 
 function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnection | null {
   const backend = (config.stackParts ?? []).find(
@@ -73,7 +89,10 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
 
   if (!backend) return null;
 
-  const targetPath = backend.targetPath ?? getRoleTargetPath("backend") ?? "apps/server";
+  const targetPath = getStandaloneBackendEcosystem(config.stackParts)
+    ? "."
+    : (backend.targetPath ?? getRoleTargetPath("backend") ?? "apps/server");
+  const directory = shellDirectory(targetPath, backend.ecosystem === "crystal");
   const label = BACKEND_LABELS[backend.toolId] ?? `${backend.ecosystem} ${backend.toolId}`;
   const graphFrontends = getGraphWebFrontends(config);
   const graphFrontend = graphFrontends[0];
@@ -86,6 +105,93 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
   const webOrigin = graphFrontends.length <= 1 && webPort ? `http://localhost:${webPort}` : null;
 
   switch (backend.ecosystem) {
+    case "crystal": {
+      const ownedTool = (role: string) =>
+        (config.stackParts ?? []).find((part) => part.ownerPartId === backend.id && part.role === role)
+          ?.toolId;
+      const commands = getCrystalCommands({
+        crystalWebFramework: backend.toolId,
+        crystalOrm: ownedTool("orm"),
+        crystalAuth: ownedTool("auth"),
+        crystalTesting: ownedTool("testing") ?? "none",
+      });
+      const origins =
+        [...new Set(getGraphFrontendPorts(config).values())]
+          .map((port) => `http://localhost:${port}`)
+          .join(",") || webOrigin;
+      return {
+        partId: backend.id,
+        ecosystem: backend.ecosystem,
+        toolId: backend.toolId,
+        label,
+        targetPath,
+        webOrigin,
+        serverUrl: "http://localhost:3000",
+        healthPath: "/health",
+        healthUrl: "http://localhost:3000/health",
+        setupCommand: [`cd ${directory}`, "shards install", commands.migrate, commands.seed]
+          .filter(Boolean)
+          .join(" && "),
+        devCommand: `cd ${directory} && ${origins ? `export CORS_ORIGIN=${origins} && ` : ""}${commands.run}`,
+        checkCommand: `cd ${directory} && ${commands.build}`,
+        testCommand: commands.test ? `cd ${directory} && ${commands.test}` : null,
+      };
+    }
+    case "ruby": {
+      const ownedTool = (role: string) =>
+        config.stackParts?.find(
+          (part) => part.role === role && part.ecosystem === "ruby" && part.ownerPartId === backend.id,
+        )?.toolId;
+      const rubyTesting = ownedTool("testing") ?? config.rubyTesting ?? "minitest";
+      const rubyOrm = ownedTool("orm") ?? "none";
+      const needsMigration = rubyOrm !== "none" || ownedTool("auth") === "rodauth";
+      return {
+        partId: backend.id,
+        ecosystem: backend.ecosystem,
+        toolId: backend.toolId,
+        label,
+        targetPath,
+        webOrigin,
+        serverUrl: "http://localhost:4567",
+        healthPath: "/health",
+        healthUrl: "http://localhost:4567/health",
+        setupCommand: needsMigration
+          ? `cd ${directory} && bundle install && bundle exec rake db:migrate`
+          : `cd ${directory} && bundle install`,
+        devCommand: `cd ${directory} && bundle exec ruby bin/server`,
+        checkCommand: `cd ${directory} && bundle exec rake build`,
+        testCommand:
+          rubyTesting === "none" ? null : `cd ${directory} && bundle exec rake test`,
+      };
+    }
+    case "php": {
+      const ownedParts = (config.stackParts ?? []).filter((part) => part.ownerPartId === backend.id);
+      const needsDatabaseSetup = ownedParts.some(
+        (part) =>
+          (part.role === "orm" && part.toolId !== "none") ||
+          (part.role === "jobQueue" && part.toolId === "laravel-queue"),
+      );
+      const hasTesting = ownedParts.some(
+        (part) => part.role === "testing" && part.toolId !== "none",
+      );
+      return {
+        partId: backend.id,
+        ecosystem: backend.ecosystem,
+        toolId: backend.toolId,
+        label,
+        targetPath,
+        webOrigin,
+        serverUrl: "http://localhost:8080",
+        healthPath: "/health",
+        healthUrl: "http://localhost:8080/health",
+        setupCommand: needsDatabaseSetup
+          ? `cd ${directory} && composer install --no-interaction && composer run db:setup`
+          : `cd ${directory} && composer install --no-interaction`,
+        devCommand: `cd ${directory} && composer run dev`,
+        checkCommand: `cd ${directory} && composer run build`,
+        testCommand: hasTesting ? `cd ${directory} && composer test` : null,
+      };
+    }
     case "elixir": {
       const hasPhoenix = backend.toolId === "phoenix" || backend.toolId === "phoenix-live-view";
       const hasEcto = (config.stackParts ?? []).some(
@@ -103,11 +209,11 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
         healthPath: hasPhoenix ? "/api/health" : "/health",
         healthUrl: `http://localhost:4000${hasPhoenix ? "/api/health" : "/health"}`,
         setupCommand: hasEcto
-          ? `cd ${targetPath} && mix deps.get && mix ecto.setup`
-          : `cd ${targetPath} && mix deps.get`,
-        devCommand: `cd ${targetPath} && ${hasPhoenix ? "mix phx.server" : "iex -S mix"}`,
-        checkCommand: `cd ${targetPath} && mix compile --warnings-as-errors`,
-        testCommand: `cd ${targetPath} && mix test`,
+          ? `cd ${directory} && mix deps.get && mix ecto.setup`
+          : `cd ${directory} && mix deps.get`,
+        devCommand: `cd ${directory} && ${hasPhoenix ? "mix phx.server" : "iex -S mix"}`,
+        checkCommand: `cd ${directory} && mix compile --warnings-as-errors`,
+        testCommand: `cd ${directory} && mix test`,
       };
     }
     case "rust":
@@ -122,9 +228,9 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
         healthPath: "/health",
         healthUrl: "http://localhost:3000/health",
         setupCommand: null,
-        devCommand: `cd ${targetPath} && cargo run --bin server`,
-        checkCommand: `cd ${targetPath} && cargo check`,
-        testCommand: `cd ${targetPath} && cargo test`,
+        devCommand: `cd ${directory} && cargo run --bin server`,
+        checkCommand: `cd ${directory} && cargo check`,
+        testCommand: `cd ${directory} && cargo test`,
       };
     case "python": {
       const packageManager =
@@ -148,7 +254,7 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
           : packageManager === "pip"
             ? `if [ "$OS" = "Windows_NT" ]; then python -m venv .venv; else python3 -m venv .venv; fi && ${runPython("pip install -e '.[dev]'")}`
             : "uv sync --extra dev";
-      const devCommand = `cd ${targetPath} && ${
+      const devCommand = `cd ${directory} && ${
         backend.toolId === "fastapi"
           ? runPython("uvicorn app.main:app --reload --host 0.0.0.0 --port ${PORT:-8000}")
           : backend.toolId === "litestar"
@@ -167,10 +273,10 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
         serverUrl: "http://localhost:8000",
         healthPath: "/health",
         healthUrl: "http://localhost:8000/health",
-        setupCommand: `cd ${targetPath} && ${setupCommand}`,
+        setupCommand: `cd ${directory} && ${setupCommand}`,
         devCommand,
-        checkCommand: `cd ${targetPath} && ${runPython("ruff check .", { dev: true })}`,
-        testCommand: `cd ${targetPath} && ${runPython("pytest", { dev: true })}`,
+        checkCommand: `cd ${directory} && ${runPython("ruff check .", { dev: true })}`,
+        testCommand: `cd ${directory} && ${runPython("pytest", { dev: true })}`,
       };
     }
     case "go":
@@ -184,10 +290,10 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
         serverUrl: "http://localhost:8080",
         healthPath: "/health",
         healthUrl: "http://localhost:8080/health",
-        setupCommand: `cd ${targetPath} && go mod tidy`,
-        devCommand: `cd ${targetPath} && go run cmd/server/main.go`,
-        checkCommand: `cd ${targetPath} && go mod tidy && go test ./...`,
-        testCommand: `cd ${targetPath} && go mod tidy && go test ./...`,
+        setupCommand: `cd ${directory} && go mod tidy`,
+        devCommand: `cd ${directory} && go run cmd/server/main.go`,
+        checkCommand: `cd ${directory} && go mod tidy && go test ./...`,
+        testCommand: `cd ${directory} && go mod tidy && go test ./...`,
       };
     case "java": {
       const selectedBuildTool =
@@ -221,9 +327,9 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
         healthPath: isQuarkus ? "/hello" : "/health",
         healthUrl: `http://localhost:8080${isQuarkus ? "/hello" : "/health"}`,
         setupCommand: null,
-        devCommand: `cd ${targetPath} && ${buildTool} ${devTask}`,
-        checkCommand: `cd ${targetPath} && ${buildTool} ${buildTask}`,
-        testCommand: `cd ${targetPath} && ${buildTool} test`,
+        devCommand: `cd ${directory} && ${buildTool} ${devTask}`,
+        checkCommand: `cd ${directory} && ${buildTool} ${buildTask}`,
+        testCommand: `cd ${directory} && ${buildTool} test`,
       };
     }
     case "dotnet": {
@@ -253,10 +359,10 @@ function getRawGraphBackendConnection(config: ProjectConfig): GraphBackendConnec
         serverUrl: "http://localhost:5000",
         healthPath,
         healthUrl: `http://localhost:5000${healthPath}`,
-        setupCommand: `cd ${targetPath} && dotnet restore`,
-        devCommand: `cd ${targetPath} && dotnet run`,
-        checkCommand: `cd ${targetPath} && dotnet build --no-restore`,
-        testCommand: hasTesting ? `cd ${targetPath} && dotnet test` : null,
+        setupCommand: `cd ${directory} && dotnet restore`,
+        devCommand: `cd ${directory} && dotnet run`,
+        checkCommand: `cd ${directory} && dotnet build --no-restore`,
+        testCommand: hasTesting ? `cd ${directory} && dotnet test` : null,
       };
     }
     default:
@@ -297,15 +403,13 @@ export function getGraphBackendConnections(config: ProjectConfig): GraphBackendC
     if (port === defaultPort) return connection;
 
     const serverUrl = `${url.protocol}//${url.hostname}:${port}`;
+    const directory = shellDirectory(connection.targetPath, connection.ecosystem === "crystal");
     return {
       ...connection,
       serverUrl,
       healthUrl: `${serverUrl}${connection.healthPath}`,
       devCommand: connection.devCommand
-        .replace(
-          `cd ${connection.targetPath} && `,
-          `cd ${connection.targetPath} && export PORT=${port} && `,
-        )
+        .replace(`cd ${directory} && `, `cd ${directory} && export PORT=${port} && `)
         .replace(`\${PORT:-${defaultPort}}`, `\${PORT:-${port}}`),
     };
   });
@@ -318,6 +422,7 @@ export function getGraphBackendConnections(config: ProjectConfig): GraphBackendC
         part.source !== "provided" &&
         ((part.ecosystem === "go" && part.toolId === "grpc-go") ||
           (part.ecosystem === "rust" && part.toolId === "tonic") ||
+          (part.ecosystem === "elixir" && part.toolId === "grpc") ||
           (part.ecosystem === "java" && part.toolId === "grpc")),
     );
     if (!usesGrpc) return connection;
@@ -328,8 +433,8 @@ export function getGraphBackendConnections(config: ProjectConfig): GraphBackendC
     return {
       ...connection,
       devCommand: connection.devCommand.replace(
-        `cd ${connection.targetPath} && `,
-        `cd ${connection.targetPath} && export ${grpcPortVariable}=${grpcPort} && `,
+        `cd ${shellDirectory(connection.targetPath)} && `,
+        `cd ${shellDirectory(connection.targetPath)} && export ${grpcPortVariable}=${grpcPort} && `,
       ),
     };
   });

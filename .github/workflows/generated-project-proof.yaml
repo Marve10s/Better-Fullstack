@@ -72,6 +72,34 @@ jobs:
           otp-version: 28.0.2
           elixir-version: 1.19.0
 
+      - name: Setup pinned Crystal and Shards
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: "1.22.1"
+          shards: "0.20.0"
+      - name: Setup Ruby and Bundler
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4.11"
+          bundler: "4.0.21"
+      - name: Setup PHP and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5.12"
+          extensions: dom, filter, json, libxml, mbstring, xmlwriter
+          coverage: none
+          tools: composer:2.10.3
+
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.bun/install/cache
+          key: deps-${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            deps-${{ runner.os }}-bun-
+
       - name: Install repository dependencies
         run: bun install --frozen-lockfile
 
@@ -90,8 +118,16 @@ jobs:
       - name: Run persistent recipe runtime proof
         run: bun run test:recipe-runtime
 
-      - name: Run eight-ecosystem generated project runtime proof
+      - name: Run native PHP HTTP proof
+        run: bun run testing/php-runtime-proof.ts
+
+      - name: Run generated project runtime proof
         run: bun run testing/generated-project-proof.ts
+
+      - name: Run native Crystal HTTP proof
+        run: bun run testing/crystal-runtime-proof.ts --output testing/.smoke-output/crystal-runtime-proof
+      - name: Run native Ruby HTTP proof
+        run: bun run testing/ruby-runtime-proof.ts --output testing/.smoke-output/ruby-runtime-proof
 
       - name: Publish job summary
         if: always()
@@ -105,6 +141,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: generated-project-proof-${{ github.sha }}
-          path: testing/.smoke-output/generated-project-proof/
+          path: |
+            testing/.smoke-output/generated-project-proof/
+            testing/.smoke-output/crystal-runtime-proof/
+            testing/.smoke-output/ruby-runtime-proof/
+            testing/.smoke-output/php-runtime-proof/
           include-hidden-files: true
           if-no-files-found: error

@@ -1,7 +1,7 @@
+import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 import type { Backend, Caching, Ecosystem } from "@/types";
 
 import { exitCancelled } from "@/presentation/errors";
-import type { PromptSingleResolution } from "@/prompts/core/prompt-contract";
 import { isCancel, navigableSelect } from "@/prompts/core/navigable";
 
 const CACHING_PROMPT_OPTIONS = [
@@ -39,7 +39,11 @@ type CachingPromptContext = {
 export function resolveCachingPrompt(
   context: CachingPromptContext = {},
 ): PromptSingleResolution<Caching> {
-  if (context.ecosystem === "react-native" || context.ecosystem === "elixir") {
+  if (
+    context.ecosystem === "react-native" ||
+    context.ecosystem === "elixir" ||
+    context.ecosystem === "php"
+  ) {
     return {
       shouldPrompt: false,
       mode: "single",

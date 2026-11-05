@@ -1,0 +1,146 @@
+{{#if (ne phpJobQueue "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use DateTimeImmutable;
+{{#if (eq phpJobQueue "symfony-messenger")}}
+use Doctrine\DBAL\DriverManager;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Messenger\Bridge\Doctrine\Transport\Connection;
+use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransport;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Event\WorkerRunningEvent;
+use Symfony\Component\Messenger\Handler\HandlersLocator;
+use Symfony\Component\Messenger\MessageBus;
+use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
+use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
+use Symfony\Component\Messenger\Worker;
+{{else if (eq phpJobQueue "enqueue-fs")}}
+use Enqueue\Fs\FsConnectionFactory;
+use Enqueue\Fs\FsContext;
+{{else}}
+use App\Jobs\ProcessJob;
+{{/if}}
+use RuntimeException;
+
+final readonly class JobQueue
+{
+{{#if (eq phpJobQueue "symfony-messenger")}}
+    public function __construct(private string $directory, private DoctrineTransport $transport)
+{{else if (eq phpJobQueue "enqueue-fs")}}
+    public function __construct(private string $directory, private FsContext $context)
+{{else}}
+    public function __construct(private string $directory)
+{{/if}}
+    {
+    }
+
+    public static function fromEnvironment(string $root): self
+    {
+        $directory = getenv('QUEUE_PATH') ?: $root . '{{#if (eq phpWebFramework "laravel")}}/storage/app/queue{{else}}/var/queue{{/if}}';
+        if (!is_dir($directory . '/status') && !mkdir($directory . '/status', 0775, true) && !is_dir($directory . '/status')) {
+            throw new RuntimeException('Cannot create the queue directory.');
+        }
+{{#if (eq phpJobQueue "symfony-messenger")}}
+        $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => $directory . '/messages.sqlite']);
+        return new self($directory, new DoctrineTransport(new Connection(['auto_setup' => true], $connection), new PhpSerializer()));
+{{else if (eq phpJobQueue "enqueue-fs")}}
+        return new self($directory, (new FsConnectionFactory('file://' . $directory . '/messages'))->createContext());
+{{else}}
+        return new self($directory);
+{{/if}}
+    }
+
+    public function dispatch(): string
+    {
+        $id = bin2hex(random_bytes(16));
+        $this->write($id, ['id' => $id, 'status' => 'queued']);
+{{#if (eq phpJobQueue "symfony-messenger")}}
+        $this->transport->send(new Envelope(new ProcessJob($id)));
+{{else if (eq phpJobQueue "enqueue-fs")}}
+        $this->context->createProducer()->send($this->context->createQueue('jobs'), $this->context->createMessage(json_encode(['id' => $id], JSON_THROW_ON_ERROR)));
+{{else}}
+        ProcessJob::dispatch($id);
+{{/if}}
+        return $id;
+    }
+
+    public function status(string $id): ?array
+    {
+        if (preg_match('/^[a-f0-9]{32}$/', $id) !== 1 || !is_file($this->file($id))) {
+            return null;
+        }
+        $handle = fopen($this->file($id), 'r');
+        if ($handle === false) {
+            throw new RuntimeException('Cannot open the job status.');
+        }
+        try {
+            if (!flock($handle, LOCK_SH)) {
+                throw new RuntimeException('Cannot lock the job status.');
+            }
+            $contents = stream_get_contents($handle);
+            if ($contents === false) {
+                throw new RuntimeException('Cannot read the job status.');
+            }
+            return json_decode($contents, true, 8, JSON_THROW_ON_ERROR);
+        } finally {
+            fclose($handle);
+        }
+    }
+
+    public function process(string $id): void
+    {
+        $this->write($id, ['id' => $id, 'status' => 'done', 'processedAt' => (new DateTimeImmutable())->format(DATE_RFC3339_EXTENDED)]);
+    }
+{{#if (eq phpJobQueue "symfony-messenger")}}
+
+    public function work(bool $stopWhenEmpty): void
+    {
+        $bus = new MessageBus([new HandleMessageMiddleware(new HandlersLocator([
+            ProcessJob::class => [fn (ProcessJob $job) => $this->process($job->id)],
+        ]))]);
+        $events = new EventDispatcher();
+        if ($stopWhenEmpty) {
+            $events->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event): void {
+                if ($event->isWorkerIdle()) {
+                    $event->getWorker()->stop();
+                }
+            });
+        }
+        (new Worker(['default' => $this->transport], $bus, $events))->run(['sleep' => 500_000]);
+    }
+{{else if (eq phpJobQueue "enqueue-fs")}}
+
+    public function work(bool $stopWhenEmpty): void
+    {
+        $consumer = $this->context->createConsumer($this->context->createQueue('jobs'));
+        while (true) {
+            $message = $consumer->receive(500);
+            if ($message === null) {
+                if ($stopWhenEmpty) {
+                    return;
+                }
+                continue;
+            }
+            $this->process(json_decode($message->getBody(), true, 8, JSON_THROW_ON_ERROR)['id']);
+            $consumer->acknowledge($message);
+        }
+    }
+{{/if}}
+
+    private function file(string $id): string
+    {
+        return $this->directory . '/status/' . $id . '.json';
+    }
+
+    private function write(string $id, array $status): void
+    {
+        if (file_put_contents($this->file($id), json_encode($status, JSON_THROW_ON_ERROR), LOCK_EX) === false) {
+            throw new RuntimeException('Cannot write the job status.');
+        }
+    }
+}
+{{/if}}

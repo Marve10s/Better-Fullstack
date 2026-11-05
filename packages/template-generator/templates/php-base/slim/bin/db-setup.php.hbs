@@ -1,0 +1,13 @@
+{{#if (ne phpOrm "none")}}
+<?php
+
+declare(strict_types=1);
+
+use App\Environment;
+use App\Notes;
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+Environment::load(dirname(__DIR__) . '/.env');
+Notes::open(getenv('DATABASE_PATH') ?: dirname(__DIR__) . '/var/database.sqlite')->migrate();
+echo "Database schema is ready.\n";
+{{/if}}

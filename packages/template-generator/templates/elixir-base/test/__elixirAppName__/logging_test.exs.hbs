@@ -1,0 +1,63 @@
+defmodule {{elixirModuleName}}.LoggingTest do
+  use ExUnit.Case, async: false
+
+  require Logger
+{{#if (eq elixirLogging "logger-json")}}
+
+  test "the default handler writes structured JSON log lines" do
+    {:ok, %{formatter: {formatter, config}}} = :logger.get_handler_config(:default)
+    assert formatter == LoggerJSON.Formatters.Basic
+
+    event = %{
+      level: :info,
+      msg: {:string, "order placed"},
+      meta: %{time: :logger.timestamp(), request_id: "req-1"}
+    }
+
+    line = event |> formatter.format(config) |> IO.iodata_to_binary()
+
+    assert %{
+             "message" => "order placed",
+             "severity" => "info",
+             "metadata" => %{"request_id" => "req-1"}
+           } = {{#if (eq elixirJson "elixir-json")}}JSON{{else}}Jason{{/if}}.decode!(line)
+  end
+{{/if}}
+{{#if (eq elixirLogging "logger-file-backend")}}
+
+  test "log lines are appended to the configured file" do
+    path = Application.fetch_env!(:logger, :file_log)[:path]
+    marker = "file-backend-#{System.unique_integer([:positive])}"
+
+    level = Logger.level()
+    Logger.configure(level: :info)
+    on_exit(fn -> Logger.configure(level: level) end)
+
+    Logger.info(marker, request_id: "req-1")
+    Logger.flush()
+
+    assert File.read!(path) =~ ~r/request_id=req-1 \[info\] #{marker}/
+  end
+{{/if}}
+{{#if (eq elixirLogging "logster")}}
+
+  test "requests are logged as one logfmt line" do
+    import ExUnit.CaptureLog
+
+    level = Logger.level()
+    Logger.configure(level: :info)
+    on_exit(fn -> Logger.configure(level: level) end)
+
+    log =
+      capture_log([level: :info], fn ->
+        conn = Plug.Test.conn(:get, "/api/health")
+        conn = {{elixirModuleName}}Web.Endpoint.call(conn, {{elixirModuleName}}Web.Endpoint.init([]))
+        assert conn.status == 200
+      end)
+
+    assert log =~ "method=GET"
+    assert log =~ "path=/api/health"
+    assert log =~ "status=200"
+  end
+{{/if}}
+end

@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Application;
+{{#if (ne phpCache "none")}}
+use App\CachedClock;
+{{/if}}
+use App\Environment;
+{{#if (ne phpJobQueue "none")}}
+use App\JobQueue;
+{{/if}}
+{{#if (ne phpOrm "none")}}
+use App\Notes;
+{{/if}}
+{{#if (eq phpLogging "monolog")}}
+use Monolog\Formatter\JsonFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Level;
+use Monolog\Logger;
+{{/if}}
+{{#if (ne phpAuth "none")}}
+use App\TokenVerifier;
+{{/if}}
+{{#if (ne phpHttpClient "none")}}
+use App\UpstreamClient;
+{{/if}}
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+Environment::load(dirname(__DIR__) . '/.env');
+Application::create(
+    corsOrigin: getenv('CORS_ORIGIN') ?: '',
+{{#if (ne phpOrm "none")}}
+    notes: Notes::open(getenv('DATABASE_PATH') ?: dirname(__DIR__) . '/var/database.sqlite'),
+{{/if}}
+{{#if (ne phpAuth "none")}}
+    tokens: TokenVerifier::fromEnvironment(),
+{{/if}}
+{{#if (ne phpCache "none")}}
+    clock: CachedClock::fromEnvironment(dirname(__DIR__)),
+{{/if}}
+{{#if (ne phpJobQueue "none")}}
+    jobs: JobQueue::fromEnvironment(dirname(__DIR__)),
+{{/if}}
+{{#if (eq phpLogging "monolog")}}
+    logger: new Logger('app', [(new StreamHandler('php://stderr', Level::fromName(getenv('LOG_LEVEL') ?: 'info')))->setFormatter(new JsonFormatter())]),
+{{/if}}
+{{#if (ne phpHttpClient "none")}}
+    upstream: UpstreamClient::fromEnvironment(),
+{{/if}}
+)->run();

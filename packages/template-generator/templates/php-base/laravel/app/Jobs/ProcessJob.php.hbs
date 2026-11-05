@@ -1,0 +1,25 @@
+{{#if (eq phpJobQueue "laravel-queue")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Jobs;
+
+use App\JobQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+
+final class ProcessJob implements ShouldQueue
+{
+    use Queueable;
+
+    public function __construct(public string $id)
+    {
+    }
+
+    public function handle(): void
+    {
+        JobQueue::fromEnvironment(base_path())->process($this->id);
+    }
+}
+{{/if}}

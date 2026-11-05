@@ -9,9 +9,13 @@ import {
 const applicationRoles = new Set(["frontend", "backend", "mobile"]);
 
 export function getComposerParts(specs: readonly string[]) {
-  return parseStackPartSpecs([...specs], "selected").filter(
-    (part) => part.source !== "provided" && part.toolId !== "none",
-  );
+  try {
+    return parseStackPartSpecs([...specs], "selected").filter(
+      (part) => part.source !== "provided" && part.toolId !== "none",
+    );
+  } catch {
+    return [];
+  }
 }
 
 export function hasComposerApplication(specs: readonly string[]) {

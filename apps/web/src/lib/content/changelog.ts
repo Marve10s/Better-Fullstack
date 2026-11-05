@@ -32,10 +32,33 @@ function gradientArtwork(): ChangelogRelease["image"] {
 
 export const changelogReleases: ChangelogRelease[] = [
   {
+    version: "v2.8.1",
+    publishedAt: "2026-10-28T10:14:02Z",
+    displayDate: "October 27, 2026",
+    isLatest: true,
+    href: "/changelog#v281",
+    title: "Libraries for PHP, Ruby, Crystal, and Elixir",
+    summary:
+      "PHP, Ruby, and Crystal projects can now pick frameworks, ORMs, auth, jobs, caching, and more. Elixir gets five new categories.",
+    highlights: [
+      "Laravel, Symfony, Rails, Lucky, and more",
+      "ORMs and auth for PHP, Ruby, and Crystal",
+      "Jobs, caching, email, and HTTP clients",
+      "Five new Elixir categories",
+      "Pick them in the builder or the CLI",
+    ],
+    cta: { label: "Build a stack", href: "/new" },
+    image: {
+      src: "/changelog/v2.8.1.webp",
+      alt: "Better Fullstack 2.8.1 artwork with PHP, Ruby, Crystal, and Elixir tiles",
+      credit: "Better Fullstack",
+      creditHref: `${RELEASE_BASE_URL}/v2.8.1`,
+    },
+  },
+  {
     version: "v2.8.0",
     publishedAt: "2026-10-13T17:54:51Z",
     displayDate: "October 13, 2026",
-    isLatest: true,
     href: "/changelog#v280",
     title: "CLI discovery, jobs, and vector search",
     summary:

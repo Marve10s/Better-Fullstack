@@ -1,7 +1,14 @@
 import {
+  getCategoryDisplayName,
+  getCrystalCommands,
   getLocalWebDevPort,
+  getOptionMetadata,
+  getStandaloneBackendEcosystem,
   hasJavaScriptWorkspaceRoot,
   isToolingOverlayOnly,
+  stackGraphToLegacyProjectConfigForEcosystem,
+  toDotnetIdentifierSegment,
+  type OptionCategory,
 } from "@better-fullstack/types";
 import { consola } from "consola";
 import pc from "picocolors";
@@ -45,14 +52,20 @@ export async function displayPostInstallInstructions(
     dbSetup,
     webDeploy,
     serverDeploy,
-    ecosystem,
   } = config;
+
+  const standaloneEcosystem = getStandaloneBackendEcosystem(config.stackParts);
+  const ecosystem = standaloneEcosystem ?? config.ecosystem;
 
   if (ecosystem !== "typescript" && addons?.includes("gitleaks")) {
     consola.box(getGitleaksInstructions("gitleaks", false, config.git));
   }
 
-  if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
+  if (
+    config.stackParts?.length &&
+    !isToolingOverlayOnly(config.stackParts) &&
+    !standaloneEcosystem
+  ) {
     const { getGraphProjectTasks } = await import("@better-fullstack/template-generator");
     const tasks = getGraphProjectTasks(config);
     const hasJavaScript = hasJavaScriptWorkspaceRoot(config.stackParts);
@@ -62,6 +75,15 @@ export async function displayPostInstallInstructions(
     consola.box(
       `Next steps\n\n${steps.join("\n")}\n\nNative mobile apps run in their own simulator or device. See README.md for application commands and connection details.`,
     );
+    return;
+  }
+
+  if (ecosystem === "crystal") {
+    const commands = getCrystalCommands(
+      config.stackParts?.length ? stackGraphToLegacyProjectConfigForEcosystem(config, "crystal") : config,
+    );
+    const steps = [`cd ${relativePath}`, depsInstalled ? undefined : "shards install", commands.migrate, commands.seed, commands.build, commands.test, commands.proof, commands.proof ? "HOST=127.0.0.1 PORT=3000 ./bin/server" : "./bin/server"];
+    consola.box(`Next steps\n\n${steps.filter(Boolean).join("\n")}\n\nExperimental recipe. Runtime proof has not been recorded.`);
     return;
   }
 
@@ -89,8 +111,30 @@ export async function displayPostInstallInstructions(
     return;
   }
 
+  if (ecosystem === "ruby") {
+    const ruby = config.stackParts?.length
+      ? stackGraphToLegacyProjectConfigForEcosystem(config, "ruby")
+      : config;
+    consola.box(
+      `Next steps\n\ncd ${relativePath}\n${depsInstalled ? "" : "bundle install\n"}${(ruby.rubyOrm && ruby.rubyOrm !== "none") || ruby.rubyAuth === "rodauth" ? "bundle exec rake db:migrate\n" : ""}bundle exec rake build\n${ruby.rubyTesting === "none" ? "" : "bundle exec rake test\n"}bundle exec ruby bin/server\n\nHTTP: http://127.0.0.1:4567/health\nRuntime proof: bundle exec ruby bin/proof\n${ruby.rubyOrm && ruby.rubyOrm !== "none" ? `Database: ${ruby.rubyOrm} on SQLite (DATABASE_PATH).\n` : ""}${ruby.rubyAuth && ruby.rubyAuth !== "none" ? `Auth: ${ruby.rubyAuth}. Set its secrets from .env.example before production.\n` : ""}${ruby.rubyCache === "redis" ? "Cache: start Redis at REDIS_URL before tests and bin/proof.\n" : ruby.rubyCache === "memcached" ? "Cache: start Memcached at MEMCACHED_SERVERS before tests and bin/proof.\n" : ""}${ruby.rubyJobQueue && ruby.rubyJobQueue !== "none" ? `Jobs: ${ruby.rubyJobQueue}; run the worker with bundle exec ruby bin/worker${ruby.rubyJobQueue === "solid-queue" ? "" : " (Redis at JOBS_REDIS_URL)"}.\n` : ""}Experimental recipe.`,
+    );
+    return;
+  }
+
+  if (ecosystem === "php") {
+    consola.box(
+      `Next steps\n\ncd ${relativePath}\n${depsInstalled ? "" : "composer install --no-interaction\n"}composer run build\n${config.phpTesting === "none" ? "" : "composer test\n"}composer run proof:http\n${(config.phpOrm && config.phpOrm !== "none") || config.phpJobQueue === "laravel-queue" ? "composer run db:setup\n" : ""}composer run dev\n\n${config.phpAuth && config.phpAuth !== "none" ? "Set JWT_SECRET (32+ bytes) before calling GET /api/me.\n" : ""}${config.phpCache === "predis" ? "Set REDIS_URL to a running Redis server before calling GET /api/cached-time.\n" : ""}${config.phpJobQueue && config.phpJobQueue !== "none" ? "Run composer run queue:work beside composer run dev to process jobs.\n" : ""}${config.phpEmail && config.phpEmail !== "none" ? "Configure SMTP in .env, then run composer run mail:send -- you@example.com.\n" : ""}${config.phpHttpClient && config.phpHttpClient !== "none" ? "Set UPSTREAM_URL before calling GET /api/upstream.\n" : ""}Experimental PHP recipe. See PHP.md for routes, environment and the verification boundary.`,
+    );
+    return;
+  }
+
   if (ecosystem === "elixir") {
     displayElixirInstructions(config);
+    return;
+  }
+
+  if (ecosystem === "dotnet") {
+    displayDotnetInstructions(config);
     return;
   }
 
@@ -209,7 +253,7 @@ export async function displayPostInstallInstructions(
   const graphBackendPart = getGraphPart(config, "backend");
   const graphBackendNeedsSetup =
     Boolean(graphBackendUrl) &&
-    ["python", "go", "elixir"].includes(graphBackendPart?.ecosystem ?? "");
+    ["python", "go", "elixir", "php"].includes(graphBackendPart?.ecosystem ?? "");
   let output = graphSummary ? `${pc.bold("Generated:")} ${graphSummary}\n\n` : "";
   output += `${pc.bold("Next steps")}\n${pc.cyan("1.")} ${cdCmd}\n`;
   let stepCounter = 2;
@@ -976,7 +1020,7 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
       warp: "Warp",
       salvo: "Salvo",
     };
-    output += `${pc.cyan("•")} Web Framework: ${frameworkNames[rustWebFramework] || rustWebFramework}\n`;
+    output += `${pc.cyan("•")} Web Framework: ${frameworkNames[rustWebFramework] ?? optionLabel("rustWebFramework", rustWebFramework)}\n`;
   }
 
   if (rustFrontend && rustFrontend !== "none") {
@@ -985,7 +1029,7 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
       dioxus: "Dioxus",
       yew: "Yew",
     };
-    output += `${pc.cyan("•")} Frontend: ${frontendNames[rustFrontend] || rustFrontend}\n`;
+    output += `${pc.cyan("•")} Frontend: ${frontendNames[rustFrontend] ?? optionLabel("rustFrontend", rustFrontend)}\n`;
   }
 
   if (rustOrm && rustOrm !== "none") {
@@ -997,7 +1041,7 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
       rusqlite: "rusqlite",
       "tokio-postgres": "tokio-postgres",
     };
-    output += `${pc.cyan("•")} Database: ${ormNames[rustOrm] || rustOrm}\n`;
+    output += `${pc.cyan("•")} Database: ${ormNames[rustOrm] ?? optionLabel("rustOrm", rustOrm)}\n`;
   }
 
   if (rustApi && rustApi !== "none") {
@@ -1006,7 +1050,7 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
       tonic: "Tonic",
       jsonrpsee: "jsonrpsee",
     };
-    output += `${pc.cyan("•")} API: ${apiNames[rustApi] || rustApi}\n`;
+    output += `${pc.cyan("•")} API: ${apiNames[rustApi] ?? optionLabel("rustApi", rustApi)}\n`;
   }
 
   if (rustCli && rustCli !== "none") {
@@ -1014,7 +1058,7 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
       clap: "Clap",
       ratatui: "Ratatui",
     };
-    output += `${pc.cyan("•")} CLI: ${cliNames[rustCli] || rustCli}\n`;
+    output += `${pc.cyan("•")} CLI: ${cliNames[rustCli] ?? optionLabel("rustCli", rustCli)}\n`;
   }
 
   const { rustLogging } = config;
@@ -1023,7 +1067,7 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
       tracing: "Tracing",
       "env-logger": "env_logger",
     };
-    output += `${pc.cyan("•")} Logging: ${loggingNames[rustLogging] || rustLogging}\n`;
+    output += `${pc.cyan("•")} Logging: ${loggingNames[rustLogging] ?? optionLabel("rustLogging", rustLogging)}\n`;
   }
 
   const { rustErrorHandling } = config;
@@ -1032,7 +1076,7 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
       "anyhow-thiserror": "anyhow + thiserror",
       eyre: "eyre + color-eyre",
     };
-    output += `${pc.cyan("•")} Error Handling: ${errorHandlingNames[rustErrorHandling] || rustErrorHandling}\n`;
+    output += `${pc.cyan("•")} Error Handling: ${errorHandlingNames[rustErrorHandling] ?? optionLabel("rustErrorHandling", rustErrorHandling)}\n`;
   }
 
   const { rustCaching } = config;
@@ -1041,7 +1085,7 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
       moka: "Moka",
       redis: "Redis",
     };
-    output += `${pc.cyan("•")} Caching: ${cachingNames[rustCaching] || rustCaching}\n`;
+    output += `${pc.cyan("•")} Caching: ${cachingNames[rustCaching] ?? optionLabel("rustCaching", rustCaching)}\n`;
   }
 
   const { rustAuth } = config;
@@ -1049,7 +1093,7 @@ function displayRustInstructions(config: ProjectConfig & { depsInstalled: boolea
     const authNames: Record<string, string> = {
       oauth2: "OAuth2",
     };
-    output += `${pc.cyan("•")} Auth: ${authNames[rustAuth] || rustAuth}\n`;
+    output += `${pc.cyan("•")} Auth: ${authNames[rustAuth] ?? optionLabel("rustAuth", rustAuth)}\n`;
   }
 
   output += `\n${pc.bold("Common Cargo commands:")}\n`;
@@ -1114,6 +1158,40 @@ function getGoJobAndMigrationGuidance(
   return sections;
 }
 
+function optionLabel(category: OptionCategory, value: string): string {
+  return getOptionMetadata(category, value)?.label ?? value;
+}
+
+function displayDotnetInstructions(config: ProjectConfig & { depsInstalled: boolean }) {
+  const hasTests = config.dotnetTesting?.some((library) => library !== "none") ?? false;
+  const steps = [
+    `cd ${config.relativePath}`,
+    ...(config.depsInstalled ? [] : ["dotnet restore"]),
+    ...(hasTests ? [`dotnet test ${toDotnetIdentifierSegment(config.projectName)}.Tests`] : []),
+    "dotnet run",
+  ];
+  const stack = (["dotnetWebFramework", "dotnetOrm", "dotnetAuth", "dotnetApi"] as const).flatMap(
+    (category) => {
+      const value = config[category];
+      if (!value || value === "none") return [];
+      return [
+        `${pc.cyan("•")} ${getCategoryDisplayName(category)}: ${optionLabel(category, value)}`,
+      ];
+    },
+  );
+
+  let output = `${pc.bold("Next steps")}\n`;
+  output += steps.map((step, index) => `${pc.cyan(`${index + 1}.`)} ${step}`).join("\n");
+  if (stack.length > 0) {
+    output += `\n\n${pc.bold("Your .NET project includes:")}\n${stack.join("\n")}`;
+  }
+  output += `\n\n${pc.bold("Enjoying Better Fullstack?")} Help us grow - star the repo!\n`;
+  output += `${pc.cyan("https://github.com/Marve10s/Better-Fullstack")}\n`;
+  output += pc.dim("Your star helps other developers discover the project.");
+
+  consola.box(output);
+}
+
 function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean }) {
   const {
     relativePath,
@@ -1159,7 +1237,7 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
       kratos: "Kratos",
       httprouter: "HttpRouter",
     };
-    output += `${pc.cyan("•")} Web Framework: ${frameworkNames[goWebFramework] || goWebFramework}\n`;
+    output += `${pc.cyan("•")} Web Framework: ${frameworkNames[goWebFramework] ?? optionLabel("goWebFramework", goWebFramework)}\n`;
   }
 
   if (goOrm && goOrm !== "none") {
@@ -1170,7 +1248,7 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
       bun: "Bun",
       sqlx: "sqlx",
     };
-    output += `${pc.cyan("•")} Database: ${ormNames[goOrm] || goOrm}\n`;
+    output += `${pc.cyan("•")} Database: ${ormNames[goOrm] ?? optionLabel("goOrm", goOrm)}\n`;
   }
 
   if (goApi && goApi !== "none") {
@@ -1180,7 +1258,7 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
       "connect-go": "Connect-Go",
       "oapi-codegen": "oapi-codegen",
     };
-    output += `${pc.cyan("•")} API: ${apiNames[goApi] || goApi}\n`;
+    output += `${pc.cyan("•")} API: ${apiNames[goApi] ?? optionLabel("goApi", goApi)}\n`;
   }
 
   if (goCli && goCli !== "none") {
@@ -1189,7 +1267,7 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
       bubbletea: "Bubble Tea",
       "urfave-cli": "urfave/cli",
     };
-    output += `${pc.cyan("•")} CLI: ${cliNames[goCli] || goCli}\n`;
+    output += `${pc.cyan("•")} CLI: ${cliNames[goCli] ?? optionLabel("goCli", goCli)}\n`;
   }
 
   if (goLogging && goLogging !== "none") {
@@ -1198,7 +1276,7 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
       zerolog: "Zerolog",
       slog: "slog",
     };
-    output += `${pc.cyan("•")} Logging: ${loggingNames[goLogging] || goLogging}\n`;
+    output += `${pc.cyan("•")} Logging: ${loggingNames[goLogging] ?? optionLabel("goLogging", goLogging)}\n`;
   }
 
   if (goAuth && goAuth !== "none") {
@@ -1208,7 +1286,7 @@ function displayGoInstructions(config: ProjectConfig & { depsInstalled: boolean 
       goth: "Goth",
       oauth2: "x/oauth2",
     };
-    output += `${pc.cyan("•")} Auth: ${authNames[goAuth] || goAuth}\n`;
+    output += `${pc.cyan("•")} Auth: ${authNames[goAuth] ?? optionLabel("goAuth", goAuth)}\n`;
   }
 
   const extras: Array<[string, string | string[]]> = [
@@ -1437,7 +1515,7 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
       "spring-boot": "Spring Boot",
       quarkus: "Quarkus",
     };
-    output += `${pc.cyan("•")} Web Framework: ${frameworkNames[javaWebFramework] || javaWebFramework}\n`;
+    output += `${pc.cyan("•")} Web Framework: ${frameworkNames[javaWebFramework] ?? optionLabel("javaWebFramework", javaWebFramework)}\n`;
   } else {
     output += `${pc.cyan("•")} Scaffold: Plain Java\n`;
   }
@@ -1447,7 +1525,7 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
       maven: "Maven Wrapper",
       gradle: "Gradle Wrapper",
     };
-    output += `${pc.cyan("•")} Build Tool: ${buildToolNames[javaBuildTool] || javaBuildTool}\n`;
+    output += `${pc.cyan("•")} Build Tool: ${buildToolNames[javaBuildTool] ?? optionLabel("javaBuildTool", javaBuildTool)}\n`;
   } else {
     output += `${pc.cyan("•")} Build Tool: None\n`;
   }
@@ -1456,14 +1534,14 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
     const ormNames: Record<string, string> = {
       "spring-data-jpa": "Spring Data JPA",
     };
-    output += `${pc.cyan("•")} ORM: ${ormNames[javaOrm] || javaOrm}\n`;
+    output += `${pc.cyan("•")} ORM: ${ormNames[javaOrm] ?? optionLabel("javaOrm", javaOrm)}\n`;
   }
 
   if (isSpringBoot && javaAuth && javaAuth !== "none") {
     const authNames: Record<string, string> = {
       "spring-security": "Spring Security",
     };
-    output += `${pc.cyan("•")} Auth: ${authNames[javaAuth] || javaAuth}\n`;
+    output += `${pc.cyan("•")} Auth: ${authNames[javaAuth] ?? optionLabel("javaAuth", javaAuth)}\n`;
   }
 
   if (effectiveJavaLibraries.length > 0) {
@@ -1498,7 +1576,7 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
       "spring-restclient": "Spring REST Client",
     };
     const libraryList = effectiveJavaLibraries
-      .map((library) => libraryNames[library] || library)
+      .map((library) => libraryNames[library] ?? optionLabel("javaLibraries", library))
       .join(", ");
     output += `${pc.cyan("•")} Libraries: ${libraryList}\n`;
   }
@@ -1516,7 +1594,7 @@ function displayJavaInstructions(config: ProjectConfig & { depsInstalled: boolea
       jqwik: "jqwik",
     };
     const testingList = effectiveJavaTestingLibraries
-      .map((library) => testingNames[library] || library)
+      .map((library) => testingNames[library] ?? optionLabel("javaTestingLibraries", library))
       .join(", ");
     output += `${pc.cyan("•")} Testing: ${testingList}\n`;
   }
@@ -1615,7 +1693,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
       aiohttp: "aiohttp",
       streamlit: "Streamlit",
     };
-    output += `${pc.cyan("•")} Web Framework: ${frameworkNames[pythonWebFramework] || pythonWebFramework}\n`;
+    output += `${pc.cyan("•")} Web Framework: ${frameworkNames[pythonWebFramework] ?? optionLabel("pythonWebFramework", pythonWebFramework)}\n`;
   }
 
   if (pythonOrm && pythonOrm !== "none") {
@@ -1626,14 +1704,14 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
       peewee: "Peewee",
       pymongo: "PyMongo",
     };
-    output += `${pc.cyan("•")} ORM: ${ormNames[pythonOrm] || pythonOrm}\n`;
+    output += `${pc.cyan("•")} ORM: ${ormNames[pythonOrm] ?? optionLabel("pythonOrm", pythonOrm)}\n`;
   }
 
   if (pythonValidation && pythonValidation !== "none") {
     const validationNames: Record<string, string> = {
       pydantic: "Pydantic",
     };
-    output += `${pc.cyan("•")} Validation: ${validationNames[pythonValidation] || pythonValidation}\n`;
+    output += `${pc.cyan("•")} Validation: ${validationNames[pythonValidation] ?? optionLabel("pythonValidation", pythonValidation)}\n`;
   }
 
   if (pythonAi && pythonAi.length > 0 && !pythonAi.includes("none")) {
@@ -1652,7 +1730,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
     };
     const aiList = pythonAi
       .filter((ai) => ai !== "none")
-      .map((ai) => aiNames[ai] || ai)
+      .map((ai) => aiNames[ai] ?? optionLabel("pythonAi", ai))
       .join(", ");
     output += `${pc.cyan("•")} AI: ${aiList}\n`;
   }
@@ -1662,14 +1740,14 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
       "django-rest-framework": "Django REST Framework",
       "django-ninja": "Django Ninja",
     };
-    output += `${pc.cyan("•")} API Framework: ${apiNames[pythonApi] || pythonApi}\n`;
+    output += `${pc.cyan("•")} API Framework: ${apiNames[pythonApi] ?? optionLabel("pythonApi", pythonApi)}\n`;
   }
 
   if (pythonTaskQueue && pythonTaskQueue !== "none") {
     const taskQueueNames: Record<string, string> = {
       celery: "Celery",
     };
-    output += `${pc.cyan("•")} Task Queue: ${taskQueueNames[pythonTaskQueue] || pythonTaskQueue}\n`;
+    output += `${pc.cyan("•")} Task Queue: ${taskQueueNames[pythonTaskQueue] ?? optionLabel("pythonTaskQueue", pythonTaskQueue)}\n`;
   }
 
   if (pythonQuality && pythonQuality !== "none") {
@@ -1678,7 +1756,7 @@ function displayPythonInstructions(config: ProjectConfig & { depsInstalled: bool
       mypy: "mypy",
       pyright: "Pyright",
     };
-    output += `${pc.cyan("•")} Code Quality: ${qualityNames[pythonQuality] || pythonQuality}\n`;
+    output += `${pc.cyan("•")} Code Quality: ${qualityNames[pythonQuality] ?? optionLabel("pythonQuality", pythonQuality)}\n`;
   }
 
   if (pythonObservability && pythonObservability !== "none") {
@@ -1727,6 +1805,11 @@ function displayElixirInstructions(config: ProjectConfig & { depsInstalled: bool
     elixirJobs,
     elixirAuth,
     elixirDeploy,
+    elixirLogging,
+    elixirConfig,
+    elixirMessageQueue,
+    elixirTemplating,
+    elixirCli,
   } = config;
 
   let output = `${pc.bold("Project created successfully!")}\n\n`;
@@ -1750,6 +1833,16 @@ function displayElixirInstructions(config: ProjectConfig & { depsInstalled: bool
   output += `${pc.cyan("•")} Jobs: ${elixirJobs}\n`;
   output += `${pc.cyan("•")} Auth: ${elixirAuth}\n`;
   output += `${pc.cyan("•")} Deploy: ${elixirDeploy}\n`;
+  if (elixirJobs === "exq") {
+    output += `${pc.yellow("NOTE:")} Exq needs Redis at REDIS_URL (default redis://localhost:6379)\n`;
+  }
+  if (elixirLogging !== "none") output += `${pc.cyan("•")} Logging: ${elixirLogging}\n`;
+  if (elixirConfig !== "none") output += `${pc.cyan("•")} Runtime config: ${elixirConfig}\n`;
+  if (elixirTemplating !== "none") output += `${pc.cyan("•")} Templating: ${elixirTemplating}\n`;
+  if (elixirCli !== "none") output += `${pc.cyan("•")} CLI: ${elixirCli} (greet Mix task)\n`;
+  if (elixirMessageQueue !== "none") {
+    output += `${pc.yellow("NOTE:")} Start the ${elixirMessageQueue} broker, then run mix test --include message_queue\n`;
+  }
 
   output += `\n${pc.bold("Common Mix commands:")}\n`;
   output += `${pc.cyan("•")} Run: mix phx.server\n`;

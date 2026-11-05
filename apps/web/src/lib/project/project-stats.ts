@@ -5,6 +5,8 @@ export const OPTION_ENTRY_COUNT = Object.values(OPTION_CATEGORY_METADATA).reduce
   0,
 );
 export const CATEGORY_COUNT = Object.keys(OPTION_CATEGORY_METADATA).length;
+export const MCP_TOOL_COUNT = 40;
+export const MCP_RESOURCE_COUNT = 4;
 
 // Display names keyed by the canonical EcosystemSchema values. Using a typed
 // Record means adding an ecosystem to the schema fails the build here until a
@@ -16,7 +18,10 @@ const ECOSYSTEM_DISPLAY_NAMES: Record<(typeof ECOSYSTEM_VALUES)[number], string>
   rust: "Rust",
   python: "Python",
   go: "Go",
+  crystal: "Crystal",
   java: "Java",
+  ruby: "Ruby",
+  php: "PHP",
   elixir: "Elixir",
   dotnet: ".NET",
 };
@@ -56,7 +61,9 @@ export const COMPARISON_COUNTS = {
   databases: countUniqueSelectableOptions((category) => category === "database"),
   orms: countUniqueSelectableOptions((category) => matchesCategoryFamily(category, "orm")),
   apis: countUniqueSelectableOptions((category) => matchesCategoryFamily(category, "api")),
-  authProviders: countUniqueSelectableOptions((category) => matchesCategoryFamily(category, "auth")),
+  authProviders: countUniqueSelectableOptions((category) =>
+    matchesCategoryFamily(category, "auth"),
+  ),
   paymentProviders: countUniqueSelectableOptions((category) => category === "payments"),
   aiIntegrations: countUniqueSelectableOptions((category) => matchesCategoryFamily(category, "ai")),
   deployTargets: countUniqueSelectableOptions((category) => category.endsWith("Deploy")),

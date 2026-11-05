@@ -16,19 +16,23 @@ Run the narrowest checks that cover the changed area:
 For changes that affect stack options, generated output, compatibility, or preview correctness, also run:
 
 ```bash
+bun run test
 bun run test:release
 ```
 
-The root `package.json` is authoritative for the lane's exact composition. It builds core packages
-and checks CLI startup, docs/plugin/workflow contracts, public evidence, capability claims,
-recommendations, update qualification, lifecycle/MCP contracts, template output, and builder parity.
+The root `package.json` is authoritative for the lane's exact composition. It builds core packages,
+runs `bun run test:scripts` (every test under `scripts/` and `testing/`), and runs the release-only
+validators: agent docs, plugin bundle, preview and release workflows, public evidence claims,
+capability evidence, recommendations, update qualification and actions, mutation contracts, the
+built MCP protocol, and tech links. Package tests, including template output and builder parity,
+run in `bun run test`, which CI runs on every pull request.
 Runtime and published-package proof have separate commands; passing structural tests does not
 establish that a generated application runs.
 
 Additional focused release-facing checks:
 
 - `bun run test:plugin-bundle` validates the local installable agent plugin manifest, marketplace entry, MCP command, icon paths, and bundled skills.
-- `bun run test:ai-examples` runs the CLI AI/chat example suite from the `apps/cli` package context so workspace package resolution matches local package scripts.
+- `bun test test/generation/examples.test.ts` from `apps/cli` runs the CLI AI/chat example suite with the package's own workspace resolution.
 - `bun test apps/cli/test/lifecycle/add-history-commands.test.ts` covers the user-facing `add` command, including stack-update dry-runs and apply flows.
 - `bun test apps/cli/test/lifecycle/stack-update.test.ts` covers the lower-level planner/apply conflict model and create-time stack-field coverage.
 - `bun run test:published-package -- --specifier <npm-tag-or-version>` validates the already-published npm package through Bun, npm, and pnpm scaffold runs. Use this only after a package has been published to npm.
@@ -46,15 +50,16 @@ Additional focused release-facing checks:
 
 ## Release workflow expectations
 
-- Pull requests run lint. The final `Build Check` preserves the required check name and follows
-  the lint result without requiring tests or builds.
+- Pull requests run lint and tests. The final `Build Check` preserves the required check name and
+  fails when either fails; Release Guard and the web build run only after pushes to main.
 - After pushes to main, `.github/workflows/test.yaml` runs `Release Guard`, lint, tests, and the web
   build in parallel. `Build Check` fails when any prerequisite fails.
   Release Guard owns the core package and CLI builds; Web Build owns the Vercel-parity web build.
 - `.github/workflows/release.yaml` starts after successful required CI on the exact main-branch
   release commit. It packs artifacts, runs generated-project proof, captures upgrade fixtures,
   qualifies the previous fixture, and binds the evidence into a SHA-bound release receipt before
-  publication. It does not independently rerun the root `test:release` command.
+  publication. It also runs the native Crystal, Ruby, and PHP HTTP proofs described in
+  `testing/README.md`. It does not independently rerun the root `test:release` command.
 - `.github/workflows/pr-preview-build.yaml` builds preview tarballs without secrets. Publication
   requires the protected `npm-preview` environment and its package-scoped credential. Preview and
   release workflows run published-package smoke checks after npm publication. Verify live
@@ -107,9 +112,7 @@ The report classifies likely backport candidates into `reliability`, `dependency
 1. Pick commits from the report by area and impact. Prefer reliability, DX, and compatibility fixes first; skip upstream architectural shifts that conflict with this fork.
 2. Implement manually - avoid large cherry-picks unless the change is isolated and low-risk.
 3. Keep Better-Fullstack-specific naming and architecture choices intact.
-4. Run affected package checks and `bun run test:release` for stack/generator changes. Add the web
+4. Run affected package checks, `bun run test`, and `bun run test:release` for stack/generator changes. Add the web
    build when routes or bundles change. Root `bun run check` formats the whole repository; avoid it
    for a scoped backport in a dirty worktree.
 5. Keep each backport focused by theme. Commit, push, and PR creation need the user's authorization.
-
-Use `docs/projects/README.md` as the stable entry point for current project documents.

@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Environment;
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+Environment::load(dirname(__DIR__) . '/.env');
+$host = getenv('HOST') ?: '127.0.0.1';
+$port = filter_var(getenv('PORT') ?: '8080', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 65535]]);
+if ($port === false || filter_var($host, FILTER_VALIDATE_IP) === false) {
+    fwrite(STDERR, "HOST must be an IP address and PORT must be between 1 and 65535.\n");
+    exit(1);
+}
+$address = str_contains($host, ':') ? "[{$host}]:{$port}" : "{$host}:{$port}";
+$command = [PHP_BINARY, '-S', $address, '-t', 'public', 'public/index.php'];
+$process = proc_open($command, [STDIN, STDOUT, STDERR], $pipes, dirname(__DIR__));
+if (!is_resource($process)) throw new RuntimeException('Cannot start PHP server.');
+exit(proc_close($process));

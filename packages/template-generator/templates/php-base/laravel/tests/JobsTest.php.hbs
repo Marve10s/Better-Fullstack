@@ -1,0 +1,57 @@
+{{#if (ne phpJobQueue "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+{{#if (ne phpJobQueue "laravel-queue")}}
+use App\JobQueue;
+{{else}}
+use Illuminate\Foundation\Testing\RefreshDatabase;
+{{/if}}
+use Illuminate\Foundation\Testing\TestCase;
+
+final class JobsTest extends TestCase
+{
+{{#if (eq phpJobQueue "laravel-queue")}}
+    use RefreshDatabase;
+
+    public $mockConsoleOutput = false;
+
+{{/if}}
+    protected function setUp(): void
+    {
+{{#if (eq phpJobQueue "laravel-queue")}}
+        putenv('APP_ENV=testing');
+        putenv('DB_CONNECTION=sqlite');
+        putenv('DB_DATABASE=:memory:');
+        putenv('QUEUE_CONNECTION=database');
+        putenv('CACHE_STORE=array');
+{{/if}}
+        parent::setUp();
+        putenv('QUEUE_PATH=' . sys_get_temp_dir() . '/jobs-' . bin2hex(random_bytes(6)));
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('QUEUE_PATH');
+        parent::tearDown();
+    }
+
+    public function testWorkerProcessesAQueuedJob(): void
+    {
+        $id = $this->postJson('/api/jobs')->assertStatus(202)->json('id');
+        $this->getJson('/api/jobs/' . $id)->assertExactJson(['id' => $id, 'status' => 'queued']);
+{{#if (eq phpJobQueue "laravel-queue")}}
+        $this->assertDatabaseCount('jobs', 1);
+        self::assertSame(0, $this->artisan('queue:work', ['--stop-when-empty' => true]));
+        $this->assertDatabaseCount('jobs', 0);
+{{else}}
+        JobQueue::fromEnvironment('')->work(true);
+{{/if}}
+        $this->getJson('/api/jobs/' . $id)->assertOk()->assertJsonPath('status', 'done');
+        $this->getJson('/api/jobs/' . str_repeat('0', 32))->assertNotFound();
+    }
+}
+{{/if}}

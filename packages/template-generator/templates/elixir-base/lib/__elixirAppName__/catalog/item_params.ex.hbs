@@ -1,0 +1,42 @@
+{{#if (eq elixirValidation "peri")}}
+defmodule {{elixirModuleName}}.Catalog.ItemParams do
+  import Peri
+
+  defschema :item, %{
+    name: {:required, {:string, {:min, 2}}},
+    description: :string
+  }
+
+  def validate(attrs) when is_map(attrs) do
+    case item(attrs) do
+      {:ok, params} -> {:ok, params}
+      {:error, errors} -> {:error, Enum.map_join(errors, ", ", &Peri.Error.message/1)}
+    end
+  end
+
+  def validate(_attrs), do: {:error, "item attributes must be a map"}
+end
+{{/if}}
+{{#if (eq elixirValidation "tarams")}}
+defmodule {{elixirModuleName}}.Catalog.ItemParams do
+  @schema %{
+    name: [type: :string, required: true, length: [min: 2, max: 120]],
+    description: :string
+  }
+
+  def validate(attrs) when is_map(attrs) do
+    case Tarams.cast(attrs, @schema) do
+      {:ok, params} -> {:ok, params}
+      {:error, errors} -> {:error, format_errors(errors)}
+    end
+  end
+
+  def validate(_attrs), do: {:error, "item attributes must be a map"}
+
+  defp format_errors(errors) do
+    Enum.map_join(errors, ", ", fn {field, messages} ->
+      "#{field} #{Enum.join(List.wrap(messages), ", ")}"
+    end)
+  end
+end
+{{/if}}

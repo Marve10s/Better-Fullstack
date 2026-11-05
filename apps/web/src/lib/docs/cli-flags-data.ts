@@ -37,7 +37,10 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "go",
           "java",
           "elixir",
-          "dotnet"
+          "dotnet",
+          "php",
+          "ruby",
+          "crystal"
         ],
         "valueHint": null,
         "defaultValue": "typescript",
@@ -1283,7 +1286,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "none"
         ],
         "valueHint": null,
-        "defaultValue": "none",
+        "defaultValue": "axum",
         "multiple": false
       },
       {
@@ -1312,7 +1315,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
           "none"
         ],
         "valueHint": null,
-        "defaultValue": "none",
+        "defaultValue": "sea-orm",
         "multiple": false
       },
       {
@@ -2016,6 +2019,105 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
     ]
   },
   {
+    "id": "crystal",
+    "title": "Crystal flags",
+    "description": "Experimental Kemal, Lucky, Athena, or Marten HTTP service with Crystal and Shards.",
+    "flags": [
+      {
+        "flag": "--crystal-web-framework",
+        "summary": "Crystal HTTP framework.",
+        "values": [
+          "kemal",
+          "lucky",
+          "athena",
+          "marten",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "kemal",
+        "multiple": false
+      },
+      {
+        "flag": "--crystal-orm",
+        "summary": "Crystal database layer.",
+        "values": [
+          "crystal-db",
+          "avram",
+          "marten-orm",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--crystal-auth",
+        "summary": "Crystal authentication.",
+        "values": [
+          "jwt",
+          "kemal-session",
+          "marten-auth",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--crystal-testing",
+        "summary": "Crystal test tooling.",
+        "values": [
+          "spec",
+          "spectator",
+          "spec-kemal",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "spec",
+        "multiple": false
+      },
+      {
+        "flag": "--crystal-validation",
+        "summary": "Crystal input validation.",
+        "values": [
+          "athena-validator",
+          "active-model",
+          "marten-schema",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--crystal-cache",
+        "summary": "Crystal cache store.",
+        "values": [
+          "memory",
+          "file",
+          "redis",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--crystal-jobs",
+        "summary": "Crystal background jobs.",
+        "values": [
+          "sidekiq",
+          "mosquito",
+          "tasker",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      }
+    ]
+  },
+  {
     "id": "java",
     "title": "Java flags",
     "description": "Flags for `--ecosystem java`.",
@@ -2367,6 +2469,283 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
     ]
   },
   {
+    "id": "ruby",
+    "title": "Ruby flags",
+    "description": "Flags for `--ecosystem ruby`.",
+    "flags": [
+      {
+        "flag": "--ruby-web-framework",
+        "summary": "Ruby HTTP framework.",
+        "values": [
+          "sinatra",
+          "rails",
+          "roda",
+          "grape",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "sinatra",
+        "multiple": false
+      },
+      {
+        "flag": "--ruby-orm",
+        "summary": "Ruby ORM / database layer.",
+        "values": [
+          "active-record",
+          "sequel",
+          "rom",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--ruby-auth",
+        "summary": "Ruby authentication.",
+        "values": [
+          "jwt",
+          "omniauth",
+          "rodauth",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--ruby-testing",
+        "summary": "Ruby test framework.",
+        "values": [
+          "minitest",
+          "rspec",
+          "test-unit",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "minitest",
+        "multiple": false
+      },
+      {
+        "flag": "--ruby-validation",
+        "summary": "Ruby request validation.",
+        "values": [
+          "dry-validation",
+          "active-model",
+          "json-schemer",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--ruby-cache",
+        "summary": "Ruby cache store.",
+        "values": [
+          "redis",
+          "memcached",
+          "memory",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--ruby-job-queue",
+        "summary": "Ruby background job queue.",
+        "values": [
+          "sidekiq",
+          "resque",
+          "solid-queue",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--ruby-email",
+        "summary": "Ruby email delivery.",
+        "values": [
+          "mail",
+          "action-mailer",
+          "resend",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--ruby-logging",
+        "summary": "Ruby request logging.",
+        "values": [
+          "logger",
+          "semantic-logger",
+          "ougai",
+          "lograge",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "logger",
+        "multiple": false
+      },
+      {
+        "flag": "--ruby-http-client",
+        "summary": "Ruby HTTP client.",
+        "values": [
+          "faraday",
+          "httparty",
+          "httpx",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "id": "php",
+    "title": "PHP flags",
+    "description": "Flags for `--ecosystem php`.",
+    "flags": [
+      {
+        "flag": "--php-web-framework",
+        "summary": "PHP HTTP framework.",
+        "values": [
+          "slim",
+          "laravel",
+          "symfony",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "slim",
+        "multiple": false
+      },
+      {
+        "flag": "--php-orm",
+        "summary": "PHP ORM / database layer.",
+        "values": [
+          "eloquent",
+          "doctrine",
+          "cycle",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--php-auth",
+        "summary": "PHP authentication.",
+        "values": [
+          "firebase-jwt",
+          "lcobucci-jwt",
+          "symfony-security",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--php-testing",
+        "summary": "PHP test runner.",
+        "values": [
+          "phpunit",
+          "pest",
+          "codeception",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "phpunit",
+        "multiple": false
+      },
+      {
+        "flag": "--php-validation",
+        "summary": "PHP validation library.",
+        "values": [
+          "symfony-validator",
+          "respect-validation",
+          "laravel-validation",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--php-cache",
+        "summary": "PHP cache library.",
+        "values": [
+          "symfony-cache",
+          "laminas-cache",
+          "predis",
+          "laravel-cache",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--php-job-queue",
+        "summary": "PHP background job queue.",
+        "values": [
+          "symfony-messenger",
+          "enqueue-fs",
+          "laravel-queue",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--php-email",
+        "summary": "PHP email library.",
+        "values": [
+          "symfony-mailer",
+          "phpmailer",
+          "laravel-mail",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--php-logging",
+        "summary": "PHP logging (framework-specific).",
+        "values": [
+          "monolog",
+          "laravel-log",
+          "symfony-monolog",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--php-http-client",
+        "summary": "PHP HTTP client.",
+        "values": [
+          "guzzle",
+          "symfony-http-client",
+          "httplug-curl",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      }
+    ]
+  },
+  {
     "id": "elixir",
     "title": "Elixir flags",
     "description": "Flags for `--ecosystem elixir`.",
@@ -2445,6 +2824,7 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "oban",
           "quantum",
+          "exq",
           "none"
         ],
         "valueHint": null,
@@ -2457,6 +2837,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "values": [
           "ecto-changesets",
           "nimble-options",
+          "peri",
+          "tarams",
           "none"
         ],
         "valueHint": null,
@@ -2481,6 +2863,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Elixir JSON library.",
         "values": [
           "jason",
+          "elixir-json",
+          "jiffy",
           "none"
         ],
         "valueHint": null,
@@ -2562,6 +2946,8 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Elixir internationalization.",
         "values": [
           "gettext",
+          "linguist",
+          "ex-cldr-messages",
           "none"
         ],
         "valueHint": null,
@@ -2607,6 +2993,73 @@ export const CLI_FLAG_GROUPS: CliFlagGroup[] = [
         "summary": "Elixir clustering.",
         "values": [
           "libcluster",
+          "dns-cluster",
+          "distributed-erlang",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--elixir-logging",
+        "summary": "Elixir logging.",
+        "values": [
+          "logger-json",
+          "logger-file-backend",
+          "logster",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--elixir-cli",
+        "summary": "Elixir command-line tooling.",
+        "values": [
+          "option-parser",
+          "optimus",
+          "owl",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--elixir-templating",
+        "summary": "Elixir text templating engine.",
+        "values": [
+          "eex",
+          "solid-liquid",
+          "bbmustache",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--elixir-message-queue",
+        "summary": "Elixir message broker client.",
+        "values": [
+          "amqp",
+          "gnat",
+          "brod",
+          "none"
+        ],
+        "valueHint": null,
+        "defaultValue": "none",
+        "multiple": false
+      },
+      {
+        "flag": "--elixir-config",
+        "summary": "Elixir runtime configuration.",
+        "values": [
+          "dotenvy",
+          "skogsra",
+          "confex",
           "none"
         ],
         "valueHint": null,
@@ -2784,6 +3237,13 @@ export const CLI_FLAG_SUMMARY_MESSAGES: Record<string, () => string> = {
   "go:--go-templating": m.docsCliSummaryGoGoTemplating,
   "go:--go-proto-tooling": m.docsCliSummaryGoGoProtoTooling,
   "go:--go-di": m.docsCliSummaryGoGoDi,
+  "crystal:--crystal-web-framework": m.docsCliSummaryCrystalCrystalWebFramework,
+  "crystal:--crystal-orm": m.docsCliSummaryCrystalCrystalOrm,
+  "crystal:--crystal-auth": m.docsCliSummaryCrystalCrystalAuth,
+  "crystal:--crystal-testing": m.docsCliSummaryCrystalCrystalTesting,
+  "crystal:--crystal-validation": m.docsCliSummaryCrystalCrystalValidation,
+  "crystal:--crystal-cache": m.docsCliSummaryCrystalCrystalCache,
+  "crystal:--crystal-jobs": m.docsCliSummaryCrystalCrystalJobs,
   "java:--java-web-framework": m.docsCliSummaryJavaJavaWebFramework,
   "java:--java-language": m.docsCliSummaryJavaJavaLanguage,
   "java:--java-build-tool": m.docsCliSummaryJavaJavaBuildTool,
@@ -2806,6 +3266,26 @@ export const CLI_FLAG_SUMMARY_MESSAGES: Record<string, () => string> = {
   "dotnet:--dotnet-caching": m.docsCliSummaryDotnetDotnetCaching,
   "dotnet:--dotnet-deploy": m.docsCliSummaryDotnetDotnetDeploy,
   "dotnet:--dotnet-libraries": m.docsCliSummaryDotnetDotnetLibraries,
+  "ruby:--ruby-web-framework": m.docsCliSummaryRubyRubyWebFramework,
+  "ruby:--ruby-orm": m.docsCliSummaryRubyRubyOrm,
+  "ruby:--ruby-auth": m.docsCliSummaryRubyRubyAuth,
+  "ruby:--ruby-testing": m.docsCliSummaryRubyRubyTesting,
+  "ruby:--ruby-validation": m.docsCliSummaryRubyRubyValidation,
+  "ruby:--ruby-cache": m.docsCliSummaryRubyRubyCache,
+  "ruby:--ruby-job-queue": m.docsCliSummaryRubyRubyJobQueue,
+  "ruby:--ruby-email": m.docsCliSummaryRubyRubyEmail,
+  "ruby:--ruby-logging": m.docsCliSummaryRubyRubyLogging,
+  "ruby:--ruby-http-client": m.docsCliSummaryRubyRubyHttpClient,
+  "php:--php-web-framework": m.docsCliSummaryPhpPhpWebFramework,
+  "php:--php-orm": m.docsCliSummaryPhpPhpOrm,
+  "php:--php-auth": m.docsCliSummaryPhpPhpAuth,
+  "php:--php-testing": m.docsCliSummaryPhpPhpTesting,
+  "php:--php-validation": m.docsCliSummaryPhpPhpValidation,
+  "php:--php-cache": m.docsCliSummaryPhpPhpCache,
+  "php:--php-job-queue": m.docsCliSummaryPhpPhpJobQueue,
+  "php:--php-email": m.docsCliSummaryPhpPhpEmail,
+  "php:--php-logging": m.docsCliSummaryPhpPhpLogging,
+  "php:--php-http-client": m.docsCliSummaryPhpPhpHttpClient,
   "elixir:--elixir-web-framework": m.docsCliSummaryElixirElixirWebFramework,
   "elixir:--elixir-orm": m.docsCliSummaryElixirElixirOrm,
   "elixir:--elixir-auth": m.docsCliSummaryElixirElixirAuth,
@@ -2825,6 +3305,11 @@ export const CLI_FLAG_SUMMARY_MESSAGES: Record<string, () => string> = {
   "elixir:--elixir-application-framework": m.docsCliSummaryElixirElixirApplicationFramework,
   "elixir:--elixir-documentation": m.docsCliSummaryElixirElixirDocumentation,
   "elixir:--elixir-clustering": m.docsCliSummaryElixirElixirClustering,
+  "elixir:--elixir-logging": m.docsCliSummaryElixirElixirLogging,
+  "elixir:--elixir-cli": m.docsCliSummaryElixirElixirCli,
+  "elixir:--elixir-templating": m.docsCliSummaryElixirElixirTemplating,
+  "elixir:--elixir-message-queue": m.docsCliSummaryElixirElixirMessageQueue,
+  "elixir:--elixir-config": m.docsCliSummaryElixirElixirConfig,
   "elixir:--elixir-deploy": m.docsCliSummaryElixirElixirDeploy,
   "elixir:--elixir-libraries": m.docsCliSummaryElixirElixirLibraries,
 };

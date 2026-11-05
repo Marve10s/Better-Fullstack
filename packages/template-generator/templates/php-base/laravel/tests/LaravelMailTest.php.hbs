@@ -1,0 +1,27 @@
+{{#if (eq phpEmail "laravel-mail")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\WelcomeMailer;
+use Illuminate\Foundation\Testing\TestCase;
+
+final class LaravelMailTest extends TestCase
+{
+    public $mockConsoleOutput = false;
+
+    public function testSendCommandDeliversTheWelcomeEmail(): void
+    {
+        config(['mail.default' => 'array']);
+        self::assertSame(0, $this->artisan('mail:send', ['to' => 'ada@example.com']));
+        $messages = app('mail.manager')->mailer('array')->getSymfonyTransport()->messages();
+        self::assertCount(1, $messages);
+        $email = $messages[0]->getOriginalMessage();
+        self::assertSame('ada@example.com', $email->getTo()[0]->getAddress());
+        self::assertSame(WelcomeMailer::SUBJECT, $email->getSubject());
+        self::assertSame(1, $this->artisan('mail:send', ['to' => 'not-an-email']));
+    }
+}
+{{/if}}

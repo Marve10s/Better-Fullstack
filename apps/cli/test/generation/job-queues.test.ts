@@ -97,7 +97,7 @@ const GRAPH_REJECTED = [
       "backend.runtime:typescript:node",
       "backend.jobQueue:typescript:upstash-qstash",
     ],
-    error: "Upstash QStash is generated for Hono, Express, Fastify, and Elysia backends",
+    error: "Upstash QStash is generated for Hono, Express, Fastify, Elysia, and full-stack framework backends",
   },
 ] as const;
 
@@ -334,7 +334,7 @@ describe("generated job queues", () => {
     },
     {
       options: { backend: "nestjs", runtime: "node", jobQueue: "upstash-qstash" },
-      error: "Upstash QStash is generated for Hono, Express, Fastify, and Elysia backends",
+      error: "Upstash QStash is generated for Hono, Express, Fastify, Elysia, and full-stack framework backends",
     },
   ] as const;
 
@@ -382,20 +382,21 @@ describe("generated job queues", () => {
     ).toBe("pg-boss");
   });
 
-  test("the public create API rejects Hatchet on a fullstack backend", async () => {
+  test("the public create API rejects Hatchet on a fullstack deployment that cannot run its worker", async () => {
     const result = await runTRPCTest(
       createCustomConfig({
         projectName: "jobs-hatchet-self",
         frontend: ["next"],
         backend: "self",
         runtime: "none",
+        webDeploy: "vercel",
         jobQueue: "hatchet",
       }),
     );
 
     expect(result.success).toBe(false);
     expect(result.error).toContain(
-      "Hatchet is generated for Hono, Express, Fastify, and Elysia backends",
+      "Hatchet requires a separate worker process; generated vercel deployments do not start one",
     );
   });
 
@@ -415,6 +416,16 @@ describe("generated job queues", () => {
     expect(
       promptValues({ backend: "nestjs", runtime: "node", database: "postgres" }),
     ).not.toContain("upstash-qstash");
+
+    const selfOnVercel = promptValues({
+      backend: "self",
+      runtime: "none",
+      database: "postgres",
+      webDeploy: "vercel",
+    });
+    expect(selfOnVercel).toContain("upstash-qstash");
+    expect(selfOnVercel).not.toContain("pg-boss");
+    expect(selfOnVercel).not.toContain("hatchet");
   });
 
   test("graph-only input is validated against the job queue the generator uses", async () => {
@@ -491,12 +502,13 @@ describe("generated job queues", () => {
 
     const backends = resolveBackendPrompt({ frontends: ["next"], jobQueue: "pg-boss" });
     expect(backends.options.map((option) => option.value)).toEqual([
+      "self",
       "hono",
       "express",
       "fastify",
       "elysia",
     ]);
-    expect(backends.initialValue).toBe("hono");
+    expect(backends.initialValue).toBe("self");
 
     const runtimes = resolveRuntimePrompt({ backend: "hono", jobQueue: "pg-boss" });
     expect(runtimes.options.map((option) => option.value)).toEqual(["bun", "node"]);

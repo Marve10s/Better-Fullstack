@@ -1,0 +1,52 @@
+{{#if (ne phpAuth "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\TokenVerifier;
+use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Testing\TestResponse;
+
+final class AuthTest extends TestCase
+{
+    private const string SECRET = 'test-secret-with-at-least-32-bytes!';
+
+    private function me(?string $authorization): TestResponse
+    {
+        config(['jwt.secret' => self::SECRET, 'jwt.issuer' => 'issuer', 'jwt.audience' => 'api']);
+        return $this->call('GET', '/api/me', server: $authorization === null ? [] : ['HTTP_AUTHORIZATION' => $authorization]);
+    }
+
+    public function testAllowsBearerAuthorizationInPreflight(): void
+    {
+        config(['cors.allowed_origins' => 'http://localhost:5173']);
+        $response = $this->call('OPTIONS', '/api/me', server: [
+            'HTTP_ORIGIN' => 'http://localhost:5173',
+            'HTTP_ACCESS_CONTROL_REQUEST_METHOD' => 'GET',
+            'HTTP_ACCESS_CONTROL_REQUEST_HEADERS' => 'authorization',
+        ]);
+        $response->assertNoContent()->assertHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+        self::assertContains('authorization', array_map('trim', explode(',', strtolower((string) $response->headers->get('Access-Control-Allow-Headers')))));
+    }
+
+    public function testAcceptsASignedTokenForTheConfiguredAudience(): void
+    {
+        $token = (new TokenVerifier(self::SECRET, 'issuer', 'api'))->issue('ada');
+        $this->me('Bearer ' . $token)->assertOk()->assertExactJson(['subject' => 'ada']);
+    }
+
+    public function testRejectsMissingTamperedForeignAndExpiredTokens(): void
+    {
+        $tokens = new TokenVerifier(self::SECRET, 'issuer', 'api');
+        $token = $tokens->issue('ada');
+        foreach ([null, $token, 'Bearer ' . $token . 'x', 'Bearer ' . (new TokenVerifier(self::SECRET, 'issuer', 'other'))->issue('ada'), 'Bearer ' . (new TokenVerifier(str_repeat('x', 32), 'issuer', 'api'))->issue('ada'), 'Bearer ' . $tokens->issue('ada', -60)] as $authorization) {
+            $this->me($authorization)
+                ->assertUnauthorized()
+                ->assertHeader('WWW-Authenticate', 'Bearer')
+                ->assertExactJson(['error' => 'unauthorized']);
+        }
+    }
+}
+{{/if}}

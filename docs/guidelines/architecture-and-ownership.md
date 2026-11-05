@@ -105,8 +105,8 @@ belongs in the CLI or shared packages.
 - Browser state belongs in web builder modules; reusable stack semantics belong in shared types.
 - User documentation belongs in `apps/web/content`; agent engineering rules belong in
   `docs/guidelines`.
-- Unfinished designs live in `docs/projects/backlog/` or `docs/projects/active/`. Delete completed
-  plans after preserving current constraints in their owning guide; Git history is the archive.
+- The repository keeps no plan or roadmap documents. Record durable constraints in the owning
+  guideline; Git history, pull requests, and release notes are the record of what shipped.
 - Keep `docs/reference/` for current contracts and operations, not speculative research.
 
 ## Dependency Direction

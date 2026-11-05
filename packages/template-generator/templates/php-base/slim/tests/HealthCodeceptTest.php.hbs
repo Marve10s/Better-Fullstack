@@ -1,0 +1,21 @@
+{{#if (eq phpTesting "codeception")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Application;
+use Codeception\Test\Unit;
+use Slim\Psr7\Factory\ServerRequestFactory;
+
+final class HealthCodeceptTest extends Unit
+{
+    public function testReportsHealthAsJson(): void
+    {
+        $response = Application::create()->handle((new ServerRequestFactory())->createServerRequest('GET', '/health'));
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(['status' => 'ok', 'framework' => 'slim'], json_decode((string) $response->getBody(), true, 32, JSON_THROW_ON_ERROR));
+    }
+}
+{{/if}}

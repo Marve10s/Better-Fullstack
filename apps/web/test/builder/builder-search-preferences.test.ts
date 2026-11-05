@@ -33,6 +33,53 @@ describe("builder search preferences", () => {
     expect(loadBuilderSearchPreferences(storage)).toEqual({ typescript: "auth", rust: "axum" });
   });
 
+  it("works without browser storage", () => {
+    expect(loadBuilderSearchPreferences(null)).toEqual({});
+    expect(() => saveBuilderSearchPreferences({ rust: "axum" }, null)).not.toThrow();
+  });
+
+  it("ignores storage read failures", () => {
+    const storage = {
+      getItem: () => {
+        throw new DOMException("Storage is blocked", "SecurityError");
+      },
+      setItem: () => {},
+    };
+
+    expect(loadBuilderSearchPreferences(storage)).toEqual({});
+  });
+
+  it("ignores storage write failures", () => {
+    const storage = {
+      getItem: () => null,
+      setItem: () => {
+        throw new DOMException("Storage is full", "QuotaExceededError");
+      },
+    };
+
+    expect(() => saveBuilderSearchPreferences({ rust: "axum" }, storage)).not.toThrow();
+  });
+
+  it("ignores failures when accessing browser storage", () => {
+    const originalWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: {
+        get localStorage() {
+          throw new DOMException("Storage is blocked", "SecurityError");
+        },
+      },
+    });
+
+    try {
+      expect(loadBuilderSearchPreferences()).toEqual({});
+      expect(() => saveBuilderSearchPreferences({ rust: "axum" })).not.toThrow();
+    } finally {
+      if (originalWindow) Object.defineProperty(globalThis, "window", originalWindow);
+      else Reflect.deleteProperty(globalThis, "window");
+    }
+  });
+
   it("ignores malformed stored values", () => {
     expect(parseBuilderSearchPreferences("not-json")).toEqual({});
     expect(parseBuilderSearchPreferences('{"typescript":"auth","rust":4}')).toEqual({

@@ -113,6 +113,13 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
     goTemplating: "none",
     goProtoTooling: "none",
     goDI: "none",
+    crystalWebFramework: "none",
+    crystalOrm: "none",
+    crystalAuth: "none",
+    crystalTesting: "none",
+    crystalValidation: "none",
+    crystalCache: "none",
+    crystalJobs: "none",
     javaWebFramework: "none",
     javaBuildTool: "none",
     javaOrm: "none",
@@ -121,6 +128,26 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
     javaLogging: "none",
     javaLibraries: [],
     javaTestingLibraries: [],
+    rubyWebFramework: ecosystem === "ruby" ? "sinatra" : "none",
+    rubyOrm: "none",
+    rubyAuth: "none",
+    rubyTesting: ecosystem === "ruby" ? "minitest" : "none",
+    rubyValidation: "none",
+    rubyCache: "none",
+    rubyJobQueue: "none",
+    rubyEmail: "none",
+    rubyLogging: "none",
+    rubyHttpClient: "none",
+    phpWebFramework: ecosystem === "php" ? "slim" : "none",
+    phpOrm: "none",
+    phpAuth: "none",
+    phpTesting: ecosystem === "php" ? "phpunit" : "none",
+    phpValidation: "none",
+    phpCache: "none",
+    phpJobQueue: "none",
+    phpEmail: "none",
+    phpLogging: "none",
+    phpHttpClient: "none",
     elixirWebFramework: "none",
     elixirOrm: "none",
     elixirAuth: "none",
@@ -140,6 +167,11 @@ export function makeBaseConfig(name: string, ecosystem: Ecosystem): ProjectConfi
     elixirApplicationFramework: "none",
     elixirDocumentation: "none",
     elixirClustering: "none",
+    elixirLogging: "none",
+    elixirConfig: "none",
+    elixirMessageQueue: "none",
+    elixirTemplating: "none",
+    elixirCli: "none",
     elixirDeploy: "none",
     elixirLibraries: [],
     dotnetWebFramework: "none",
@@ -168,6 +200,7 @@ type PresetDef = {
 export type PresetGroupId = "pr-core" | "pr-broad" | "all";
 
 const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
+  "ruby-sinatra": { ecosystem: "ruby", overrides: { rubyWebFramework: "sinatra" } },
   "tanstack-fullstack": {
     ecosystem: "typescript",
     overrides: {
@@ -903,6 +936,11 @@ const SMOKE_TEST_PRESETS: Record<string, PresetDef> = {
       elixirApplicationFramework: "none",
       elixirDocumentation: "ex_doc",
       elixirClustering: "none",
+      elixirLogging: "none",
+      elixirConfig: "none",
+      elixirMessageQueue: "none",
+      elixirTemplating: "none",
+      elixirCli: "none",
       elixirDeploy: "none",
     },
   },
@@ -1062,6 +1100,7 @@ const PRESET_GROUPS = {
     "hono-node-prisma-docker",
   ],
   "pr-broad": [
+    "ruby-sinatra",
     "nextjs-minimal",
     "next-payload",
     "sveltekit",
@@ -1126,10 +1165,21 @@ function resolvePresetIds(presetId: string): string[] | null {
   return null;
 }
 
-export function getPresetCombos(presetId: string): ComboCandidate[] {
+export interface PresetPartition {
+  index: number;
+  total: number;
+}
+
+export function getPresetCombos(presetId: string, partition?: PresetPartition): ComboCandidate[] {
   const resolvedPresetIds = resolvePresetIds(presetId);
   if (resolvedPresetIds) {
-    return resolvedPresetIds.map((id) => buildSinglePresetCombo(id));
+    // Stride by index so each shard mixes ecosystems and heavy/light presets
+    // instead of inheriting the grouped list's ordering.
+    const ids =
+      partition && partition.total > 1
+        ? resolvedPresetIds.filter((_, i) => i % partition.total === partition.index)
+        : resolvedPresetIds;
+    return ids.map((id) => buildSinglePresetCombo(id));
   }
 
   const def = SMOKE_TEST_PRESETS[presetId];

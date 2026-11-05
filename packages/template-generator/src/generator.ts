@@ -1,16 +1,23 @@
 import type { ProjectConfig, StackPart } from "@better-fullstack/types";
 
 import {
-  hasJavaScriptWorkspaceRoot,
+  getCrystalSelectionIssue,
+  getRubyRecipeIssue,
+  getPhpRecipeIssue,
+  parseStackPartSpecs,
+  formatStackGraphIssue,
   getCodeQualitySelectionIssue,
+  getRoleTargetPath,
   getShadcnLintFrontendIssue,
   getShadcnLintGraphFrontendIssue,
-  toolingRequiresJavaScriptWorkspace,
-  formatStackGraphIssue,
-  getRoleTargetPath,
+  getStandaloneBackendEcosystem,
+  hasJavaScriptWorkspaceRoot,
+  getBrowserExtensionRecipeIssue,
+  getSelectedBrowserExtensions,
+  isBrowserExtension,
   hasVitePlusWorkspaceRoot,
   isToolingOverlayOnly,
-  parseStackPartSpecs,
+  toolingRequiresJavaScriptWorkspace,
   stackGraphToLegacyProjectConfigForEcosystem,
   validateStackParts,
 } from "@better-fullstack/types";
@@ -47,8 +54,11 @@ import {
   processRustBaseTemplate,
   processPythonBaseTemplate,
   processGoBaseTemplate,
+  processCrystalBaseTemplate,
   processJavaBaseTemplate,
   processDotnetBaseTemplate,
+  processRubyBaseTemplate,
+  processPhpBaseTemplate,
   processElixirBaseTemplate,
   processFrontendTemplates,
   processGraphNativeAppTemplates,
@@ -67,6 +77,7 @@ import {
   processLoggingTemplates,
   processObservabilityTemplates,
   processRateLimitTemplates,
+  processCachingTemplates,
   processBotProtectionTemplates,
   processFeatureFlagsTemplates,
   processIntegrationsTemplates,
@@ -108,8 +119,11 @@ const ECOSYSTEM_BASE_TEMPLATE_PROCESSORS = {
   rust: processRustBaseTemplate,
   python: processPythonBaseTemplate,
   go: processGoBaseTemplate,
+  crystal: processCrystalBaseTemplate,
   java: processJavaBaseTemplate,
   dotnet: processDotnetBaseTemplate,
+  ruby: processRubyBaseTemplate,
+  php: processPhpBaseTemplate,
   elixir: processElixirBaseTemplate,
 } satisfies Record<NonTypeScriptTemplateEcosystem, EcosystemBaseTemplateProcessor>;
 
@@ -145,7 +159,13 @@ function validateGraphContainerAddons(config: ProjectConfig): string[] {
 
 function validateGraphRenderingSupport(config: ProjectConfig): string[] {
   return validateStackParts(config.stackParts ?? [])
-    .issues.filter((issue) => issue.code === "UNSUPPORTED_REPEATED_PRIMARY")
+    .issues.filter(
+      (issue) =>
+        issue.code === "UNSUPPORTED_REPEATED_PRIMARY" ||
+        issue.code === "UNSUPPORTED_TARGET_PATH" ||
+        issue.code === "OVERLAPPING_TARGET_PATH" ||
+        issue.code === "INVALID_TARGET_PATH",
+    )
     .map(formatStackGraphIssue);
 }
 
@@ -333,7 +353,9 @@ async function processGraphTemplates(
             pythonPackageManager: config.pythonPackageManager ?? "uv",
           }
         : projectedConfig;
-    await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[ecosystem](vfs, templates, backendConfig, targetPath);
+    const templateConfig =
+      ecosystem === "ruby" ? { ...backendConfig, stackParts: config.stackParts } : backendConfig;
+    await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[ecosystem](vfs, templates, templateConfig, targetPath);
   }
 
   // Pin the backend's CORS to the web frontend's dev origin (must run after the
@@ -419,6 +441,7 @@ async function processTypeScriptWorkspaceTemplates(
   await processLoggingTemplates(vfs, templates, config);
   await processObservabilityTemplates(vfs, templates, config);
   await processRateLimitTemplates(vfs, templates, config);
+  await processCachingTemplates(vfs, templates, config);
   await processBotProtectionTemplates(vfs, templates, config);
   await processFeatureFlagsTemplates(vfs, templates, config);
   await processIntegrationsTemplates(vfs, templates, config);
@@ -444,9 +467,36 @@ async function processTypeScriptWorkspaceTemplates(
   processCatalogs(vfs, config);
 }
 
+function resolveGenerationConfig(config: ProjectConfig): ProjectConfig {
+  const ecosystem = getStandaloneBackendEcosystem(config.stackParts);
+  if (!ecosystem || isToolingOverlayOnly(config.stackParts)) return config;
+  const projected = withGraphAddonSelections(
+    config,
+    stackGraphToLegacyProjectConfigForEcosystem(config, ecosystem),
+  );
+  return {
+    ...projected,
+    examples: config.examples,
+    stackParts: undefined,
+  };
+}
+
 export async function generateVirtualProject(options: GeneratorOptions): Promise<GeneratorResult> {
   try {
-    const { config, templates } = options;
+    const rubyIssue = getRubyRecipeIssue(options.config);
+    if (rubyIssue) return { success: false, error: rubyIssue };
+
+    const { config: requestedConfig, templates } = options;
+    const browserExtensions = getSelectedBrowserExtensions(requestedConfig);
+    const config = {
+      ...requestedConfig,
+      addons: [
+        ...requestedConfig.addons.filter((addon) => !isBrowserExtension(addon)),
+        ...browserExtensions,
+      ],
+    };
+    const extensionIssue = getBrowserExtensionRecipeIssue(config);
+    if (extensionIssue) return { success: false, error: extensionIssue };
 
     if (!templates || templates.size === 0) {
       return {
@@ -454,6 +504,9 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
         error: "No templates provided. Templates must be passed via the templates option.",
       };
     }
+
+    const crystalIssue = getCrystalSelectionIssue(config);
+    if (crystalIssue) return { success: false, error: crystalIssue };
 
     const usesGraphParts =
       Boolean(config.stackParts?.length) && !isToolingOverlayOnly(config.stackParts);
@@ -519,49 +572,59 @@ export async function generateVirtualProject(options: GeneratorOptions): Promise
       }
     }
 
-    const vfs = new VirtualFileSystem();
+    const phpIssue = getPhpRecipeIssue(config);
+    if (phpIssue) return { success: false, error: phpIssue };
+    if (config.stackParts?.some((part) => part.ecosystem === "php")) {
+      const phpGraphIssues = validateStackParts(config.stackParts).issues;
+      if (phpGraphIssues.length > 0)
+        return { success: false, error: phpGraphIssues.map(formatStackGraphIssue).join("\n") };
+    }
 
-    if (usesGraphParts) {
-      await processGraphTemplates(vfs, templates, config);
-    } else if (config.ecosystem in ECOSYSTEM_BASE_TEMPLATE_PROCESSORS) {
-      await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[config.ecosystem as NonTypeScriptTemplateEcosystem](
-        vfs,
-        templates,
-        config,
-      );
+    const vfs = new VirtualFileSystem();
+    const generationConfig = resolveGenerationConfig(config);
+    const rendersGraph = usesGraphParts && generationConfig === config;
+
+    if (rendersGraph) {
+      await processGraphTemplates(vfs, templates, generationConfig);
+    } else if (generationConfig.ecosystem in ECOSYSTEM_BASE_TEMPLATE_PROCESSORS) {
+      await ECOSYSTEM_BASE_TEMPLATE_PROCESSORS[
+        generationConfig.ecosystem as NonTypeScriptTemplateEcosystem
+      ](vfs, templates, generationConfig);
     } else {
       // TypeScript and React Native ecosystems use package.json and TS project structure.
-      await processBaseTemplate(vfs, templates, config);
-      await processTypeScriptWorkspaceTemplates(vfs, templates, config, {
-        addonConfig: config,
+      await processBaseTemplate(vfs, templates, generationConfig);
+      await processTypeScriptWorkspaceTemplates(vfs, templates, generationConfig, {
+        addonConfig: generationConfig,
         includeDatabaseTemplates: true,
       });
 
       // Collapse the monorepo layout into a flat single-app repo when the stack
       // qualifies (thin self app). Runs last so it operates on the complete,
       // valid monorepo tree; a no-op for the default monorepo shape.
-      if (qualifiesForSingleApp(config)) {
-        flattenSingleApp(vfs, config);
+      if (qualifiesForSingleApp(generationConfig)) {
+        flattenSingleApp(vfs, generationConfig);
       }
     }
 
     if (
-      !usesGraphParts &&
-      config.ecosystem !== "typescript" &&
-      config.ecosystem !== "react-native"
+      !rendersGraph &&
+      generationConfig.ecosystem !== "typescript" &&
+      generationConfig.ecosystem !== "react-native"
     ) {
-      await processAddonTemplates(vfs, templates, config);
-      processEnvVariables(vfs, config);
+      if (generationConfig.ecosystem !== "php") {
+        await processAddonTemplates(vfs, templates, generationConfig);
+        processEnvVariables(vfs, generationConfig);
+      }
     }
 
-    processReadme(vfs, config);
-    processAiDocs(vfs, config);
+    processReadme(vfs, generationConfig);
+    processAiDocs(vfs, generationConfig);
 
     const tree: VirtualFileTree = {
-      root: vfs.toTree(config.projectName),
+      root: vfs.toTree(generationConfig.projectName),
       fileCount: vfs.getFileCount(),
       directoryCount: vfs.getDirectoryCount(),
-      config,
+      config: generationConfig,
     };
 
     return { success: true, tree };

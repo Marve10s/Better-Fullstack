@@ -79,19 +79,32 @@ const JAVA_RESERVED_WORDS = new Set([
 ]);
 
 export function processReadme(vfs: VirtualFileSystem, config: ProjectConfig): void {
+  if (
+    config.ecosystem === "php" &&
+    !config.stackParts?.some((part) => part.role === "frontend" || part.role === "mobile") &&
+    vfs.exists("README.md")
+  )
+    return;
   let content: string;
   if (config.stackParts?.length && !isToolingOverlayOnly(config.stackParts)) {
     content = generateGraphReadmeContent(config);
+  } else if (config.ecosystem === "ruby" && vfs.exists("README.md")) {
+    return;
   } else if (config.ecosystem === "rust") {
     content = generateRustReadmeContent(config);
   } else if (config.ecosystem === "python") {
     content = generatePythonReadmeContent(config);
   } else if (config.ecosystem === "go") {
     content = generateGoReadmeContent(config);
+  } else if (config.ecosystem === "crystal" && vfs.exists("README.md")) {
+    return;
   } else if (config.ecosystem === "java") {
     content = generateJavaReadmeContent(config);
   } else if (config.ecosystem === "elixir") {
+    if (vfs.exists("README.md")) return;
     content = generateElixirReadmeContent(config);
+  } else if (config.ecosystem === "dotnet" && vfs.exists("README.md")) {
+    return;
   } else {
     content = generateReadmeContent(config);
   }
@@ -582,22 +595,29 @@ ${generateScriptsList(packageManagerRunCmd, database, orm, hasWeb, hasNative, ad
 }
 
 function generateJobQueueSection(options: ProjectConfig, packageManagerRunCmd: string): string {
-  const run = (script: string) => `cd apps/server && ${packageManagerRunCmd} ${script}`;
-  const productionWorker = `
+  const isSelfBackend = options.backend === "self";
+  const appDir = isSelfBackend ? "apps/web" : "apps/server";
+  const host = isSelfBackend ? "app" : "server";
+  const run = (script: string) => `cd ${appDir} && ${packageManagerRunCmd} ${script}`;
+  const productionWorker = isSelfBackend
+    ? `
+In production, run \`${run("jobs:worker")}\` as its own long-running process; the web app does not start it.
+`
+    : `
 In production, \`build\` also compiles the worker to \`apps/server/dist/jobs/worker.mjs\`; start it with \`${run("jobs:worker:start")}\`.${
-    options.addons.includes("docker-compose")
-      ? " Docker Compose runs it from the server image as the `worker` service."
-      : ""
-  }
+        options.addons.includes("docker-compose")
+          ? " Docker Compose runs it from the server image as the `worker` service."
+          : ""
+      }
 `;
 
   if (options.jobQueue === "pg-boss") {
     return `
 ## Background jobs (pg-boss)
 
-Jobs are stored in your PostgreSQL database through \`DATABASE_URL\`; pg-boss creates its own \`pgboss\` schema on first start. The example \`welcome-email\` queue lives in \`apps/server/src/jobs/queue.ts\`, and \`enqueueWelcomeEmail()\` is the producer to call from your routes.
+Jobs are stored in your PostgreSQL database through \`DATABASE_URL\`; pg-boss creates its own \`pgboss\` schema on first start. The example \`welcome-email\` queue lives in \`${appDir}/src/jobs/queue.ts\`, and \`enqueueWelcomeEmail()\` is the producer to call from your routes.
 
-Run the worker as a separate long-running process next to the server, then enqueue a test job:
+Run the worker as a separate long-running process next to the ${host}, then enqueue a test job:
 
 \`\`\`bash
 ${run("jobs:worker")}
@@ -610,9 +630,9 @@ ${productionWorker}`;
     return `
 ## Background jobs (Hatchet)
 
-Create a Hatchet Cloud tenant or run Hatchet yourself, then set \`HATCHET_CLIENT_TOKEN\` in \`apps/server/.env\`. For a local Hatchet engine without TLS, also set \`HATCHET_CLIENT_TLS_STRATEGY=none\`. The example \`welcome-email\` task lives in \`apps/server/src/jobs/hatchet.ts\`, and \`enqueueWelcomeEmail()\` is the producer to call from your routes.
+Create a Hatchet Cloud tenant or run Hatchet yourself, then set \`HATCHET_CLIENT_TOKEN\` in \`${appDir}/.env\`. For a local Hatchet engine without TLS, also set \`HATCHET_CLIENT_TLS_STRATEGY=none\`. The example \`welcome-email\` task lives in \`${appDir}/src/jobs/hatchet.ts\`, and \`enqueueWelcomeEmail()\` is the producer to call from your routes.
 
-Run the worker as a separate long-running process next to the server, then enqueue a test run:
+Run the worker as a separate long-running process next to the ${host}, then enqueue a test run:
 
 \`\`\`bash
 ${run("jobs:worker")}
@@ -625,12 +645,12 @@ ${productionWorker}`;
     return `
 ## Background jobs (Upstash QStash)
 
-QStash delivers each job as a signed HTTP request to \`POST /api/jobs/welcome-email\` on the server, which verifies the signature before running the job. Set \`QSTASH_TOKEN\`, \`QSTASH_CURRENT_SIGNING_KEY\`, and \`QSTASH_NEXT_SIGNING_KEY\` from the [Upstash console](https://console.upstash.com/qstash), and set \`QSTASH_WEBHOOK_URL\` to the public URL of that route. QStash cannot reach \`localhost\`, so use a tunnel in development or the local QStash dev server (\`npx @upstash/qstash-cli dev\`) with \`QSTASH_URL=http://127.0.0.1:8080\` and the keys it prints.
+QStash delivers each job as a signed HTTP request to \`POST /api/jobs/welcome-email\` on the ${host}, which verifies the signature before running the job. Set \`QSTASH_TOKEN\`, \`QSTASH_CURRENT_SIGNING_KEY\`, and \`QSTASH_NEXT_SIGNING_KEY\` from the [Upstash console](https://console.upstash.com/qstash), and set \`QSTASH_WEBHOOK_URL\` to the public URL of that route. QStash cannot reach \`localhost\`, so use a tunnel in development or the local QStash dev server (\`npx @upstash/qstash-cli dev\`) with \`QSTASH_URL=http://127.0.0.1:8080\` and the keys it prints.
 
-\`publishWelcomeEmail()\` in \`apps/server/src/jobs/qstash.ts\` is the producer to call from your routes.${
+\`publishWelcomeEmail()\` in \`${appDir}/src/jobs/qstash.ts\` is the producer to call from your routes.${
       options.runtime === "workers"
         ? ""
-        : ` With the server running, publish a test job:
+        : ` With the ${host} running, publish a test job:
 
 \`\`\`bash
 ${run("jobs:enqueue")}
@@ -936,7 +956,7 @@ ${signInSetup}
 }
 
 const PASSPORT_SAME_SITE_NOTE =
-  "The Passport session cookie is `SameSite=Lax`, so the browser sends it to the API only when the web app and the API are on the same site, such as `app.example.com` and `api.example.com` (`localhost` on different ports also counts). If they are on different sites, serve the API from the web app's domain or proxy it there; setting the cookie to `sameSite: \"none\"` with `secure: true` in `apps/server/src/index.ts` also works but lets every site send it.";
+  'The Passport session cookie is `SameSite=Lax`, so the browser sends it to the API only when the web app and the API are on the same site, such as `app.example.com` and `api.example.com` (`localhost` on different ports also counts). If they are on different sites, serve the API from the web app\'s domain or proxy it there; setting the cookie to `sameSite: "none"` with `secure: true` in `apps/server/src/index.ts` also works but lets every site send it.';
 
 function generatePassportSetup(): string {
   return `

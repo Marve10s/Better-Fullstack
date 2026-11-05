@@ -1,7 +1,6 @@
 # Recipe generation contract
 
 This reference describes the implemented post-scaffold recipe workflow in `apps/cli/src/recipes/`.
-Product priority remains in `docs/next-updates-roadmap.md`.
 
 ## Authority
 

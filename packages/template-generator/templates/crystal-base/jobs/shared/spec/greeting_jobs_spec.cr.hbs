@@ -1,0 +1,37 @@
+require "spec"
+{{#if (or (eq crystalJobs "sidekiq") (eq crystalJobs "mosquito"))}}
+require "random/secure"
+
+ENV["JOBS_QUEUE"] = "bfs-spec-#{Random::Secure.hex(8)}"
+{{/if}}
+require "../src/greeting_jobs"
+{{#if (eq crystalJobs "mosquito")}}
+
+Mosquito.configure { |settings| settings.global_prefix = ENV["JOBS_QUEUE"] }
+{{/if}}
+
+describe GreetingJobs do
+  it "rejects invalid names and missing ids before touching the queue" do
+    GreetingJobs.enqueue(%({"name":"  "})).status.should eq(422)
+    GreetingJobs.status(nil).status.should eq(422)
+  end
+
+  it "reports a queued greeting as done once the job runs" do
+    queued = GreetingJobs.enqueue(%({"name":"Ada"}))
+    queued.status.should eq(202)
+    id = JSON.parse(queued.body)["id"].as_s
+    JSON.parse(GreetingJobs.status(id).body)["status"].as_s.should eq("queued")
+{{#if (eq crystalJobs "tasker")}}
+    sleep 100.milliseconds
+{{/if}}
+{{#if (eq crystalJobs "sidekiq")}}
+    GreetingJob.new.perform(id, "Ada")
+{{/if}}
+{{#if (eq crystalJobs "mosquito")}}
+    GreetingJob.new(id: id, name: "Ada").perform
+{{/if}}
+    done = JSON.parse(GreetingJobs.status(id).body)
+    done["status"].as_s.should eq("done")
+    done["message"].as_s.should eq("Hello, Ada!")
+  end
+end

@@ -16,9 +16,18 @@ import path from "node:path";
 
 import type { ProjectConfig } from "@/types";
 
-import { readBtsConfig, serializeBtsConfig } from "@/config/bts-config";
+import {
+  dropUnscaffoldedJavaScriptWorkspace,
+  readBtsConfig,
+  recordsUnscaffoldedJavaScriptWorkspace,
+  serializeBtsConfig,
+} from "@/config/bts-config";
 import { getProjectRecoveryCommand } from "@/lifecycle/lifecycle-command";
-import { getCurrentLifecycleVersions, hashContent } from "@/lifecycle/scaffold-manifest";
+import {
+  getCurrentLifecycleVersions,
+  hashContent,
+  readScaffoldManifestResult,
+} from "@/lifecycle/scaffold-manifest";
 
 const CONFIG_PATH = "bts.jsonc";
 
@@ -65,6 +74,9 @@ function parseObject(content: string): Record<string, unknown> | null {
     : null;
 }
 
+const UNSCAFFOLDED_JAVASCRIPT_WORKSPACE_REASON =
+  "Drop the TypeScript workspace that was never scaffolded; the baseline has no JavaScript root.";
+
 function changeReason(pathName: string, hasGraph: boolean): string {
   if (pathName === "stackParts") return "Add the authoritative Stack Graph projection.";
   if (pathName === "graphSummary" || pathName === "effectiveStack") {
@@ -77,6 +89,7 @@ function changeReason(pathName: string, hasGraph: boolean): string {
 function getChanges(
   current: Record<string, unknown>,
   proposed: Record<string, unknown>,
+  dropsJavaScriptWorkspace = false,
 ): ConfigDriftChange[] {
   const hasGraph = Array.isArray(proposed.stackParts) && proposed.stackParts.length > 0;
   const keys = new Set([...Object.keys(current), ...Object.keys(proposed)]);
@@ -86,7 +99,9 @@ function getChanges(
     .map((key) => ({
       path: key,
       action: !(key in current) ? "add" : !(key in proposed) ? "remove" : "update",
-      reason: changeReason(key, hasGraph),
+      reason: dropsJavaScriptWorkspace
+        ? UNSCAFFOLDED_JAVASCRIPT_WORKSPACE_REASON
+        : changeReason(key, hasGraph),
     }));
 }
 
@@ -194,13 +209,20 @@ async function buildInternalPlan(projectDirInput: string): Promise<InternalPlan>
   if (!normalized) {
     throw new Error("bts.jsonc cannot be normalized to the current configuration contract.");
   }
+  const manifestResult = await readScaffoldManifestResult(projectDir);
+  const dropsJavaScriptWorkspace =
+    manifestResult.status === "valid" &&
+    recordsUnscaffoldedJavaScriptWorkspace(normalized.stackParts, manifestResult.manifest.hashes);
+  const canonical = dropsJavaScriptWorkspace
+    ? dropUnscaffoldedJavaScriptWorkspace(normalized)
+    : normalized;
   const canonicalContent = serializeBtsConfig(
-    { ...normalized, projectDir } as unknown as ProjectConfig,
-    { version: normalized.version, createdAt: normalized.createdAt },
+    { ...canonical, projectDir } as unknown as ProjectConfig,
+    { version: canonical.version, createdAt: canonical.createdAt },
   );
   const proposedObject = parseObject(canonicalContent);
   if (!proposedObject) throw new Error("The canonical config producer returned invalid JSONC.");
-  const changes = getChanges(currentObject, proposedObject);
+  const changes = getChanges(currentObject, proposedObject, dropsJavaScriptWorkspace);
   const proposedContent = applyConfigChanges(currentContent, proposedObject, changes);
   const preimage = { sha256: hashContent(currentContent), mode: stats.mode & 0o7777 };
   const base: InternalPlan = {

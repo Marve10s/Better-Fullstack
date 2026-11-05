@@ -1,0 +1,27 @@
+{{#if (eq elixirApi "grpc")}}
+defmodule {{elixirModuleName}}.Rpc.Greeter.Server do
+  use GRPC.Server, service: {{elixirModuleName}}.Rpc.Greeter.Service
+
+  alias {{elixirModuleName}}.Rpc.{HelloReply, HelloRequest}
+
+  def say_hello(%HelloRequest{} = request, materializer) do
+    request
+    |> GRPC.Stream.unary(materializer: materializer, stages: 1)
+    |> GRPC.Stream.map(&greeting/1)
+    |> GRPC.Stream.run()
+  end
+
+  defp greeting(%HelloRequest{name: name}) do
+    name = String.trim(name)
+
+    if name == "" or String.length(name) > 80 do
+      GRPC.RPCError.exception(
+        status: GRPC.Status.invalid_argument(),
+        message: "name must contain 1 to 80 characters"
+      )
+    else
+      %HelloReply{message: "Hello, #{name}!"}
+    end
+  end
+end
+{{/if}}

@@ -1,0 +1,126 @@
+require "json"
+require "roda"
+{{#if (ne rubyAuth "none")}}
+require_relative "auth"
+{{/if}}
+{{#if (ne rubyCache "none")}}
+require_relative "cache"
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+require_relative "jobs"
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+require_relative "upstream"
+{{/if}}
+require_relative "http_policy"
+{{#if (ne rubyOrm "none")}}
+require_relative "items"
+{{/if}}
+require_relative "name_input"
+require_relative "request_body_limit"
+{{#if (and (ne rubyLogging "none") (ne rubyLogging "lograge"))}}
+require_relative "request_logger"
+{{/if}}
+
+module BetterFullstack
+  class App < Roda
+{{#if (and (ne rubyLogging "none") (ne rubyLogging "lograge"))}}
+    use RequestLogger
+{{/if}}
+    use RequestBodyLimit, -> { HttpPolicy.allowed_origins }
+    use HttpPolicy
+{{#if (ne rubyAuth "none")}}
+    use Auth
+{{/if}}
+
+    plugin :json
+    plugin :all_verbs
+    plugin :not_found do
+      response["content-type"] = "application/json"
+      JSON.generate(error: "not_found")
+    end
+    plugin :error_handler do |_error|
+      response.status = 500
+      response["content-type"] = "application/json"
+      JSON.generate(error: "internal_server_error")
+    end
+
+    route do |r|
+      r.get "health" do
+        { status: "ok", service: "roda" }
+      end
+
+      r.post "api/greetings" do
+        name = NameInput.parse(r.media_type, r.body)
+        if name.is_a?(NameInput::Invalid)
+          response.status = name.status
+          next { error: name.error }
+        end
+        { greeting: "Hello, #{name}!" }
+      end
+{{#if (ne rubyCache "none")}}
+
+      r.get "api/cache" do
+        status, body = Cache.demo
+        response.status = status
+        body
+      end
+{{/if}}
+{{#if (ne rubyHttpClient "none")}}
+
+      r.get "api/upstream" do
+        status, body = Upstream.health
+        response.status = status
+        body
+      end
+{{/if}}
+{{#if (ne rubyJobQueue "none")}}
+
+      r.post "api/jobs" do
+        name = NameInput.parse(r.media_type, r.body)
+        if name.is_a?(NameInput::Invalid)
+          response.status = name.status
+          next { error: name.error }
+        end
+        status, body = Jobs.create(name)
+        response.status = status
+        body
+      end
+
+      r.get "api/jobs", String do |id|
+        status, body = Jobs.find(id)
+        response.status = status
+        body
+      end
+{{/if}}
+{{#if (ne rubyAuth "none")}}
+
+      r.get "api/me" do
+        user = env[Auth::CURRENT_USER]
+        next { user: user } if user
+
+        response.status = 401
+        { error: "unauthorized" }
+      end
+{{/if}}
+{{#if (ne rubyOrm "none")}}
+
+      r.is "api/items" do
+        r.get do
+          { items: Items.all }
+        end
+
+        r.post do
+          name = NameInput.parse(r.media_type, r.body)
+          if name.is_a?(NameInput::Invalid)
+            response.status = name.status
+            next { error: name.error }
+          end
+          response.status = 201
+          Items.create(name)
+        end
+      end
+{{/if}}
+    end
+  end
+end

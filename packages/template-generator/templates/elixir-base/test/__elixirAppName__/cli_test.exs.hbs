@@ -1,0 +1,20 @@
+defmodule {{elixirModuleName}}.CLITest do
+  use ExUnit.Case, async: true
+
+  alias {{elixirModuleName}}.CLI
+
+  test "parses options into a greeting" do
+    assert {:ok, output} = CLI.run(["--name", "Ada", "--times", "2"])
+    assert output =~ "Hello, Ada!"
+    assert length(Regex.scan(~r/Hello, Ada!/, output)) == 2
+  end
+
+  test "rejects invalid options" do
+    assert {:error, _message} = CLI.run(["--times", "many"])
+  end
+
+  test "prints usage for --help" do
+    assert {:ok, usage} = CLI.run(["--help"])
+    assert usage =~ "--name"
+  end
+end

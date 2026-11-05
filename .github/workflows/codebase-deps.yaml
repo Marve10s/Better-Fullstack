@@ -63,6 +63,11 @@ jobs:
             fi
           done
 
+      - name: Restore Held Dependencies
+        run: |
+          bun run .github/scripts/restore-held-dependencies.ts
+          bun install
+
       - name: Revert Major Bumps (patch-minor mode)
         if: steps.mode.outputs.mode == 'patch-minor'
         run: |
@@ -245,7 +250,7 @@ jobs:
 
     steps:
       - name: Install System Dependencies
-        run: dnf install -y git tar gzip unzip libstdc++ which curl ca-certificates nodejs22
+        run: dnf install -y git tar gzip unzip libstdc++ which ca-certificates nodejs22
 
       - name: Checkout Dependency Branch
         uses: actions/checkout@v4

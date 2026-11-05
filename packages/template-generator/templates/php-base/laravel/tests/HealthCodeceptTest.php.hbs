@@ -1,0 +1,24 @@
+{{#if (eq phpTesting "codeception")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use Codeception\Test\Unit;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
+
+final class HealthCodeceptTest extends Unit
+{
+    public function testReportsHealthAsJson(): void
+    {
+        $app = require dirname(__DIR__) . '/bootstrap/app.php';
+        $this->assertInstanceOf(Application::class, $app);
+        $response = $app->make(Kernel::class)->handle(Request::create('/health'));
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(['status' => 'ok', 'framework' => 'laravel'], json_decode((string) $response->getContent(), true, 32, JSON_THROW_ON_ERROR));
+    }
+}
+{{/if}}

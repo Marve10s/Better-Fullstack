@@ -1,0 +1,16 @@
+{
+  "extends": "plasmo/templates/tsconfig.base",
+  "files": [],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts"],
+  "exclude": ["node_modules", "build", ".plasmo"],
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "bundler",
+    "types": ["chrome", "react", "react-dom"],
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "target": "ES2022",
+    "jsx": "react-jsx",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  }
+}

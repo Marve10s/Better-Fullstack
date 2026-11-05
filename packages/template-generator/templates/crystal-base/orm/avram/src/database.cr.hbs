@@ -1,0 +1,39 @@
+require "avram"
+
+class AppDatabase < Avram::Database
+end
+
+AppDatabase.configure do |settings|
+  settings.credentials = Avram::Credentials.parse(ENV.fetch("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/{{shardName}}_development"))
+end
+
+Avram.configure do |settings|
+  settings.database_to_migrate = AppDatabase
+  settings.lazy_load_enabled = false
+end
+
+abstract class BaseModel < Avram::Model
+  def self.database : Avram::Database.class
+    AppDatabase
+  end
+end
+
+class GreetingRecord < BaseModel
+  table :greetings do
+    column name : String
+  end
+end
+
+class CreateGreetings::V20261027000001 < Avram::Migrator::Migration::V1
+  def migrate
+    create :greetings do
+      primary_key id : Int64
+      add_timestamps
+      add name : String
+    end
+  end
+
+  def rollback
+    drop :greetings
+  end
+end

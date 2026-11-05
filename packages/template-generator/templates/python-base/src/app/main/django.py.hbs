@@ -1,0 +1,185 @@
+"""Main application entry point."""
+# ruff: noqa: I001
+
+import os
+
+from dotenv import load_dotenv
+{{#if (eq pythonObservability "signoz")}}
+from app import otel as _otel  # noqa: F401 - importing activates SigNoz tracing
+{{/if}}
+{{#if (ne pythonLogging "none")}}
+from app.logging_config import configure_logging
+{{/if}}
+
+{{#if (eq observability "sentry")}}
+from app.observability import init_sentry
+
+{{/if}}
+import django
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
+import json
+{{/if}}
+from django.conf import settings
+from django.http import {{#if (eq pythonObservability "prometheus-client")}}HttpResponse, {{/if}}JsonResponse
+from django.urls import path
+{{#if (eq pythonObservability "prometheus-client")}}
+from app.metrics import render_metrics
+{{/if}}
+{{#if (eq pythonApi "django-rest-framework")}}
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+{{/if}}
+{{#if (eq pythonApi "django-ninja")}}
+from ninja import NinjaAPI
+{{/if}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
+from app.auth import create_access_token, verify_token
+{{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+from strawberry.django.views import GraphQLView
+
+from app.graphql_schema import schema as graphql_schema
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+from ariadne_django.views import GraphQLView
+
+from app.ariadne_schema import schema as ariadne_schema
+{{/if}}
+
+load_dotenv()
+{{#if (ne pythonLogging "none")}}
+configure_logging()
+{{/if}}
+
+_cors_origin = os.getenv("CORS_ORIGIN")
+
+if not settings.configured:
+    settings.configure(
+        DEBUG=os.getenv("DEBUG", "true").lower() == "true",
+        ROOT_URLCONF=__name__,
+        SECRET_KEY=os.getenv("SECRET_KEY", "change-me-in-production"),
+        ALLOWED_HOSTS=["*"],
+        INSTALLED_APPS=[
+            "django.contrib.contenttypes",
+            "django.contrib.auth",
+            "corsheaders",
+{{#if (eq pythonApi "django-rest-framework")}}
+            "rest_framework",
+{{/if}}
+        ],
+        MIDDLEWARE=[
+{{#if (ne pythonLogging "none")}}
+            "app.logging_config.request_logging_middleware",
+{{/if}}
+            "corsheaders.middleware.CorsMiddleware",
+            "django.middleware.common.CommonMiddleware",
+        ],
+{{#if (ne pythonLogging "none")}}
+        # Logging is configured by app.logging_config, not Django's defaults.
+        LOGGING_CONFIG=None,
+{{/if}}
+        CORS_ALLOW_ALL_ORIGINS=not _cors_origin,
+        CORS_ALLOWED_ORIGINS=[_cors_origin] if _cors_origin else [],
+    )
+    django.setup()
+
+
+def root(request):
+    """Root endpoint."""
+    return JsonResponse({"message": "Welcome to {{projectName}}!"})
+
+
+def health(request):
+    """Health check endpoint."""
+    return JsonResponse({"status": "healthy"})
+
+{{#if (eq pythonObservability "prometheus-client")}}
+
+def metrics(request):
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return HttpResponse(payload, content_type=content_type)
+
+{{/if}}
+{{#if (eq pythonApi "django-rest-framework")}}
+
+@api_view(["GET"])
+def api_status(request):
+    """REST API status endpoint."""
+    return Response({"status": "ok", "framework": "django-rest-framework"})
+{{/if}}
+{{#if (eq pythonApi "django-ninja")}}
+
+ninja_api = NinjaAPI(title="{{projectName}} API")
+
+
+@ninja_api.get("/status")
+def api_status(request):
+    """REST API status endpoint."""
+    return {"status": "ok", "framework": "django-ninja"}
+{{/if}}
+
+
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
+def auth_token(request):
+    """Create an access token."""
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    body = json.loads(request.body) if request.body else {}
+    username = body.get("username", "")
+    if not username:
+        return JsonResponse({"error": "Username is required"}, status=400)
+    token = create_access_token(data={"sub": username})
+    return JsonResponse({"access_token": token, "token_type": "bearer"})
+
+
+def auth_me(request):
+    """Get current authenticated user from Bearer token."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return JsonResponse({"error": "Missing or invalid authorization header"}, status=401)
+    token = auth_header.removeprefix("Bearer ")
+    payload = verify_token(token)
+    if payload is None:
+        return JsonResponse({"error": "Invalid or expired token"}, status=401)
+    return JsonResponse({"username": payload.get("sub"), "token_data": payload})
+{{/if}}
+
+
+urlpatterns = [
+    path("", root),
+    path("health", health),
+{{#if (eq pythonObservability "prometheus-client")}}
+    path("metrics", metrics),
+{{/if}}
+{{#if (eq pythonApi "django-rest-framework")}}
+    path("api/status", api_status),
+{{/if}}
+{{#if (eq pythonApi "django-ninja")}}
+    path("api/", ninja_api.urls),
+{{/if}}
+{{#if (or (eq pythonAuth "authlib") (or (eq pythonAuth "jwt") (eq pythonAuth "pyjwt")))}}
+    path("auth/token", auth_token),
+    path("auth/me", auth_me),
+{{/if}}
+{{#if (eq pythonGraphql "strawberry")}}
+    path("graphql", GraphQLView.as_view(schema=graphql_schema)),
+{{/if}}
+{{#if (eq pythonGraphql "ariadne")}}
+    path("graphql", GraphQLView.as_view(schema=ariadne_schema)),
+{{/if}}
+]
+
+{{#if (eq pythonServer "gunicorn")}}
+from django.core.wsgi import get_wsgi_application
+
+application = get_wsgi_application()
+{{/if}}
+
+
+if __name__ == "__main__":
+    from django.core.management import execute_from_command_line
+    import sys
+
+    sys.argv = ["manage.py", "runserver", f"{os.getenv('HOST', '0.0.0.0')}:{os.getenv('PORT', '8000')}"]
+    execute_from_command_line(sys.argv)

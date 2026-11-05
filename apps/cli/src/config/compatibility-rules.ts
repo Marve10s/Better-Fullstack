@@ -1,6 +1,11 @@
 import {
   allowedApisForFrontends as allowedApisForFrontendsShared,
   getAIFrontendCompatibilityIssue,
+  getBrowserExtensionRecipeIssue,
+  getBrowserExtensionSelectionIssue,
+  getSelectedBrowserExtensions,
+  toolingOverlayStackParts,
+  isBrowserExtension,
   getApiFrontendCompatibilityIssue,
   getCompatibleAddons as getCompatibleAddonsShared,
   getCompatibleCSSFrameworks as getCompatibleCSSFrameworksShared,
@@ -13,6 +18,7 @@ import {
   isBackendUtilsCompatibleBackend,
   isExampleAIAllowed as isExampleAIAllowedShared,
   isExampleChatSdkAllowed as isExampleChatSdkAllowedShared,
+  isExampleTanstackShowcaseAllowed,
   isFrontendAllowedWithBackend as isFrontendAllowedWithBackendShared,
   isWebFrontend as isWebFrontendShared,
   requiresChatSdkVercelAIForSelection,
@@ -488,6 +494,10 @@ export function validateAddonCompatibility(
   javaApi?: ProjectConfig["javaApi"],
   hasVitePlusStackPart = false,
 ): { isCompatible: boolean; reason?: string } {
+  if (isBrowserExtension(addon)) {
+    const reason = getBrowserExtensionRecipeIssue({ ecosystem, addons: [addon] });
+    return reason ? { isCompatible: false, reason } : { isCompatible: true };
+  }
   const baseCompatibility = validateAddonCompatibilityShared(addon, frontend, _auth);
   if (!baseCompatibility.isCompatible) return baseCompatibility;
 
@@ -722,6 +732,13 @@ export function getCompatibleAddons(
   const compatibleAddons = getCompatibleAddonsShared(allAddons, frontend, existingAddons, auth);
 
   return compatibleAddons.filter((addon) => {
+    if (isBrowserExtension(addon)) {
+      if (getBrowserExtensionSelectionIssue([...existingAddons, ...getSelectedBrowserExtensions(context ?? {}), addon], context?.workspaceShape)) return false;
+      const stackParts = context?.stackParts?.length
+        ? [...context.stackParts, ...toolingOverlayStackParts([addon])]
+        : undefined;
+      return getBrowserExtensionRecipeIssue({ ...context, ecosystem, addons: [addon], stackParts }) === null;
+    }
     const { isCompatible } = validateAddonCompatibility(
       addon,
       frontend,
@@ -763,7 +780,10 @@ export function validateAddonsAgainstFrontends(
   goApi?: ProjectConfig["goApi"],
   javaApi?: ProjectConfig["javaApi"],
   hasJavaScriptStackPart = false,
+  browserExtensionContext?: Partial<ProjectConfig>,
 ) {
+  const extensionIssue = getBrowserExtensionRecipeIssue(browserExtensionContext ?? { addons, ecosystem });
+  if (extensionIssue) exitWithError(extensionIssue);
   const workspaceRunners = new Set(
     addons.filter((addon) => ["turborepo", "nx", "vite-plus"].includes(addon)),
   );
@@ -784,7 +804,7 @@ export function validateAddonsAgainstFrontends(
   }
 
   for (const addon of addons) {
-    if (addon === "none") continue;
+    if (addon === "none" || (browserExtensionContext && isBrowserExtension(addon))) continue;
     const { isCompatible, reason } = validateAddonCompatibility(
       addon,
       frontends,
@@ -883,14 +903,7 @@ export function validateExamplesCompatibility(
   if (examplesArr.length === 0 || examplesArr.includes("none")) return;
 
   if (examplesArr.includes("tanstack-showcase")) {
-    const showcaseFrontends: Frontend[] = [
-      "tanstack-router",
-      "tanstack-start",
-      "solid-start",
-      "tanstack-start-solid",
-    ];
-    const hasShowcaseFrontend = (frontend ?? []).some((f) => showcaseFrontends.includes(f));
-    if (!hasShowcaseFrontend) {
+    if (!isExampleTanstackShowcaseAllowed(frontend)) {
       exitWithError(
         "The 'tanstack-showcase' example requires TanStack Router, TanStack Start, SolidStart, or TanStack Start (Solid).",
       );

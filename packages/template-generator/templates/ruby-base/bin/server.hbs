@@ -1,0 +1,11 @@
+require "bundler/setup"
+require "puma/cli"
+
+host = ENV.fetch("HOST", "127.0.0.1")
+port = Integer(ENV.fetch("PORT", "{{rubyPort}}"), 10)
+Puma::CLI.new([
+  "--bind", "tcp://#{host.include?(":") ? "[#{host}]" : host}:#{port}",
+  "--environment", ENV.fetch("RACK_ENV", "development"),
+  "--threads", "0:5",
+  File.expand_path("../config.ru", __dir__)
+]).run

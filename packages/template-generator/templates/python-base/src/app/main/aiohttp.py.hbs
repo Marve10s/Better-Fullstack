@@ -1,0 +1,70 @@
+"""Main application entry point."""
+# ruff: noqa: I001
+
+import os
+
+from dotenv import load_dotenv
+{{#if (eq pythonObservability "signoz")}}
+from app import otel as _otel  # noqa: F401 - importing activates SigNoz tracing
+{{/if}}
+{{#if (ne pythonLogging "none")}}
+from app.logging_config import configure_logging, request_logging_middleware, add_request_id_header
+{{/if}}
+
+{{#if (eq observability "sentry")}}
+from app.observability import init_sentry
+
+{{/if}}
+from aiohttp import web
+{{#if (eq pythonObservability "prometheus-client")}}
+
+from app.metrics import render_metrics
+{{/if}}
+
+load_dotenv()
+{{#if (ne pythonLogging "none")}}
+configure_logging()
+{{/if}}
+
+
+async def index(request: web.Request) -> web.Response:
+    """Root endpoint."""
+    return web.json_response({"message": "Welcome to {{projectName}}!"})
+
+
+async def health(request: web.Request) -> web.Response:
+    """Health check endpoint."""
+    return web.json_response({"status": "healthy"})
+{{#if (eq pythonObservability "prometheus-client")}}
+
+
+async def metrics(request: web.Request) -> web.Response:
+    """Prometheus metrics endpoint."""
+    payload, content_type = render_metrics()
+    return web.Response(body=payload, headers={"Content-Type": content_type})
+{{/if}}
+
+
+def create_app() -> web.Application:
+    """Build the aiohttp application and register routes."""
+    application = web.Application({{#if (ne pythonLogging "none")}}middlewares=[request_logging_middleware]{{/if}})
+{{#if (ne pythonLogging "none")}}
+    application.on_response_prepare.append(add_request_id_header)
+{{/if}}
+    application.router.add_get("/", index)
+    application.router.add_get("/health", health)
+{{#if (eq pythonObservability "prometheus-client")}}
+    application.router.add_get("/metrics", metrics)
+{{/if}}
+    return application
+
+
+app = create_app()
+
+
+if __name__ == "__main__":
+    web.run_app(
+        app,
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "8000")),
+    )

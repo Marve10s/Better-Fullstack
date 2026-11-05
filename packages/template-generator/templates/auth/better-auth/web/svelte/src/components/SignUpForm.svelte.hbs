@@ -8,7 +8,7 @@
 	import { authClient } from '$lib/auth-client';
 	import { goto } from '$app/navigation';
 
-	let { switchToSignIn } = $props<{ switchToSignIn: () => void }>();
+	let { switchToSignIn }: { switchToSignIn: () => void } = $props();
 
 {{#if (eq validation "valibot")}}
 	const validationSchema = v.object({

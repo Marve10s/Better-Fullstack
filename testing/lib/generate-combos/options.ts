@@ -6,6 +6,15 @@ import type {
 } from "@testing/lib/generate-combos/types";
 
 import {
+  CRYSTAL_AUTH_VALUES,
+  CRYSTAL_TESTING_VALUES,
+  CRYSTAL_VALIDATION_VALUES,
+  CRYSTAL_CACHE_VALUES,
+  CRYSTAL_JOBS_VALUES,
+  CRYSTAL_ORM_VALUES,
+  CRYSTAL_WEB_FRAMEWORK_VALUES,
+  type CrystalOptionCategory,
+  getCrystalOptionIssue,
   ADDONS_VALUES,
   AI_VALUES,
   ANALYTICS_VALUES,
@@ -40,6 +49,11 @@ import {
   ELIXIR_APPLICATION_FRAMEWORK_VALUES,
   ELIXIR_DOCUMENTATION_VALUES,
   ELIXIR_CLUSTERING_VALUES,
+  ELIXIR_LOGGING_VALUES,
+  ELIXIR_CONFIG_VALUES,
+  ELIXIR_MESSAGE_QUEUE_VALUES,
+  ELIXIR_TEMPLATING_VALUES,
+  ELIXIR_CLI_VALUES,
   ELIXIR_REALTIME_VALUES,
   ELIXIR_TESTING_VALUES,
   ELIXIR_VALIDATION_VALUES,
@@ -97,6 +111,16 @@ import {
   PYTHON_ORM_VALUES,
   PYTHON_GRAPHQL_VALUES,
   PYTHON_QUALITY_VALUES,
+  PHP_AUTH_VALUES,
+  PHP_ORM_VALUES,
+  PHP_TESTING_VALUES,
+  PHP_VALIDATION_VALUES,
+  PHP_CACHE_VALUES,
+  PHP_JOB_QUEUE_VALUES,
+  PHP_EMAIL_VALUES,
+  PHP_LOGGING_VALUES,
+  PHP_HTTP_CLIENT_VALUES,
+  PHP_WEB_FRAMEWORK_VALUES,
   PYTHON_TESTING_VALUES,
   PYTHON_CACHING_VALUES,
   PYTHON_REALTIME_VALUES,
@@ -115,6 +139,16 @@ import {
   PYTHON_WEB_FRAMEWORK_VALUES,
   RATE_LIMIT_VALUES,
   REALTIME_VALUES,
+  RUBY_AUTH_VALUES,
+  RUBY_ORM_VALUES,
+  RUBY_TESTING_VALUES,
+  RUBY_VALIDATION_VALUES,
+  RUBY_CACHE_VALUES,
+  RUBY_JOB_QUEUE_VALUES,
+  RUBY_EMAIL_VALUES,
+  RUBY_LOGGING_VALUES,
+  RUBY_HTTP_CLIENT_VALUES,
+  RUBY_WEB_FRAMEWORK_VALUES,
   RUNTIME_VALUES,
   RUST_API_VALUES,
   RUST_CLI_VALUES,
@@ -146,6 +180,7 @@ import {
   WEB_DEPLOY_VALUES,
   WEB_MCP_VALUES,
   getCategoryOptionIds,
+  getPhpCapabilityIssue,
   type CLIInput,
   type Ecosystem,
   type ProjectConfig,
@@ -550,7 +585,9 @@ function makeGoDraft(args: GeneratorArgs): CandidateDraft {
       goObservability: sampleScalar(GO_OBSERVABILITY_VALUES, 0.5),
       goValidation: sampleScalar(GO_VALIDATION_VALUES, 0.5),
       goQuality: sampleScalar(GO_QUALITY_VALUES, 0.5),
-      goMigrations: getGoMigrationsIncompatibility(goMigrations, goSelection) ? "none" : goMigrations,
+      goMigrations: getGoMigrationsIncompatibility(goMigrations, goSelection)
+        ? "none"
+        : goMigrations,
       goTemplating: sampleScalar(GO_TEMPLATING_VALUES, 0.5),
       goProtoTooling: sampleScalar(GO_PROTO_TOOLING_VALUES, 0.5),
       goDI: sampleScalar(GO_DI_VALUES, 0.5),
@@ -608,6 +645,97 @@ function makeJavaDraft(args: GeneratorArgs): CandidateDraft {
   };
 }
 
+function makeRubyDraft(args: GeneratorArgs): CandidateDraft {
+  return {
+    ecosystem: "ruby",
+    options: {
+      ...createCommonOptions("ruby", args),
+      rubyWebFramework: sampleScalar(RUBY_WEB_FRAMEWORK_VALUES, 0, "rubyWebFramework"),
+      rubyOrm: sampleScalar(RUBY_ORM_VALUES, 0.4, "rubyOrm"),
+      rubyAuth: sampleScalar(RUBY_AUTH_VALUES, 0.4, "rubyAuth"),
+      rubyTesting: sampleScalar(RUBY_TESTING_VALUES, 0.15, "rubyTesting"),
+      rubyValidation: sampleScalar(RUBY_VALIDATION_VALUES, 0.4, "rubyValidation"),
+      rubyCache: sampleScalar(RUBY_CACHE_VALUES, 0.4, "rubyCache"),
+      rubyJobQueue: sampleScalar(RUBY_JOB_QUEUE_VALUES, 0.4, "rubyJobQueue"),
+      rubyEmail: sampleScalar(RUBY_EMAIL_VALUES, 0.4, "rubyEmail"),
+      rubyLogging: sampleScalar(RUBY_LOGGING_VALUES, 0.15, "rubyLogging"),
+      rubyHttpClient: sampleScalar(RUBY_HTTP_CLIENT_VALUES, 0.4, "rubyHttpClient"),
+      database: "none",
+      addons: ["none"],
+      examples: ["none"],
+    },
+  };
+}
+
+function makePhpDraft(args: GeneratorArgs): CandidateDraft {
+  const phpWebFramework = sampleScalar(
+    PHP_WEB_FRAMEWORK_VALUES.filter((value) => value !== "none"),
+    0,
+    "phpWebFramework",
+  );
+  const phpOrm = sampleScalar(
+    PHP_ORM_VALUES.filter((value) => !getPhpCapabilityIssue(phpWebFramework, "orm", value)),
+    0.4,
+    "phpOrm",
+  );
+  const phpAuth = sampleScalar(
+    PHP_AUTH_VALUES.filter((value) => !getPhpCapabilityIssue(phpWebFramework, "auth", value)),
+    0.4,
+    "phpAuth",
+  );
+  return {
+    ecosystem: "php",
+    options: {
+      ...createCommonOptions("php", args),
+      phpWebFramework,
+      phpOrm,
+      phpAuth,
+      phpTesting: sampleScalar(PHP_TESTING_VALUES, 0.1, "phpTesting"),
+      phpValidation: sampleScalar(
+        PHP_VALIDATION_VALUES.filter(
+          (value) => !getPhpCapabilityIssue(phpWebFramework, "validation", value),
+        ),
+        0.4,
+        "phpValidation",
+      ),
+      phpCache: sampleScalar(
+        PHP_CACHE_VALUES.filter(
+          (value) => !getPhpCapabilityIssue(phpWebFramework, "caching", value),
+        ),
+        0.4,
+        "phpCache",
+      ),
+      phpJobQueue: sampleScalar(
+        PHP_JOB_QUEUE_VALUES.filter(
+          (value) => !getPhpCapabilityIssue(phpWebFramework, "jobQueue", value),
+        ),
+        0.4,
+        "phpJobQueue",
+      ),
+      phpEmail: sampleScalar(
+        PHP_EMAIL_VALUES.filter((value) => !getPhpCapabilityIssue(phpWebFramework, "email", value)),
+        0.4,
+        "phpEmail",
+      ),
+      phpLogging: sampleScalar(
+        PHP_LOGGING_VALUES.filter(
+          (value) => !getPhpCapabilityIssue(phpWebFramework, "logging", value),
+        ),
+        0.4,
+        "phpLogging",
+      ),
+      phpHttpClient: sampleScalar(
+        PHP_HTTP_CLIENT_VALUES.filter(
+          (value) => !getPhpCapabilityIssue(phpWebFramework, "httpClient", value),
+        ),
+        0.4,
+        "phpHttpClient",
+      ),
+      database: "none",
+    },
+  };
+}
+
 function makeElixirDraft(args: GeneratorArgs): CandidateDraft {
   const elixirWebFramework = sampleScalar(ELIXIR_WEB_FRAMEWORK_VALUES, 0.08, "elixirWebFramework");
   const usesPhoenix = elixirWebFramework !== "none";
@@ -625,13 +753,16 @@ function makeElixirDraft(args: GeneratorArgs): CandidateDraft {
       elixirRealtime: usesPhoenix
         ? sampleScalar(ELIXIR_REALTIME_VALUES, 0.25, "elixirRealtime")
         : "none",
-      elixirJobs:
-        elixirOrm === "ecto-sql" ? sampleScalar(ELIXIR_JOBS_VALUES, 0.55, "elixirJobs") : "none",
+      elixirJobs: sampleScalar(
+        ELIXIR_JOBS_VALUES.filter((value) => value !== "oban" || elixirOrm === "ecto-sql"),
+        0.55,
+        "elixirJobs",
+      ),
       elixirValidation: hasEcto
         ? sampleScalar(ELIXIR_VALIDATION_VALUES, 0.2, "elixirValidation")
         : "none",
       elixirHttp: usesPhoenix ? sampleScalar(ELIXIR_HTTP_VALUES, 0.25, "elixirHttp") : "none",
-      elixirJson: usesPhoenix ? sampleScalar(ELIXIR_JSON_VALUES, 0.05, "elixirJson") : "none",
+      elixirJson: sampleScalar(ELIXIR_JSON_VALUES, 0.05, "elixirJson"),
       elixirEmail: usesPhoenix ? sampleScalar(ELIXIR_EMAIL_VALUES, 0.7, "elixirEmail") : "none",
       elixirCaching: usesPhoenix
         ? sampleScalar(ELIXIR_CACHING_VALUES, 0.75, "elixirCaching")
@@ -655,10 +786,17 @@ function makeElixirDraft(args: GeneratorArgs): CandidateDraft {
       elixirDocumentation: usesPhoenix
         ? sampleScalar(ELIXIR_DOCUMENTATION_VALUES, 0.5, "elixirDocumentation")
         : "none",
-      elixirClustering: usesPhoenix
-        ? sampleScalar(ELIXIR_CLUSTERING_VALUES, 0.6, "elixirClustering")
-        : "none",
-      elixirDeploy: usesPhoenix ? sampleScalar(ELIXIR_DEPLOY_VALUES, 0.65, "elixirDeploy") : "none",
+      elixirClustering: sampleScalar(ELIXIR_CLUSTERING_VALUES, 0.6, "elixirClustering"),
+      elixirLogging: sampleScalar(
+        ELIXIR_LOGGING_VALUES.filter((value) => usesPhoenix || value !== "logster"),
+        0.6,
+        "elixirLogging",
+      ),
+      elixirConfig: sampleScalar(ELIXIR_CONFIG_VALUES, 0.6, "elixirConfig"),
+      elixirMessageQueue: sampleScalar(ELIXIR_MESSAGE_QUEUE_VALUES, 0.6, "elixirMessageQueue"),
+      elixirTemplating: sampleScalar(ELIXIR_TEMPLATING_VALUES, 0.6, "elixirTemplating"),
+      elixirCli: sampleScalar(ELIXIR_CLI_VALUES, 0.6, "elixirCli"),
+      elixirDeploy: sampleScalar(ELIXIR_DEPLOY_VALUES, 0.65, "elixirDeploy"),
       elixirLibraries: usesPhoenix
         ? sampleArray(ELIXIR_LIBRARIES_VALUES, 0.5, 2, "elixirLibraries")
         : [],
@@ -833,6 +971,13 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     goTemplating: "none",
     goProtoTooling: "none",
     goDI: "none",
+    crystalWebFramework: "none",
+    crystalOrm: "none",
+    crystalAuth: "none",
+    crystalTesting: "none",
+    crystalValidation: "none",
+    crystalCache: "none",
+    crystalJobs: "none",
     javaWebFramework: "none",
     javaBuildTool: "none",
     javaOrm: "none",
@@ -843,6 +988,26 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     javaTestingLibraries: [],
     mobileLibraries: [],
     dotnetLibraries: [],
+    rubyWebFramework: "none",
+    rubyOrm: "none",
+    rubyAuth: "none",
+    rubyTesting: "none",
+    rubyValidation: "none",
+    rubyCache: "none",
+    rubyJobQueue: "none",
+    rubyEmail: "none",
+    rubyLogging: "none",
+    rubyHttpClient: "none",
+    phpWebFramework: "none",
+    phpOrm: "none",
+    phpAuth: "none",
+    phpTesting: "none",
+    phpValidation: "none",
+    phpCache: "none",
+    phpJobQueue: "none",
+    phpEmail: "none",
+    phpLogging: "none",
+    phpHttpClient: "none",
     elixirWebFramework: "none",
     elixirOrm: "none",
     elixirAuth: "none",
@@ -862,6 +1027,11 @@ function createValidationBase(projectName: string, draft: CandidateDraft): Proje
     elixirApplicationFramework: "none",
     elixirDocumentation: "none",
     elixirClustering: "none",
+    elixirLogging: "none",
+    elixirConfig: "none",
+    elixirMessageQueue: "none",
+    elixirTemplating: "none",
+    elixirCli: "none",
     elixirDeploy: "none",
     elixirLibraries: [],
     aiDocs: [],
@@ -969,8 +1139,49 @@ function createDraft(ecosystem: Ecosystem, args: GeneratorArgs): CandidateDraft 
       return makePythonDraft(args);
     case "go":
       return makeGoDraft(args);
+    case "crystal": {
+      const crystalWebFramework = sampleScalar(
+        CRYSTAL_WEB_FRAMEWORK_VALUES,
+        0,
+        "crystalWebFramework",
+      );
+      const crystalOptions = <T extends string>(category: CrystalOptionCategory, values: readonly T[]) =>
+        values.filter((value) => !getCrystalOptionIssue(category, value, { crystalWebFramework }));
+      const crystalCache = sampleScalar(crystalOptions("crystalCache", CRYSTAL_CACHE_VALUES), 0.5, "crystalCache");
+      const crystalOrm = sampleScalar(crystalOptions("crystalOrm", CRYSTAL_ORM_VALUES), 0.5, "crystalOrm");
+      return {
+        ecosystem: "crystal",
+        options: {
+          ...createCommonOptions("crystal", args),
+          crystalWebFramework,
+          crystalOrm,
+          crystalAuth: sampleScalar(
+            CRYSTAL_AUTH_VALUES.filter(
+              (value) =>
+                !getCrystalOptionIssue("crystalAuth", value, { crystalWebFramework, crystalOrm }),
+            ),
+            0.5,
+            "crystalAuth",
+          ),
+          crystalTesting: sampleScalar(crystalOptions("crystalTesting", CRYSTAL_TESTING_VALUES), 0.5, "crystalTesting"),
+          crystalValidation: sampleScalar(crystalOptions("crystalValidation", CRYSTAL_VALIDATION_VALUES), 0.5, "crystalValidation"),
+          crystalCache,
+          crystalJobs: sampleScalar(
+            CRYSTAL_JOBS_VALUES.filter(
+              (value) => !getCrystalOptionIssue("crystalJobs", value, { crystalWebFramework, crystalCache }),
+            ),
+            0.5,
+            "crystalJobs",
+          ),
+        },
+      };
+    }
     case "java":
       return makeJavaDraft(args);
+    case "ruby":
+      return makeRubyDraft(args);
+    case "php":
+      return makePhpDraft(args);
     case "elixir":
       return makeElixirDraft(args);
     case "dotnet":

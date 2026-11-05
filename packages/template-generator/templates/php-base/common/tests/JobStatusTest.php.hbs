@@ -1,0 +1,50 @@
+{{#if (ne phpJobQueue "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\JobQueue;
+use PHPUnit\Framework\TestCase;
+
+final class JobStatusTest extends TestCase
+{
+    public function testWaitsForTheWriterBeforeReadingStatus(): void
+    {
+        $directory = sys_get_temp_dir() . '/job-status-' . bin2hex(random_bytes(6));
+        $previous = getenv('QUEUE_PATH');
+        putenv('QUEUE_PATH=' . $directory);
+        $queue = JobQueue::fromEnvironment('');
+        $id = str_repeat('a', 32);
+        $file = $directory . '/status/' . $id . '.json';
+        $writer = proc_open([PHP_BINARY, '-r', '
+            $handle = fopen($argv[1], "c");
+            if ($handle === false || !flock($handle, LOCK_EX)) exit(1);
+            ftruncate($handle, 0);
+            echo "locked\n";
+            fflush(STDOUT);
+            usleep(200000);
+            fwrite($handle, json_encode(["id" => str_repeat("a", 32), "status" => "done"], JSON_THROW_ON_ERROR));
+            fclose($handle);
+        ', $file], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+        try {
+            self::assertIsResource($writer);
+            self::assertSame("locked\n", fgets($pipes[1]));
+            self::assertSame(['id' => $id, 'status' => 'done'], $queue->status($id));
+        } finally {
+            foreach ($pipes as $pipe) {
+                fclose($pipe);
+            }
+            if (is_resource($writer)) {
+                proc_close($writer);
+            }
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST) as $entry) {
+                $entry->isDir() ? rmdir($entry->getPathname()) : unlink($entry->getPathname());
+            }
+            rmdir($directory);
+            putenv($previous === false ? 'QUEUE_PATH' : 'QUEUE_PATH=' . $previous);
+        }
+    }
+}
+{{/if}}

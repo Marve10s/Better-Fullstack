@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+use App\GreetingEndpoint;
+use App\Http\Middleware\ApplyCorsPolicy;
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\HandleCors;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(api: __DIR__ . '/../routes/api.php', {{#if (eq phpEmail "laravel-mail")}}commands: __DIR__ . '/../routes/console.php', {{/if}}apiPrefix: '')
+    ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->replace(HandleCors::class, ApplyCorsPolicy::class);
+    })
+    ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (Throwable $error) {
+            $status = $error instanceof HttpExceptionInterface ? $error->getStatusCode() : 500;
+            return response()->json(['error' => GreetingEndpoint::errorFor($status)], $status);
+        });
+    })
+    ->create();

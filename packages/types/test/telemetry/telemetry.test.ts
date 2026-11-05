@@ -35,6 +35,13 @@ describe("telemetry contract", () => {
   });
 
   it("validates canonical values rather than identifier syntax", () => {
+    expect(sanitizeTelemetryStackDimension("crystalWebFramework", "kemal")).toBe("kemal");
+    expect(
+      sanitizeTelemetryStackDimension("crystalWebFramework", "/private/customer"),
+    ).toBeUndefined();
+    expect(
+      sanitizeTelemetryStackDimension("crystalWebFramework", "sk-private-token"),
+    ).toBeUndefined();
     expect(sanitizeTelemetryStackDimension("backend", "hono")).toBe("hono");
     expect(sanitizeTelemetryStackDimension("backend", "customer-private-backend")).toBeUndefined();
     expect(sanitizeTelemetryStackDimension("targetEcosystem", "go")).toBe("go");

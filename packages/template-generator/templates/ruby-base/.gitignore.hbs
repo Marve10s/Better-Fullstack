@@ -1,0 +1,8 @@
+.bundle/
+vendor/bundle/
+.env
+*.log
+tmp/
+{{#if (or (ne rubyOrm "none") (eq rubyAuth "rodauth"))}}
+db/*.sqlite3*
+{{/if}}

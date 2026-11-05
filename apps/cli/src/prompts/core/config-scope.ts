@@ -4,7 +4,12 @@ import type { Ecosystem, ProjectConfig } from "@/types";
 
 import { getDefaultConfig } from "@/constants";
 import { exitCancelled } from "@/presentation/errors";
-import { isCancel, isGoBack, navigableMultiselect, navigableSelect } from "@/prompts/core/navigable";
+import {
+  isCancel,
+  isGoBack,
+  navigableMultiselect,
+  navigableSelect,
+} from "@/prompts/core/navigable";
 
 export type ConfigScope = "core" | "full" | "custom";
 
@@ -108,15 +113,7 @@ const typescriptSections = [
   {
     id: "content",
     label: "Content, Analytics & i18n",
-    promptKeys: [
-      "cms",
-      "analytics",
-      "webMcp",
-      "i18n",
-      "featureFlags",
-      "integrations",
-      "ecommerce",
-    ],
+    promptKeys: ["cms", "analytics", "webMcp", "i18n", "featureFlags", "integrations", "ecommerce"],
   },
   {
     id: "deploy",
@@ -283,6 +280,7 @@ export const CONFIG_SCOPE_REGISTRY = {
       },
     ],
   },
+  crystal: { core: ["crystalWebFramework", "crystalOrm", "crystalAuth", "crystalTesting", "crystalValidation", "crystalCache", "crystalJobs"], sections: [] },
   java: {
     core: [
       "javaWebFramework",
@@ -329,6 +327,36 @@ export const CONFIG_SCOPE_REGISTRY = {
       },
     ],
   },
+  ruby: {
+    core: [
+      "rubyWebFramework",
+      "rubyOrm",
+      "rubyAuth",
+      "rubyTesting",
+      "rubyValidation",
+      "rubyCache",
+      "rubyJobQueue",
+      "rubyEmail",
+      "rubyLogging",
+      "rubyHttpClient",
+    ],
+    sections: [],
+  },
+  php: {
+    core: [
+      "phpWebFramework",
+      "phpOrm",
+      "phpAuth",
+      "phpTesting",
+      "phpValidation",
+      "phpCache",
+      "phpJobQueue",
+      "phpEmail",
+      "phpLogging",
+      "phpHttpClient",
+    ],
+    sections: [],
+  },
   elixir: {
     core: ["elixirWebFramework", "database", "dbSetup", "elixirOrm", "elixirAuth", "elixirApi"],
     sections: [
@@ -336,6 +364,17 @@ export const CONFIG_SCOPE_REGISTRY = {
         id: "backend-extras",
         label: "Realtime & Jobs",
         promptKeys: ["elixirRealtime", "elixirJobs"],
+      },
+      {
+        id: "app-tooling",
+        label: "Logging, Config, Messaging, Templates & CLI",
+        promptKeys: [
+          "elixirLogging",
+          "elixirConfig",
+          "elixirMessageQueue",
+          "elixirTemplating",
+          "elixirCli",
+        ],
       },
       {
         id: "type-safety-http",

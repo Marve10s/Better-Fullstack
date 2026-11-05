@@ -1,0 +1,101 @@
+abstract class ApiHandler < Marten::Handler
+  private def respond(result : GreetingRequest::Result) : Marten::HTTP::Response
+    json(result.body, status: result.status)
+  end
+end
+
+class HealthHandler < ApiHandler
+  http_method_names :get
+
+  def get
+    json({status: "ok"})
+  end
+end
+
+class HelloHandler < ApiHandler
+  http_method_names :get
+
+  def get
+    respond GreetingRequest.query(request.query_params["name"]?)
+  end
+end
+
+class EchoHandler < ApiHandler
+  http_method_names :post
+  protect_from_forgery false
+
+  def post
+    respond GreetingRequest.json(request.body)
+  end
+end
+{{#if (ne crystalOrm "none")}}
+
+class GreetingsHandler < ApiHandler
+  http_method_names :get, :post
+  protect_from_forgery false
+
+  def get
+    respond GreetingStore.list
+  end
+
+  def post
+    respond GreetingStore.create(request.body)
+  end
+end
+{{/if}}
+{{#if (ne crystalAuth "none")}}
+
+class LoginHandler < ApiHandler
+  http_method_names :post
+  protect_from_forgery false
+
+  def post
+    respond {{#if (eq crystalAuth "jwt")}}TokenAuth.login(request.body){{else}}SessionAuth.sign_in(request){{/if}}
+  end
+end
+
+class MeHandler < ApiHandler
+  http_method_names :get
+
+  def get
+    respond {{#if (eq crystalAuth "jwt")}}TokenAuth.current_user(request.headers["Authorization"]?){{else}}SessionAuth.current_user(request){{/if}}
+  end
+end
+{{/if}}
+{{#if (eq crystalAuth "marten-auth")}}
+
+class LogoutHandler < ApiHandler
+  http_method_names :post
+  protect_from_forgery false
+
+  def post
+    MartenAuth.sign_out(request)
+    head 204
+  end
+end
+{{/if}}
+{{#if (ne crystalCache "none")}}
+
+class CachedTimeHandler < ApiHandler
+  http_method_names :get
+
+  def get
+    respond CachedClock.fetch
+  end
+end
+{{/if}}
+{{#if (ne crystalJobs "none")}}
+
+class JobsHandler < ApiHandler
+  http_method_names :get, :post
+  protect_from_forgery false
+
+  def get
+    respond GreetingJobs.status(request.query_params["id"]?)
+  end
+
+  def post
+    respond GreetingJobs.enqueue(request.body)
+  end
+end
+{{/if}}

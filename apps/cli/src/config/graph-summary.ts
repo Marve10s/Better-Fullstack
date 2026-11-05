@@ -39,6 +39,9 @@ const BACKEND_LABELS: Record<string, string> = {
   "go:chi": "Go Chi API",
   "java:spring-boot": "Java Spring Boot API",
   "java:quarkus": "Java Quarkus API",
+  "php:slim": "PHP Slim HTTP API",
+  "php:laravel": "PHP Laravel HTTP API",
+  "php:symfony": "PHP Symfony HTTP API",
   "elixir:phoenix": "Elixir Phoenix API",
   "elixir:phoenix-live-view": "Elixir Phoenix LiveView API",
 };
@@ -104,6 +107,8 @@ export function getGraphBackendUrl(config: Pick<ProjectConfig, "stackParts">): s
   const backendPart = getPrimaryGraphPart(config, "backend");
 
   switch (backendPart?.ecosystem) {
+    case "php":
+      return "http://localhost:8080";
     case "elixir":
       return "http://localhost:4000";
     case "rust":
@@ -138,7 +143,9 @@ function labelFor(part: StackPart | undefined) {
     return FRONTEND_LABELS[part.toolId] ?? `${part.toolId} web app`;
   }
   if (part.role === "backend") {
-    return BACKEND_LABELS[`${part.ecosystem}:${part.toolId}`] ?? `${part.ecosystem} ${part.toolId} API`;
+    return (
+      BACKEND_LABELS[`${part.ecosystem}:${part.toolId}`] ?? `${part.ecosystem} ${part.toolId} API`
+    );
   }
   return TOOL_LABELS[part.toolId] ?? part.toolId;
 }

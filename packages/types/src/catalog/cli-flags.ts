@@ -65,6 +65,136 @@ export type ResolvedCliFlagGroup = {
   readonly flags: readonly ResolvedCliFlag[];
 };
 
+const GO_CLI_FLAG_DEFINITIONS = [
+  {
+    flag: "go-web-framework",
+    summary: "Go web framework.",
+    source: { kind: "category", category: "goWebFramework" },
+    configKey: "goWebFramework",
+  },
+  {
+    flag: "go-orm",
+    summary: "Go ORM / database.",
+    source: { kind: "category", category: "goOrm" },
+    configKey: "goOrm",
+  },
+  {
+    flag: "go-api",
+    summary: "Go API layer.",
+    source: { kind: "category", category: "goApi" },
+    configKey: "goApi",
+  },
+  {
+    flag: "go-cli",
+    summary: "Go CLI tooling.",
+    source: { kind: "category", category: "goCli" },
+    configKey: "goCli",
+  },
+  {
+    flag: "go-logging",
+    summary: "Go logging.",
+    source: { kind: "category", category: "goLogging" },
+    configKey: "goLogging",
+  },
+  {
+    flag: "go-auth",
+    summary: "Go-native auth helpers.",
+    source: { kind: "category", category: "goAuth" },
+    configKey: "goAuth",
+  },
+  {
+    flag: "go-testing",
+    summary: "Go testing libraries.",
+    source: { kind: "category", category: "goTesting" },
+    configKey: "goTesting",
+    multiple: true,
+  },
+  {
+    flag: "go-realtime",
+    summary: "Go realtime.",
+    source: { kind: "category", category: "goRealtime" },
+    configKey: "goRealtime",
+  },
+  {
+    flag: "go-message-queue",
+    summary: "Go message queue.",
+    source: { kind: "category", category: "goMessageQueue" },
+    configKey: "goMessageQueue",
+  },
+  {
+    flag: "go-caching",
+    summary: "Go caching.",
+    source: { kind: "category", category: "goCaching" },
+    configKey: "goCaching",
+  },
+  {
+    flag: "go-config",
+    summary: "Go config loader.",
+    source: { kind: "category", category: "goConfig" },
+    configKey: "goConfig",
+  },
+  {
+    flag: "go-observability",
+    summary: "Go observability.",
+    source: { kind: "category", category: "goObservability" },
+    configKey: "goObservability",
+  },
+  {
+    flag: "go-validation",
+    summary: "Go validation.",
+    source: { kind: "category", category: "goValidation" },
+    configKey: "goValidation",
+  },
+  {
+    flag: "go-quality",
+    summary: "Go code quality.",
+    source: { kind: "category", category: "goQuality" },
+    configKey: "goQuality",
+  },
+  {
+    flag: "go-migrations",
+    summary: "Go database migrations.",
+    source: { kind: "category", category: "goMigrations" },
+    configKey: "goMigrations",
+  },
+  {
+    flag: "go-templating",
+    summary: "Go templating.",
+    source: { kind: "category", category: "goTemplating" },
+    configKey: "goTemplating",
+  },
+  {
+    flag: "go-proto-tooling",
+    summary: "Go protobuf tooling.",
+    source: { kind: "category", category: "goProtoTooling" },
+    configKey: "goProtoTooling",
+  },
+  {
+    flag: "go-di",
+    summary: "Go dependency injection.",
+    source: { kind: "category", category: "goDI" },
+    configKey: "goDI",
+  },
+] as const satisfies readonly CliFlagDefinition[];
+
+type GoCliConfigKey = (typeof GO_CLI_FLAG_DEFINITIONS)[number]["configKey"];
+type GoCliSerializationInput = {
+  [Key in GoCliConfigKey]?: CliDefaultConfig[Key] extends readonly string[]
+    ? readonly string[]
+    : string;
+};
+
+export function serializeGoCliFlags(config: GoCliSerializationInput) {
+  return GO_CLI_FLAG_DEFINITIONS.map(({ flag, configKey }) => {
+    const value = config[configKey];
+    const serializedValue =
+      typeof value === "string"
+        ? value
+        : value?.filter((entry) => entry !== "none").join(" ") || "none";
+    return `--${flag} ${serializedValue}`;
+  });
+}
+
 export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
   {
     id: "common",
@@ -825,117 +955,14 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
     title: "Go flags",
     description: "Flags for `--ecosystem go`. Global `--auth` also applies.",
     ecosystem: "go",
-    flags: [
-      {
-        flag: "go-web-framework",
-        summary: "Go web framework.",
-        source: { kind: "category", category: "goWebFramework" },
-        configKey: "goWebFramework",
-      },
-      {
-        flag: "go-orm",
-        summary: "Go ORM / database.",
-        source: { kind: "category", category: "goOrm" },
-        configKey: "goOrm",
-      },
-      {
-        flag: "go-api",
-        summary: "Go API layer.",
-        source: { kind: "category", category: "goApi" },
-        configKey: "goApi",
-      },
-      {
-        flag: "go-cli",
-        summary: "Go CLI tooling.",
-        source: { kind: "category", category: "goCli" },
-        configKey: "goCli",
-      },
-      {
-        flag: "go-logging",
-        summary: "Go logging.",
-        source: { kind: "category", category: "goLogging" },
-        configKey: "goLogging",
-      },
-      {
-        flag: "go-auth",
-        summary: "Go-native auth helpers.",
-        source: { kind: "category", category: "goAuth" },
-        configKey: "goAuth",
-      },
-      {
-        flag: "go-testing",
-        summary: "Go testing libraries.",
-        source: { kind: "category", category: "goTesting" },
-        configKey: "goTesting",
-        multiple: true,
-      },
-      {
-        flag: "go-realtime",
-        summary: "Go realtime.",
-        source: { kind: "category", category: "goRealtime" },
-        configKey: "goRealtime",
-      },
-      {
-        flag: "go-message-queue",
-        summary: "Go message queue.",
-        source: { kind: "category", category: "goMessageQueue" },
-        configKey: "goMessageQueue",
-      },
-      {
-        flag: "go-caching",
-        summary: "Go caching.",
-        source: { kind: "category", category: "goCaching" },
-        configKey: "goCaching",
-      },
-      {
-        flag: "go-config",
-        summary: "Go config loader.",
-        source: { kind: "category", category: "goConfig" },
-        configKey: "goConfig",
-      },
-      {
-        flag: "go-observability",
-        summary: "Go observability.",
-        source: { kind: "category", category: "goObservability" },
-        configKey: "goObservability",
-      },
-      {
-        flag: "go-validation",
-        summary: "Go validation.",
-        source: { kind: "category", category: "goValidation" },
-        configKey: "goValidation",
-      },
-      {
-        flag: "go-quality",
-        summary: "Go code quality.",
-        source: { kind: "category", category: "goQuality" },
-        configKey: "goQuality",
-      },
-      {
-        flag: "go-migrations",
-        summary: "Go database migrations.",
-        source: { kind: "category", category: "goMigrations" },
-        configKey: "goMigrations",
-      },
-      {
-        flag: "go-templating",
-        summary: "Go templating.",
-        source: { kind: "category", category: "goTemplating" },
-        configKey: "goTemplating",
-      },
-      {
-        flag: "go-proto-tooling",
-        summary: "Go protobuf tooling.",
-        source: { kind: "category", category: "goProtoTooling" },
-        configKey: "goProtoTooling",
-      },
-      {
-        flag: "go-di",
-        summary: "Go dependency injection.",
-        source: { kind: "category", category: "goDI" },
-        configKey: "goDI",
-      },
-    ],
+    flags: GO_CLI_FLAG_DEFINITIONS,
+  },
+  {
+    id: "crystal",
+    title: "Crystal flags",
+    description: "Experimental Kemal, Lucky, Athena, or Marten HTTP service with Crystal and Shards.",
+    ecosystem: "crystal",
+    flags: [{ flag: "crystal-web-framework", summary: "Crystal HTTP framework.", source: { kind: "category", category: "crystalWebFramework" }, configKey: "crystalWebFramework" }, { flag: "crystal-orm", summary: "Crystal database layer.", source: { kind: "category", category: "crystalOrm" }, configKey: "crystalOrm" }, { flag: "crystal-auth", summary: "Crystal authentication.", source: { kind: "category", category: "crystalAuth" }, configKey: "crystalAuth" }, { flag: "crystal-testing", summary: "Crystal test tooling.", source: { kind: "category", category: "crystalTesting" }, configKey: "crystalTesting" }, { flag: "crystal-validation", summary: "Crystal input validation.", source: { kind: "category", category: "crystalValidation" }, configKey: "crystalValidation" }, { flag: "crystal-cache", summary: "Crystal cache store.", source: { kind: "category", category: "crystalCache" }, configKey: "crystalCache" }, { flag: "crystal-jobs", summary: "Crystal background jobs.", source: { kind: "category", category: "crystalJobs" }, configKey: "crystalJobs" }],
   },
   {
     id: "java",
@@ -1091,6 +1118,142 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
     ],
   },
   {
+    id: "ruby",
+    title: "Ruby flags",
+    description: "Flags for `--ecosystem ruby`.",
+    ecosystem: "ruby",
+    flags: [
+      {
+        flag: "ruby-web-framework",
+        summary: "Ruby HTTP framework.",
+        source: { kind: "category", category: "rubyWebFramework" },
+        configKey: "rubyWebFramework",
+      },
+      {
+        flag: "ruby-orm",
+        summary: "Ruby ORM / database layer.",
+        source: { kind: "category", category: "rubyOrm" },
+        configKey: "rubyOrm",
+      },
+      {
+        flag: "ruby-auth",
+        summary: "Ruby authentication.",
+        source: { kind: "category", category: "rubyAuth" },
+        configKey: "rubyAuth",
+      },
+      {
+        flag: "ruby-testing",
+        summary: "Ruby test framework.",
+        source: { kind: "category", category: "rubyTesting" },
+        configKey: "rubyTesting",
+      },
+      {
+        flag: "ruby-validation",
+        summary: "Ruby request validation.",
+        source: { kind: "category", category: "rubyValidation" },
+        configKey: "rubyValidation",
+      },
+      {
+        flag: "ruby-cache",
+        summary: "Ruby cache store.",
+        source: { kind: "category", category: "rubyCache" },
+        configKey: "rubyCache",
+      },
+      {
+        flag: "ruby-job-queue",
+        summary: "Ruby background job queue.",
+        source: { kind: "category", category: "rubyJobQueue" },
+        configKey: "rubyJobQueue",
+      },
+      {
+        flag: "ruby-email",
+        summary: "Ruby email delivery.",
+        source: { kind: "category", category: "rubyEmail" },
+        configKey: "rubyEmail",
+      },
+      {
+        flag: "ruby-logging",
+        summary: "Ruby request logging.",
+        source: { kind: "category", category: "rubyLogging" },
+        configKey: "rubyLogging",
+      },
+      {
+        flag: "ruby-http-client",
+        summary: "Ruby HTTP client.",
+        source: { kind: "category", category: "rubyHttpClient" },
+        configKey: "rubyHttpClient",
+      },
+    ],
+  },
+  {
+    id: "php",
+    title: "PHP flags",
+    description: "Flags for `--ecosystem php`.",
+    ecosystem: "php",
+    flags: [
+      {
+        flag: "php-web-framework",
+        summary: "PHP HTTP framework.",
+        source: { kind: "category", category: "phpWebFramework" },
+        configKey: "phpWebFramework",
+      },
+      {
+        flag: "php-orm",
+        summary: "PHP ORM / database layer.",
+        source: { kind: "category", category: "phpOrm" },
+        configKey: "phpOrm",
+      },
+      {
+        flag: "php-auth",
+        summary: "PHP authentication.",
+        source: { kind: "category", category: "phpAuth" },
+        configKey: "phpAuth",
+      },
+      {
+        flag: "php-testing",
+        summary: "PHP test runner.",
+        source: { kind: "category", category: "phpTesting" },
+        configKey: "phpTesting",
+      },
+      {
+        flag: "php-validation",
+        summary: "PHP validation library.",
+        source: { kind: "category", category: "phpValidation" },
+        configKey: "phpValidation",
+      },
+      {
+        flag: "php-cache",
+        summary: "PHP cache library.",
+        source: { kind: "category", category: "phpCache" },
+        configKey: "phpCache",
+      },
+      {
+        flag: "php-job-queue",
+        summary: "PHP background job queue.",
+        source: { kind: "category", category: "phpJobQueue" },
+        configKey: "phpJobQueue",
+      },
+      {
+        flag: "php-email",
+        summary: "PHP email library.",
+        source: { kind: "category", category: "phpEmail" },
+        configKey: "phpEmail",
+      },
+      {
+        flag: "php-logging",
+        summary: "PHP logging (framework-specific).",
+        source: { kind: "category", category: "phpLogging" },
+        configKey: "phpLogging",
+      },
+      {
+        flag: "php-http-client",
+        summary: "PHP HTTP client.",
+        source: { kind: "category", category: "phpHttpClient" },
+        configKey: "phpHttpClient",
+      },
+    ],
+  },
+  {
     id: "elixir",
     title: "Elixir flags",
     description: "Flags for `--ecosystem elixir`.",
@@ -1209,6 +1372,36 @@ export const CLI_FLAG_GROUP_DEFINITIONS: readonly CliFlagGroupDefinition[] = [
         summary: "Elixir clustering.",
         source: { kind: "category", category: "elixirClustering" },
         configKey: "elixirClustering",
+      },
+      {
+        flag: "elixir-logging",
+        summary: "Elixir logging.",
+        source: { kind: "category", category: "elixirLogging" },
+        configKey: "elixirLogging",
+      },
+      {
+        flag: "elixir-cli",
+        summary: "Elixir command-line tooling.",
+        source: { kind: "category", category: "elixirCli" },
+        configKey: "elixirCli",
+      },
+      {
+        flag: "elixir-templating",
+        summary: "Elixir text templating engine.",
+        source: { kind: "category", category: "elixirTemplating" },
+        configKey: "elixirTemplating",
+      },
+      {
+        flag: "elixir-message-queue",
+        summary: "Elixir message broker client.",
+        source: { kind: "category", category: "elixirMessageQueue" },
+        configKey: "elixirMessageQueue",
+      },
+      {
+        flag: "elixir-config",
+        summary: "Elixir runtime configuration.",
+        source: { kind: "category", category: "elixirConfig" },
+        configKey: "elixirConfig",
       },
       {
         flag: "elixir-deploy",

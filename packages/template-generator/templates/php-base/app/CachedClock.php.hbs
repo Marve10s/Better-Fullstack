@@ -1,0 +1,85 @@
+{{#if (ne phpCache "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use DateTimeImmutable;
+{{#if (eq phpCache "laravel-cache")}}
+use Illuminate\Contracts\Cache\Repository;
+{{else if (eq phpCache "laminas-cache")}}
+use Laminas\Cache\Psr\SimpleCache\SimpleCacheDecorator;
+use Laminas\Cache\Storage\Adapter\Filesystem;
+use Psr\SimpleCache\CacheInterface;
+{{else if (eq phpCache "predis")}}
+use Predis\Client;
+{{else}}
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+{{/if}}
+
+final readonly class CachedClock
+{
+    public const int TTL_SECONDS = 60;
+
+{{#if (eq phpCache "laravel-cache")}}
+    public function __construct(private Repository $cache, private string $namespace)
+{{else if (eq phpCache "predis")}}
+    public function __construct(private Client $cache, private string $namespace)
+{{else}}
+    public function __construct(private CacheInterface $cache, private string $namespace)
+{{/if}}
+    {
+    }
+
+{{#if (ne phpCache "laravel-cache")}}
+    public static function fromEnvironment(string $root): self
+    {
+        $namespace = getenv('CACHE_NAMESPACE') ?: 'app';
+{{#if (eq phpCache "predis")}}
+        return new self(new Client(getenv('REDIS_URL') ?: 'tcp://127.0.0.1:6379'), $namespace);
+{{else}}
+        $directory = $root . '{{#if (eq phpWebFramework "laravel")}}/storage/framework/cache/app{{else}}/var/cache/app{{/if}}';
+{{#if (eq phpCache "laminas-cache")}}
+        if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
+            throw new \RuntimeException('Cannot create cache directory.');
+        }
+        return new self(new SimpleCacheDecorator(new Filesystem(['cache_dir' => $directory])), $namespace);
+{{else}}
+        return new self(new FilesystemAdapter('', self::TTL_SECONDS, $directory), $namespace);
+{{/if}}
+{{/if}}
+    }
+
+{{/if}}
+    public function read(): array
+    {
+        $key = $this->namespace . '.clock';
+{{#if (eq phpCache "symfony-cache")}}
+        $cached = true;
+        $value = $this->cache->get($key, function (ItemInterface $item) use (&$cached): string {
+            $cached = false;
+            $item->expiresAfter(self::TTL_SECONDS);
+            return (new DateTimeImmutable())->format(DATE_RFC3339_EXTENDED);
+        });
+        return ['value' => $value, 'cached' => $cached];
+{{else}}
+        $value = $this->cache->get($key);
+        if (is_string($value)) {
+            return ['value' => $value, 'cached' => true];
+        }
+        $value = (new DateTimeImmutable())->format(DATE_RFC3339_EXTENDED);
+{{#if (eq phpCache "predis")}}
+        $this->cache->set($key, $value, 'EX', self::TTL_SECONDS);
+{{else if (eq phpCache "laravel-cache")}}
+        $this->cache->put($key, $value, self::TTL_SECONDS);
+{{else}}
+        $this->cache->set($key, $value, self::TTL_SECONDS);
+{{/if}}
+        return ['value' => $value, 'cached' => false];
+{{/if}}
+    }
+}
+{{/if}}

@@ -1,0 +1,72 @@
+{{#if (ne phpOrm "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Application;
+use App\Notes;
+use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
+use Slim\App;
+use Slim\Psr7\Factory\ServerRequestFactory;
+use Slim\Psr7\Factory\StreamFactory;
+
+final class NotesTest extends TestCase
+{
+    private string $database;
+
+    protected function setUp(): void
+    {
+        $this->database = tempnam(sys_get_temp_dir(), 'notes-') ?: throw new \RuntimeException('Cannot create database file.');
+    }
+
+    protected function tearDown(): void
+    {
+        @unlink($this->database);
+    }
+
+    private function app(): App
+    {
+        $notes = Notes::open($this->database);
+        $notes->migrate();
+        return Application::create('', $notes);
+    }
+
+    private static function post(App $app, string $body): ResponseInterface
+    {
+        $request = (new ServerRequestFactory())->createServerRequest('POST', '/api/notes')
+            ->withHeader('Content-Type', 'application/json')
+            ->withBody((new StreamFactory())->createStream($body));
+        return $app->handle($request);
+    }
+
+    private static function decode(ResponseInterface $response): mixed
+    {
+        return json_decode((string) $response->getBody(), true, 32, JSON_THROW_ON_ERROR);
+    }
+
+    public function testPersistsAndListsNotes(): void
+    {
+        $app = $this->app();
+        $created = self::post($app, '{"title":" First note "}');
+        self::assertSame(201, $created->getStatusCode());
+        self::assertSame(['id' => 1, 'title' => 'First note'], self::decode($created));
+        self::post($app, '{"title":"Second note"}');
+        $reopened = $this->app();
+        $list = $reopened->handle((new ServerRequestFactory())->createServerRequest('GET', '/api/notes'));
+        self::assertSame(['notes' => [['id' => 1, 'title' => 'First note'], ['id' => 2, 'title' => 'Second note']]], self::decode($list));
+    }
+
+    public function testRejectsInvalidNotes(): void
+    {
+        $app = $this->app();
+        foreach (['{"title":""}', '{"title":7}', '{"title":"x","extra":1}', '[]'] as $body) {
+            self::assertSame(422, self::post($app, $body)->getStatusCode(), $body);
+        }
+        self::assertSame(400, self::post($app, '{')->getStatusCode());
+        self::assertSame(['notes' => []], self::decode($app->handle((new ServerRequestFactory())->createServerRequest('GET', '/api/notes'))));
+    }
+}
+{{/if}}

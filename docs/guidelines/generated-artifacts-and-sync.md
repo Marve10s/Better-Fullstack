@@ -83,4 +83,4 @@ Review those diffs, then regenerate embedded templates when source versions chan
 - Confirm output is deterministic on a second run when practical.
 - Run the narrow package build/test that consumes the artifact.
 - Run template snapshots for template changes.
-- Run `bun run test:release` for release-sensitive generator/schema projections.
+- Run `bun run test` and `bun run test:release` for release-sensitive generator/schema projections.

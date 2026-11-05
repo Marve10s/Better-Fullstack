@@ -1,0 +1,86 @@
+{{#if (ne phpEmail "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+{{#if (eq phpEmail "symfony-mailer")}}
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mailer\Transport;
+use Symfony\Component\Mime\Email;
+{{else if (eq phpEmail "phpmailer")}}
+use PHPMailer\PHPMailer\PHPMailer;
+{{else}}
+use Illuminate\Mail\Message;
+use Illuminate\Support\Facades\Mail;
+{{/if}}
+
+final readonly class WelcomeMailer
+{
+    public const string SUBJECT = 'Welcome to {{projectName}}';
+
+{{#if (eq phpEmail "symfony-mailer")}}
+    public function __construct(private MailerInterface $mailer, private string $from)
+    {
+    }
+
+    public static function fromEnvironment(): self
+    {
+        return new self(new Mailer(Transport::fromDsn(getenv('MAILER_DSN') ?: 'smtp://127.0.0.1:1025')), getenv('MAIL_FROM_ADDRESS') ?: 'hello@example.com');
+    }
+
+    public function send(string $to): void
+    {
+        $this->mailer->send((new Email())->from($this->from)->to($to)->subject(self::SUBJECT)->text(self::body()));
+    }
+{{else if (eq phpEmail "phpmailer")}}
+    public function __construct(private string $host, private int $port, private string $username, private string $password, private string $encryption, private string $from)
+    {
+    }
+
+    public static function fromEnvironment(): self
+    {
+        return new self(getenv('MAIL_HOST') ?: '127.0.0.1', (int) (getenv('MAIL_PORT') ?: 1025), (string) getenv('MAIL_USERNAME'), (string) getenv('MAIL_PASSWORD'), (string) getenv('MAIL_ENCRYPTION'), getenv('MAIL_FROM_ADDRESS') ?: 'hello@example.com');
+    }
+
+    public function compose(string $to): PHPMailer
+    {
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host = $this->host;
+        $mail->Port = $this->port;
+        $mail->Timeout = 10;
+        if ($this->username !== '') {
+            $mail->SMTPAuth = true;
+            $mail->Username = $this->username;
+            $mail->Password = $this->password;
+        }
+        if ($this->encryption !== '') {
+            $mail->SMTPSecure = $this->encryption;
+        }
+        $mail->setFrom($this->from);
+        $mail->addAddress($to);
+        $mail->Subject = self::SUBJECT;
+        $mail->Body = self::body();
+        return $mail;
+    }
+
+    public function send(string $to): void
+    {
+        $this->compose($to)->send();
+    }
+{{else}}
+    public function send(string $to): void
+    {
+        Mail::raw(self::body(), fn (Message $message) => $message->to($to)->subject(self::SUBJECT));
+    }
+{{/if}}
+
+    public static function body(): string
+    {
+        return "Your {{projectName}} service can send email.\n";
+    }
+}
+{{/if}}

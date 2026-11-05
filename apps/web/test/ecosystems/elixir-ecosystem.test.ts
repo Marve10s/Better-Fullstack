@@ -1,7 +1,7 @@
 import { PRESET_DEFINITIONS, PRESET_CATEGORIES } from "@better-fullstack/types";
 import { describe, expect, it } from "bun:test";
 
-import { getDisabledReason } from "@/components/stack-builder/utils";
+import { analyzeStackCompatibility, getDisabledReason } from "@/components/stack-builder/utils";
 import { DEFAULT_STACK, ECOSYSTEMS, type StackState } from "@/lib/stack/constant";
 import { generateStackCommand } from "@/lib/stack/stack-utils";
 
@@ -60,6 +60,22 @@ describe("Elixir Ecosystem Tab", () => {
         expect(getDisabledReason(stack, category, optionId)).toBeNull();
       }
     }
+  });
+
+  it.each(["peri", "tarams"] as const)("disables %s without Ecto", (elixirValidation) => {
+    const stack = {
+      ...DEFAULT_STACK,
+      ecosystem: "elixir" as const,
+      elixirOrm: "none" as const,
+      elixirValidation,
+    };
+    expect(getDisabledReason(stack, "elixirValidation", elixirValidation)).toContain(
+      "Peri and Tarams require Ecto",
+    );
+    expect(analyzeStackCompatibility(stack).adjustedStack?.elixirValidation).toBe("none");
+    expect(
+      getDisabledReason({ ...stack, elixirOrm: "ecto" }, "elixirValidation", elixirValidation),
+    ).toBeNull();
   });
 
   it("serializes Elixir presets into ecosystem-specific commands", () => {

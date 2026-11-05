@@ -1,0 +1,84 @@
+{{#if (ne phpAuth "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use App\Kernel;
+use App\TokenVerifier;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+final class AuthTest extends TestCase
+{
+    private const string SECRET = 'test-secret-with-at-least-32-bytes!';
+
+    protected function setUp(): void
+    {
+        putenv('JWT_SECRET=' . self::SECRET);
+        putenv('JWT_ISSUER=issuer');
+        putenv('JWT_AUDIENCE=api');
+    }
+
+    protected function tearDown(): void
+    {
+        putenv('JWT_SECRET');
+        putenv('JWT_ISSUER');
+        putenv('JWT_AUDIENCE');
+    }
+
+    private function me(?string $authorization): Response
+    {
+        $request = Request::create('/api/me');
+        if ($authorization !== null) {
+            $request->headers->set('Authorization', $authorization);
+        }
+        $kernel = new Kernel('test', false);
+        $response = $kernel->handle($request);
+        $kernel->shutdown();
+        return $response;
+    }
+
+    public function testAllowsBearerAuthorizationInPreflight(): void
+    {
+        $previous = getenv('CORS_ORIGIN');
+        putenv('CORS_ORIGIN=http://localhost:5173');
+        $kernel = new Kernel('test', false);
+        try {
+            $request = Request::create('/api/me', 'OPTIONS', server: [
+                'HTTP_ORIGIN' => 'http://localhost:5173',
+                'HTTP_ACCESS_CONTROL_REQUEST_METHOD' => 'GET',
+                'HTTP_ACCESS_CONTROL_REQUEST_HEADERS' => 'authorization',
+            ]);
+            $response = $kernel->handle($request);
+            self::assertSame(204, $response->getStatusCode());
+            self::assertSame('http://localhost:5173', $response->headers->get('Access-Control-Allow-Origin'));
+            self::assertContains('authorization', array_map('trim', explode(',', strtolower((string) $response->headers->get('Access-Control-Allow-Headers')))));
+        } finally {
+            $kernel->shutdown();
+            putenv($previous === false ? 'CORS_ORIGIN' : 'CORS_ORIGIN=' . $previous);
+        }
+    }
+
+    public function testAcceptsASignedTokenForTheConfiguredAudience(): void
+    {
+        $response = $this->me('Bearer ' . TokenVerifier::fromEnvironment()->issue('ada'));
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame(['subject' => 'ada'], json_decode((string) $response->getContent(), true, 32, JSON_THROW_ON_ERROR));
+    }
+
+    public function testRejectsMissingTamperedForeignAndExpiredTokens(): void
+    {
+        $tokens = TokenVerifier::fromEnvironment();
+        $token = $tokens->issue('ada');
+        foreach ([null, $token, 'Bearer ' . $token . 'x', 'Bearer ' . (new TokenVerifier(self::SECRET, 'issuer', 'other'))->issue('ada'), 'Bearer ' . (new TokenVerifier(str_repeat('x', 32), 'issuer', 'api'))->issue('ada'), 'Bearer ' . $tokens->issue('ada', -60)] as $authorization) {
+            $response = $this->me($authorization);
+            self::assertSame(401, $response->getStatusCode(), (string) $authorization);
+            self::assertSame('Bearer', $response->headers->get('WWW-Authenticate'));
+            self::assertSame(['error' => 'unauthorized'], json_decode((string) $response->getContent(), true, 32, JSON_THROW_ON_ERROR));
+        }
+    }
+}
+{{/if}}

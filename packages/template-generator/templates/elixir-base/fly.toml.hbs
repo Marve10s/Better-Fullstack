@@ -5,8 +5,16 @@ primary_region = "iad"
   dockerfile = "Dockerfile"
 
 [env]
+{{#if (eq elixirApi "grpc")}}
+  GRPC_PORT = "50051"
+{{/if}}
+{{#if (ne elixirWebFramework "none")}}
   PHX_HOST = "{{elixirDeployAppName}}.fly.dev"
   PORT = "4000"
+{{/if}}
+{{#if (or (eq elixirClustering "libcluster") (eq elixirClustering "dns-cluster"))}}
+  DNS_CLUSTER_QUERY = "{{elixirDeployAppName}}.internal"
+{{/if}}
 {{#if (eq elixirOrm "ecto_sqlite3")}}
   DATABASE_PATH = "/data/{{elixirAppName}}.db"
 
@@ -15,18 +23,41 @@ primary_region = "iad"
   destination = "/data"
 {{/if}}
 
+{{#if (ne elixirWebFramework "none")}}
 [http_service]
   internal_port = 4000
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
-{{#if (eq elixirJobs "oban")}}
-  # Oban runs inside the app, so a stopped machine also stops queued and scheduled jobs.
+{{#if (or (eq elixirJobs "oban") (eq elixirJobs "exq"))}}
+  # Jobs run inside the app, so a stopped machine also stops queued and scheduled jobs.
   min_machines_running = 1
 {{else}}
   min_machines_running = 0
 {{/if}}
   processes = ["app"]
+{{/if}}
+
+{{#if (eq elixirApi "grpc")}}
+[[services]]
+  internal_port = 50051
+  protocol = "tcp"
+  processes = ["app"]
+  auto_stop_machines = true
+  auto_start_machines = true
+{{#if (or (eq elixirJobs "oban") (eq elixirJobs "exq"))}}
+  min_machines_running = 1
+{{else}}
+  min_machines_running = 0
+{{/if}}
+
+  [[services.ports]]
+    port = 50051
+    handlers = ["tls", "http"]
+
+    [services.ports.http_options]
+      h2_backend = true
+{{/if}}
 
 [[vm]]
   memory = "1gb"

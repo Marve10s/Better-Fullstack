@@ -1,0 +1,86 @@
+defmodule {{elixirModuleName}}.CLI do
+{{#if (eq elixirCli "optimus")}}
+  def spec do
+    Optimus.new!(
+      name: "{{elixirAppName}}.greet",
+      description: "Print a greeting",
+      version: "0.1.0",
+      allow_unknown_args: false,
+      options: [
+        name: [
+          value_name: "NAME",
+          short: "-n",
+          long: "--name",
+          help: "Who to greet",
+          default: "world"
+        ],
+        times: [
+          value_name: "TIMES",
+          short: "-t",
+          long: "--times",
+          help: "How many times to greet",
+          parser: :integer,
+          default: 1
+        ]
+      ]
+    )
+  end
+
+  def run(argv) do
+    case Optimus.parse(spec(), argv) do
+      {:ok, %{options: %{name: name, times: times}}} -> {:ok, greet(name, times)}
+      :help -> {:ok, IO.iodata_to_binary(Optimus.help(spec()))}
+      :version -> {:ok, "{{elixirAppName}} 0.1.0"}
+      {:error, errors} -> {:error, Enum.join(errors, "\n")}
+    end
+  end
+{{else}}
+  @switches [name: :string, times: :integer, help: :boolean]
+  @aliases [n: :name, t: :times, h: :help]
+
+  def run(argv) do
+    case OptionParser.parse(argv, strict: @switches, aliases: @aliases) do
+      {[help: true], [], []} ->
+        {:ok, "Usage: mix {{elixirAppName}}.greet [--name NAME] [--times TIMES]"}
+
+      {opts, [], []} ->
+        output = greet(Keyword.get(opts, :name, "world"), Keyword.get(opts, :times, 1))
+{{#if (eq elixirCli "owl")}}
+        {:ok, boxed(output)}
+{{else}}
+        {:ok, output}
+{{/if}}
+
+      {_opts, args, invalid} ->
+        unknown = Enum.map(invalid, &elem(&1, 0)) ++ args
+        {:error, "Invalid arguments: #{Enum.join(unknown, " ")}"}
+    end
+  end
+{{#if (eq elixirCli "owl")}}
+
+  defp boxed(text) do
+    text
+    |> Owl.Box.new(title: "{{elixirAppName}}", padding_x: 1)
+    |> Owl.Data.to_chardata()
+    |> IO.chardata_to_string()
+  end
+{{/if}}
+{{/if}}
+
+  def main(argv) do
+    case run(argv) do
+      {:ok, output} ->
+        IO.puts(output)
+
+      {:error, message} ->
+        IO.puts(:stderr, message)
+        exit({:shutdown, 1})
+    end
+  end
+
+  defp greet(name, times) do
+    "Hello, #{name}!"
+    |> List.duplicate(max(times, 1))
+    |> Enum.join("\n")
+  end
+end

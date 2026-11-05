@@ -1,0 +1,48 @@
+{{#if (eq phpOrm "eloquent")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests;
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Testing\TestResponse;
+
+final class NotesTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public $mockConsoleOutput = false;
+
+    protected function setUp(): void
+    {
+        putenv('APP_ENV=testing');
+        putenv('DB_CONNECTION=sqlite');
+        putenv('DB_DATABASE=:memory:');
+        parent::setUp();
+    }
+
+    private function postNote(string $body): TestResponse
+    {
+        return $this->call('POST', '/api/notes', server: ['CONTENT_TYPE' => 'application/json'], content: $body);
+    }
+
+    public function testPersistsAndListsNotes(): void
+    {
+        $this->postNote('{"title":" First note "}')->assertCreated()->assertExactJson(['id' => 1, 'title' => 'First note']);
+        $this->postNote('{"title":"Second note"}')->assertCreated();
+        $this->assertDatabaseCount('notes', 2);
+        $this->get('/api/notes')->assertExactJson(['notes' => [['id' => 1, 'title' => 'First note'], ['id' => 2, 'title' => 'Second note']]]);
+    }
+
+    public function testRejectsInvalidNotes(): void
+    {
+        foreach (['{"title":""}', '{"title":7}', '{"title":"x","extra":1}', '[]'] as $body) {
+            $this->postNote($body)->assertStatus(422);
+        }
+        $this->postNote('{')->assertStatus(400);
+        $this->assertDatabaseCount('notes', 0);
+    }
+}
+{{/if}}

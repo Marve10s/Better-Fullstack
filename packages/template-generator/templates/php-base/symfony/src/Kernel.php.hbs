@@ -1,0 +1,118 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+{{#if (eq phpOrm "doctrine")}}
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
+{{/if}}
+{{#if (eq phpAuth "symfony-security")}}
+use App\Security\BearerChallenge;
+use App\Security\BearerTokenHandler;
+{{/if}}
+use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
+{{#if (eq phpLogging "symfony-monolog")}}
+use Symfony\Bundle\MonologBundle\MonologBundle;
+{{/if}}
+use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+{{#if (eq phpAuth "symfony-security")}}
+use Symfony\Bundle\SecurityBundle\SecurityBundle;
+{{/if}}
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+{{#if (eq phpCache "symfony-cache")}}
+use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
+{{/if}}
+use Symfony\Component\HttpKernel\Kernel as BaseKernel;
+use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
+
+final class Kernel extends BaseKernel
+{
+    use MicroKernelTrait;
+
+    public function registerBundles(): iterable
+    {
+        yield new FrameworkBundle();
+{{#if (eq phpLogging "symfony-monolog")}}
+        yield new MonologBundle();
+{{/if}}
+{{#if (eq phpAuth "symfony-security")}}
+        yield new SecurityBundle();
+{{/if}}
+{{#if (eq phpOrm "doctrine")}}
+        yield new DoctrineBundle();
+{{/if}}
+    }
+
+    private function configureContainer(ContainerConfigurator $container): void
+    {
+        $container->extension('framework', [
+            'http_method_override' => false,
+            'handle_all_throwables' => true,
+            'php_errors' => ['log' => true],
+        ]);
+        $container->parameters()->set('app.cors_origin', '%env(default::CORS_ORIGIN)%');
+{{#if (eq phpLogging "symfony-monolog")}}
+        $container->parameters()->set('app.log_path', 'php://stderr');
+        $container->extension('monolog', [
+            'handlers' => [
+                'main' => ['type' => 'stream', 'path' => '%env(default:app.log_path:LOG_PATH)%', 'level' => 'info', 'formatter' => 'monolog.formatter.json'],
+            ],
+        ]);
+{{/if}}
+{{#if (eq phpOrm "doctrine")}}
+        $container->parameters()->set('app.database_path', '%kernel.project_dir%/var/database.sqlite');
+        $container->extension('doctrine', [
+            'dbal' => ['driver' => 'pdo_sqlite', 'path' => '%env(default:app.database_path:DATABASE_PATH)%'],
+            'orm' => [
+                'mappings' => [
+                    'App' => ['type' => 'attribute', 'dir' => '%kernel.project_dir%/src/Entity', 'prefix' => 'App\\Entity'],
+                ],
+            ],
+        ]);
+{{/if}}
+        $container->services()
+            ->defaults()->autowire()->autoconfigure()
+            ->load('App\\Controller\\', __DIR__ . '/Controller/')
+            ->load('App\\EventSubscriber\\', __DIR__ . '/EventSubscriber/'){{#if (eq phpAuth "symfony-security")}}
+            ->load('App\\Security\\', __DIR__ . '/Security/'){{/if}};
+{{#if (ne phpAuth "none")}}
+        $container->services()->set(TokenVerifier::class)->factory([TokenVerifier::class, 'fromEnvironment']);
+{{/if}}
+{{#if (eq phpCache "symfony-cache")}}
+        $container->parameters()->set('app.cache_namespace', 'app');
+        $container->services()->set(CachedClock::class)->args([service('cache.app'), '%env(default:app.cache_namespace:CACHE_NAMESPACE)%']);
+{{else if (ne phpCache "none")}}
+        $container->services()->set(CachedClock::class)->factory([CachedClock::class, 'fromEnvironment'])->args(['%kernel.project_dir%']);
+{{/if}}
+{{#if (ne phpHttpClient "none")}}
+        $container->services()->set(UpstreamClient::class)->factory([UpstreamClient::class, 'fromEnvironment']);
+{{/if}}
+{{#if (ne phpJobQueue "none")}}
+        $container->services()->set(JobQueue::class)->factory([JobQueue::class, 'fromEnvironment'])->args(['%kernel.project_dir%']);
+{{/if}}
+{{#if (eq phpAuth "symfony-security")}}
+        $container->extension('security', [
+            'providers' => ['token_subjects' => ['memory' => null]],
+            'firewalls' => [
+                'api' => [
+                    'pattern' => '^/api/me',
+                    'stateless' => true,
+                    'provider' => 'token_subjects',
+                    'entry_point' => BearerChallenge::class,
+                    'access_token' => [
+                        'token_handler' => BearerTokenHandler::class,
+                        'failure_handler' => BearerChallenge::class,
+                    ],
+                ],
+            ],
+            'access_control' => [['path' => '^/api/me', 'roles' => 'IS_AUTHENTICATED_FULLY']],
+        ]);
+{{/if}}
+    }
+
+    private function configureRoutes(RoutingConfigurator $routes): void
+    {
+        $routes->import(__DIR__ . '/Controller/', 'attribute');
+    }
+}

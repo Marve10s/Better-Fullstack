@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Foundation\Application;
+use Symfony\Component\Console\Input\ArgvInput;
+
+require __DIR__ . '/vendor/autoload.php';
+
+$app = require __DIR__ . '/bootstrap/app.php';
+assert($app instanceof Application);
+exit($app->handleCommand(new ArgvInput()));

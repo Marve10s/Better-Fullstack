@@ -1,0 +1,34 @@
+defmodule {{elixirModuleName}}.Templates do
+{{#if (eq elixirTemplating "eex")}}
+  require EEx
+
+  @template_path "priv/templates/welcome.eex"
+  @external_resource @template_path
+
+  EEx.function_from_file(:defp, :render_welcome, @template_path, [:assigns])
+
+  def welcome(name, count), do: render_welcome(name: name, count: count)
+{{/if}}
+{{#if (eq elixirTemplating "solid-liquid")}}
+  def welcome(name, count) do
+    {:ok, template} = Solid.parse(File.read!(template_path()))
+    {:ok, output, _errors} = Solid.render(template, %{"name" => name, "count" => count})
+    IO.iodata_to_binary(output)
+  end
+
+  defp template_path,
+    do: Application.app_dir(:{{elixirAppName}}, "priv/templates/welcome.liquid")
+{{/if}}
+{{#if (eq elixirTemplating "bbmustache")}}
+  def welcome(name, count) do
+    :bbmustache.render(
+      File.read!(template_path()),
+      %{"name" => name, "count" => count, "one" => count == 1},
+      key_type: :binary
+    )
+  end
+
+  defp template_path,
+    do: Application.app_dir(:{{elixirAppName}}, "priv/templates/welcome.mustache")
+{{/if}}
+end

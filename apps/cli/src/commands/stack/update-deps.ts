@@ -51,11 +51,6 @@ function getAddDepsPath(): string {
     path.join(process.cwd(), "packages/template-generator/src/dependencies/add-deps.ts"),
     // Development: running from apps/cli
     path.join(process.cwd(), "../../packages/template-generator/src/dependencies/add-deps.ts"),
-    // Installed: look in node_modules
-    path.join(
-      process.cwd(),
-      "node_modules/@better-fullstack/template-generator/src/utils/add-deps.ts",
-    ),
   ];
 
   for (const p of possiblePaths) {
@@ -75,7 +70,9 @@ async function updateAddDepsFile(updates: VersionInfo[]): Promise<boolean> {
   const filePath = getAddDepsPath();
 
   if (!fs.existsSync(filePath)) {
-    log.error(`Could not find add-deps.ts at ${filePath}`);
+    log.error(
+      `Could not find add-deps.ts at ${filePath}. update-deps edits the Better-Fullstack source, so run it from a Better-Fullstack checkout.`,
+    );
     return false;
   }
 

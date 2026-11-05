@@ -7,7 +7,6 @@
   "ignorePatterns": [
     "*.hbs",
     "apps/cli/templates/**",
-    "apps/web/src/lib/docs/verified-combinations-data.ts",
     "packages/template-generator/src/templates.generated.ts"
   ]
 }

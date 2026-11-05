@@ -1,0 +1,6 @@
+require "bundler/setup"
+require "sidekiq/cli"
+
+cli = Sidekiq::CLI.instance
+cli.parse(["--require", File.expand_path("../jobs.rb", __dir__), "--queue", ENV.fetch("JOBS_QUEUE", "default"), "--concurrency", ENV.fetch("WORKER_CONCURRENCY", "2")])
+cli.run

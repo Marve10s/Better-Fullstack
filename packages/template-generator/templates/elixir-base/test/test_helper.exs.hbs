@@ -1,4 +1,11 @@
+{{#if (ne elixirMessageQueue "none")}}
+ExUnit.start(exclude: [:message_queue])
+{{else}}
 ExUnit.start()
+{{/if}}
+{{#if (eq elixirJobs "exq")}}
+{:ok, _} = Exq.Mock.start_link(mode: :fake)
+{{/if}}
 {{#if (eq elixirTesting "wallaby")}}
 {:ok, _} = Application.ensure_all_started(:wallaby)
 

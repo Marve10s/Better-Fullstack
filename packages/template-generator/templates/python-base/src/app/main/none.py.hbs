@@ -1,0 +1,30 @@
+"""Main application entry point."""
+# ruff: noqa: I001
+
+
+from dotenv import load_dotenv
+{{#if (eq pythonObservability "signoz")}}
+from app import otel as _otel  # noqa: F401 - importing activates SigNoz tracing
+{{/if}}
+{{#if (ne pythonLogging "none")}}
+from app.logging_config import configure_logging
+{{/if}}
+
+{{#if (eq observability "sentry")}}
+from app.observability import init_sentry
+
+{{/if}}
+load_dotenv()
+{{#if (ne pythonLogging "none")}}
+configure_logging()
+{{/if}}
+
+
+def main():
+    """Main entry point."""
+    print("Welcome to {{projectName}}!")
+    print("Add your application logic here.")
+
+
+if __name__ == "__main__":
+    main()

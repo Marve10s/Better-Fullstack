@@ -3,6 +3,10 @@ defmodule {{elixirModuleName}}.Application do
 
   @impl true
   def start(_type, _args) do
+{{#if (eq elixirLogging "logger-file-backend")}}
+    LoggerBackends.add({LoggerFileBackend, :file_log})
+
+{{/if}}
 {{#if (and (eq elixirObservability "opentelemetry") (ne elixirWebFramework "none"))}}
 {{#if (eq elixirHttpServer "bandit")}}
     OpentelemetryBandit.setup()
@@ -25,6 +29,13 @@ defmodule {{elixirModuleName}}.Application do
       )
 
 {{/if}}
+{{#if (eq elixirJobs "exq")}}
+    exq_children =
+      if Application.get_env(:{{elixirAppName}}, :start_exq, true),
+        do: [Exq],
+        else: []
+
+{{/if}}
 {{#if (eq elixirClustering "libcluster")}}
     topologies =
       Application.fetch_env!(
@@ -33,13 +44,18 @@ defmodule {{elixirModuleName}}.Application do
       )
 
 {{/if}}
-{{#if (or (eq elixirObservability "prom_ex") (eq elixirOrm "ecto-sql") (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3") (ne elixirWebFramework "none") (eq elixirHttp "finch") (eq elixirEmail "swoosh") (ne elixirCaching "none") (eq elixirClustering "libcluster") (ne elixirJobs "none"))}}
+{{#if (or (eq elixirObservability "prom_ex") (eq elixirOrm "ecto-sql") (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3") (ne elixirWebFramework "none") (eq elixirHttp "finch") (eq elixirEmail "swoosh") (ne elixirCaching "none") (ne elixirClustering "none") (eq elixirJobs "oban") (eq elixirJobs "quantum"))}}
     children = [
+{{#if (eq elixirApi "grpc")}}
+      {GRPC.Server.Supervisor,
+       [endpoint: {{elixirModuleName}}.GRPCEndpoint] ++
+         Application.fetch_env!(:{{elixirAppName}}, {{elixirModuleName}}.GRPCEndpoint)},
+{{/if}}
 {{#if (eq elixirObservability "prom_ex")}}
-      {{elixirModuleName}}.PromEx{{#if (or (eq elixirOrm "ecto-sql") (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3") (ne elixirWebFramework "none") (eq elixirHttp "finch") (eq elixirEmail "swoosh") (ne elixirCaching "none") (eq elixirClustering "libcluster") (ne elixirJobs "none"))}},{{/if}}
+      {{elixirModuleName}}.PromEx{{#if (or (eq elixirOrm "ecto-sql") (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3") (ne elixirWebFramework "none") (eq elixirHttp "finch") (eq elixirEmail "swoosh") (ne elixirCaching "none") (ne elixirClustering "none") (eq elixirJobs "oban") (eq elixirJobs "quantum"))}},{{/if}}
 {{/if}}
 {{#if (or (eq elixirOrm "ecto-sql") (eq elixirOrm "myxql") (eq elixirOrm "ecto_sqlite3"))}}
-      {{elixirModuleName}}.Repo{{#if (or (ne elixirWebFramework "none") (eq elixirHttp "finch") (eq elixirEmail "swoosh") (ne elixirCaching "none") (eq elixirClustering "libcluster") (ne elixirJobs "none"))}},{{/if}}
+      {{elixirModuleName}}.Repo{{#if (or (ne elixirWebFramework "none") (eq elixirHttp "finch") (eq elixirEmail "swoosh") (ne elixirCaching "none") (ne elixirClustering "none") (eq elixirJobs "oban") (eq elixirJobs "quantum"))}},{{/if}}
 {{/if}}
 {{#if (ne elixirWebFramework "none")}}
       {Phoenix.PubSub, name: {{elixirModuleName}}.PubSub},
@@ -48,22 +64,22 @@ defmodule {{elixirModuleName}}.Application do
       {{elixirModuleName}}Web.Presence,
 {{/if}}
 {{#if (eq elixirHttp "finch")}}
-      {Finch, name: {{elixirModuleName}}.Finch}{{#if (or (ne elixirWebFramework "none") (eq elixirEmail "swoosh") (ne elixirCaching "none") (eq elixirClustering "libcluster") (ne elixirJobs "none"))}},{{/if}}
+      {Finch, name: {{elixirModuleName}}.Finch}{{#if (or (ne elixirWebFramework "none") (eq elixirEmail "swoosh") (ne elixirCaching "none") (ne elixirClustering "none") (eq elixirJobs "oban") (eq elixirJobs "quantum"))}},{{/if}}
 {{/if}}
 {{#if (eq elixirEmail "swoosh")}}
-      {Finch, name: Swoosh.Finch}{{#if (or (ne elixirWebFramework "none") (ne elixirCaching "none") (eq elixirClustering "libcluster") (ne elixirJobs "none"))}},{{/if}}
+      {Finch, name: Swoosh.Finch}{{#if (or (ne elixirWebFramework "none") (ne elixirCaching "none") (ne elixirClustering "none") (eq elixirJobs "oban") (eq elixirJobs "quantum"))}},{{/if}}
 {{/if}}
 {{#if (eq elixirCaching "cachex")}}
-      {Cachex, name: :{{elixirAppName}}_cache}{{#if (or (ne elixirWebFramework "none") (eq elixirClustering "libcluster") (ne elixirJobs "none"))}},{{/if}}
+      {Cachex, name: :{{elixirAppName}}_cache}{{#if (or (ne elixirWebFramework "none") (ne elixirClustering "none") (eq elixirJobs "oban") (eq elixirJobs "quantum"))}},{{/if}}
 {{/if}}
 {{#if (eq elixirCaching "nebulex")}}
-      {{elixirModuleName}}.Cache{{#if (or (ne elixirWebFramework "none") (eq elixirClustering "libcluster") (ne elixirJobs "none"))}},{{/if}}
+      {{elixirModuleName}}.Cache{{#if (or (ne elixirWebFramework "none") (ne elixirClustering "none") (eq elixirJobs "oban") (eq elixirJobs "quantum"))}},{{/if}}
 {{/if}}
 {{#if (eq elixirCaching "redix")}}
       {
         Redix,
         {redis_url, name: {{elixirModuleName}}.Redix}
-      }{{#if (or (ne elixirWebFramework "none") (eq elixirClustering "libcluster") (ne elixirJobs "none"))}},{{/if}}
+      }{{#if (or (ne elixirWebFramework "none") (ne elixirClustering "none") (eq elixirJobs "oban") (eq elixirJobs "quantum"))}},{{/if}}
 {{/if}}
 {{#if (eq elixirClustering "libcluster")}}
       {
@@ -72,7 +88,16 @@ defmodule {{elixirModuleName}}.Application do
           topologies,
           [name: {{elixirModuleName}}.ClusterSupervisor]
         ]
-      }{{#if (or (ne elixirWebFramework "none") (ne elixirJobs "none"))}},{{/if}}
+      }{{#if (or (ne elixirWebFramework "none") (eq elixirJobs "oban") (eq elixirJobs "quantum"))}},{{/if}}
+{{/if}}
+{{#if (eq elixirClustering "dns-cluster")}}
+      {
+        DNSCluster,
+        query: Application.get_env(:{{elixirAppName}}, :dns_cluster_query) || :ignore
+      }{{#if (or (ne elixirWebFramework "none") (eq elixirJobs "oban") (eq elixirJobs "quantum"))}},{{/if}}
+{{/if}}
+{{#if (eq elixirClustering "distributed-erlang")}}
+      {{elixirModuleName}}.Cluster{{#if (or (ne elixirWebFramework "none") (eq elixirJobs "oban") (eq elixirJobs "quantum"))}},{{/if}}
 {{/if}}
 {{#if (eq elixirJobs "oban")}}
       {Oban, oban_config}{{#if (or (ne elixirWebFramework "none"))}},{{/if}}
@@ -93,7 +118,7 @@ defmodule {{elixirModuleName}}.Application do
       name: {{elixirModuleName}}.Supervisor
     ]
 
-    Supervisor.start_link(children, opts)
+    Supervisor.start_link(children{{#if (eq elixirJobs "exq")}} ++ exq_children{{/if}}, opts)
   end
 
   @impl true

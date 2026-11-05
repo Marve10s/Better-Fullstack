@@ -1,0 +1,26 @@
+{{#if (ne phpOrm "none")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use InvalidArgumentException;
+use stdClass;
+
+final class NoteInput
+{
+    public static function titleFromJson(string $json): string
+    {
+        $body = json_decode($json, false, 32, JSON_THROW_ON_ERROR);
+        if (!$body instanceof stdClass || array_keys(get_object_vars($body)) !== ['title']) {
+            throw new InvalidArgumentException('Expected a JSON object with only title.');
+        }
+        $title = is_string($body->title) ? trim($body->title) : '';
+        if ($title === '' || strlen($title) > 120) {
+            throw new InvalidArgumentException('title must contain 1 to 120 bytes of text.');
+        }
+        return $title;
+    }
+}
+{{/if}}

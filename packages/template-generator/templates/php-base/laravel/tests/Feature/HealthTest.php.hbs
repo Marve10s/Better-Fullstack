@@ -1,0 +1,9 @@
+{{#if (eq phpTesting "pest")}}
+<?php
+
+declare(strict_types=1);
+
+it('reports health as JSON', function (): void {
+    $this->get('/health')->assertOk()->assertExactJson(['status' => 'ok', 'framework' => 'laravel']);
+});
+{{/if}}

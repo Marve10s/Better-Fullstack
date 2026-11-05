@@ -1,0 +1,117 @@
+# {{projectName}}
+
+Experimental Crystal 1.22.1 and Shards 0.20.0 project. {{#if (eq crystalWebFramework "kemal")}}Kemal is pinned to 1.15.0.{{/if}}{{#if (eq crystalWebFramework "lucky")}}Lucky is pinned to 1.5.0 and runs without Avram or a database.{{/if}}{{#if (eq crystalWebFramework "athena")}}The Athena framework component is pinned to 0.23.0.{{/if}}{{#if (eq crystalWebFramework "marten")}}Marten is pinned to 0.7.1 and runs without a database.{{/if}} Public capability evidence remains unverified until a current receipt qualifies this recipe.
+
+Install the native toolchain using the [official installation guide](https://crystal-lang.org/install/). On macOS, Homebrew provides `brew install crystal`, which includes Shards. Confirm `crystal --version` reports 1.22.1 and `shards --version` reports 0.20.0 before qualifying this exact recipe. Package manager versions may advance; use official release archives if needed.
+
+```sh
+shards install
+{{#if (eq crystalOrm "avram")}}
+crystal run scripts/db_migrate.cr
+{{/if}}
+{{#if (eq crystalOrm "marten-orm")}}
+crystal run manage.cr -- migrate
+{{/if}}
+{{#if (eq crystalAuth "marten-auth")}}
+AUTH_PASSWORD=change-me crystal run manage.cr -- seed
+{{/if}}
+{{#if (eq crystalWebFramework "athena")}}
+shards build --release -Dwithout_libmagic
+{{#if (ne crystalTesting "none")}}
+crystal spec -Dwithout_libmagic
+{{/if}}
+{{else}}
+shards build --release
+{{#if (ne crystalTesting "none")}}
+crystal spec
+{{/if}}
+{{/if}}
+{{#if (eq crystalWebFramework "none")}}
+./bin/server
+{{else}}
+crystal run scripts/http_proof.cr
+HOST=127.0.0.1 PORT=3000{{#if (eq crystalWebFramework "kemal")}} KEMAL_ENV=production{{/if}} ./bin/server
+{{/if}}
+```
+
+Commit `shard.lock` after the first successful install. It pins transitive shards. Subsequent clean installs can use `shards install --frozen`. `shards update` intentionally changes the lock; review and rerun native proofs after updating. `shards build --release` emits `bin/server`.
+{{#if (eq crystalWebFramework "athena")}}
+
+Athena's MIME component links `libmagic` by default. The `-Dwithout_libmagic` flag keeps the binary free of that native library; MIME types are then guessed from file extensions only.
+{{/if}}
+{{#if (ne crystalWebFramework "none")}}
+
+`GET /health` returns `{"status":"ok"}`. `GET /api/hello?name=Crystal` and `POST /api/echo` with `{"name":"Crystal"}` return `{"message":"Hello, Crystal!"}`. Blank or more than 80 characters returns 422; malformed JSON returns 400; request bodies larger than 4096 bytes return {{#if (eq crystalWebFramework "marten")}}400, Marten's native response for oversized bodies{{else}}413{{/if}}. Unknown routes use the framework's default 404 behavior.
+
+`PORT` accepts canonical decimal integers from 1 through 65535; invalid values exit 2 before binding. `HOST` defaults to loopback.{{#if (eq crystalWebFramework "kemal")}} `KEMAL_ENV` defaults to production.{{/if}}{{#if (eq crystalWebFramework "lucky")}} Set `SECRET_KEY_BASE` in production; without it each boot uses a random key. Cookies are disabled for the JSON actions.{{/if}}{{#if (eq crystalWebFramework "marten")}} Set `MARTEN_SECRET_KEY` in production; without it each boot uses a random key. `ALLOWED_HOSTS` is a comma-separated host allowlist and defaults to `127.0.0.1,localhost`.{{/if}} Configure `CORS_ORIGIN` with a comma-separated list of exact frontend origins for GET requests. Cross-origin POST/preflight and browser credentials are outside this recipe. Environment values are read from the process; `.env.example` is documentation and is not loaded automatically.
+
+The proof chooses a free loopback port, starts the compiled server, parses real HTTP JSON, rejects invalid input, sends SIGTERM, waits at most five seconds, and checks the port can be rebound. Cleanup kills only its child process on failure. Port selection has a small close/bind race. The proof uses POSIX signals and targets macOS/Linux.{{#if (eq crystalWebFramework "kemal")}} Kemal drains active requests for at most two seconds; long-lived request draining has not been qualified.{{/if}}
+{{/if}}
+
+{{#if (ne crystalOrm "none")}}
+`GET /api/greetings` returns the newest 20 stored names as `{"greetings":[...]}`. `POST /api/greetings` with `{"name":"Crystal"}` stores the validated name and returns 201; invalid names return 422 and are not written.
+
+{{/if}}
+{{#if (eq crystalOrm "crystal-db")}}
+crystal-db 0.15.0 and crystal-sqlite3 0.24.0 run parameterized SQL against `DATABASE_URL`, which defaults to `sqlite3://./development.sqlite3`. The `greetings` table is created on first use. The SQLite shard links the system `libsqlite3`; macOS includes it, and Debian or Ubuntu need `libsqlite3-dev`. Specs use a temporary database file.
+
+{{/if}}
+{{#if (eq crystalOrm "avram")}}
+Avram 1.5.0 stores greetings in PostgreSQL at `DATABASE_URL`. `crystal run scripts/db_migrate.cr` creates the database and applies pending migrations; `crystal run scripts/db_migrate.cr -- rollback` reverts the latest one. Specs migrate and truncate the separate database in `TEST_DATABASE_URL`, so never point it at data you need. The HTTP proof uses the connection credentials in `DATABASE_URL` to create a uniquely named database, then drops it on exit; the database user needs permission to create and drop databases.
+
+{{/if}}
+{{#if (eq crystalOrm "marten-orm")}}
+Marten's ORM stores greetings in SQLite at `DATABASE_PATH`, which defaults to `development.sqlite3`. Run `crystal run manage.cr -- migrate` before starting the server; `crystal run manage.cr -- genmigrations` writes new migrations after model changes. Specs run migrations against an in-memory database. The SQLite shard links the system `libsqlite3`.
+
+{{/if}}
+{{#if (ne crystalAuth "none")}}
+`POST /api/auth/login` with `{"username":"...","password":"..."}` signs in; wrong credentials return 401. `GET /api/me` returns `{"username":"..."}` for a signed-in caller and 401 otherwise.{{#if (ne crystalAuth "marten-auth")}} The only account is `AUTH_USERNAME` (default `demo`) with `AUTH_PASSWORD`; while `AUTH_PASSWORD` is unset every sign-in fails. Credentials are compared in constant time. Replace this single account with a user store before production.{{/if}}
+
+{{/if}}
+{{#if (eq crystalAuth "jwt")}}
+crystal-community/jwt 1.7.2 issues HS256 tokens that expire after one hour. Send them as `Authorization: Bearer <token>`. Set `JWT_SECRET` to a long random value; without it each boot uses a random secret and earlier tokens stop working. Decoding pins HS256, so unsigned or differently signed tokens are rejected. There is no revocation list.
+
+{{/if}}
+{{#if (eq crystalAuth "kemal-session")}}
+kemal-session 1.6.0 stores the signed-in username in a server-side session. Sign-in rotates the session id, `POST /api/auth/logout` destroys it, and the `app_session` cookie is HttpOnly, SameSite=Lax, and Secure unless `SESSION_SECURE=false`. Set `SESSION_SECRET`; without it each boot signs cookies with a random secret. Sessions use kemal-session's memory engine, so they reset on restart and are not shared across processes.
+
+{{/if}}
+{{#if (eq crystalAuth "marten-auth")}}
+Marten Auth 0.2.1 stores users in the `accounts_user` table with bcrypt password hashes and signs them in through Marten sessions. `crystal run manage.cr -- seed` creates or updates the user named by `AUTH_USERNAME` (default `demo@example.com`) with `AUTH_PASSWORD`. `POST /api/auth/logout` clears the session. Session cookies are HttpOnly and Secure unless `SESSION_SECURE=false`. Marten's default store keeps the session in a signed cookie, so a copied cookie stays valid until it expires; set `MARTEN_SECRET_KEY` so sessions survive restarts.
+
+{{/if}}
+{{#if (eq crystalValidation "athena-validator")}}
+Athena Validator 0.6.0 checks greeting names in `src/greeting_input.cr` with `NotBlank` and `Length(..80)` constraints. A violation raises `ArgumentError`, which the routes return as 422 with the constraint message.
+
+{{/if}}
+{{#if (eq crystalValidation "active-model")}}
+Spider-Gazelle ActiveModel 4.7.1 checks greeting names in `src/greeting_input.cr` with `presence` and `length` validations. A failure raises `ArgumentError`, which the routes return as 422 with the first error. ActiveModel pulls in `crystal-db` and the `sanitize` shard, which tracks its default branch; `shard.lock` pins the resolved commit.
+
+{{/if}}
+{{#if (eq crystalValidation "marten-schema")}}
+A Marten schema in `src/greeting_input.cr` strips greeting names and requires 1 to 80 characters. A failure raises `ArgumentError`, which the handlers return as 422 with Marten's translated message.
+
+{{/if}}
+{{#if (ne crystalCache "none")}}
+`GET /api/cached-time` returns `{"cached_at":"..."}` and keeps the same timestamp until its 30-second entry expires.{{#if (eq crystalCache "memory")}} crystal-cache 1.1.0's MemoryStore keeps entries inside one server process, so they reset on restart and are not shared between processes.{{/if}}{{#if (eq crystalCache "file")}} crystal-cache 1.1.0's FileStore writes entries under `CACHE_DIR`, which defaults to `tmp/cache`, so they survive restarts on the same machine.{{/if}}{{#if (eq crystalCache "redis")}} redis_cache_store 1.1.0 keeps entries in Redis at `REDIS_URL`, which defaults to `redis://localhost:6379`, namespaced by `{{shardName}}`. The route returns 503 while Redis is unreachable, and `crystal spec` needs a running Redis.{{/if}}
+
+{{/if}}
+{{#if (ne crystalJobs "none")}}
+`POST /api/jobs` with `{"name":"Crystal"}` validates the name, queues a greeting job, and returns 202 with `{"id":"...","status":"queued"}`. `GET /api/jobs?id=...` reports `queued` until the job stores `Hello, Crystal!`, then `done` with the message.{{#if (eq crystalJobs "sidekiq")}} Sidekiq.cr 0.8.0 queues jobs in Redis at `REDIS_URL` and stores results there for an hour. Run `./bin/worker` beside `./bin/server` to process them; the queue routes return 503 while Redis is unreachable, and `crystal spec` needs a running Redis.{{/if}}{{#if (eq crystalJobs "mosquito")}} Mosquito 2.0.0 queues jobs in Redis at `REDIS_URL` with retries and stores results there for an hour. Run `./bin/worker` beside `./bin/server` to process them; the queue routes return 503 while Redis is unreachable, and `crystal spec` needs a running Redis.{{/if}}{{#if (or (eq crystalJobs "sidekiq") (eq crystalJobs "mosquito"))}} The HTTP proof and specs use unique `JOBS_QUEUE` values so their jobs and results stay separate from application jobs. Set the same `JOBS_QUEUE` on a server and its worker to give them a separate queue.{{/if}}{{#if (eq crystalJobs "tasker")}} Tasker 3.1.0 runs the job inside the server process a few milliseconds later. Queued jobs and results are lost on restart, every server process keeps its own results, and results stay in memory until the process exits.{{/if}}
+
+{{/if}}
+{{#if (eq crystalTesting "spectator")}}
+Spectator 0.12.4 runs `spec/greeting_spectator_spec.cr` in the same `crystal spec` run as the built-in Spec files, and a failure in either fails the run. Use `Spectator.describe` with `let`, `subject`, `sample`, doubles, and mocks for new specs.
+
+{{/if}}
+{{#if (eq crystalTesting "spec-kemal")}}
+spec-kemal 1.3.0 sends requests through the Kemal handler chain in memory. `spec/server_spec.cr` sets `KEMAL_ENV=test` before requiring `src/server.cr`, so `Kemal.run` registers the routes without binding a port.
+
+{{/if}}
+{{#if (eq crystalTesting "none")}}
+No specs are generated. Add a `spec/` directory and run `crystal spec` when you add tests.
+
+{{/if}}
+Deployment, native addons, and service overlays are unsupported. Use an explicit mixed graph to add an independently owned frontend or another service; keep Crystal's manifest and native commands in its service directory.
+
+Named service replay uses `--part backend:crystal:{{#if (eq crystalWebFramework "none")}}kemal{{else}}{{crystalWebFramework}}{{/if}}:reports@services/reports`. The optional `@relative-path` suffix preserves the directory; percent-encode special path characters. Parent directories and absolute paths are rejected by the part parser. Existing part bindings without a suffix retain their defaults.

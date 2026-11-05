@@ -22,3 +22,8 @@ export async function clickVisibleTestId(page: Page, testId: string) {
   await expect(locator).toBeVisible();
   await locator.click();
 }
+
+export async function selectEcosystem(page: Page, ecosystemId: string) {
+  await clickVisibleTestId(page, "ecosystem-menu");
+  await clickVisibleTestId(page, `ecosystem-${ecosystemId}`);
+}

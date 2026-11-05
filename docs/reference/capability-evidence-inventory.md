@@ -17,23 +17,36 @@ promote every option that happened to exist in the generated project.
 
 ## Golden runtime recipes
 
-The release proof runs eight recipes. `testing/lib/generated-project-proof-matrix.ts` derives the
+The release proof runs the named recipes below. `testing/lib/generated-project-proof-matrix.ts` derives the
 matrix from the same definitions used by the CLI, MCP server, and web evidence endpoint.
 
-| Recipe       | Generation input                           | Live assertion                                                                                                                      | Known limit                                            |
-| ------------ | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| TypeScript   | `react-hono` test preset                   | Pushes the Drizzle schema, starts Hono, calls GraphQL health, then creates a Better Auth email user.                                | It does not run a browser UI.                          |
-| React Native | Explicit React Native and Hono Stack Parts | Builds and type-checks the native app, starts the generated Hono backend, and calls its root endpoint.                              | It does not launch a simulator or device.              |
-| Rust         | `rust-axum-seaorm` test preset             | Builds the Clap CLI, runs `info`, starts Axum through the CLI, calls the SeaORM health endpoint, then runs the CLI `check` command. | It uses local SQLite instead of a network database.    |
-| Python       | `python-fastapi-sqlalchemy` test preset    | Starts FastAPI through Uvicorn and calls the health endpoint.                                                                       | It does not cover external Python services.            |
-| Go           | `go-gin-gorm` test preset                  | Runs a real buffered gRPC client and server call, starts Gin, and calls the GORM health endpoint.                                   | It uses local SQLite instead of a network database.    |
-| Java         | `java-spring-maven` test preset            | Starts Spring Boot and calls the Actuator health endpoint.                                                                          | It uses the generated local H2 configuration.          |
-| Elixir       | `elixir-phoenix-api` test preset           | Creates and migrates the Ecto SQLite database, starts Phoenix, and calls its health endpoint.                                       | It covers the API path, not LiveView browser behavior. |
-| .NET         | `dotnet-minimal-efcore` test preset        | Starts the built ASP.NET Minimal API and calls the health-check endpoint.                                                           | It uses the generated local SQLite database.           |
+| Recipe       | Generation input                           | Live assertion                                                                                                                                          | Known limit                                            |
+| ------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| TypeScript   | `react-hono` test preset                   | Pushes the Drizzle schema, starts Hono, calls GraphQL health, then creates a Better Auth email user.                                                    | It does not run a browser UI.                          |
+| React Native | Explicit React Native and Hono Stack Parts | Builds and type-checks the native app, starts the generated Hono backend, and calls its root endpoint.                                                  | It does not launch a simulator or device.              |
+| Rust         | `rust-axum-seaorm` test preset             | Builds the Clap CLI, runs `info`, starts Axum through the CLI, calls the SeaORM health endpoint, then runs the CLI `check` command.                     | It uses local SQLite instead of a network database.    |
+| Python       | `python-fastapi-sqlalchemy` test preset    | Starts FastAPI through Uvicorn and calls the health endpoint.                                                                                           | It does not cover external Python services.            |
+| Go           | `go-gin-gorm` test preset                  | Runs a real buffered gRPC client and server call, starts Gin, and calls the GORM health endpoint.                                                       | It uses local SQLite instead of a network database.    |
+| Java         | `java-spring-maven` test preset            | Starts Spring Boot and calls the Actuator health endpoint.                                                                                              | It uses the generated local H2 configuration.          |
+| Elixir       | `elixir-phoenix-api` test preset           | Creates and migrates the Ecto SQLite database, starts Phoenix, and calls its health endpoint.                                                           | It covers the API path, not LiveView browser behavior. |
+| .NET         | `dotnet-minimal-efcore` test preset        | Starts the built ASP.NET Minimal API and calls the health-check endpoint.                                                                               | It uses the generated local SQLite database.           |
 
 The proof writes `generated-project-proof.json` and `capability-runtime-receipt.json` under
 `testing/.smoke-output/generated-project-proof/`. A release receipt embeds the capability receipt
-only when all eight recipes pass from a clean, full-SHA checkout.
+only when every required recipe passes from a clean, full-SHA checkout.
+
+The experimental PHP recipe has a separate `testing/php-runtime-proof.ts` lane in CI and releases.
+It checks Composer installation, the native build, PHPUnit, parsed HTTP responses, invalid input,
+CORS, and shutdown. Its observation does not promote public evidence or change the versioned
+eight-case upgrade fixture. Database, authentication, and production hosting remain outside it.
+
+## Experimental Ruby observation
+
+Ruby's Sinatra recipe uses a separate `testing/ruby-runtime-proof.ts` gate with Ruby 3.4.11 and Bundler 4.0.21. It exercises install, syntax checks, Minitest/Rack tests, live JSON HTTP, rejected input, and shutdown. The output remains an unqualified observation. Ruby stays listed and experimental until a current revision-matched receipt qualifies it. The eight golden recipes and historical upgrade receipt schema stay unchanged.
+
+## Experimental Crystal observation
+
+Crystal's Kemal, Lucky, Athena, and Marten recipes use the separate `testing/crystal-runtime-proof.ts` gate with Crystal 1.22.1 and Shards 0.20.0. The runner supports all four, but CI and release run only the default Kemal recipe. It scaffolds through the built CLI, installs dependencies, compiles, runs native specs, and checks live JSON HTTP, rejected input, and shutdown. Its revision, toolchain, lockfile, and result remain an unqualified observation. Crystal stays listed and experimental; the eight golden recipes and historical upgrade receipt schema are unchanged.
 
 ## Freshness and producer changes
 

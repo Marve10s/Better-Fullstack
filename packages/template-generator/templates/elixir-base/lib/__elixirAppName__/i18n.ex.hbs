@@ -1,0 +1,47 @@
+{{#if (eq elixirI18n "linguist")}}
+defmodule {{elixirModuleName}}.I18n do
+  use Linguist.Vocabulary
+
+  locale("en",
+    greeting: "Hello, %{name}!",
+    items: "%{count} items"
+  )
+
+  locale("fr",
+    greeting: "Bonjour, %{name} !",
+    items: "%{count} articles"
+  )
+end
+{{/if}}
+{{#if (eq elixirI18n "ex-cldr-messages")}}
+defmodule {{elixirModuleName}}.Cldr do
+  use Cldr,
+    locales: ["en", "fr"],
+    default_locale: "en",
+    providers: [Cldr.Number, Cldr.List, Cldr.Message]
+end
+
+defmodule {{elixirModuleName}}.I18n do
+  @messages %{
+    "en" => %{
+      "greeting" => "\{{Hello, {$name}!}}",
+      "items" => ".input {$count :number} .match $count one \{{{$count} item}} * \{{{$count} items}}"
+    },
+    "fr" => %{
+      "greeting" => "\{{Bonjour, {$name} !}}",
+      "items" =>
+        ".input {$count :number} .match $count one \{{{$count} article}} * \{{{$count} articles}}"
+    }
+  }
+
+  def t!(locale, key, bindings \\ []) do
+    @messages
+    |> Map.fetch!(locale)
+    |> Map.fetch!(key)
+    |> Cldr.Message.format!(Map.new(bindings, fn {name, value} -> {to_string(name), value} end),
+      backend: {{elixirModuleName}}.Cldr,
+      locale: locale
+    )
+  end
+end
+{{/if}}

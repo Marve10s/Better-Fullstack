@@ -77,14 +77,22 @@ export const createProjectOperation = defineOperation({
         createProject(config, { allowExistingDirectory: false }),
       );
       failureStage = "post_installation";
-      const installCmd = getInstallCommand(
-        input.ecosystem ?? "typescript",
+      let installCmd = getInstallCommand(
+        config.ecosystem,
         projectName,
-        input.packageManager,
-        input.javaBuildTool,
-        input.javaWebFramework,
-        input.pythonPackageManager,
+        config.packageManager,
+        config.javaBuildTool,
+        config.javaWebFramework,
+        config.pythonPackageManager,
+        config,
       );
+      if (input.part?.length) {
+        const { getGraphProjectTasks } = await import("@better-fullstack/template-generator");
+        const setup = getGraphProjectTasks(config).flatMap((task) =>
+          task.setup ? [`(${task.setup})`] : [],
+        );
+        if (setup.length > 0) installCmd = `cd ${projectName} && ${setup.join(" && ")}`;
+      }
       await trackProjectCreation(config, false, {
         source: "mcp",
         success: true,

@@ -1,0 +1,25 @@
+require "sidekiq"
+
+ENV["REDIS_PROVIDER"] ||= "REDIS_URL"
+ENV["REDIS_URL"] ||= "redis://localhost:6379"
+Sidekiq::Client.default_context = Sidekiq::Client::Context.new
+
+class GreetingJob
+  include Sidekiq::Worker
+
+  def perform(id : String, name : String)
+    Sidekiq.redis { |conn| conn.set(GreetingJob.key(id), "Hello, #{name}!", ex: 3600) }
+  end
+
+  def self.schedule(id : String, name : String) : Nil
+    async { |job| job.queue = ENV.fetch("JOBS_QUEUE", "default") }.perform(id, name)
+  end
+
+  def self.result(id : String) : String?
+    Sidekiq.redis { |conn| conn.get(key(id)) }
+  end
+
+  def self.key(id : String) : String
+    "{{shardName}}:#{ENV.fetch("JOBS_QUEUE", "default")}:greeting-jobs:#{id}"
+  end
+end

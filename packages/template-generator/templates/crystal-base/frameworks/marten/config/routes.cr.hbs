@@ -1,0 +1,21 @@
+Marten.routes.draw do
+  path "/health", HealthHandler, name: "health"
+  path "/api/hello", HelloHandler, name: "hello"
+  path "/api/echo", EchoHandler, name: "echo"
+{{#if (ne crystalOrm "none")}}
+  path "/api/greetings", GreetingsHandler, name: "greetings"
+{{/if}}
+{{#if (ne crystalJobs "none")}}
+  path "/api/jobs", JobsHandler, name: "jobs"
+{{/if}}
+{{#if (ne crystalCache "none")}}
+  path "/api/cached-time", CachedTimeHandler, name: "cached_time"
+{{/if}}
+{{#if (ne crystalAuth "none")}}
+  path "/api/auth/login", LoginHandler, name: "login"
+  path "/api/me", MeHandler, name: "me"
+{{/if}}
+{{#if (eq crystalAuth "marten-auth")}}
+  path "/api/auth/logout", LogoutHandler, name: "logout"
+{{/if}}
+end

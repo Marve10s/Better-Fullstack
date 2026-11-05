@@ -1,0 +1,157 @@
+require "lucky"
+require "./app_config"
+require "./greeting_request"
+require "./http_guard"
+{{#if (eq crystalAuth "jwt")}}
+require "./token_auth"
+{{/if}}
+{{#if (ne crystalCache "none")}}
+require "./cached_clock"
+{{/if}}
+{{#if (ne crystalJobs "none")}}
+require "./greeting_jobs"
+{{/if}}
+{{#if (ne crystalOrm "none")}}
+require "./greeting_store"
+{{/if}}
+
+Lucky::Server.configure do |settings|
+  settings.secret_key_base = ENV.fetch("SECRET_KEY_BASE", Random::Secure.urlsafe_base64(32))
+  settings.host = AppConfig.host
+  settings.port = AppConfig.port
+end
+
+Lucky::Session.configure do |settings|
+  settings.key = "_app_session"
+end
+
+Lucky::ForceSSLHandler.configure do |settings|
+  settings.enabled = false
+end
+
+Lucky::ErrorHandler.configure do |settings|
+  settings.show_debug_output = false
+end
+
+Lucky::RouteHelper.configure do |settings|
+  settings.base_uri = "http://#{Lucky::Server.settings.host}:#{Lucky::Server.settings.port}"
+end
+
+class Errors::Show < Lucky::ErrorAction
+  default_format :json
+  dont_report [Lucky::RouteNotFoundError]
+
+  def default_render(error : Exception) : Lucky::Response
+    json({error: "internal server error"}, status: 500)
+  end
+
+  def render(error : Lucky::RouteNotFoundError)
+    json({error: "not found"}, status: 404)
+  end
+
+  def report(error : Exception) : Nil
+    Log.error(exception: error) { error.message }
+  end
+end
+
+abstract class ApiAction < Lucky::Action
+  disable_cookies
+  accepted_formats [:json], default: :json
+
+  private def respond(result : GreetingRequest::Result) : Lucky::Response
+    raw_json(result.body, status: result.status)
+  end
+end
+
+class Health::Show < ApiAction
+  get "/health" do
+    json({status: "ok"})
+  end
+end
+
+class Api::Hello::Show < ApiAction
+  get "/api/hello" do
+    respond GreetingRequest.query(params.get?(:name))
+  end
+end
+
+class Api::Echo::Create < ApiAction
+  post "/api/echo" do
+    respond GreetingRequest.json(params.body)
+  end
+end
+
+{{#if (ne crystalOrm "none")}}
+class Api::Greetings::Index < ApiAction
+  get "/api/greetings" do
+    respond GreetingStore.list
+  end
+end
+
+class Api::Greetings::Create < ApiAction
+  post "/api/greetings" do
+    respond GreetingStore.create(params.body)
+  end
+end
+
+{{/if}}
+{{#if (eq crystalAuth "jwt")}}
+class Api::Auth::Login::Create < ApiAction
+  post "/api/auth/login" do
+    respond TokenAuth.login(params.body)
+  end
+end
+
+class Api::Me::Show < ApiAction
+  get "/api/me" do
+    respond TokenAuth.current_user(request.headers["Authorization"]?)
+  end
+end
+
+{{/if}}
+{{#if (ne crystalCache "none")}}
+class Api::CachedTime::Show < ApiAction
+  get "/api/cached-time" do
+    respond CachedClock.fetch
+  end
+end
+
+{{/if}}
+{{#if (ne crystalJobs "none")}}
+class Api::Jobs::Create < ApiAction
+  post "/api/jobs" do
+    respond GreetingJobs.enqueue(params.body)
+  end
+end
+
+class Api::Jobs::Show < ApiAction
+  get "/api/jobs" do
+    respond GreetingJobs.status(params.get?(:id))
+  end
+end
+
+{{/if}}
+class AppServer < Lucky::BaseAppServer
+  def middleware : Array(HTTP::Handler)
+    [
+      HttpGuard.new,
+      Lucky::RequestIdHandler.new,
+      Lucky::ErrorHandler.new(action: Errors::Show),
+      Lucky::RouteHandler.new,
+      Lucky::RouteNotFoundHandler.new,
+    ] of HTTP::Handler
+  end
+
+  def protocol
+    "http"
+  end
+
+  def listen
+    server.listen(host, port, reuse_port: false)
+  end
+end
+
+Habitat.raise_if_missing_settings!
+app_server = AppServer.new
+Process.on_terminate { app_server.close }
+app_server.listen

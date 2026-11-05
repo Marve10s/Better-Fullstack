@@ -11,7 +11,10 @@ export const ECOSYSTEM_SHARE_SLUGS = {
   rust: "rust",
   python: "python",
   go: "go",
+  crystal: "crystal",
   java: "java",
+  ruby: "ruby",
+  php: "php",
   elixir: "elixir",
   dotnet: "dotnet",
 } as const satisfies Record<StackState["ecosystem"], string>;

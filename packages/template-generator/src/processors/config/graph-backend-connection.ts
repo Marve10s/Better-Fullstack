@@ -7,18 +7,31 @@ import {
   getGraphBackendConnections,
   hasWebFrontend,
 } from "@/graph/graph-backend";
+import { getGraphFrontendPorts } from "@/graph/graph-frontend";
 
-/**
- * Pins the non-TypeScript backend's CORS to the web frontend's dev origin by
- * writing CORS_ORIGIN into the backend .env/.env.example. The backend templates
- * fall back to permissive CORS when the variable is unset. Backend-only and
- * multiple-frontend scaffolds keep that default instead of blocking a frontend.
- */
 export function processGraphBackendEnv(vfs: VirtualFileSystem, config: ProjectConfig): void {
+  const frontendOrigins = Array.from(
+    getGraphFrontendPorts(config).values(),
+    (port) => `http://localhost:${port}`,
+  );
   for (const connection of getGraphBackendConnections(config)) {
-    if (!connection.webOrigin || !vfs.directoryExists(connection.targetPath)) continue;
+    const corsOrigin =
+      (connection.ecosystem === "php" || connection.ecosystem === "crystal") &&
+      frontendOrigins.length > 0
+        ? [...new Set(frontendOrigins)].join(",")
+        : connection.webOrigin;
+    if (!corsOrigin || !vfs.directoryExists(connection.targetPath)) continue;
 
-    const line = `CORS_ORIGIN=${connection.webOrigin}`;
+    if (connection.ecosystem === "ruby") {
+      const path = `${connection.targetPath}/.env.example`;
+      const current = vfs.readFile(path) ?? "";
+      vfs.writeFile(
+        path,
+        current.replace(/^ALLOWED_ORIGIN=.*$/m, `ALLOWED_ORIGIN=${connection.webOrigin}`),
+      );
+      continue;
+    }
+    const line = `CORS_ORIGIN=${corsOrigin}`;
     for (const file of [".env", ".env.example"]) {
       const path = `${connection.targetPath}/${file}`;
       const current = vfs.exists(path) ? (vfs.readFile(path) ?? "") : "";
@@ -27,7 +40,10 @@ export function processGraphBackendEnv(vfs: VirtualFileSystem, config: ProjectCo
         next = current.replace(/^CORS_ORIGIN=.*$/m, line);
       } else {
         const separator = current.length > 0 && !current.endsWith("\n") ? "\n" : "";
-        const comment = "# Web frontend dev origin (unset or empty = allow any origin)\n";
+        const comment =
+          connection.ecosystem === "php" || connection.ecosystem === "crystal"
+            ? ""
+            : "# Web frontend dev origin (unset or empty = allow any origin)\n";
         next = `${current}${separator}${current.length > 0 ? "\n" : ""}${comment}${line}\n`;
       }
       vfs.writeFile(path, next);

@@ -5,7 +5,7 @@ defmodule {{elixirModuleName}}.MixProject do
     [
       app: :{{elixirAppName}},
       version: "0.1.0",
-      elixir: "~> 1.16",
+      elixir: "{{#if (eq elixirJson "elixir-json")}}~> 1.18{{else}}~> 1.17{{/if}}",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -28,7 +28,7 @@ defmodule {{elixirModuleName}}.MixProject do
   def application do
     [
       mod: { {{~elixirModuleName}}.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools{{#if (eq elixirTemplating "eex")}}, :eex{{/if}}]
     ]
   end
 
@@ -80,8 +80,11 @@ defmodule {{elixirModuleName}}.MixProject do
       {:oban, "~> 2.24.0"},
 {{/if}}
 {{#if (eq elixirApi "grpc")}}
-      {:grpc, "~> 0.11"},
-      {:protobuf, "~> 0.15"},
+      {:grpc, "~> 1.0.5"},
+      {:grpc_server, "~> 1.0.5"},
+      {:protobuf, "~> 0.17.1"},
+      {:cowboy, "~> 2.20.0"},
+      {:gun, "~> 2.4.0"},
 {{/if}}
 {{#if (includes elixirLibraries "broadway")}}
       {:broadway, "~> 1.3"},
@@ -91,6 +94,9 @@ defmodule {{elixirModuleName}}.MixProject do
 {{/if}}
 {{#if (eq elixirJobs "quantum")}}
       {:quantum, "~> 3.5"},
+{{/if}}
+{{#if (eq elixirJobs "exq")}}
+      {:exq, "~> 0.25"},
 {{/if}}
 {{#if (eq elixirApi "absinthe")}}
       {:absinthe, "~> 1.7"},
@@ -102,6 +108,12 @@ defmodule {{elixirModuleName}}.MixProject do
 {{#if (eq elixirValidation "nimble-options")}}
       {:nimble_options, "~> 1.1"},
 {{/if}}
+{{#if (eq elixirValidation "peri")}}
+      {:peri, "~> 0.11"},
+{{/if}}
+{{#if (eq elixirValidation "tarams")}}
+      {:tarams, "~> 1.9"},
+{{/if}}
 {{#if (or (eq elixirHttp "req") (eq elixirTesting "bypass"))}}
       {:req, "~> 0.5"},
 {{/if}}
@@ -111,8 +123,11 @@ defmodule {{elixirModuleName}}.MixProject do
 {{#if (eq elixirHttp "tesla")}}
       {:tesla, "~> 1.20"},
 {{/if}}
-{{#if (or (ne elixirWebFramework "none") (eq elixirJson "jason"))}}
+{{#if (or (ne elixirWebFramework "none") (eq elixirJson "jason") (and (eq elixirLogging "logger-json") (ne elixirJson "elixir-json")))}}
       {:jason, "~> 1.4"},
+{{/if}}
+{{#if (eq elixirJson "jiffy")}}
+      {:jiffy, "~> 2.0"},
 {{/if}}
 {{#if (eq elixirEmail "swoosh")}}
       {:swoosh, "~> 1.17"},
@@ -183,6 +198,12 @@ defmodule {{elixirModuleName}}.MixProject do
 {{#if (eq elixirI18n "gettext")}}
       {:gettext, "~> 1.0"},
 {{/if}}
+{{#if (eq elixirI18n "linguist")}}
+      {:linguist, "~> 0.6"},
+{{/if}}
+{{#if (eq elixirI18n "ex-cldr-messages")}}
+      {:ex_cldr_messages, "~> 2.0"},
+{{/if}}
 {{#if (and (ne elixirWebFramework "none") (eq elixirHttpServer "bandit"))}}
       {:bandit, "~> 1.12"},
 {{/if}}
@@ -197,6 +218,49 @@ defmodule {{elixirModuleName}}.MixProject do
 {{/if}}
 {{#if (eq elixirClustering "libcluster")}}
       {:libcluster, "~> 3.5"},
+{{/if}}
+{{#if (eq elixirClustering "dns-cluster")}}
+      {:dns_cluster, "~> 0.3"},
+{{/if}}
+{{#if (eq elixirLogging "logger-json")}}
+      {:logger_json, "~> 7.0"},
+{{/if}}
+{{#if (eq elixirLogging "logger-file-backend")}}
+      {:logger_file_backend, "~> 0.1"},
+      {:logger_backends, "~> 1.0"},
+{{/if}}
+{{#if (eq elixirLogging "logster")}}
+      {:logster, "~> 1.1"},
+{{/if}}
+{{#if (eq elixirConfig "dotenvy")}}
+      {:dotenvy, "~> 1.2"},
+{{/if}}
+{{#if (eq elixirConfig "skogsra")}}
+      {:skogsra, "~> 2.5"},
+{{/if}}
+{{#if (eq elixirConfig "confex")}}
+      {:confex, "~> 3.5"},
+{{/if}}
+{{#if (eq elixirMessageQueue "amqp")}}
+      {:amqp, "~> 4.3"},
+{{/if}}
+{{#if (eq elixirMessageQueue "gnat")}}
+      {:gnat, "~> 1.18"},
+{{/if}}
+{{#if (eq elixirMessageQueue "brod")}}
+      {:brod, "~> 4.7"},
+{{/if}}
+{{#if (eq elixirTemplating "solid-liquid")}}
+      {:solid, "~> 1.3"},
+{{/if}}
+{{#if (eq elixirTemplating "bbmustache")}}
+      {:bbmustache, "~> 1.12"},
+{{/if}}
+{{#if (eq elixirCli "optimus")}}
+      {:optimus, "~> 0.6"},
+{{/if}}
+{{#if (eq elixirCli "owl")}}
+      {:owl, "~> 0.13"},
 {{/if}}
 {{#if (includes elixirLibraries "ex_aws")}}
       {:ex_aws, "~> 2.7"},

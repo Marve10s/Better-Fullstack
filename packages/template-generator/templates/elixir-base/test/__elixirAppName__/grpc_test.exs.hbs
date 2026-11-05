@@ -1,0 +1,48 @@
+{{#if (eq elixirApi "grpc")}}
+defmodule {{elixirModuleName}}.GRPCTest do
+  use ExUnit.Case, async: false
+
+  alias {{elixirModuleName}}.Rpc.{Greeter, HelloReply, HelloRequest}
+
+  setup do
+    start_supervised!(
+      {GRPC.Server.Supervisor,
+       endpoint: {{elixirModuleName}}.GRPCEndpoint,
+       port: 0,
+       start_server: true,
+       max_body_size: 32_768,
+       adapter_opts: [ip: {127, 0, 0, 1}, num_acceptors: 1, idle_timeout: 5_000]}
+    )
+
+    port = :ranch.get_port(inspect({{elixirModuleName}}.GRPCEndpoint))
+    {:ok, channel} = GRPC.Stub.connect("127.0.0.1:#{port}", connect_timeout: 2_000)
+    on_exit(fn -> GRPC.Stub.disconnect(channel) end)
+    %{channel: channel}
+  end
+
+  test "exchanges a protobuf request and response over HTTP/2", %{channel: channel} do
+    assert {:ok, %HelloReply{message: "Hello, Better Fullstack!"}} =
+             Greeter.Stub.say_hello(channel, %HelloRequest{name: "Better Fullstack"}, timeout: 2_000)
+  end
+
+  test "returns invalid_argument for an empty name", %{channel: channel} do
+    assert {:error, %GRPC.RPCError{status: 3, message: message}} =
+             Greeter.Stub.say_hello(channel, %HelloRequest{name: "   "}, timeout: 2_000)
+
+    assert message == "name must contain 1 to 80 characters"
+  end
+
+  test "returns invalid_argument for a name longer than 80 characters", %{channel: channel} do
+    assert {:error, %GRPC.RPCError{status: 3}} =
+             Greeter.Stub.say_hello(channel, %HelloRequest{name: String.duplicate("a", 81)}, timeout: 2_000)
+  end
+
+  test "rejects an oversized body before the service and keeps the connection usable", %{channel: channel} do
+    assert {:error, %GRPC.RPCError{status: 8}} =
+             Greeter.Stub.say_hello(channel, %HelloRequest{name: String.duplicate("a", 40_000)}, timeout: 2_000)
+
+    assert {:ok, %HelloReply{message: "Hello, again!"}} =
+             Greeter.Stub.say_hello(channel, %HelloRequest{name: "again"}, timeout: 2_000)
+  end
+end
+{{/if}}

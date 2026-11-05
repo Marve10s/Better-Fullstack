@@ -1,0 +1,51 @@
+{{#if (eq phpOrm "doctrine")}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use App\Entity\Note;
+use App\GreetingEndpoint;
+use App\NoteInput;
+use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
+use JsonException;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[AsController]
+final readonly class NotesController
+{
+    public function __construct(private EntityManagerInterface $entities)
+    {
+    }
+
+    #[Route('/api/notes', methods: ['GET'])]
+    public function list(): JsonResponse
+    {
+        $notes = $this->entities->getRepository(Note::class)->findBy([], ['id' => 'ASC']);
+        return new JsonResponse(['notes' => array_map(fn (Note $note): array => $note->toArray(), $notes)]);
+    }
+
+    #[Route('/api/notes', methods: ['POST'])]
+    public function create(Request $request): JsonResponse
+    {
+        if (strlen($request->getContent()) > GreetingEndpoint::MAX_BODY_BYTES) {
+            return new JsonResponse(['error' => 'payload_too_large'], 413);
+        }
+        try {
+            $note = new Note(NoteInput::titleFromJson($request->getContent()));
+        } catch (JsonException) {
+            return new JsonResponse(['error' => 'invalid_json'], 400);
+        } catch (InvalidArgumentException $error) {
+            return new JsonResponse(['error' => 'validation_failed', 'message' => $error->getMessage()], 422);
+        }
+        $this->entities->persist($note);
+        $this->entities->flush();
+        return new JsonResponse($note->toArray(), 201);
+    }
+}
+{{/if}}

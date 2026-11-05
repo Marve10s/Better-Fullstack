@@ -2,21 +2,24 @@
 translationStatus: pending
 title: Ecosystems
 description: Supported language ecosystems, what Better Fullstack scaffolds for each one, and the compatibility rules that apply.
-updated: 2026-08-22
+updated: 2026-10-24
 ---
 
-One CLI covers eight solo ecosystems plus additional languages for composed projects. Each ecosystem ships its own templates, toolchain checks, and compatibility rules.
+One CLI covers solo ecosystems and additional languages for composed projects. Each ecosystem ships its own templates, toolchain checks, and compatibility rules.
 
-| Ecosystem                           | Best for                                                                                                       | Tooling            |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------- |
-| [TypeScript](#typescript)           | Fullstack web, APIs, workers, desktop, and the largest integration matrix.                                      | npm/pnpm/Yarn/Bun   |
-| [React Native](#react-native)       | Expo mobile apps with navigation, UI, storage, testing, push, OTA, and deep linking.                            | npm/pnpm/Yarn/Bun   |
-| [Rust](#rust)                       | Backend services, CLIs, GraphQL/gRPC, web frontends, typed libraries.                                           | Cargo               |
-| [Python](#python)                   | API and AI-oriented services with framework, ORM, validation, queue, and quality choices.                       | uv                  |
-| [Go](#go)                           | API services, gRPC, CLIs, ORMs, logging, and auth helpers.                                                      | Go modules          |
-| [Java and Kotlin](#java-and-kotlin) | Spring Boot, Ktor, Quarkus, Micronaut, or plain JVM projects with Maven/Gradle.                                 | Maven/Gradle        |
-| [Elixir](#elixir)                   | Phoenix and LiveView apps with Ecto, Absinthe, realtime, jobs, and deploy files.                                | Mix                 |
-| [.NET](#net)                        | ASP.NET Core services with EF Core or Dapper, Identity, Minimal APIs, SignalR, jobs, and tests.                 | .NET SDK 10         |
+| Ecosystem                           | Best for                                                                                        | Tooling             |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------- |
+| [TypeScript](#typescript)           | Fullstack web, APIs, workers, desktop, and the largest integration matrix.                      | npm/pnpm/Yarn/Bun   |
+| [React Native](#react-native)       | Expo mobile apps with navigation, UI, storage, testing, push, OTA, and deep linking.            | npm/pnpm/Yarn/Bun   |
+| [Rust](#rust)                       | Backend services, CLIs, GraphQL/gRPC, web frontends, typed libraries.                           | Cargo               |
+| [Python](#python)                   | API and AI-oriented services with framework, ORM, validation, queue, and quality choices.       | uv                  |
+| [Go](#go)                           | API services, gRPC, CLIs, ORMs, logging, and auth helpers.                                      | Go modules          |
+| [Java and Kotlin](#java-and-kotlin) | Spring Boot, Ktor, Quarkus, Micronaut, or plain JVM projects with Maven/Gradle.                 | Maven/Gradle        |
+| [Elixir](#elixir)                   | Phoenix and LiveView apps with Ecto, Absinthe, realtime, jobs, and deploy files.                | Mix                 |
+| [.NET](#net)                        | ASP.NET Core services with EF Core or Dapper, Identity, Minimal APIs, SignalR, jobs, and tests. | .NET SDK 10         |
+| [PHP](#php)                         | Experimental Slim, Laravel or Symfony JSON services with PHPUnit and a live HTTP proof.         | PHP 8.5, Composer 2 |
+| [Ruby](#ruby)                       | Experimental Sinatra, Rails, Roda, or Grape JSON services with ORMs, auth, jobs, and email.    | Bundler             |
+| [Crystal](#crystal)                 | Experimental Kemal, Lucky, Athena, or Marten HTTP services and framework-free programs.         | Crystal, Shards     |
 
 For product stacks that span languages, use [Multi-Ecosystem mode](/docs/ecosystems/multi-ecosystem/), which models the project as stack parts such as `frontend:typescript:next` and `backend:go:gin`. That mode also unlocks Kotlin/Compose, SwiftUI, Flutter, Blazor, and standalone Rust web frontends; see [Native and Additional Apps](/docs/ecosystems/native-apps/).
 
@@ -45,6 +48,41 @@ Accepting all defaults creates a TypeScript web project. The package manager fol
 Runtime and package manager are separate choices: a generated TypeScript project can install with npm while selecting Bun as its application runtime.
 
 Some flags are global because they live in one project config, but not every flag applies to every ecosystem. The generated tables on [CLI Create](/docs/cli/create/) are the exact current inventory per ecosystem.
+
+## Crystal
+
+The experimental Crystal recipe generates a native JSON HTTP service with `--crystal-web-framework kemal`, `lucky`, `athena`, or `marten`. It requires Crystal 1.22.1 and Shards 0.20.0, and pins Kemal 1.15.0, Lucky 1.5.0, Athena 0.23.0, or Marten 0.7.1. Lucky and Marten run without a database. Athena builds and specs need `-Dwithout_libmagic`, which the generated README and next steps include. Public capability evidence stays listed until a current receipt qualifies the recipe.
+
+```sh
+bunx create-better-fullstack@latest crystal-api --ecosystem crystal --crystal-web-framework kemal --database none --addons none --examples none --ai-docs agents-md --no-install --no-git
+cd crystal-api
+shards install
+shards build --release
+crystal spec
+crystal run scripts/http_proof.cr
+```
+
+The service exposes `/health`, a validated greeting at `/api/hello?name=Crystal`, and a JSON POST endpoint at `/api/echo`. Every framework serves the same contract. The HTTP proof checks parsed responses, rejected input, the body limit, SIGTERM shutdown, and port release. Marten rejects oversized bodies with its native 400 response; the other frameworks return 413. `crystalWebFramework=none` instead creates a native greeting program without an HTTP framework.
+
+Add a database layer with `--crystal-orm`. `crystal-db` runs parameterized SQL on SQLite with any framework, `avram` uses Lucky's PostgreSQL ORM and migrations, and `marten-orm` uses Marten models and migrations on SQLite. Each one adds `GET` and `POST /api/greetings`, a spec against a real database, and proof assertions that a stored greeting is listed. Avram works only with Lucky and Marten ORM only with Marten; other pairings are rejected.
+
+Add sign-in with `--crystal-auth`. `jwt` issues HS256 bearer tokens with any framework, `kemal-session` keeps a server-side session for Kemal, and `marten-auth` stores bcrypt users through Marten ORM. Each one adds `POST /api/auth/login` and a protected `GET /api/me`; the session options also add `POST /api/auth/logout`. `jwt` and `kemal-session` check one account from `AUTH_USERNAME` and `AUTH_PASSWORD`, while `marten-auth` seeds that account into the database.
+
+Choose test tooling with `--crystal-testing`. `spec` keeps Crystal's built-in Spec files, `spectator` adds a Spectator spec that runs in the same `crystal spec` run, and `spec-kemal` adds in-memory HTTP specs for Kemal routes. `spec-kemal` works only with Kemal. `none` generates no specs.
+
+Validate greeting names with `--crystal-validation`. `athena-validator` applies `NotBlank` and `Length` constraints, `active-model` uses Spider-Gazelle ActiveModel presence and length validations, and `marten-schema` uses a Marten schema field. Each one replaces the hand-written name check, so invalid names still return 422 with the library's message. `marten-schema` works only with Marten.
+
+Cache a value with `--crystal-cache`. `memory` keeps entries in the server process, `file` writes them under `CACHE_DIR`, and `redis` stores them in Redis at `REDIS_URL`. Each one adds `GET /api/cached-time`, which returns the same timestamp until its 30-second entry expires, and a spec that proves the expiry. The cache options need an HTTP framework.
+
+Run background jobs with `--crystal-jobs`. `sidekiq` and `mosquito` queue jobs in Redis at `REDIS_URL` and build a separate `bin/worker`, while `tasker` schedules the job inside the server process, so queued work is lost on restart. Each one adds `POST /api/jobs`, which validates a name and returns 202 with a job id, and `GET /api/jobs?id=...`, which reports the job as queued or done. Sidekiq.cr cannot be combined with the Redis cache because they depend on different shards named `redis`.
+
+Append a relative directory to a binding, such as `backend:crystal:kemal:audit@services/audit%20api`. Directory segments accept ASCII letters, digits, spaces, dots, underscores, hyphens, `@`, `:`, and `%`. Encode special characters in the binding. Applications cannot share a destination or nest one destination inside another.
+
+TypeScript frontends and backends use `apps/web` and `apps/server`. React Native apps use `apps/native`. Custom directories for these applications are rejected because their templates require the default paths.
+
+Database packages using a TypeScript ORM, Redis, or EdgeDB must use `packages/db` so workspace dependencies and commands can find them. Native database marker directories can use custom paths.
+
+Database, authentication, deployment, and native addon adapters are unsupported. Use an explicit mixed graph for independent applications. Environment variables come from the process; the example environment file is not loaded automatically. CORS covers configured exact origins for GET requests. Cross-origin POST, credentials, production hosting, and Windows runtime behavior remain unqualified.
 
 ## TypeScript
 
@@ -178,7 +216,9 @@ npm create better-fullstack@latest my-phoenix-app -- \
   --no-install
 ```
 
-Oban and `phx-gen-auth` require `ecto-sql` with PostgreSQL. Pow and ExMachina require an Ecto SQL repository (`ecto-sql`, `myxql`, or `ecto_sqlite3`), and Absinthe needs an Ecto layer. Auth, APIs, realtime, Gettext, Wallaby, and the HTTP server adapters require Phoenix. Every deploy target generates files: `docker`, `mix-release`, `fly`, and `gigalixir` add a release `Dockerfile`, `fly` also adds `fly.toml`, and `gigalixir` adds a `Procfile`.
+Oban and `phx-gen-auth` require `ecto-sql` with PostgreSQL. Pow and ExMachina require an Ecto SQL repository (`ecto-sql`, `myxql`, or `ecto_sqlite3`), and Absinthe needs an Ecto layer. Auth, APIs, realtime, Gettext, Wallaby, and the HTTP server adapters require Phoenix. Exq needs Redis at `REDIS_URL`. `elixir-json` uses the built-in `JSON` module and requires Elixir 1.18 or newer; Jiffy compiles a NIF and needs a C compiler. Linguist, CLDR Messages, DNSCluster, and the built-in Distributed Erlang option also work in plain Elixir apps. Every deploy target generates files: `docker`, `mix-release`, `fly`, and `gigalixir` add a release `Dockerfile`, `fly` also adds `fly.toml`, and `gigalixir` adds a `Procfile`.
+
+`--elixir-logging` selects `logger-json` (JSON lines from `Logger`), `logger-file-backend` (a log file under `log/`), or `logster` (one logfmt line per request). Logster requires Phoenix. `--elixir-config` adds a `Settings` module backed by `dotenvy`, `skogsra`, or `confex` that reads typed environment variables. `--elixir-message-queue` adds a `MessageQueue` module for RabbitMQ (`amqp`), NATS (`gnat`), or Kafka (`brod`); its broker test is tagged and runs with `mix test --include message_queue` once the broker is up. `--elixir-templating` renders `priv/templates/welcome.*` through built-in EEx, Solid (Liquid, `solid-liquid`), or `bbmustache`. `--elixir-cli` adds a `mix <app>.greet` task parsed with the built-in `OptionParser`, Optimus, or OptionParser with Owl output.
 
 ## .NET
 
@@ -210,3 +250,50 @@ npm create better-fullstack@latest blazor-go -- \
 ```
 
 That primary frontend part is distinct from `--dotnet-web-framework aspnet-blazor`, which selects the solo .NET application surface.
+
+## Ruby
+
+Ruby offers an experimental HTTP recipe for four frameworks: Sinatra 4.2.1 (default), API-only Rails 8.1.4, Roda 3.109.0, and Grape 4.0.1. Select one with `--ruby-web-framework sinatra|rails|roda|grape`. Bundler owns `Gemfile` and the lockfile generated during installation. Every framework runs on Puma 7.1.0 behind the same Rack host, origin, and body-size policy, so the HTTP contract and tests below are identical. `.ruby-version` selects Ruby 3.4.11 and the Gemfile accepts Ruby 3.3 through 4.x. Add a database layer with `--ruby-orm active-record|sequel|rom`: each option generates SQLite persistence (`db.rb`, `items.rb`, versioned migrations, `bundle exec rake db:migrate`) behind `GET` and `POST /api/items`, with tests and a live proof that writes and reads a row. `DATABASE_PATH` overrides the SQLite file. Add authentication with `--ruby-auth jwt|omniauth|rodauth`: `jwt` verifies HS256 bearer tokens with ruby-jwt, `omniauth` signs users in through OpenID Connect (discovery and PKCE) with a CSRF-protected request phase and a cookie session, and `rodauth` adds JSON account creation, login, and logout with accounts in SQLite. Each exposes `GET /api/me`, and the OmniAuth option needs a real OpenID Connect provider for a full sign-in. Pick the test runner with `--ruby-testing minitest|rspec|test-unit|none` (Minitest by default); every runner drives the same Rack::Test request coverage through `bundle exec rake test`, and `none` generates no suite. Choose request validation with `--ruby-validation dry-validation|active-model|json-schemer|none`: each library option moves the greeting payload rules into `name_contract.rb` (a dry-validation contract, Active Model validations, or JSON Schemas checked by JSONSchemer) while keeping the same 422 error codes, and `none` (the default) keeps the hand-written checks. Add a cache with `--ruby-cache redis|memcached|memory|none`: `redis` (redis-rb at `REDIS_URL`) and `memcached` (Dalli at `MEMCACHED_SERVERS`) need a running server, while `memory` uses an in-process Active Support MemoryStore. Each serves `GET /api/cache` with a 30-second TTL, answers 503 when its server is down, and has hit and expiry tests that skip without a server. Run background jobs with `--ruby-job-queue sidekiq|resque|solid-queue|none`: `POST /api/jobs` enqueues a greeting job and `GET /api/jobs/:id` reports `queued` or `done`, while `bundle exec ruby bin/worker` runs the worker process. Sidekiq and Resque use Redis at `JOBS_REDIS_URL` (Resque is not offered with Grape, whose Mustermann 4 requirement conflicts with Resque's Sinatra dependency); Solid Queue stores jobs in SQLite through Active Job and requires `--ruby-web-framework rails` with `--ruby-orm active-record`. Send email with `--ruby-email mail|action-mailer|resend|none`: `mailer.rb` delivers a welcome message from `bundle exec rake "email:welcome[you@example.com]"` over SMTP (`mail`, or `action-mailer` on Rails only) or through the Resend API, and no HTTP route sends mail. Log requests with `--ruby-logging logger|semantic-logger|ougai|lograge|none` (Ruby Logger by default): the first three mount `request_logger.rb` as the outermost Rack middleware writing a line or JSON event per request, and `lograge` (Rails only) condenses Rails controller logs; `LOG_PATH` redirects logs to a file. Call an upstream API with `--ruby-http-client faraday|httparty|httpx|none`: `upstream.rb` fetches `{UPSTREAM_URL}/health` with explicit timeouts behind `GET /api/upstream` and answers 502 when the upstream fails; `UPSTREAM_URL` defaults to the service itself. No shared database or deployment adapter is generated.
+
+```sh
+bun create better-fullstack@latest ruby-api --ecosystem ruby --ruby-web-framework sinatra --database none --addons none --examples none --ai-docs agents-md --no-install --no-git
+cd ruby-api
+bundle install
+bundle exec rake build
+bundle exec rake test
+bundle exec ruby bin/proof
+bundle exec ruby bin/server
+```
+
+`build` checks Ruby entry points for syntax errors. Minitest/Rack tests exercise the app without a network server. `bin/proof` starts Puma on a free loopback port, parses a valid JSON response, checks an invalid request returns 422, and shuts down the process. These commands are a proof procedure, not a claim that this revision has passed it.
+
+GET `/health` returns JSON. POST `/api/greetings` accepts exactly `{"name":"Ruby"}` and returns a greeting. The app rejects malformed JSON, unsupported content types, extra fields, invalid names, and bodies over 16 KiB. `HOST`, `PORT`, `RACK_ENV`, and `ALLOWED_ORIGIN` come from the process environment; `.env.example` is documentation and is not loaded automatically.
+
+For a composed project, select `backend:ruby:sinatra` (or `rails`, `roda`, `grape`) alongside an existing frontend. Each named Ruby service keeps its own Gemfile, source, commands, and assigned port. The shared graph rejects unsupported capabilities attached to Ruby while retaining capabilities owned by other services. The browser preview and ZIP export generate native Ruby source; the browser Run tab cannot execute Ruby.
+
+The recipe remains experimental and listed until current, revision-matched evidence proves the declared boundaries. See the [Sinatra](https://github.com/sinatra/sinatra/tree/v4.2.1), [Rails API](https://guides.rubyonrails.org/api_app.html), [Roda](https://roda.jeremyevans.net/documentation.html), and [Grape](https://github.com/ruby-grape/grape) documentation for the pinned framework APIs.
+
+## PHP
+
+The experimental PHP recipe generates a Slim, Laravel 13 or Symfony 8 application with Composer dependencies, PSR-4 classes, PHPUnit request tests, and a bounded HTTP proof. Choose the framework with `--php-web-framework slim`, `laravel` or `symfony`; all three serve the same HTTP contract. It requires PHP 8.5.12 or a later 8.5 patch and Composer 2. It provides REST and testing. `--php-orm eloquent` (Slim or Laravel), `doctrine` (Slim or Symfony) or `cycle` (Slim) adds a SQLite-backed notes resource with `composer run db:setup`; other combinations are rejected. `--php-auth firebase-jwt` or `lcobucci-jwt` (any framework) or `symfony-security` (Symfony) protects `GET /api/me` with HS256 bearer tokens signed with `JWT_SECRET`; the starter verifies tokens and does not issue credentials. `--php-testing` selects PHPUnit (default), Pest or Codeception, which all run the same generated request tests, or `none`, which leaves only the HTTP proof. `--php-validation symfony-validator` or `respect-validation` (any framework) or `laravel-validation` (Laravel) validates the greeting payload with that library instead of the hand-written checks. `--php-cache symfony-cache`, `laminas-cache` or `predis` (any framework) or `laravel-cache` (Laravel) serves `GET /api/cached-time` from that cache; Predis needs a running Redis server in `REDIS_URL`. `--php-job-queue symfony-messenger` or `enqueue-fs` (any framework) or `laravel-queue` (Laravel) adds `POST /api/jobs` and a separate `composer run queue:work` worker; Laravel Queue also needs `composer run db:setup`. `--php-email symfony-mailer` or `phpmailer` (any framework) or `laravel-mail` (Laravel) adds a `composer run mail:send -- <address>` command that sends over SMTP; no HTTP route sends email. `--php-logging` follows the framework that owns logging: `monolog` for Slim, `laravel-log` for Laravel or `symfony-monolog` for Symfony, each writing a JSON `greeting.created` entry to standard error. `--php-http-client guzzle`, `symfony-http-client` or `httplug-curl` (any framework) adds `GET /api/upstream`, which fetches `UPSTREAM_URL` with a 5-second timeout. Migrations beyond the starter schema and deployment integrations are outside this recipe.
+
+```sh
+bunx create-better-fullstack@latest php-service \
+  --ecosystem php \
+  --php-web-framework slim \
+  --database none \
+  --addons none \
+  --examples none \
+  --ai-docs agents-md \
+  --no-install \
+  --no-git
+cd php-service
+composer install --no-interaction
+composer run build
+composer test
+composer run proof:http
+```
+
+`GET /health` returns the service status. `POST /api/greetings` validates a JSON name and optional repetition count. `proof:http` starts its own loopback server, checks parsed responses and rejected input, and verifies that its process stops. Read the generated `PHP.md` for the request contract and environment variables.
+
+For a composed web application, use `--part frontend:typescript:react-vite --part backend:php:slim`. Composer owns the PHP service; JavaScript tooling remains in the web workspace. Named PHP services retain separate directories and development ports. PHP's built-in server is for local development, and production hosting needs separate qualification.

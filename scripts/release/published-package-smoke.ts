@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { EVIDENCE_SCHEMA_VERSION } from "@scripts/verified-combinations/evidence";
+import { EVIDENCE_SCHEMA_VERSION } from "@scripts/evidence/smoke-evidence";
 import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";

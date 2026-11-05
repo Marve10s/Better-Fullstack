@@ -1,0 +1,150 @@
+{{#if (ne rustOrm "none")}}
+mod database;
+{{/if}}
+{{#if (eq rustApi "jsonrpsee")}}
+mod rpc;
+{{/if}}
+use std::convert::Infallible;
+use std::net::SocketAddr;
+
+use serde::Serialize;
+use warp::Filter;
+{{#if (ne rustAuth "none")}}
+mod auth;
+{{/if}}
+{{#if (ne rustCaching "none")}}
+mod cache;
+{{/if}}
+{{#if (eq email "resend")}}
+mod email;
+{{/if}}
+{{#if (ne rustErrorHandling "none")}}
+mod error;
+{{/if}}
+{{#if (eq search "meilisearch")}}
+mod meilisearch;
+{{/if}}
+{{#if (ne rustMessageQueue "none")}}
+mod messaging;
+{{/if}}
+{{#if (eq observability "sentry")}}
+mod observability;
+{{/if}}
+{{#if (ne rustObservability "none")}}
+mod otel;
+{{/if}}
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+mod realtime;
+{{/if}}
+{{#if (ne rustTemplating "none")}}
+mod templating;
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+mod upstash_cache;
+{{/if}}
+
+#[derive(Serialize)]
+struct HealthResponse {
+    status: &'static str,
+    message: &'static str,
+{{#if (ne rustOrm "none")}}
+    database: &'static str,
+{{/if}}
+}
+
+{{#if (ne rustOrm "none")}}
+async fn health(db: database::Database) -> Result<impl warp::Reply, Infallible> {
+    let database = if database::is_healthy(&db).await { "connected" } else { "disconnected" };
+    Ok(warp::reply::json(&HealthResponse {
+        status: "ok",
+        message: "Server is running",
+        database,
+    }))
+}
+{{else}}
+async fn health() -> Result<impl warp::Reply, Infallible> {
+    Ok(warp::reply::json(&HealthResponse {
+        status: "ok",
+        message: "Server is running",
+    }))
+}
+{{/if}}
+
+#[tokio::main]
+async fn main() -> {{#if (eq rustErrorHandling "anyhow-thiserror")}}anyhow::Result<()>{{else if (eq rustErrorHandling "eyre")}}eyre::Result<()>{{else}}Result<(), Box<dyn std::error::Error>>{{/if}} {
+    dotenvy::dotenv().ok();
+{{#if (eq rustApi "jsonrpsee")}}
+
+    // Start JSON-RPC on a dedicated port alongside the HTTP server
+    let rpc_host = std::env::var("JSONRPC_HOST")
+        .or_else(|_| std::env::var("HOST"))
+        .unwrap_or_else(|_| "127.0.0.1".to_string());
+    let rpc_port = std::env::var("JSONRPC_PORT").unwrap_or_else(|_| "9944".to_string());
+    let rpc_address = format!("{rpc_host}:{rpc_port}").parse()?;
+    let _rpc_server = rpc::start(rpc_address).await.map_err(|error| std::io::Error::other(error.to_string()))?;
+{{/if}}
+{{#if (eq rustObservability "metrics")}}
+
+    // Install the Prometheus metrics recorder and HTTP exporter
+    otel::install_metrics().map_err(|error| std::io::Error::other(error.to_string()))?;
+{{/if}}
+{{#if (eq observability "sentry")}}
+    let _sentry_guard = observability::init_sentry();
+{{/if}}
+{{#if (eq rustLogging "tracing")}}
+    tracing_subscriber::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .init();
+{{else if (eq rustLogging "env-logger")}}
+    env_logger::init();
+{{/if}}
+{{#if (eq rustCaching "moka")}}
+    let _cache = cache::create_cache::<String>();
+{{/if}}
+{{#if (eq rustCaching "redis")}}
+    let _redis_client = cache::create_redis_client()?;
+{{/if}}
+{{#if (eq caching "upstash-redis")}}
+    let _upstash_client = upstash_cache::create_client()?;
+{{/if}}
+{{#if (eq search "meilisearch")}}
+    let _meilisearch_client = meilisearch::create_client()?;
+{{/if}}
+{{#if (eq rustRealtime "tokio-tungstenite")}}
+    let websocket_host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let websocket_port = std::env::var("WEBSOCKET_PORT").unwrap_or_else(|_| "8765".to_string());
+    let websocket_address = format!("{websocket_host}:{websocket_port}");
+    tokio::spawn(async move {
+        let _ = realtime::serve(&websocket_address).await;
+    });
+{{/if}}
+{{#if (ne rustOrm "none")}}
+    let db = database::connect().await.map_err(|error| std::io::Error::other(error.to_string()))?;
+    let database = warp::any().map(move || db.clone());
+    let health_route = warp::path("health")
+        .and(warp::get())
+        .and(database)
+        .and_then(health);
+{{else}}
+    let health_route = warp::path("health").and(warp::get()).and_then(health);
+{{/if}}
+    let cors = match std::env::var("CORS_ORIGIN") {
+        Ok(origin) if !origin.is_empty() => warp::cors()
+            .allow_origin(origin.as_str())
+            .allow_methods(["GET", "OPTIONS"])
+            .allow_headers(["content-type"]),
+        _ => warp::cors()
+            .allow_any_origin()
+            .allow_methods(["GET", "OPTIONS"])
+            .allow_headers(["content-type"]),
+    };
+    let routes = health_route.with(cors);
+    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+    let address = format!("{host}:{port}").parse::<SocketAddr>()?;
+{{#if (eq rustLogging "tracing")}}
+    tracing::info!(%address, "Warp server listening");
+{{/if}}
+    warp::serve(routes).run(address).await;
+    Ok(())
+}

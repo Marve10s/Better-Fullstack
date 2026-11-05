@@ -171,7 +171,7 @@
         "title": "Bubble Tea를 사용한 Go CLI",
         "description": "Better Fullstack의 Go CLI 프로젝트 스캐폴딩을 사용하여 Bubble Tea로 Go 터미널 애플리케이션을 만듭니다.",
         "updated": "2026-05-12",
-        "category": "가다",
+        "category": "Go",
         "tags": ["go", "cli", "bubbletea"],
         "keywords": [
           "go bubble tea starter",
@@ -188,7 +188,7 @@
         "title": "SQLC를 사용한 Echo",
         "description": "Echo, SQLC, Zap 로깅 및 Better Fullstack의 Go 프로젝트 스캐폴딩을 사용하여 Go API 프로젝트를 만듭니다.",
         "updated": "2026-05-12",
-        "category": "가다",
+        "category": "Go",
         "tags": ["echo", "sqlc", "go", "api"],
         "keywords": [
           "echo sqlc starter",
@@ -205,7 +205,7 @@
         "title": "PostgreSQL 및 GORM을 사용한 Gin",
         "description": "Gin, PostgreSQL, GORM, Zap 로깅 및 깔끔한 Better Fullstack 프로젝트 구조를 사용하여 Go API 프로젝트를 만듭니다.",
         "updated": "2026-05-12",
-        "category": "가다",
+        "category": "Go",
         "tags": ["gin", "postgres", "gorm", "go"],
         "keywords": [
           "gin postgres starter",
@@ -222,7 +222,7 @@
         "title": "Go gRPC 서비스",
         "description": "Gin, gRPC-Go, GORM, Zap 로깅 및 Better Fullstack의 Go 서비스 스캐폴딩을 사용하여 Go 백엔드를 만듭니다.",
         "updated": "2026-05-12",
-        "category": "가다",
+        "category": "Go",
         "tags": ["go", "grpc", "gin", "gorm"],
         "keywords": [
           "go grpc starter",
@@ -259,7 +259,7 @@
         "title": "Spring Boot(PostgreSQL 및 JPA 포함)",
         "description": "Spring Boot, PostgreSQL, Maven, JPA, JUnit 5 및 Better Fullstack을 사용하는 선택적 Spring 라이브러리를 사용하여 Java API 프로젝트를 만듭니다.",
         "updated": "2026-05-12",
-        "category": "자바",
+        "category": "Java",
         "tags": ["spring-boot", "postgres", "jpa", "java"],
         "keywords": [
           "spring boot postgres starter",
@@ -276,7 +276,7 @@
         "title": "보안 Spring Boot API",
         "description": "Spring Boot, Spring Security, Spring Data JPA, Flyway, Gradle, JUnit 5 및 Testcontainers를 사용하여 보안 Java API를 만듭니다.",
         "updated": "2026-05-12",
-        "category": "자바",
+        "category": "Java",
         "tags": ["spring-boot", "spring-security", "jpa", "testcontainers"],
         "keywords": [
           "spring security api starter",
@@ -430,7 +430,7 @@
         "title": "Django REST API 스타터",
         "description": "Better Fullstack을 사용하여 Django, Django REST Framework, SQLAlchemy, Pydantic 및 Ruff로 Python 백엔드를 만듭니다.",
         "updated": "2026-05-12",
-        "category": "파이썬",
+        "category": "Python",
         "tags": ["django", "django-rest-framework", "python", "api"],
         "keywords": [
           "django rest api starter",
@@ -447,7 +447,7 @@
         "title": "LangChain을 사용한 FastAPI AI 에이전트",
         "description": "Better Fullstack을 사용하여 FastAPI, LangChain, SQLModel, Pydantic 및 Ruff로 Python AI API를 만듭니다.",
         "updated": "2026-05-12",
-        "category": "파이썬",
+        "category": "Python",
         "tags": ["fastapi", "langchain", "ai", "sqlmodel"],
         "keywords": [
           "fastapi langchain starter",
@@ -464,7 +464,7 @@
         "title": "FastAPI(PostgreSQL 및 SQLAlchemy 포함)",
         "description": "Better Fullstack을 사용하여 FastAPI, PostgreSQL, SQLAlchemy, Pydantic 및 Ruff로 Python API 프로젝트를 만듭니다.",
         "updated": "2026-05-12",
-        "category": "파이썬",
+        "category": "Python",
         "tags": ["fastapi", "postgres", "sqlalchemy", "pydantic"],
         "keywords": [
           "fastapi postgres starter",
@@ -498,7 +498,7 @@
         "title": "Axum 및 Leptos를 사용한 풀스택 Rust",
         "description": "Axum, Leptos, SeaORM 및 Better Fullstack의 Rust 프로젝트 스캐폴딩을 사용하여 풀스택 Rust 앱을 만듭니다.",
         "updated": "2026-05-12",
-        "category": "녹",
+        "category": "Rust",
         "tags": ["rust", "axum", "leptos", "seaorm"],
         "keywords": [
           "fullstack rust starter",
@@ -515,7 +515,7 @@
         "title": "Axum(PostgreSQL 및 SeaORM 포함)",
         "description": "Axum, PostgreSQL, SeaORM, 추적 및 Better Fullstack을 사용하여 구조화된 오류 처리 기능을 갖춘 Rust API 프로젝트를 만듭니다.",
         "updated": "2026-05-12",
-        "category": "녹",
+        "category": "Rust",
         "tags": ["axum", "postgres", "seaorm", "tracing"],
         "keywords": [
           "axum postgres starter",
@@ -532,7 +532,7 @@
         "title": "Ratatui를 사용한 Rust CLI",
         "description": "Better Fullstack의 Rust CLI 프로젝트 스캐폴딩을 사용하여 Ratatui로 Rust 터미널 UI 앱을 만듭니다.",
         "updated": "2026-05-12",
-        "category": "녹",
+        "category": "Rust",
         "tags": ["rust", "cli", "ratatui"],
         "keywords": [
           "rust ratatui starter",
@@ -549,7 +549,7 @@
         "title": "Tonic 및 SQLx를 사용한 Rust gRPC 서비스",
         "description": "Axum, Tonic, SQLx, 추적 및 Better Fullstack을 사용한 구조적 오류 처리 기능을 갖춘 Rust gRPC 서비스를 만듭니다.",
         "updated": "2026-05-12",
-        "category": "녹",
+        "category": "Rust",
         "tags": ["rust", "tonic", "grpc", "sqlx"],
         "keywords": [
           "rust grpc starter",

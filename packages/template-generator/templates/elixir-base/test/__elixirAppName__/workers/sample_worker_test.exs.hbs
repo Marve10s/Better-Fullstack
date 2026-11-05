@@ -1,0 +1,21 @@
+defmodule {{elixirModuleName}}.Workers.SampleWorkerTest do
+  use ExUnit.Case, async: true
+
+  alias {{elixirModuleName}}.Workers.SampleWorker
+
+  test "enqueues the sample job on the default queue" do
+    assert {:ok, _jid} = SampleWorker.enqueue("Ada")
+
+    assert [
+             %Exq.Support.Job{
+               queue: "default",
+               class: "{{elixirModuleName}}.Workers.SampleWorker",
+               args: ["Ada"]
+             }
+           ] = Exq.Mock.jobs()
+  end
+
+  test "performs the sample job" do
+    assert {:ok, "Hello, Ada"} = SampleWorker.perform("Ada")
+  end
+end

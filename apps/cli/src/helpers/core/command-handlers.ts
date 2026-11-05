@@ -1,4 +1,5 @@
 import { lifecycleResult } from "@better-fullstack/project-lifecycle/contracts";
+import { CRYSTAL_PROJECT_DEFAULTS } from "@better-fullstack/types";
 import { intro, log, note, outro } from "@clack/prompts";
 import consola from "consola";
 import fs from "fs-extra";
@@ -79,6 +80,8 @@ import {
 import {
   getProvidedFlags,
   assertShapeInputIsUsable,
+  assertCrystalInputIsUsable,
+  assertRubyInputIsUsable,
   processAndValidateFlags,
   processProvidedFlagsWithoutValidation,
   validateConfigCompatibility,
@@ -216,6 +219,8 @@ async function showBuilderRecommendationPrompt() {
 }
 
 function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
+  if (flagConfig.ecosystem === "crystal")
+    return { ...getDefaultConfig(), ...CRYSTAL_PROJECT_DEFAULTS };
   const baseConfig = getDefaultConfig();
   if (
     flagConfig.stackParts?.length &&
@@ -225,6 +230,22 @@ function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
     baseConfig.addons = baseConfig.addons.filter(
       (addon) => !toolingRequiresJavaScriptWorkspace(addon),
     );
+  }
+
+  if (flagConfig.ecosystem === "php") {
+    return {
+      ...baseConfig,
+      frontend: ["none"],
+      backend: "none",
+      runtime: "none",
+      api: "none",
+      database: "none",
+      orm: "none",
+      auth: "none",
+      addons: [],
+      examples: [],
+      phpWebFramework: "slim",
+    };
   }
 
   // A disabled Rust backend must not inherit the SeaORM backend default.
@@ -363,9 +384,7 @@ function rejectAdjustedRequestedFlags(
     (providedFlags.has("vectorDb")
       ? getRequestedVectorDbRejection(config.vectorDb, adjustedConfig)
       : null) ??
-    (providedFlags.has("auth")
-      ? getRequestedAuthRejection(config.auth, adjustedConfig)
-      : null) ??
+    (providedFlags.has("auth") ? getRequestedAuthRejection(config.auth, adjustedConfig) : null) ??
     getRequestedDatabaseSetupRejection(
       {
         database: isRequested("database") ? config.database : undefined,
@@ -511,6 +530,8 @@ export async function createProjectHandler(
 
       // Input-only, so it runs before any directory is resolved, cleared, or
       // created. A rejected shape must never cost the user their files.
+      assertCrystalInputIsUsable(originalInput);
+      assertRubyInputIsUsable(originalInput);
       assertShapeInputIsUsable(originalInput, providedFlags);
 
       failureStage = "directory_preparation";
@@ -540,13 +561,13 @@ export async function createProjectHandler(
 
       let finalResolvedPath: string;
       let finalBaseName: string;
+      let shouldClearDirectory = false;
 
       if (input.dryRun) {
         finalBaseName = path.basename(currentPathInput);
         finalResolvedPath = path.resolve(process.cwd(), currentPathInput);
       } else {
         let finalPathInput: string;
-        let shouldClearDirectory: boolean;
 
         try {
           if (input.directoryConflict) {
@@ -680,6 +701,13 @@ export async function createProjectHandler(
               goTemplating: "none",
               goProtoTooling: "none",
               goDI: "none",
+              crystalWebFramework: "none",
+              crystalOrm: "none",
+              crystalAuth: "none",
+              crystalTesting: "none",
+              crystalValidation: "none",
+              crystalCache: "none",
+              crystalJobs: "none",
               javaWebFramework: "none",
               javaBuildTool: "none",
               javaOrm: "none",
@@ -700,6 +728,26 @@ export async function createProjectHandler(
               dotnetCaching: "none",
               dotnetDeploy: "none",
               dotnetLibraries: [],
+              rubyWebFramework: "none",
+              rubyOrm: "none",
+              rubyAuth: "none",
+              rubyTesting: "none",
+              rubyValidation: "none",
+              rubyCache: "none",
+              rubyJobQueue: "none",
+              rubyEmail: "none",
+              rubyLogging: "none",
+              rubyHttpClient: "none",
+              phpWebFramework: "none",
+              phpOrm: "none",
+              phpAuth: "none",
+              phpTesting: "none",
+              phpValidation: "none",
+              phpCache: "none",
+              phpJobQueue: "none",
+              phpEmail: "none",
+              phpLogging: "none",
+              phpHttpClient: "none",
               elixirWebFramework: "none",
               elixirOrm: "none",
               elixirAuth: "none",
@@ -719,6 +767,11 @@ export async function createProjectHandler(
               elixirApplicationFramework: "none",
               elixirDocumentation: "none",
               elixirClustering: "none",
+              elixirLogging: "none",
+              elixirConfig: "none",
+              elixirMessageQueue: "none",
+              elixirTemplating: "none",
+              elixirCli: "none",
               elixirDeploy: "none",
               elixirLibraries: [],
               aiDocs: [],
@@ -732,7 +785,7 @@ export async function createProjectHandler(
           };
         }
 
-        const setupResult = await setupProjectDirectory(finalPathInput, shouldClearDirectory);
+        const setupResult = await setupProjectDirectory(finalPathInput, false);
         finalResolvedPath = setupResult.finalResolvedPath;
         finalBaseName = setupResult.finalBaseName;
         currentPathInput = finalPathInput;
@@ -970,6 +1023,7 @@ export async function createProjectHandler(
 
       failureStage = "directory_preparation";
       const createResult = await createProject(config, {
+        clearExistingDirectory: shouldClearDirectory,
         manualDb: cliInput.manualDb ?? input.manualDb,
         yolo: cliInput.yolo,
       });

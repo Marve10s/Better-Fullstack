@@ -1,0 +1,42 @@
+require "json"
+{{#if (eq crystalCache "redis")}}
+require "redis_cache_store"
+{{else}}
+require "cache"
+{{/if}}
+require "./greeting_request"
+
+module CachedClock
+  TTL = 30.seconds
+
+{{#if (eq crystalCache "memory")}}
+  @@store : Cache::MemoryStore(String)?
+{{/if}}
+{{#if (eq crystalCache "file")}}
+  @@store : Cache::FileStore(String)?
+{{/if}}
+{{#if (eq crystalCache "redis")}}
+  @@store : Cache::RedisCacheStore(String)?
+{{/if}}
+
+  def self.store
+{{#if (eq crystalCache "memory")}}
+    @@store ||= Cache::MemoryStore(String).new(expires_in: TTL)
+{{/if}}
+{{#if (eq crystalCache "file")}}
+    @@store ||= Cache::FileStore(String).new(expires_in: TTL, cache_path: ENV.fetch("CACHE_DIR", "tmp/cache"))
+{{/if}}
+{{#if (eq crystalCache "redis")}}
+    @@store ||= Cache::RedisCacheStore(String).new(expires_in: TTL, namespace: "{{shardName}}")
+{{/if}}
+  end
+
+  def self.fetch : GreetingRequest::Result
+    cached_at = store.fetch("cached_at") { Time.utc.to_rfc3339(fraction_digits: 6) }
+    GreetingRequest::Result.new(200, {cached_at: cached_at}.to_json)
+{{#if (eq crystalCache "redis")}}
+  rescue IO::Error
+    GreetingRequest::Result.new(503, {error: "cache unavailable"}.to_json)
+{{/if}}
+  end
+end

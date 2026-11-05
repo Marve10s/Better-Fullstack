@@ -13,6 +13,7 @@ import { join } from "node:path";
 import {
   readBtsConfig,
   readBtsConfigFromFile,
+  recordsUnscaffoldedJavaScriptWorkspace,
   updateBtsConfig,
   writeBtsConfig,
 } from "@/config/bts-config";
@@ -371,5 +372,44 @@ describe("bts.jsonc graph persistence", () => {
     expect(readBack?.addons).toEqual(["turborepo", "pwa"]);
     expect(readBack?.webDeploy).toBe("netlify");
     expect(readBack?.serverDeploy).toBe("railway");
+  });
+});
+
+describe("recordsUnscaffoldedJavaScriptWorkspace", () => {
+  const parts = parseStackPartSpecs([
+    "backend:rust:axum",
+    "frontend:typescript:tanstack-router",
+    "workspaceTooling:universal:turborepo",
+  ]);
+
+  it("flags a recorded TypeScript workspace when the baseline only holds a nested native service", () => {
+    expect(
+      recordsUnscaffoldedJavaScriptWorkspace(parts, {
+        "apps/server/Cargo.toml": "a",
+        "apps/server/src/main.rs": "b",
+      }),
+    ).toBe(true);
+  });
+
+  it("trusts a baseline that scaffolded a JavaScript manifest", () => {
+    expect(
+      recordsUnscaffoldedJavaScriptWorkspace(parts, {
+        "apps/server/Cargo.toml": "a",
+        "apps/web/package.json": "b",
+      }),
+    ).toBe(false);
+    expect(
+      recordsUnscaffoldedJavaScriptWorkspace(parts, { "Cargo.toml": "a", "package.json": "b" }),
+    ).toBe(false);
+  });
+
+  it("ignores projects without a native backend or without a baseline", () => {
+    expect(
+      recordsUnscaffoldedJavaScriptWorkspace(
+        parseStackPartSpecs(["frontend:typescript:tanstack-router"]),
+        { "src/index.ts": "a" },
+      ),
+    ).toBe(false);
+    expect(recordsUnscaffoldedJavaScriptWorkspace(parts, {})).toBe(false);
   });
 });

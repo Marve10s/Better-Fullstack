@@ -14,6 +14,7 @@ import {
 import {
   EMBEDDED_TEMPLATES,
   generateVirtualProject,
+  normalizeElixirAppName,
   type VirtualFile,
   type VirtualFileTree,
   type VirtualNode,
@@ -297,11 +298,26 @@ function buffersEqual(left: Buffer | undefined, right: Buffer | undefined): bool
   return Boolean(left && right && left.equals(right));
 }
 
-async function inferProjectName(projectDir: string): Promise<string> {
+export async function inferProjectName(projectDir: string): Promise<string> {
   const packageJsonPath = path.join(projectDir, "package.json");
   const packageJson = await fs.readJson(packageJsonPath).catch(() => null);
   if (packageJson && typeof packageJson.name === "string" && packageJson.name.trim()) {
     return packageJson.name.trim();
+  }
+
+  const goMod = await fs.readFile(path.join(projectDir, "go.mod"), "utf-8").catch(() => "");
+  const moduleDirective = goMod.match(/^\s*module\s+(?:"([^"\r\n]+)"|([^\s"]+))/m);
+  const moduleName = moduleDirective?.[1] ?? moduleDirective?.[2];
+  if (moduleName) return moduleName;
+
+  const mixProject = await fs.readFile(path.join(projectDir, "mix.exs"), "utf-8").catch(() => "");
+  const mixAppName = mixProject.match(/^\s*app:\s*:([a-z][a-z0-9_]*)/m)?.[1];
+  if (mixAppName) {
+    const readme = await fs.readFile(path.join(projectDir, "README.md"), "utf-8").catch(() => "");
+    const readmeTitle = readme.match(/^#\s+(\S+)\s*$/m)?.[1];
+    return readmeTitle && normalizeElixirAppName(readmeTitle) === mixAppName
+      ? readmeTitle
+      : mixAppName;
   }
 
   return path.basename(projectDir);
@@ -1806,6 +1822,12 @@ function getInstallCommand(config: ProjectConfig): string {
       return "go mod tidy";
     case "java":
       return config.javaBuildTool === "gradle" ? "./gradlew test" : "./mvnw test";
+    case "crystal":
+      return "shards install";
+    case "ruby":
+      return "bundle install";
+    case "php":
+      return "composer install --no-interaction";
     case "elixir":
       return "mix deps.get && mix compile";
     default:

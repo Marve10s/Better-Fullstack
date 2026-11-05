@@ -34,12 +34,48 @@ config :{{elixirAppName}},
        live_view: [signing_salt: "change-me"]
 {{/if}}
 
+{{#if (eq elixirConfig "confex")}}
+config :{{elixirAppName}}, {{elixirModuleName}}.Settings,
+  greeting: {:system, "APP_GREETING", "Hello"},
+  max_connections: {:system, :integer, "APP_MAX_CONNECTIONS", 10}
+
+{{/if}}
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
+{{#if (eq elixirLogging "logger-json")}}
+
+config :logger, :default_handler,
+  formatter: {LoggerJSON.Formatters.Basic, metadata: [:request_id]}
+{{#if (eq elixirJson "elixir-json")}}
+
+config :logger_json, encoder: JSON
+{{/if}}
+{{/if}}
+{{#if (eq elixirLogging "logger-file-backend")}}
+
+config :logger, :file_log,
+  path: "log/{{elixirAppName}}.log",
+  level: :info,
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:request_id]
+{{/if}}
+{{#if (eq elixirLogging "logster")}}
+
+config :phoenix, :logger, false
+{{/if}}
+
+{{#if (eq elixirApi "grpc")}}
+config :{{elixirAppName}}, {{elixirModuleName}}.GRPCEndpoint,
+  port: 50051,
+  start_server: config_env() != :test,
+  max_body_size: 32_768,
+  adapter_opts: [ip: {127, 0, 0, 1}, idle_timeout: 5_000]
+
+{{/if}}
 {{#if (ne elixirWebFramework "none")}}
 
-config :phoenix, :json_library, Jason
+config :phoenix, :json_library, {{#if (eq elixirJson "elixir-json")}}JSON{{else if (eq elixirJson "jiffy")}}{{elixirModuleName}}.JSON{{else}}Jason{{/if}}
 {{/if}}
 {{#if (eq elixirJobs "oban")}}
 
@@ -59,6 +95,15 @@ config :{{elixirAppName}},
            task: fn -> :ok end
          ]
        ]
+{{/if}}
+{{#if (eq elixirJobs "exq")}}
+
+config :exq,
+  name: Exq,
+  namespace: "exq",
+  queues: ["default"],
+  concurrency: :infinite,
+  start_on_application: false
 {{/if}}
 {{#if (eq elixirEmail "swoosh")}}
 
@@ -105,11 +150,12 @@ config :sentry,
   enable_source_code_context: true,
   root_source_code_paths: [File.cwd!()]
 {{/if}}
-{{#if (eq elixirClustering "libcluster")}}
+{{#if (eq elixirI18n "linguist")}}
 
-config :{{elixirAppName}},
-       :cluster_topologies,
-       local_epmd: [strategy: Cluster.Strategy.Epmd, config: [hosts: []]]
+config :linguist, pluralization_key: :count
+{{/if}}
+{{#if (eq elixirClustering "libcluster")}}
+config :{{elixirAppName}}, :cluster_topologies, []
 {{/if}}
 {{#if (eq elixirAuth "pow")}}
 

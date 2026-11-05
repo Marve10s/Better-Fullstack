@@ -177,6 +177,38 @@ describe("PostHog ingestion boundary", () => {
     expect(JSON.stringify(batches)).not.toContain("viewport_height");
   });
 
+  it("drops legacy MCP startup events while retaining command outcomes", async () => {
+    const batches = collectEvents();
+    const base = { eventType: "command_used", machineId: crypto.randomUUID() };
+    const ingestOptions = { ...options, trustedRequestKey: "mcp-startup-filter" };
+    const responses = await Promise.all(
+      [
+        ["mcp", "started"],
+        ["bfs_plan_project", "started"],
+        ["bfs_plan_project", "succeeded"],
+      ].map(([action, status]) =>
+        handleTelemetryIngest(request({ ...base, action, status }), ingestOptions),
+      ),
+    );
+    expect(responses.map((response) => response.status)).toEqual([204, 204, 204]);
+    expect(batches).toHaveLength(2);
+    expect(batches).toMatchObject([
+      {
+        batch: [
+          { event: "command_used", properties: { action: "bfs_plan_project", status: "started" } },
+        ],
+      },
+      {
+        batch: [
+          {
+            event: "command_used",
+            properties: { action: "bfs_plan_project", status: "succeeded" },
+          },
+        ],
+      },
+    ]);
+  });
+
   it("rejects malformed and oversized input without accepting an event", async () => {
     const batches = collectEvents();
     for (const body of [

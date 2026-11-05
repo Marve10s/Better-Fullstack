@@ -1,0 +1,146 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use InvalidArgumentException;
+use JsonException;
+{{#if (eq phpLogging "monolog")}}
+use Psr\Log\LoggerInterface;
+{{/if}}
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Slim\App;
+use Slim\Exception\HttpException;
+use Slim\Factory\AppFactory;
+use Throwable;
+
+final class Application
+{
+    public static function create(string $corsOrigin = ''{{#if (ne phpOrm "none")}}, ?Notes $notes = null{{/if}}{{#if (ne phpAuth "none")}}, ?TokenVerifier $tokens = null{{/if}}{{#if (ne phpCache "none")}}, ?CachedClock $clock = null{{/if}}{{#if (ne phpJobQueue "none")}}, ?JobQueue $jobs = null{{/if}}{{#if (eq phpLogging "monolog")}}, ?LoggerInterface $logger = null{{/if}}{{#if (ne phpHttpClient "none")}}, ?UpstreamClient $upstream = null{{/if}}): App
+    {
+        $app = AppFactory::create();
+        $app->get('/health', function (ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
+            return self::json($response, ['status' => 'ok', 'framework' => 'slim']);
+        });
+        $app->post('/api/greetings', function (ServerRequestInterface $request, ResponseInterface $response){{#if (eq phpLogging "monolog")}} use ($logger){{/if}}: ResponseInterface {
+            $mediaType = strtolower(trim(explode(';', $request->getHeaderLine('Content-Type'))[0]));
+            if ($mediaType !== 'application/json') {
+                return self::json($response, ['error' => 'unsupported_media_type'], 415);
+            }
+            $stream = $request->getBody();
+            if ($stream->isSeekable()) {
+                $stream->rewind();
+            }
+            $body = '';
+            while (strlen($body) < 4097 && !$stream->eof()) {
+                $chunk = $stream->read(4097 - strlen($body));
+                if ($chunk === '') {
+                    break;
+                }
+                $body .= $chunk;
+            }
+            if (strlen($body) > 4096) {
+                return self::json($response, ['error' => 'payload_too_large'], 413);
+            }
+            try {
+                $greeting = Greeting::fromJson($body);
+            } catch (JsonException) {
+                return self::json($response, ['error' => 'invalid_json'], 400);
+            } catch (InvalidArgumentException $error) {
+                return self::json($response, ['error' => 'validation_failed', 'message' => $error->getMessage()], 422);
+            }
+{{#if (eq phpLogging "monolog")}}
+            $logger?->info('greeting.created', ['repetitions' => $greeting->repetitions]);
+{{/if}}
+            return self::json($response, ['message' => $greeting->message(), 'repetitions' => $greeting->repetitions]);
+        });
+{{#if (ne phpOrm "none")}}
+        if ($notes !== null) {
+            $app->get('/api/notes', function (ServerRequestInterface $request, ResponseInterface $response) use ($notes): ResponseInterface {
+                return self::json($response, ['notes' => $notes->all()]);
+            });
+            $app->post('/api/notes', function (ServerRequestInterface $request, ResponseInterface $response) use ($notes): ResponseInterface {
+                $body = (string) $request->getBody();
+                if (strlen($body) > 4096) {
+                    return self::json($response, ['error' => 'payload_too_large'], 413);
+                }
+                try {
+                    $title = NoteInput::titleFromJson($body);
+                } catch (JsonException) {
+                    return self::json($response, ['error' => 'invalid_json'], 400);
+                } catch (InvalidArgumentException $error) {
+                    return self::json($response, ['error' => 'validation_failed', 'message' => $error->getMessage()], 422);
+                }
+                return self::json($response, $notes->add($title), 201);
+            });
+        }
+{{/if}}
+{{#if (ne phpAuth "none")}}
+        if ($tokens !== null) {
+            $app->get('/api/me', function (ServerRequestInterface $request, ResponseInterface $response) use ($tokens): ResponseInterface {
+                $subject = $tokens->subject($request->getHeaderLine('Authorization'));
+                if ($subject === null) {
+                    return self::json($response, ['error' => 'unauthorized'], 401)->withHeader('WWW-Authenticate', 'Bearer');
+                }
+                return self::json($response, ['subject' => $subject]);
+            });
+        }
+{{/if}}
+{{#if (ne phpCache "none")}}
+        if ($clock !== null) {
+            $app->get('/api/cached-time', function (ServerRequestInterface $request, ResponseInterface $response) use ($clock): ResponseInterface {
+                return self::json($response, $clock->read());
+            });
+        }
+{{/if}}
+{{#if (ne phpJobQueue "none")}}
+        if ($jobs !== null) {
+            $app->post('/api/jobs', function (ServerRequestInterface $request, ResponseInterface $response) use ($jobs): ResponseInterface {
+                return self::json($response, ['id' => $jobs->dispatch(), 'status' => 'queued'], 202);
+            });
+            $app->get('/api/jobs/{id}', function (ServerRequestInterface $request, ResponseInterface $response, array $args) use ($jobs): ResponseInterface {
+                $status = $jobs->status($args['id']);
+                return $status === null ? self::json($response, ['error' => 'not_found'], 404) : self::json($response, $status);
+            });
+        }
+{{/if}}
+{{#if (ne phpHttpClient "none")}}
+        if ($upstream !== null) {
+            $app->get('/api/upstream', function (ServerRequestInterface $request, ResponseInterface $response) use ($upstream): ResponseInterface {
+                [$status, $body] = $upstream->fetch();
+                return self::json($response, $body, $status);
+            });
+        }
+{{/if}}
+        $app->addRoutingMiddleware();
+        $errors = $app->addErrorMiddleware(false, true, true);
+        $errors->setDefaultErrorHandler(function (ServerRequestInterface $request, Throwable $error) use ($app): ResponseInterface {
+            $status = $error instanceof HttpException ? $error->getCode() : 500;
+            return self::json($app->getResponseFactory()->createResponse(), ['error' => $status === 404 ? 'not_found' : ($status === 405 ? 'method_not_allowed' : 'internal_error')], $status);
+        });
+        $corsOrigins = array_map('trim', explode(',', $corsOrigin));
+        $app->add(function (ServerRequestInterface $request, RequestHandlerInterface $handler) use ($app, $corsOrigins): ResponseInterface {
+            $response = $request->getMethod() === 'OPTIONS'
+                ? $app->getResponseFactory()->createResponse(204)
+                : $handler->handle($request);
+            $origin = $request->getHeaderLine('Origin');
+            if ($origin !== '' && in_array($origin, $corsOrigins, true)) {
+                $response = $response->withHeader('Access-Control-Allow-Origin', $origin)
+                    ->withHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+                    ->withHeader('Access-Control-Allow-Headers', 'Content-Type{{#if (ne phpAuth "none")}}, Authorization{{/if}}')
+                    ->withHeader('Vary', 'Origin');
+            }
+            return $response;
+        });
+        return $app;
+    }
+
+    private static function json(ResponseInterface $response, array $body, int $status = 200): ResponseInterface
+    {
+        $response->getBody()->write(json_encode($body, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+        return $response->withStatus($status)->withHeader('Content-Type', 'application/json');
+    }
+}

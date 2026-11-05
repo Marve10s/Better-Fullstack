@@ -177,7 +177,7 @@ describe("programmatic stack pages", () => {
     }
   });
 
-  it("filters inert cross-ecosystem parts before generating Rust stack pages", () => {
+  it("translates Rust stack pages without inert TypeScript parts", () => {
     const page = getStackPage("rust-axum-leptos-seaorm");
     expect(page).toBeDefined();
     if (!page) return;
@@ -194,8 +194,8 @@ describe("programmatic stack pages", () => {
     );
 
     expect(validateStackParts(unfilteredParts).issues).toEqual([]);
-    expect(filteredParts.length).toBeLessThan(unfilteredParts.length);
-    expect(filteredParts.some((part) => part.ecosystem === "typescript")).toBe(false);
+    expect(unfilteredParts.some((part) => part.ecosystem === "typescript")).toBe(false);
+    expect(filteredParts).toEqual(unfilteredParts);
     expect(validateStackParts(filteredParts).issues).toEqual([]);
     expect(page.compatibility.graphIssueCount).toBe(0);
   });

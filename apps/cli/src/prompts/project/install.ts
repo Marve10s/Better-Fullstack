@@ -14,6 +14,16 @@ export async function getinstallChoice(
 ) {
   if (install !== undefined) return install;
 
+  if (ecosystem === "crystal") {
+    if (!(await commandExists("crystal")) || !(await commandExists("shards"))) {
+      log.warn("Install Crystal 1.22.1 and Shards 0.20.0 from https://crystal-lang.org/install/");
+      return false;
+    }
+    const response = await navigableConfirm({ message: "Run shards install?", initialValue: DEFAULT_CONFIG.install });
+    if (isCancel(response)) return exitCancelled("Operation cancelled");
+    return response;
+  }
+
   // For Rust: check cargo and show appropriate message
   if (ecosystem === "rust") {
     const cargoInstalled = await commandExists("cargo");
@@ -93,6 +103,35 @@ export async function getinstallChoice(
     if (isCancel(response)) return exitCancelled("Operation cancelled");
 
     return response;
+  }
+
+  if (ecosystem === "ruby") {
+    if (!(await commandExists("bundle"))) {
+      log.warn(
+        "Bundler is required. Install Ruby and Bundler from https://www.ruby-lang.org/en/documentation/installation/",
+      );
+      return false;
+    }
+    const response = await navigableConfirm({
+      message: "Run bundle install?",
+      initialValue: DEFAULT_CONFIG.install,
+    });
+    if (isCancel(response)) return exitCancelled("Operation cancelled");
+    return response;
+  }
+
+  if (ecosystem === "php") {
+    if (!(await commandExists("php")) || !(await commandExists("composer"))) {
+      log.warn(
+        "PHP 8.5.12+ and Composer 2 are required. See https://www.php.net/downloads and https://getcomposer.org/download/",
+      );
+      return false;
+    }
+    const response = await navigableConfirm({
+      message: "Run composer install?",
+      initialValue: DEFAULT_CONFIG.install,
+    });
+    return isCancel(response) ? exitCancelled("Operation cancelled") : response;
   }
 
   if (ecosystem === "elixir") {
