@@ -8,18 +8,114 @@ import { resolveCompatibilityAdjustments } from "@/config/stack-compatibility";
 import { getDefaultConfig } from "@/constants";
 import { generateReproducibleCommand } from "@/lifecycle/generate-reproducible-command";
 import { PROMPT_RESOLVER_REGISTRY } from "@/prompts/core/prompt-resolver-registry";
-import { buildRail, findStepId, type RailStep } from "@/tui/steps";
+import { chapterProgress, type ChapterProgress } from "@/tui/steps";
 
 export type Tone = "ok" | "warn" | "error" | "info";
+
+export type ConstellationNode = {
+  key: string;
+  value: unknown;
+  label: string;
+};
 
 export type TuiSummary = {
   projectName: string;
   ecosystem?: string;
-  rail: RailStep[];
-  stepIndex: number;
+  ecosystemId?: string;
+  progress: ChapterProgress;
   compatibility: { tone: Tone; text: string }[];
+  conflictKeys: string[];
   command: string;
+  nodes: ConstellationNode[];
 };
+
+const HIDDEN_NODE_KEYS = new Set([
+  "projectName",
+  "versionChannel",
+  "ecosystem",
+  "compositionMode",
+  "configScope",
+  "configSections",
+]);
+
+const TITLE_OVERRIDES: Record<string, string> = {
+  projectName: "PROJECT",
+  versionChannel: "CHANNEL",
+  compositionMode: "SHAPE",
+  configScope: "SCOPE",
+  configSections: "SECTIONS",
+  packageManager: "PACKAGES",
+  pythonPackageManager: "PACKAGES",
+  dbSetup: "DB SETUP",
+  aiDocs: "AI DOCS",
+  webDeploy: "WEB DEPLOY",
+  serverDeploy: "SERVER DEPLOY",
+  api: "API",
+  orm: "ORM",
+  ai: "AI",
+};
+
+const ECOSYSTEM_PREFIX =
+  /^(rust|python|go|java|dotnet|ruby|php|elixir|crystal|mobile|kotlin)(?=[A-Z])/;
+const MESSAGE_FILLER =
+  /^(select|choose|pick|enter|which|what|how|do|would|you|your|a|an|the|to|for|of|want|like|project's)$/i;
+
+function titleWords(stepKey: string | undefined, message: string): string[] {
+  if (stepKey && TITLE_OVERRIDES[stepKey]) return TITLE_OVERRIDES[stepKey].split(" ");
+  if (stepKey) {
+    return stepKey
+      .replace(ECOSYSTEM_PREFIX, "")
+      .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+      .toUpperCase()
+      .split(" ");
+  }
+  const words = message
+    .replace(/[^A-Za-z0-9 -]/g, " ")
+    .split(/\s+/)
+    .filter((word) => word && !MESSAGE_FILLER.test(word));
+  return (words.length > 0 ? words.slice(0, 2) : ["NEXT"]).map((word) => word.toUpperCase());
+}
+
+export function chapterTitle(
+  stepKey: string | undefined,
+  message: string,
+  maxChars: number,
+): string {
+  const words = titleWords(stepKey, message);
+  const full = words.join(" ");
+  if (full.length <= maxChars) return full;
+  const last = words.at(-1) ?? full;
+  return last.length <= maxChars ? last : last.slice(0, Math.max(1, maxChars));
+}
+
+function nodeLabel(value: unknown): string | undefined {
+  if (typeof value === "string") return value === "none" ? undefined : value;
+  if (!Array.isArray(value)) return undefined;
+  const picked = value.filter(
+    (item): item is string => typeof item === "string" && item !== "none",
+  );
+  if (picked.length === 0) return undefined;
+  return picked.length === 1 ? picked[0] : `${picked[0]} +${picked.length - 1}`;
+}
+
+export function constellationNodes(decisions: TuiDecision[]): ConstellationNode[] {
+  const latestByKey = new Map<string, TuiDecision>();
+  for (const decision of decisions) {
+    if (!decision.stepKey || HIDDEN_NODE_KEYS.has(decision.stepKey)) continue;
+    latestByKey.delete(decision.stepKey);
+    latestByKey.set(decision.stepKey, decision);
+  }
+  const seenLabels = new Set<string>();
+  return [...latestByKey.values()].flatMap((decision) => {
+    const label = nodeLabel(decision.value);
+    if (!label || !decision.stepKey || seenLabels.has(label)) return [];
+    seenLabels.add(label);
+    const value = Array.isArray(decision.value)
+      ? decision.value.find((item) => item !== "none")
+      : decision.value;
+    return [{ key: decision.stepKey, value, label }];
+  });
+}
 
 const DEFAULT_CONFIG: Record<string, unknown> = getDefaultConfig();
 const RULE_DRIVEN_ECOSYSTEMS = new Set(["typescript", "react-native"]);
@@ -65,8 +161,9 @@ function compatibilityLines(
   controller: TuiController,
   decided: Partial<ProjectConfig>,
   ecosystem: string | undefined,
-): TuiSummary["compatibility"] {
+): Pick<TuiSummary, "compatibility" | "conflictKeys"> {
   const lines: TuiSummary["compatibility"] = [];
+  const conflictKeys: string[] = [];
   const prompt = controller.prompt;
   const highlighted = controller.highlighted;
   if (highlighted?.disabled && highlighted.hint) {
@@ -82,10 +179,12 @@ function compatibilityLines(
   const value = stepKey ? candidateFor(controller, stepKey) : undefined;
   if (stepKey && value !== undefined) candidate[stepKey] = value;
   try {
-    const { adjustments } = resolveCompatibilityAdjustments(candidate as Partial<ProjectConfig>, {
-      onlyDefinedKeys: true,
-    });
+    const { adjustments, changes } = resolveCompatibilityAdjustments(
+      candidate as Partial<ProjectConfig>,
+      { onlyDefinedKeys: true },
+    );
     for (const adjustment of adjustments) lines.push({ tone: "warn", text: adjustment });
+    if (adjustments.length > 0) conflictKeys.push(...Object.keys(changes));
   } catch (error) {
     lines.push({
       tone: "warn",
@@ -101,7 +200,7 @@ function compatibilityLines(
     );
   }
   for (const notice of controller.notices.slice(-3)) lines.push({ tone: "info", text: notice });
-  return lines;
+  return { compatibility: lines, conflictKeys };
 }
 
 function liveCommand(decided: Partial<ProjectConfig>): string {
@@ -116,28 +215,28 @@ export function summarize(controller: TuiController): TuiSummary {
   const { decisions, results, phase } = controller;
   const decided = decidedConfig(results, decisions, controller.initialProjectName);
   const ecosystem = typeof results.ecosystem === "string" ? results.ecosystem : undefined;
-  const context = {
+  const progress = chapterProgress({
     ecosystem: ecosystem as Ecosystem | undefined,
     scope: results.configScope as ConfigScope | undefined,
     selectedSectionIds: Array.isArray(results.configSections)
       ? results.configSections.map(String)
       : undefined,
-    stepKey: controller.prompt?.navigation.stepKey,
+    answered: decisions.length,
     reviewing: phase.kind === "review",
-  };
-  const rail = buildRail({
-    ...context,
-    lastStepId: findStepId({ ...context, stepKey: decisions.at(-1)?.stepKey, reviewing: false }),
   });
+  const settled = phase.kind !== "prompt";
   return {
-    projectName: typeof decided.projectName === "string" ? decided.projectName : "new project",
+    projectName: typeof decided.projectName === "string" ? decided.projectName : "my-app",
     ecosystem: latest(decisions, "ecosystem")?.answer,
-    rail,
-    stepIndex: rail.findIndex((step) => step.status === "current"),
-    compatibility:
-      phase.kind === "review"
-        ? [{ tone: "ok", text: "Compatibility checks passed. Press enter to create the project." }]
-        : compatibilityLines(controller, decided, ecosystem),
+    ecosystemId: ecosystem,
+    progress,
+    ...(settled
+      ? {
+          compatibility: [{ tone: "ok" as const, text: "Compatibility checks passed." }],
+          conflictKeys: [],
+        }
+      : compatibilityLines(controller, decided, ecosystem)),
     command: phase.kind === "review" ? phase.review.command : liveCommand(decided),
+    nodes: constellationNodes(decisions),
   };
 }

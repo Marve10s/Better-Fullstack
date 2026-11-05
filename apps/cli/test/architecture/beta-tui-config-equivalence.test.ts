@@ -49,9 +49,15 @@ function moveTo(
   }
 }
 
-function answer(controller: TuiController, prompt: TuiPrompt) {
+function answer(controller: TuiController, prompt: TuiPrompt, quickPick: boolean) {
   if (!(prompt.message in script)) return controller.handleKey({ name: "return" });
   const target = script[prompt.message];
+  const index =
+    prompt.kind === "select" ? prompt.options.findIndex((option) => option.value === target) : -1;
+  if (quickPick && index >= 0 && index < 9) {
+    const digit = String(index + 1);
+    return controller.handleKey({ name: digit, sequence: digit });
+  }
   if (prompt.kind === "text") {
     for (const _ of prompt.input) controller.handleKey({ name: "backspace" });
     for (const char of String(target)) controller.handleKey({ name: char, sequence: char });
@@ -81,7 +87,7 @@ async function gatherClassic(stack: Script) {
   return runWithContextAsync({}, () => gather(stack));
 }
 
-async function gatherWithTui(stack: Script) {
+async function gatherWithTui(stack: Script, quickPick = false) {
   const { TuiController } = await import("@/tui/controller");
   const controller = new TuiController();
   const answered = new WeakSet<TuiPrompt>();
@@ -89,7 +95,7 @@ async function gatherWithTui(stack: Script) {
     const prompt = controller.prompt;
     if (!prompt || answered.has(prompt)) return;
     answered.add(prompt);
-    queueMicrotask(() => answer(controller, prompt));
+    queueMicrotask(() => answer(controller, prompt, quickPick));
   });
   const config = await runWithContextAsync({}, () => {
     setPromptDriver(controller);
@@ -136,4 +142,11 @@ describe("beta TUI config equivalence", () => {
       expect(config).toEqual(classic);
     });
   }
+
+  test("quick-pick number keys produce the same config as arrow keys", async () => {
+    const stack = STACKS["TypeScript, full scope"] ?? {};
+    const arrows = await gatherWithTui(stack);
+    const digits = await gatherWithTui(stack, true);
+    expect(digits.config).toEqual(arrows.config);
+  });
 });

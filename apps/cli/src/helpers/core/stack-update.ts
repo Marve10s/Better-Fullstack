@@ -220,6 +220,7 @@ const NON_STACK_UPDATE_CREATE_KEYS = new Set([
   "disableAnalytics",
   "manualDb",
   "tui",
+  "motion",
   // Workspace shape is a create-time structural choice; converting an existing
   // project between monorepo and single-app is out of scope for stack updates.
   "workspaceShape",

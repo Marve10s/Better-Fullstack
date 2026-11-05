@@ -12,6 +12,7 @@ type CLIContext = {
   navigation: NavigationState;
   silent: boolean;
   promptDriver?: PromptDriver;
+  outputCaptured?: boolean;
 };
 
 const cliStorage = new AsyncLocalStorage<CLIContext>();
@@ -84,6 +85,17 @@ export function setPromptDriver(driver: PromptDriver | undefined): void {
   if (ctx) {
     ctx.promptDriver = driver;
   }
+}
+
+export function setOutputCaptured(value: boolean): void {
+  const ctx = tryGetContext();
+  if (ctx) {
+    ctx.outputCaptured = value;
+  }
+}
+
+export function childStderr(): "pipe" | ["inherit", "pipe"] {
+  return tryGetContext()?.outputCaptured ? "pipe" : ["inherit", "pipe"];
 }
 
 type ContextOptions = {

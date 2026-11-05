@@ -188,6 +188,7 @@ const CREATE_ONLY_KEYS = new Set([
   "disableAnalytics",
   "manualDb",
   "tui",
+  "motion",
   "workspaceShape",
 ]);
 

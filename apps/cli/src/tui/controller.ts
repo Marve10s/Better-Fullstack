@@ -8,6 +8,7 @@ import type { PromptDriver, PromptNavigation } from "@/prompts/core/prompt-drive
 
 import { UserCancelledError } from "@/presentation/errors";
 import { GO_BACK_SYMBOL } from "@/presentation/navigation";
+import { appendProgress, type ProgressLine } from "@/tui/progress";
 
 export type TuiOption = {
   value: unknown;
@@ -65,15 +66,37 @@ type Pending = {
   reject: (error: Error) => void;
 };
 
+export type TuiLanding = {
+  projectName: string;
+  stack: string[];
+  nextSteps: string[];
+  command: string;
+  tree: string[];
+  elapsedMs: number;
+  failures: string[];
+};
+
 export type TuiPhase =
   | { kind: "idle" }
   | { kind: "prompt"; prompt: TuiPrompt }
-  | { kind: "review"; review: TuiReview; offset: number };
+  | { kind: "review"; review: TuiReview; offset: number }
+  | { kind: "launch"; startedAt: number }
+  | { kind: "landed"; landing: TuiLanding; landedAt: number; copied: boolean };
+
+export type TuiWindow = { start: number; count: number; columnStep: number };
 
 function firstEnabled(options: TuiOption[], preferred: number): number {
   if (options[preferred] && !options[preferred].disabled) return preferred;
   const index = options.findIndex((option) => !option.disabled);
   return index === -1 ? 0 : index;
+}
+
+function moveAcross(options: TuiOption[], cursor: number, step: number): number {
+  const lastColumn = Math.floor((options.length - 1) / Math.abs(step));
+  const column = Math.floor(cursor / Math.abs(step)) + Math.sign(step);
+  if (column < 0 || column > lastColumn) return cursor;
+  const target = Math.min(cursor + step, options.length - 1);
+  return options[target]?.disabled ? moveCursor(options, target, Math.sign(step)) : target;
 }
 
 function moveCursor(options: TuiOption[], cursor: number, step: number): number {
@@ -112,6 +135,11 @@ export class TuiController implements PromptDriver {
   results: Readonly<Record<string, unknown>> = {};
   reviewRows = 1;
   notices: string[] = [];
+  progress: ProgressLine[] = [];
+  window: TuiWindow = { start: 0, count: 9, columnStep: 0 };
+  showWhy = false;
+  copyCommand: ((text: string) => boolean) | undefined;
+  onAbort: (() => void) | undefined;
   private pending: Pending | undefined;
   private listeners = new Set<() => void>();
 
@@ -123,6 +151,10 @@ export class TuiController implements PromptDriver {
   }
 
   addNotice(text: string): void {
+    if (this.phase.kind === "launch" || this.phase.kind === "landed") {
+      this.progress = appendProgress(this.progress, text);
+      return this.changed();
+    }
     const lines = text
       .split("\n")
       .map((line) => line.trim())
@@ -130,6 +162,21 @@ export class TuiController implements PromptDriver {
     if (lines.length === 0) return;
     this.notices = [...this.notices, ...lines].slice(-20);
     this.changed();
+  }
+
+  launch(firstStep: string, now = Date.now()): void {
+    this.progress = [{ text: firstStep, state: "active" }];
+    this.phase = { kind: "launch", startedAt: now };
+    this.changed();
+  }
+
+  land(landing: TuiLanding, now = Date.now()): Promise<void> {
+    if (this.cancelled) return Promise.resolve();
+    return new Promise<void>((resolve, reject) => {
+      this.pending = { resolve: () => resolve(), reject };
+      this.phase = { kind: "landed", landing, landedAt: now, copied: false };
+      this.changed();
+    });
   }
 
   get prompt(): TuiPrompt | undefined {
@@ -208,21 +255,31 @@ export class TuiController implements PromptDriver {
   }
 
   cancel(): void {
-    this.cancelled = true;
     const pending = this.pending;
     this.pending = undefined;
+    if (this.phase.kind === "landed") return pending?.resolve(undefined);
+    const launching = this.phase.kind === "launch";
+    this.cancelled = true;
     this.phase = { kind: "idle" };
     pending?.reject(new UserCancelledError("Operation cancelled"));
+    if (launching) this.onAbort?.();
   }
 
   handleKey(key: TuiKey): void {
     if (key.ctrl && key.name === "c") return this.cancel();
     if (this.phase.kind === "review") return this.handleReviewKey(key);
+    if (this.phase.kind === "landed") return this.handleLandedKey(key);
     const prompt = this.prompt;
     if (!prompt) return;
     if (prompt.kind === "text") return this.handleTextKey(prompt, key);
+    if (key.sequence === "?") {
+      this.showWhy = !this.showWhy;
+      return this.changed();
+    }
+    const digit = /^[1-9]$/.test(key.sequence ?? "") ? Number(key.sequence) : undefined;
+    if (digit !== undefined) return this.quickPick(prompt, digit);
 
-    if (key.name === "escape" || key.name === "b") {
+    if (key.name === "escape" || key.name === "b" || key.name === "backspace") {
       if (prompt.navigation.canGoBack) this.goBack();
       return;
     }
@@ -232,6 +289,10 @@ export class TuiController implements PromptDriver {
       prompt.cursor = moveCursor(prompt.options, prompt.cursor, 1);
     else if (prompt.kind === "confirm" && (key.name === "left" || key.name === "right")) {
       prompt.cursor = prompt.cursor === 0 ? 1 : 0;
+    } else if (this.window.columnStep > 0 && (key.name === "left" || key.name === "h")) {
+      prompt.cursor = moveAcross(prompt.options, prompt.cursor, -this.window.columnStep);
+    } else if (this.window.columnStep > 0 && (key.name === "right" || key.name === "l")) {
+      prompt.cursor = moveAcross(prompt.options, prompt.cursor, this.window.columnStep);
     } else if (prompt.kind === "confirm" && (key.name === "y" || key.name === "n")) {
       prompt.cursor = key.name === "y" ? 0 : 1;
       return this.submitChoice(prompt);
@@ -253,6 +314,34 @@ export class TuiController implements PromptDriver {
         : this.submitChoice(prompt);
     } else return;
     this.changed();
+  }
+
+  private quickPick(prompt: Exclude<TuiPrompt, { kind: "text" }>, digit: number): void {
+    if (digit > this.window.count) return;
+    const index = this.window.start + digit - 1;
+    const option = prompt.options[index];
+    if (!option || option.disabled) return;
+    prompt.cursor = index;
+    if (prompt.kind !== "multiselect") return this.submitChoice(prompt);
+    prompt.selected = prompt.selected.includes(option.value)
+      ? prompt.selected.filter((value) => value !== option.value)
+      : [...prompt.selected, option.value];
+    prompt.error = undefined;
+    this.changed();
+  }
+
+  private handleLandedKey(key: TuiKey): void {
+    if (this.phase.kind !== "landed") return;
+    if (key.name === "c") {
+      this.phase.copied = this.copyCommand?.(this.phase.landing.command) ?? false;
+      return this.changed();
+    }
+    if (key.name === "return" || key.name === "q" || key.name === "escape") {
+      const pending = this.pending;
+      this.pending = undefined;
+      this.changed();
+      pending?.resolve(undefined);
+    }
   }
 
   private handleReviewKey(key: TuiKey): void {

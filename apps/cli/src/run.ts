@@ -227,6 +227,7 @@ const AddCommandInputSchema = CreateCommandOptionsSchema.omit({
   disableAnalytics: true,
   manualDb: true,
   tui: true,
+  motion: true,
   // Workspace shape is a create-time structural choice, not a stack update.
   workspaceShape: true,
 }).extend({

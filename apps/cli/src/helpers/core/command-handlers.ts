@@ -6,6 +6,7 @@ import fs from "fs-extra";
 import path from "node:path";
 import pc from "picocolors";
 
+import type { BetaTuiSession } from "@/tui/start";
 import type {
   Addons,
   CreateInput,
@@ -45,7 +46,6 @@ import { handleDirectoryConflict, setupProjectDirectory } from "@/project/projec
 import { addToHistory } from "@/project/project-history";
 import { gatherConfig } from "@/prompts/core/config-prompts";
 import { isCancel, isGoBack, navigableSelect } from "@/prompts/core/navigable";
-import type { BetaTuiSession } from "@/tui/start";
 import { getProjectName } from "@/prompts/project/project-name";
 import {
   SHAPE_DEFAULT_ECOSYSTEM,
@@ -128,6 +128,7 @@ const NON_STACK_CREATE_OPTION_KEYS = new Set([
   "renderTitle",
   "disableAnalytics",
   "tui",
+  "motion",
 ]);
 
 const CREATE_STACK_FLAG_KEYS = new Set(
@@ -474,6 +475,7 @@ export async function createProjectHandler(
     config?: string;
     presetOptions?: PresetOptionSelection;
     tui?: boolean;
+    motion?: boolean;
   },
   options: CreateHandlerOptions = {},
 ) {
@@ -523,7 +525,7 @@ export async function createProjectHandler(
       }
       if (shouldStartBetaTui(input, hasConfigBase, builderChoice)) {
         const { startBetaTui } = await import("@/tui/start");
-        betaTui = await startBetaTui({ projectName: input.projectName });
+        betaTui = await startBetaTui({ projectName: input.projectName, motion: input.motion });
       }
 
       if (hasConfigBase && !isSilent()) {
@@ -960,7 +962,16 @@ export async function createProjectHandler(
 
       if (betaTui) {
         await betaTui.review(config);
-        await betaTui.close();
+        if (
+          betaTui.hostsScaffold(config, {
+            manualDb: cliInput.manualDb ?? input.manualDb,
+            dryRun: input.dryRun,
+          })
+        ) {
+          betaTui.launch(config);
+        } else {
+          await betaTui.close();
+        }
       }
 
       if (input.dryRun) {
@@ -1127,6 +1138,13 @@ export async function createProjectHandler(
           );
         }
       }
+
+      await betaTui?.land({
+        config,
+        elapsedMs: elapsedTimeMs,
+        reproducibleCommand,
+        setupFailures: setupFailures.map((failure) => failure.step),
+      });
 
       return {
         success: true,

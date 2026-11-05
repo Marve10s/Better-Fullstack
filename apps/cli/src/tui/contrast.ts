@@ -1,6 +1,9 @@
-export const TUI_BACKGROUND = "0d1117";
-export const ICON_BADGE = "e6edf3";
+export const TUI_BACKGROUND = "0a0d14";
+export const LIGHT_INK = "e6edf3";
 export const MIN_ICON_CONTRAST = 3;
+export const COMFORTABLE_ICON_CONTRAST = 4.5;
+const LIFT_STEPS = 10;
+const NEUTRAL_SPREAD = 40;
 
 function channel(value: number): number {
   const srgb = value / 255;
@@ -37,12 +40,20 @@ export function contrastRatio(first: string, second: string): number {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
-export function needsBadge(inkHex: string): boolean {
-  return contrastRatio(inkHex, TUI_BACKGROUND) < MIN_ICON_CONTRAST;
+function liftInk(hex: string): string {
+  const rgb = parseHex(hex);
+  for (let step = 0; step <= LIFT_STEPS; step++) {
+    const lifted = toHex(rgb.map((value) => value + ((255 - value) * step) / LIFT_STEPS));
+    if (contrastRatio(lifted, TUI_BACKGROUND) >= COMFORTABLE_ICON_CONTRAST) return lifted;
+  }
+  return hex;
 }
 
-export function iconBackdrop(badge: boolean): string {
-  return badge ? ICON_BADGE : TUI_BACKGROUND;
+export function readableInk(hex: string): string {
+  if (contrastRatio(hex, TUI_BACKGROUND) >= COMFORTABLE_ICON_CONTRAST) return hex;
+  const channels = parseHex(hex);
+  const neutral = Math.max(...channels) - Math.min(...channels) < NEUTRAL_SPREAD;
+  return neutral ? LIGHT_INK : liftInk(hex);
 }
 
 export function inkColor(rgba: Uint8Array | readonly number[]): string {

@@ -1,27 +1,81 @@
 import { Resvg } from "@resvg/resvg-js";
+import { icoToPng } from "@scripts/ico-to-png";
+import { ICON_REGISTRY, type IconConfig } from "@web/lib/stack/tech-icons";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import zlib from "node:zlib";
 
-import { ICON_REGISTRY, type IconConfig } from "../../web/src/lib/stack/tech-icons";
-import {
-  ICON_BADGE,
-  TUI_BACKGROUND,
-  inkColor,
-  needsBadge,
-  parseHex,
-  toHex,
-} from "../src/tui/contrast";
-import { icoToPng } from "./ico-to-png";
+import { TUI_BACKGROUND, inkColor, parseHex } from "@/tui/contrast";
 
 const ROOT = path.resolve(import.meta.dir, "..");
 const WEB_PUBLIC = path.resolve(ROOT, "../web/public");
 const OUTPUT = path.join(ROOT, "src/tui/icons.generated.json");
 const CANVAS = 64;
-const IMAGE_SIZE = 32;
-const BADGE_RADIUS = 0.22;
-const CELL_COLUMNS = 4;
-const CELL_ROWS = 2;
+const IMAGE_SIZE = 64;
+const NERD_FONTS_VERSION = "3.4.0";
+const NERD_GLYPH_NAMES = `https://raw.githubusercontent.com/ryanoasis/nerd-fonts/v${NERD_FONTS_VERSION}/glyphnames.json`;
+
+const TUI_ONLY_ICONS: Record<string, IconConfig> = {
+  yarn: { type: "si", slug: "yarn", hex: "2C8EBB" },
+  uv: { type: "si", slug: "uv", hex: "DE5FE9" },
+  ktor: { type: "si", slug: "ktor", hex: "087CFA" },
+  keycloak: { type: "si", slug: "keycloak", hex: "4D4D4D" },
+  revenuecat: { type: "si", slug: "revenuecat", hex: "F2545B" },
+  scalar: { type: "si", slug: "scalar", hex: "1A1A1A" },
+};
+
+const DEVICON_NAMES: Record<string, string> = {
+  next: "nextjs",
+  node: "nodejs",
+  postgres: "postgresql",
+  "prisma-postgres": "prisma",
+  "react-native": "react",
+  "expo-router": "react",
+  "expo-notifications": "react",
+  vue: "vuejs",
+  nuxt: "nuxtjs",
+  solid: "solidjs",
+  "solid-start": "solidjs",
+  tailwind: "tailwindcss",
+  workers: "cloudflareworkers",
+  d1: "cloudflare",
+  r2: "cloudflare",
+  antd: "antdesign",
+  mui: "materialui",
+  "django-rest-framework": "djangorest",
+  cypress: "cypressio",
+  "apollo-client": "graphql",
+  "apollo-server": "graphql",
+  "graphql-yoga": "graphql",
+  "graphql-codegen": "graphql",
+  "graphql-hotchocolate": "graphql",
+  "vite-plus": "vitejs",
+  "react-vite": "vitejs",
+  "vanilla-vite": "vitejs",
+  "ef-core": "dotnetcore",
+  "minimal-api": "dotnetcore",
+  junit5: "junit",
+  "pytest-cov": "pytest",
+  "kafka-go": "apachekafka",
+  rdkafka: "apachekafka",
+  brod: "apachekafka",
+  "confluent-kafka": "apachekafka",
+  amqp: "rabbitmq",
+  "mongodb-atlas": "mongodb",
+  "upstash-redis": "redis",
+  "phoenix-live-view": "phoenix",
+  "docker-compose": "docker",
+  devcontainer: "docker",
+  scss: "sass",
+  "postcss-only": "postcss",
+};
+
+const DEVICON_PREFIXES: [string, string][] = [
+  ["spring-", "spring"],
+  ["aspnet-blazor", "blazor"],
+  ["aspnet-", "dotnetcore"],
+  ["ecto", "ecto"],
+];
 
 type Source = { key: string; load: () => Promise<{ bytes: Uint8Array; mime: string }> };
 
@@ -75,13 +129,10 @@ function render(svg: string, size: number) {
   }).render();
 }
 
-function frame(dataUri: string, badge: boolean, withBackdrop = badge): string {
-  const inset = badge ? 10 : 2;
+function frame(dataUri: string): string {
+  const inset = 2;
   const size = CANVAS - inset * 2;
-  const backdrop = withBackdrop
-    ? `<rect width="${CANVAS}" height="${CANVAS}" rx="${BADGE_RADIUS * CANVAS}" fill="#${ICON_BADGE}"/>`
-    : "";
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${CANVAS}" height="${CANVAS}" viewBox="0 0 ${CANVAS} ${CANVAS}">${backdrop}<image href="${dataUri}" x="${inset}" y="${inset}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet"/></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${CANVAS}" height="${CANVAS}" viewBox="0 0 ${CANVAS} ${CANVAS}"><image href="${dataUri}" x="${inset}" y="${inset}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet"/></svg>`;
 }
 
 function straightAlpha(premultiplied: Uint8Array): Uint8Array {
@@ -97,39 +148,6 @@ function straightAlpha(premultiplied: Uint8Array): Uint8Array {
     pixels[offset + 3] = alpha;
   }
   return pixels;
-}
-
-function halfBlockCells(rgba: Uint8Array, width: number): string {
-  const background = parseHex(TUI_BACKGROUND);
-  const block = width / CELL_COLUMNS;
-  const pixel = (column: number, row: number) => {
-    const sum = [0, 0, 0, 0];
-    for (let y = row * block; y < (row + 1) * block; y++) {
-      for (let x = column * block; x < (column + 1) * block; x++) {
-        const offset = (y * width + x) * 4;
-        const alpha = (rgba[offset + 3] ?? 0) / 255;
-        for (let channel = 0; channel < 3; channel++) {
-          sum[channel] = (sum[channel] ?? 0) + (rgba[offset + channel] ?? 0) * alpha;
-        }
-        sum[3] = (sum[3] ?? 0) + alpha;
-      }
-    }
-    const weight = sum[3] ?? 0;
-    const coverage = weight / (block * block);
-    return toHex(
-      background.map((base, channel) => {
-        const color = weight > 0 ? (sum[channel] ?? 0) / weight : base;
-        return color * coverage + base * (1 - coverage);
-      }),
-    );
-  };
-  let cells = "";
-  for (let row = 0; row < CELL_ROWS; row++) {
-    for (let column = 0; column < CELL_COLUMNS; column++) {
-      cells += pixel(column, row * 2) + pixel(column, row * 2 + 1);
-    }
-  }
-  return cells;
 }
 
 function quantize(pixels: Uint8Array): Uint8Array {
@@ -154,28 +172,58 @@ async function buildIcon(source: Source) {
   const bytes = isIco(loaded.bytes) ? icoToPng(loaded.bytes) : loaded.bytes;
   const mime = isIco(loaded.bytes) ? "image/png" : loaded.mime;
   const dataUri = `data:${mime};base64,${Buffer.from(bytes).toString("base64")}`;
-  const bare = straightAlpha(render(frame(dataUri, false), CANVAS).pixels);
+  const bare = straightAlpha(render(frame(dataUri), CANVAS).pixels);
   if (!bare.some((value, index) => index % 4 === 3 && value > 0)) {
     throw new Error("rendered no pixels");
   }
   const ink = inkColor(bare);
-  const badge = needsBadge(ink);
-  const logo = straightAlpha(render(frame(dataUri, badge, false), IMAGE_SIZE).pixels);
+  const logo = straightAlpha(render(frame(dataUri), IMAGE_SIZE).pixels);
   const mono = isMonochrome(logo, ink);
   return {
     source: source.key,
-    badge,
     ink,
-    cells: halfBlockCells(straightAlpha(render(frame(dataUri, badge), CANVAS).pixels), CANVAS),
     image: mono ? logo.filter((_, index) => index % 4 === 3) : quantize(logo),
     mono,
   };
 }
 
+function deviconName(id: string, names: ReadonlySet<string>): string | undefined {
+  const base = id.startsWith("self-") ? id.slice(5) : id;
+  const prefixed = DEVICON_PREFIXES.find(([prefix]) => base.startsWith(prefix))?.[1];
+  const candidates = [DEVICON_NAMES[base], prefixed, base.replaceAll(/[-_]/g, "")];
+  return candidates.find((name): name is string => name !== undefined && names.has(name));
+}
+
+async function loadDevicons(): Promise<Map<string, string>> {
+  const response = await fetch(NERD_GLYPH_NAMES);
+  if (!response.ok) throw new Error(`${NERD_GLYPH_NAMES} answered ${response.status}`);
+  const glyphs: unknown = await response.json();
+  if (typeof glyphs !== "object" || glyphs === null)
+    throw new Error("glyphnames.json is not an object");
+  const devicons = new Map<string, string>();
+  for (const [name, glyph] of Object.entries(glyphs)) {
+    if (!name.startsWith("dev-") || typeof glyph !== "object" || glyph === null) continue;
+    if ("code" in glyph && typeof glyph.code === "string") devicons.set(name.slice(4), glyph.code);
+  }
+  return devicons;
+}
+
 async function main() {
+  const registry = { ...ICON_REGISTRY, ...TUI_ONLY_ICONS };
+  const devicons = await loadDevicons();
+  const deviconIds = new Set(devicons.keys());
+  const nerd = Object.fromEntries(
+    Object.keys(registry)
+      .sort()
+      .flatMap((id) => {
+        const name = deviconName(id, deviconIds);
+        return name ? [[id, devicons.get(name)]] : [];
+      }),
+  );
+
   const sources = new Map<string, Source>();
   const sourceById = new Map<string, string>();
-  for (const [id, config] of Object.entries(ICON_REGISTRY)) {
+  for (const [id, config] of Object.entries(registry)) {
     const source = sourceFor(config);
     sources.set(source.key, source);
     sourceById.set(id, source.key);
@@ -218,19 +266,16 @@ async function main() {
 
   const asset = {
     background: TUI_BACKGROUND,
-    badge: ICON_BADGE,
-    columns: CELL_COLUMNS,
-    rows: CELL_ROWS,
     imageSize: IMAGE_SIZE,
-    badgeRadius: BADGE_RADIUS,
+    nerdFonts: NERD_FONTS_VERSION,
     ids,
+    nerd,
     icons,
     atlas: atlas.toString("base64"),
   };
   await writeFile(OUTPUT, `${JSON.stringify(asset)}\n`);
-  const badged = icons.filter((icon) => icon.badge).length;
   console.log(
-    `Wrote ${icons.length} icons for ${Object.keys(ids).length} ids (${badged} on a badge, atlas ${atlas.length} bytes) to ${path.relative(ROOT, OUTPUT)}`,
+    `Wrote ${icons.length} icons for ${Object.keys(ids).length} ids (${Object.keys(nerd).length} devicons, atlas ${atlas.length} bytes) to ${path.relative(ROOT, OUTPUT)}`,
   );
 }
 

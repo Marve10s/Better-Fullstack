@@ -1,7 +1,7 @@
 export const MIN_BUN_VERSION = "1.3.14";
 export const MIN_NODE_VERSION = "26.4.0";
-export const MIN_COLUMNS = 80;
-export const MIN_ROWS = 24;
+export const MIN_COLUMNS = 60;
+export const MIN_ROWS = 16;
 
 const SUPPORTED_TARGETS = new Set([
   "darwin-arm64",

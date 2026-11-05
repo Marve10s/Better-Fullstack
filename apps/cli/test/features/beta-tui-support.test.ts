@@ -50,8 +50,8 @@ describe("beta TUI support check", () => {
     expect(reasonFor({ stdinIsTTY: false })).toContain("interactive terminal");
     expect(reasonFor({ ci: "true" })).toContain("interactive terminal");
     expect(reasonFor({ term: "dumb" })).toContain("TERM=dumb");
-    expect(reasonFor({ columns: 79 })).toContain("at least 80x24");
-    expect(reasonFor({ rows: 20 })).toContain("at least 80x24");
+    expect(reasonFor({ columns: 59 })).toContain("at least 60x16");
+    expect(reasonFor({ rows: 15 })).toContain("at least 60x16");
     expect(reasonFor({ platform: "freebsd", arch: "x64" })).toContain("freebsd-x64");
   });
 });
