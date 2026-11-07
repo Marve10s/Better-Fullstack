@@ -269,7 +269,7 @@ const BASE_LINKS: LinkMap = {
     githubUrl: "https://github.com/confluentinc/confluent-kafka-python",
   },
   trpc: { docsUrl: "https://trpc.io/docs", githubUrl: "https://github.com/trpc/trpc" },
-  orpc: { docsUrl: "https://orpc.unnoq.com/", githubUrl: "https://github.com/unnoq/orpc" },
+  orpc: { docsUrl: "https://orpc.dev/", githubUrl: "https://github.com/middleapi/orpc" },
   "ts-rest": {
     docsUrl: "https://ts-rest.com/",
     githubUrl: "https://github.com/ts-rest/ts-rest",
