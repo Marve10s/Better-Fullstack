@@ -187,6 +187,8 @@ const CREATE_ONLY_KEYS = new Set([
   "renderTitle",
   "disableAnalytics",
   "manualDb",
+  "tui",
+  "motion",
   "workspaceShape",
 ]);
 

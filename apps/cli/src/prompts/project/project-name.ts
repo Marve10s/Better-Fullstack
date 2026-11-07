@@ -1,4 +1,4 @@
-import { isCancel, text } from "@clack/prompts";
+import { text } from "@clack/prompts";
 import consola from "consola";
 import fs from "fs-extra";
 import path from "node:path";
@@ -6,7 +6,9 @@ import pc from "picocolors";
 
 import { DEFAULT_CONFIG } from "@/constants";
 import { ProjectNameSchema } from "@/types";
+import { getPromptDriver } from "@/presentation/context";
 import { exitCancelled } from "@/presentation/errors";
+import type { NavigableTextOptions } from "@/prompts/core/navigable";
 
 function isPathWithinCwd(targetPath: string) {
   const resolved = path.resolve(targetPath);
@@ -54,7 +56,7 @@ export async function getProjectName(initialName?: string) {
   }
 
   while (!isValid) {
-    const response = await text({
+    const textOptions: NavigableTextOptions = {
       message: "Enter your project name or path (relative to current directory)",
       placeholder: defaultName,
       initialValue: initialName,
@@ -75,9 +77,13 @@ export async function getProjectName(initialName?: string) {
 
         return undefined;
       },
-    });
+    };
+    const driver = getPromptDriver();
+    const response = driver
+      ? await driver.text(textOptions, { canGoBack: false, stepKey: "projectName" })
+      : await text(textOptions);
 
-    if (isCancel(response)) return exitCancelled("Operation cancelled.");
+    if (typeof response === "symbol") return exitCancelled("Operation cancelled.");
 
     projectPath = response || defaultName;
     isValid = true;

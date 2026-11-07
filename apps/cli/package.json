@@ -138,6 +138,7 @@
     "dev": "tsdown --watch",
     "lint": "oxlint . && tsc --noEmit && bun test test/recommendations/cli-builder-sync.test.ts",
     "check-types": "tsc --noEmit",
+    "generate:tui-icons": "bun scripts/generate-tui-icons.ts",
     "test": "bun test --parallel=2 --isolate --timeout=180000 ./test/{architecture,ecosystems,features,generation,lifecycle,mcp,prompts,recommendations,support,telemetry}/*.test.ts",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage ./test/{architecture,ecosystems,features,generation,lifecycle,mcp,prompts,recommendations,support,telemetry}/*.test.ts",
@@ -173,6 +174,8 @@
   "devDependencies": {
     "@better-fullstack/project-lifecycle": "workspace:*",
     "@modelcontextprotocol/client": "^2.4.0",
+    "@opentui/core": "0.8.1",
+    "@resvg/resvg-js": "2.6.2",
     "@types/bun": "^1.4.4",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.9.3",

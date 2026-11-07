@@ -12,6 +12,7 @@
     "types": ["node"],
     "paths": {
       "@/*": ["./src/*"],
+      "@scripts/*": ["./scripts/*"],
       "@test/*": ["./test/*"],
       "@testing/*": ["../../testing/*"],
       "@web/*": ["../web/src/*"]
