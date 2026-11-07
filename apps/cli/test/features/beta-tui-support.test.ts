@@ -63,7 +63,17 @@ describe("beta TUI entry", () => {
       shouldStartBetaTui({ tui: true, part: ["backend:typescript:hono"] }, false, undefined),
     ).toBe(false);
     expect(shouldStartBetaTui({ tui: true }, true, undefined)).toBe(false);
-    expect(shouldStartBetaTui({ tui: true }, false, "tui")).toBe(false);
+    expect(
+      shouldStartBetaTui({ tui: true }, false, "tui", { stdinIsTTY: false, stdoutIsTTY: true }),
+    ).toBe(false);
+    expect(
+      shouldStartBetaTui({ tui: true }, false, undefined, {
+        silent: false,
+        stdinIsTTY: true,
+        stdoutIsTTY: true,
+        ci: "",
+      }),
+    ).toBe(true);
     expect(shouldStartBetaTui({}, false, "continue")).toBe(false);
   });
 

@@ -52,7 +52,7 @@ export async function handleDirectoryConflict(currentPathInput: string) {
     } satisfies NavigableSelectOptions<DirectoryConflictAction>;
     const driver = getPromptDriver();
     const action = driver
-      ? await driver.select(conflictPrompt, { canGoBack: false, stepKey: "projectName" })
+      ? await driver.select(conflictPrompt, { canGoBack: false, stepKey: "directoryConflict" })
       : await select<DirectoryConflictAction>(conflictPrompt);
 
     if (isCancel(action)) return exitCancelled("Operation cancelled.");

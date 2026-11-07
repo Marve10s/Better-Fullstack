@@ -230,10 +230,11 @@ export function shouldStartBetaTui(
   input: Pick<CreateInput, "yes" | "part"> & { tui?: boolean },
   hasConfigBase: boolean,
   builderChoice: string | undefined,
+  environment?: Parameters<typeof canPromptInteractively>[0],
 ): boolean {
   if (!input.tui && builderChoice !== "tui") return false;
   if (input.yes || input.part?.length || hasConfigBase) return false;
-  return canPromptInteractively();
+  return canPromptInteractively(environment);
 }
 
 function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
@@ -527,7 +528,11 @@ export async function createProjectHandler(
         const { startBetaTui } = await import("@/tui/start");
         betaTui = await startBetaTui({ projectName: input.projectName, motion: input.motion });
       } else if (input.tui && !isSilent()) {
-        log.warn("The beta TUI is not available in this terminal. Continuing in the classic CLI.");
+        const reason =
+          input.yes || input.part?.length || hasConfigBase
+            ? "The beta TUI cannot be combined with --yes, --part, --config, or --from-history."
+            : "The beta TUI is not available in this terminal.";
+        log.warn(`${reason} Continuing in the classic CLI.`);
       }
 
       if (hasConfigBase && !isSilent()) {
