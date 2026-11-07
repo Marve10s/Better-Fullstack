@@ -69,6 +69,13 @@ describe("beta TUI entry", () => {
 
   test("falls back to the classic flow without downloading when the terminal is unsupported", async () => {
     const { startBetaTui } = await import("@/tui/start");
-    expect(await startBetaTui()).toBeUndefined();
+    const previous = process.env.CI;
+    process.env.CI = "true";
+    try {
+      expect(await startBetaTui()).toBeUndefined();
+    } finally {
+      if (previous === undefined) delete process.env.CI;
+      else process.env.CI = previous;
+    }
   });
 });

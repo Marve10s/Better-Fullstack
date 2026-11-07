@@ -85,8 +85,14 @@ export async function installOpenTui(dir = getOpenTuiRuntimeDir()): Promise<void
     }
     await fs.writeFile(path.join(staging, ENTRY_FILE), 'export * from "@opentui/core";\n');
     if (await isOpenTuiInstalled(dir)) return;
-    await fs.remove(dir);
-    await fs.move(staging, dir);
+    try {
+      await fs.move(staging, dir, { overwrite: false });
+      return;
+    } catch {
+      if (await isOpenTuiInstalled(dir)) return;
+      await fs.remove(dir);
+      await fs.move(staging, dir, { overwrite: false });
+    }
   } finally {
     await fs.remove(staging);
   }

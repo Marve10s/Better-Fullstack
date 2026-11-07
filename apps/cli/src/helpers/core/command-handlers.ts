@@ -526,6 +526,8 @@ export async function createProjectHandler(
       if (shouldStartBetaTui(input, hasConfigBase, builderChoice)) {
         const { startBetaTui } = await import("@/tui/start");
         betaTui = await startBetaTui({ projectName: input.projectName, motion: input.motion });
+      } else if (input.tui && !isSilent()) {
+        log.warn("The beta TUI is not available in this terminal. Continuing in the classic CLI.");
       }
 
       if (hasConfigBase && !isSilent()) {

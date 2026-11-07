@@ -6,7 +6,7 @@ import pc from "picocolors";
 import type { Addons, PackageManager, PythonPackageManager } from "@/types";
 
 import { commandExists } from "@/platform/command-exists";
-import { childStderr } from "@/presentation/context";
+import { childStderr, isOutputCaptured } from "@/presentation/context";
 import { classifySetupFailure } from "@/telemetry/analytics";
 
 /**
@@ -36,6 +36,9 @@ function toErrorMessage(error: unknown): string {
  */
 function toStepFailure(step: string, error: unknown, errorMessage: string): SetupStepResult {
   const stderr = (error as { stderr?: unknown })?.stderr;
+  if (typeof stderr === "string" && stderr && isOutputCaptured()) {
+    process.stderr.write(`${stderr}\n`);
+  }
   const detail = typeof stderr === "string" ? `${errorMessage}\n${stderr}` : errorMessage;
   return { step, success: false, errorMessage, failureReason: classifySetupFailure(detail) };
 }

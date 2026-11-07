@@ -305,8 +305,9 @@ export class TuiController implements PromptDriver {
         prompt.error = undefined;
       }
     } else if (prompt.kind === "multiselect" && key.name === "a") {
-      const allSelected = prompt.selected.length === prompt.options.length;
-      prompt.selected = allSelected ? [] : prompt.options.map((option) => option.value);
+      const enabled = prompt.options.filter((option) => !option.disabled);
+      const allSelected = enabled.every((option) => prompt.selected.includes(option.value));
+      prompt.selected = allSelected ? [] : enabled.map((option) => option.value);
       prompt.error = undefined;
     } else if (key.name === "return") {
       return prompt.kind === "multiselect"

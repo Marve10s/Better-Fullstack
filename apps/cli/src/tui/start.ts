@@ -42,7 +42,7 @@ export type BetaTuiSession = {
 };
 
 const MIN_WARP_MS = 2400;
-const INTERACTIVE_ADDONS = new Set(["mcp", "skills", "fumadocs", "opentui", "wxt"]);
+const INTERACTIVE_ADDONS = new Set(["mcp", "skills", "fumadocs", "opentui", "wxt", "ruler", "ultracite"]);
 
 type Write = typeof process.stdout.write;
 

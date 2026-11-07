@@ -98,6 +98,10 @@ export function childStderr(): "pipe" | ["inherit", "pipe"] {
   return tryGetContext()?.outputCaptured ? "pipe" : ["inherit", "pipe"];
 }
 
+export function isOutputCaptured(): boolean {
+  return tryGetContext()?.outputCaptured ?? false;
+}
+
 type ContextOptions = {
   silent?: boolean;
 };

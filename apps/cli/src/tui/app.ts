@@ -44,6 +44,7 @@ export async function mountTui(
     targetFps: 30,
   });
 
+  try {
   const scene = new Scene(options.motion, Date.now());
   const surface = new otui.FrameBufferRenderable(renderer, {
     position: "absolute",
@@ -270,4 +271,10 @@ export async function mountTui(
       return closing;
     },
   };
+  } catch (error) {
+    try {
+      renderer.destroy();
+    } catch {}
+    throw error;
+  }
 }
