@@ -6,6 +6,7 @@ import pc from "picocolors";
 import type { Addons, PackageManager, PythonPackageManager } from "@/types";
 
 import { commandExists } from "@/platform/command-exists";
+import { childStderr, isOutputCaptured } from "@/presentation/context";
 import { classifySetupFailure } from "@/telemetry/analytics";
 
 /**
@@ -35,6 +36,9 @@ function toErrorMessage(error: unknown): string {
  */
 function toStepFailure(step: string, error: unknown, errorMessage: string): SetupStepResult {
   const stderr = (error as { stderr?: unknown })?.stderr;
+  if (typeof stderr === "string" && stderr && isOutputCaptured()) {
+    process.stderr.write(`${stderr}\n`);
+  }
   const detail = typeof stderr === "string" ? `${errorMessage}\n${stderr}` : errorMessage;
   return { step, success: false, errorMessage, failureReason: classifySetupFailure(detail) };
 }
@@ -101,7 +105,7 @@ export async function installDependencies({
           ...process.env,
           ...getInstallEnvironment(packageManager),
         },
-        stderr: ["inherit", "pipe"],
+        stderr: childStderr(),
       })`${packageManager} ${args}`;
 
     try {
@@ -135,7 +139,7 @@ export async function runCargoBuild({
 
     await $({
       cwd: projectDir,
-      stderr: ["inherit", "pipe"],
+      stderr: childStderr(),
     })`cargo build`;
 
     s.stop("Cargo build completed");
@@ -161,7 +165,7 @@ export async function runDotnetRestore({
 
     await $({
       cwd: projectDir,
-      stderr: ["inherit", "pipe"],
+      stderr: childStderr(),
     })`dotnet restore`;
 
     s.stop(".NET dependencies restored successfully");
@@ -183,7 +187,7 @@ export async function runUvSync({ projectDir }: { projectDir: string }): Promise
 
     await $({
       cwd: projectDir,
-      stderr: ["inherit", "pipe"],
+      stderr: childStderr(),
     })`uv sync --extra dev`;
 
     s.stop("Python dependencies installed successfully");
@@ -211,15 +215,15 @@ export async function runPythonInstall({
   try {
     if (packageManager === "poetry") {
       s.start("Running poetry install...");
-      await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`poetry install --extras dev`;
+      await $({ cwd: projectDir, stderr: childStderr() })`poetry install --extras dev`;
     } else {
       s.start("Creating a virtual environment and installing with pip...");
       const python = (await commandExists("python")) ? "python" : "python3";
-      await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`${python} -m venv .venv`;
+      await $({ cwd: projectDir, stderr: childStderr() })`${python} -m venv .venv`;
       const pip = process.platform === "win32" ? ".venv/Scripts/pip.exe" : ".venv/bin/pip";
       // Include the dev extra: pytest and the selected quality tools live there,
       // and the printed next-step commands advertise them.
-      await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`${pip} install -e .[dev]`;
+      await $({ cwd: projectDir, stderr: childStderr() })`${pip} install -e .[dev]`;
     }
 
     s.stop("Python dependencies installed successfully");
@@ -245,7 +249,7 @@ export async function runGoModTidy({
 
     await $({
       cwd: projectDir,
-      stderr: ["inherit", "pipe"],
+      stderr: childStderr(),
     })`go mod tidy`;
 
     s.stop("Go dependencies installed successfully");
@@ -272,7 +276,7 @@ export async function runMavenTests({
 
     await $({
       cwd: projectDir,
-      stderr: ["inherit", "pipe"],
+      stderr: childStderr(),
     })`${mvnw} test`;
 
     s.stop("Maven tests completed");
@@ -299,7 +303,7 @@ export async function runGradleTests({
 
     await $({
       cwd: projectDir,
-      stderr: ["inherit", "pipe"],
+      stderr: childStderr(),
     })`${gradlew} test`;
 
     s.stop("Gradle tests completed");
@@ -325,12 +329,12 @@ export async function runMixCompile({
 
     await $({
       cwd: projectDir,
-      stderr: ["inherit", "pipe"],
+      stderr: childStderr(),
     })`mix deps.get`;
 
     await $({
       cwd: projectDir,
-      stderr: ["inherit", "pipe"],
+      stderr: childStderr(),
     })`mix compile`;
 
     s.stop("Elixir dependencies installed and project compiled");
@@ -358,7 +362,7 @@ export async function runShardsInstall({
     };
   }
   try {
-    await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`shards install`;
+    await $({ cwd: projectDir, stderr: childStderr() })`shards install`;
     return { step, success: true };
   } catch (error) {
     return toStepFailure(step, error, toErrorMessage(error));
@@ -372,7 +376,7 @@ export async function runBundleInstall({
 }): Promise<SetupStepResult> {
   const step = "bundle install";
   try {
-    await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`bundle install`;
+    await $({ cwd: projectDir, stderr: childStderr() })`bundle install`;
     return { step, success: true };
   } catch (error) {
     return toStepFailure(step, error, toErrorMessage(error));
@@ -386,7 +390,7 @@ export async function runComposerInstall({
 }): Promise<SetupStepResult> {
   const step = "composer install";
   try {
-    await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`composer install --no-interaction`;
+    await $({ cwd: projectDir, stderr: childStderr() })`composer install --no-interaction`;
     return { step, success: true };
   } catch (error) {
     return toStepFailure(step, error, toErrorMessage(error));

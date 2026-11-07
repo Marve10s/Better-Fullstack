@@ -1,13 +1,18 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 
+import type { PromptDriver, PromptStep } from "@/prompts/core/prompt-driver";
+
 type NavigationState = {
   isFirstPrompt: boolean;
   lastPromptShownUI: boolean;
+  step?: PromptStep;
 };
 
 type CLIContext = {
   navigation: NavigationState;
   silent: boolean;
+  promptDriver?: PromptDriver;
+  outputCaptured?: boolean;
 };
 
 const cliStorage = new AsyncLocalStorage<CLIContext>();
@@ -58,6 +63,43 @@ export function setLastPromptShownUI(value: boolean): void {
   if (ctx) {
     ctx.navigation.lastPromptShownUI = value;
   }
+}
+
+export function getPromptStep(): PromptStep | undefined {
+  return getContext().navigation.step;
+}
+
+export function setPromptStep(step: PromptStep | undefined): void {
+  const ctx = tryGetContext();
+  if (ctx) {
+    ctx.navigation.step = step;
+  }
+}
+
+export function getPromptDriver(): PromptDriver | undefined {
+  return tryGetContext()?.promptDriver;
+}
+
+export function setPromptDriver(driver: PromptDriver | undefined): void {
+  const ctx = tryGetContext();
+  if (ctx) {
+    ctx.promptDriver = driver;
+  }
+}
+
+export function setOutputCaptured(value: boolean): void {
+  const ctx = tryGetContext();
+  if (ctx) {
+    ctx.outputCaptured = value;
+  }
+}
+
+export function childStderr(): "pipe" | ["inherit", "pipe"] {
+  return tryGetContext()?.outputCaptured ? "pipe" : ["inherit", "pipe"];
+}
+
+export function isOutputCaptured(): boolean {
+  return tryGetContext()?.outputCaptured ?? false;
 }
 
 type ContextOptions = {

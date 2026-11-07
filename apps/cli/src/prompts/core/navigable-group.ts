@@ -2,7 +2,13 @@
  * Navigable group - a group of prompts that allows going back
  */
 
-import { didLastPromptShowUI, setIsFirstPrompt, setLastPromptShownUI } from "@/presentation/context";
+import {
+  didLastPromptShowUI,
+  setIsFirstPrompt,
+  getPromptStep,
+  setLastPromptShownUI,
+  setPromptStep,
+} from "@/presentation/context";
 import { isGoBack } from "@/presentation/navigation";
 import { isCancel } from "@/prompts/core/navigable";
 
@@ -37,6 +43,7 @@ export async function navigableGroup<T>(
   opts?: NavigablePromptGroupOptions<T>,
 ): Promise<Prettify<PromptGroupAwaitedReturn<T>>> {
   const results = {} as any;
+  const parentStep = getPromptStep();
   const promptNames = Object.keys(prompts) as (keyof T)[];
   let currentIndex = 0;
   let goingBack = false;
@@ -46,6 +53,7 @@ export async function navigableGroup<T>(
     const prompt = prompts[name];
 
     setIsFirstPrompt(currentIndex === 0);
+    setPromptStep({ key: String(name), results });
 
     setLastPromptShownUI(false);
 
@@ -71,6 +79,7 @@ export async function navigableGroup<T>(
         opts.onCancel({ results });
       }
       setIsFirstPrompt(false);
+      setPromptStep(parentStep);
       return results;
     }
 
@@ -90,6 +99,7 @@ export async function navigableGroup<T>(
   }
 
   setIsFirstPrompt(false);
+  setPromptStep(parentStep);
 
   return results;
 }
