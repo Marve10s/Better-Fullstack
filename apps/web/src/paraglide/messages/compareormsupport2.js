@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Compareormsupport2Inputs */
 
-const en_compareormsupport2 = /** @type {(inputs: Compareormsupport2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM support (Drizzle, Prisma, etc.)`)
-};
 
-const es_compareormsupport2 = /** @type {(inputs: Compareormsupport2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Soporte ORM (Drizzle, Prisma, etc.)`)
-};
-
-const zh_compareormsupport2 = /** @type {(inputs: Compareormsupport2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM 支持（Drizzle、Prisma 等）`)
-};
-
-const ja_compareormsupport2 = /** @type {(inputs: Compareormsupport2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM サポート (Drizzle、Prisma など)`)
-};
-
-const ko_compareormsupport2 = /** @type {(inputs: Compareormsupport2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM 지원(Drizzle, Prisma 등)`)
-};
-
-const zh_hant1_compareormsupport2 = /** @type {(inputs: Compareormsupport2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM 支援（Drizzle、Prisma 等）`)
-};
-
-const de_compareormsupport2 = /** @type {(inputs: Compareormsupport2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM-Unterstützung (Drizzle, Prisma usw.)`)
-};
-
-const fr_compareormsupport2 = /** @type {(inputs: Compareormsupport2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prise en charge ORM (Drizzle, Prisma, etc.)`)
-};
-
-const uk_compareormsupport2 = /** @type {(inputs: Compareormsupport2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Підтримка ORM (Drizzle, Prisma тощо)`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_compareormsupport2 = /** @type {(inputs: Compareormsupport2Inputs) => L
 * @returns {LocalizedString}
 */
 const compareormsupport2 = /** @type {((inputs?: Compareormsupport2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareormsupport2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_compareormsupport2(inputs)
-	if (locale === "zh") return zh_compareormsupport2(inputs)
-	if (locale === "ja") return ja_compareormsupport2(inputs)
-	if (locale === "ko") return ko_compareormsupport2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_compareormsupport2(inputs)
-	if (locale === "de") return de_compareormsupport2(inputs)
-	if (locale === "fr") return fr_compareormsupport2(inputs)
-	if (locale === "uk") return uk_compareormsupport2(inputs)
-	return en_compareormsupport2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Soporte ORM (Drizzle, Prisma, etc.)")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("ORM 支持（Drizzle、Prisma 等）")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ORM サポート (Drizzle、Prisma など)")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("ORM 지원(Drizzle, Prisma 등)")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("ORM 支援（Drizzle、Prisma 等）")
+	if (locale === "de") return /** @type {LocalizedString} */ ("ORM-Unterstützung (Drizzle, Prisma usw.)")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Prise en charge ORM (Drizzle, Prisma, etc.)")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Підтримка ORM (Drizzle, Prisma тощо)")
+	return /** @type {LocalizedString} */ ("ORM support (Drizzle, Prisma, etc.)")
 });
 export { compareormsupport2 as "compareOrmSupport" }

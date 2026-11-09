@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Uiclose1Inputs */
 
-const en_uiclose1 = /** @type {(inputs: Uiclose1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Close`)
-};
 
-const es_uiclose1 = /** @type {(inputs: Uiclose1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cerrar`)
-};
-
-const zh_uiclose1 = /** @type {(inputs: Uiclose1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`关闭`)
-};
-
-const ja_uiclose1 = /** @type {(inputs: Uiclose1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`閉じる`)
-};
-
-const ko_uiclose1 = /** @type {(inputs: Uiclose1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`닫기`)
-};
-
-const zh_hant1_uiclose1 = /** @type {(inputs: Uiclose1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`關閉`)
-};
-
-const de_uiclose1 = /** @type {(inputs: Uiclose1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Schließen`)
-};
-
-const fr_uiclose1 = /** @type {(inputs: Uiclose1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fermer`)
-};
-
-const uk_uiclose1 = /** @type {(inputs: Uiclose1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Закрити`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_uiclose1 = /** @type {(inputs: Uiclose1Inputs) => LocalizedString} */ (
 * @returns {LocalizedString}
 */
 const uiclose1 = /** @type {((inputs?: Uiclose1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Uiclose1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_uiclose1(inputs)
-	if (locale === "zh") return zh_uiclose1(inputs)
-	if (locale === "ja") return ja_uiclose1(inputs)
-	if (locale === "ko") return ko_uiclose1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_uiclose1(inputs)
-	if (locale === "de") return de_uiclose1(inputs)
-	if (locale === "fr") return fr_uiclose1(inputs)
-	if (locale === "uk") return uk_uiclose1(inputs)
-	return en_uiclose1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Cerrar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("关闭")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("閉じる")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("닫기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("關閉")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Schließen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Fermer")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Закрити")
+	return /** @type {LocalizedString} */ ("Close")
 });
 export { uiclose1 as "uiClose" }

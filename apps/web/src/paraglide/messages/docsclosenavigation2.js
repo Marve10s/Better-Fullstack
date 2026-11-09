@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{ section: NonNullable<unknown> }} Docsclosenavigation2Inputs */
 
-const en_docsclosenavigation2 = /** @type {(inputs: Docsclosenavigation2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Close ${i?.section} navigation`)
-};
 
-const es_docsclosenavigation2 = /** @type {(inputs: Docsclosenavigation2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Cerrar navegación de ${i?.section}`)
-};
-
-const zh_docsclosenavigation2 = /** @type {(inputs: Docsclosenavigation2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`关闭${i?.section}导航`)
-};
-
-const ja_docsclosenavigation2 = /** @type {(inputs: Docsclosenavigation2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.section}のナビゲーションを閉じる`)
-};
-
-const ko_docsclosenavigation2 = /** @type {(inputs: Docsclosenavigation2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.section} 탐색 닫기`)
-};
-
-const zh_hant1_docsclosenavigation2 = /** @type {(inputs: Docsclosenavigation2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`關閉${i?.section}導覽`)
-};
-
-const de_docsclosenavigation2 = /** @type {(inputs: Docsclosenavigation2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.section}-Navigation schließen`)
-};
-
-const fr_docsclosenavigation2 = /** @type {(inputs: Docsclosenavigation2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Fermer la navigation ${i?.section}`)
-};
-
-const uk_docsclosenavigation2 = /** @type {(inputs: Docsclosenavigation2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Закрити навігацію: ${i?.section}`)
-};
 
 /**
 * | output |
@@ -50,16 +16,16 @@ const uk_docsclosenavigation2 = /** @type {(inputs: Docsclosenavigation2Inputs) 
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const docsclosenavigation2 = /** @type {((inputs: Docsclosenavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclosenavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const docsclosenavigation2 = /** @type {((inputs: Docsclosenavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclosenavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((i, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclosenavigation2(inputs)
-	if (locale === "zh") return zh_docsclosenavigation2(inputs)
-	if (locale === "ja") return ja_docsclosenavigation2(inputs)
-	if (locale === "ko") return ko_docsclosenavigation2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclosenavigation2(inputs)
-	if (locale === "de") return de_docsclosenavigation2(inputs)
-	if (locale === "fr") return fr_docsclosenavigation2(inputs)
-	if (locale === "uk") return uk_docsclosenavigation2(inputs)
-	return en_docsclosenavigation2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ (`Cerrar navegación de ${i?.section}`)
+	if (locale === "zh") return /** @type {LocalizedString} */ (`关闭${i?.section}导航`)
+	if (locale === "ja") return /** @type {LocalizedString} */ (`${i?.section}のナビゲーションを閉じる`)
+	if (locale === "ko") return /** @type {LocalizedString} */ (`${i?.section} 탐색 닫기`)
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ (`關閉${i?.section}導覽`)
+	if (locale === "de") return /** @type {LocalizedString} */ (`${i?.section}-Navigation schließen`)
+	if (locale === "fr") return /** @type {LocalizedString} */ (`Fermer la navigation ${i?.section}`)
+	if (locale === "uk") return /** @type {LocalizedString} */ (`Закрити навігацію: ${i?.section}`)
+	return /** @type {LocalizedString} */ (`Close ${i?.section} navigation`)
 });
 export { docsclosenavigation2 as "docsCloseNavigation" }

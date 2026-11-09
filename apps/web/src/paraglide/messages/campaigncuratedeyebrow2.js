@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Campaigncuratedeyebrow2Inputs */
 
-const en_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Five places to start`)
-};
 
-const es_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cinco puntos de partida`)
-};
-
-const zh_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`五个起点`)
-};
-
-const ja_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`5つのスタート地点`)
-};
-
-const ko_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`다섯 가지 시작점`)
-};
-
-const zh_hant1_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`五個起點`)
-};
-
-const de_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fünf Startpunkte`)
-};
-
-const fr_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cinq points de départ`)
-};
-
-const uk_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Пʼять точок старту`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_campaigncuratedeyebrow2 = /** @type {(inputs: Campaigncuratedeyebrow2In
 * @returns {LocalizedString}
 */
 const campaigncuratedeyebrow2 = /** @type {((inputs?: Campaigncuratedeyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaigncuratedeyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_campaigncuratedeyebrow2(inputs)
-	if (locale === "zh") return zh_campaigncuratedeyebrow2(inputs)
-	if (locale === "ja") return ja_campaigncuratedeyebrow2(inputs)
-	if (locale === "ko") return ko_campaigncuratedeyebrow2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_campaigncuratedeyebrow2(inputs)
-	if (locale === "de") return de_campaigncuratedeyebrow2(inputs)
-	if (locale === "fr") return fr_campaigncuratedeyebrow2(inputs)
-	if (locale === "uk") return uk_campaigncuratedeyebrow2(inputs)
-	return en_campaigncuratedeyebrow2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Cinco puntos de partida")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("五个起点")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("5つのスタート地点")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("다섯 가지 시작점")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("五個起點")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Fünf Startpunkte")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Cinq points de départ")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Пʼять точок старту")
+	return /** @type {LocalizedString} */ ("Five places to start")
 });
 export { campaigncuratedeyebrow2 as "campaignCuratedEyebrow" }

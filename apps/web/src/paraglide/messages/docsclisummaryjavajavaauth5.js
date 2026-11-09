@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummaryjavajavaauth5Inputs */
 
-const en_docsclisummaryjavajavaauth5 = /** @type {(inputs: Docsclisummaryjavajavaauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java auth.`)
-};
 
-const es_docsclisummaryjavajavaauth5 = /** @type {(inputs: Docsclisummaryjavajavaauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Autenticación en Java.`)
-};
-
-const zh_docsclisummaryjavajavaauth5 = /** @type {(inputs: Docsclisummaryjavajavaauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java 认证。`)
-};
-
-const ja_docsclisummaryjavajavaauth5 = /** @type {(inputs: Docsclisummaryjavajavaauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java の認証。`)
-};
-
-const ko_docsclisummaryjavajavaauth5 = /** @type {(inputs: Docsclisummaryjavajavaauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java 인증.`)
-};
-
-const zh_hant1_docsclisummaryjavajavaauth5 = /** @type {(inputs: Docsclisummaryjavajavaauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java 驗證。`)
-};
-
-const de_docsclisummaryjavajavaauth5 = /** @type {(inputs: Docsclisummaryjavajavaauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Authentifizierung für Java.`)
-};
-
-const fr_docsclisummaryjavajavaauth5 = /** @type {(inputs: Docsclisummaryjavajavaauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Authentification Java.`)
-};
-
-const uk_docsclisummaryjavajavaauth5 = /** @type {(inputs: Docsclisummaryjavajavaauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Автентифікація в Java.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummaryjavajavaauth5 = /** @type {(inputs: Docsclisummaryjavajav
 * @returns {LocalizedString}
 */
 const docsclisummaryjavajavaauth5 = /** @type {((inputs?: Docsclisummaryjavajavaauth5Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummaryjavajavaauth5Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummaryjavajavaauth5(inputs)
-	if (locale === "zh") return zh_docsclisummaryjavajavaauth5(inputs)
-	if (locale === "ja") return ja_docsclisummaryjavajavaauth5(inputs)
-	if (locale === "ko") return ko_docsclisummaryjavajavaauth5(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummaryjavajavaauth5(inputs)
-	if (locale === "de") return de_docsclisummaryjavajavaauth5(inputs)
-	if (locale === "fr") return fr_docsclisummaryjavajavaauth5(inputs)
-	if (locale === "uk") return uk_docsclisummaryjavajavaauth5(inputs)
-	return en_docsclisummaryjavajavaauth5(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Autenticación en Java.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Java 认证。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Java の認証。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Java 인증.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Java 驗證。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Authentifizierung für Java.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Authentification Java.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Автентифікація в Java.")
+	return /** @type {LocalizedString} */ ("Java auth.")
 });
 export { docsclisummaryjavajavaauth5 as "docsCliSummaryJavaJavaAuth" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderlanguagesectionbackend3Inputs */
 
-const en_builderlanguagesectionbackend3 = /** @type {(inputs: Builderlanguagesectionbackend3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend`)
-};
 
-const es_builderlanguagesectionbackend3 = /** @type {(inputs: Builderlanguagesectionbackend3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend`)
-};
-
-const zh_builderlanguagesectionbackend3 = /** @type {(inputs: Builderlanguagesectionbackend3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`后端`)
-};
-
-const ja_builderlanguagesectionbackend3 = /** @type {(inputs: Builderlanguagesectionbackend3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`バックエンド`)
-};
-
-const ko_builderlanguagesectionbackend3 = /** @type {(inputs: Builderlanguagesectionbackend3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`백엔드`)
-};
-
-const zh_hant1_builderlanguagesectionbackend3 = /** @type {(inputs: Builderlanguagesectionbackend3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`後端`)
-};
-
-const de_builderlanguagesectionbackend3 = /** @type {(inputs: Builderlanguagesectionbackend3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend`)
-};
-
-const fr_builderlanguagesectionbackend3 = /** @type {(inputs: Builderlanguagesectionbackend3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend`)
-};
-
-const uk_builderlanguagesectionbackend3 = /** @type {(inputs: Builderlanguagesectionbackend3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Бекенд`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderlanguagesectionbackend3 = /** @type {(inputs: Builderlanguagesec
 * @returns {LocalizedString}
 */
 const builderlanguagesectionbackend3 = /** @type {((inputs?: Builderlanguagesectionbackend3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderlanguagesectionbackend3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderlanguagesectionbackend3(inputs)
-	if (locale === "zh") return zh_builderlanguagesectionbackend3(inputs)
-	if (locale === "ja") return ja_builderlanguagesectionbackend3(inputs)
-	if (locale === "ko") return ko_builderlanguagesectionbackend3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderlanguagesectionbackend3(inputs)
-	if (locale === "de") return de_builderlanguagesectionbackend3(inputs)
-	if (locale === "fr") return fr_builderlanguagesectionbackend3(inputs)
-	if (locale === "uk") return uk_builderlanguagesectionbackend3(inputs)
-	return en_builderlanguagesectionbackend3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Backend")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("后端")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("バックエンド")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("백엔드")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("後端")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Backend")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Backend")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Бекенд")
+	return /** @type {LocalizedString} */ ("Backend")
 });
 export { builderlanguagesectionbackend3 as "builderLanguageSectionBackend" }

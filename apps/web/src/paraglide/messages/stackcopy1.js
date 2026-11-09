@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Stackcopy1Inputs */
 
-const en_stackcopy1 = /** @type {(inputs: Stackcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Copy`)
-};
 
-const es_stackcopy1 = /** @type {(inputs: Stackcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Copiar`)
-};
-
-const zh_stackcopy1 = /** @type {(inputs: Stackcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`复制`)
-};
-
-const ja_stackcopy1 = /** @type {(inputs: Stackcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`コピー`)
-};
-
-const ko_stackcopy1 = /** @type {(inputs: Stackcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`복사`)
-};
-
-const zh_hant1_stackcopy1 = /** @type {(inputs: Stackcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`複製`)
-};
-
-const de_stackcopy1 = /** @type {(inputs: Stackcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Kopieren`)
-};
-
-const fr_stackcopy1 = /** @type {(inputs: Stackcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Copier`)
-};
-
-const uk_stackcopy1 = /** @type {(inputs: Stackcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Копіювати`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_stackcopy1 = /** @type {(inputs: Stackcopy1Inputs) => LocalizedString} 
 * @returns {LocalizedString}
 */
 const stackcopy1 = /** @type {((inputs?: Stackcopy1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackcopy1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_stackcopy1(inputs)
-	if (locale === "zh") return zh_stackcopy1(inputs)
-	if (locale === "ja") return ja_stackcopy1(inputs)
-	if (locale === "ko") return ko_stackcopy1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_stackcopy1(inputs)
-	if (locale === "de") return de_stackcopy1(inputs)
-	if (locale === "fr") return fr_stackcopy1(inputs)
-	if (locale === "uk") return uk_stackcopy1(inputs)
-	return en_stackcopy1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Copiar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("复制")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("コピー")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("복사")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("複製")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Kopieren")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Copier")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Копіювати")
+	return /** @type {LocalizedString} */ ("Copy")
 });
 export { stackcopy1 as "stackCopy" }

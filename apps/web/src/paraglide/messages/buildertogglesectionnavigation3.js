@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildertogglesectionnavigation3Inputs */
 
-const en_buildertogglesectionnavigation3 = /** @type {(inputs: Buildertogglesectionnavigation3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Toggle section navigation`)
-};
 
-const es_buildertogglesectionnavigation3 = /** @type {(inputs: Buildertogglesectionnavigation3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Alternar navegación de secciones`)
-};
-
-const zh_buildertogglesectionnavigation3 = /** @type {(inputs: Buildertogglesectionnavigation3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`切换分区导航`)
-};
-
-const ja_buildertogglesectionnavigation3 = /** @type {(inputs: Buildertogglesectionnavigation3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`セクションのナビゲーションを切り替えます`)
-};
-
-const ko_buildertogglesectionnavigation3 = /** @type {(inputs: Buildertogglesectionnavigation3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`섹션 탐색 전환`)
-};
-
-const zh_hant1_buildertogglesectionnavigation3 = /** @type {(inputs: Buildertogglesectionnavigation3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`切換分區導航`)
-};
-
-const de_buildertogglesectionnavigation3 = /** @type {(inputs: Buildertogglesectionnavigation3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abschnittsnavigation umschalten`)
-};
-
-const fr_buildertogglesectionnavigation3 = /** @type {(inputs: Buildertogglesectionnavigation3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Basculer la navigation dans les sections`)
-};
-
-const uk_buildertogglesectionnavigation3 = /** @type {(inputs: Buildertogglesectionnavigation3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Перемкнути навігацію розділами`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildertogglesectionnavigation3 = /** @type {(inputs: Buildertogglesect
 * @returns {LocalizedString}
 */
 const buildertogglesectionnavigation3 = /** @type {((inputs?: Buildertogglesectionnavigation3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildertogglesectionnavigation3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildertogglesectionnavigation3(inputs)
-	if (locale === "zh") return zh_buildertogglesectionnavigation3(inputs)
-	if (locale === "ja") return ja_buildertogglesectionnavigation3(inputs)
-	if (locale === "ko") return ko_buildertogglesectionnavigation3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildertogglesectionnavigation3(inputs)
-	if (locale === "de") return de_buildertogglesectionnavigation3(inputs)
-	if (locale === "fr") return fr_buildertogglesectionnavigation3(inputs)
-	if (locale === "uk") return uk_buildertogglesectionnavigation3(inputs)
-	return en_buildertogglesectionnavigation3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Alternar navegación de secciones")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("切换分区导航")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("セクションのナビゲーションを切り替えます")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("섹션 탐색 전환")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("切換分區導航")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Abschnittsnavigation umschalten")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Basculer la navigation dans les sections")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Перемкнути навігацію розділами")
+	return /** @type {LocalizedString} */ ("Toggle section navigation")
 });
 export { buildertogglesectionnavigation3 as "builderToggleSectionNavigation" }

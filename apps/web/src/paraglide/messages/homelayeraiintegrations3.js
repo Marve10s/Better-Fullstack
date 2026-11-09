@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Homelayeraiintegrations3Inputs */
 
-const en_homelayeraiintegrations3 = /** @type {(inputs: Homelayeraiintegrations3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI INTEGRATIONS`)
-};
 
-const es_homelayeraiintegrations3 = /** @type {(inputs: Homelayeraiintegrations3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`INTEGRACIONES DE IA`)
-};
-
-const zh_homelayeraiintegrations3 = /** @type {(inputs: Homelayeraiintegrations3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 集成`)
-};
-
-const ja_homelayeraiintegrations3 = /** @type {(inputs: Homelayeraiintegrations3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 統合`)
-};
-
-const ko_homelayeraiintegrations3 = /** @type {(inputs: Homelayeraiintegrations3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 통합`)
-};
-
-const zh_hant1_homelayeraiintegrations3 = /** @type {(inputs: Homelayeraiintegrations3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 集成`)
-};
-
-const de_homelayeraiintegrations3 = /** @type {(inputs: Homelayeraiintegrations3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI INTEGRATIONEN`)
-};
-
-const fr_homelayeraiintegrations3 = /** @type {(inputs: Homelayeraiintegrations3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`INTÉGRATIONS AI`)
-};
-
-const uk_homelayeraiintegrations3 = /** @type {(inputs: Homelayeraiintegrations3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI-ІНТЕГРАЦІЇ`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_homelayeraiintegrations3 = /** @type {(inputs: Homelayeraiintegrations3
 * @returns {LocalizedString}
 */
 const homelayeraiintegrations3 = /** @type {((inputs?: Homelayeraiintegrations3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homelayeraiintegrations3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_homelayeraiintegrations3(inputs)
-	if (locale === "zh") return zh_homelayeraiintegrations3(inputs)
-	if (locale === "ja") return ja_homelayeraiintegrations3(inputs)
-	if (locale === "ko") return ko_homelayeraiintegrations3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_homelayeraiintegrations3(inputs)
-	if (locale === "de") return de_homelayeraiintegrations3(inputs)
-	if (locale === "fr") return fr_homelayeraiintegrations3(inputs)
-	if (locale === "uk") return uk_homelayeraiintegrations3(inputs)
-	return en_homelayeraiintegrations3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("INTEGRACIONES DE IA")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("AI 集成")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("AI 統合")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("AI 통합")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("AI 集成")
+	if (locale === "de") return /** @type {LocalizedString} */ ("AI INTEGRATIONEN")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("INTÉGRATIONS AI")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("AI-ІНТЕГРАЦІЇ")
+	return /** @type {LocalizedString} */ ("AI INTEGRATIONS")
 });
 export { homelayeraiintegrations3 as "homeLayerAiIntegrations" }

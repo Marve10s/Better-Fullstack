@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpopenbuilder2Inputs */
 
-const en_mcpopenbuilder2 = /** @type {(inputs: Mcpopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Open builder`)
-};
 
-const es_mcpopenbuilder2 = /** @type {(inputs: Mcpopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abrir constructor`)
-};
-
-const zh_mcpopenbuilder2 = /** @type {(inputs: Mcpopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打开构建器`)
-};
-
-const ja_mcpopenbuilder2 = /** @type {(inputs: Mcpopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ビルダーを開く`)
-};
-
-const ko_mcpopenbuilder2 = /** @type {(inputs: Mcpopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`빌더 열기`)
-};
-
-const zh_hant1_mcpopenbuilder2 = /** @type {(inputs: Mcpopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打開建構器`)
-};
-
-const de_mcpopenbuilder2 = /** @type {(inputs: Mcpopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Öffnen Sie den Builder`)
-};
-
-const fr_mcpopenbuilder2 = /** @type {(inputs: Mcpopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ouvrir le constructeur`)
-};
-
-const uk_mcpopenbuilder2 = /** @type {(inputs: Mcpopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкрити конструктор`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpopenbuilder2 = /** @type {(inputs: Mcpopenbuilder2Inputs) => Localiz
 * @returns {LocalizedString}
 */
 const mcpopenbuilder2 = /** @type {((inputs?: Mcpopenbuilder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpopenbuilder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpopenbuilder2(inputs)
-	if (locale === "zh") return zh_mcpopenbuilder2(inputs)
-	if (locale === "ja") return ja_mcpopenbuilder2(inputs)
-	if (locale === "ko") return ko_mcpopenbuilder2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpopenbuilder2(inputs)
-	if (locale === "de") return de_mcpopenbuilder2(inputs)
-	if (locale === "fr") return fr_mcpopenbuilder2(inputs)
-	if (locale === "uk") return uk_mcpopenbuilder2(inputs)
-	return en_mcpopenbuilder2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Abrir constructor")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("打开构建器")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ビルダーを開く")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("빌더 열기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("打開建構器")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Öffnen Sie den Builder")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Ouvrir le constructeur")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Відкрити конструктор")
+	return /** @type {LocalizedString} */ ("Open builder")
 });
 export { mcpopenbuilder2 as "mcpOpenBuilder" }

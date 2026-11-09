@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderseotitle2Inputs */
 
-const en_builderseotitle2 = /** @type {(inputs: Builderseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stack Builder | Better Fullstack`)
-};
 
-const es_builderseotitle2 = /** @type {(inputs: Builderseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Constructor de stack | Better Fullstack`)
-};
-
-const zh_builderseotitle2 = /** @type {(inputs: Builderseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stack 构建器 | Better Fullstack`)
-};
-
-const ja_builderseotitle2 = /** @type {(inputs: Builderseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stack Builder | Better Fullstack`)
-};
-
-const ko_builderseotitle2 = /** @type {(inputs: Builderseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stack Builder | Better Fullstack`)
-};
-
-const zh_hant1_builderseotitle2 = /** @type {(inputs: Builderseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stack 建構器 | Better Fullstack`)
-};
-
-const de_builderseotitle2 = /** @type {(inputs: Builderseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stack Builder | Better Fullstack`)
-};
-
-const fr_builderseotitle2 = /** @type {(inputs: Builderseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stack Builder | Better Fullstack`)
-};
-
-const uk_builderseotitle2 = /** @type {(inputs: Builderseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Конструктор стеку | Better Fullstack`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderseotitle2 = /** @type {(inputs: Builderseotitle2Inputs) => Local
 * @returns {LocalizedString}
 */
 const builderseotitle2 = /** @type {((inputs?: Builderseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderseotitle2(inputs)
-	if (locale === "zh") return zh_builderseotitle2(inputs)
-	if (locale === "ja") return ja_builderseotitle2(inputs)
-	if (locale === "ko") return ko_builderseotitle2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderseotitle2(inputs)
-	if (locale === "de") return de_builderseotitle2(inputs)
-	if (locale === "fr") return fr_builderseotitle2(inputs)
-	if (locale === "uk") return uk_builderseotitle2(inputs)
-	return en_builderseotitle2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Constructor de stack | Better Fullstack")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Stack 构建器 | Better Fullstack")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Stack Builder | Better Fullstack")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Stack Builder | Better Fullstack")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Stack 建構器 | Better Fullstack")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Stack Builder | Better Fullstack")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Stack Builder | Better Fullstack")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Конструктор стеку | Better Fullstack")
+	return /** @type {LocalizedString} */ ("Stack Builder | Better Fullstack")
 });
 export { builderseotitle2 as "builderSeoTitle" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{ count: NonNullable<unknown> }} Docssearchsectionsindexed3Inputs */
 
-const en_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsindexed3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} sections indexed`)
-};
 
-const es_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsindexed3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} secciones indexadas`)
-};
-
-const zh_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsindexed3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`已索引 ${i?.count} 个章节`)
-};
-
-const ja_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsindexed3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} セクションのインデックスが作成されました`)
-};
-
-const ko_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsindexed3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 섹션 색인이 생성됨`)
-};
-
-const zh_hant1_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsindexed3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`已索引 ${i?.count} 個章節`)
-};
-
-const de_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsindexed3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} Abschnitte indiziert`)
-};
-
-const fr_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsindexed3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} sections indexées`)
-};
-
-const uk_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsindexed3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} розділів проіндексовано`)
-};
 
 /**
 * | output |
@@ -50,16 +16,16 @@ const uk_docssearchsectionsindexed3 = /** @type {(inputs: Docssearchsectionsinde
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const docssearchsectionsindexed3 = /** @type {((inputs: Docssearchsectionsindexed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchsectionsindexed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const docssearchsectionsindexed3 = /** @type {((inputs: Docssearchsectionsindexed3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchsectionsindexed3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((i, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docssearchsectionsindexed3(inputs)
-	if (locale === "zh") return zh_docssearchsectionsindexed3(inputs)
-	if (locale === "ja") return ja_docssearchsectionsindexed3(inputs)
-	if (locale === "ko") return ko_docssearchsectionsindexed3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docssearchsectionsindexed3(inputs)
-	if (locale === "de") return de_docssearchsectionsindexed3(inputs)
-	if (locale === "fr") return fr_docssearchsectionsindexed3(inputs)
-	if (locale === "uk") return uk_docssearchsectionsindexed3(inputs)
-	return en_docssearchsectionsindexed3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ (`${i?.count} secciones indexadas`)
+	if (locale === "zh") return /** @type {LocalizedString} */ (`已索引 ${i?.count} 个章节`)
+	if (locale === "ja") return /** @type {LocalizedString} */ (`${i?.count} セクションのインデックスが作成されました`)
+	if (locale === "ko") return /** @type {LocalizedString} */ (`${i?.count} 섹션 색인이 생성됨`)
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ (`已索引 ${i?.count} 個章節`)
+	if (locale === "de") return /** @type {LocalizedString} */ (`${i?.count} Abschnitte indiziert`)
+	if (locale === "fr") return /** @type {LocalizedString} */ (`${i?.count} sections indexées`)
+	if (locale === "uk") return /** @type {LocalizedString} */ (`${i?.count} розділів проіндексовано`)
+	return /** @type {LocalizedString} */ (`${i?.count} sections indexed`)
 });
 export { docssearchsectionsindexed3 as "docsSearchSectionsIndexed" }

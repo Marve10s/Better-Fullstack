@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Homelayerlanguageecosystems3Inputs */
 
-const en_homelayerlanguageecosystems3 = /** @type {(inputs: Homelayerlanguageecosystems3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`LANGUAGE ECOSYSTEMS`)
-};
 
-const es_homelayerlanguageecosystems3 = /** @type {(inputs: Homelayerlanguageecosystems3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ECOSISTEMAS DE LENGUAJE`)
-};
-
-const zh_homelayerlanguageecosystems3 = /** @type {(inputs: Homelayerlanguageecosystems3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`语言生态`)
-};
-
-const ja_homelayerlanguageecosystems3 = /** @type {(inputs: Homelayerlanguageecosystems3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`言語エコシステム`)
-};
-
-const ko_homelayerlanguageecosystems3 = /** @type {(inputs: Homelayerlanguageecosystems3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`언어 생태계`)
-};
-
-const zh_hant1_homelayerlanguageecosystems3 = /** @type {(inputs: Homelayerlanguageecosystems3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`語言生態`)
-};
-
-const de_homelayerlanguageecosystems3 = /** @type {(inputs: Homelayerlanguageecosystems3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`SPRACHÖKOSYSTEME`)
-};
-
-const fr_homelayerlanguageecosystems3 = /** @type {(inputs: Homelayerlanguageecosystems3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ÉCOSYSTÈMES DE LANGAGES`)
-};
-
-const uk_homelayerlanguageecosystems3 = /** @type {(inputs: Homelayerlanguageecosystems3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`МОВНІ ЕКОСИСТЕМИ`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_homelayerlanguageecosystems3 = /** @type {(inputs: Homelayerlanguageeco
 * @returns {LocalizedString}
 */
 const homelayerlanguageecosystems3 = /** @type {((inputs?: Homelayerlanguageecosystems3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homelayerlanguageecosystems3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_homelayerlanguageecosystems3(inputs)
-	if (locale === "zh") return zh_homelayerlanguageecosystems3(inputs)
-	if (locale === "ja") return ja_homelayerlanguageecosystems3(inputs)
-	if (locale === "ko") return ko_homelayerlanguageecosystems3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_homelayerlanguageecosystems3(inputs)
-	if (locale === "de") return de_homelayerlanguageecosystems3(inputs)
-	if (locale === "fr") return fr_homelayerlanguageecosystems3(inputs)
-	if (locale === "uk") return uk_homelayerlanguageecosystems3(inputs)
-	return en_homelayerlanguageecosystems3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("ECOSISTEMAS DE LENGUAJE")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("语言生态")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("言語エコシステム")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("언어 생태계")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("語言生態")
+	if (locale === "de") return /** @type {LocalizedString} */ ("SPRACHÖKOSYSTEME")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("ÉCOSYSTÈMES DE LANGAGES")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("МОВНІ ЕКОСИСТЕМИ")
+	return /** @type {LocalizedString} */ ("LANGUAGE ECOSYSTEMS")
 });
 export { homelayerlanguageecosystems3 as "homeLayerLanguageEcosystems" }

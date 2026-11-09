@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docssearchplaceholder2Inputs */
 
-const en_docssearchplaceholder2 = /** @type {(inputs: Docssearchplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Search docs...`)
-};
 
-const es_docssearchplaceholder2 = /** @type {(inputs: Docssearchplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Buscar docs...`)
-};
-
-const zh_docssearchplaceholder2 = /** @type {(inputs: Docssearchplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`搜索文档...`)
-};
-
-const ja_docssearchplaceholder2 = /** @type {(inputs: Docssearchplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ドキュメントを検索...`)
-};
-
-const ko_docssearchplaceholder2 = /** @type {(inputs: Docssearchplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`문서 검색...`)
-};
-
-const zh_hant1_docssearchplaceholder2 = /** @type {(inputs: Docssearchplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`搜尋文件...`)
-};
-
-const de_docssearchplaceholder2 = /** @type {(inputs: Docssearchplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dokumente durchsuchen...`)
-};
-
-const fr_docssearchplaceholder2 = /** @type {(inputs: Docssearchplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rechercher des documents...`)
-};
-
-const uk_docssearchplaceholder2 = /** @type {(inputs: Docssearchplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Шукати в документації...`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docssearchplaceholder2 = /** @type {(inputs: Docssearchplaceholder2Inpu
 * @returns {LocalizedString}
 */
 const docssearchplaceholder2 = /** @type {((inputs?: Docssearchplaceholder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchplaceholder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docssearchplaceholder2(inputs)
-	if (locale === "zh") return zh_docssearchplaceholder2(inputs)
-	if (locale === "ja") return ja_docssearchplaceholder2(inputs)
-	if (locale === "ko") return ko_docssearchplaceholder2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docssearchplaceholder2(inputs)
-	if (locale === "de") return de_docssearchplaceholder2(inputs)
-	if (locale === "fr") return fr_docssearchplaceholder2(inputs)
-	if (locale === "uk") return uk_docssearchplaceholder2(inputs)
-	return en_docssearchplaceholder2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Buscar docs...")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("搜索文档...")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ドキュメントを検索...")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("문서 검색...")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("搜尋文件...")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Dokumente durchsuchen...")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Rechercher des documents...")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Шукати в документації...")
+	return /** @type {LocalizedString} */ ("Search docs...")
 });
 export { docssearchplaceholder2 as "docsSearchPlaceholder" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpfinaltitle2Inputs */
 
-const en_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2.6× faster than`)
-};
 
-const es_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2.6× más rápido que`)
-};
-
-const zh_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`比`)
-};
-
-const ja_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プロンプトのみより`)
-};
-
-const ko_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2.6배 더 빠르다`)
-};
-
-const zh_hant1_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`比`)
-};
-
-const de_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2,6× schneller als`)
-};
-
-const fr_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2,6 fois plus rapide que`)
-};
-
-const uk_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`2,6× швидше, ніж`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpfinaltitle2 = /** @type {(inputs: Mcpfinaltitle2Inputs) => Localized
 * @returns {LocalizedString}
 */
 const mcpfinaltitle2 = /** @type {((inputs?: Mcpfinaltitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpfinaltitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpfinaltitle2(inputs)
-	if (locale === "zh") return zh_mcpfinaltitle2(inputs)
-	if (locale === "ja") return ja_mcpfinaltitle2(inputs)
-	if (locale === "ko") return ko_mcpfinaltitle2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpfinaltitle2(inputs)
-	if (locale === "de") return de_mcpfinaltitle2(inputs)
-	if (locale === "fr") return fr_mcpfinaltitle2(inputs)
-	if (locale === "uk") return uk_mcpfinaltitle2(inputs)
-	return en_mcpfinaltitle2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("2.6× más rápido que")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("比")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("プロンプトのみより")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("2.6배 더 빠르다")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("比")
+	if (locale === "de") return /** @type {LocalizedString} */ ("2,6× schneller als")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("2,6 fois plus rapide que")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("2,6× швидше, ніж")
+	return /** @type {LocalizedString} */ ("2.6× faster than")
 });
 export { mcpfinaltitle2 as "mcpFinalTitle" }

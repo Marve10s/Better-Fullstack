@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docscommandplaceholder2Inputs */
 
-const en_docscommandplaceholder2 = /** @type {(inputs: Docscommandplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Type a command or search...`)
-};
 
-const es_docscommandplaceholder2 = /** @type {(inputs: Docscommandplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Escribe un comando o busca...`)
-};
-
-const zh_docscommandplaceholder2 = /** @type {(inputs: Docscommandplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`输入命令或搜索...`)
-};
-
-const ja_docscommandplaceholder2 = /** @type {(inputs: Docscommandplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`コマンドを入力または検索...`)
-};
-
-const ko_docscommandplaceholder2 = /** @type {(inputs: Docscommandplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`명령을 입력하거나 검색...`)
-};
-
-const zh_hant1_docscommandplaceholder2 = /** @type {(inputs: Docscommandplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`輸入指令或搜尋...`)
-};
-
-const de_docscommandplaceholder2 = /** @type {(inputs: Docscommandplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Befehl eingeben oder suchen...`)
-};
-
-const fr_docscommandplaceholder2 = /** @type {(inputs: Docscommandplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tapez une commande ou recherchez...`)
-};
-
-const uk_docscommandplaceholder2 = /** @type {(inputs: Docscommandplaceholder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Введіть команду або шукайте...`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docscommandplaceholder2 = /** @type {(inputs: Docscommandplaceholder2In
 * @returns {LocalizedString}
 */
 const docscommandplaceholder2 = /** @type {((inputs?: Docscommandplaceholder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docscommandplaceholder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docscommandplaceholder2(inputs)
-	if (locale === "zh") return zh_docscommandplaceholder2(inputs)
-	if (locale === "ja") return ja_docscommandplaceholder2(inputs)
-	if (locale === "ko") return ko_docscommandplaceholder2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docscommandplaceholder2(inputs)
-	if (locale === "de") return de_docscommandplaceholder2(inputs)
-	if (locale === "fr") return fr_docscommandplaceholder2(inputs)
-	if (locale === "uk") return uk_docscommandplaceholder2(inputs)
-	return en_docscommandplaceholder2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Escribe un comando o busca...")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("输入命令或搜索...")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("コマンドを入力または検索...")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("명령을 입력하거나 검색...")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("輸入指令或搜尋...")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Befehl eingeben oder suchen...")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Tapez une commande ou recherchez...")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Введіть команду або шукайте...")
+	return /** @type {LocalizedString} */ ("Type a command or search...")
 });
 export { docscommandplaceholder2 as "docsCommandPlaceholder" }

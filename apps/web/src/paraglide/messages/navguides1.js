@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Navguides1Inputs */
 
-const en_navguides1 = /** @type {(inputs: Navguides1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guides`)
-};
 
-const es_navguides1 = /** @type {(inputs: Navguides1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guías`)
-};
-
-const zh_navguides1 = /** @type {(inputs: Navguides1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`指南`)
-};
-
-const ja_navguides1 = /** @type {(inputs: Navguides1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ガイド`)
-};
-
-const ko_navguides1 = /** @type {(inputs: Navguides1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`가이드`)
-};
-
-const zh_hant1_navguides1 = /** @type {(inputs: Navguides1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`指南`)
-};
-
-const de_navguides1 = /** @type {(inputs: Navguides1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guides`)
-};
-
-const fr_navguides1 = /** @type {(inputs: Navguides1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guides`)
-};
-
-const uk_navguides1 = /** @type {(inputs: Navguides1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Гайди`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_navguides1 = /** @type {(inputs: Navguides1Inputs) => LocalizedString} 
 * @returns {LocalizedString}
 */
 const navguides1 = /** @type {((inputs?: Navguides1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navguides1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_navguides1(inputs)
-	if (locale === "zh") return zh_navguides1(inputs)
-	if (locale === "ja") return ja_navguides1(inputs)
-	if (locale === "ko") return ko_navguides1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_navguides1(inputs)
-	if (locale === "de") return de_navguides1(inputs)
-	if (locale === "fr") return fr_navguides1(inputs)
-	if (locale === "uk") return uk_navguides1(inputs)
-	return en_navguides1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Guías")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("指南")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ガイド")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("가이드")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("指南")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Guides")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Guides")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Гайди")
+	return /** @type {LocalizedString} */ ("Guides")
 });
 export { navguides1 as "navGuides" }

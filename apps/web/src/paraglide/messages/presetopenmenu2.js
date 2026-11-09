@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Presetopenmenu2Inputs */
 
-const en_presetopenmenu2 = /** @type {(inputs: Presetopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Open preset menu`)
-};
 
-const es_presetopenmenu2 = /** @type {(inputs: Presetopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abrir menú de plantillas`)
-};
-
-const zh_presetopenmenu2 = /** @type {(inputs: Presetopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打开预设菜单`)
-};
-
-const ja_presetopenmenu2 = /** @type {(inputs: Presetopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プリセットメニューを開く`)
-};
-
-const ko_presetopenmenu2 = /** @type {(inputs: Presetopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`사전 설정 메뉴 열기`)
-};
-
-const zh_hant1_presetopenmenu2 = /** @type {(inputs: Presetopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`開啟預設選單`)
-};
-
-const de_presetopenmenu2 = /** @type {(inputs: Presetopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Voreingestelltes Menü öffnen`)
-};
-
-const fr_presetopenmenu2 = /** @type {(inputs: Presetopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ouvrir le menu prédéfini`)
-};
-
-const uk_presetopenmenu2 = /** @type {(inputs: Presetopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкрити меню пресетів`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_presetopenmenu2 = /** @type {(inputs: Presetopenmenu2Inputs) => Localiz
 * @returns {LocalizedString}
 */
 const presetopenmenu2 = /** @type {((inputs?: Presetopenmenu2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetopenmenu2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_presetopenmenu2(inputs)
-	if (locale === "zh") return zh_presetopenmenu2(inputs)
-	if (locale === "ja") return ja_presetopenmenu2(inputs)
-	if (locale === "ko") return ko_presetopenmenu2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_presetopenmenu2(inputs)
-	if (locale === "de") return de_presetopenmenu2(inputs)
-	if (locale === "fr") return fr_presetopenmenu2(inputs)
-	if (locale === "uk") return uk_presetopenmenu2(inputs)
-	return en_presetopenmenu2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Abrir menú de plantillas")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("打开预设菜单")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("プリセットメニューを開く")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("사전 설정 메뉴 열기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("開啟預設選單")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Voreingestelltes Menü öffnen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Ouvrir le menu prédéfini")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Відкрити меню пресетів")
+	return /** @type {LocalizedString} */ ("Open preset menu")
 });
 export { presetopenmenu2 as "presetOpenMenu" }

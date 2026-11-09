@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcptoolplandescription3Inputs */
 
-const en_mcptoolplandescription3 = /** @type {(inputs: Mcptoolplandescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dry-run preview: generates the file tree in memory`)
-};
 
-const es_mcptoolplandescription3 = /** @type {(inputs: Mcptoolplandescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vista previa dry-run: genera el árbol de archivos en memoria`)
-};
-
-const zh_mcptoolplandescription3 = /** @type {(inputs: Mcptoolplandescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dry-run 预览：在内存中生成文件树`)
-};
-
-const ja_mcptoolplandescription3 = /** @type {(inputs: Mcptoolplandescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ドライラン プレビュー: メモリ内にファイル ツリーを生成します。`)
-};
-
-const ko_mcptoolplandescription3 = /** @type {(inputs: Mcptoolplandescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`테스트 실행 미리보기: 메모리에 파일 트리를 생성합니다.`)
-};
-
-const zh_hant1_mcptoolplandescription3 = /** @type {(inputs: Mcptoolplandescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dry-run 預覽：在記憶體中產生檔案樹`)
-};
-
-const de_mcptoolplandescription3 = /** @type {(inputs: Mcptoolplandescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Probelaufvorschau: Erstellt den Dateibaum im Speicher`)
-};
-
-const fr_mcptoolplandescription3 = /** @type {(inputs: Mcptoolplandescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aperçu à blanc : génère l'arborescence des fichiers en mémoire`)
-};
-
-const uk_mcptoolplandescription3 = /** @type {(inputs: Mcptoolplandescription3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dry-run preview: генерує дерево файлів у пам’яті`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcptoolplandescription3 = /** @type {(inputs: Mcptoolplandescription3In
 * @returns {LocalizedString}
 */
 const mcptoolplandescription3 = /** @type {((inputs?: Mcptoolplandescription3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolplandescription3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcptoolplandescription3(inputs)
-	if (locale === "zh") return zh_mcptoolplandescription3(inputs)
-	if (locale === "ja") return ja_mcptoolplandescription3(inputs)
-	if (locale === "ko") return ko_mcptoolplandescription3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcptoolplandescription3(inputs)
-	if (locale === "de") return de_mcptoolplandescription3(inputs)
-	if (locale === "fr") return fr_mcptoolplandescription3(inputs)
-	if (locale === "uk") return uk_mcptoolplandescription3(inputs)
-	return en_mcptoolplandescription3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Vista previa dry-run: genera el árbol de archivos en memoria")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Dry-run 预览：在内存中生成文件树")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ドライラン プレビュー: メモリ内にファイル ツリーを生成します。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("테스트 실행 미리보기: 메모리에 파일 트리를 생성합니다.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Dry-run 預覽：在記憶體中產生檔案樹")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Probelaufvorschau: Erstellt den Dateibaum im Speicher")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Aperçu à blanc : génère l'arborescence des fichiers en mémoire")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Dry-run preview: генерує дерево файлів у пам’яті")
+	return /** @type {LocalizedString} */ ("Dry-run preview: generates the file tree in memory")
 });
 export { mcptoolplandescription3 as "mcpToolPlanDescription" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummarypythonpythonorm5Inputs */
 
-const en_docsclisummarypythonpythonorm5 = /** @type {(inputs: Docsclisummarypythonpythonorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python ORM / database.`)
-};
 
-const es_docsclisummarypythonpythonorm5 = /** @type {(inputs: Docsclisummarypythonpythonorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / base de datos Python.`)
-};
-
-const zh_docsclisummarypythonpythonorm5 = /** @type {(inputs: Docsclisummarypythonpythonorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python ORM / 数据库。`)
-};
-
-const ja_docsclisummarypythonpythonorm5 = /** @type {(inputs: Docsclisummarypythonpythonorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python の ORM / データベース。`)
-};
-
-const ko_docsclisummarypythonpythonorm5 = /** @type {(inputs: Docsclisummarypythonpythonorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python ORM / 데이터베이스.`)
-};
-
-const zh_hant1_docsclisummarypythonpythonorm5 = /** @type {(inputs: Docsclisummarypythonpythonorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python ORM / 資料庫。`)
-};
-
-const de_docsclisummarypythonpythonorm5 = /** @type {(inputs: Docsclisummarypythonpythonorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / Datenbank für Python.`)
-};
-
-const fr_docsclisummarypythonpythonorm5 = /** @type {(inputs: Docsclisummarypythonpythonorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / base de données Python.`)
-};
-
-const uk_docsclisummarypythonpythonorm5 = /** @type {(inputs: Docsclisummarypythonpythonorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / база даних Python.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummarypythonpythonorm5 = /** @type {(inputs: Docsclisummarypyth
 * @returns {LocalizedString}
 */
 const docsclisummarypythonpythonorm5 = /** @type {((inputs?: Docsclisummarypythonpythonorm5Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummarypythonpythonorm5Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummarypythonpythonorm5(inputs)
-	if (locale === "zh") return zh_docsclisummarypythonpythonorm5(inputs)
-	if (locale === "ja") return ja_docsclisummarypythonpythonorm5(inputs)
-	if (locale === "ko") return ko_docsclisummarypythonpythonorm5(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummarypythonpythonorm5(inputs)
-	if (locale === "de") return de_docsclisummarypythonpythonorm5(inputs)
-	if (locale === "fr") return fr_docsclisummarypythonpythonorm5(inputs)
-	if (locale === "uk") return uk_docsclisummarypythonpythonorm5(inputs)
-	return en_docsclisummarypythonpythonorm5(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("ORM / base de datos Python.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Python ORM / 数据库。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Python の ORM / データベース。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Python ORM / 데이터베이스.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Python ORM / 資料庫。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("ORM / Datenbank für Python.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("ORM / base de données Python.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("ORM / база даних Python.")
+	return /** @type {LocalizedString} */ ("Python ORM / database.")
 });
 export { docsclisummarypythonpythonorm5 as "docsCliSummaryPythonPythonOrm" }

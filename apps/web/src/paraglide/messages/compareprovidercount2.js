@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{ count: NonNullable<unknown> }} Compareprovidercount2Inputs */
 
-const en_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} providers`)
-};
 
-const es_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} proveedores`)
-};
-
-const zh_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 个提供方`)
-};
-
-const ja_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} プロバイダー`)
-};
-
-const ko_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 제공자`)
-};
-
-const zh_hant1_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 個提供方`)
-};
-
-const de_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} Anbieter`)
-};
-
-const fr_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} fournisseurs`)
-};
-
-const uk_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} провайдерів`)
-};
 
 /**
 * | output |
@@ -50,16 +16,16 @@ const uk_compareprovidercount2 = /** @type {(inputs: Compareprovidercount2Inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const compareprovidercount2 = /** @type {((inputs: Compareprovidercount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareprovidercount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const compareprovidercount2 = /** @type {((inputs: Compareprovidercount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareprovidercount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((i, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_compareprovidercount2(inputs)
-	if (locale === "zh") return zh_compareprovidercount2(inputs)
-	if (locale === "ja") return ja_compareprovidercount2(inputs)
-	if (locale === "ko") return ko_compareprovidercount2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_compareprovidercount2(inputs)
-	if (locale === "de") return de_compareprovidercount2(inputs)
-	if (locale === "fr") return fr_compareprovidercount2(inputs)
-	if (locale === "uk") return uk_compareprovidercount2(inputs)
-	return en_compareprovidercount2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ (`${i?.count} proveedores`)
+	if (locale === "zh") return /** @type {LocalizedString} */ (`${i?.count} 个提供方`)
+	if (locale === "ja") return /** @type {LocalizedString} */ (`${i?.count} プロバイダー`)
+	if (locale === "ko") return /** @type {LocalizedString} */ (`${i?.count} 제공자`)
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ (`${i?.count} 個提供方`)
+	if (locale === "de") return /** @type {LocalizedString} */ (`${i?.count} Anbieter`)
+	if (locale === "fr") return /** @type {LocalizedString} */ (`${i?.count} fournisseurs`)
+	if (locale === "uk") return /** @type {LocalizedString} */ (`${i?.count} провайдерів`)
+	return /** @type {LocalizedString} */ (`${i?.count} providers`)
 });
 export { compareprovidercount2 as "compareProviderCount" }

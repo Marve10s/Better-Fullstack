@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderstepfinalize2Inputs */
 
-const en_builderstepfinalize2 = /** @type {(inputs: Builderstepfinalize2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Finalize`)
-};
 
-const es_builderstepfinalize2 = /** @type {(inputs: Builderstepfinalize2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Finalizar`)
-};
-
-const zh_builderstepfinalize2 = /** @type {(inputs: Builderstepfinalize2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`完成`)
-};
-
-const ja_builderstepfinalize2 = /** @type {(inputs: Builderstepfinalize2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ファイナライズ`)
-};
-
-const ko_builderstepfinalize2 = /** @type {(inputs: Builderstepfinalize2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`마무리`)
-};
-
-const zh_hant1_builderstepfinalize2 = /** @type {(inputs: Builderstepfinalize2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`完成`)
-};
-
-const de_builderstepfinalize2 = /** @type {(inputs: Builderstepfinalize2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abschließen`)
-};
-
-const fr_builderstepfinalize2 = /** @type {(inputs: Builderstepfinalize2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Finaliser`)
-};
-
-const uk_builderstepfinalize2 = /** @type {(inputs: Builderstepfinalize2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Фіналізація`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderstepfinalize2 = /** @type {(inputs: Builderstepfinalize2Inputs) 
 * @returns {LocalizedString}
 */
 const builderstepfinalize2 = /** @type {((inputs?: Builderstepfinalize2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderstepfinalize2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderstepfinalize2(inputs)
-	if (locale === "zh") return zh_builderstepfinalize2(inputs)
-	if (locale === "ja") return ja_builderstepfinalize2(inputs)
-	if (locale === "ko") return ko_builderstepfinalize2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderstepfinalize2(inputs)
-	if (locale === "de") return de_builderstepfinalize2(inputs)
-	if (locale === "fr") return fr_builderstepfinalize2(inputs)
-	if (locale === "uk") return uk_builderstepfinalize2(inputs)
-	return en_builderstepfinalize2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Finalizar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("完成")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ファイナライズ")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("마무리")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("完成")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Abschließen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Finaliser")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Фіналізація")
+	return /** @type {LocalizedString} */ ("Finalize")
 });
 export { builderstepfinalize2 as "builderStepFinalize" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Saveddelete1Inputs */
 
-const en_saveddelete1 = /** @type {(inputs: Saveddelete1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Delete`)
-};
 
-const es_saveddelete1 = /** @type {(inputs: Saveddelete1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Eliminar`)
-};
-
-const zh_saveddelete1 = /** @type {(inputs: Saveddelete1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`删除`)
-};
-
-const ja_saveddelete1 = /** @type {(inputs: Saveddelete1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`削除`)
-};
-
-const ko_saveddelete1 = /** @type {(inputs: Saveddelete1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`삭제`)
-};
-
-const zh_hant1_saveddelete1 = /** @type {(inputs: Saveddelete1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`刪除`)
-};
-
-const de_saveddelete1 = /** @type {(inputs: Saveddelete1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Löschen`)
-};
-
-const fr_saveddelete1 = /** @type {(inputs: Saveddelete1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Supprimer`)
-};
-
-const uk_saveddelete1 = /** @type {(inputs: Saveddelete1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Видалити`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_saveddelete1 = /** @type {(inputs: Saveddelete1Inputs) => LocalizedStri
 * @returns {LocalizedString}
 */
 const saveddelete1 = /** @type {((inputs?: Saveddelete1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Saveddelete1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_saveddelete1(inputs)
-	if (locale === "zh") return zh_saveddelete1(inputs)
-	if (locale === "ja") return ja_saveddelete1(inputs)
-	if (locale === "ko") return ko_saveddelete1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_saveddelete1(inputs)
-	if (locale === "de") return de_saveddelete1(inputs)
-	if (locale === "fr") return fr_saveddelete1(inputs)
-	if (locale === "uk") return uk_saveddelete1(inputs)
-	return en_saveddelete1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Eliminar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("删除")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("削除")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("삭제")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("刪除")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Löschen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Supprimer")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Видалити")
+	return /** @type {LocalizedString} */ ("Delete")
 });
 export { saveddelete1 as "savedDelete" }

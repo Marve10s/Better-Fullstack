@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildergroupintegrations2Inputs */
 
-const en_buildergroupintegrations2 = /** @type {(inputs: Buildergroupintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Integrations`)
-};
 
-const es_buildergroupintegrations2 = /** @type {(inputs: Buildergroupintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Integraciones`)
-};
-
-const zh_buildergroupintegrations2 = /** @type {(inputs: Buildergroupintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`集成`)
-};
-
-const ja_buildergroupintegrations2 = /** @type {(inputs: Buildergroupintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`統合`)
-};
-
-const ko_buildergroupintegrations2 = /** @type {(inputs: Buildergroupintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`통합`)
-};
-
-const zh_hant1_buildergroupintegrations2 = /** @type {(inputs: Buildergroupintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`整合`)
-};
-
-const de_buildergroupintegrations2 = /** @type {(inputs: Buildergroupintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Integrationen`)
-};
-
-const fr_buildergroupintegrations2 = /** @type {(inputs: Buildergroupintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Intégrations`)
-};
-
-const uk_buildergroupintegrations2 = /** @type {(inputs: Buildergroupintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Інтеграції`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildergroupintegrations2 = /** @type {(inputs: Buildergroupintegration
 * @returns {LocalizedString}
 */
 const buildergroupintegrations2 = /** @type {((inputs?: Buildergroupintegrations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildergroupintegrations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildergroupintegrations2(inputs)
-	if (locale === "zh") return zh_buildergroupintegrations2(inputs)
-	if (locale === "ja") return ja_buildergroupintegrations2(inputs)
-	if (locale === "ko") return ko_buildergroupintegrations2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildergroupintegrations2(inputs)
-	if (locale === "de") return de_buildergroupintegrations2(inputs)
-	if (locale === "fr") return fr_buildergroupintegrations2(inputs)
-	if (locale === "uk") return uk_buildergroupintegrations2(inputs)
-	return en_buildergroupintegrations2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Integraciones")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("集成")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("統合")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("통합")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("整合")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Integrationen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Intégrations")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Інтеграції")
+	return /** @type {LocalizedString} */ ("Integrations")
 });
 export { buildergroupintegrations2 as "builderGroupIntegrations" }

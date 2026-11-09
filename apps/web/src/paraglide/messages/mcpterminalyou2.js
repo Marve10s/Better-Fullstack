@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpterminalyou2Inputs */
 
-const en_mcpterminalyou2 = /** @type {(inputs: Mcpterminalyou2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`you:`)
-};
 
-const es_mcpterminalyou2 = /** @type {(inputs: Mcpterminalyou2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`tú:`)
-};
-
-const zh_mcpterminalyou2 = /** @type {(inputs: Mcpterminalyou2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`你：`)
-};
-
-const ja_mcpterminalyou2 = /** @type {(inputs: Mcpterminalyou2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`あなた：`)
-};
-
-const ko_mcpterminalyou2 = /** @type {(inputs: Mcpterminalyou2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`당신:`)
-};
-
-const zh_hant1_mcpterminalyou2 = /** @type {(inputs: Mcpterminalyou2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`你：`)
-};
-
-const de_mcpterminalyou2 = /** @type {(inputs: Mcpterminalyou2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Du:`)
-};
-
-const fr_mcpterminalyou2 = /** @type {(inputs: Mcpterminalyou2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`toi:`)
-};
-
-const uk_mcpterminalyou2 = /** @type {(inputs: Mcpterminalyou2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ви:`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpterminalyou2 = /** @type {(inputs: Mcpterminalyou2Inputs) => Localiz
 * @returns {LocalizedString}
 */
 const mcpterminalyou2 = /** @type {((inputs?: Mcpterminalyou2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpterminalyou2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpterminalyou2(inputs)
-	if (locale === "zh") return zh_mcpterminalyou2(inputs)
-	if (locale === "ja") return ja_mcpterminalyou2(inputs)
-	if (locale === "ko") return ko_mcpterminalyou2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpterminalyou2(inputs)
-	if (locale === "de") return de_mcpterminalyou2(inputs)
-	if (locale === "fr") return fr_mcpterminalyou2(inputs)
-	if (locale === "uk") return uk_mcpterminalyou2(inputs)
-	return en_mcpterminalyou2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("tú:")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("你：")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("あなた：")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("당신:")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("你：")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Du:")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("toi:")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("ви:")
+	return /** @type {LocalizedString} */ ("you:")
 });
 export { mcpterminalyou2 as "mcpTerminalYou" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsverificationcommit2Inputs */
 
-const en_docsverificationcommit2 = /** @type {(inputs: Docsverificationcommit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Commit`)
-};
 
-const es_docsverificationcommit2 = /** @type {(inputs: Docsverificationcommit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Commit`)
-};
-
-const zh_docsverificationcommit2 = /** @type {(inputs: Docsverificationcommit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`提交`)
-};
-
-const ja_docsverificationcommit2 = /** @type {(inputs: Docsverificationcommit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`コミット`)
-};
-
-const ko_docsverificationcommit2 = /** @type {(inputs: Docsverificationcommit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`커밋`)
-};
-
-const zh_hant1_docsverificationcommit2 = /** @type {(inputs: Docsverificationcommit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Commit`)
-};
-
-const de_docsverificationcommit2 = /** @type {(inputs: Docsverificationcommit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Commit`)
-};
-
-const fr_docsverificationcommit2 = /** @type {(inputs: Docsverificationcommit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Commit`)
-};
-
-const uk_docsverificationcommit2 = /** @type {(inputs: Docsverificationcommit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Коміт`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsverificationcommit2 = /** @type {(inputs: Docsverificationcommit2In
 * @returns {LocalizedString}
 */
 const docsverificationcommit2 = /** @type {((inputs?: Docsverificationcommit2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsverificationcommit2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsverificationcommit2(inputs)
-	if (locale === "zh") return zh_docsverificationcommit2(inputs)
-	if (locale === "ja") return ja_docsverificationcommit2(inputs)
-	if (locale === "ko") return ko_docsverificationcommit2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsverificationcommit2(inputs)
-	if (locale === "de") return de_docsverificationcommit2(inputs)
-	if (locale === "fr") return fr_docsverificationcommit2(inputs)
-	if (locale === "uk") return uk_docsverificationcommit2(inputs)
-	return en_docsverificationcommit2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Commit")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("提交")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("コミット")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("커밋")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Commit")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Commit")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Commit")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Коміт")
+	return /** @type {LocalizedString} */ ("Commit")
 });
 export { docsverificationcommit2 as "docsVerificationCommit" }

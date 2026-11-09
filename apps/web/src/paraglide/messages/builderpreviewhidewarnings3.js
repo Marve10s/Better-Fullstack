@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderpreviewhidewarnings3Inputs */
 
-const en_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`hide`)
-};
 
-const es_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ocultar`)
-};
-
-const zh_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`隐藏`)
-};
-
-const ja_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`非表示`)
-};
-
-const ko_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`숨기기`)
-};
-
-const zh_hant1_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`隱藏`)
-};
-
-const de_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`verstecken`)
-};
-
-const fr_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`cacher`)
-};
-
-const uk_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`приховати`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderpreviewhidewarnings3 = /** @type {(inputs: Builderpreviewhidewar
 * @returns {LocalizedString}
 */
 const builderpreviewhidewarnings3 = /** @type {((inputs?: Builderpreviewhidewarnings3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewhidewarnings3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderpreviewhidewarnings3(inputs)
-	if (locale === "zh") return zh_builderpreviewhidewarnings3(inputs)
-	if (locale === "ja") return ja_builderpreviewhidewarnings3(inputs)
-	if (locale === "ko") return ko_builderpreviewhidewarnings3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderpreviewhidewarnings3(inputs)
-	if (locale === "de") return de_builderpreviewhidewarnings3(inputs)
-	if (locale === "fr") return fr_builderpreviewhidewarnings3(inputs)
-	if (locale === "uk") return uk_builderpreviewhidewarnings3(inputs)
-	return en_builderpreviewhidewarnings3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("ocultar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("隐藏")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("非表示")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("숨기기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("隱藏")
+	if (locale === "de") return /** @type {LocalizedString} */ ("verstecken")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("cacher")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("приховати")
+	return /** @type {LocalizedString} */ ("hide")
 });
 export { builderpreviewhidewarnings3 as "builderPreviewHideWarnings" }

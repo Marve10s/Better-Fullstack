@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docssectionbuild2Inputs */
 
-const en_docssectionbuild2 = /** @type {(inputs: Docssectionbuild2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Build`)
-};
 
-const es_docssectionbuild2 = /** @type {(inputs: Docssectionbuild2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Construir`)
-};
-
-const zh_docssectionbuild2 = /** @type {(inputs: Docssectionbuild2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`构建`)
-};
-
-const ja_docssectionbuild2 = /** @type {(inputs: Docssectionbuild2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`構築`)
-};
-
-const ko_docssectionbuild2 = /** @type {(inputs: Docssectionbuild2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`빌드`)
-};
-
-const zh_hant1_docssectionbuild2 = /** @type {(inputs: Docssectionbuild2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`建構`)
-};
-
-const de_docssectionbuild2 = /** @type {(inputs: Docssectionbuild2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Erstellen`)
-};
-
-const fr_docssectionbuild2 = /** @type {(inputs: Docssectionbuild2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Construire`)
-};
-
-const uk_docssectionbuild2 = /** @type {(inputs: Docssectionbuild2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Створення`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docssectionbuild2 = /** @type {(inputs: Docssectionbuild2Inputs) => Loc
 * @returns {LocalizedString}
 */
 const docssectionbuild2 = /** @type {((inputs?: Docssectionbuild2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssectionbuild2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docssectionbuild2(inputs)
-	if (locale === "zh") return zh_docssectionbuild2(inputs)
-	if (locale === "ja") return ja_docssectionbuild2(inputs)
-	if (locale === "ko") return ko_docssectionbuild2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docssectionbuild2(inputs)
-	if (locale === "de") return de_docssectionbuild2(inputs)
-	if (locale === "fr") return fr_docssectionbuild2(inputs)
-	if (locale === "uk") return uk_docssectionbuild2(inputs)
-	return en_docssectionbuild2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Construir")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("构建")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("構築")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("빌드")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("建構")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Erstellen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Construire")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Створення")
+	return /** @type {LocalizedString} */ ("Build")
 });
 export { docssectionbuild2 as "docsSectionBuild" }

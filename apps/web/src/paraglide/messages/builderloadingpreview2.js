@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderloadingpreview2Inputs */
 
-const en_builderloadingpreview2 = /** @type {(inputs: Builderloadingpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Loading preview...`)
-};
 
-const es_builderloadingpreview2 = /** @type {(inputs: Builderloadingpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cargando vista previa...`)
-};
-
-const zh_builderloadingpreview2 = /** @type {(inputs: Builderloadingpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`正在加载预览...`)
-};
-
-const ja_builderloadingpreview2 = /** @type {(inputs: Builderloadingpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プレビューを読み込んでいます...`)
-};
-
-const ko_builderloadingpreview2 = /** @type {(inputs: Builderloadingpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`미리보기 로드 중...`)
-};
-
-const zh_hant1_builderloadingpreview2 = /** @type {(inputs: Builderloadingpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`正在載入預覽...`)
-};
-
-const de_builderloadingpreview2 = /** @type {(inputs: Builderloadingpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vorschau wird geladen...`)
-};
-
-const fr_builderloadingpreview2 = /** @type {(inputs: Builderloadingpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Chargement de l'aperçu...`)
-};
-
-const uk_builderloadingpreview2 = /** @type {(inputs: Builderloadingpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Завантаження попереднього перегляду...`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderloadingpreview2 = /** @type {(inputs: Builderloadingpreview2Inpu
 * @returns {LocalizedString}
 */
 const builderloadingpreview2 = /** @type {((inputs?: Builderloadingpreview2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderloadingpreview2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderloadingpreview2(inputs)
-	if (locale === "zh") return zh_builderloadingpreview2(inputs)
-	if (locale === "ja") return ja_builderloadingpreview2(inputs)
-	if (locale === "ko") return ko_builderloadingpreview2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderloadingpreview2(inputs)
-	if (locale === "de") return de_builderloadingpreview2(inputs)
-	if (locale === "fr") return fr_builderloadingpreview2(inputs)
-	if (locale === "uk") return uk_builderloadingpreview2(inputs)
-	return en_builderloadingpreview2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Cargando vista previa...")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("正在加载预览...")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("プレビューを読み込んでいます...")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("미리보기 로드 중...")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("正在載入預覽...")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Vorschau wird geladen...")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Chargement de l'aperçu...")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Завантаження попереднього перегляду...")
+	return /** @type {LocalizedString} */ ("Loading preview...")
 });
 export { builderloadingpreview2 as "builderLoadingPreview" }

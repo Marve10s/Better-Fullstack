@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{ count: NonNullable<unknown> }} Comparedatabasecount2Inputs */
 
-const en_comparedatabasecount2 = /** @type {(inputs: Comparedatabasecount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} databases`)
-};
 
-const es_comparedatabasecount2 = /** @type {(inputs: Comparedatabasecount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} bases de datos`)
-};
-
-const zh_comparedatabasecount2 = /** @type {(inputs: Comparedatabasecount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 个数据库`)
-};
-
-const ja_comparedatabasecount2 = /** @type {(inputs: Comparedatabasecount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} データベース`)
-};
-
-const ko_comparedatabasecount2 = /** @type {(inputs: Comparedatabasecount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 데이터베이스`)
-};
-
-const zh_hant1_comparedatabasecount2 = /** @type {(inputs: Comparedatabasecount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 個資料庫`)
-};
-
-const de_comparedatabasecount2 = /** @type {(inputs: Comparedatabasecount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} Datenbanken`)
-};
-
-const fr_comparedatabasecount2 = /** @type {(inputs: Comparedatabasecount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} bases de données`)
-};
-
-const uk_comparedatabasecount2 = /** @type {(inputs: Comparedatabasecount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} баз даних`)
-};
 
 /**
 * | output |
@@ -50,16 +16,16 @@ const uk_comparedatabasecount2 = /** @type {(inputs: Comparedatabasecount2Inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const comparedatabasecount2 = /** @type {((inputs: Comparedatabasecount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparedatabasecount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const comparedatabasecount2 = /** @type {((inputs: Comparedatabasecount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparedatabasecount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((i, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_comparedatabasecount2(inputs)
-	if (locale === "zh") return zh_comparedatabasecount2(inputs)
-	if (locale === "ja") return ja_comparedatabasecount2(inputs)
-	if (locale === "ko") return ko_comparedatabasecount2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_comparedatabasecount2(inputs)
-	if (locale === "de") return de_comparedatabasecount2(inputs)
-	if (locale === "fr") return fr_comparedatabasecount2(inputs)
-	if (locale === "uk") return uk_comparedatabasecount2(inputs)
-	return en_comparedatabasecount2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ (`${i?.count} bases de datos`)
+	if (locale === "zh") return /** @type {LocalizedString} */ (`${i?.count} 个数据库`)
+	if (locale === "ja") return /** @type {LocalizedString} */ (`${i?.count} データベース`)
+	if (locale === "ko") return /** @type {LocalizedString} */ (`${i?.count} 데이터베이스`)
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ (`${i?.count} 個資料庫`)
+	if (locale === "de") return /** @type {LocalizedString} */ (`${i?.count} Datenbanken`)
+	if (locale === "fr") return /** @type {LocalizedString} */ (`${i?.count} bases de données`)
+	if (locale === "uk") return /** @type {LocalizedString} */ (`${i?.count} баз даних`)
+	return /** @type {LocalizedString} */ (`${i?.count} databases`)
 });
 export { comparedatabasecount2 as "compareDatabaseCount" }

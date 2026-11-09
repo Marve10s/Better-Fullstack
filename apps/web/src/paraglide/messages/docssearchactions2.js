@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docssearchactions2Inputs */
 
-const en_docssearchactions2 = /** @type {(inputs: Docssearchactions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Actions`)
-};
 
-const es_docssearchactions2 = /** @type {(inputs: Docssearchactions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Acciones`)
-};
-
-const zh_docssearchactions2 = /** @type {(inputs: Docssearchactions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`操作`)
-};
-
-const ja_docssearchactions2 = /** @type {(inputs: Docssearchactions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`アクション`)
-};
-
-const ko_docssearchactions2 = /** @type {(inputs: Docssearchactions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`작업`)
-};
-
-const zh_hant1_docssearchactions2 = /** @type {(inputs: Docssearchactions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`操作`)
-};
-
-const de_docssearchactions2 = /** @type {(inputs: Docssearchactions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aktionen`)
-};
-
-const fr_docssearchactions2 = /** @type {(inputs: Docssearchactions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Actions`)
-};
-
-const uk_docssearchactions2 = /** @type {(inputs: Docssearchactions2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Дії`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docssearchactions2 = /** @type {(inputs: Docssearchactions2Inputs) => L
 * @returns {LocalizedString}
 */
 const docssearchactions2 = /** @type {((inputs?: Docssearchactions2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchactions2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docssearchactions2(inputs)
-	if (locale === "zh") return zh_docssearchactions2(inputs)
-	if (locale === "ja") return ja_docssearchactions2(inputs)
-	if (locale === "ko") return ko_docssearchactions2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docssearchactions2(inputs)
-	if (locale === "de") return de_docssearchactions2(inputs)
-	if (locale === "fr") return fr_docssearchactions2(inputs)
-	if (locale === "uk") return uk_docssearchactions2(inputs)
-	return en_docssearchactions2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Acciones")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("操作")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("アクション")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("작업")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("操作")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Aktionen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Actions")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Дії")
+	return /** @type {LocalizedString} */ ("Actions")
 });
 export { docssearchactions2 as "docsSearchActions" }

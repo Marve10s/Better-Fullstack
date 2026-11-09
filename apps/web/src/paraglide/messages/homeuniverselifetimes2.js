@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Homeuniverselifetimes2Inputs */
 
-const en_homeuniverselifetimes2 = /** @type {(inputs: Homeuniverselifetimes2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`universe lifetimes`)
-};
 
-const es_homeuniverselifetimes2 = /** @type {(inputs: Homeuniverselifetimes2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`vidas del universo`)
-};
-
-const zh_homeuniverselifetimes2 = /** @type {(inputs: Homeuniverselifetimes2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`个宇宙寿命`)
-};
-
-const ja_homeuniverselifetimes2 = /** @type {(inputs: Homeuniverselifetimes2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`宇宙の寿命`)
-};
-
-const ko_homeuniverselifetimes2 = /** @type {(inputs: Homeuniverselifetimes2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`우주 수명`)
-};
-
-const zh_hant1_homeuniverselifetimes2 = /** @type {(inputs: Homeuniverselifetimes2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`個宇宙壽命`)
-};
-
-const de_homeuniverselifetimes2 = /** @type {(inputs: Homeuniverselifetimes2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Universumslebensdauern`)
-};
-
-const fr_homeuniverselifetimes2 = /** @type {(inputs: Homeuniverselifetimes2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`durées de vie de l'univers`)
-};
-
-const uk_homeuniverselifetimes2 = /** @type {(inputs: Homeuniverselifetimes2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`життів Всесвіту`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_homeuniverselifetimes2 = /** @type {(inputs: Homeuniverselifetimes2Inpu
 * @returns {LocalizedString}
 */
 const homeuniverselifetimes2 = /** @type {((inputs?: Homeuniverselifetimes2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeuniverselifetimes2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_homeuniverselifetimes2(inputs)
-	if (locale === "zh") return zh_homeuniverselifetimes2(inputs)
-	if (locale === "ja") return ja_homeuniverselifetimes2(inputs)
-	if (locale === "ko") return ko_homeuniverselifetimes2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_homeuniverselifetimes2(inputs)
-	if (locale === "de") return de_homeuniverselifetimes2(inputs)
-	if (locale === "fr") return fr_homeuniverselifetimes2(inputs)
-	if (locale === "uk") return uk_homeuniverselifetimes2(inputs)
-	return en_homeuniverselifetimes2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("vidas del universo")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("个宇宙寿命")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("宇宙の寿命")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("우주 수명")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("個宇宙壽命")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Universumslebensdauern")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("durées de vie de l'univers")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("життів Всесвіту")
+	return /** @type {LocalizedString} */ ("universe lifetimes")
 });
 export { homeuniverselifetimes2 as "homeUniverseLifetimes" }

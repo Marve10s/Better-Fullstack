@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Savedemptytitle2Inputs */
 
-const en_savedemptytitle2 = /** @type {(inputs: Savedemptytitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`No saved presets yet`)
-};
 
-const es_savedemptytitle2 = /** @type {(inputs: Savedemptytitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aún no hay plantillas guardadas`)
-};
-
-const zh_savedemptytitle2 = /** @type {(inputs: Savedemptytitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`还没有保存的预设`)
-};
-
-const ja_savedemptytitle2 = /** @type {(inputs: Savedemptytitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`まだプリセットが保存されていません`)
-};
-
-const ko_savedemptytitle2 = /** @type {(inputs: Savedemptytitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`아직 저장된 사전 설정이 없습니다.`)
-};
-
-const zh_hant1_savedemptytitle2 = /** @type {(inputs: Savedemptytitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`還沒儲存的預設`)
-};
-
-const de_savedemptytitle2 = /** @type {(inputs: Savedemptytitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Noch keine gespeicherten Voreinstellungen`)
-};
-
-const fr_savedemptytitle2 = /** @type {(inputs: Savedemptytitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aucun préréglage enregistré pour le moment`)
-};
-
-const uk_savedemptytitle2 = /** @type {(inputs: Savedemptytitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Збережених пресетів ще немає`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_savedemptytitle2 = /** @type {(inputs: Savedemptytitle2Inputs) => Local
 * @returns {LocalizedString}
 */
 const savedemptytitle2 = /** @type {((inputs?: Savedemptytitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedemptytitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_savedemptytitle2(inputs)
-	if (locale === "zh") return zh_savedemptytitle2(inputs)
-	if (locale === "ja") return ja_savedemptytitle2(inputs)
-	if (locale === "ko") return ko_savedemptytitle2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_savedemptytitle2(inputs)
-	if (locale === "de") return de_savedemptytitle2(inputs)
-	if (locale === "fr") return fr_savedemptytitle2(inputs)
-	if (locale === "uk") return uk_savedemptytitle2(inputs)
-	return en_savedemptytitle2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Aún no hay plantillas guardadas")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("还没有保存的预设")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("まだプリセットが保存されていません")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("아직 저장된 사전 설정이 없습니다.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("還沒儲存的預設")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Noch keine gespeicherten Voreinstellungen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Aucun préréglage enregistré pour le moment")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Збережених пресетів ще немає")
+	return /** @type {LocalizedString} */ ("No saved presets yet")
 });
 export { savedemptytitle2 as "savedEmptyTitle" }

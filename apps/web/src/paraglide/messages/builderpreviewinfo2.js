@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderpreviewinfo2Inputs */
 
-const en_builderpreviewinfo2 = /** @type {(inputs: Builderpreviewinfo2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Preview info`)
-};
 
-const es_builderpreviewinfo2 = /** @type {(inputs: Builderpreviewinfo2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Información de vista previa`)
-};
-
-const zh_builderpreviewinfo2 = /** @type {(inputs: Builderpreviewinfo2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`预览信息`)
-};
-
-const ja_builderpreviewinfo2 = /** @type {(inputs: Builderpreviewinfo2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プレビュー情報`)
-};
-
-const ko_builderpreviewinfo2 = /** @type {(inputs: Builderpreviewinfo2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`미리보기 정보`)
-};
-
-const zh_hant1_builderpreviewinfo2 = /** @type {(inputs: Builderpreviewinfo2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`預覽資訊`)
-};
-
-const de_builderpreviewinfo2 = /** @type {(inputs: Builderpreviewinfo2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vorschauinformationen`)
-};
-
-const fr_builderpreviewinfo2 = /** @type {(inputs: Builderpreviewinfo2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Informations sur l'aperçu`)
-};
-
-const uk_builderpreviewinfo2 = /** @type {(inputs: Builderpreviewinfo2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Інформація про попередній перегляд`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderpreviewinfo2 = /** @type {(inputs: Builderpreviewinfo2Inputs) =>
 * @returns {LocalizedString}
 */
 const builderpreviewinfo2 = /** @type {((inputs?: Builderpreviewinfo2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewinfo2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderpreviewinfo2(inputs)
-	if (locale === "zh") return zh_builderpreviewinfo2(inputs)
-	if (locale === "ja") return ja_builderpreviewinfo2(inputs)
-	if (locale === "ko") return ko_builderpreviewinfo2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderpreviewinfo2(inputs)
-	if (locale === "de") return de_builderpreviewinfo2(inputs)
-	if (locale === "fr") return fr_builderpreviewinfo2(inputs)
-	if (locale === "uk") return uk_builderpreviewinfo2(inputs)
-	return en_builderpreviewinfo2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Información de vista previa")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("预览信息")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("プレビュー情報")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("미리보기 정보")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("預覽資訊")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Vorschauinformationen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Informations sur l'aperçu")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Інформація про попередній перегляд")
+	return /** @type {LocalizedString} */ ("Preview info")
 });
 export { builderpreviewinfo2 as "builderPreviewInfo" }

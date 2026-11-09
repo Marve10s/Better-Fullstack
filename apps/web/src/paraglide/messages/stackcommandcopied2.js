@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Stackcommandcopied2Inputs */
 
-const en_stackcommandcopied2 = /** @type {(inputs: Stackcommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Command copied to clipboard!`)
-};
 
-const es_stackcommandcopied2 = /** @type {(inputs: Stackcommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Comando copiado al portapapeles.`)
-};
-
-const zh_stackcommandcopied2 = /** @type {(inputs: Stackcommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`命令已复制到剪贴板！`)
-};
-
-const ja_stackcommandcopied2 = /** @type {(inputs: Stackcommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`コマンドがクリップボードにコピーされました!`)
-};
-
-const ko_stackcommandcopied2 = /** @type {(inputs: Stackcommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`명령이 클립보드에 복사되었습니다!`)
-};
-
-const zh_hant1_stackcommandcopied2 = /** @type {(inputs: Stackcommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`命令已複製到剪貼簿！`)
-};
-
-const de_stackcommandcopied2 = /** @type {(inputs: Stackcommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Befehl in die Zwischenablage kopiert!`)
-};
-
-const fr_stackcommandcopied2 = /** @type {(inputs: Stackcommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Commande copiée dans le presse-papier !`)
-};
-
-const uk_stackcommandcopied2 = /** @type {(inputs: Stackcommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Команду скопійовано в буфер обміну!`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_stackcommandcopied2 = /** @type {(inputs: Stackcommandcopied2Inputs) =>
 * @returns {LocalizedString}
 */
 const stackcommandcopied2 = /** @type {((inputs?: Stackcommandcopied2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackcommandcopied2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_stackcommandcopied2(inputs)
-	if (locale === "zh") return zh_stackcommandcopied2(inputs)
-	if (locale === "ja") return ja_stackcommandcopied2(inputs)
-	if (locale === "ko") return ko_stackcommandcopied2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_stackcommandcopied2(inputs)
-	if (locale === "de") return de_stackcommandcopied2(inputs)
-	if (locale === "fr") return fr_stackcommandcopied2(inputs)
-	if (locale === "uk") return uk_stackcommandcopied2(inputs)
-	return en_stackcommandcopied2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Comando copiado al portapapeles.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("命令已复制到剪贴板！")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("コマンドがクリップボードにコピーされました!")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("명령이 클립보드에 복사되었습니다!")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("命令已複製到剪貼簿！")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Befehl in die Zwischenablage kopiert!")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Commande copiée dans le presse-papier !")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Команду скопійовано в буфер обміну!")
+	return /** @type {LocalizedString} */ ("Command copied to clipboard!")
 });
 export { stackcommandcopied2 as "stackCommandCopied" }

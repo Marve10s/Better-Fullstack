@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Campaignstepdownload2Inputs */
 
-const en_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Take the code`)
-};
 
-const es_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Llévate el código`)
-};
-
-const zh_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`带走代码`)
-};
-
-const ja_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`コードを持ち帰る`)
-};
-
-const ko_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`코드 가져가기`)
-};
-
-const zh_hant1_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`帶走程式碼`)
-};
-
-const de_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nimm den Code mit`)
-};
-
-const fr_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Emportez le code`)
-};
-
-const uk_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Заберіть код`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_campaignstepdownload2 = /** @type {(inputs: Campaignstepdownload2Inputs
 * @returns {LocalizedString}
 */
 const campaignstepdownload2 = /** @type {((inputs?: Campaignstepdownload2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignstepdownload2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_campaignstepdownload2(inputs)
-	if (locale === "zh") return zh_campaignstepdownload2(inputs)
-	if (locale === "ja") return ja_campaignstepdownload2(inputs)
-	if (locale === "ko") return ko_campaignstepdownload2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_campaignstepdownload2(inputs)
-	if (locale === "de") return de_campaignstepdownload2(inputs)
-	if (locale === "fr") return fr_campaignstepdownload2(inputs)
-	if (locale === "uk") return uk_campaignstepdownload2(inputs)
-	return en_campaignstepdownload2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Llévate el código")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("带走代码")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("コードを持ち帰る")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("코드 가져가기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("帶走程式碼")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Nimm den Code mit")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Emportez le code")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Заберіть код")
+	return /** @type {LocalizedString} */ ("Take the code")
 });
 export { campaignstepdownload2 as "campaignStepDownload" }

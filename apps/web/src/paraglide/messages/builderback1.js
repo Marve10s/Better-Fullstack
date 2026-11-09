@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderback1Inputs */
 
-const en_builderback1 = /** @type {(inputs: Builderback1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Back`)
-};
 
-const es_builderback1 = /** @type {(inputs: Builderback1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Atrás`)
-};
-
-const zh_builderback1 = /** @type {(inputs: Builderback1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`返回`)
-};
-
-const ja_builderback1 = /** @type {(inputs: Builderback1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`戻る`)
-};
-
-const ko_builderback1 = /** @type {(inputs: Builderback1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`뒤로`)
-};
-
-const zh_hant1_builderback1 = /** @type {(inputs: Builderback1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`返回`)
-};
-
-const de_builderback1 = /** @type {(inputs: Builderback1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Zurück`)
-};
-
-const fr_builderback1 = /** @type {(inputs: Builderback1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Retour`)
-};
-
-const uk_builderback1 = /** @type {(inputs: Builderback1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Назад`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderback1 = /** @type {(inputs: Builderback1Inputs) => LocalizedStri
 * @returns {LocalizedString}
 */
 const builderback1 = /** @type {((inputs?: Builderback1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderback1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderback1(inputs)
-	if (locale === "zh") return zh_builderback1(inputs)
-	if (locale === "ja") return ja_builderback1(inputs)
-	if (locale === "ko") return ko_builderback1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderback1(inputs)
-	if (locale === "de") return de_builderback1(inputs)
-	if (locale === "fr") return fr_builderback1(inputs)
-	if (locale === "uk") return uk_builderback1(inputs)
-	return en_builderback1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Atrás")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("返回")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("戻る")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("뒤로")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("返回")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Zurück")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Retour")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Назад")
+	return /** @type {LocalizedString} */ ("Back")
 });
 export { builderback1 as "builderBack" }

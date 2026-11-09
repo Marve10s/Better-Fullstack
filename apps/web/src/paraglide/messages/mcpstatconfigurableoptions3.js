@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpstatconfigurableoptions3Inputs */
 
-const en_mcpstatconfigurableoptions3 = /** @type {(inputs: Mcpstatconfigurableoptions3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`configurable options`)
-};
 
-const es_mcpstatconfigurableoptions3 = /** @type {(inputs: Mcpstatconfigurableoptions3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`opciones configurables`)
-};
-
-const zh_mcpstatconfigurableoptions3 = /** @type {(inputs: Mcpstatconfigurableoptions3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`可配置选项`)
-};
-
-const ja_mcpstatconfigurableoptions3 = /** @type {(inputs: Mcpstatconfigurableoptions3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`構成可能なオプション`)
-};
-
-const ko_mcpstatconfigurableoptions3 = /** @type {(inputs: Mcpstatconfigurableoptions3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`구성 가능한 옵션`)
-};
-
-const zh_hant1_mcpstatconfigurableoptions3 = /** @type {(inputs: Mcpstatconfigurableoptions3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`可配置選項`)
-};
-
-const de_mcpstatconfigurableoptions3 = /** @type {(inputs: Mcpstatconfigurableoptions3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`konfigurierbare Optionen`)
-};
-
-const fr_mcpstatconfigurableoptions3 = /** @type {(inputs: Mcpstatconfigurableoptions3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`options configurables`)
-};
-
-const uk_mcpstatconfigurableoptions3 = /** @type {(inputs: Mcpstatconfigurableoptions3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`настроювані параметри`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpstatconfigurableoptions3 = /** @type {(inputs: Mcpstatconfigurableop
 * @returns {LocalizedString}
 */
 const mcpstatconfigurableoptions3 = /** @type {((inputs?: Mcpstatconfigurableoptions3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpstatconfigurableoptions3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpstatconfigurableoptions3(inputs)
-	if (locale === "zh") return zh_mcpstatconfigurableoptions3(inputs)
-	if (locale === "ja") return ja_mcpstatconfigurableoptions3(inputs)
-	if (locale === "ko") return ko_mcpstatconfigurableoptions3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpstatconfigurableoptions3(inputs)
-	if (locale === "de") return de_mcpstatconfigurableoptions3(inputs)
-	if (locale === "fr") return fr_mcpstatconfigurableoptions3(inputs)
-	if (locale === "uk") return uk_mcpstatconfigurableoptions3(inputs)
-	return en_mcpstatconfigurableoptions3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("opciones configurables")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("可配置选项")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("構成可能なオプション")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("구성 가능한 옵션")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("可配置選項")
+	if (locale === "de") return /** @type {LocalizedString} */ ("konfigurierbare Optionen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("options configurables")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("настроювані параметри")
+	return /** @type {LocalizedString} */ ("configurable options")
 });
 export { mcpstatconfigurableoptions3 as "mcpStatConfigurableOptions" }

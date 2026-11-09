@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Presettracksaasintent3Inputs */
 
-const en_presettracksaasintent3 = /** @type {(inputs: Presettracksaasintent3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Sell subscriptions`)
-};
 
-const es_presettracksaasintent3 = /** @type {(inputs: Presettracksaasintent3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vender suscripciones`)
-};
-
-const zh_presettracksaasintent3 = /** @type {(inputs: Presettracksaasintent3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`销售订阅`)
-};
-
-const ja_presettracksaasintent3 = /** @type {(inputs: Presettracksaasintent3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`サブスクリプションを販売する`)
-};
-
-const ko_presettracksaasintent3 = /** @type {(inputs: Presettracksaasintent3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`구독 판매`)
-};
-
-const zh_hant1_presettracksaasintent3 = /** @type {(inputs: Presettracksaasintent3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`銷售訂閱`)
-};
-
-const de_presettracksaasintent3 = /** @type {(inputs: Presettracksaasintent3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abonnements verkaufen`)
-};
-
-const fr_presettracksaasintent3 = /** @type {(inputs: Presettracksaasintent3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vendre des abonnements`)
-};
-
-const uk_presettracksaasintent3 = /** @type {(inputs: Presettracksaasintent3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Продавати підписки`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_presettracksaasintent3 = /** @type {(inputs: Presettracksaasintent3Inpu
 * @returns {LocalizedString}
 */
 const presettracksaasintent3 = /** @type {((inputs?: Presettracksaasintent3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettracksaasintent3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_presettracksaasintent3(inputs)
-	if (locale === "zh") return zh_presettracksaasintent3(inputs)
-	if (locale === "ja") return ja_presettracksaasintent3(inputs)
-	if (locale === "ko") return ko_presettracksaasintent3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_presettracksaasintent3(inputs)
-	if (locale === "de") return de_presettracksaasintent3(inputs)
-	if (locale === "fr") return fr_presettracksaasintent3(inputs)
-	if (locale === "uk") return uk_presettracksaasintent3(inputs)
-	return en_presettracksaasintent3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Vender suscripciones")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("销售订阅")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("サブスクリプションを販売する")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("구독 판매")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("銷售訂閱")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Abonnements verkaufen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Vendre des abonnements")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Продавати підписки")
+	return /** @type {LocalizedString} */ ("Sell subscriptions")
 });
 export { presettracksaasintent3 as "presetTrackSaasIntent" }

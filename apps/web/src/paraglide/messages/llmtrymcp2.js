@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Llmtrymcp2Inputs */
 
-const en_llmtrymcp2 = /** @type {(inputs: Llmtrymcp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Try out MCP`)
-};
 
-const es_llmtrymcp2 = /** @type {(inputs: Llmtrymcp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Probar MCP`)
-};
-
-const zh_llmtrymcp2 = /** @type {(inputs: Llmtrymcp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`试用 MCP`)
-};
-
-const ja_llmtrymcp2 = /** @type {(inputs: Llmtrymcp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`MCP を試してみる`)
-};
-
-const ko_llmtrymcp2 = /** @type {(inputs: Llmtrymcp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`MCP를 사용해 보세요.`)
-};
-
-const zh_hant1_llmtrymcp2 = /** @type {(inputs: Llmtrymcp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`試試 MCP`)
-};
-
-const de_llmtrymcp2 = /** @type {(inputs: Llmtrymcp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Probieren Sie MCP aus`)
-};
-
-const fr_llmtrymcp2 = /** @type {(inputs: Llmtrymcp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Essayez MCP`)
-};
-
-const uk_llmtrymcp2 = /** @type {(inputs: Llmtrymcp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Спробувати MCP`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_llmtrymcp2 = /** @type {(inputs: Llmtrymcp2Inputs) => LocalizedString} 
 * @returns {LocalizedString}
 */
 const llmtrymcp2 = /** @type {((inputs?: Llmtrymcp2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Llmtrymcp2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_llmtrymcp2(inputs)
-	if (locale === "zh") return zh_llmtrymcp2(inputs)
-	if (locale === "ja") return ja_llmtrymcp2(inputs)
-	if (locale === "ko") return ko_llmtrymcp2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_llmtrymcp2(inputs)
-	if (locale === "de") return de_llmtrymcp2(inputs)
-	if (locale === "fr") return fr_llmtrymcp2(inputs)
-	if (locale === "uk") return uk_llmtrymcp2(inputs)
-	return en_llmtrymcp2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Probar MCP")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("试用 MCP")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("MCP を試してみる")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("MCP를 사용해 보세요.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("試試 MCP")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Probieren Sie MCP aus")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Essayez MCP")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Спробувати MCP")
+	return /** @type {LocalizedString} */ ("Try out MCP")
 });
 export { llmtrymcp2 as "llmTryMcp" }

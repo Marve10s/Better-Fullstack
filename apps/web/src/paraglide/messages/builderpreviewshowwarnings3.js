@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderpreviewshowwarnings3Inputs */
 
-const en_builderpreviewshowwarnings3 = /** @type {(inputs: Builderpreviewshowwarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`show`)
-};
 
-const es_builderpreviewshowwarnings3 = /** @type {(inputs: Builderpreviewshowwarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`mostrar`)
-};
-
-const zh_builderpreviewshowwarnings3 = /** @type {(inputs: Builderpreviewshowwarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`显示`)
-};
-
-const ja_builderpreviewshowwarnings3 = /** @type {(inputs: Builderpreviewshowwarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`表示`)
-};
-
-const ko_builderpreviewshowwarnings3 = /** @type {(inputs: Builderpreviewshowwarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`보기`)
-};
-
-const zh_hant1_builderpreviewshowwarnings3 = /** @type {(inputs: Builderpreviewshowwarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`顯示`)
-};
-
-const de_builderpreviewshowwarnings3 = /** @type {(inputs: Builderpreviewshowwarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`zeigen`)
-};
-
-const fr_builderpreviewshowwarnings3 = /** @type {(inputs: Builderpreviewshowwarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`montrer`)
-};
-
-const uk_builderpreviewshowwarnings3 = /** @type {(inputs: Builderpreviewshowwarnings3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`показати`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderpreviewshowwarnings3 = /** @type {(inputs: Builderpreviewshowwar
 * @returns {LocalizedString}
 */
 const builderpreviewshowwarnings3 = /** @type {((inputs?: Builderpreviewshowwarnings3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewshowwarnings3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderpreviewshowwarnings3(inputs)
-	if (locale === "zh") return zh_builderpreviewshowwarnings3(inputs)
-	if (locale === "ja") return ja_builderpreviewshowwarnings3(inputs)
-	if (locale === "ko") return ko_builderpreviewshowwarnings3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderpreviewshowwarnings3(inputs)
-	if (locale === "de") return de_builderpreviewshowwarnings3(inputs)
-	if (locale === "fr") return fr_builderpreviewshowwarnings3(inputs)
-	if (locale === "uk") return uk_builderpreviewshowwarnings3(inputs)
-	return en_builderpreviewshowwarnings3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("mostrar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("显示")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("表示")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("보기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("顯示")
+	if (locale === "de") return /** @type {LocalizedString} */ ("zeigen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("montrer")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("показати")
+	return /** @type {LocalizedString} */ ("show")
 });
 export { builderpreviewshowwarnings3 as "builderPreviewShowWarnings" }

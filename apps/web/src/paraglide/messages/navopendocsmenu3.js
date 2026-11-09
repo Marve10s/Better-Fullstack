@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Navopendocsmenu3Inputs */
 
-const en_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Open documentation menu`)
-};
 
-const es_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abrir menú de documentación`)
-};
-
-const zh_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打开文档菜单`)
-};
-
-const ja_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ドキュメントメニューを開く`)
-};
-
-const ko_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`문서 메뉴 열기`)
-};
-
-const zh_hant1_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`開啟文件選單`)
-};
-
-const de_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dokumentationsmenü öffnen`)
-};
-
-const fr_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ouvrir le menu Documentation`)
-};
-
-const uk_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкрити меню документації`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_navopendocsmenu3 = /** @type {(inputs: Navopendocsmenu3Inputs) => Local
 * @returns {LocalizedString}
 */
 const navopendocsmenu3 = /** @type {((inputs?: Navopendocsmenu3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navopendocsmenu3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_navopendocsmenu3(inputs)
-	if (locale === "zh") return zh_navopendocsmenu3(inputs)
-	if (locale === "ja") return ja_navopendocsmenu3(inputs)
-	if (locale === "ko") return ko_navopendocsmenu3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_navopendocsmenu3(inputs)
-	if (locale === "de") return de_navopendocsmenu3(inputs)
-	if (locale === "fr") return fr_navopendocsmenu3(inputs)
-	if (locale === "uk") return uk_navopendocsmenu3(inputs)
-	return en_navopendocsmenu3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Abrir menú de documentación")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("打开文档菜单")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ドキュメントメニューを開く")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("문서 메뉴 열기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("開啟文件選單")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Dokumentationsmenü öffnen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Ouvrir le menu Documentation")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Відкрити меню документації")
+	return /** @type {LocalizedString} */ ("Open documentation menu")
 });
 export { navopendocsmenu3 as "navOpenDocsMenu" }

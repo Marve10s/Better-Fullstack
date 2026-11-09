@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Campaignogalt2Inputs */
 
-const en_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Run Before You Clone with Better Fullstack`)
-};
 
-const es_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ejecuta antes de clonar con Better Fullstack`)
-};
-
-const zh_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`使用 Better Fullstack，先运行再克隆`)
-};
-
-const ja_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack でクローンする前に実行`)
-};
-
-const ko_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack과 함께, 클론하기 전에 실행`)
-};
-
-const zh_hant1_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`使用 Better Fullstack，先執行再複製`)
-};
-
-const de_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Erst ausführen, dann klonen – mit Better Fullstack`)
-};
-
-const fr_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Exécutez avant de cloner avec Better Fullstack`)
-};
-
-const uk_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Запусти перед клонуванням із Better Fullstack`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_campaignogalt2 = /** @type {(inputs: Campaignogalt2Inputs) => Localized
 * @returns {LocalizedString}
 */
 const campaignogalt2 = /** @type {((inputs?: Campaignogalt2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignogalt2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_campaignogalt2(inputs)
-	if (locale === "zh") return zh_campaignogalt2(inputs)
-	if (locale === "ja") return ja_campaignogalt2(inputs)
-	if (locale === "ko") return ko_campaignogalt2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_campaignogalt2(inputs)
-	if (locale === "de") return de_campaignogalt2(inputs)
-	if (locale === "fr") return fr_campaignogalt2(inputs)
-	if (locale === "uk") return uk_campaignogalt2(inputs)
-	return en_campaignogalt2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Ejecuta antes de clonar con Better Fullstack")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("使用 Better Fullstack，先运行再克隆")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Better Fullstack でクローンする前に実行")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Better Fullstack과 함께, 클론하기 전에 실행")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("使用 Better Fullstack，先執行再複製")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Erst ausführen, dann klonen – mit Better Fullstack")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Exécutez avant de cloner avec Better Fullstack")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Запусти перед клонуванням із Better Fullstack")
+	return /** @type {LocalizedString} */ ("Run Before You Clone with Better Fullstack")
 });
 export { campaignogalt2 as "campaignOgAlt" }

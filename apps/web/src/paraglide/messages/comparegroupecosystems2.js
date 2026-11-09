@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Comparegroupecosystems2Inputs */
 
-const en_comparegroupecosystems2 = /** @type {(inputs: Comparegroupecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ecosystems`)
-};
 
-const es_comparegroupecosystems2 = /** @type {(inputs: Comparegroupecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ecosistemas`)
-};
-
-const zh_comparegroupecosystems2 = /** @type {(inputs: Comparegroupecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`生态`)
-};
-
-const ja_comparegroupecosystems2 = /** @type {(inputs: Comparegroupecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`エコシステム`)
-};
-
-const ko_comparegroupecosystems2 = /** @type {(inputs: Comparegroupecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`생태계`)
-};
-
-const zh_hant1_comparegroupecosystems2 = /** @type {(inputs: Comparegroupecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`生態`)
-};
-
-const de_comparegroupecosystems2 = /** @type {(inputs: Comparegroupecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ökosysteme`)
-};
-
-const fr_comparegroupecosystems2 = /** @type {(inputs: Comparegroupecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Écosystèmes`)
-};
-
-const uk_comparegroupecosystems2 = /** @type {(inputs: Comparegroupecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Екосистеми`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_comparegroupecosystems2 = /** @type {(inputs: Comparegroupecosystems2In
 * @returns {LocalizedString}
 */
 const comparegroupecosystems2 = /** @type {((inputs?: Comparegroupecosystems2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupecosystems2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_comparegroupecosystems2(inputs)
-	if (locale === "zh") return zh_comparegroupecosystems2(inputs)
-	if (locale === "ja") return ja_comparegroupecosystems2(inputs)
-	if (locale === "ko") return ko_comparegroupecosystems2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_comparegroupecosystems2(inputs)
-	if (locale === "de") return de_comparegroupecosystems2(inputs)
-	if (locale === "fr") return fr_comparegroupecosystems2(inputs)
-	if (locale === "uk") return uk_comparegroupecosystems2(inputs)
-	return en_comparegroupecosystems2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Ecosistemas")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("生态")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("エコシステム")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("생태계")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("生態")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Ökosysteme")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Écosystèmes")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Екосистеми")
+	return /** @type {LocalizedString} */ ("Ecosystems")
 });
 export { comparegroupecosystems2 as "compareGroupEcosystems" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummaryelixirelixirauth5Inputs */
 
-const en_docsclisummaryelixirelixirauth5 = /** @type {(inputs: Docsclisummaryelixirelixirauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Elixir auth.`)
-};
 
-const es_docsclisummaryelixirelixirauth5 = /** @type {(inputs: Docsclisummaryelixirelixirauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Autenticación en Elixir.`)
-};
-
-const zh_docsclisummaryelixirelixirauth5 = /** @type {(inputs: Docsclisummaryelixirelixirauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Elixir 认证。`)
-};
-
-const ja_docsclisummaryelixirelixirauth5 = /** @type {(inputs: Docsclisummaryelixirelixirauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Elixir の認証。`)
-};
-
-const ko_docsclisummaryelixirelixirauth5 = /** @type {(inputs: Docsclisummaryelixirelixirauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Elixir 인증.`)
-};
-
-const zh_hant1_docsclisummaryelixirelixirauth5 = /** @type {(inputs: Docsclisummaryelixirelixirauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Elixir 驗證。`)
-};
-
-const de_docsclisummaryelixirelixirauth5 = /** @type {(inputs: Docsclisummaryelixirelixirauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Authentifizierung für Elixir.`)
-};
-
-const fr_docsclisummaryelixirelixirauth5 = /** @type {(inputs: Docsclisummaryelixirelixirauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Authentification Elixir.`)
-};
-
-const uk_docsclisummaryelixirelixirauth5 = /** @type {(inputs: Docsclisummaryelixirelixirauth5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Автентифікація в Elixir.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummaryelixirelixirauth5 = /** @type {(inputs: Docsclisummaryeli
 * @returns {LocalizedString}
 */
 const docsclisummaryelixirelixirauth5 = /** @type {((inputs?: Docsclisummaryelixirelixirauth5Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummaryelixirelixirauth5Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummaryelixirelixirauth5(inputs)
-	if (locale === "zh") return zh_docsclisummaryelixirelixirauth5(inputs)
-	if (locale === "ja") return ja_docsclisummaryelixirelixirauth5(inputs)
-	if (locale === "ko") return ko_docsclisummaryelixirelixirauth5(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummaryelixirelixirauth5(inputs)
-	if (locale === "de") return de_docsclisummaryelixirelixirauth5(inputs)
-	if (locale === "fr") return fr_docsclisummaryelixirelixirauth5(inputs)
-	if (locale === "uk") return uk_docsclisummaryelixirelixirauth5(inputs)
-	return en_docsclisummaryelixirelixirauth5(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Autenticación en Elixir.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Elixir 认证。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Elixir の認証。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Elixir 인증.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Elixir 驗證。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Authentifizierung für Elixir.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Authentification Elixir.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Автентифікація в Elixir.")
+	return /** @type {LocalizedString} */ ("Elixir auth.")
 });
 export { docsclisummaryelixirelixirauth5 as "docsCliSummaryElixirElixirAuth" }

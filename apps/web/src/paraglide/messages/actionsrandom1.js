@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Actionsrandom1Inputs */
 
-const en_actionsrandom1 = /** @type {(inputs: Actionsrandom1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Random`)
-};
 
-const es_actionsrandom1 = /** @type {(inputs: Actionsrandom1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aleatorio`)
-};
-
-const zh_actionsrandom1 = /** @type {(inputs: Actionsrandom1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`随机`)
-};
-
-const ja_actionsrandom1 = /** @type {(inputs: Actionsrandom1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ランダム`)
-};
-
-const ko_actionsrandom1 = /** @type {(inputs: Actionsrandom1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`무작위`)
-};
-
-const zh_hant1_actionsrandom1 = /** @type {(inputs: Actionsrandom1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`隨機`)
-};
-
-const de_actionsrandom1 = /** @type {(inputs: Actionsrandom1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Zufällig`)
-};
-
-const fr_actionsrandom1 = /** @type {(inputs: Actionsrandom1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aléatoire`)
-};
-
-const uk_actionsrandom1 = /** @type {(inputs: Actionsrandom1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Випадковий`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_actionsrandom1 = /** @type {(inputs: Actionsrandom1Inputs) => Localized
 * @returns {LocalizedString}
 */
 const actionsrandom1 = /** @type {((inputs?: Actionsrandom1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Actionsrandom1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_actionsrandom1(inputs)
-	if (locale === "zh") return zh_actionsrandom1(inputs)
-	if (locale === "ja") return ja_actionsrandom1(inputs)
-	if (locale === "ko") return ko_actionsrandom1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_actionsrandom1(inputs)
-	if (locale === "de") return de_actionsrandom1(inputs)
-	if (locale === "fr") return fr_actionsrandom1(inputs)
-	if (locale === "uk") return uk_actionsrandom1(inputs)
-	return en_actionsrandom1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Aleatorio")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("随机")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ランダム")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("무작위")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("隨機")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Zufällig")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Aléatoire")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Випадковий")
+	return /** @type {LocalizedString} */ ("Random")
 });
 export { actionsrandom1 as "actionsRandom" }

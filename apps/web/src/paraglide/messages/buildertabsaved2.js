@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildertabsaved2Inputs */
 
-const en_buildertabsaved2 = /** @type {(inputs: Buildertabsaved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Saved`)
-};
 
-const es_buildertabsaved2 = /** @type {(inputs: Buildertabsaved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guardados`)
-};
-
-const zh_buildertabsaved2 = /** @type {(inputs: Buildertabsaved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已保存`)
-};
-
-const ja_buildertabsaved2 = /** @type {(inputs: Buildertabsaved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`保存されました`)
-};
-
-const ko_buildertabsaved2 = /** @type {(inputs: Buildertabsaved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`저장됨`)
-};
-
-const zh_hant1_buildertabsaved2 = /** @type {(inputs: Buildertabsaved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已儲存`)
-};
-
-const de_buildertabsaved2 = /** @type {(inputs: Buildertabsaved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Gespeichert`)
-};
-
-const fr_buildertabsaved2 = /** @type {(inputs: Buildertabsaved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Enregistré`)
-};
-
-const uk_buildertabsaved2 = /** @type {(inputs: Buildertabsaved2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Збережено`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildertabsaved2 = /** @type {(inputs: Buildertabsaved2Inputs) => Local
 * @returns {LocalizedString}
 */
 const buildertabsaved2 = /** @type {((inputs?: Buildertabsaved2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildertabsaved2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildertabsaved2(inputs)
-	if (locale === "zh") return zh_buildertabsaved2(inputs)
-	if (locale === "ja") return ja_buildertabsaved2(inputs)
-	if (locale === "ko") return ko_buildertabsaved2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildertabsaved2(inputs)
-	if (locale === "de") return de_buildertabsaved2(inputs)
-	if (locale === "fr") return fr_buildertabsaved2(inputs)
-	if (locale === "uk") return uk_buildertabsaved2(inputs)
-	return en_buildertabsaved2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Guardados")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("已保存")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("保存されました")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("저장됨")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("已儲存")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Gespeichert")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Enregistré")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Збережено")
+	return /** @type {LocalizedString} */ ("Saved")
 });
 export { buildertabsaved2 as "builderTabSaved" }
