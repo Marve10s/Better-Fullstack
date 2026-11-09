@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderrunfailed2Inputs */
 
-const en_builderrunfailed2 = /** @type {(inputs: Builderrunfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Run failed`)
-};
 
-const es_builderrunfailed2 = /** @type {(inputs: Builderrunfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`La ejecución falló`)
-};
-
-const zh_builderrunfailed2 = /** @type {(inputs: Builderrunfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`运行失败`)
-};
-
-const ja_builderrunfailed2 = /** @type {(inputs: Builderrunfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`実行に失敗しました`)
-};
-
-const ko_builderrunfailed2 = /** @type {(inputs: Builderrunfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`실행 실패`)
-};
-
-const zh_hant1_builderrunfailed2 = /** @type {(inputs: Builderrunfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`執行失敗`)
-};
-
-const de_builderrunfailed2 = /** @type {(inputs: Builderrunfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ausführung fehlgeschlagen`)
-};
-
-const fr_builderrunfailed2 = /** @type {(inputs: Builderrunfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Échec de l’exécution`)
-};
-
-const uk_builderrunfailed2 = /** @type {(inputs: Builderrunfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Помилка запуску`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderrunfailed2 = /** @type {(inputs: Builderrunfailed2Inputs) => Loc
 * @returns {LocalizedString}
 */
 const builderrunfailed2 = /** @type {((inputs?: Builderrunfailed2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderrunfailed2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderrunfailed2(inputs)
-	if (locale === "zh") return zh_builderrunfailed2(inputs)
-	if (locale === "ja") return ja_builderrunfailed2(inputs)
-	if (locale === "ko") return ko_builderrunfailed2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderrunfailed2(inputs)
-	if (locale === "de") return de_builderrunfailed2(inputs)
-	if (locale === "fr") return fr_builderrunfailed2(inputs)
-	if (locale === "uk") return uk_builderrunfailed2(inputs)
-	return en_builderrunfailed2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("La ejecución falló")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("运行失败")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("実行に失敗しました")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("실행 실패")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("執行失敗")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Ausführung fehlgeschlagen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Échec de l’exécution")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Помилка запуску")
+	return /** @type {LocalizedString} */ ("Run failed")
 });
 export { builderrunfailed2 as "builderRunFailed" }

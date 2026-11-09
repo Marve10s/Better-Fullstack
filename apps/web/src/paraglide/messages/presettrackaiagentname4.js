@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Presettrackaiagentname4Inputs */
 
-const en_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI Agent App`)
-};
 
-const es_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`App de agente de IA`)
-};
-
-const zh_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 代理应用`)
-};
-
-const ja_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI エージェント アプリ`)
-};
-
-const ko_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 에이전트 앱`)
-};
-
-const zh_hant1_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 代理應用`)
-};
-
-const de_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI Agent-App`)
-};
-
-const fr_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Application d'agent AI`)
-};
-
-const uk_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Застосунок з AI-агентом`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_presettrackaiagentname4 = /** @type {(inputs: Presettrackaiagentname4In
 * @returns {LocalizedString}
 */
 const presettrackaiagentname4 = /** @type {((inputs?: Presettrackaiagentname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackaiagentname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_presettrackaiagentname4(inputs)
-	if (locale === "zh") return zh_presettrackaiagentname4(inputs)
-	if (locale === "ja") return ja_presettrackaiagentname4(inputs)
-	if (locale === "ko") return ko_presettrackaiagentname4(inputs)
-	if (locale === "zh-Hant") return zh_hant1_presettrackaiagentname4(inputs)
-	if (locale === "de") return de_presettrackaiagentname4(inputs)
-	if (locale === "fr") return fr_presettrackaiagentname4(inputs)
-	if (locale === "uk") return uk_presettrackaiagentname4(inputs)
-	return en_presettrackaiagentname4(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("App de agente de IA")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("AI 代理应用")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("AI エージェント アプリ")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("AI 에이전트 앱")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("AI 代理應用")
+	if (locale === "de") return /** @type {LocalizedString} */ ("AI Agent-App")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Application d'agent AI")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Застосунок з AI-агентом")
+	return /** @type {LocalizedString} */ ("AI Agent App")
 });
 export { presettrackaiagentname4 as "presetTrackAiAgentName" }

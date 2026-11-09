@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Savedproject1Inputs */
 
-const en_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project`)
-};
 
-const es_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Proyecto`)
-};
-
-const zh_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`项目`)
-};
-
-const ja_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プロジェクト`)
-};
-
-const ko_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`프로젝트`)
-};
-
-const zh_hant1_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`專案`)
-};
-
-const de_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Projekt`)
-};
-
-const fr_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Projet`)
-};
-
-const uk_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Проєкт`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_savedproject1 = /** @type {(inputs: Savedproject1Inputs) => LocalizedSt
 * @returns {LocalizedString}
 */
 const savedproject1 = /** @type {((inputs?: Savedproject1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedproject1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_savedproject1(inputs)
-	if (locale === "zh") return zh_savedproject1(inputs)
-	if (locale === "ja") return ja_savedproject1(inputs)
-	if (locale === "ko") return ko_savedproject1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_savedproject1(inputs)
-	if (locale === "de") return de_savedproject1(inputs)
-	if (locale === "fr") return fr_savedproject1(inputs)
-	if (locale === "uk") return uk_savedproject1(inputs)
-	return en_savedproject1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Proyecto")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("项目")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("プロジェクト")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("프로젝트")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("專案")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Projekt")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Projet")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Проєкт")
+	return /** @type {LocalizedString} */ ("Project")
 });
 export { savedproject1 as "savedProject" }

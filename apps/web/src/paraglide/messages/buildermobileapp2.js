@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildermobileapp2Inputs */
 
-const en_buildermobileapp2 = /** @type {(inputs: Buildermobileapp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Mobile App`)
-};
 
-const es_buildermobileapp2 = /** @type {(inputs: Buildermobileapp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`App móvil`)
-};
-
-const zh_buildermobileapp2 = /** @type {(inputs: Buildermobileapp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`移动应用`)
-};
-
-const ja_buildermobileapp2 = /** @type {(inputs: Buildermobileapp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`モバイルアプリ`)
-};
-
-const ko_buildermobileapp2 = /** @type {(inputs: Buildermobileapp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`모바일 앱`)
-};
-
-const zh_hant1_buildermobileapp2 = /** @type {(inputs: Buildermobileapp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`行動應用`)
-};
-
-const de_buildermobileapp2 = /** @type {(inputs: Buildermobileapp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Mobile App`)
-};
-
-const fr_buildermobileapp2 = /** @type {(inputs: Buildermobileapp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Application mobile`)
-};
-
-const uk_buildermobileapp2 = /** @type {(inputs: Buildermobileapp2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Мобільний застосунок`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildermobileapp2 = /** @type {(inputs: Buildermobileapp2Inputs) => Loc
 * @returns {LocalizedString}
 */
 const buildermobileapp2 = /** @type {((inputs?: Buildermobileapp2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildermobileapp2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildermobileapp2(inputs)
-	if (locale === "zh") return zh_buildermobileapp2(inputs)
-	if (locale === "ja") return ja_buildermobileapp2(inputs)
-	if (locale === "ko") return ko_buildermobileapp2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildermobileapp2(inputs)
-	if (locale === "de") return de_buildermobileapp2(inputs)
-	if (locale === "fr") return fr_buildermobileapp2(inputs)
-	if (locale === "uk") return uk_buildermobileapp2(inputs)
-	return en_buildermobileapp2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("App móvil")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("移动应用")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("モバイルアプリ")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("모바일 앱")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("行動應用")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Mobile App")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Application mobile")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Мобільний застосунок")
+	return /** @type {LocalizedString} */ ("Mobile App")
 });
 export { buildermobileapp2 as "builderMobileApp" }

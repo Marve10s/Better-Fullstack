@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpresources1Inputs */
 
-const en_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`readable resources`)
-};
 
-const es_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`recursos legibles`)
-};
-
-const zh_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`可读资源`)
-};
-
-const ja_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`読み取り可能なリソース`)
-};
-
-const ko_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`읽을 수 있는 리소스`)
-};
-
-const zh_hant1_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`可讀資源`)
-};
-
-const de_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`lesbare Ressourcen`)
-};
-
-const fr_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ressources lisibles`)
-};
-
-const uk_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`доступні для читання ресурси`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpresources1 = /** @type {(inputs: Mcpresources1Inputs) => LocalizedSt
 * @returns {LocalizedString}
 */
 const mcpresources1 = /** @type {((inputs?: Mcpresources1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpresources1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpresources1(inputs)
-	if (locale === "zh") return zh_mcpresources1(inputs)
-	if (locale === "ja") return ja_mcpresources1(inputs)
-	if (locale === "ko") return ko_mcpresources1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpresources1(inputs)
-	if (locale === "de") return de_mcpresources1(inputs)
-	if (locale === "fr") return fr_mcpresources1(inputs)
-	if (locale === "uk") return uk_mcpresources1(inputs)
-	return en_mcpresources1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("recursos legibles")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("可读资源")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("読み取り可能なリソース")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("읽을 수 있는 리소스")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("可讀資源")
+	if (locale === "de") return /** @type {LocalizedString} */ ("lesbare Ressourcen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("ressources lisibles")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("доступні для читання ресурси")
+	return /** @type {LocalizedString} */ ("readable resources")
 });
 export { mcpresources1 as "mcpResources" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{ ecosystem: NonNullable<unknown> }} Builderbackendgroup2Inputs */
 
-const en_builderbackendgroup2 = /** @type {(inputs: Builderbackendgroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystem} Backend`)
-};
 
-const es_builderbackendgroup2 = /** @type {(inputs: Builderbackendgroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Backend ${i?.ecosystem}`)
-};
-
-const zh_builderbackendgroup2 = /** @type {(inputs: Builderbackendgroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystem} 后端`)
-};
-
-const ja_builderbackendgroup2 = /** @type {(inputs: Builderbackendgroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystem} バックエンド`)
-};
-
-const ko_builderbackendgroup2 = /** @type {(inputs: Builderbackendgroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystem} 백엔드`)
-};
-
-const zh_hant1_builderbackendgroup2 = /** @type {(inputs: Builderbackendgroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystem} 後端`)
-};
-
-const de_builderbackendgroup2 = /** @type {(inputs: Builderbackendgroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystem} Backend`)
-};
-
-const fr_builderbackendgroup2 = /** @type {(inputs: Builderbackendgroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystem} Back-end`)
-};
-
-const uk_builderbackendgroup2 = /** @type {(inputs: Builderbackendgroup2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.ecosystem}: бекенд`)
-};
 
 /**
 * | output |
@@ -50,16 +16,16 @@ const uk_builderbackendgroup2 = /** @type {(inputs: Builderbackendgroup2Inputs) 
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderbackendgroup2 = /** @type {((inputs: Builderbackendgroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderbackendgroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const builderbackendgroup2 = /** @type {((inputs: Builderbackendgroup2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderbackendgroup2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((i, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderbackendgroup2(inputs)
-	if (locale === "zh") return zh_builderbackendgroup2(inputs)
-	if (locale === "ja") return ja_builderbackendgroup2(inputs)
-	if (locale === "ko") return ko_builderbackendgroup2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderbackendgroup2(inputs)
-	if (locale === "de") return de_builderbackendgroup2(inputs)
-	if (locale === "fr") return fr_builderbackendgroup2(inputs)
-	if (locale === "uk") return uk_builderbackendgroup2(inputs)
-	return en_builderbackendgroup2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ (`Backend ${i?.ecosystem}`)
+	if (locale === "zh") return /** @type {LocalizedString} */ (`${i?.ecosystem} 后端`)
+	if (locale === "ja") return /** @type {LocalizedString} */ (`${i?.ecosystem} バックエンド`)
+	if (locale === "ko") return /** @type {LocalizedString} */ (`${i?.ecosystem} 백엔드`)
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ (`${i?.ecosystem} 後端`)
+	if (locale === "de") return /** @type {LocalizedString} */ (`${i?.ecosystem} Backend`)
+	if (locale === "fr") return /** @type {LocalizedString} */ (`${i?.ecosystem} Back-end`)
+	if (locale === "uk") return /** @type {LocalizedString} */ (`${i?.ecosystem}: бекенд`)
+	return /** @type {LocalizedString} */ (`${i?.ecosystem} Backend`)
 });
 export { builderbackendgroup2 as "builderBackendGroup" }

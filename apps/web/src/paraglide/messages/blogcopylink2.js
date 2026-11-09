@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Blogcopylink2Inputs */
 
-const en_blogcopylink2 = /** @type {(inputs: Blogcopylink2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Copy link`)
-};
 
-const es_blogcopylink2 = /** @type {(inputs: Blogcopylink2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Copiar enlace`)
-};
-
-const zh_blogcopylink2 = /** @type {(inputs: Blogcopylink2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`复制链接`)
-};
-
-const ja_blogcopylink2 = /** @type {(inputs: Blogcopylink2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`リンクをコピー`)
-};
-
-const ko_blogcopylink2 = /** @type {(inputs: Blogcopylink2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`링크 복사`)
-};
-
-const zh_hant1_blogcopylink2 = /** @type {(inputs: Blogcopylink2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`複製連結`)
-};
-
-const de_blogcopylink2 = /** @type {(inputs: Blogcopylink2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Link kopieren`)
-};
-
-const fr_blogcopylink2 = /** @type {(inputs: Blogcopylink2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Copier le lien`)
-};
-
-const uk_blogcopylink2 = /** @type {(inputs: Blogcopylink2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Копіювати посилання`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_blogcopylink2 = /** @type {(inputs: Blogcopylink2Inputs) => LocalizedSt
 * @returns {LocalizedString}
 */
 const blogcopylink2 = /** @type {((inputs?: Blogcopylink2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Blogcopylink2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_blogcopylink2(inputs)
-	if (locale === "zh") return zh_blogcopylink2(inputs)
-	if (locale === "ja") return ja_blogcopylink2(inputs)
-	if (locale === "ko") return ko_blogcopylink2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_blogcopylink2(inputs)
-	if (locale === "de") return de_blogcopylink2(inputs)
-	if (locale === "fr") return fr_blogcopylink2(inputs)
-	if (locale === "uk") return uk_blogcopylink2(inputs)
-	return en_blogcopylink2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Copiar enlace")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("复制链接")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("リンクをコピー")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("링크 복사")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("複製連結")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Link kopieren")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Copier le lien")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Копіювати посилання")
+	return /** @type {LocalizedString} */ ("Copy link")
 });
 export { blogcopylink2 as "blogCopyLink" }

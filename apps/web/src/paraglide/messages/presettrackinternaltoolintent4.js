@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Presettrackinternaltoolintent4Inputs */
 
-const en_presettrackinternaltoolintent4 = /** @type {(inputs: Presettrackinternaltoolintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Move fast with CRUD`)
-};
 
-const es_presettrackinternaltoolintent4 = /** @type {(inputs: Presettrackinternaltoolintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Avanzar rápido con CRUD`)
-};
-
-const zh_presettrackinternaltoolintent4 = /** @type {(inputs: Presettrackinternaltoolintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`快速构建 CRUD`)
-};
-
-const ja_presettrackinternaltoolintent4 = /** @type {(inputs: Presettrackinternaltoolintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`CRUD で迅速に行動する`)
-};
-
-const ko_presettrackinternaltoolintent4 = /** @type {(inputs: Presettrackinternaltoolintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`CRUD로 빠르게 이동`)
-};
-
-const zh_hant1_presettrackinternaltoolintent4 = /** @type {(inputs: Presettrackinternaltoolintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`快速建置 CRUD`)
-};
-
-const de_presettrackinternaltoolintent4 = /** @type {(inputs: Presettrackinternaltoolintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bewegen Sie sich schnell mit CRUD`)
-};
-
-const fr_presettrackinternaltoolintent4 = /** @type {(inputs: Presettrackinternaltoolintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Avancez vite avec le CRUD`)
-};
-
-const uk_presettrackinternaltoolintent4 = /** @type {(inputs: Presettrackinternaltoolintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Швидко зібрати CRUD`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_presettrackinternaltoolintent4 = /** @type {(inputs: Presettrackinterna
 * @returns {LocalizedString}
 */
 const presettrackinternaltoolintent4 = /** @type {((inputs?: Presettrackinternaltoolintent4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackinternaltoolintent4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_presettrackinternaltoolintent4(inputs)
-	if (locale === "zh") return zh_presettrackinternaltoolintent4(inputs)
-	if (locale === "ja") return ja_presettrackinternaltoolintent4(inputs)
-	if (locale === "ko") return ko_presettrackinternaltoolintent4(inputs)
-	if (locale === "zh-Hant") return zh_hant1_presettrackinternaltoolintent4(inputs)
-	if (locale === "de") return de_presettrackinternaltoolintent4(inputs)
-	if (locale === "fr") return fr_presettrackinternaltoolintent4(inputs)
-	if (locale === "uk") return uk_presettrackinternaltoolintent4(inputs)
-	return en_presettrackinternaltoolintent4(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Avanzar rápido con CRUD")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("快速构建 CRUD")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("CRUD で迅速に行動する")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("CRUD로 빠르게 이동")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("快速建置 CRUD")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Bewegen Sie sich schnell mit CRUD")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Avancez vite avec le CRUD")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Швидко зібрати CRUD")
+	return /** @type {LocalizedString} */ ("Move fast with CRUD")
 });
 export { presettrackinternaltoolintent4 as "presetTrackInternalToolIntent" }

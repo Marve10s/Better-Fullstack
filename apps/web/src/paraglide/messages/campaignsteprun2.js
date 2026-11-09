@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Campaignsteprun2Inputs */
 
-const en_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Run the real project`)
-};
 
-const es_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ejecuta el proyecto real`)
-};
-
-const zh_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`运行真实项目`)
-};
-
-const ja_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`本物のプロジェクトを実行`)
-};
-
-const ko_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`실제 프로젝트 실행`)
-};
-
-const zh_hant1_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`執行真實專案`)
-};
-
-const de_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Führe das echte Projekt aus`)
-};
-
-const fr_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Exécutez le vrai projet`)
-};
-
-const uk_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Запустіть справжній проєкт`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_campaignsteprun2 = /** @type {(inputs: Campaignsteprun2Inputs) => Local
 * @returns {LocalizedString}
 */
 const campaignsteprun2 = /** @type {((inputs?: Campaignsteprun2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignsteprun2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_campaignsteprun2(inputs)
-	if (locale === "zh") return zh_campaignsteprun2(inputs)
-	if (locale === "ja") return ja_campaignsteprun2(inputs)
-	if (locale === "ko") return ko_campaignsteprun2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_campaignsteprun2(inputs)
-	if (locale === "de") return de_campaignsteprun2(inputs)
-	if (locale === "fr") return fr_campaignsteprun2(inputs)
-	if (locale === "uk") return uk_campaignsteprun2(inputs)
-	return en_campaignsteprun2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Ejecuta el proyecto real")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("运行真实项目")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("本物のプロジェクトを実行")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("실제 프로젝트 실행")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("執行真實專案")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Führe das echte Projekt aus")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Exécutez le vrai projet")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Запустіть справжній проєкт")
+	return /** @type {LocalizedString} */ ("Run the real project")
 });
 export { campaignsteprun2 as "campaignStepRun" }

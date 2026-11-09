@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Toconthispage3Inputs */
 
-const en_toconthispage3 = /** @type {(inputs: Toconthispage3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`On this page`)
-};
 
-const es_toconthispage3 = /** @type {(inputs: Toconthispage3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`En esta página`)
-};
-
-const zh_toconthispage3 = /** @type {(inputs: Toconthispage3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`本页内容`)
-};
-
-const ja_toconthispage3 = /** @type {(inputs: Toconthispage3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`このページの内容`)
-};
-
-const ko_toconthispage3 = /** @type {(inputs: Toconthispage3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`이 페이지에서`)
-};
-
-const zh_hant1_toconthispage3 = /** @type {(inputs: Toconthispage3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`本頁內容`)
-};
-
-const de_toconthispage3 = /** @type {(inputs: Toconthispage3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Auf dieser Seite`)
-};
-
-const fr_toconthispage3 = /** @type {(inputs: Toconthispage3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Sur cette page`)
-};
-
-const uk_toconthispage3 = /** @type {(inputs: Toconthispage3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`На цій сторінці`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_toconthispage3 = /** @type {(inputs: Toconthispage3Inputs) => Localized
 * @returns {LocalizedString}
 */
 const toconthispage3 = /** @type {((inputs?: Toconthispage3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Toconthispage3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_toconthispage3(inputs)
-	if (locale === "zh") return zh_toconthispage3(inputs)
-	if (locale === "ja") return ja_toconthispage3(inputs)
-	if (locale === "ko") return ko_toconthispage3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_toconthispage3(inputs)
-	if (locale === "de") return de_toconthispage3(inputs)
-	if (locale === "fr") return fr_toconthispage3(inputs)
-	if (locale === "uk") return uk_toconthispage3(inputs)
-	return en_toconthispage3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("En esta página")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("本页内容")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("このページの内容")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("이 페이지에서")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("本頁內容")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Auf dieser Seite")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Sur cette page")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("На цій сторінці")
+	return /** @type {LocalizedString} */ ("On this page")
 });
 export { toconthispage3 as "tocOnThisPage" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Savedduplicate1Inputs */
 
-const en_savedduplicate1 = /** @type {(inputs: Savedduplicate1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Duplicate`)
-};
 
-const es_savedduplicate1 = /** @type {(inputs: Savedduplicate1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Duplicar`)
-};
-
-const zh_savedduplicate1 = /** @type {(inputs: Savedduplicate1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`复制一份`)
-};
-
-const ja_savedduplicate1 = /** @type {(inputs: Savedduplicate1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`複製`)
-};
-
-const ko_savedduplicate1 = /** @type {(inputs: Savedduplicate1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`복제`)
-};
-
-const zh_hant1_savedduplicate1 = /** @type {(inputs: Savedduplicate1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`複製一份`)
-};
-
-const de_savedduplicate1 = /** @type {(inputs: Savedduplicate1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Duplizieren`)
-};
-
-const fr_savedduplicate1 = /** @type {(inputs: Savedduplicate1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dupliquer`)
-};
-
-const uk_savedduplicate1 = /** @type {(inputs: Savedduplicate1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Дублювати`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_savedduplicate1 = /** @type {(inputs: Savedduplicate1Inputs) => Localiz
 * @returns {LocalizedString}
 */
 const savedduplicate1 = /** @type {((inputs?: Savedduplicate1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedduplicate1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_savedduplicate1(inputs)
-	if (locale === "zh") return zh_savedduplicate1(inputs)
-	if (locale === "ja") return ja_savedduplicate1(inputs)
-	if (locale === "ko") return ko_savedduplicate1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_savedduplicate1(inputs)
-	if (locale === "de") return de_savedduplicate1(inputs)
-	if (locale === "fr") return fr_savedduplicate1(inputs)
-	if (locale === "uk") return uk_savedduplicate1(inputs)
-	return en_savedduplicate1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Duplicar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("复制一份")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("複製")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("복제")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("複製一份")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Duplizieren")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Dupliquer")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Дублювати")
+	return /** @type {LocalizedString} */ ("Duplicate")
 });
 export { savedduplicate1 as "savedDuplicate" }

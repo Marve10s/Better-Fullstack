@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildernext1Inputs */
 
-const en_buildernext1 = /** @type {(inputs: Buildernext1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Next`)
-};
 
-const es_buildernext1 = /** @type {(inputs: Buildernext1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Siguiente`)
-};
-
-const zh_buildernext1 = /** @type {(inputs: Buildernext1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`下一步`)
-};
-
-const ja_buildernext1 = /** @type {(inputs: Buildernext1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`次`)
-};
-
-const ko_buildernext1 = /** @type {(inputs: Buildernext1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`다음`)
-};
-
-const zh_hant1_buildernext1 = /** @type {(inputs: Buildernext1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`下一步`)
-};
-
-const de_buildernext1 = /** @type {(inputs: Buildernext1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Weiter`)
-};
-
-const fr_buildernext1 = /** @type {(inputs: Buildernext1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Suivant`)
-};
-
-const uk_buildernext1 = /** @type {(inputs: Buildernext1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Далі`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildernext1 = /** @type {(inputs: Buildernext1Inputs) => LocalizedStri
 * @returns {LocalizedString}
 */
 const buildernext1 = /** @type {((inputs?: Buildernext1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildernext1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildernext1(inputs)
-	if (locale === "zh") return zh_buildernext1(inputs)
-	if (locale === "ja") return ja_buildernext1(inputs)
-	if (locale === "ko") return ko_buildernext1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildernext1(inputs)
-	if (locale === "de") return de_buildernext1(inputs)
-	if (locale === "fr") return fr_buildernext1(inputs)
-	if (locale === "uk") return uk_buildernext1(inputs)
-	return en_buildernext1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Siguiente")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("下一步")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("次")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("다음")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("下一步")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Weiter")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Suivant")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Далі")
+	return /** @type {LocalizedString} */ ("Next")
 });
 export { buildernext1 as "builderNext" }

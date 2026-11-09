@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docssectionai2Inputs */
 
-const en_docssectionai2 = /** @type {(inputs: Docssectionai2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI Agents`)
-};
 
-const es_docssectionai2 = /** @type {(inputs: Docssectionai2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agentes de IA`)
-};
-
-const zh_docssectionai2 = /** @type {(inputs: Docssectionai2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 代理`)
-};
-
-const ja_docssectionai2 = /** @type {(inputs: Docssectionai2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI エージェント`)
-};
-
-const ko_docssectionai2 = /** @type {(inputs: Docssectionai2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 에이전트`)
-};
-
-const zh_hant1_docssectionai2 = /** @type {(inputs: Docssectionai2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 代理`)
-};
-
-const de_docssectionai2 = /** @type {(inputs: Docssectionai2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI Agenten`)
-};
-
-const fr_docssectionai2 = /** @type {(inputs: Docssectionai2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agents AI`)
-};
-
-const uk_docssectionai2 = /** @type {(inputs: Docssectionai2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI-агенти`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docssectionai2 = /** @type {(inputs: Docssectionai2Inputs) => Localized
 * @returns {LocalizedString}
 */
 const docssectionai2 = /** @type {((inputs?: Docssectionai2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssectionai2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docssectionai2(inputs)
-	if (locale === "zh") return zh_docssectionai2(inputs)
-	if (locale === "ja") return ja_docssectionai2(inputs)
-	if (locale === "ko") return ko_docssectionai2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docssectionai2(inputs)
-	if (locale === "de") return de_docssectionai2(inputs)
-	if (locale === "fr") return fr_docssectionai2(inputs)
-	if (locale === "uk") return uk_docssectionai2(inputs)
-	return en_docssectionai2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Agentes de IA")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("AI 代理")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("AI エージェント")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("AI 에이전트")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("AI 代理")
+	if (locale === "de") return /** @type {LocalizedString} */ ("AI Agenten")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Agents AI")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("AI-агенти")
+	return /** @type {LocalizedString} */ ("AI Agents")
 });
 export { docssectionai2 as "docsSectionAi" }

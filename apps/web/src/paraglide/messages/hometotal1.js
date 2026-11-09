@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Hometotal1Inputs */
 
-const en_hometotal1 = /** @type {(inputs: Hometotal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`total`)
-};
 
-const es_hometotal1 = /** @type {(inputs: Hometotal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`total`)
-};
-
-const zh_hometotal1 = /** @type {(inputs: Hometotal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`总计`)
-};
-
-const ja_hometotal1 = /** @type {(inputs: Hometotal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`合計`)
-};
-
-const ko_hometotal1 = /** @type {(inputs: Hometotal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`총`)
-};
-
-const zh_hant1_hometotal1 = /** @type {(inputs: Hometotal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`總計`)
-};
-
-const de_hometotal1 = /** @type {(inputs: Hometotal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`gesamt`)
-};
-
-const fr_hometotal1 = /** @type {(inputs: Hometotal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`total`)
-};
-
-const uk_hometotal1 = /** @type {(inputs: Hometotal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`всього`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_hometotal1 = /** @type {(inputs: Hometotal1Inputs) => LocalizedString} 
 * @returns {LocalizedString}
 */
 const hometotal1 = /** @type {((inputs?: Hometotal1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometotal1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_hometotal1(inputs)
-	if (locale === "zh") return zh_hometotal1(inputs)
-	if (locale === "ja") return ja_hometotal1(inputs)
-	if (locale === "ko") return ko_hometotal1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_hometotal1(inputs)
-	if (locale === "de") return de_hometotal1(inputs)
-	if (locale === "fr") return fr_hometotal1(inputs)
-	if (locale === "uk") return uk_hometotal1(inputs)
-	return en_hometotal1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("total")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("总计")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("合計")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("총")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("總計")
+	if (locale === "de") return /** @type {LocalizedString} */ ("gesamt")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("total")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("всього")
+	return /** @type {LocalizedString} */ ("total")
 });
 export { hometotal1 as "homeTotal" }

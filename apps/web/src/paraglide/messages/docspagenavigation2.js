@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docspagenavigation2Inputs */
 
-const en_docspagenavigation2 = /** @type {(inputs: Docspagenavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Page navigation`)
-};
 
-const es_docspagenavigation2 = /** @type {(inputs: Docspagenavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Navegación de página`)
-};
-
-const zh_docspagenavigation2 = /** @type {(inputs: Docspagenavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`页面导航`)
-};
-
-const ja_docspagenavigation2 = /** @type {(inputs: Docspagenavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ページナビゲーション`)
-};
-
-const ko_docspagenavigation2 = /** @type {(inputs: Docspagenavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`페이지 탐색`)
-};
-
-const zh_hant1_docspagenavigation2 = /** @type {(inputs: Docspagenavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`頁面導航`)
-};
-
-const de_docspagenavigation2 = /** @type {(inputs: Docspagenavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Seitennavigation`)
-};
-
-const fr_docspagenavigation2 = /** @type {(inputs: Docspagenavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Navigation dans les pages`)
-};
-
-const uk_docspagenavigation2 = /** @type {(inputs: Docspagenavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Навігація сторінкою`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docspagenavigation2 = /** @type {(inputs: Docspagenavigation2Inputs) =>
 * @returns {LocalizedString}
 */
 const docspagenavigation2 = /** @type {((inputs?: Docspagenavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docspagenavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docspagenavigation2(inputs)
-	if (locale === "zh") return zh_docspagenavigation2(inputs)
-	if (locale === "ja") return ja_docspagenavigation2(inputs)
-	if (locale === "ko") return ko_docspagenavigation2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docspagenavigation2(inputs)
-	if (locale === "de") return de_docspagenavigation2(inputs)
-	if (locale === "fr") return fr_docspagenavigation2(inputs)
-	if (locale === "uk") return uk_docspagenavigation2(inputs)
-	return en_docspagenavigation2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Navegación de página")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("页面导航")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ページナビゲーション")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("페이지 탐색")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("頁面導航")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Seitennavigation")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Navigation dans les pages")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Навігація сторінкою")
+	return /** @type {LocalizedString} */ ("Page navigation")
 });
 export { docspagenavigation2 as "docsPageNavigation" }

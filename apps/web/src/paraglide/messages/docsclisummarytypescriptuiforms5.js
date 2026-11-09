@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummarytypescriptuiforms5Inputs */
 
-const en_docsclisummarytypescriptuiforms5 = /** @type {(inputs: Docsclisummarytypescriptuiforms5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Form library.`)
-};
 
-const es_docsclisummarytypescriptuiforms5 = /** @type {(inputs: Docsclisummarytypescriptuiforms5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Biblioteca de formularios.`)
-};
-
-const zh_docsclisummarytypescriptuiforms5 = /** @type {(inputs: Docsclisummarytypescriptuiforms5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`表单库。`)
-};
-
-const ja_docsclisummarytypescriptuiforms5 = /** @type {(inputs: Docsclisummarytypescriptuiforms5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`フォームライブラリ。`)
-};
-
-const ko_docsclisummarytypescriptuiforms5 = /** @type {(inputs: Docsclisummarytypescriptuiforms5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`폼 라이브러리.`)
-};
-
-const zh_hant1_docsclisummarytypescriptuiforms5 = /** @type {(inputs: Docsclisummarytypescriptuiforms5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`表單函式庫。`)
-};
-
-const de_docsclisummarytypescriptuiforms5 = /** @type {(inputs: Docsclisummarytypescriptuiforms5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Formularbibliothek.`)
-};
-
-const fr_docsclisummarytypescriptuiforms5 = /** @type {(inputs: Docsclisummarytypescriptuiforms5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bibliothèque de formulaires.`)
-};
-
-const uk_docsclisummarytypescriptuiforms5 = /** @type {(inputs: Docsclisummarytypescriptuiforms5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Бібліотека форм.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummarytypescriptuiforms5 = /** @type {(inputs: Docsclisummaryty
 * @returns {LocalizedString}
 */
 const docsclisummarytypescriptuiforms5 = /** @type {((inputs?: Docsclisummarytypescriptuiforms5Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummarytypescriptuiforms5Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummarytypescriptuiforms5(inputs)
-	if (locale === "zh") return zh_docsclisummarytypescriptuiforms5(inputs)
-	if (locale === "ja") return ja_docsclisummarytypescriptuiforms5(inputs)
-	if (locale === "ko") return ko_docsclisummarytypescriptuiforms5(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummarytypescriptuiforms5(inputs)
-	if (locale === "de") return de_docsclisummarytypescriptuiforms5(inputs)
-	if (locale === "fr") return fr_docsclisummarytypescriptuiforms5(inputs)
-	if (locale === "uk") return uk_docsclisummarytypescriptuiforms5(inputs)
-	return en_docsclisummarytypescriptuiforms5(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Biblioteca de formularios.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("表单库。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("フォームライブラリ。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("폼 라이브러리.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("表單函式庫。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Formularbibliothek.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Bibliothèque de formulaires.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Бібліотека форм.")
+	return /** @type {LocalizedString} */ ("Form library.")
 });
 export { docsclisummarytypescriptuiforms5 as "docsCliSummaryTypescriptUiForms" }

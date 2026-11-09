@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Changelogfullreleasenotes3Inputs */
 
-const en_changelogfullreleasenotes3 = /** @type {(inputs: Changelogfullreleasenotes3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Full release notes`)
-};
 
-const es_changelogfullreleasenotes3 = /** @type {(inputs: Changelogfullreleasenotes3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Notas completas de la versión`)
-};
-
-const zh_changelogfullreleasenotes3 = /** @type {(inputs: Changelogfullreleasenotes3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`完整发布说明`)
-};
-
-const ja_changelogfullreleasenotes3 = /** @type {(inputs: Changelogfullreleasenotes3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`完全なリリースノート`)
-};
-
-const ko_changelogfullreleasenotes3 = /** @type {(inputs: Changelogfullreleasenotes3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`전체 릴리스 노트`)
-};
-
-const zh_hant1_changelogfullreleasenotes3 = /** @type {(inputs: Changelogfullreleasenotes3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`完整發布說明`)
-};
-
-const de_changelogfullreleasenotes3 = /** @type {(inputs: Changelogfullreleasenotes3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vollständige Versionshinweise`)
-};
-
-const fr_changelogfullreleasenotes3 = /** @type {(inputs: Changelogfullreleasenotes3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Notes de version complètes`)
-};
-
-const uk_changelogfullreleasenotes3 = /** @type {(inputs: Changelogfullreleasenotes3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Повні нотатки до релізу`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_changelogfullreleasenotes3 = /** @type {(inputs: Changelogfullreleaseno
 * @returns {LocalizedString}
 */
 const changelogfullreleasenotes3 = /** @type {((inputs?: Changelogfullreleasenotes3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogfullreleasenotes3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_changelogfullreleasenotes3(inputs)
-	if (locale === "zh") return zh_changelogfullreleasenotes3(inputs)
-	if (locale === "ja") return ja_changelogfullreleasenotes3(inputs)
-	if (locale === "ko") return ko_changelogfullreleasenotes3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_changelogfullreleasenotes3(inputs)
-	if (locale === "de") return de_changelogfullreleasenotes3(inputs)
-	if (locale === "fr") return fr_changelogfullreleasenotes3(inputs)
-	if (locale === "uk") return uk_changelogfullreleasenotes3(inputs)
-	return en_changelogfullreleasenotes3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Notas completas de la versión")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("完整发布说明")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("完全なリリースノート")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("전체 릴리스 노트")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("完整發布說明")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Vollständige Versionshinweise")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Notes de version complètes")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Повні нотатки до релізу")
+	return /** @type {LocalizedString} */ ("Full release notes")
 });
 export { changelogfullreleasenotes3 as "changelogFullReleaseNotes" }

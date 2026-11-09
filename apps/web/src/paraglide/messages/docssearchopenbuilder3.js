@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docssearchopenbuilder3Inputs */
 
-const en_docssearchopenbuilder3 = /** @type {(inputs: Docssearchopenbuilder3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Open Stack Builder`)
-};
 
-const es_docssearchopenbuilder3 = /** @type {(inputs: Docssearchopenbuilder3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abrir Stack Builder`)
-};
-
-const zh_docssearchopenbuilder3 = /** @type {(inputs: Docssearchopenbuilder3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打开 Stack Builder`)
-};
-
-const ja_docssearchopenbuilder3 = /** @type {(inputs: Docssearchopenbuilder3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stack Builder を開く`)
-};
-
-const ko_docssearchopenbuilder3 = /** @type {(inputs: Docssearchopenbuilder3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stack Builder 열기`)
-};
-
-const zh_hant1_docssearchopenbuilder3 = /** @type {(inputs: Docssearchopenbuilder3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`開啟 Stack Builder`)
-};
-
-const de_docssearchopenbuilder3 = /** @type {(inputs: Docssearchopenbuilder3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stack Builder öffnen`)
-};
-
-const fr_docssearchopenbuilder3 = /** @type {(inputs: Docssearchopenbuilder3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ouvrir le Stack Builder`)
-};
-
-const uk_docssearchopenbuilder3 = /** @type {(inputs: Docssearchopenbuilder3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкрити Stack Builder`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docssearchopenbuilder3 = /** @type {(inputs: Docssearchopenbuilder3Inpu
 * @returns {LocalizedString}
 */
 const docssearchopenbuilder3 = /** @type {((inputs?: Docssearchopenbuilder3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchopenbuilder3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docssearchopenbuilder3(inputs)
-	if (locale === "zh") return zh_docssearchopenbuilder3(inputs)
-	if (locale === "ja") return ja_docssearchopenbuilder3(inputs)
-	if (locale === "ko") return ko_docssearchopenbuilder3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docssearchopenbuilder3(inputs)
-	if (locale === "de") return de_docssearchopenbuilder3(inputs)
-	if (locale === "fr") return fr_docssearchopenbuilder3(inputs)
-	if (locale === "uk") return uk_docssearchopenbuilder3(inputs)
-	return en_docssearchopenbuilder3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Abrir Stack Builder")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("打开 Stack Builder")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Stack Builder を開く")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Stack Builder 열기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("開啟 Stack Builder")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Stack Builder öffnen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Ouvrir le Stack Builder")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Відкрити Stack Builder")
+	return /** @type {LocalizedString} */ ("Open Stack Builder")
 });
 export { docssearchopenbuilder3 as "docsSearchOpenBuilder" }

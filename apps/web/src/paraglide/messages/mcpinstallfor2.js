@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpinstallfor2Inputs */
 
-const en_mcpinstallfor2 = /** @type {(inputs: Mcpinstallfor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Install for`)
-};
 
-const es_mcpinstallfor2 = /** @type {(inputs: Mcpinstallfor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Instalar para`)
-};
-
-const zh_mcpinstallfor2 = /** @type {(inputs: Mcpinstallfor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`安装到`)
-};
-
-const ja_mcpinstallfor2 = /** @type {(inputs: Mcpinstallfor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`インストール対象`)
-};
-
-const ko_mcpinstallfor2 = /** @type {(inputs: Mcpinstallfor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`설치 대상`)
-};
-
-const zh_hant1_mcpinstallfor2 = /** @type {(inputs: Mcpinstallfor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`安裝到`)
-};
-
-const de_mcpinstallfor2 = /** @type {(inputs: Mcpinstallfor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Installieren für`)
-};
-
-const fr_mcpinstallfor2 = /** @type {(inputs: Mcpinstallfor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Installer pour`)
-};
-
-const uk_mcpinstallfor2 = /** @type {(inputs: Mcpinstallfor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Встановити для`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpinstallfor2 = /** @type {(inputs: Mcpinstallfor2Inputs) => Localized
 * @returns {LocalizedString}
 */
 const mcpinstallfor2 = /** @type {((inputs?: Mcpinstallfor2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpinstallfor2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpinstallfor2(inputs)
-	if (locale === "zh") return zh_mcpinstallfor2(inputs)
-	if (locale === "ja") return ja_mcpinstallfor2(inputs)
-	if (locale === "ko") return ko_mcpinstallfor2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpinstallfor2(inputs)
-	if (locale === "de") return de_mcpinstallfor2(inputs)
-	if (locale === "fr") return fr_mcpinstallfor2(inputs)
-	if (locale === "uk") return uk_mcpinstallfor2(inputs)
-	return en_mcpinstallfor2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Instalar para")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("安装到")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("インストール対象")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("설치 대상")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("安裝到")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Installieren für")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Installer pour")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Встановити для")
+	return /** @type {LocalizedString} */ ("Install for")
 });
 export { mcpinstallfor2 as "mcpInstallFor" }

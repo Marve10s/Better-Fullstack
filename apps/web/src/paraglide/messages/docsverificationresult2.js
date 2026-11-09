@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsverificationresult2Inputs */
 
-const en_docsverificationresult2 = /** @type {(inputs: Docsverificationresult2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Result`)
-};
 
-const es_docsverificationresult2 = /** @type {(inputs: Docsverificationresult2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resultado`)
-};
-
-const zh_docsverificationresult2 = /** @type {(inputs: Docsverificationresult2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`结果`)
-};
-
-const ja_docsverificationresult2 = /** @type {(inputs: Docsverificationresult2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`結果`)
-};
-
-const ko_docsverificationresult2 = /** @type {(inputs: Docsverificationresult2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`결과`)
-};
-
-const zh_hant1_docsverificationresult2 = /** @type {(inputs: Docsverificationresult2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`結果`)
-};
-
-const de_docsverificationresult2 = /** @type {(inputs: Docsverificationresult2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ergebnis`)
-};
-
-const fr_docsverificationresult2 = /** @type {(inputs: Docsverificationresult2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Résultat`)
-};
-
-const uk_docsverificationresult2 = /** @type {(inputs: Docsverificationresult2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Результат`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsverificationresult2 = /** @type {(inputs: Docsverificationresult2In
 * @returns {LocalizedString}
 */
 const docsverificationresult2 = /** @type {((inputs?: Docsverificationresult2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsverificationresult2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsverificationresult2(inputs)
-	if (locale === "zh") return zh_docsverificationresult2(inputs)
-	if (locale === "ja") return ja_docsverificationresult2(inputs)
-	if (locale === "ko") return ko_docsverificationresult2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsverificationresult2(inputs)
-	if (locale === "de") return de_docsverificationresult2(inputs)
-	if (locale === "fr") return fr_docsverificationresult2(inputs)
-	if (locale === "uk") return uk_docsverificationresult2(inputs)
-	return en_docsverificationresult2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Resultado")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("结果")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("結果")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("결과")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("結果")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Ergebnis")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Résultat")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Результат")
+	return /** @type {LocalizedString} */ ("Result")
 });
 export { docsverificationresult2 as "docsVerificationResult" }

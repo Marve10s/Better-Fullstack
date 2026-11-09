@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docssectioncli2Inputs */
 
-const en_docssectioncli2 = /** @type {(inputs: Docssectioncli2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`CLI`)
-};
 
-const es_docssectioncli2 = /** @type {(inputs: Docssectioncli2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`CLI`)
-};
-
-const zh_docssectioncli2 = /** @type {(inputs: Docssectioncli2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`CLI`)
-};
-
-const ja_docssectioncli2 = /** @type {(inputs: Docssectioncli2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`CLI`)
-};
-
-const ko_docssectioncli2 = /** @type {(inputs: Docssectioncli2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`CLI`)
-};
-
-const zh_hant1_docssectioncli2 = /** @type {(inputs: Docssectioncli2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`CLI`)
-};
-
-const de_docssectioncli2 = /** @type {(inputs: Docssectioncli2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`CLI`)
-};
-
-const fr_docssectioncli2 = /** @type {(inputs: Docssectioncli2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`CLI`)
-};
-
-const uk_docssectioncli2 = /** @type {(inputs: Docssectioncli2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`CLI`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docssectioncli2 = /** @type {(inputs: Docssectioncli2Inputs) => Localiz
 * @returns {LocalizedString}
 */
 const docssectioncli2 = /** @type {((inputs?: Docssectioncli2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssectioncli2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docssectioncli2(inputs)
-	if (locale === "zh") return zh_docssectioncli2(inputs)
-	if (locale === "ja") return ja_docssectioncli2(inputs)
-	if (locale === "ko") return ko_docssectioncli2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docssectioncli2(inputs)
-	if (locale === "de") return de_docssectioncli2(inputs)
-	if (locale === "fr") return fr_docssectioncli2(inputs)
-	if (locale === "uk") return uk_docssectioncli2(inputs)
-	return en_docssectioncli2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("CLI")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("CLI")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("CLI")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("CLI")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("CLI")
+	if (locale === "de") return /** @type {LocalizedString} */ ("CLI")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("CLI")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("CLI")
+	return /** @type {LocalizedString} */ ("CLI")
 });
 export { docssectioncli2 as "docsSectionCli" }

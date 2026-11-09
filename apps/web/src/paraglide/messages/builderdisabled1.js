@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderdisabled1Inputs */
 
-const en_builderdisabled1 = /** @type {(inputs: Builderdisabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Disabled`)
-};
 
-const es_builderdisabled1 = /** @type {(inputs: Builderdisabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Desactivado`)
-};
-
-const zh_builderdisabled1 = /** @type {(inputs: Builderdisabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已禁用`)
-};
-
-const ja_builderdisabled1 = /** @type {(inputs: Builderdisabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`無効`)
-};
-
-const ko_builderdisabled1 = /** @type {(inputs: Builderdisabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`비활성화됨`)
-};
-
-const zh_hant1_builderdisabled1 = /** @type {(inputs: Builderdisabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已停用`)
-};
-
-const de_builderdisabled1 = /** @type {(inputs: Builderdisabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Deaktiviert`)
-};
-
-const fr_builderdisabled1 = /** @type {(inputs: Builderdisabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Désactivé`)
-};
-
-const uk_builderdisabled1 = /** @type {(inputs: Builderdisabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Вимкнено`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderdisabled1 = /** @type {(inputs: Builderdisabled1Inputs) => Local
 * @returns {LocalizedString}
 */
 const builderdisabled1 = /** @type {((inputs?: Builderdisabled1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderdisabled1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderdisabled1(inputs)
-	if (locale === "zh") return zh_builderdisabled1(inputs)
-	if (locale === "ja") return ja_builderdisabled1(inputs)
-	if (locale === "ko") return ko_builderdisabled1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderdisabled1(inputs)
-	if (locale === "de") return de_builderdisabled1(inputs)
-	if (locale === "fr") return fr_builderdisabled1(inputs)
-	if (locale === "uk") return uk_builderdisabled1(inputs)
-	return en_builderdisabled1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Desactivado")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("已禁用")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("無効")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("비활성화됨")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("已停用")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Deaktiviert")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Désactivé")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Вимкнено")
+	return /** @type {LocalizedString} */ ("Disabled")
 });
 export { builderdisabled1 as "builderDisabled" }

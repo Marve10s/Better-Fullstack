@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummarytypescriptstackorm5Inputs */
 
-const en_docsclisummarytypescriptstackorm5 = /** @type {(inputs: Docsclisummarytypescriptstackorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / query layer.`)
-};
 
-const es_docsclisummarytypescriptstackorm5 = /** @type {(inputs: Docsclisummarytypescriptstackorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / capa de consultas.`)
-};
-
-const zh_docsclisummarytypescriptstackorm5 = /** @type {(inputs: Docsclisummarytypescriptstackorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / 查询层。`)
-};
-
-const ja_docsclisummarytypescriptstackorm5 = /** @type {(inputs: Docsclisummarytypescriptstackorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / クエリレイヤー。`)
-};
-
-const ko_docsclisummarytypescriptstackorm5 = /** @type {(inputs: Docsclisummarytypescriptstackorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / 쿼리 계층.`)
-};
-
-const zh_hant1_docsclisummarytypescriptstackorm5 = /** @type {(inputs: Docsclisummarytypescriptstackorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / 查詢層。`)
-};
-
-const de_docsclisummarytypescriptstackorm5 = /** @type {(inputs: Docsclisummarytypescriptstackorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / Abfrageschicht.`)
-};
-
-const fr_docsclisummarytypescriptstackorm5 = /** @type {(inputs: Docsclisummarytypescriptstackorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / couche de requêtes.`)
-};
-
-const uk_docsclisummarytypescriptstackorm5 = /** @type {(inputs: Docsclisummarytypescriptstackorm5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ORM / шар запитів.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummarytypescriptstackorm5 = /** @type {(inputs: Docsclisummaryt
 * @returns {LocalizedString}
 */
 const docsclisummarytypescriptstackorm5 = /** @type {((inputs?: Docsclisummarytypescriptstackorm5Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummarytypescriptstackorm5Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummarytypescriptstackorm5(inputs)
-	if (locale === "zh") return zh_docsclisummarytypescriptstackorm5(inputs)
-	if (locale === "ja") return ja_docsclisummarytypescriptstackorm5(inputs)
-	if (locale === "ko") return ko_docsclisummarytypescriptstackorm5(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummarytypescriptstackorm5(inputs)
-	if (locale === "de") return de_docsclisummarytypescriptstackorm5(inputs)
-	if (locale === "fr") return fr_docsclisummarytypescriptstackorm5(inputs)
-	if (locale === "uk") return uk_docsclisummarytypescriptstackorm5(inputs)
-	return en_docsclisummarytypescriptstackorm5(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("ORM / capa de consultas.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("ORM / 查询层。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ORM / クエリレイヤー。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("ORM / 쿼리 계층.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("ORM / 查詢層。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("ORM / Abfrageschicht.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("ORM / couche de requêtes.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("ORM / шар запитів.")
+	return /** @type {LocalizedString} */ ("ORM / query layer.")
 });
 export { docsclisummarytypescriptstackorm5 as "docsCliSummaryTypescriptStackOrm" }

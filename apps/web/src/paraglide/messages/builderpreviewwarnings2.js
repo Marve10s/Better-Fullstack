@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{ count: NonNullable<unknown> }} Builderpreviewwarnings2Inputs */
 
-const en_builderpreviewwarnings2 = /** @type {(inputs: Builderpreviewwarnings2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} features will not generate templates`)
-};
 
-const es_builderpreviewwarnings2 = /** @type {(inputs: Builderpreviewwarnings2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} funciones no generarán plantillas`)
-};
-
-const zh_builderpreviewwarnings2 = /** @type {(inputs: Builderpreviewwarnings2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 项功能不会生成模板`)
-};
-
-const ja_builderpreviewwarnings2 = /** @type {(inputs: Builderpreviewwarnings2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 機能はテンプレートを生成しません`)
-};
-
-const ko_builderpreviewwarnings2 = /** @type {(inputs: Builderpreviewwarnings2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 기능은 템플릿을 생성하지 않습니다.`)
-};
-
-const zh_hant1_builderpreviewwarnings2 = /** @type {(inputs: Builderpreviewwarnings2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 項功能不會產生模板`)
-};
-
-const de_builderpreviewwarnings2 = /** @type {(inputs: Builderpreviewwarnings2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} Funktionen generieren keine Vorlagen`)
-};
-
-const fr_builderpreviewwarnings2 = /** @type {(inputs: Builderpreviewwarnings2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} fonctionnalités ne généreront pas de modèles`)
-};
-
-const uk_builderpreviewwarnings2 = /** @type {(inputs: Builderpreviewwarnings2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} функцій не згенерують шаблони`)
-};
 
 /**
 * | output |
@@ -50,16 +16,16 @@ const uk_builderpreviewwarnings2 = /** @type {(inputs: Builderpreviewwarnings2In
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderpreviewwarnings2 = /** @type {((inputs: Builderpreviewwarnings2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewwarnings2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const builderpreviewwarnings2 = /** @type {((inputs: Builderpreviewwarnings2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewwarnings2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((i, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderpreviewwarnings2(inputs)
-	if (locale === "zh") return zh_builderpreviewwarnings2(inputs)
-	if (locale === "ja") return ja_builderpreviewwarnings2(inputs)
-	if (locale === "ko") return ko_builderpreviewwarnings2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderpreviewwarnings2(inputs)
-	if (locale === "de") return de_builderpreviewwarnings2(inputs)
-	if (locale === "fr") return fr_builderpreviewwarnings2(inputs)
-	if (locale === "uk") return uk_builderpreviewwarnings2(inputs)
-	return en_builderpreviewwarnings2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ (`${i?.count} funciones no generarán plantillas`)
+	if (locale === "zh") return /** @type {LocalizedString} */ (`${i?.count} 项功能不会生成模板`)
+	if (locale === "ja") return /** @type {LocalizedString} */ (`${i?.count} 機能はテンプレートを生成しません`)
+	if (locale === "ko") return /** @type {LocalizedString} */ (`${i?.count} 기능은 템플릿을 생성하지 않습니다.`)
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ (`${i?.count} 項功能不會產生模板`)
+	if (locale === "de") return /** @type {LocalizedString} */ (`${i?.count} Funktionen generieren keine Vorlagen`)
+	if (locale === "fr") return /** @type {LocalizedString} */ (`${i?.count} fonctionnalités ne généreront pas de modèles`)
+	if (locale === "uk") return /** @type {LocalizedString} */ (`${i?.count} функцій не згенерують шаблони`)
+	return /** @type {LocalizedString} */ (`${i?.count} features will not generate templates`)
 });
 export { builderpreviewwarnings2 as "builderPreviewWarnings" }

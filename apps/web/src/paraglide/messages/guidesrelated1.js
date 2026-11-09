@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Guidesrelated1Inputs */
 
-const en_guidesrelated1 = /** @type {(inputs: Guidesrelated1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Related guides`)
-};
 
-const es_guidesrelated1 = /** @type {(inputs: Guidesrelated1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guías relacionadas`)
-};
-
-const zh_guidesrelated1 = /** @type {(inputs: Guidesrelated1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`相关指南`)
-};
-
-const ja_guidesrelated1 = /** @type {(inputs: Guidesrelated1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`関連ガイド`)
-};
-
-const ko_guidesrelated1 = /** @type {(inputs: Guidesrelated1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`관련 가이드`)
-};
-
-const zh_hant1_guidesrelated1 = /** @type {(inputs: Guidesrelated1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`相關指南`)
-};
-
-const de_guidesrelated1 = /** @type {(inputs: Guidesrelated1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Verwandte Leitfäden`)
-};
-
-const fr_guidesrelated1 = /** @type {(inputs: Guidesrelated1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guides associés`)
-};
-
-const uk_guidesrelated1 = /** @type {(inputs: Guidesrelated1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Пов’язані гайди`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_guidesrelated1 = /** @type {(inputs: Guidesrelated1Inputs) => Localized
 * @returns {LocalizedString}
 */
 const guidesrelated1 = /** @type {((inputs?: Guidesrelated1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Guidesrelated1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_guidesrelated1(inputs)
-	if (locale === "zh") return zh_guidesrelated1(inputs)
-	if (locale === "ja") return ja_guidesrelated1(inputs)
-	if (locale === "ko") return ko_guidesrelated1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_guidesrelated1(inputs)
-	if (locale === "de") return de_guidesrelated1(inputs)
-	if (locale === "fr") return fr_guidesrelated1(inputs)
-	if (locale === "uk") return uk_guidesrelated1(inputs)
-	return en_guidesrelated1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Guías relacionadas")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("相关指南")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("関連ガイド")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("관련 가이드")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("相關指南")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Verwandte Leitfäden")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Guides associés")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Пов’язані гайди")
+	return /** @type {LocalizedString} */ ("Related guides")
 });
 export { guidesrelated1 as "guidesRelated" }

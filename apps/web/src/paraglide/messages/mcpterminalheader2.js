@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpterminalheader2Inputs */
 
-const en_mcpterminalheader2 = /** @type {(inputs: Mcpterminalheader2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`agent session`)
-};
 
-const es_mcpterminalheader2 = /** @type {(inputs: Mcpterminalheader2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`sesión del agente`)
-};
-
-const zh_mcpterminalheader2 = /** @type {(inputs: Mcpterminalheader2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`代理会话`)
-};
-
-const ja_mcpterminalheader2 = /** @type {(inputs: Mcpterminalheader2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`エージェントセッション`)
-};
-
-const ko_mcpterminalheader2 = /** @type {(inputs: Mcpterminalheader2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`에이전트 세션`)
-};
-
-const zh_hant1_mcpterminalheader2 = /** @type {(inputs: Mcpterminalheader2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`代理會話`)
-};
-
-const de_mcpterminalheader2 = /** @type {(inputs: Mcpterminalheader2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agentensitzung`)
-};
-
-const fr_mcpterminalheader2 = /** @type {(inputs: Mcpterminalheader2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`session d'agent`)
-};
-
-const uk_mcpterminalheader2 = /** @type {(inputs: Mcpterminalheader2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`сесія агента`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpterminalheader2 = /** @type {(inputs: Mcpterminalheader2Inputs) => L
 * @returns {LocalizedString}
 */
 const mcpterminalheader2 = /** @type {((inputs?: Mcpterminalheader2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpterminalheader2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpterminalheader2(inputs)
-	if (locale === "zh") return zh_mcpterminalheader2(inputs)
-	if (locale === "ja") return ja_mcpterminalheader2(inputs)
-	if (locale === "ko") return ko_mcpterminalheader2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpterminalheader2(inputs)
-	if (locale === "de") return de_mcpterminalheader2(inputs)
-	if (locale === "fr") return fr_mcpterminalheader2(inputs)
-	if (locale === "uk") return uk_mcpterminalheader2(inputs)
-	return en_mcpterminalheader2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("sesión del agente")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("代理会话")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("エージェントセッション")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("에이전트 세션")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("代理會話")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Agentensitzung")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("session d'agent")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("сесія агента")
+	return /** @type {LocalizedString} */ ("agent session")
 });
 export { mcpterminalheader2 as "mcpTerminalHeader" }

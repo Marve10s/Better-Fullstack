@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Navtemplates1Inputs */
 
-const en_navtemplates1 = /** @type {(inputs: Navtemplates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Templates`)
-};
 
-const es_navtemplates1 = /** @type {(inputs: Navtemplates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Plantillas`)
-};
-
-const zh_navtemplates1 = /** @type {(inputs: Navtemplates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`模板`)
-};
-
-const ja_navtemplates1 = /** @type {(inputs: Navtemplates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`テンプレート`)
-};
-
-const ko_navtemplates1 = /** @type {(inputs: Navtemplates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`템플릿`)
-};
-
-const zh_hant1_navtemplates1 = /** @type {(inputs: Navtemplates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`範本`)
-};
-
-const de_navtemplates1 = /** @type {(inputs: Navtemplates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vorlagen`)
-};
-
-const fr_navtemplates1 = /** @type {(inputs: Navtemplates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Modèles`)
-};
-
-const uk_navtemplates1 = /** @type {(inputs: Navtemplates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Шаблони`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_navtemplates1 = /** @type {(inputs: Navtemplates1Inputs) => LocalizedSt
 * @returns {LocalizedString}
 */
 const navtemplates1 = /** @type {((inputs?: Navtemplates1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navtemplates1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_navtemplates1(inputs)
-	if (locale === "zh") return zh_navtemplates1(inputs)
-	if (locale === "ja") return ja_navtemplates1(inputs)
-	if (locale === "ko") return ko_navtemplates1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_navtemplates1(inputs)
-	if (locale === "de") return de_navtemplates1(inputs)
-	if (locale === "fr") return fr_navtemplates1(inputs)
-	if (locale === "uk") return uk_navtemplates1(inputs)
-	return en_navtemplates1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Plantillas")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("模板")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("テンプレート")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("템플릿")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("範本")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Vorlagen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Modèles")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Шаблони")
+	return /** @type {LocalizedString} */ ("Templates")
 });
 export { navtemplates1 as "navTemplates" }

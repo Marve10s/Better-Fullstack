@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildercomposeredit2Inputs */
 
-const en_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Edit`)
-};
 
-const es_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Editar`)
-};
-
-const zh_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`编辑`)
-};
-
-const ja_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`編集`)
-};
-
-const ko_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`편집`)
-};
-
-const zh_hant1_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`編輯`)
-};
-
-const de_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bearbeiten`)
-};
-
-const fr_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Modifier`)
-};
-
-const uk_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Редагувати`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildercomposeredit2 = /** @type {(inputs: Buildercomposeredit2Inputs) 
 * @returns {LocalizedString}
 */
 const buildercomposeredit2 = /** @type {((inputs?: Buildercomposeredit2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercomposeredit2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildercomposeredit2(inputs)
-	if (locale === "zh") return zh_buildercomposeredit2(inputs)
-	if (locale === "ja") return ja_buildercomposeredit2(inputs)
-	if (locale === "ko") return ko_buildercomposeredit2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildercomposeredit2(inputs)
-	if (locale === "de") return de_buildercomposeredit2(inputs)
-	if (locale === "fr") return fr_buildercomposeredit2(inputs)
-	if (locale === "uk") return uk_buildercomposeredit2(inputs)
-	return en_buildercomposeredit2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Editar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("编辑")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("編集")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("편집")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("編輯")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Bearbeiten")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Modifier")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Редагувати")
+	return /** @type {LocalizedString} */ ("Edit")
 });
 export { buildercomposeredit2 as "builderComposerEdit" }

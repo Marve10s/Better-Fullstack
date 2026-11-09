@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Changelogrelease20260612imagealt3Inputs */
 
-const en_changelogrelease20260612imagealt3 = /** @type {(inputs: Changelogrelease20260612imagealt3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abstract colorful gradient artwork`)
-};
 
-const es_changelogrelease20260612imagealt3 = /** @type {(inputs: Changelogrelease20260612imagealt3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Arte abstracto de gradiente colorido`)
-};
-
-const zh_changelogrelease20260612imagealt3 = /** @type {(inputs: Changelogrelease20260612imagealt3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`抽象彩色渐变艺术图`)
-};
-
-const ja_changelogrelease20260612imagealt3 = /** @type {(inputs: Changelogrelease20260612imagealt3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`抽象的なカラフルなグラデーションのアートワーク`)
-};
-
-const ko_changelogrelease20260612imagealt3 = /** @type {(inputs: Changelogrelease20260612imagealt3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`추상 화려한 그라데이션 작품`)
-};
-
-const zh_hant1_changelogrelease20260612imagealt3 = /** @type {(inputs: Changelogrelease20260612imagealt3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`抽象彩色漸層藝術圖`)
-};
-
-const de_changelogrelease20260612imagealt3 = /** @type {(inputs: Changelogrelease20260612imagealt3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abstrakte farbenfrohe Farbverlaufsgrafik`)
-};
-
-const fr_changelogrelease20260612imagealt3 = /** @type {(inputs: Changelogrelease20260612imagealt3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Oeuvre abstraite dégradé coloré`)
-};
-
-const uk_changelogrelease20260612imagealt3 = /** @type {(inputs: Changelogrelease20260612imagealt3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Абстрактна кольорова градієнтна ілюстрація`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_changelogrelease20260612imagealt3 = /** @type {(inputs: Changelogreleas
 * @returns {LocalizedString}
 */
 const changelogrelease20260612imagealt3 = /** @type {((inputs?: Changelogrelease20260612imagealt3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogrelease20260612imagealt3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_changelogrelease20260612imagealt3(inputs)
-	if (locale === "zh") return zh_changelogrelease20260612imagealt3(inputs)
-	if (locale === "ja") return ja_changelogrelease20260612imagealt3(inputs)
-	if (locale === "ko") return ko_changelogrelease20260612imagealt3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_changelogrelease20260612imagealt3(inputs)
-	if (locale === "de") return de_changelogrelease20260612imagealt3(inputs)
-	if (locale === "fr") return fr_changelogrelease20260612imagealt3(inputs)
-	if (locale === "uk") return uk_changelogrelease20260612imagealt3(inputs)
-	return en_changelogrelease20260612imagealt3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Arte abstracto de gradiente colorido")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("抽象彩色渐变艺术图")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("抽象的なカラフルなグラデーションのアートワーク")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("추상 화려한 그라데이션 작품")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("抽象彩色漸層藝術圖")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Abstrakte farbenfrohe Farbverlaufsgrafik")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Oeuvre abstraite dégradé coloré")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Абстрактна кольорова градієнтна ілюстрація")
+	return /** @type {LocalizedString} */ ("Abstract colorful gradient artwork")
 });
 export { changelogrelease20260612imagealt3 as "changelogRelease20260612ImageAlt" }

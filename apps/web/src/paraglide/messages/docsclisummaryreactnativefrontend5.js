@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummaryreactnativefrontend5Inputs */
 
-const en_docsclisummaryreactnativefrontend5 = /** @type {(inputs: Docsclisummaryreactnativefrontend5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Expo native frontend styling.`)
-};
 
-const es_docsclisummaryreactnativefrontend5 = /** @type {(inputs: Docsclisummaryreactnativefrontend5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Estilos del frontend nativo de Expo.`)
-};
-
-const zh_docsclisummaryreactnativefrontend5 = /** @type {(inputs: Docsclisummaryreactnativefrontend5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Expo 原生前端的样式方案。`)
-};
-
-const ja_docsclisummaryreactnativefrontend5 = /** @type {(inputs: Docsclisummaryreactnativefrontend5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Expo ネイティブフロントエンドのスタイリング。`)
-};
-
-const ko_docsclisummaryreactnativefrontend5 = /** @type {(inputs: Docsclisummaryreactnativefrontend5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Expo 네이티브 프런트엔드 스타일링.`)
-};
-
-const zh_hant1_docsclisummaryreactnativefrontend5 = /** @type {(inputs: Docsclisummaryreactnativefrontend5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Expo 原生前端的樣式方案。`)
-};
-
-const de_docsclisummaryreactnativefrontend5 = /** @type {(inputs: Docsclisummaryreactnativefrontend5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Styling für das native Expo-Frontend.`)
-};
-
-const fr_docsclisummaryreactnativefrontend5 = /** @type {(inputs: Docsclisummaryreactnativefrontend5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Style du frontend natif Expo.`)
-};
-
-const uk_docsclisummaryreactnativefrontend5 = /** @type {(inputs: Docsclisummaryreactnativefrontend5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Стилізація нативного фронтенду Expo.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummaryreactnativefrontend5 = /** @type {(inputs: Docsclisummary
 * @returns {LocalizedString}
 */
 const docsclisummaryreactnativefrontend5 = /** @type {((inputs?: Docsclisummaryreactnativefrontend5Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummaryreactnativefrontend5Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummaryreactnativefrontend5(inputs)
-	if (locale === "zh") return zh_docsclisummaryreactnativefrontend5(inputs)
-	if (locale === "ja") return ja_docsclisummaryreactnativefrontend5(inputs)
-	if (locale === "ko") return ko_docsclisummaryreactnativefrontend5(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummaryreactnativefrontend5(inputs)
-	if (locale === "de") return de_docsclisummaryreactnativefrontend5(inputs)
-	if (locale === "fr") return fr_docsclisummaryreactnativefrontend5(inputs)
-	if (locale === "uk") return uk_docsclisummaryreactnativefrontend5(inputs)
-	return en_docsclisummaryreactnativefrontend5(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Estilos del frontend nativo de Expo.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Expo 原生前端的样式方案。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Expo ネイティブフロントエンドのスタイリング。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Expo 네이티브 프런트엔드 스타일링.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Expo 原生前端的樣式方案。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Styling für das native Expo-Frontend.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Style du frontend natif Expo.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Стилізація нативного фронтенду Expo.")
+	return /** @type {LocalizedString} */ ("Expo native frontend styling.")
 });
 export { docsclisummaryreactnativefrontend5 as "docsCliSummaryReactNativeFrontend" }

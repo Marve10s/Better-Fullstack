@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Presetmenu1Inputs */
 
-const en_presetmenu1 = /** @type {(inputs: Presetmenu1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Presets`)
-};
 
-const es_presetmenu1 = /** @type {(inputs: Presetmenu1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Plantillas`)
-};
-
-const zh_presetmenu1 = /** @type {(inputs: Presetmenu1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`预设`)
-};
-
-const ja_presetmenu1 = /** @type {(inputs: Presetmenu1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プリセット`)
-};
-
-const ko_presetmenu1 = /** @type {(inputs: Presetmenu1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`사전 설정`)
-};
-
-const zh_hant1_presetmenu1 = /** @type {(inputs: Presetmenu1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`預設`)
-};
-
-const de_presetmenu1 = /** @type {(inputs: Presetmenu1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Voreinstellungen`)
-};
-
-const fr_presetmenu1 = /** @type {(inputs: Presetmenu1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Préréglages`)
-};
-
-const uk_presetmenu1 = /** @type {(inputs: Presetmenu1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Пресети`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_presetmenu1 = /** @type {(inputs: Presetmenu1Inputs) => LocalizedString
 * @returns {LocalizedString}
 */
 const presetmenu1 = /** @type {((inputs?: Presetmenu1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetmenu1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_presetmenu1(inputs)
-	if (locale === "zh") return zh_presetmenu1(inputs)
-	if (locale === "ja") return ja_presetmenu1(inputs)
-	if (locale === "ko") return ko_presetmenu1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_presetmenu1(inputs)
-	if (locale === "de") return de_presetmenu1(inputs)
-	if (locale === "fr") return fr_presetmenu1(inputs)
-	if (locale === "uk") return uk_presetmenu1(inputs)
-	return en_presetmenu1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Plantillas")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("预设")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("プリセット")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("사전 설정")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("預設")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Voreinstellungen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Préréglages")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Пресети")
+	return /** @type {LocalizedString} */ ("Presets")
 });
 export { presetmenu1 as "presetMenu" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderloading1Inputs */
 
-const en_builderloading1 = /** @type {(inputs: Builderloading1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Loading...`)
-};
 
-const es_builderloading1 = /** @type {(inputs: Builderloading1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cargando...`)
-};
-
-const zh_builderloading1 = /** @type {(inputs: Builderloading1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`加载中...`)
-};
-
-const ja_builderloading1 = /** @type {(inputs: Builderloading1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`読み込み中...`)
-};
-
-const ko_builderloading1 = /** @type {(inputs: Builderloading1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`로드 중...`)
-};
-
-const zh_hant1_builderloading1 = /** @type {(inputs: Builderloading1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`載入中...`)
-};
-
-const de_builderloading1 = /** @type {(inputs: Builderloading1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Laden...`)
-};
-
-const fr_builderloading1 = /** @type {(inputs: Builderloading1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Chargement...`)
-};
-
-const uk_builderloading1 = /** @type {(inputs: Builderloading1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Завантаження...`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderloading1 = /** @type {(inputs: Builderloading1Inputs) => Localiz
 * @returns {LocalizedString}
 */
 const builderloading1 = /** @type {((inputs?: Builderloading1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderloading1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderloading1(inputs)
-	if (locale === "zh") return zh_builderloading1(inputs)
-	if (locale === "ja") return ja_builderloading1(inputs)
-	if (locale === "ko") return ko_builderloading1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderloading1(inputs)
-	if (locale === "de") return de_builderloading1(inputs)
-	if (locale === "fr") return fr_builderloading1(inputs)
-	if (locale === "uk") return uk_builderloading1(inputs)
-	return en_builderloading1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Cargando...")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("加载中...")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("読み込み中...")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("로드 중...")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("載入中...")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Laden...")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Chargement...")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Завантаження...")
+	return /** @type {LocalizedString} */ ("Loading...")
 });
 export { builderloading1 as "builderLoading" }

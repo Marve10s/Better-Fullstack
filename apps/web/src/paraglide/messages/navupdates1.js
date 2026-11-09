@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Navupdates1Inputs */
 
-const en_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Updates`)
-};
 
-const es_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Novedades`)
-};
-
-const zh_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`更新`)
-};
-
-const ja_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`アップデート`)
-};
-
-const ko_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`업데이트`)
-};
-
-const zh_hant1_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`更新`)
-};
-
-const de_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Updates`)
-};
-
-const fr_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nouveautés`)
-};
-
-const uk_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Оновлення`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_navupdates1 = /** @type {(inputs: Navupdates1Inputs) => LocalizedString
 * @returns {LocalizedString}
 */
 const navupdates1 = /** @type {((inputs?: Navupdates1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navupdates1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_navupdates1(inputs)
-	if (locale === "zh") return zh_navupdates1(inputs)
-	if (locale === "ja") return ja_navupdates1(inputs)
-	if (locale === "ko") return ko_navupdates1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_navupdates1(inputs)
-	if (locale === "de") return de_navupdates1(inputs)
-	if (locale === "fr") return fr_navupdates1(inputs)
-	if (locale === "uk") return uk_navupdates1(inputs)
-	return en_navupdates1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Novedades")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("更新")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("アップデート")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("업데이트")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("更新")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Updates")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Nouveautés")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Оновлення")
+	return /** @type {LocalizedString} */ ("Updates")
 });
 export { navupdates1 as "navUpdates" }

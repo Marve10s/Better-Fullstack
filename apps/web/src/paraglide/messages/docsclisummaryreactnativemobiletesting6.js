@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummaryreactnativemobiletesting6Inputs */
 
-const en_docsclisummaryreactnativemobiletesting6 = /** @type {(inputs: Docsclisummaryreactnativemobiletesting6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Mobile testing setup.`)
-};
 
-const es_docsclisummaryreactnativemobiletesting6 = /** @type {(inputs: Docsclisummaryreactnativemobiletesting6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Configuración de pruebas móviles.`)
-};
-
-const zh_docsclisummaryreactnativemobiletesting6 = /** @type {(inputs: Docsclisummaryreactnativemobiletesting6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`移动端测试配置。`)
-};
-
-const ja_docsclisummaryreactnativemobiletesting6 = /** @type {(inputs: Docsclisummaryreactnativemobiletesting6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`モバイルのテストセットアップ。`)
-};
-
-const ko_docsclisummaryreactnativemobiletesting6 = /** @type {(inputs: Docsclisummaryreactnativemobiletesting6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`모바일 테스트 설정.`)
-};
-
-const zh_hant1_docsclisummaryreactnativemobiletesting6 = /** @type {(inputs: Docsclisummaryreactnativemobiletesting6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`行動裝置測試設定。`)
-};
-
-const de_docsclisummaryreactnativemobiletesting6 = /** @type {(inputs: Docsclisummaryreactnativemobiletesting6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Testeinrichtung für mobile Apps.`)
-};
-
-const fr_docsclisummaryreactnativemobiletesting6 = /** @type {(inputs: Docsclisummaryreactnativemobiletesting6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Configuration des tests mobiles.`)
-};
-
-const uk_docsclisummaryreactnativemobiletesting6 = /** @type {(inputs: Docsclisummaryreactnativemobiletesting6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Налаштування мобільного тестування.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummaryreactnativemobiletesting6 = /** @type {(inputs: Docsclisu
 * @returns {LocalizedString}
 */
 const docsclisummaryreactnativemobiletesting6 = /** @type {((inputs?: Docsclisummaryreactnativemobiletesting6Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummaryreactnativemobiletesting6Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummaryreactnativemobiletesting6(inputs)
-	if (locale === "zh") return zh_docsclisummaryreactnativemobiletesting6(inputs)
-	if (locale === "ja") return ja_docsclisummaryreactnativemobiletesting6(inputs)
-	if (locale === "ko") return ko_docsclisummaryreactnativemobiletesting6(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummaryreactnativemobiletesting6(inputs)
-	if (locale === "de") return de_docsclisummaryreactnativemobiletesting6(inputs)
-	if (locale === "fr") return fr_docsclisummaryreactnativemobiletesting6(inputs)
-	if (locale === "uk") return uk_docsclisummaryreactnativemobiletesting6(inputs)
-	return en_docsclisummaryreactnativemobiletesting6(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Configuración de pruebas móviles.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("移动端测试配置。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("モバイルのテストセットアップ。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("모바일 테스트 설정.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("行動裝置測試設定。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Testeinrichtung für mobile Apps.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Configuration des tests mobiles.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Налаштування мобільного тестування.")
+	return /** @type {LocalizedString} */ ("Mobile testing setup.")
 });
 export { docsclisummaryreactnativemobiletesting6 as "docsCliSummaryReactNativeMobileTesting" }

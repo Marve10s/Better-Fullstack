@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docssearchnavigate2Inputs */
 
-const en_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Navigate`)
-};
 
-const es_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Navegar`)
-};
-
-const zh_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`导航`)
-};
-
-const ja_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ナビゲート`)
-};
-
-const ko_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`탐색`)
-};
-
-const zh_hant1_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`導航`)
-};
-
-const de_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Navigieren`)
-};
-
-const fr_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Naviguer`)
-};
-
-const uk_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Навігація`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docssearchnavigate2 = /** @type {(inputs: Docssearchnavigate2Inputs) =>
 * @returns {LocalizedString}
 */
 const docssearchnavigate2 = /** @type {((inputs?: Docssearchnavigate2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchnavigate2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docssearchnavigate2(inputs)
-	if (locale === "zh") return zh_docssearchnavigate2(inputs)
-	if (locale === "ja") return ja_docssearchnavigate2(inputs)
-	if (locale === "ko") return ko_docssearchnavigate2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docssearchnavigate2(inputs)
-	if (locale === "de") return de_docssearchnavigate2(inputs)
-	if (locale === "fr") return fr_docssearchnavigate2(inputs)
-	if (locale === "uk") return uk_docssearchnavigate2(inputs)
-	return en_docssearchnavigate2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Navegar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("导航")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ナビゲート")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("탐색")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("導航")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Navigieren")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Naviguer")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Навігація")
+	return /** @type {LocalizedString} */ ("Navigate")
 });
 export { docssearchnavigate2 as "docsSearchNavigate" }

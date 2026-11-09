@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Campaignsharestargithub3Inputs */
 
-const en_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Star on GitHub`)
-};
 
-const es_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dar una estrella en GitHub`)
-};
-
-const zh_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`在 GitHub 上加星`)
-};
-
-const ja_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`GitHub でスターを付ける`)
-};
-
-const ko_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`GitHub에서 스타 누르기`)
-};
-
-const zh_hant1_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`在 GitHub 上按星星`)
-};
-
-const de_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Auf GitHub einen Stern geben`)
-};
-
-const fr_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Mettre une étoile sur GitHub`)
-};
-
-const uk_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Поставити зірку на GitHub`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_campaignsharestargithub3 = /** @type {(inputs: Campaignsharestargithub3
 * @returns {LocalizedString}
 */
 const campaignsharestargithub3 = /** @type {((inputs?: Campaignsharestargithub3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignsharestargithub3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_campaignsharestargithub3(inputs)
-	if (locale === "zh") return zh_campaignsharestargithub3(inputs)
-	if (locale === "ja") return ja_campaignsharestargithub3(inputs)
-	if (locale === "ko") return ko_campaignsharestargithub3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_campaignsharestargithub3(inputs)
-	if (locale === "de") return de_campaignsharestargithub3(inputs)
-	if (locale === "fr") return fr_campaignsharestargithub3(inputs)
-	if (locale === "uk") return uk_campaignsharestargithub3(inputs)
-	return en_campaignsharestargithub3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Dar una estrella en GitHub")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("在 GitHub 上加星")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("GitHub でスターを付ける")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("GitHub에서 스타 누르기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("在 GitHub 上按星星")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Auf GitHub einen Stern geben")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Mettre une étoile sur GitHub")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Поставити зірку на GitHub")
+	return /** @type {LocalizedString} */ ("Star on GitHub")
 });
 export { campaignsharestargithub3 as "campaignShareStarGithub" }

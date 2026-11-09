@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Presettrackrustbackendname4Inputs */
 
-const en_presettrackrustbackendname4 = /** @type {(inputs: Presettrackrustbackendname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust Backend`)
-};
 
-const es_presettrackrustbackendname4 = /** @type {(inputs: Presettrackrustbackendname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backend Rust`)
-};
-
-const zh_presettrackrustbackendname4 = /** @type {(inputs: Presettrackrustbackendname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust 后端`)
-};
-
-const ja_presettrackrustbackendname4 = /** @type {(inputs: Presettrackrustbackendname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rustバックエンド`)
-};
-
-const ko_presettrackrustbackendname4 = /** @type {(inputs: Presettrackrustbackendname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust 백엔드`)
-};
-
-const zh_hant1_presettrackrustbackendname4 = /** @type {(inputs: Presettrackrustbackendname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust 後端`)
-};
-
-const de_presettrackrustbackendname4 = /** @type {(inputs: Presettrackrustbackendname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust-Backend`)
-};
-
-const fr_presettrackrustbackendname4 = /** @type {(inputs: Presettrackrustbackendname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Back-end Rust`)
-};
-
-const uk_presettrackrustbackendname4 = /** @type {(inputs: Presettrackrustbackendname4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust-бекенд`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_presettrackrustbackendname4 = /** @type {(inputs: Presettrackrustbacken
 * @returns {LocalizedString}
 */
 const presettrackrustbackendname4 = /** @type {((inputs?: Presettrackrustbackendname4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackrustbackendname4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_presettrackrustbackendname4(inputs)
-	if (locale === "zh") return zh_presettrackrustbackendname4(inputs)
-	if (locale === "ja") return ja_presettrackrustbackendname4(inputs)
-	if (locale === "ko") return ko_presettrackrustbackendname4(inputs)
-	if (locale === "zh-Hant") return zh_hant1_presettrackrustbackendname4(inputs)
-	if (locale === "de") return de_presettrackrustbackendname4(inputs)
-	if (locale === "fr") return fr_presettrackrustbackendname4(inputs)
-	if (locale === "uk") return uk_presettrackrustbackendname4(inputs)
-	return en_presettrackrustbackendname4(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Backend Rust")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Rust 后端")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Rustバックエンド")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Rust 백엔드")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Rust 後端")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Rust-Backend")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Back-end Rust")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Rust-бекенд")
+	return /** @type {LocalizedString} */ ("Rust Backend")
 });
 export { presettrackrustbackendname4 as "presetTrackRustBackendName" }

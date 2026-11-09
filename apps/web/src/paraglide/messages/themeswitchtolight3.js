@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Themeswitchtolight3Inputs */
 
-const en_themeswitchtolight3 = /** @type {(inputs: Themeswitchtolight3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Switch to light mode`)
-};
 
-const es_themeswitchtolight3 = /** @type {(inputs: Themeswitchtolight3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cambiar al modo claro`)
-};
-
-const zh_themeswitchtolight3 = /** @type {(inputs: Themeswitchtolight3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`切换到浅色模式`)
-};
-
-const ja_themeswitchtolight3 = /** @type {(inputs: Themeswitchtolight3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ライトモードに切り替える`)
-};
-
-const ko_themeswitchtolight3 = /** @type {(inputs: Themeswitchtolight3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`밝은 모드로 전환`)
-};
-
-const zh_hant1_themeswitchtolight3 = /** @type {(inputs: Themeswitchtolight3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`切換到淺色模式`)
-};
-
-const de_themeswitchtolight3 = /** @type {(inputs: Themeswitchtolight3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Wechseln Sie in den Lichtmodus`)
-};
-
-const fr_themeswitchtolight3 = /** @type {(inputs: Themeswitchtolight3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Passer en mode clair`)
-};
-
-const uk_themeswitchtolight3 = /** @type {(inputs: Themeswitchtolight3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Увімкнути світлу тему`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_themeswitchtolight3 = /** @type {(inputs: Themeswitchtolight3Inputs) =>
 * @returns {LocalizedString}
 */
 const themeswitchtolight3 = /** @type {((inputs?: Themeswitchtolight3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Themeswitchtolight3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_themeswitchtolight3(inputs)
-	if (locale === "zh") return zh_themeswitchtolight3(inputs)
-	if (locale === "ja") return ja_themeswitchtolight3(inputs)
-	if (locale === "ko") return ko_themeswitchtolight3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_themeswitchtolight3(inputs)
-	if (locale === "de") return de_themeswitchtolight3(inputs)
-	if (locale === "fr") return fr_themeswitchtolight3(inputs)
-	if (locale === "uk") return uk_themeswitchtolight3(inputs)
-	return en_themeswitchtolight3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Cambiar al modo claro")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("切换到浅色模式")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ライトモードに切り替える")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("밝은 모드로 전환")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("切換到淺色模式")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Wechseln Sie in den Lichtmodus")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Passer en mode clair")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Увімкнути світлу тему")
+	return /** @type {LocalizedString} */ ("Switch to light mode")
 });
 export { themeswitchtolight3 as "themeSwitchToLight" }

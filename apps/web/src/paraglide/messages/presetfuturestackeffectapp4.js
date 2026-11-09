@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Presetfuturestackeffectapp4Inputs */
 
-const en_presetfuturestackeffectapp4 = /** @type {(inputs: Presetfuturestackeffectapp4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`In the app`)
-};
 
-const es_presetfuturestackeffectapp4 = /** @type {(inputs: Presetfuturestackeffectapp4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`En la app`)
-};
-
-const zh_presetfuturestackeffectapp4 = /** @type {(inputs: Presetfuturestackeffectapp4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`应用内`)
-};
-
-const ja_presetfuturestackeffectapp4 = /** @type {(inputs: Presetfuturestackeffectapp4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`アプリ内`)
-};
-
-const ko_presetfuturestackeffectapp4 = /** @type {(inputs: Presetfuturestackeffectapp4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`앱 안에서`)
-};
-
-const zh_hant1_presetfuturestackeffectapp4 = /** @type {(inputs: Presetfuturestackeffectapp4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`應用程式內`)
-};
-
-const de_presetfuturestackeffectapp4 = /** @type {(inputs: Presetfuturestackeffectapp4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`In der App`)
-};
-
-const fr_presetfuturestackeffectapp4 = /** @type {(inputs: Presetfuturestackeffectapp4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dans l'application`)
-};
-
-const uk_presetfuturestackeffectapp4 = /** @type {(inputs: Presetfuturestackeffectapp4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`У застосунку`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_presetfuturestackeffectapp4 = /** @type {(inputs: Presetfuturestackeffe
 * @returns {LocalizedString}
 */
 const presetfuturestackeffectapp4 = /** @type {((inputs?: Presetfuturestackeffectapp4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetfuturestackeffectapp4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_presetfuturestackeffectapp4(inputs)
-	if (locale === "zh") return zh_presetfuturestackeffectapp4(inputs)
-	if (locale === "ja") return ja_presetfuturestackeffectapp4(inputs)
-	if (locale === "ko") return ko_presetfuturestackeffectapp4(inputs)
-	if (locale === "zh-Hant") return zh_hant1_presetfuturestackeffectapp4(inputs)
-	if (locale === "de") return de_presetfuturestackeffectapp4(inputs)
-	if (locale === "fr") return fr_presetfuturestackeffectapp4(inputs)
-	if (locale === "uk") return uk_presetfuturestackeffectapp4(inputs)
-	return en_presetfuturestackeffectapp4(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("En la app")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("应用内")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("アプリ内")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("앱 안에서")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("應用程式內")
+	if (locale === "de") return /** @type {LocalizedString} */ ("In der App")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Dans l'application")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("У застосунку")
+	return /** @type {LocalizedString} */ ("In the app")
 });
 export { presetfuturestackeffectapp4 as "presetFutureStackEffectApp" }

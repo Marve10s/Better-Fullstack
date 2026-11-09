@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderlibraries1Inputs */
 
-const en_builderlibraries1 = /** @type {(inputs: Builderlibraries1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Libraries`)
-};
 
-const es_builderlibraries1 = /** @type {(inputs: Builderlibraries1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Librerías`)
-};
-
-const zh_builderlibraries1 = /** @type {(inputs: Builderlibraries1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`库`)
-};
-
-const ja_builderlibraries1 = /** @type {(inputs: Builderlibraries1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ライブラリ`)
-};
-
-const ko_builderlibraries1 = /** @type {(inputs: Builderlibraries1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`라이브러리`)
-};
-
-const zh_hant1_builderlibraries1 = /** @type {(inputs: Builderlibraries1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`庫`)
-};
-
-const de_builderlibraries1 = /** @type {(inputs: Builderlibraries1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bibliotheken`)
-};
-
-const fr_builderlibraries1 = /** @type {(inputs: Builderlibraries1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bibliothèques`)
-};
-
-const uk_builderlibraries1 = /** @type {(inputs: Builderlibraries1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Бібліотеки`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderlibraries1 = /** @type {(inputs: Builderlibraries1Inputs) => Loc
 * @returns {LocalizedString}
 */
 const builderlibraries1 = /** @type {((inputs?: Builderlibraries1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderlibraries1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderlibraries1(inputs)
-	if (locale === "zh") return zh_builderlibraries1(inputs)
-	if (locale === "ja") return ja_builderlibraries1(inputs)
-	if (locale === "ko") return ko_builderlibraries1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderlibraries1(inputs)
-	if (locale === "de") return de_builderlibraries1(inputs)
-	if (locale === "fr") return fr_builderlibraries1(inputs)
-	if (locale === "uk") return uk_builderlibraries1(inputs)
-	return en_builderlibraries1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Librerías")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("库")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ライブラリ")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("라이브러리")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("庫")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Bibliotheken")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Bibliothèques")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Бібліотеки")
+	return /** @type {LocalizedString} */ ("Libraries")
 });
 export { builderlibraries1 as "builderLibraries" }

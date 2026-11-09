@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Navsectioncreate2Inputs */
 
-const en_navsectioncreate2 = /** @type {(inputs: Navsectioncreate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Create`)
-};
 
-const es_navsectioncreate2 = /** @type {(inputs: Navsectioncreate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Crear`)
-};
-
-const zh_navsectioncreate2 = /** @type {(inputs: Navsectioncreate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`创建`)
-};
-
-const ja_navsectioncreate2 = /** @type {(inputs: Navsectioncreate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`作成`)
-};
-
-const ko_navsectioncreate2 = /** @type {(inputs: Navsectioncreate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`만들기`)
-};
-
-const zh_hant1_navsectioncreate2 = /** @type {(inputs: Navsectioncreate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`建立`)
-};
-
-const de_navsectioncreate2 = /** @type {(inputs: Navsectioncreate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Erstellen`)
-};
-
-const fr_navsectioncreate2 = /** @type {(inputs: Navsectioncreate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Créer`)
-};
-
-const uk_navsectioncreate2 = /** @type {(inputs: Navsectioncreate2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Створити`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_navsectioncreate2 = /** @type {(inputs: Navsectioncreate2Inputs) => Loc
 * @returns {LocalizedString}
 */
 const navsectioncreate2 = /** @type {((inputs?: Navsectioncreate2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navsectioncreate2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_navsectioncreate2(inputs)
-	if (locale === "zh") return zh_navsectioncreate2(inputs)
-	if (locale === "ja") return ja_navsectioncreate2(inputs)
-	if (locale === "ko") return ko_navsectioncreate2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_navsectioncreate2(inputs)
-	if (locale === "de") return de_navsectioncreate2(inputs)
-	if (locale === "fr") return fr_navsectioncreate2(inputs)
-	if (locale === "uk") return uk_navsectioncreate2(inputs)
-	return en_navsectioncreate2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Crear")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("创建")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("作成")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("만들기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("建立")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Erstellen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Créer")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Створити")
+	return /** @type {LocalizedString} */ ("Create")
 });
 export { navsectioncreate2 as "navSectionCreate" }

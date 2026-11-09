@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Presettrackaiagentintent4Inputs */
 
-const en_presettrackaiagentintent4 = /** @type {(inputs: Presettrackaiagentintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Build with agents`)
-};
 
-const es_presettrackaiagentintent4 = /** @type {(inputs: Presettrackaiagentintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Construir con agentes`)
-};
-
-const zh_presettrackaiagentintent4 = /** @type {(inputs: Presettrackaiagentintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`使用代理构建`)
-};
-
-const ja_presettrackaiagentintent4 = /** @type {(inputs: Presettrackaiagentintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`エージェントを使用して構築する`)
-};
-
-const ko_presettrackaiagentintent4 = /** @type {(inputs: Presettrackaiagentintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`에이전트로 구축`)
-};
-
-const zh_hant1_presettrackaiagentintent4 = /** @type {(inputs: Presettrackaiagentintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`使用代理構建`)
-};
-
-const de_presettrackaiagentintent4 = /** @type {(inputs: Presettrackaiagentintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bauen Sie mit Agenten`)
-};
-
-const fr_presettrackaiagentintent4 = /** @type {(inputs: Presettrackaiagentintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Construire avec des agents`)
-};
-
-const uk_presettrackaiagentintent4 = /** @type {(inputs: Presettrackaiagentintent4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Будувати з агентами`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_presettrackaiagentintent4 = /** @type {(inputs: Presettrackaiagentinten
 * @returns {LocalizedString}
 */
 const presettrackaiagentintent4 = /** @type {((inputs?: Presettrackaiagentintent4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presettrackaiagentintent4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_presettrackaiagentintent4(inputs)
-	if (locale === "zh") return zh_presettrackaiagentintent4(inputs)
-	if (locale === "ja") return ja_presettrackaiagentintent4(inputs)
-	if (locale === "ko") return ko_presettrackaiagentintent4(inputs)
-	if (locale === "zh-Hant") return zh_hant1_presettrackaiagentintent4(inputs)
-	if (locale === "de") return de_presettrackaiagentintent4(inputs)
-	if (locale === "fr") return fr_presettrackaiagentintent4(inputs)
-	if (locale === "uk") return uk_presettrackaiagentintent4(inputs)
-	return en_presettrackaiagentintent4(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Construir con agentes")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("使用代理构建")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("エージェントを使用して構築する")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("에이전트로 구축")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("使用代理構建")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Bauen Sie mit Agenten")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Construire avec des agents")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Будувати з агентами")
+	return /** @type {LocalizedString} */ ("Build with agents")
 });
 export { presettrackaiagentintent4 as "presetTrackAiAgentIntent" }

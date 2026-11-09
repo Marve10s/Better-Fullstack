@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Campaignlocalonly2Inputs */
 
-const en_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Runs locally in your browser`)
-};
 
-const es_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Se ejecuta localmente en tu navegador`)
-};
-
-const zh_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`在你的浏览器中本地运行`)
-};
-
-const ja_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ブラウザ内でローカルに実行`)
-};
-
-const ko_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`브라우저에서 로컬로 실행`)
-};
-
-const zh_hant1_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`在你的瀏覽器中本機執行`)
-};
-
-const de_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Läuft lokal in deinem Browser`)
-};
-
-const fr_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`S'exécute localement dans votre navigateur`)
-};
-
-const uk_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Працює локально у вашому браузері`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_campaignlocalonly2 = /** @type {(inputs: Campaignlocalonly2Inputs) => L
 * @returns {LocalizedString}
 */
 const campaignlocalonly2 = /** @type {((inputs?: Campaignlocalonly2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Campaignlocalonly2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_campaignlocalonly2(inputs)
-	if (locale === "zh") return zh_campaignlocalonly2(inputs)
-	if (locale === "ja") return ja_campaignlocalonly2(inputs)
-	if (locale === "ko") return ko_campaignlocalonly2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_campaignlocalonly2(inputs)
-	if (locale === "de") return de_campaignlocalonly2(inputs)
-	if (locale === "fr") return fr_campaignlocalonly2(inputs)
-	if (locale === "uk") return uk_campaignlocalonly2(inputs)
-	return en_campaignlocalonly2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Se ejecuta localmente en tu navegador")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("在你的浏览器中本地运行")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ブラウザ内でローカルに実行")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("브라우저에서 로컬로 실행")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("在你的瀏覽器中本機執行")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Läuft lokal in deinem Browser")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("S'exécute localement dans votre navigateur")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Працює локально у вашому браузері")
+	return /** @type {LocalizedString} */ ("Runs locally in your browser")
 });
 export { campaignlocalonly2 as "campaignLocalOnly" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Homecontributorseyebrow2Inputs */
 
-const en_homecontributorseyebrow2 = /** @type {(inputs: Homecontributorseyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`contributors`)
-};
 
-const es_homecontributorseyebrow2 = /** @type {(inputs: Homecontributorseyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`contribuidores`)
-};
-
-const zh_homecontributorseyebrow2 = /** @type {(inputs: Homecontributorseyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`贡献者`)
-};
-
-const ja_homecontributorseyebrow2 = /** @type {(inputs: Homecontributorseyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`貢献者`)
-};
-
-const ko_homecontributorseyebrow2 = /** @type {(inputs: Homecontributorseyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`기여자`)
-};
-
-const zh_hant1_homecontributorseyebrow2 = /** @type {(inputs: Homecontributorseyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`貢獻者`)
-};
-
-const de_homecontributorseyebrow2 = /** @type {(inputs: Homecontributorseyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Mitwirkende`)
-};
-
-const fr_homecontributorseyebrow2 = /** @type {(inputs: Homecontributorseyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`contributeurs`)
-};
-
-const uk_homecontributorseyebrow2 = /** @type {(inputs: Homecontributorseyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`контриб’ютори`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_homecontributorseyebrow2 = /** @type {(inputs: Homecontributorseyebrow2
 * @returns {LocalizedString}
 */
 const homecontributorseyebrow2 = /** @type {((inputs?: Homecontributorseyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homecontributorseyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_homecontributorseyebrow2(inputs)
-	if (locale === "zh") return zh_homecontributorseyebrow2(inputs)
-	if (locale === "ja") return ja_homecontributorseyebrow2(inputs)
-	if (locale === "ko") return ko_homecontributorseyebrow2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_homecontributorseyebrow2(inputs)
-	if (locale === "de") return de_homecontributorseyebrow2(inputs)
-	if (locale === "fr") return fr_homecontributorseyebrow2(inputs)
-	if (locale === "uk") return uk_homecontributorseyebrow2(inputs)
-	return en_homecontributorseyebrow2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("contribuidores")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("贡献者")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("貢献者")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("기여자")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("貢獻者")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Mitwirkende")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("contributeurs")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("контриб’ютори")
+	return /** @type {LocalizedString} */ ("contributors")
 });
 export { homecontributorseyebrow2 as "homeContributorsEyebrow" }

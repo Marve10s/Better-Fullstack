@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummaryelixirelixirvalidation5Inputs */
 
-const en_docsclisummaryelixirelixirvalidation5 = /** @type {(inputs: Docsclisummaryelixirelixirvalidation5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Elixir validation.`)
-};
 
-const es_docsclisummaryelixirelixirvalidation5 = /** @type {(inputs: Docsclisummaryelixirelixirvalidation5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Validación en Elixir.`)
-};
-
-const zh_docsclisummaryelixirelixirvalidation5 = /** @type {(inputs: Docsclisummaryelixirelixirvalidation5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Elixir 校验。`)
-};
-
-const ja_docsclisummaryelixirelixirvalidation5 = /** @type {(inputs: Docsclisummaryelixirelixirvalidation5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Elixir のバリデーション。`)
-};
-
-const ko_docsclisummaryelixirelixirvalidation5 = /** @type {(inputs: Docsclisummaryelixirelixirvalidation5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Elixir 검증.`)
-};
-
-const zh_hant1_docsclisummaryelixirelixirvalidation5 = /** @type {(inputs: Docsclisummaryelixirelixirvalidation5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Elixir 驗證。`)
-};
-
-const de_docsclisummaryelixirelixirvalidation5 = /** @type {(inputs: Docsclisummaryelixirelixirvalidation5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Validierung für Elixir.`)
-};
-
-const fr_docsclisummaryelixirelixirvalidation5 = /** @type {(inputs: Docsclisummaryelixirelixirvalidation5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Validation Elixir.`)
-};
-
-const uk_docsclisummaryelixirelixirvalidation5 = /** @type {(inputs: Docsclisummaryelixirelixirvalidation5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Валідація в Elixir.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummaryelixirelixirvalidation5 = /** @type {(inputs: Docsclisumm
 * @returns {LocalizedString}
 */
 const docsclisummaryelixirelixirvalidation5 = /** @type {((inputs?: Docsclisummaryelixirelixirvalidation5Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummaryelixirelixirvalidation5Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummaryelixirelixirvalidation5(inputs)
-	if (locale === "zh") return zh_docsclisummaryelixirelixirvalidation5(inputs)
-	if (locale === "ja") return ja_docsclisummaryelixirelixirvalidation5(inputs)
-	if (locale === "ko") return ko_docsclisummaryelixirelixirvalidation5(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummaryelixirelixirvalidation5(inputs)
-	if (locale === "de") return de_docsclisummaryelixirelixirvalidation5(inputs)
-	if (locale === "fr") return fr_docsclisummaryelixirelixirvalidation5(inputs)
-	if (locale === "uk") return uk_docsclisummaryelixirelixirvalidation5(inputs)
-	return en_docsclisummaryelixirelixirvalidation5(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Validación en Elixir.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Elixir 校验。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Elixir のバリデーション。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Elixir 검증.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Elixir 驗證。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Validierung für Elixir.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Validation Elixir.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Валідація в Elixir.")
+	return /** @type {LocalizedString} */ ("Elixir validation.")
 });
 export { docsclisummaryelixirelixirvalidation5 as "docsCliSummaryElixirElixirValidation" }

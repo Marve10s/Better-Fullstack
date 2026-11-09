@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Comparerustbackends2Inputs */
 
-const en_comparerustbackends2 = /** @type {(inputs: Comparerustbackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust backends (Axum, Actix, Rocket)`)
-};
 
-const es_comparerustbackends2 = /** @type {(inputs: Comparerustbackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backends Rust (Axum, Actix, Rocket)`)
-};
-
-const zh_comparerustbackends2 = /** @type {(inputs: Comparerustbackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust 后端（Axum、Actix、Rocket）`)
-};
-
-const ja_comparerustbackends2 = /** @type {(inputs: Comparerustbackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust バックエンド (Axum、Actix、Rocket)`)
-};
-
-const ko_comparerustbackends2 = /** @type {(inputs: Comparerustbackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust 백엔드(Axum, Actix, Rocket)`)
-};
-
-const zh_hant1_comparerustbackends2 = /** @type {(inputs: Comparerustbackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust 後端（Axum、Actix、Rocket）`)
-};
-
-const de_comparerustbackends2 = /** @type {(inputs: Comparerustbackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust-Backends (Axum, Actix, Rocket)`)
-};
-
-const fr_comparerustbackends2 = /** @type {(inputs: Comparerustbackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backends Rust (Axum, Actix, Rocket)`)
-};
-
-const uk_comparerustbackends2 = /** @type {(inputs: Comparerustbackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust-бекенди (Axum, Actix, Rocket)`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_comparerustbackends2 = /** @type {(inputs: Comparerustbackends2Inputs) 
 * @returns {LocalizedString}
 */
 const comparerustbackends2 = /** @type {((inputs?: Comparerustbackends2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparerustbackends2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_comparerustbackends2(inputs)
-	if (locale === "zh") return zh_comparerustbackends2(inputs)
-	if (locale === "ja") return ja_comparerustbackends2(inputs)
-	if (locale === "ko") return ko_comparerustbackends2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_comparerustbackends2(inputs)
-	if (locale === "de") return de_comparerustbackends2(inputs)
-	if (locale === "fr") return fr_comparerustbackends2(inputs)
-	if (locale === "uk") return uk_comparerustbackends2(inputs)
-	return en_comparerustbackends2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Backends Rust (Axum, Actix, Rocket)")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Rust 后端（Axum、Actix、Rocket）")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Rust バックエンド (Axum、Actix、Rocket)")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Rust 백엔드(Axum, Actix, Rocket)")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Rust 後端（Axum、Actix、Rocket）")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Rust-Backends (Axum, Actix, Rocket)")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Backends Rust (Axum, Actix, Rocket)")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Rust-бекенди (Axum, Actix, Rocket)")
+	return /** @type {LocalizedString} */ ("Rust backends (Axum, Actix, Rocket)")
 });
 export { comparerustbackends2 as "compareRustBackends" }
