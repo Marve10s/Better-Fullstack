@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Blogtitle1Inputs */
 
-const en_blogtitle1 = /** @type {(inputs: Blogtitle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Notes from the workshop.`)
-};
 
-const es_blogtitle1 = /** @type {(inputs: Blogtitle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Notas desde el taller.`)
-};
-
-const zh_blogtitle1 = /** @type {(inputs: Blogtitle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`来自工作台的笔记。`)
-};
-
-const ja_blogtitle1 = /** @type {(inputs: Blogtitle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ワークショップのメモ。`)
-};
-
-const ko_blogtitle1 = /** @type {(inputs: Blogtitle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`워크숍에서 얻은 메모입니다.`)
-};
-
-const zh_hant1_blogtitle1 = /** @type {(inputs: Blogtitle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`來自工作室的筆記。`)
-};
-
-const de_blogtitle1 = /** @type {(inputs: Blogtitle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Notizen aus dem Workshop.`)
-};
-
-const fr_blogtitle1 = /** @type {(inputs: Blogtitle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Notes de l'atelier.`)
-};
-
-const uk_blogtitle1 = /** @type {(inputs: Blogtitle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Нотатки з майстерні.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_blogtitle1 = /** @type {(inputs: Blogtitle1Inputs) => LocalizedString} 
 * @returns {LocalizedString}
 */
 const blogtitle1 = /** @type {((inputs?: Blogtitle1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Blogtitle1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_blogtitle1(inputs)
-	if (locale === "zh") return zh_blogtitle1(inputs)
-	if (locale === "ja") return ja_blogtitle1(inputs)
-	if (locale === "ko") return ko_blogtitle1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_blogtitle1(inputs)
-	if (locale === "de") return de_blogtitle1(inputs)
-	if (locale === "fr") return fr_blogtitle1(inputs)
-	if (locale === "uk") return uk_blogtitle1(inputs)
-	return en_blogtitle1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Notas desde el taller.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("来自工作台的笔记。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ワークショップのメモ。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("워크숍에서 얻은 메모입니다.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("來自工作室的筆記。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Notizen aus dem Workshop.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Notes de l'atelier.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Нотатки з майстерні.")
+	return /** @type {LocalizedString} */ ("Notes from the workshop.")
 });
 export { blogtitle1 as "blogTitle" }

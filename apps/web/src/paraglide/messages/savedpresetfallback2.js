@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Savedpresetfallback2Inputs */
 
-const en_savedpresetfallback2 = /** @type {(inputs: Savedpresetfallback2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Saved preset`)
-};
 
-const es_savedpresetfallback2 = /** @type {(inputs: Savedpresetfallback2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Plantilla guardada`)
-};
-
-const zh_savedpresetfallback2 = /** @type {(inputs: Savedpresetfallback2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已保存预设`)
-};
-
-const ja_savedpresetfallback2 = /** @type {(inputs: Savedpresetfallback2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`保存されたプリセット`)
-};
-
-const ko_savedpresetfallback2 = /** @type {(inputs: Savedpresetfallback2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`저장된 사전 설정`)
-};
-
-const zh_hant1_savedpresetfallback2 = /** @type {(inputs: Savedpresetfallback2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已儲存預設`)
-};
-
-const de_savedpresetfallback2 = /** @type {(inputs: Savedpresetfallback2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Voreinstellung gespeichert`)
-};
-
-const fr_savedpresetfallback2 = /** @type {(inputs: Savedpresetfallback2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Préréglage enregistré`)
-};
-
-const uk_savedpresetfallback2 = /** @type {(inputs: Savedpresetfallback2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Збережений пресет`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_savedpresetfallback2 = /** @type {(inputs: Savedpresetfallback2Inputs) 
 * @returns {LocalizedString}
 */
 const savedpresetfallback2 = /** @type {((inputs?: Savedpresetfallback2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedpresetfallback2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_savedpresetfallback2(inputs)
-	if (locale === "zh") return zh_savedpresetfallback2(inputs)
-	if (locale === "ja") return ja_savedpresetfallback2(inputs)
-	if (locale === "ko") return ko_savedpresetfallback2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_savedpresetfallback2(inputs)
-	if (locale === "de") return de_savedpresetfallback2(inputs)
-	if (locale === "fr") return fr_savedpresetfallback2(inputs)
-	if (locale === "uk") return uk_savedpresetfallback2(inputs)
-	return en_savedpresetfallback2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Plantilla guardada")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("已保存预设")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("保存されたプリセット")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("저장된 사전 설정")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("已儲存預設")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Voreinstellung gespeichert")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Préréglage enregistré")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Збережений пресет")
+	return /** @type {LocalizedString} */ ("Saved preset")
 });
 export { savedpresetfallback2 as "savedPresetFallback" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildertabbuilder2Inputs */
 
-const en_buildertabbuilder2 = /** @type {(inputs: Buildertabbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Builder`)
-};
 
-const es_buildertabbuilder2 = /** @type {(inputs: Buildertabbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Constructor`)
-};
-
-const zh_buildertabbuilder2 = /** @type {(inputs: Buildertabbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`构建器`)
-};
-
-const ja_buildertabbuilder2 = /** @type {(inputs: Buildertabbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ビルダー`)
-};
-
-const ko_buildertabbuilder2 = /** @type {(inputs: Buildertabbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`빌더`)
-};
-
-const zh_hant1_buildertabbuilder2 = /** @type {(inputs: Buildertabbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`建構器`)
-};
-
-const de_buildertabbuilder2 = /** @type {(inputs: Buildertabbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Builder`)
-};
-
-const fr_buildertabbuilder2 = /** @type {(inputs: Buildertabbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Constructeur`)
-};
-
-const uk_buildertabbuilder2 = /** @type {(inputs: Buildertabbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Конструктор`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildertabbuilder2 = /** @type {(inputs: Buildertabbuilder2Inputs) => L
 * @returns {LocalizedString}
 */
 const buildertabbuilder2 = /** @type {((inputs?: Buildertabbuilder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildertabbuilder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildertabbuilder2(inputs)
-	if (locale === "zh") return zh_buildertabbuilder2(inputs)
-	if (locale === "ja") return ja_buildertabbuilder2(inputs)
-	if (locale === "ko") return ko_buildertabbuilder2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildertabbuilder2(inputs)
-	if (locale === "de") return de_buildertabbuilder2(inputs)
-	if (locale === "fr") return fr_buildertabbuilder2(inputs)
-	if (locale === "uk") return uk_buildertabbuilder2(inputs)
-	return en_buildertabbuilder2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Constructor")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("构建器")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ビルダー")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("빌더")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("建構器")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Builder")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Constructeur")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Конструктор")
+	return /** @type {LocalizedString} */ ("Builder")
 });
 export { buildertabbuilder2 as "builderTabBuilder" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Compareauthentication1Inputs */
 
-const en_compareauthentication1 = /** @type {(inputs: Compareauthentication1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Authentication`)
-};
 
-const es_compareauthentication1 = /** @type {(inputs: Compareauthentication1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Autenticación`)
-};
-
-const zh_compareauthentication1 = /** @type {(inputs: Compareauthentication1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`认证`)
-};
-
-const ja_compareauthentication1 = /** @type {(inputs: Compareauthentication1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`認証`)
-};
-
-const ko_compareauthentication1 = /** @type {(inputs: Compareauthentication1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`인증`)
-};
-
-const zh_hant1_compareauthentication1 = /** @type {(inputs: Compareauthentication1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`認證`)
-};
-
-const de_compareauthentication1 = /** @type {(inputs: Compareauthentication1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Authentifizierung`)
-};
-
-const fr_compareauthentication1 = /** @type {(inputs: Compareauthentication1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Authentification`)
-};
-
-const uk_compareauthentication1 = /** @type {(inputs: Compareauthentication1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Автентифікація`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_compareauthentication1 = /** @type {(inputs: Compareauthentication1Inpu
 * @returns {LocalizedString}
 */
 const compareauthentication1 = /** @type {((inputs?: Compareauthentication1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareauthentication1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_compareauthentication1(inputs)
-	if (locale === "zh") return zh_compareauthentication1(inputs)
-	if (locale === "ja") return ja_compareauthentication1(inputs)
-	if (locale === "ko") return ko_compareauthentication1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_compareauthentication1(inputs)
-	if (locale === "de") return de_compareauthentication1(inputs)
-	if (locale === "fr") return fr_compareauthentication1(inputs)
-	if (locale === "uk") return uk_compareauthentication1(inputs)
-	return en_compareauthentication1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Autenticación")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("认证")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("認証")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("인증")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("認證")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Authentifizierung")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Authentification")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Автентифікація")
+	return /** @type {LocalizedString} */ ("Authentication")
 });
 export { compareauthentication1 as "compareAuthentication" }

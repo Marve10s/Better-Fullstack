@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Homeopenbuilder2Inputs */
 
-const en_homeopenbuilder2 = /** @type {(inputs: Homeopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Open the builder`)
-};
 
-const es_homeopenbuilder2 = /** @type {(inputs: Homeopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abrir el constructor`)
-};
-
-const zh_homeopenbuilder2 = /** @type {(inputs: Homeopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打开构建器`)
-};
-
-const ja_homeopenbuilder2 = /** @type {(inputs: Homeopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ビルダーを開く`)
-};
-
-const ko_homeopenbuilder2 = /** @type {(inputs: Homeopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`빌더 열기`)
-};
-
-const zh_hant1_homeopenbuilder2 = /** @type {(inputs: Homeopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打開建構器`)
-};
-
-const de_homeopenbuilder2 = /** @type {(inputs: Homeopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Öffnen Sie den Builder`)
-};
-
-const fr_homeopenbuilder2 = /** @type {(inputs: Homeopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ouvrir le constructeur`)
-};
-
-const uk_homeopenbuilder2 = /** @type {(inputs: Homeopenbuilder2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкрити конструктор`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_homeopenbuilder2 = /** @type {(inputs: Homeopenbuilder2Inputs) => Local
 * @returns {LocalizedString}
 */
 const homeopenbuilder2 = /** @type {((inputs?: Homeopenbuilder2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeopenbuilder2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_homeopenbuilder2(inputs)
-	if (locale === "zh") return zh_homeopenbuilder2(inputs)
-	if (locale === "ja") return ja_homeopenbuilder2(inputs)
-	if (locale === "ko") return ko_homeopenbuilder2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_homeopenbuilder2(inputs)
-	if (locale === "de") return de_homeopenbuilder2(inputs)
-	if (locale === "fr") return fr_homeopenbuilder2(inputs)
-	if (locale === "uk") return uk_homeopenbuilder2(inputs)
-	return en_homeopenbuilder2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Abrir el constructor")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("打开构建器")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ビルダーを開く")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("빌더 열기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("打開建構器")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Öffnen Sie den Builder")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Ouvrir le constructeur")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Відкрити конструктор")
+	return /** @type {LocalizedString} */ ("Open the builder")
 });
 export { homeopenbuilder2 as "homeOpenBuilder" }

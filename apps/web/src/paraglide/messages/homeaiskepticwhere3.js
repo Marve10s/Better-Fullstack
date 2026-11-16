@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Homeaiskepticwhere3Inputs */
 
-const en_homeaiskepticwhere3 = /** @type {(inputs: Homeaiskepticwhere3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`on stream`)
-};
 
-const es_homeaiskepticwhere3 = /** @type {(inputs: Homeaiskepticwhere3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`en directo`)
-};
-
-const zh_homeaiskepticwhere3 = /** @type {(inputs: Homeaiskepticwhere3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`直播中`)
-};
-
-const ja_homeaiskepticwhere3 = /** @type {(inputs: Homeaiskepticwhere3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`配信にて`)
-};
-
-const ko_homeaiskepticwhere3 = /** @type {(inputs: Homeaiskepticwhere3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`방송에서`)
-};
-
-const zh_hant1_homeaiskepticwhere3 = /** @type {(inputs: Homeaiskepticwhere3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`直播中`)
-};
-
-const de_homeaiskepticwhere3 = /** @type {(inputs: Homeaiskepticwhere3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`im Stream`)
-};
-
-const fr_homeaiskepticwhere3 = /** @type {(inputs: Homeaiskepticwhere3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`en stream`)
-};
-
-const uk_homeaiskepticwhere3 = /** @type {(inputs: Homeaiskepticwhere3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`на стримі`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_homeaiskepticwhere3 = /** @type {(inputs: Homeaiskepticwhere3Inputs) =>
 * @returns {LocalizedString}
 */
 const homeaiskepticwhere3 = /** @type {((inputs?: Homeaiskepticwhere3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Homeaiskepticwhere3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_homeaiskepticwhere3(inputs)
-	if (locale === "zh") return zh_homeaiskepticwhere3(inputs)
-	if (locale === "ja") return ja_homeaiskepticwhere3(inputs)
-	if (locale === "ko") return ko_homeaiskepticwhere3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_homeaiskepticwhere3(inputs)
-	if (locale === "de") return de_homeaiskepticwhere3(inputs)
-	if (locale === "fr") return fr_homeaiskepticwhere3(inputs)
-	if (locale === "uk") return uk_homeaiskepticwhere3(inputs)
-	return en_homeaiskepticwhere3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("en directo")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("直播中")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("配信にて")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("방송에서")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("直播中")
+	if (locale === "de") return /** @type {LocalizedString} */ ("im Stream")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("en stream")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("на стримі")
+	return /** @type {LocalizedString} */ ("on stream")
 });
 export { homeaiskepticwhere3 as "homeAiSkepticWhere" }

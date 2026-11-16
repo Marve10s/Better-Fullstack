@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Navcopy1Inputs */
 
-const en_navcopy1 = /** @type {(inputs: Navcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Copy`)
-};
 
-const es_navcopy1 = /** @type {(inputs: Navcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Copiar`)
-};
-
-const zh_navcopy1 = /** @type {(inputs: Navcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`复制`)
-};
-
-const ja_navcopy1 = /** @type {(inputs: Navcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`コピー`)
-};
-
-const ko_navcopy1 = /** @type {(inputs: Navcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`복사`)
-};
-
-const zh_hant1_navcopy1 = /** @type {(inputs: Navcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`複製`)
-};
-
-const de_navcopy1 = /** @type {(inputs: Navcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Kopieren`)
-};
-
-const fr_navcopy1 = /** @type {(inputs: Navcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Copier`)
-};
-
-const uk_navcopy1 = /** @type {(inputs: Navcopy1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Копіювати`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_navcopy1 = /** @type {(inputs: Navcopy1Inputs) => LocalizedString} */ (
 * @returns {LocalizedString}
 */
 const navcopy1 = /** @type {((inputs?: Navcopy1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navcopy1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_navcopy1(inputs)
-	if (locale === "zh") return zh_navcopy1(inputs)
-	if (locale === "ja") return ja_navcopy1(inputs)
-	if (locale === "ko") return ko_navcopy1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_navcopy1(inputs)
-	if (locale === "de") return de_navcopy1(inputs)
-	if (locale === "fr") return fr_navcopy1(inputs)
-	if (locale === "uk") return uk_navcopy1(inputs)
-	return en_navcopy1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Copiar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("复制")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("コピー")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("복사")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("複製")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Kopieren")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Copier")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Копіювати")
+	return /** @type {LocalizedString} */ ("Copy")
 });
 export { navcopy1 as "navCopy" }

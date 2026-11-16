@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummarydotnetdotnetjobqueue6Inputs */
 
-const en_docsclisummarydotnetdotnetjobqueue6 = /** @type {(inputs: Docsclisummarydotnetdotnetjobqueue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`.NET background jobs.`)
-};
 
-const es_docsclisummarydotnetdotnetjobqueue6 = /** @type {(inputs: Docsclisummarydotnetdotnetjobqueue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tareas en segundo plano en .NET.`)
-};
-
-const zh_docsclisummarydotnetdotnetjobqueue6 = /** @type {(inputs: Docsclisummarydotnetdotnetjobqueue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`.NET 后台任务。`)
-};
-
-const ja_docsclisummarydotnetdotnetjobqueue6 = /** @type {(inputs: Docsclisummarydotnetdotnetjobqueue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`.NET のバックグラウンドジョブ。`)
-};
-
-const ko_docsclisummarydotnetdotnetjobqueue6 = /** @type {(inputs: Docsclisummarydotnetdotnetjobqueue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`.NET 백그라운드 작업.`)
-};
-
-const zh_hant1_docsclisummarydotnetdotnetjobqueue6 = /** @type {(inputs: Docsclisummarydotnetdotnetjobqueue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`.NET 背景工作。`)
-};
-
-const de_docsclisummarydotnetdotnetjobqueue6 = /** @type {(inputs: Docsclisummarydotnetdotnetjobqueue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Hintergrundaufgaben für .NET.`)
-};
-
-const fr_docsclisummarydotnetdotnetjobqueue6 = /** @type {(inputs: Docsclisummarydotnetdotnetjobqueue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tâches en arrière-plan .NET.`)
-};
-
-const uk_docsclisummarydotnetdotnetjobqueue6 = /** @type {(inputs: Docsclisummarydotnetdotnetjobqueue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Фонові завдання в .NET.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummarydotnetdotnetjobqueue6 = /** @type {(inputs: Docsclisummar
 * @returns {LocalizedString}
 */
 const docsclisummarydotnetdotnetjobqueue6 = /** @type {((inputs?: Docsclisummarydotnetdotnetjobqueue6Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummarydotnetdotnetjobqueue6Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummarydotnetdotnetjobqueue6(inputs)
-	if (locale === "zh") return zh_docsclisummarydotnetdotnetjobqueue6(inputs)
-	if (locale === "ja") return ja_docsclisummarydotnetdotnetjobqueue6(inputs)
-	if (locale === "ko") return ko_docsclisummarydotnetdotnetjobqueue6(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummarydotnetdotnetjobqueue6(inputs)
-	if (locale === "de") return de_docsclisummarydotnetdotnetjobqueue6(inputs)
-	if (locale === "fr") return fr_docsclisummarydotnetdotnetjobqueue6(inputs)
-	if (locale === "uk") return uk_docsclisummarydotnetdotnetjobqueue6(inputs)
-	return en_docsclisummarydotnetdotnetjobqueue6(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Tareas en segundo plano en .NET.")
+	if (locale === "zh") return /** @type {LocalizedString} */ (".NET 后台任务。")
+	if (locale === "ja") return /** @type {LocalizedString} */ (".NET のバックグラウンドジョブ。")
+	if (locale === "ko") return /** @type {LocalizedString} */ (".NET 백그라운드 작업.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ (".NET 背景工作。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Hintergrundaufgaben für .NET.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Tâches en arrière-plan .NET.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Фонові завдання в .NET.")
+	return /** @type {LocalizedString} */ (".NET background jobs.")
 });
 export { docsclisummarydotnetdotnetjobqueue6 as "docsCliSummaryDotnetDotnetJobQueue" }

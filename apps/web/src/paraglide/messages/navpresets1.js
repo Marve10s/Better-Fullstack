@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Navpresets1Inputs */
 
-const en_navpresets1 = /** @type {(inputs: Navpresets1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Presets`)
-};
 
-const es_navpresets1 = /** @type {(inputs: Navpresets1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Plantillas`)
-};
-
-const zh_navpresets1 = /** @type {(inputs: Navpresets1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`预设`)
-};
-
-const ja_navpresets1 = /** @type {(inputs: Navpresets1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プリセット`)
-};
-
-const ko_navpresets1 = /** @type {(inputs: Navpresets1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`사전 설정`)
-};
-
-const zh_hant1_navpresets1 = /** @type {(inputs: Navpresets1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`預設`)
-};
-
-const de_navpresets1 = /** @type {(inputs: Navpresets1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Voreinstellungen`)
-};
-
-const fr_navpresets1 = /** @type {(inputs: Navpresets1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Préréglages`)
-};
-
-const uk_navpresets1 = /** @type {(inputs: Navpresets1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Пресети`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_navpresets1 = /** @type {(inputs: Navpresets1Inputs) => LocalizedString
 * @returns {LocalizedString}
 */
 const navpresets1 = /** @type {((inputs?: Navpresets1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navpresets1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_navpresets1(inputs)
-	if (locale === "zh") return zh_navpresets1(inputs)
-	if (locale === "ja") return ja_navpresets1(inputs)
-	if (locale === "ko") return ko_navpresets1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_navpresets1(inputs)
-	if (locale === "de") return de_navpresets1(inputs)
-	if (locale === "fr") return fr_navpresets1(inputs)
-	if (locale === "uk") return uk_navpresets1(inputs)
-	return en_navpresets1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Plantillas")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("预设")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("プリセット")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("사전 설정")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("預設")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Voreinstellungen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Préréglages")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Пресети")
+	return /** @type {LocalizedString} */ ("Presets")
 });
 export { navpresets1 as "navPresets" }

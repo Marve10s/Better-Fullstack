@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Compareuilibrarychoices3Inputs */
 
-const en_compareuilibrarychoices3 = /** @type {(inputs: Compareuilibrarychoices3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`UI library choices`)
-};
 
-const es_compareuilibrarychoices3 = /** @type {(inputs: Compareuilibrarychoices3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Opciones de librería UI`)
-};
-
-const zh_compareuilibrarychoices3 = /** @type {(inputs: Compareuilibrarychoices3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`UI 库选择`)
-};
-
-const ja_compareuilibrarychoices3 = /** @type {(inputs: Compareuilibrarychoices3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`UIライブラリの選択肢`)
-};
-
-const ko_compareuilibrarychoices3 = /** @type {(inputs: Compareuilibrarychoices3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`UI 라이브러리 선택`)
-};
-
-const zh_hant1_compareuilibrarychoices3 = /** @type {(inputs: Compareuilibrarychoices3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`UI 庫選擇`)
-};
-
-const de_compareuilibrarychoices3 = /** @type {(inputs: Compareuilibrarychoices3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Auswahlmöglichkeiten der UI-Bibliothek`)
-};
-
-const fr_compareuilibrarychoices3 = /** @type {(inputs: Compareuilibrarychoices3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Choix de la bibliothèque d'interface utilisateur`)
-};
-
-const uk_compareuilibrarychoices3 = /** @type {(inputs: Compareuilibrarychoices3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Вибір UI-бібліотеки`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_compareuilibrarychoices3 = /** @type {(inputs: Compareuilibrarychoices3
 * @returns {LocalizedString}
 */
 const compareuilibrarychoices3 = /** @type {((inputs?: Compareuilibrarychoices3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareuilibrarychoices3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_compareuilibrarychoices3(inputs)
-	if (locale === "zh") return zh_compareuilibrarychoices3(inputs)
-	if (locale === "ja") return ja_compareuilibrarychoices3(inputs)
-	if (locale === "ko") return ko_compareuilibrarychoices3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_compareuilibrarychoices3(inputs)
-	if (locale === "de") return de_compareuilibrarychoices3(inputs)
-	if (locale === "fr") return fr_compareuilibrarychoices3(inputs)
-	if (locale === "uk") return uk_compareuilibrarychoices3(inputs)
-	return en_compareuilibrarychoices3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Opciones de librería UI")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("UI 库选择")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("UIライブラリの選択肢")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("UI 라이브러리 선택")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("UI 庫選擇")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Auswahlmöglichkeiten der UI-Bibliothek")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Choix de la bibliothèque d'interface utilisateur")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Вибір UI-бібліотеки")
+	return /** @type {LocalizedString} */ ("UI library choices")
 });
 export { compareuilibrarychoices3 as "compareUiLibraryChoices" }

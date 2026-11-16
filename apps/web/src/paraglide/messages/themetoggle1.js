@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Themetoggle1Inputs */
 
-const en_themetoggle1 = /** @type {(inputs: Themetoggle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Toggle theme`)
-};
 
-const es_themetoggle1 = /** @type {(inputs: Themetoggle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cambiar tema`)
-};
-
-const zh_themetoggle1 = /** @type {(inputs: Themetoggle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`切换主题`)
-};
-
-const ja_themetoggle1 = /** @type {(inputs: Themetoggle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`テーマの切り替え`)
-};
-
-const ko_themetoggle1 = /** @type {(inputs: Themetoggle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`테마 전환`)
-};
-
-const zh_hant1_themetoggle1 = /** @type {(inputs: Themetoggle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`切換主題`)
-};
-
-const de_themetoggle1 = /** @type {(inputs: Themetoggle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Design umschalten`)
-};
-
-const fr_themetoggle1 = /** @type {(inputs: Themetoggle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Changer de thème`)
-};
-
-const uk_themetoggle1 = /** @type {(inputs: Themetoggle1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Перемкнути тему`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_themetoggle1 = /** @type {(inputs: Themetoggle1Inputs) => LocalizedStri
 * @returns {LocalizedString}
 */
 const themetoggle1 = /** @type {((inputs?: Themetoggle1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Themetoggle1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_themetoggle1(inputs)
-	if (locale === "zh") return zh_themetoggle1(inputs)
-	if (locale === "ja") return ja_themetoggle1(inputs)
-	if (locale === "ko") return ko_themetoggle1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_themetoggle1(inputs)
-	if (locale === "de") return de_themetoggle1(inputs)
-	if (locale === "fr") return fr_themetoggle1(inputs)
-	if (locale === "uk") return uk_themetoggle1(inputs)
-	return en_themetoggle1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Cambiar tema")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("切换主题")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("テーマの切り替え")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("테마 전환")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("切換主題")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Design umschalten")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Changer de thème")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Перемкнути тему")
+	return /** @type {LocalizedString} */ ("Toggle theme")
 });
 export { themetoggle1 as "themeToggle" }

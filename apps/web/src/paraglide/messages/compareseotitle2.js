@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Compareseotitle2Inputs */
 
-const en_compareseotitle2 = /** @type {(inputs: Compareseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Compare Fullstack Scaffolding Tools | Better Fullstack`)
-};
 
-const es_compareseotitle2 = /** @type {(inputs: Compareseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Comparar herramientas de scaffolding fullstack | Better Fullstack`)
-};
-
-const zh_compareseotitle2 = /** @type {(inputs: Compareseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`比较全栈脚手架工具 | Better Fullstack`)
-};
-
-const ja_compareseotitle2 = /** @type {(inputs: Compareseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`フルスタック足場ツールの比較 | Better Fullstack`)
-};
-
-const ko_compareseotitle2 = /** @type {(inputs: Compareseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`풀스택 스캐폴딩 도구 비교 | Better Fullstack`)
-};
-
-const zh_hant1_compareseotitle2 = /** @type {(inputs: Compareseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`比較全端腳手架工具 | Better Fullstack`)
-};
-
-const de_compareseotitle2 = /** @type {(inputs: Compareseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vergleichen Sie Fullstack-Gerüstwerkzeuge | Better Fullstack`)
-};
-
-const fr_compareseotitle2 = /** @type {(inputs: Compareseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Comparez les outils d'échafaudage Fullstack | Better Fullstack`)
-};
-
-const uk_compareseotitle2 = /** @type {(inputs: Compareseotitle2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Порівняння інструментів фулстек-скафолдингу | Better Fullstack`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_compareseotitle2 = /** @type {(inputs: Compareseotitle2Inputs) => Local
 * @returns {LocalizedString}
 */
 const compareseotitle2 = /** @type {((inputs?: Compareseotitle2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Compareseotitle2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_compareseotitle2(inputs)
-	if (locale === "zh") return zh_compareseotitle2(inputs)
-	if (locale === "ja") return ja_compareseotitle2(inputs)
-	if (locale === "ko") return ko_compareseotitle2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_compareseotitle2(inputs)
-	if (locale === "de") return de_compareseotitle2(inputs)
-	if (locale === "fr") return fr_compareseotitle2(inputs)
-	if (locale === "uk") return uk_compareseotitle2(inputs)
-	return en_compareseotitle2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Comparar herramientas de scaffolding fullstack | Better Fullstack")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("比较全栈脚手架工具 | Better Fullstack")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("フルスタック足場ツールの比較 | Better Fullstack")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("풀스택 스캐폴딩 도구 비교 | Better Fullstack")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("比較全端腳手架工具 | Better Fullstack")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Vergleichen Sie Fullstack-Gerüstwerkzeuge | Better Fullstack")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Comparez les outils d'échafaudage Fullstack | Better Fullstack")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Порівняння інструментів фулстек-скафолдингу | Better Fullstack")
+	return /** @type {LocalizedString} */ ("Compare Fullstack Scaffolding Tools | Better Fullstack")
 });
 export { compareseotitle2 as "compareSeoTitle" }

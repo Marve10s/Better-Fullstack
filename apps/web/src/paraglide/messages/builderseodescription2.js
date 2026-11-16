@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderseodescription2Inputs */
 
-const en_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Build and share custom fullstack combinations with the Better Fullstack visual stack builder.`)
-};
 
-const es_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Crea y comparte combinaciones fullstack personalizadas con el constructor visual de Better Fullstack.`)
-};
-
-const zh_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`使用 Better Fullstack 可视化 stack 构建器创建并分享自定义全栈组合。`)
-};
-
-const ja_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack ビジュアル スタック ビルダーを使用してカスタム フルスタックの組み合わせを構築し、共有します。`)
-};
-
-const ko_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Better Fullstack 비주얼 스택 빌더를 사용하여 사용자 정의 풀 스택 조합을 구축하고 공유하세요.`)
-};
-
-const zh_hant1_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`使用 Better Fullstack 視覺化 stack 建構器建立並分享自訂全端組合。`)
-};
-
-const de_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Erstellen und teilen Sie benutzerdefinierte Fullstack-Kombinationen mit dem visuellen Stack Builder Better Fullstack.`)
-};
-
-const fr_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Créez et partagez des combinaisons fullstack personnalisées avec le générateur de pile visuelle Better Fullstack.`)
-};
-
-const uk_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Збирайте й поширюйте власні фулстек-комбінації у візуальному конструкторі Better Fullstack.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderseodescription2 = /** @type {(inputs: Builderseodescription2Inpu
 * @returns {LocalizedString}
 */
 const builderseodescription2 = /** @type {((inputs?: Builderseodescription2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderseodescription2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderseodescription2(inputs)
-	if (locale === "zh") return zh_builderseodescription2(inputs)
-	if (locale === "ja") return ja_builderseodescription2(inputs)
-	if (locale === "ko") return ko_builderseodescription2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderseodescription2(inputs)
-	if (locale === "de") return de_builderseodescription2(inputs)
-	if (locale === "fr") return fr_builderseodescription2(inputs)
-	if (locale === "uk") return uk_builderseodescription2(inputs)
-	return en_builderseodescription2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Crea y comparte combinaciones fullstack personalizadas con el constructor visual de Better Fullstack.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("使用 Better Fullstack 可视化 stack 构建器创建并分享自定义全栈组合。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Better Fullstack ビジュアル スタック ビルダーを使用してカスタム フルスタックの組み合わせを構築し、共有します。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Better Fullstack 비주얼 스택 빌더를 사용하여 사용자 정의 풀 스택 조합을 구축하고 공유하세요.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("使用 Better Fullstack 視覺化 stack 建構器建立並分享自訂全端組合。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Erstellen und teilen Sie benutzerdefinierte Fullstack-Kombinationen mit dem visuellen Stack Builder Better Fullstack.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Créez et partagez des combinaisons fullstack personnalisées avec le générateur de pile visuelle Better Fullstack.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Збирайте й поширюйте власні фулстек-комбінації у візуальному конструкторі Better Fullstack.")
+	return /** @type {LocalizedString} */ ("Build and share custom fullstack combinations with the Better Fullstack visual stack builder.")
 });
 export { builderseodescription2 as "builderSeoDescription" }

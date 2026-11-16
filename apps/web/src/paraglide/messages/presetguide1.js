@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Presetguide1Inputs */
 
-const en_presetguide1 = /** @type {(inputs: Presetguide1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guide`)
-};
 
-const es_presetguide1 = /** @type {(inputs: Presetguide1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guía`)
-};
-
-const zh_presetguide1 = /** @type {(inputs: Presetguide1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`指南`)
-};
-
-const ja_presetguide1 = /** @type {(inputs: Presetguide1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ガイド`)
-};
-
-const ko_presetguide1 = /** @type {(inputs: Presetguide1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`가이드`)
-};
-
-const zh_hant1_presetguide1 = /** @type {(inputs: Presetguide1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`指南`)
-};
-
-const de_presetguide1 = /** @type {(inputs: Presetguide1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Anleitung`)
-};
-
-const fr_presetguide1 = /** @type {(inputs: Presetguide1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guide`)
-};
-
-const uk_presetguide1 = /** @type {(inputs: Presetguide1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Гайд`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_presetguide1 = /** @type {(inputs: Presetguide1Inputs) => LocalizedStri
 * @returns {LocalizedString}
 */
 const presetguide1 = /** @type {((inputs?: Presetguide1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetguide1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_presetguide1(inputs)
-	if (locale === "zh") return zh_presetguide1(inputs)
-	if (locale === "ja") return ja_presetguide1(inputs)
-	if (locale === "ko") return ko_presetguide1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_presetguide1(inputs)
-	if (locale === "de") return de_presetguide1(inputs)
-	if (locale === "fr") return fr_presetguide1(inputs)
-	if (locale === "uk") return uk_presetguide1(inputs)
-	return en_presetguide1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Guía")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("指南")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ガイド")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("가이드")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("指南")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Anleitung")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Guide")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Гайд")
+	return /** @type {LocalizedString} */ ("Guide")
 });
 export { presetguide1 as "presetGuide" }

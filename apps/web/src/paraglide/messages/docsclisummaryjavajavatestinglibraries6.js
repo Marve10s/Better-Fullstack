@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummaryjavajavatestinglibraries6Inputs */
 
-const en_docsclisummaryjavajavatestinglibraries6 = /** @type {(inputs: Docsclisummaryjavajavatestinglibraries6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java testing libraries.`)
-};
 
-const es_docsclisummaryjavajavatestinglibraries6 = /** @type {(inputs: Docsclisummaryjavajavatestinglibraries6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bibliotecas de pruebas de Java.`)
-};
-
-const zh_docsclisummaryjavajavatestinglibraries6 = /** @type {(inputs: Docsclisummaryjavajavatestinglibraries6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java 测试库。`)
-};
-
-const ja_docsclisummaryjavajavatestinglibraries6 = /** @type {(inputs: Docsclisummaryjavajavatestinglibraries6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java のテストライブラリ。`)
-};
-
-const ko_docsclisummaryjavajavatestinglibraries6 = /** @type {(inputs: Docsclisummaryjavajavatestinglibraries6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java 테스트 라이브러리.`)
-};
-
-const zh_hant1_docsclisummaryjavajavatestinglibraries6 = /** @type {(inputs: Docsclisummaryjavajavatestinglibraries6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java 測試函式庫。`)
-};
-
-const de_docsclisummaryjavajavatestinglibraries6 = /** @type {(inputs: Docsclisummaryjavajavatestinglibraries6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Testbibliotheken für Java.`)
-};
-
-const fr_docsclisummaryjavajavatestinglibraries6 = /** @type {(inputs: Docsclisummaryjavajavatestinglibraries6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bibliothèques de tests Java.`)
-};
-
-const uk_docsclisummaryjavajavatestinglibraries6 = /** @type {(inputs: Docsclisummaryjavajavatestinglibraries6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Бібліотеки тестування Java.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummaryjavajavatestinglibraries6 = /** @type {(inputs: Docsclisu
 * @returns {LocalizedString}
 */
 const docsclisummaryjavajavatestinglibraries6 = /** @type {((inputs?: Docsclisummaryjavajavatestinglibraries6Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummaryjavajavatestinglibraries6Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummaryjavajavatestinglibraries6(inputs)
-	if (locale === "zh") return zh_docsclisummaryjavajavatestinglibraries6(inputs)
-	if (locale === "ja") return ja_docsclisummaryjavajavatestinglibraries6(inputs)
-	if (locale === "ko") return ko_docsclisummaryjavajavatestinglibraries6(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummaryjavajavatestinglibraries6(inputs)
-	if (locale === "de") return de_docsclisummaryjavajavatestinglibraries6(inputs)
-	if (locale === "fr") return fr_docsclisummaryjavajavatestinglibraries6(inputs)
-	if (locale === "uk") return uk_docsclisummaryjavajavatestinglibraries6(inputs)
-	return en_docsclisummaryjavajavatestinglibraries6(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Bibliotecas de pruebas de Java.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Java 测试库。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Java のテストライブラリ。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Java 테스트 라이브러리.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Java 測試函式庫。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Testbibliotheken für Java.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Bibliothèques de tests Java.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Бібліотеки тестування Java.")
+	return /** @type {LocalizedString} */ ("Java testing libraries.")
 });
 export { docsclisummaryjavajavatestinglibraries6 as "docsCliSummaryJavaJavaTestingLibraries" }

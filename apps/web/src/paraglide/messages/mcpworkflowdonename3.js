@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpworkflowdonename3Inputs */
 
-const en_mcpworkflowdonename3 = /** @type {(inputs: Mcpworkflowdonename3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`scaffold complete`)
-};
 
-const es_mcpworkflowdonename3 = /** @type {(inputs: Mcpworkflowdonename3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`scaffold completado`)
-};
-
-const zh_mcpworkflowdonename3 = /** @type {(inputs: Mcpworkflowdonename3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`scaffold 完成`)
-};
-
-const ja_mcpworkflowdonename3 = /** @type {(inputs: Mcpworkflowdonename3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`スキャフォールド完了`)
-};
-
-const ko_mcpworkflowdonename3 = /** @type {(inputs: Mcpworkflowdonename3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`스캐폴드 완료`)
-};
-
-const zh_hant1_mcpworkflowdonename3 = /** @type {(inputs: Mcpworkflowdonename3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`scaffold 完成`)
-};
-
-const de_mcpworkflowdonename3 = /** @type {(inputs: Mcpworkflowdonename3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Gerüst fertig`)
-};
-
-const fr_mcpworkflowdonename3 = /** @type {(inputs: Mcpworkflowdonename3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`échafaudage terminé`)
-};
-
-const uk_mcpworkflowdonename3 = /** @type {(inputs: Mcpworkflowdonename3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`скафолдинг завершено`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpworkflowdonename3 = /** @type {(inputs: Mcpworkflowdonename3Inputs) 
 * @returns {LocalizedString}
 */
 const mcpworkflowdonename3 = /** @type {((inputs?: Mcpworkflowdonename3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowdonename3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpworkflowdonename3(inputs)
-	if (locale === "zh") return zh_mcpworkflowdonename3(inputs)
-	if (locale === "ja") return ja_mcpworkflowdonename3(inputs)
-	if (locale === "ko") return ko_mcpworkflowdonename3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpworkflowdonename3(inputs)
-	if (locale === "de") return de_mcpworkflowdonename3(inputs)
-	if (locale === "fr") return fr_mcpworkflowdonename3(inputs)
-	if (locale === "uk") return uk_mcpworkflowdonename3(inputs)
-	return en_mcpworkflowdonename3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("scaffold completado")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("scaffold 完成")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("スキャフォールド完了")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("스캐폴드 완료")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("scaffold 完成")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Gerüst fertig")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("échafaudage terminé")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("скафолдинг завершено")
+	return /** @type {LocalizedString} */ ("scaffold complete")
 });
 export { mcpworkflowdonename3 as "mcpWorkflowDoneName" }

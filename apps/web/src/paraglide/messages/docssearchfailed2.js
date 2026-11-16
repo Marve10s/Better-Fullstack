@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docssearchfailed2Inputs */
 
-const en_docssearchfailed2 = /** @type {(inputs: Docssearchfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Search couldn't load.`)
-};
 
-const es_docssearchfailed2 = /** @type {(inputs: Docssearchfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`No se pudo cargar la búsqueda.`)
-};
-
-const zh_docssearchfailed2 = /** @type {(inputs: Docssearchfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`搜索加载失败。`)
-};
-
-const ja_docssearchfailed2 = /** @type {(inputs: Docssearchfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`検索を読み込めませんでした。`)
-};
-
-const ko_docssearchfailed2 = /** @type {(inputs: Docssearchfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`검색을 불러오지 못했습니다.`)
-};
-
-const zh_hant1_docssearchfailed2 = /** @type {(inputs: Docssearchfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`搜尋載入失敗。`)
-};
-
-const de_docssearchfailed2 = /** @type {(inputs: Docssearchfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Suche konnte nicht geladen werden.`)
-};
-
-const fr_docssearchfailed2 = /** @type {(inputs: Docssearchfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`La recherche n'a pas pu être chargée.`)
-};
-
-const uk_docssearchfailed2 = /** @type {(inputs: Docssearchfailed2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Не вдалося завантажити пошук.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docssearchfailed2 = /** @type {(inputs: Docssearchfailed2Inputs) => Loc
 * @returns {LocalizedString}
 */
 const docssearchfailed2 = /** @type {((inputs?: Docssearchfailed2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchfailed2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docssearchfailed2(inputs)
-	if (locale === "zh") return zh_docssearchfailed2(inputs)
-	if (locale === "ja") return ja_docssearchfailed2(inputs)
-	if (locale === "ko") return ko_docssearchfailed2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docssearchfailed2(inputs)
-	if (locale === "de") return de_docssearchfailed2(inputs)
-	if (locale === "fr") return fr_docssearchfailed2(inputs)
-	if (locale === "uk") return uk_docssearchfailed2(inputs)
-	return en_docssearchfailed2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("No se pudo cargar la búsqueda.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("搜索加载失败。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("検索を読み込めませんでした。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("검색을 불러오지 못했습니다.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("搜尋載入失敗。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Suche konnte nicht geladen werden.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("La recherche n'a pas pu être chargée.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Не вдалося завантажити пошук.")
+	return /** @type {LocalizedString} */ ("Search couldn't load.")
 });
 export { docssearchfailed2 as "docsSearchFailed" }

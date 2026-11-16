@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderpreviousstep2Inputs */
 
-const en_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Previous step`)
-};
 
-const es_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Paso anterior`)
-};
-
-const zh_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`上一步`)
-};
-
-const ja_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`前のステップ`)
-};
-
-const ko_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`이전 단계`)
-};
-
-const zh_hant1_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`上一步`)
-};
-
-const de_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vorheriger Schritt`)
-};
-
-const fr_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Étape précédente`)
-};
-
-const uk_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Попередній крок`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderpreviousstep2 = /** @type {(inputs: Builderpreviousstep2Inputs) 
 * @returns {LocalizedString}
 */
 const builderpreviousstep2 = /** @type {((inputs?: Builderpreviousstep2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviousstep2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderpreviousstep2(inputs)
-	if (locale === "zh") return zh_builderpreviousstep2(inputs)
-	if (locale === "ja") return ja_builderpreviousstep2(inputs)
-	if (locale === "ko") return ko_builderpreviousstep2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderpreviousstep2(inputs)
-	if (locale === "de") return de_builderpreviousstep2(inputs)
-	if (locale === "fr") return fr_builderpreviousstep2(inputs)
-	if (locale === "uk") return uk_builderpreviousstep2(inputs)
-	return en_builderpreviousstep2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Paso anterior")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("上一步")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("前のステップ")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("이전 단계")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("上一步")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Vorheriger Schritt")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Étape précédente")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Попередній крок")
+	return /** @type {LocalizedString} */ ("Previous step")
 });
 export { builderpreviousstep2 as "builderPreviousStep" }
