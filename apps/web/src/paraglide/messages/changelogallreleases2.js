@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Changelogallreleases2Inputs */
 
-const en_changelogallreleases2 = /** @type {(inputs: Changelogallreleases2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`All releases`)
-};
 
-const es_changelogallreleases2 = /** @type {(inputs: Changelogallreleases2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Todas las versiones`)
-};
-
-const zh_changelogallreleases2 = /** @type {(inputs: Changelogallreleases2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`所有版本`)
-};
-
-const ja_changelogallreleases2 = /** @type {(inputs: Changelogallreleases2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`すべてのリリース`)
-};
-
-const ko_changelogallreleases2 = /** @type {(inputs: Changelogallreleases2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`모든 릴리스`)
-};
-
-const zh_hant1_changelogallreleases2 = /** @type {(inputs: Changelogallreleases2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`所有版本`)
-};
-
-const de_changelogallreleases2 = /** @type {(inputs: Changelogallreleases2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Alle Veröffentlichungen`)
-};
-
-const fr_changelogallreleases2 = /** @type {(inputs: Changelogallreleases2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Toutes les versions`)
-};
-
-const uk_changelogallreleases2 = /** @type {(inputs: Changelogallreleases2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Усі релізи`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_changelogallreleases2 = /** @type {(inputs: Changelogallreleases2Inputs
 * @returns {LocalizedString}
 */
 const changelogallreleases2 = /** @type {((inputs?: Changelogallreleases2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Changelogallreleases2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_changelogallreleases2(inputs)
-	if (locale === "zh") return zh_changelogallreleases2(inputs)
-	if (locale === "ja") return ja_changelogallreleases2(inputs)
-	if (locale === "ko") return ko_changelogallreleases2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_changelogallreleases2(inputs)
-	if (locale === "de") return de_changelogallreleases2(inputs)
-	if (locale === "fr") return fr_changelogallreleases2(inputs)
-	if (locale === "uk") return uk_changelogallreleases2(inputs)
-	return en_changelogallreleases2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Todas las versiones")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("所有版本")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("すべてのリリース")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("모든 릴리스")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("所有版本")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Alle Veröffentlichungen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Toutes les versions")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Усі релізи")
+	return /** @type {LocalizedString} */ ("All releases")
 });
 export { changelogallreleases2 as "changelogAllReleases" }

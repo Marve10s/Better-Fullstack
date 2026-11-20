@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummarypythonpythonwebframework6Inputs */
 
-const en_docsclisummarypythonpythonwebframework6 = /** @type {(inputs: Docsclisummarypythonpythonwebframework6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python web framework.`)
-};
 
-const es_docsclisummarypythonpythonwebframework6 = /** @type {(inputs: Docsclisummarypythonpythonwebframework6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Framework web Python.`)
-};
-
-const zh_docsclisummarypythonpythonwebframework6 = /** @type {(inputs: Docsclisummarypythonpythonwebframework6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python Web 框架。`)
-};
-
-const ja_docsclisummarypythonpythonwebframework6 = /** @type {(inputs: Docsclisummarypythonpythonwebframework6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python の Web フレームワーク。`)
-};
-
-const ko_docsclisummarypythonpythonwebframework6 = /** @type {(inputs: Docsclisummarypythonpythonwebframework6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python 웹 프레임워크.`)
-};
-
-const zh_hant1_docsclisummarypythonpythonwebframework6 = /** @type {(inputs: Docsclisummarypythonpythonwebframework6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python Web 框架。`)
-};
-
-const de_docsclisummarypythonpythonwebframework6 = /** @type {(inputs: Docsclisummarypythonpythonwebframework6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Web-Framework für Python.`)
-};
-
-const fr_docsclisummarypythonpythonwebframework6 = /** @type {(inputs: Docsclisummarypythonpythonwebframework6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Framework web Python.`)
-};
-
-const uk_docsclisummarypythonpythonwebframework6 = /** @type {(inputs: Docsclisummarypythonpythonwebframework6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Вебфреймворк Python.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummarypythonpythonwebframework6 = /** @type {(inputs: Docsclisu
 * @returns {LocalizedString}
 */
 const docsclisummarypythonpythonwebframework6 = /** @type {((inputs?: Docsclisummarypythonpythonwebframework6Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummarypythonpythonwebframework6Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummarypythonpythonwebframework6(inputs)
-	if (locale === "zh") return zh_docsclisummarypythonpythonwebframework6(inputs)
-	if (locale === "ja") return ja_docsclisummarypythonpythonwebframework6(inputs)
-	if (locale === "ko") return ko_docsclisummarypythonpythonwebframework6(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummarypythonpythonwebframework6(inputs)
-	if (locale === "de") return de_docsclisummarypythonpythonwebframework6(inputs)
-	if (locale === "fr") return fr_docsclisummarypythonpythonwebframework6(inputs)
-	if (locale === "uk") return uk_docsclisummarypythonpythonwebframework6(inputs)
-	return en_docsclisummarypythonpythonwebframework6(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Framework web Python.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Python Web 框架。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Python の Web フレームワーク。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Python 웹 프레임워크.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Python Web 框架。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Web-Framework für Python.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Framework web Python.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Вебфреймворк Python.")
+	return /** @type {LocalizedString} */ ("Python web framework.")
 });
 export { docsclisummarypythonpythonwebframework6 as "docsCliSummaryPythonPythonWebFramework" }

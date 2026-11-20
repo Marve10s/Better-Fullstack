@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildertabpreview2Inputs */
 
-const en_buildertabpreview2 = /** @type {(inputs: Buildertabpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Preview`)
-};
 
-const es_buildertabpreview2 = /** @type {(inputs: Buildertabpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vista previa`)
-};
-
-const zh_buildertabpreview2 = /** @type {(inputs: Buildertabpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`预览`)
-};
-
-const ja_buildertabpreview2 = /** @type {(inputs: Buildertabpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プレビュー`)
-};
-
-const ko_buildertabpreview2 = /** @type {(inputs: Buildertabpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`미리보기`)
-};
-
-const zh_hant1_buildertabpreview2 = /** @type {(inputs: Buildertabpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`預覽`)
-};
-
-const de_buildertabpreview2 = /** @type {(inputs: Buildertabpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vorschau`)
-};
-
-const fr_buildertabpreview2 = /** @type {(inputs: Buildertabpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aperçu`)
-};
-
-const uk_buildertabpreview2 = /** @type {(inputs: Buildertabpreview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Попередній перегляд`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildertabpreview2 = /** @type {(inputs: Buildertabpreview2Inputs) => L
 * @returns {LocalizedString}
 */
 const buildertabpreview2 = /** @type {((inputs?: Buildertabpreview2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildertabpreview2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildertabpreview2(inputs)
-	if (locale === "zh") return zh_buildertabpreview2(inputs)
-	if (locale === "ja") return ja_buildertabpreview2(inputs)
-	if (locale === "ko") return ko_buildertabpreview2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildertabpreview2(inputs)
-	if (locale === "de") return de_buildertabpreview2(inputs)
-	if (locale === "fr") return fr_buildertabpreview2(inputs)
-	if (locale === "uk") return uk_buildertabpreview2(inputs)
-	return en_buildertabpreview2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Vista previa")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("预览")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("プレビュー")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("미리보기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("預覽")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Vorschau")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Aperçu")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Попередній перегляд")
+	return /** @type {LocalizedString} */ ("Preview")
 });
 export { buildertabpreview2 as "builderTabPreview" }

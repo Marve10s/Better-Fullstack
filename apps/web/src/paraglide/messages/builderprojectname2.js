@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderprojectname2Inputs */
 
-const en_builderprojectname2 = /** @type {(inputs: Builderprojectname2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Project name`)
-};
 
-const es_builderprojectname2 = /** @type {(inputs: Builderprojectname2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nombre del proyecto`)
-};
-
-const zh_builderprojectname2 = /** @type {(inputs: Builderprojectname2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`项目名称`)
-};
-
-const ja_builderprojectname2 = /** @type {(inputs: Builderprojectname2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プロジェクト名`)
-};
-
-const ko_builderprojectname2 = /** @type {(inputs: Builderprojectname2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`프로젝트 이름`)
-};
-
-const zh_hant1_builderprojectname2 = /** @type {(inputs: Builderprojectname2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`專案名稱`)
-};
-
-const de_builderprojectname2 = /** @type {(inputs: Builderprojectname2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Projektname`)
-};
-
-const fr_builderprojectname2 = /** @type {(inputs: Builderprojectname2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nom du projet`)
-};
-
-const uk_builderprojectname2 = /** @type {(inputs: Builderprojectname2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Назва проєкту`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderprojectname2 = /** @type {(inputs: Builderprojectname2Inputs) =>
 * @returns {LocalizedString}
 */
 const builderprojectname2 = /** @type {((inputs?: Builderprojectname2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderprojectname2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderprojectname2(inputs)
-	if (locale === "zh") return zh_builderprojectname2(inputs)
-	if (locale === "ja") return ja_builderprojectname2(inputs)
-	if (locale === "ko") return ko_builderprojectname2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderprojectname2(inputs)
-	if (locale === "de") return de_builderprojectname2(inputs)
-	if (locale === "fr") return fr_builderprojectname2(inputs)
-	if (locale === "uk") return uk_builderprojectname2(inputs)
-	return en_builderprojectname2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Nombre del proyecto")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("项目名称")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("プロジェクト名")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("프로젝트 이름")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("專案名稱")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Projektname")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Nom du projet")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Назва проєкту")
+	return /** @type {LocalizedString} */ ("Project name")
 });
 export { builderprojectname2 as "builderProjectName" }

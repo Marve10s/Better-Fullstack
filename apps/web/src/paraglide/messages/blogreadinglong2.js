@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Blogreadinglong2Inputs */
 
-const en_blogreadinglong2 = /** @type {(inputs: Blogreadinglong2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Long`)
-};
 
-const es_blogreadinglong2 = /** @type {(inputs: Blogreadinglong2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Larga`)
-};
-
-const zh_blogreadinglong2 = /** @type {(inputs: Blogreadinglong2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`完整版`)
-};
-
-const ja_blogreadinglong2 = /** @type {(inputs: Blogreadinglong2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ロング`)
-};
-
-const ko_blogreadinglong2 = /** @type {(inputs: Blogreadinglong2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`길게`)
-};
-
-const zh_hant1_blogreadinglong2 = /** @type {(inputs: Blogreadinglong2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`完整版`)
-};
-
-const de_blogreadinglong2 = /** @type {(inputs: Blogreadinglong2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Lang`)
-};
-
-const fr_blogreadinglong2 = /** @type {(inputs: Blogreadinglong2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Longue`)
-};
-
-const uk_blogreadinglong2 = /** @type {(inputs: Blogreadinglong2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Повна`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_blogreadinglong2 = /** @type {(inputs: Blogreadinglong2Inputs) => Local
 * @returns {LocalizedString}
 */
 const blogreadinglong2 = /** @type {((inputs?: Blogreadinglong2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Blogreadinglong2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_blogreadinglong2(inputs)
-	if (locale === "zh") return zh_blogreadinglong2(inputs)
-	if (locale === "ja") return ja_blogreadinglong2(inputs)
-	if (locale === "ko") return ko_blogreadinglong2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_blogreadinglong2(inputs)
-	if (locale === "de") return de_blogreadinglong2(inputs)
-	if (locale === "fr") return fr_blogreadinglong2(inputs)
-	if (locale === "uk") return uk_blogreadinglong2(inputs)
-	return en_blogreadinglong2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Larga")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("完整版")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ロング")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("길게")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("完整版")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Lang")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Longue")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Повна")
+	return /** @type {LocalizedString} */ ("Long")
 });
 export { blogreadinglong2 as "blogReadingLong" }

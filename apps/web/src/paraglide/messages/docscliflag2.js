@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docscliflag2Inputs */
 
-const en_docscliflag2 = /** @type {(inputs: Docscliflag2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Flag`)
-};
 
-const es_docscliflag2 = /** @type {(inputs: Docscliflag2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Flag`)
-};
-
-const zh_docscliflag2 = /** @type {(inputs: Docscliflag2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`参数`)
-};
-
-const ja_docscliflag2 = /** @type {(inputs: Docscliflag2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`フラグ`)
-};
-
-const ko_docscliflag2 = /** @type {(inputs: Docscliflag2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`플래그`)
-};
-
-const zh_hant1_docscliflag2 = /** @type {(inputs: Docscliflag2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`旗標`)
-};
-
-const de_docscliflag2 = /** @type {(inputs: Docscliflag2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Flag`)
-};
-
-const fr_docscliflag2 = /** @type {(inputs: Docscliflag2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Option`)
-};
-
-const uk_docscliflag2 = /** @type {(inputs: Docscliflag2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Прапорець`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docscliflag2 = /** @type {(inputs: Docscliflag2Inputs) => LocalizedStri
 * @returns {LocalizedString}
 */
 const docscliflag2 = /** @type {((inputs?: Docscliflag2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docscliflag2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docscliflag2(inputs)
-	if (locale === "zh") return zh_docscliflag2(inputs)
-	if (locale === "ja") return ja_docscliflag2(inputs)
-	if (locale === "ko") return ko_docscliflag2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docscliflag2(inputs)
-	if (locale === "de") return de_docscliflag2(inputs)
-	if (locale === "fr") return fr_docscliflag2(inputs)
-	if (locale === "uk") return uk_docscliflag2(inputs)
-	return en_docscliflag2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Flag")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("参数")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("フラグ")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("플래그")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("旗標")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Flag")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Option")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Прапорець")
+	return /** @type {LocalizedString} */ ("Flag")
 });
 export { docscliflag2 as "docsCliFlag" }

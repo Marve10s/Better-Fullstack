@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcptoolstitleb3Inputs */
 
-const en_mcptoolstitleb3 = /** @type {(inputs: Mcptoolstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`One workflow.`)
-};
 
-const es_mcptoolstitleb3 = /** @type {(inputs: Mcptoolstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Un flujo.`)
-};
-
-const zh_mcptoolstitleb3 = /** @type {(inputs: Mcptoolstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`一个流程。`)
-};
-
-const ja_mcptoolstitleb3 = /** @type {(inputs: Mcptoolstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ワークフローは 1 つ。`)
-};
-
-const ko_mcptoolstitleb3 = /** @type {(inputs: Mcptoolstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`하나의 워크플로.`)
-};
-
-const zh_hant1_mcptoolstitleb3 = /** @type {(inputs: Mcptoolstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`一個流程。`)
-};
-
-const de_mcptoolstitleb3 = /** @type {(inputs: Mcptoolstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ein Arbeitsablauf.`)
-};
-
-const fr_mcptoolstitleb3 = /** @type {(inputs: Mcptoolstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Un flux de travail.`)
-};
-
-const uk_mcptoolstitleb3 = /** @type {(inputs: Mcptoolstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Один робочий процес.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcptoolstitleb3 = /** @type {(inputs: Mcptoolstitleb3Inputs) => Localiz
 * @returns {LocalizedString}
 */
 const mcptoolstitleb3 = /** @type {((inputs?: Mcptoolstitleb3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcptoolstitleb3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcptoolstitleb3(inputs)
-	if (locale === "zh") return zh_mcptoolstitleb3(inputs)
-	if (locale === "ja") return ja_mcptoolstitleb3(inputs)
-	if (locale === "ko") return ko_mcptoolstitleb3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcptoolstitleb3(inputs)
-	if (locale === "de") return de_mcptoolstitleb3(inputs)
-	if (locale === "fr") return fr_mcptoolstitleb3(inputs)
-	if (locale === "uk") return uk_mcptoolstitleb3(inputs)
-	return en_mcptoolstitleb3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Un flujo.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("一个流程。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ワークフローは 1 つ。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("하나의 워크플로.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("一個流程。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Ein Arbeitsablauf.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Un flux de travail.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Один робочий процес.")
+	return /** @type {LocalizedString} */ ("One workflow.")
 });
 export { mcptoolstitleb3 as "mcpToolsTitleB" }

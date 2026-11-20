@@ -52,6 +52,6 @@ const docsclisummarypythonpythonlogging5 = /** @type {((inputs?: Docsclisummaryp
 	if (locale === "de") return de_docsclisummarypythonpythonlogging5(inputs)
 	if (locale === "fr") return fr_docsclisummarypythonpythonlogging5(inputs)
 	if (locale === "uk") return uk_docsclisummarypythonpythonlogging5(inputs)
-	return en_docsclisummarypythonpythonlogging5(inputs)
+	return /** @type {LocalizedString} */ ("Python logging library.")
 });
 export { docsclisummarypythonpythonlogging5 as "docsCliSummaryPythonPythonLogging" }

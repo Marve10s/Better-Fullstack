@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummarytypescriptstackruntime5Inputs */
 
-const en_docsclisummarytypescriptstackruntime5 = /** @type {(inputs: Docsclisummarytypescriptstackruntime5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Server runtime.`)
-};
 
-const es_docsclisummarytypescriptstackruntime5 = /** @type {(inputs: Docsclisummarytypescriptstackruntime5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Entorno de ejecución del servidor.`)
-};
-
-const zh_docsclisummarytypescriptstackruntime5 = /** @type {(inputs: Docsclisummarytypescriptstackruntime5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`服务器运行时。`)
-};
-
-const ja_docsclisummarytypescriptstackruntime5 = /** @type {(inputs: Docsclisummarytypescriptstackruntime5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`サーバーのランタイム。`)
-};
-
-const ko_docsclisummarytypescriptstackruntime5 = /** @type {(inputs: Docsclisummarytypescriptstackruntime5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`서버 런타임.`)
-};
-
-const zh_hant1_docsclisummarytypescriptstackruntime5 = /** @type {(inputs: Docsclisummarytypescriptstackruntime5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`伺服器執行環境。`)
-};
-
-const de_docsclisummarytypescriptstackruntime5 = /** @type {(inputs: Docsclisummarytypescriptstackruntime5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Server-Laufzeit.`)
-};
-
-const fr_docsclisummarytypescriptstackruntime5 = /** @type {(inputs: Docsclisummarytypescriptstackruntime5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Environnement d’exécution du serveur.`)
-};
-
-const uk_docsclisummarytypescriptstackruntime5 = /** @type {(inputs: Docsclisummarytypescriptstackruntime5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Середовище виконання сервера.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummarytypescriptstackruntime5 = /** @type {(inputs: Docsclisumm
 * @returns {LocalizedString}
 */
 const docsclisummarytypescriptstackruntime5 = /** @type {((inputs?: Docsclisummarytypescriptstackruntime5Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummarytypescriptstackruntime5Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummarytypescriptstackruntime5(inputs)
-	if (locale === "zh") return zh_docsclisummarytypescriptstackruntime5(inputs)
-	if (locale === "ja") return ja_docsclisummarytypescriptstackruntime5(inputs)
-	if (locale === "ko") return ko_docsclisummarytypescriptstackruntime5(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummarytypescriptstackruntime5(inputs)
-	if (locale === "de") return de_docsclisummarytypescriptstackruntime5(inputs)
-	if (locale === "fr") return fr_docsclisummarytypescriptstackruntime5(inputs)
-	if (locale === "uk") return uk_docsclisummarytypescriptstackruntime5(inputs)
-	return en_docsclisummarytypescriptstackruntime5(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Entorno de ejecución del servidor.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("服务器运行时。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("サーバーのランタイム。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("서버 런타임.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("伺服器執行環境。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Server-Laufzeit.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Environnement d’exécution du serveur.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Середовище виконання сервера.")
+	return /** @type {LocalizedString} */ ("Server runtime.")
 });
 export { docsclisummarytypescriptstackruntime5 as "docsCliSummaryTypescriptStackRuntime" }

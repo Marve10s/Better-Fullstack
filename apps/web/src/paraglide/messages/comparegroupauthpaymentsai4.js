@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Comparegroupauthpaymentsai4Inputs */
 
-const en_comparegroupauthpaymentsai4 = /** @type {(inputs: Comparegroupauthpaymentsai4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Auth, Payments & AI`)
-};
 
-const es_comparegroupauthpaymentsai4 = /** @type {(inputs: Comparegroupauthpaymentsai4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Auth, pagos e IA`)
-};
-
-const zh_comparegroupauthpaymentsai4 = /** @type {(inputs: Comparegroupauthpaymentsai4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`认证、支付与 AI`)
-};
-
-const ja_comparegroupauthpaymentsai4 = /** @type {(inputs: Comparegroupauthpaymentsai4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`認証、支払い、AI`)
-};
-
-const ko_comparegroupauthpaymentsai4 = /** @type {(inputs: Comparegroupauthpaymentsai4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`인증, 결제 및 AI`)
-};
-
-const zh_hant1_comparegroupauthpaymentsai4 = /** @type {(inputs: Comparegroupauthpaymentsai4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`認證、付款與 AI`)
-};
-
-const de_comparegroupauthpaymentsai4 = /** @type {(inputs: Comparegroupauthpaymentsai4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Authentifizierung, Zahlungen und AI`)
-};
-
-const fr_comparegroupauthpaymentsai4 = /** @type {(inputs: Comparegroupauthpaymentsai4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Authentification, paiements et AI`)
-};
-
-const uk_comparegroupauthpaymentsai4 = /** @type {(inputs: Comparegroupauthpaymentsai4Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Автентифікація, платежі та AI`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_comparegroupauthpaymentsai4 = /** @type {(inputs: Comparegroupauthpayme
 * @returns {LocalizedString}
 */
 const comparegroupauthpaymentsai4 = /** @type {((inputs?: Comparegroupauthpaymentsai4Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegroupauthpaymentsai4Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_comparegroupauthpaymentsai4(inputs)
-	if (locale === "zh") return zh_comparegroupauthpaymentsai4(inputs)
-	if (locale === "ja") return ja_comparegroupauthpaymentsai4(inputs)
-	if (locale === "ko") return ko_comparegroupauthpaymentsai4(inputs)
-	if (locale === "zh-Hant") return zh_hant1_comparegroupauthpaymentsai4(inputs)
-	if (locale === "de") return de_comparegroupauthpaymentsai4(inputs)
-	if (locale === "fr") return fr_comparegroupauthpaymentsai4(inputs)
-	if (locale === "uk") return uk_comparegroupauthpaymentsai4(inputs)
-	return en_comparegroupauthpaymentsai4(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Auth, pagos e IA")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("认证、支付与 AI")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("認証、支払い、AI")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("인증, 결제 및 AI")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("認證、付款與 AI")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Authentifizierung, Zahlungen und AI")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Authentification, paiements et AI")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Автентифікація, платежі та AI")
+	return /** @type {LocalizedString} */ ("Auth, Payments & AI")
 });
 export { comparegroupauthpaymentsai4 as "compareGroupAuthPaymentsAi" }

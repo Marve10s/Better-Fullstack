@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderenabled1Inputs */
 
-const en_builderenabled1 = /** @type {(inputs: Builderenabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Enabled`)
-};
 
-const es_builderenabled1 = /** @type {(inputs: Builderenabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Activado`)
-};
-
-const zh_builderenabled1 = /** @type {(inputs: Builderenabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已启用`)
-};
-
-const ja_builderenabled1 = /** @type {(inputs: Builderenabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`有効`)
-};
-
-const ko_builderenabled1 = /** @type {(inputs: Builderenabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`활성화됨`)
-};
-
-const zh_hant1_builderenabled1 = /** @type {(inputs: Builderenabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已啟用`)
-};
-
-const de_builderenabled1 = /** @type {(inputs: Builderenabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aktiviert`)
-};
-
-const fr_builderenabled1 = /** @type {(inputs: Builderenabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Activé`)
-};
-
-const uk_builderenabled1 = /** @type {(inputs: Builderenabled1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Увімкнено`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderenabled1 = /** @type {(inputs: Builderenabled1Inputs) => Localiz
 * @returns {LocalizedString}
 */
 const builderenabled1 = /** @type {((inputs?: Builderenabled1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderenabled1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderenabled1(inputs)
-	if (locale === "zh") return zh_builderenabled1(inputs)
-	if (locale === "ja") return ja_builderenabled1(inputs)
-	if (locale === "ko") return ko_builderenabled1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderenabled1(inputs)
-	if (locale === "de") return de_builderenabled1(inputs)
-	if (locale === "fr") return fr_builderenabled1(inputs)
-	if (locale === "uk") return uk_builderenabled1(inputs)
-	return en_builderenabled1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Activado")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("已启用")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("有効")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("활성화됨")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("已啟用")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Aktiviert")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Activé")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Увімкнено")
+	return /** @type {LocalizedString} */ ("Enabled")
 });
 export { builderenabled1 as "builderEnabled" }

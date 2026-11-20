@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpworkflowcreatenote3Inputs */
 
-const en_mcpworkflowcreatenote3 = /** @type {(inputs: Mcpworkflowcreatenote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`written to ./my-app`)
-};
 
-const es_mcpworkflowcreatenote3 = /** @type {(inputs: Mcpworkflowcreatenote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`escrito en ./my-app`)
-};
-
-const zh_mcpworkflowcreatenote3 = /** @type {(inputs: Mcpworkflowcreatenote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已写入 ./my-app`)
-};
-
-const ja_mcpworkflowcreatenote3 = /** @type {(inputs: Mcpworkflowcreatenote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`./my-app に書き込まれます`)
-};
-
-const ko_mcpworkflowcreatenote3 = /** @type {(inputs: Mcpworkflowcreatenote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`./my-app에 기록됨`)
-};
-
-const zh_hant1_mcpworkflowcreatenote3 = /** @type {(inputs: Mcpworkflowcreatenote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已寫入 ./my-app`)
-};
-
-const de_mcpworkflowcreatenote3 = /** @type {(inputs: Mcpworkflowcreatenote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`geschrieben nach ./my-app`)
-};
-
-const fr_mcpworkflowcreatenote3 = /** @type {(inputs: Mcpworkflowcreatenote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`écrit dans ./my-app`)
-};
-
-const uk_mcpworkflowcreatenote3 = /** @type {(inputs: Mcpworkflowcreatenote3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`записано в ./my-app`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpworkflowcreatenote3 = /** @type {(inputs: Mcpworkflowcreatenote3Inpu
 * @returns {LocalizedString}
 */
 const mcpworkflowcreatenote3 = /** @type {((inputs?: Mcpworkflowcreatenote3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpworkflowcreatenote3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpworkflowcreatenote3(inputs)
-	if (locale === "zh") return zh_mcpworkflowcreatenote3(inputs)
-	if (locale === "ja") return ja_mcpworkflowcreatenote3(inputs)
-	if (locale === "ko") return ko_mcpworkflowcreatenote3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpworkflowcreatenote3(inputs)
-	if (locale === "de") return de_mcpworkflowcreatenote3(inputs)
-	if (locale === "fr") return fr_mcpworkflowcreatenote3(inputs)
-	if (locale === "uk") return uk_mcpworkflowcreatenote3(inputs)
-	return en_mcpworkflowcreatenote3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("escrito en ./my-app")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("已写入 ./my-app")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("./my-app に書き込まれます")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("./my-app에 기록됨")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("已寫入 ./my-app")
+	if (locale === "de") return /** @type {LocalizedString} */ ("geschrieben nach ./my-app")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("écrit dans ./my-app")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("записано в ./my-app")
+	return /** @type {LocalizedString} */ ("written to ./my-app")
 });
 export { mcpworkflowcreatenote3 as "mcpWorkflowCreateNote" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{ count: NonNullable<unknown> }} Builderpreviewfilecount3Inputs */
 
-const en_builderpreviewfilecount3 = /** @type {(inputs: Builderpreviewfilecount3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} files`)
-};
 
-const es_builderpreviewfilecount3 = /** @type {(inputs: Builderpreviewfilecount3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} archivos`)
-};
-
-const zh_builderpreviewfilecount3 = /** @type {(inputs: Builderpreviewfilecount3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 个文件`)
-};
-
-const ja_builderpreviewfilecount3 = /** @type {(inputs: Builderpreviewfilecount3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} ファイル`)
-};
-
-const ko_builderpreviewfilecount3 = /** @type {(inputs: Builderpreviewfilecount3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 파일`)
-};
-
-const zh_hant1_builderpreviewfilecount3 = /** @type {(inputs: Builderpreviewfilecount3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 個文件`)
-};
-
-const de_builderpreviewfilecount3 = /** @type {(inputs: Builderpreviewfilecount3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} Dateien`)
-};
-
-const fr_builderpreviewfilecount3 = /** @type {(inputs: Builderpreviewfilecount3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} fichiers`)
-};
-
-const uk_builderpreviewfilecount3 = /** @type {(inputs: Builderpreviewfilecount3Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} файлів`)
-};
 
 /**
 * | output |
@@ -50,16 +16,16 @@ const uk_builderpreviewfilecount3 = /** @type {(inputs: Builderpreviewfilecount3
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const builderpreviewfilecount3 = /** @type {((inputs: Builderpreviewfilecount3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewfilecount3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const builderpreviewfilecount3 = /** @type {((inputs: Builderpreviewfilecount3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewfilecount3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((i, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderpreviewfilecount3(inputs)
-	if (locale === "zh") return zh_builderpreviewfilecount3(inputs)
-	if (locale === "ja") return ja_builderpreviewfilecount3(inputs)
-	if (locale === "ko") return ko_builderpreviewfilecount3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderpreviewfilecount3(inputs)
-	if (locale === "de") return de_builderpreviewfilecount3(inputs)
-	if (locale === "fr") return fr_builderpreviewfilecount3(inputs)
-	if (locale === "uk") return uk_builderpreviewfilecount3(inputs)
-	return en_builderpreviewfilecount3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ (`${i?.count} archivos`)
+	if (locale === "zh") return /** @type {LocalizedString} */ (`${i?.count} 个文件`)
+	if (locale === "ja") return /** @type {LocalizedString} */ (`${i?.count} ファイル`)
+	if (locale === "ko") return /** @type {LocalizedString} */ (`${i?.count} 파일`)
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ (`${i?.count} 個文件`)
+	if (locale === "de") return /** @type {LocalizedString} */ (`${i?.count} Dateien`)
+	if (locale === "fr") return /** @type {LocalizedString} */ (`${i?.count} fichiers`)
+	if (locale === "uk") return /** @type {LocalizedString} */ (`${i?.count} файлів`)
+	return /** @type {LocalizedString} */ (`${i?.count} files`)
 });
 export { builderpreviewfilecount3 as "builderPreviewFileCount" }

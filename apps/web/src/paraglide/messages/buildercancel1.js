@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildercancel1Inputs */
 
-const en_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cancel`)
-};
 
-const es_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cancelar`)
-};
-
-const zh_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`取消`)
-};
-
-const ja_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`キャンセル`)
-};
-
-const ko_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`취소`)
-};
-
-const zh_hant1_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`取消`)
-};
-
-const de_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abbrechen`)
-};
-
-const fr_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Annuler`)
-};
-
-const uk_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Скасувати`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildercancel1 = /** @type {(inputs: Buildercancel1Inputs) => Localized
 * @returns {LocalizedString}
 */
 const buildercancel1 = /** @type {((inputs?: Buildercancel1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercancel1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildercancel1(inputs)
-	if (locale === "zh") return zh_buildercancel1(inputs)
-	if (locale === "ja") return ja_buildercancel1(inputs)
-	if (locale === "ko") return ko_buildercancel1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildercancel1(inputs)
-	if (locale === "de") return de_buildercancel1(inputs)
-	if (locale === "fr") return fr_buildercancel1(inputs)
-	if (locale === "uk") return uk_buildercancel1(inputs)
-	return en_buildercancel1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Cancelar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("取消")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("キャンセル")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("취소")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("取消")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Abbrechen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Annuler")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Скасувати")
+	return /** @type {LocalizedString} */ ("Cancel")
 });
 export { buildercancel1 as "builderCancel" }

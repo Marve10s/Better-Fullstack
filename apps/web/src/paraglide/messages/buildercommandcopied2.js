@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildercommandcopied2Inputs */
 
-const en_buildercommandcopied2 = /** @type {(inputs: Buildercommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Command copied`)
-};
 
-const es_buildercommandcopied2 = /** @type {(inputs: Buildercommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Comando copiado`)
-};
-
-const zh_buildercommandcopied2 = /** @type {(inputs: Buildercommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`命令已复制`)
-};
-
-const ja_buildercommandcopied2 = /** @type {(inputs: Buildercommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`コマンドがコピーされました`)
-};
-
-const ko_buildercommandcopied2 = /** @type {(inputs: Buildercommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`명령이 복사되었습니다.`)
-};
-
-const zh_hant1_buildercommandcopied2 = /** @type {(inputs: Buildercommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`命令已複製`)
-};
-
-const de_buildercommandcopied2 = /** @type {(inputs: Buildercommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Befehl kopiert`)
-};
-
-const fr_buildercommandcopied2 = /** @type {(inputs: Buildercommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Commande copiée`)
-};
-
-const uk_buildercommandcopied2 = /** @type {(inputs: Buildercommandcopied2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Команду скопійовано`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildercommandcopied2 = /** @type {(inputs: Buildercommandcopied2Inputs
 * @returns {LocalizedString}
 */
 const buildercommandcopied2 = /** @type {((inputs?: Buildercommandcopied2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildercommandcopied2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildercommandcopied2(inputs)
-	if (locale === "zh") return zh_buildercommandcopied2(inputs)
-	if (locale === "ja") return ja_buildercommandcopied2(inputs)
-	if (locale === "ko") return ko_buildercommandcopied2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildercommandcopied2(inputs)
-	if (locale === "de") return de_buildercommandcopied2(inputs)
-	if (locale === "fr") return fr_buildercommandcopied2(inputs)
-	if (locale === "uk") return uk_buildercommandcopied2(inputs)
-	return en_buildercommandcopied2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Comando copiado")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("命令已复制")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("コマンドがコピーされました")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("명령이 복사되었습니다.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("命令已複製")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Befehl kopiert")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Commande copiée")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Команду скопійовано")
+	return /** @type {LocalizedString} */ ("Command copied")
 });
 export { buildercommandcopied2 as "builderCommandCopied" }

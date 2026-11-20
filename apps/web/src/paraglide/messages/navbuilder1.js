@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Navbuilder1Inputs */
 
-const en_navbuilder1 = /** @type {(inputs: Navbuilder1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Builder`)
-};
 
-const es_navbuilder1 = /** @type {(inputs: Navbuilder1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Constructor`)
-};
-
-const zh_navbuilder1 = /** @type {(inputs: Navbuilder1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`构建器`)
-};
-
-const ja_navbuilder1 = /** @type {(inputs: Navbuilder1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ビルダー`)
-};
-
-const ko_navbuilder1 = /** @type {(inputs: Navbuilder1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`빌더`)
-};
-
-const zh_hant1_navbuilder1 = /** @type {(inputs: Navbuilder1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`建構器`)
-};
-
-const de_navbuilder1 = /** @type {(inputs: Navbuilder1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Builder`)
-};
-
-const fr_navbuilder1 = /** @type {(inputs: Navbuilder1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Constructeur`)
-};
-
-const uk_navbuilder1 = /** @type {(inputs: Navbuilder1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Конструктор`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_navbuilder1 = /** @type {(inputs: Navbuilder1Inputs) => LocalizedString
 * @returns {LocalizedString}
 */
 const navbuilder1 = /** @type {((inputs?: Navbuilder1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navbuilder1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_navbuilder1(inputs)
-	if (locale === "zh") return zh_navbuilder1(inputs)
-	if (locale === "ja") return ja_navbuilder1(inputs)
-	if (locale === "ko") return ko_navbuilder1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_navbuilder1(inputs)
-	if (locale === "de") return de_navbuilder1(inputs)
-	if (locale === "fr") return fr_navbuilder1(inputs)
-	if (locale === "uk") return uk_navbuilder1(inputs)
-	return en_navbuilder1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Constructor")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("构建器")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ビルダー")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("빌더")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("建構器")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Builder")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Constructeur")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Конструктор")
+	return /** @type {LocalizedString} */ ("Builder")
 });
 export { navbuilder1 as "navBuilder" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderuniversal1Inputs */
 
-const en_builderuniversal1 = /** @type {(inputs: Builderuniversal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Universal`)
-};
 
-const es_builderuniversal1 = /** @type {(inputs: Builderuniversal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Universal`)
-};
-
-const zh_builderuniversal1 = /** @type {(inputs: Builderuniversal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`通用`)
-};
-
-const ja_builderuniversal1 = /** @type {(inputs: Builderuniversal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ユニバーサル`)
-};
-
-const ko_builderuniversal1 = /** @type {(inputs: Builderuniversal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`범용`)
-};
-
-const zh_hant1_builderuniversal1 = /** @type {(inputs: Builderuniversal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`通用`)
-};
-
-const de_builderuniversal1 = /** @type {(inputs: Builderuniversal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Universal`)
-};
-
-const fr_builderuniversal1 = /** @type {(inputs: Builderuniversal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Universel`)
-};
-
-const uk_builderuniversal1 = /** @type {(inputs: Builderuniversal1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Універсальний`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderuniversal1 = /** @type {(inputs: Builderuniversal1Inputs) => Loc
 * @returns {LocalizedString}
 */
 const builderuniversal1 = /** @type {((inputs?: Builderuniversal1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderuniversal1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderuniversal1(inputs)
-	if (locale === "zh") return zh_builderuniversal1(inputs)
-	if (locale === "ja") return ja_builderuniversal1(inputs)
-	if (locale === "ko") return ko_builderuniversal1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderuniversal1(inputs)
-	if (locale === "de") return de_builderuniversal1(inputs)
-	if (locale === "fr") return fr_builderuniversal1(inputs)
-	if (locale === "uk") return uk_builderuniversal1(inputs)
-	return en_builderuniversal1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Universal")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("通用")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ユニバーサル")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("범용")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("通用")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Universal")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Universel")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Універсальний")
+	return /** @type {LocalizedString} */ ("Universal")
 });
 export { builderuniversal1 as "builderUniversal" }

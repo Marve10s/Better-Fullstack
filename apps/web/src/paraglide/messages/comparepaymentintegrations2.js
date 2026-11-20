@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Comparepaymentintegrations2Inputs */
 
-const en_comparepaymentintegrations2 = /** @type {(inputs: Comparepaymentintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Payment integrations`)
-};
 
-const es_comparepaymentintegrations2 = /** @type {(inputs: Comparepaymentintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Integraciones de pago`)
-};
-
-const zh_comparepaymentintegrations2 = /** @type {(inputs: Comparepaymentintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`支付集成`)
-};
-
-const ja_comparepaymentintegrations2 = /** @type {(inputs: Comparepaymentintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`支払いの統合`)
-};
-
-const ko_comparepaymentintegrations2 = /** @type {(inputs: Comparepaymentintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`결제 통합`)
-};
-
-const zh_hant1_comparepaymentintegrations2 = /** @type {(inputs: Comparepaymentintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`支付整合`)
-};
-
-const de_comparepaymentintegrations2 = /** @type {(inputs: Comparepaymentintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Zahlungsintegrationen`)
-};
-
-const fr_comparepaymentintegrations2 = /** @type {(inputs: Comparepaymentintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Intégrations de paiement`)
-};
-
-const uk_comparepaymentintegrations2 = /** @type {(inputs: Comparepaymentintegrations2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Платіжні інтеграції`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_comparepaymentintegrations2 = /** @type {(inputs: Comparepaymentintegra
 * @returns {LocalizedString}
 */
 const comparepaymentintegrations2 = /** @type {((inputs?: Comparepaymentintegrations2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparepaymentintegrations2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_comparepaymentintegrations2(inputs)
-	if (locale === "zh") return zh_comparepaymentintegrations2(inputs)
-	if (locale === "ja") return ja_comparepaymentintegrations2(inputs)
-	if (locale === "ko") return ko_comparepaymentintegrations2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_comparepaymentintegrations2(inputs)
-	if (locale === "de") return de_comparepaymentintegrations2(inputs)
-	if (locale === "fr") return fr_comparepaymentintegrations2(inputs)
-	if (locale === "uk") return uk_comparepaymentintegrations2(inputs)
-	return en_comparepaymentintegrations2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Integraciones de pago")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("支付集成")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("支払いの統合")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("결제 통합")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("支付整合")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Zahlungsintegrationen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Intégrations de paiement")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Платіжні інтеграції")
+	return /** @type {LocalizedString} */ ("Payment integrations")
 });
 export { comparepaymentintegrations2 as "comparePaymentIntegrations" }

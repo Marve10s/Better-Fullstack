@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildernone1Inputs */
 
-const en_buildernone1 = /** @type {(inputs: Buildernone1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`None`)
-};
 
-const es_buildernone1 = /** @type {(inputs: Buildernone1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ninguno`)
-};
-
-const zh_buildernone1 = /** @type {(inputs: Buildernone1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`无`)
-};
-
-const ja_buildernone1 = /** @type {(inputs: Buildernone1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`なし`)
-};
-
-const ko_buildernone1 = /** @type {(inputs: Buildernone1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`없음`)
-};
-
-const zh_hant1_buildernone1 = /** @type {(inputs: Buildernone1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`無`)
-};
-
-const de_buildernone1 = /** @type {(inputs: Buildernone1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Keiner`)
-};
-
-const fr_buildernone1 = /** @type {(inputs: Buildernone1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aucun`)
-};
-
-const uk_buildernone1 = /** @type {(inputs: Buildernone1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Жодного`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildernone1 = /** @type {(inputs: Buildernone1Inputs) => LocalizedStri
 * @returns {LocalizedString}
 */
 const buildernone1 = /** @type {((inputs?: Buildernone1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildernone1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildernone1(inputs)
-	if (locale === "zh") return zh_buildernone1(inputs)
-	if (locale === "ja") return ja_buildernone1(inputs)
-	if (locale === "ko") return ko_buildernone1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildernone1(inputs)
-	if (locale === "de") return de_buildernone1(inputs)
-	if (locale === "fr") return fr_buildernone1(inputs)
-	if (locale === "uk") return uk_buildernone1(inputs)
-	return en_buildernone1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Ninguno")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("无")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("なし")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("없음")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("無")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Keiner")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Aucun")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Жодного")
+	return /** @type {LocalizedString} */ ("None")
 });
 export { buildernone1 as "builderNone" }

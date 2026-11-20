@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildershowless2Inputs */
 
-const en_buildershowless2 = /** @type {(inputs: Buildershowless2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Show less`)
-};
 
-const es_buildershowless2 = /** @type {(inputs: Buildershowless2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Mostrar menos`)
-};
-
-const zh_buildershowless2 = /** @type {(inputs: Buildershowless2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`收起`)
-};
-
-const ja_buildershowless2 = /** @type {(inputs: Buildershowless2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`折りたたむ`)
-};
-
-const ko_buildershowless2 = /** @type {(inputs: Buildershowless2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`접기`)
-};
-
-const zh_hant1_buildershowless2 = /** @type {(inputs: Buildershowless2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`收起`)
-};
-
-const de_buildershowless2 = /** @type {(inputs: Buildershowless2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Weniger anzeigen`)
-};
-
-const fr_buildershowless2 = /** @type {(inputs: Buildershowless2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Afficher moins`)
-};
-
-const uk_buildershowless2 = /** @type {(inputs: Buildershowless2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Показати менше`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildershowless2 = /** @type {(inputs: Buildershowless2Inputs) => Local
 * @returns {LocalizedString}
 */
 const buildershowless2 = /** @type {((inputs?: Buildershowless2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildershowless2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildershowless2(inputs)
-	if (locale === "zh") return zh_buildershowless2(inputs)
-	if (locale === "ja") return ja_buildershowless2(inputs)
-	if (locale === "ko") return ko_buildershowless2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildershowless2(inputs)
-	if (locale === "de") return de_buildershowless2(inputs)
-	if (locale === "fr") return fr_buildershowless2(inputs)
-	if (locale === "uk") return uk_buildershowless2(inputs)
-	return en_buildershowless2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Mostrar menos")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("收起")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("折りたたむ")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("접기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("收起")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Weniger anzeigen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Afficher moins")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Показати менше")
+	return /** @type {LocalizedString} */ ("Show less")
 });
 export { buildershowless2 as "builderShowLess" }

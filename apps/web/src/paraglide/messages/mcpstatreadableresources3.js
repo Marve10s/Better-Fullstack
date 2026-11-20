@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpstatreadableresources3Inputs */
 
-const en_mcpstatreadableresources3 = /** @type {(inputs: Mcpstatreadableresources3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`readable resources`)
-};
 
-const es_mcpstatreadableresources3 = /** @type {(inputs: Mcpstatreadableresources3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`recursos legibles`)
-};
-
-const zh_mcpstatreadableresources3 = /** @type {(inputs: Mcpstatreadableresources3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`可读资源`)
-};
-
-const ja_mcpstatreadableresources3 = /** @type {(inputs: Mcpstatreadableresources3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`読み取り可能なリソース`)
-};
-
-const ko_mcpstatreadableresources3 = /** @type {(inputs: Mcpstatreadableresources3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`읽을 수 있는 리소스`)
-};
-
-const zh_hant1_mcpstatreadableresources3 = /** @type {(inputs: Mcpstatreadableresources3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`可讀資源`)
-};
-
-const de_mcpstatreadableresources3 = /** @type {(inputs: Mcpstatreadableresources3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`lesbare Ressourcen`)
-};
-
-const fr_mcpstatreadableresources3 = /** @type {(inputs: Mcpstatreadableresources3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ressources lisibles`)
-};
-
-const uk_mcpstatreadableresources3 = /** @type {(inputs: Mcpstatreadableresources3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`доступні для читання ресурси`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpstatreadableresources3 = /** @type {(inputs: Mcpstatreadableresource
 * @returns {LocalizedString}
 */
 const mcpstatreadableresources3 = /** @type {((inputs?: Mcpstatreadableresources3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpstatreadableresources3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpstatreadableresources3(inputs)
-	if (locale === "zh") return zh_mcpstatreadableresources3(inputs)
-	if (locale === "ja") return ja_mcpstatreadableresources3(inputs)
-	if (locale === "ko") return ko_mcpstatreadableresources3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpstatreadableresources3(inputs)
-	if (locale === "de") return de_mcpstatreadableresources3(inputs)
-	if (locale === "fr") return fr_mcpstatreadableresources3(inputs)
-	if (locale === "uk") return uk_mcpstatreadableresources3(inputs)
-	return en_mcpstatreadableresources3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("recursos legibles")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("可读资源")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("読み取り可能なリソース")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("읽을 수 있는 리소스")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("可讀資源")
+	if (locale === "de") return /** @type {LocalizedString} */ ("lesbare Ressourcen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("ressources lisibles")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("доступні для читання ресурси")
+	return /** @type {LocalizedString} */ ("readable resources")
 });
 export { mcpstatreadableresources3 as "mcpStatReadableResources" }

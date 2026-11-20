@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderopengithubrepository3Inputs */
 
-const en_builderopengithubrepository3 = /** @type {(inputs: Builderopengithubrepository3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Open GitHub repository`)
-};
 
-const es_builderopengithubrepository3 = /** @type {(inputs: Builderopengithubrepository3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abrir repositorio de GitHub`)
-};
-
-const zh_builderopengithubrepository3 = /** @type {(inputs: Builderopengithubrepository3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打开 GitHub 仓库`)
-};
-
-const ja_builderopengithubrepository3 = /** @type {(inputs: Builderopengithubrepository3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`GitHub リポジトリを開く`)
-};
-
-const ko_builderopengithubrepository3 = /** @type {(inputs: Builderopengithubrepository3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`GitHub 저장소 열기`)
-};
-
-const zh_hant1_builderopengithubrepository3 = /** @type {(inputs: Builderopengithubrepository3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打開 GitHub 倉庫`)
-};
-
-const de_builderopengithubrepository3 = /** @type {(inputs: Builderopengithubrepository3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Öffnen Sie das GitHub-Repository`)
-};
-
-const fr_builderopengithubrepository3 = /** @type {(inputs: Builderopengithubrepository3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ouvrir le dépôt GitHub`)
-};
-
-const uk_builderopengithubrepository3 = /** @type {(inputs: Builderopengithubrepository3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкрити репозиторій GitHub`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderopengithubrepository3 = /** @type {(inputs: Builderopengithubrep
 * @returns {LocalizedString}
 */
 const builderopengithubrepository3 = /** @type {((inputs?: Builderopengithubrepository3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderopengithubrepository3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderopengithubrepository3(inputs)
-	if (locale === "zh") return zh_builderopengithubrepository3(inputs)
-	if (locale === "ja") return ja_builderopengithubrepository3(inputs)
-	if (locale === "ko") return ko_builderopengithubrepository3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderopengithubrepository3(inputs)
-	if (locale === "de") return de_builderopengithubrepository3(inputs)
-	if (locale === "fr") return fr_builderopengithubrepository3(inputs)
-	if (locale === "uk") return uk_builderopengithubrepository3(inputs)
-	return en_builderopengithubrepository3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Abrir repositorio de GitHub")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("打开 GitHub 仓库")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("GitHub リポジトリを開く")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("GitHub 저장소 열기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("打開 GitHub 倉庫")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Öffnen Sie das GitHub-Repository")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Ouvrir le dépôt GitHub")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Відкрити репозиторій GitHub")
+	return /** @type {LocalizedString} */ ("Open GitHub repository")
 });
 export { builderopengithubrepository3 as "builderOpenGithubRepository" }
