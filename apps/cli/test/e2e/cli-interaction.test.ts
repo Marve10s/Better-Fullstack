@@ -216,17 +216,25 @@ describe("CLI Interaction Tests", () => {
   });
 
   describe("prompt fallback behavior", () => {
-    it("uses addon defaults in CI without prompting for template selection", async () => {
+    it("preserves the generated OpenTUI app without prompting in CI", async () => {
       const dir = join(SMOKE_DIR, "opentui-ci");
       const result = await runCLI([dir, ...OPENTUI_FLAGS], {
         env: { CI: "true" },
         timeout: 120_000,
       });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("Using default OpenTUI template: Core");
       expect(result.stdout).not.toContain("Choose a template");
+      expect(result.stderr).not.toContain("Would you like to delete it?");
       expect(existsSync(join(dir, "bts.jsonc"))).toBe(true);
-      expect(existsSync(join(dir, "apps", "tui"))).toBe(true);
+
+      const tuiDir = join(dir, "apps", "tui");
+      const manifest: unknown = JSON.parse(await readFile(join(tuiDir, "package.json"), "utf8"));
+      expect(manifest).toMatchObject({
+        dependencies: { "@opentui/core": expect.any(String) },
+      });
+      expect(await readFile(join(tuiDir, "src", "index.ts"), "utf8")).toContain(
+        "Better Fullstack + OpenTUI",
+      );
     });
 
     it("scaffolds without TTY when all flags are provided and version channel is omitted", async () => {
