@@ -28,6 +28,11 @@ const TEMPLATES = {
 
 export async function setupTui(config: ProjectConfig) {
   const { packageManager, projectDir } = config;
+  const appsDir = path.join(projectDir, "apps");
+
+  if (await fs.pathExists(path.join(appsDir, "tui", "package.json"))) {
+    return;
+  }
 
   try {
     log.info("Setting up OpenTUI...");
@@ -46,7 +51,6 @@ export async function setupTui(config: ProjectConfig) {
     const commandWithArgs = `create-tui@latest --template ${template} --no-git --no-install tui`;
     const args = getPackageExecutionArgs(packageManager, commandWithArgs);
 
-    const appsDir = path.join(projectDir, "apps");
     await fs.ensureDir(appsDir);
 
     const s = spinner();
