@@ -94,12 +94,8 @@ export function setOutputCaptured(value: boolean): void {
   }
 }
 
-export function childStderr(): "pipe" | ["inherit", "pipe"] {
-  return tryGetContext()?.outputCaptured ? "pipe" : ["inherit", "pipe"];
-}
-
-export function isOutputCaptured(): boolean {
-  return tryGetContext()?.outputCaptured ?? false;
+export function childStderr() {
+  return [tryGetContext()?.outputCaptured ? process.stderr : "inherit", "pipe"] as const;
 }
 
 type ContextOptions = {
