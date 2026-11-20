@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { execa } from "execa";
 import os from "node:os";
 import path from "node:path";
 
@@ -11,6 +12,7 @@ import {
   getInstallRetryArgs,
   installDependencies,
 } from "@/helpers/core/install-dependencies";
+import { childStderr, runWithContextAsync, setOutputCaptured } from "@/presentation/context";
 
 describe("getInstallEnvironment", () => {
   it("disables immutable Yarn CI defaults for fresh scaffolds", () => {
@@ -56,6 +58,31 @@ describe("getInstallRetryArgs", () => {
 });
 
 describe("installDependencies", () => {
+  it.each([0, 1])("captures and retains child stderr when the child exits %i", async (exitCode) => {
+    const notice = "setup command stderr";
+    const writes: string[] = [];
+    const originalWrite = process.stderr.write;
+    process.stderr.write = ((chunk, encoding, callback) => {
+      writes.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString());
+      const done = typeof encoding === "function" ? encoding : callback;
+      if (typeof done === "function") done();
+      return true;
+    }) as typeof process.stderr.write;
+
+    try {
+      const result = await runWithContextAsync({}, () => {
+        setOutputCaptured(true);
+        const script = `console.error(${JSON.stringify(notice)}); process.exit(${exitCode})`;
+        return execa(process.execPath, ["-e", script], { stderr: childStderr(), reject: false });
+      });
+      expect(result.exitCode).toBe(exitCode);
+      expect(result.stderr).toBe(notice);
+      expect(writes.join("")).toBe(`${notice}\n`);
+    } finally {
+      process.stderr.write = originalWrite;
+    }
+  });
+
   it("returns a failure result instead of swallowing the error when install fails", async () => {
     // A non-existent cwd makes the install command fail fast (ENOENT) without
     // running a real install. The function must report the failure to its

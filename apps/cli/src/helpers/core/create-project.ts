@@ -31,7 +31,7 @@ import {
   recordScaffoldManifest,
 } from "@/lifecycle/scaffold-manifest";
 import { formatProject } from "@/platform/file-formatter";
-import { isSilent } from "@/presentation/context";
+import { childStderr, isSilent } from "@/presentation/context";
 import { ProjectCreationError, type CreationStage } from "@/telemetry/creation-failure";
 import { getStandaloneBackendEcosystem, isToolingOverlayOnly, type ProjectConfig } from "@/types";
 
@@ -151,7 +151,7 @@ export async function createProject(options: ProjectConfig, cliInput: CreateProj
         }
         try {
           if (!isSilent()) log.step(`Preparing ${task.label} (${task.path})`);
-          await $({ cwd: projectDir, stderr: ["inherit", "pipe"] })`bash -c ${task.setup}`;
+          await $({ cwd: projectDir, stderr: childStderr() })`bash -c ${task.setup}`;
         } catch (error) {
           setupFailures.push({
             step: `Prepare ${task.label}`,

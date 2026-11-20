@@ -49,6 +49,23 @@ dirty worktree belongs to its author; do not overwrite or reformat it during unr
 Do not hand-correct a flag, default, or accepted value in the output. Fix the shared registry so CLI
 and docs change together.
 
+## CLI TUI Icons
+
+- Source: `apps/web/src/lib/stack/tech-icons.ts`, `apps/web/public/icon/**`, the TUI-only logos
+  in the producer's `TUI_ONLY_ICONS` (yarn, uv and other prompt values the web registry lacks), the
+  remote logos those point to (Simple Icons CDN, GitHub avatars, favicons), and the Nerd Fonts
+  `glyphnames.json` of the pinned `NERD_FONTS_VERSION`.
+- Producer: `apps/cli/scripts/generate-tui-icons.ts`.
+- Output: `apps/cli/src/tui/icons.generated.json` (a deflated atlas of 64px logo images for kitty
+  graphics, plus a devicon codepoint per id for Nerd Font terminals; shipped only in the lazy beta
+  TUI chunk).
+- Command: `bun run --cwd apps/cli generate:tui-icons` (needs network).
+
+Regenerate after adding or changing a web icon. `apps/cli/test/features/tui-icons.test.ts` fails
+when a registry id has no TUI icon, an icon breaks the 3:1 contrast rule, or a devicon codepoint
+moves. Prompt values without their own logo resolve at runtime through the aliases in
+`apps/cli/src/tui/icons.ts`.
+
 ## Stack SEO Pages
 
 The web prebuild runs `apps/web/scripts/generate-stack-pages.ts`. Change its source data and shared

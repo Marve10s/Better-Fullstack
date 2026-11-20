@@ -6,6 +6,7 @@ import fs from "fs-extra";
 import path from "node:path";
 import pc from "picocolors";
 
+import type { BetaTuiSession } from "@/tui/start";
 import type {
   Addons,
   CreateInput,
@@ -126,6 +127,8 @@ const NON_STACK_CREATE_OPTION_KEYS = new Set([
   "directoryConflict",
   "renderTitle",
   "disableAnalytics",
+  "tui",
+  "motion",
 ]);
 
 const CREATE_STACK_FLAG_KEYS = new Set(
@@ -186,7 +189,7 @@ async function showBuilderRecommendationPrompt() {
     "Prefer a visual builder?",
   );
 
-  const response = await navigableSelect<"open" | "continue">({
+  const response = await navigableSelect<"open" | "continue" | "tui">({
     message: "How would you like to continue?",
     options: [
       {
@@ -197,6 +200,11 @@ async function showBuilderRecommendationPrompt() {
       {
         value: "continue",
         label: "Continue in the CLI",
+      },
+      {
+        value: "tui",
+        label: "Try the new full-screen TUI (beta)",
+        hint: "downloads the TUI runtime once",
       },
     ],
     initialValue: "open",
@@ -215,7 +223,18 @@ async function showBuilderRecommendationPrompt() {
     return "opened" as const;
   }
 
-  return "continue" as const;
+  return response;
+}
+
+export function shouldStartBetaTui(
+  input: Pick<CreateInput, "yes" | "part"> & { tui?: boolean },
+  hasConfigBase: boolean,
+  builderChoice: string | undefined,
+  environment?: Parameters<typeof canPromptInteractively>[0],
+): boolean {
+  if (!input.tui && builderChoice !== "tui") return false;
+  if (input.yes || input.part?.length || hasConfigBase) return false;
+  return canPromptInteractively(environment);
 }
 
 function getYesBaseConfig(flagConfig: Partial<ProjectConfig>): ProjectConfig {
@@ -456,6 +475,8 @@ export async function createProjectHandler(
     fromHistory?: number;
     config?: string;
     presetOptions?: PresetOptionSelection;
+    tui?: boolean;
+    motion?: boolean;
   },
   options: CreateHandlerOptions = {},
 ) {
@@ -471,6 +492,7 @@ export async function createProjectHandler(
         : "cli-interactive";
     let failureStage: CreationStage = "configuration";
     let failureConfig: Partial<ProjectConfig> | Record<string, unknown> = input;
+    let betaTui: BetaTuiSession | undefined;
 
     try {
       if (!isSilent() && input.renderTitle !== false) {
@@ -486,7 +508,9 @@ export async function createProjectHandler(
 
       const configBase = await resolveCreateConfigBase(input);
       const hasConfigBase = configBase !== undefined;
+      let builderChoice: Awaited<ReturnType<typeof showBuilderRecommendationPrompt>> | undefined;
       if (
+        !input.tui &&
         shouldShowBuilderRecommendationPrompt({
           input,
           hasConfigBase,
@@ -497,8 +521,18 @@ export async function createProjectHandler(
           },
         })
       ) {
-        const builderChoice = await showBuilderRecommendationPrompt();
+        builderChoice = await showBuilderRecommendationPrompt();
         if (builderChoice === "opened") return;
+      }
+      if (shouldStartBetaTui(input, hasConfigBase, builderChoice)) {
+        const { startBetaTui } = await import("@/tui/start");
+        betaTui = await startBetaTui({ projectName: input.projectName, motion: input.motion });
+      } else if (input.tui && !isSilent()) {
+        const reason =
+          input.yes || input.part?.length || hasConfigBase
+            ? "The beta TUI cannot be combined with --yes, --part, --config, or --from-history."
+            : "The beta TUI is not available in this terminal.";
+        log.warn(`${reason} Continuing in the classic CLI.`);
       }
 
       if (hasConfigBase && !isSilent()) {
@@ -933,6 +967,20 @@ export async function createProjectHandler(
         displayPreflightWarnings(preflight);
       }
 
+      if (betaTui) {
+        await betaTui.review(config);
+        if (
+          betaTui.hostsScaffold(config, {
+            manualDb: cliInput.manualDb ?? input.manualDb,
+            dryRun: input.dryRun,
+          })
+        ) {
+          betaTui.launch(config);
+        } else {
+          await betaTui.close();
+        }
+      }
+
       if (input.dryRun) {
         failureStage = "generation";
         const { generateVirtualProject, EMBEDDED_TEMPLATES } =
@@ -1098,6 +1146,13 @@ export async function createProjectHandler(
         }
       }
 
+      await betaTui?.land({
+        config,
+        elapsedMs: elapsedTimeMs,
+        reproducibleCommand,
+        setupFailures: setupFailures.map((failure) => failure.step),
+      });
+
       return {
         success: true,
         projectConfig: config,
@@ -1152,6 +1207,8 @@ export async function createProjectHandler(
         throw error;
       }
       throw error;
+    } finally {
+      await betaTui?.close();
     }
   });
 }

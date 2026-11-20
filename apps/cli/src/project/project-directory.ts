@@ -4,8 +4,11 @@ import path from "node:path";
 import pc from "picocolors";
 
 import { getProjectName } from "@/prompts/project/project-name";
-import { isSilent } from "@/presentation/context";
+import { getPromptDriver, isSilent } from "@/presentation/context";
 import { exitCancelled, handleError } from "@/presentation/errors";
+import type { NavigableSelectOptions } from "@/prompts/core/navigable";
+
+type DirectoryConflictAction = "overwrite" | "merge" | "rename" | "cancel";
 
 export async function handleDirectoryConflict(currentPathInput: string) {
   while (true) {
@@ -25,7 +28,7 @@ export async function handleDirectoryConflict(currentPathInput: string) {
 
     log.warn(`Directory "${pc.yellow(currentPathInput)}" already exists and is not empty.`);
 
-    const action = await select<"overwrite" | "merge" | "rename" | "cancel">({
+    const conflictPrompt = {
       message: "What would you like to do?",
       options: [
         {
@@ -46,7 +49,11 @@ export async function handleDirectoryConflict(currentPathInput: string) {
         { value: "cancel", label: "Cancel", hint: "Abort the process" },
       ],
       initialValue: "rename",
-    });
+    } satisfies NavigableSelectOptions<DirectoryConflictAction>;
+    const driver = getPromptDriver();
+    const action = driver
+      ? await driver.select(conflictPrompt, { canGoBack: false, stepKey: "directoryConflict" })
+      : await select<DirectoryConflictAction>(conflictPrompt);
 
     if (isCancel(action)) return exitCancelled("Operation cancelled.");
 
