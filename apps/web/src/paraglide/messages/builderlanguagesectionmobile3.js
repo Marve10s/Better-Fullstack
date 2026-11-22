@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderlanguagesectionmobile3Inputs */
 
-const en_builderlanguagesectionmobile3 = /** @type {(inputs: Builderlanguagesectionmobile3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Mobile`)
-};
 
-const es_builderlanguagesectionmobile3 = /** @type {(inputs: Builderlanguagesectionmobile3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Móvil`)
-};
-
-const zh_builderlanguagesectionmobile3 = /** @type {(inputs: Builderlanguagesectionmobile3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`移动端`)
-};
-
-const ja_builderlanguagesectionmobile3 = /** @type {(inputs: Builderlanguagesectionmobile3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`モバイル`)
-};
-
-const ko_builderlanguagesectionmobile3 = /** @type {(inputs: Builderlanguagesectionmobile3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`모바일`)
-};
-
-const zh_hant1_builderlanguagesectionmobile3 = /** @type {(inputs: Builderlanguagesectionmobile3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`行動裝置`)
-};
-
-const de_builderlanguagesectionmobile3 = /** @type {(inputs: Builderlanguagesectionmobile3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Mobile`)
-};
-
-const fr_builderlanguagesectionmobile3 = /** @type {(inputs: Builderlanguagesectionmobile3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Mobile`)
-};
-
-const uk_builderlanguagesectionmobile3 = /** @type {(inputs: Builderlanguagesectionmobile3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Мобільні`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderlanguagesectionmobile3 = /** @type {(inputs: Builderlanguagesect
 * @returns {LocalizedString}
 */
 const builderlanguagesectionmobile3 = /** @type {((inputs?: Builderlanguagesectionmobile3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderlanguagesectionmobile3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderlanguagesectionmobile3(inputs)
-	if (locale === "zh") return zh_builderlanguagesectionmobile3(inputs)
-	if (locale === "ja") return ja_builderlanguagesectionmobile3(inputs)
-	if (locale === "ko") return ko_builderlanguagesectionmobile3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderlanguagesectionmobile3(inputs)
-	if (locale === "de") return de_builderlanguagesectionmobile3(inputs)
-	if (locale === "fr") return fr_builderlanguagesectionmobile3(inputs)
-	if (locale === "uk") return uk_builderlanguagesectionmobile3(inputs)
-	return en_builderlanguagesectionmobile3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Móvil")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("移动端")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("モバイル")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("모바일")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("行動裝置")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Mobile")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Mobile")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Мобільні")
+	return /** @type {LocalizedString} */ ("Mobile")
 });
 export { builderlanguagesectionmobile3 as "builderLanguageSectionMobile" }

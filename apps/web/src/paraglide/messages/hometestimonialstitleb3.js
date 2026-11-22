@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Hometestimonialstitleb3Inputs */
 
-const en_hometestimonialstitleb3 = /** @type {(inputs: Hometestimonialstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`almost`)
-};
 
-const es_hometestimonialstitleb3 = /** @type {(inputs: Hometestimonialstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`casi`)
-};
-
-const zh_hometestimonialstitleb3 = /** @type {(inputs: Hometestimonialstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`差一点`)
-};
-
-const ja_hometestimonialstitleb3 = /** @type {(inputs: Hometestimonialstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ほとんど`)
-};
-
-const ko_hometestimonialstitleb3 = /** @type {(inputs: Hometestimonialstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`거의`)
-};
-
-const zh_hant1_hometestimonialstitleb3 = /** @type {(inputs: Hometestimonialstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`差一點`)
-};
-
-const de_hometestimonialstitleb3 = /** @type {(inputs: Hometestimonialstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`fast`)
-};
-
-const fr_hometestimonialstitleb3 = /** @type {(inputs: Hometestimonialstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`presque`)
-};
-
-const uk_hometestimonialstitleb3 = /** @type {(inputs: Hometestimonialstitleb3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`майже`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_hometestimonialstitleb3 = /** @type {(inputs: Hometestimonialstitleb3In
 * @returns {LocalizedString}
 */
 const hometestimonialstitleb3 = /** @type {((inputs?: Hometestimonialstitleb3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Hometestimonialstitleb3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_hometestimonialstitleb3(inputs)
-	if (locale === "zh") return zh_hometestimonialstitleb3(inputs)
-	if (locale === "ja") return ja_hometestimonialstitleb3(inputs)
-	if (locale === "ko") return ko_hometestimonialstitleb3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_hometestimonialstitleb3(inputs)
-	if (locale === "de") return de_hometestimonialstitleb3(inputs)
-	if (locale === "fr") return fr_hometestimonialstitleb3(inputs)
-	if (locale === "uk") return uk_hometestimonialstitleb3(inputs)
-	return en_hometestimonialstitleb3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("casi")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("差一点")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ほとんど")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("거의")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("差一點")
+	if (locale === "de") return /** @type {LocalizedString} */ ("fast")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("presque")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("майже")
+	return /** @type {LocalizedString} */ ("almost")
 });
 export { hometestimonialstitleb3 as "homeTestimonialsTitleB" }

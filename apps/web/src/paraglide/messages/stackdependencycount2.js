@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{ count: NonNullable<unknown> }} Stackdependencycount2Inputs */
 
-const en_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} dependencies`)
-};
 
-const es_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} dependencias`)
-};
-
-const zh_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 个依赖`)
-};
-
-const ja_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 依存関係`)
-};
-
-const ko_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 종속성`)
-};
-
-const zh_hant1_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} 個依賴`)
-};
-
-const de_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} Abhängigkeiten`)
-};
-
-const fr_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} dépendances`)
-};
-
-const uk_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} залежностей`)
-};
 
 /**
 * | output |
@@ -50,16 +16,16 @@ const uk_stackdependencycount2 = /** @type {(inputs: Stackdependencycount2Inputs
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const stackdependencycount2 = /** @type {((inputs: Stackdependencycount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackdependencycount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const stackdependencycount2 = /** @type {((inputs: Stackdependencycount2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Stackdependencycount2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((i, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_stackdependencycount2(inputs)
-	if (locale === "zh") return zh_stackdependencycount2(inputs)
-	if (locale === "ja") return ja_stackdependencycount2(inputs)
-	if (locale === "ko") return ko_stackdependencycount2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_stackdependencycount2(inputs)
-	if (locale === "de") return de_stackdependencycount2(inputs)
-	if (locale === "fr") return fr_stackdependencycount2(inputs)
-	if (locale === "uk") return uk_stackdependencycount2(inputs)
-	return en_stackdependencycount2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ (`${i?.count} dependencias`)
+	if (locale === "zh") return /** @type {LocalizedString} */ (`${i?.count} 个依赖`)
+	if (locale === "ja") return /** @type {LocalizedString} */ (`${i?.count} 依存関係`)
+	if (locale === "ko") return /** @type {LocalizedString} */ (`${i?.count} 종속성`)
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ (`${i?.count} 個依賴`)
+	if (locale === "de") return /** @type {LocalizedString} */ (`${i?.count} Abhängigkeiten`)
+	if (locale === "fr") return /** @type {LocalizedString} */ (`${i?.count} dépendances`)
+	if (locale === "uk") return /** @type {LocalizedString} */ (`${i?.count} залежностей`)
+	return /** @type {LocalizedString} */ (`${i?.count} dependencies`)
 });
 export { stackdependencycount2 as "stackDependencyCount" }

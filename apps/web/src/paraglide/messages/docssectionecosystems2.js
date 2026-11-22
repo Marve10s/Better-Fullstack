@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docssectionecosystems2Inputs */
 
-const en_docssectionecosystems2 = /** @type {(inputs: Docssectionecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ecosystems`)
-};
 
-const es_docssectionecosystems2 = /** @type {(inputs: Docssectionecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ecosistemas`)
-};
-
-const zh_docssectionecosystems2 = /** @type {(inputs: Docssectionecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`生态系统`)
-};
-
-const ja_docssectionecosystems2 = /** @type {(inputs: Docssectionecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`エコシステム`)
-};
-
-const ko_docssectionecosystems2 = /** @type {(inputs: Docssectionecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`생태계`)
-};
-
-const zh_hant1_docssectionecosystems2 = /** @type {(inputs: Docssectionecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`生態系統`)
-};
-
-const de_docssectionecosystems2 = /** @type {(inputs: Docssectionecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ökosysteme`)
-};
-
-const fr_docssectionecosystems2 = /** @type {(inputs: Docssectionecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Écosystèmes`)
-};
-
-const uk_docssectionecosystems2 = /** @type {(inputs: Docssectionecosystems2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Екосистеми`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docssectionecosystems2 = /** @type {(inputs: Docssectionecosystems2Inpu
 * @returns {LocalizedString}
 */
 const docssectionecosystems2 = /** @type {((inputs?: Docssectionecosystems2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssectionecosystems2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docssectionecosystems2(inputs)
-	if (locale === "zh") return zh_docssectionecosystems2(inputs)
-	if (locale === "ja") return ja_docssectionecosystems2(inputs)
-	if (locale === "ko") return ko_docssectionecosystems2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docssectionecosystems2(inputs)
-	if (locale === "de") return de_docssectionecosystems2(inputs)
-	if (locale === "fr") return fr_docssectionecosystems2(inputs)
-	if (locale === "uk") return uk_docssectionecosystems2(inputs)
-	return en_docssectionecosystems2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Ecosistemas")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("生态系统")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("エコシステム")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("생태계")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("生態系統")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Ökosysteme")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Écosystèmes")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Екосистеми")
+	return /** @type {LocalizedString} */ ("Ecosystems")
 });
 export { docssectionecosystems2 as "docsSectionEcosystems" }

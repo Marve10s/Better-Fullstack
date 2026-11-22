@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummaryrustrustmessagequeue6Inputs */
 
-const en_docsclisummaryrustrustmessagequeue6 = /** @type {(inputs: Docsclisummaryrustrustmessagequeue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust message queue.`)
-};
 
-const es_docsclisummaryrustrustmessagequeue6 = /** @type {(inputs: Docsclisummaryrustrustmessagequeue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cola de mensajes en Rust.`)
-};
-
-const zh_docsclisummaryrustrustmessagequeue6 = /** @type {(inputs: Docsclisummaryrustrustmessagequeue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust 消息队列。`)
-};
-
-const ja_docsclisummaryrustrustmessagequeue6 = /** @type {(inputs: Docsclisummaryrustrustmessagequeue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust のメッセージキュー。`)
-};
-
-const ko_docsclisummaryrustrustmessagequeue6 = /** @type {(inputs: Docsclisummaryrustrustmessagequeue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust 메시지 큐.`)
-};
-
-const zh_hant1_docsclisummaryrustrustmessagequeue6 = /** @type {(inputs: Docsclisummaryrustrustmessagequeue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust 訊息佇列。`)
-};
-
-const de_docsclisummaryrustrustmessagequeue6 = /** @type {(inputs: Docsclisummaryrustrustmessagequeue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nachrichtenwarteschlange für Rust.`)
-};
-
-const fr_docsclisummaryrustrustmessagequeue6 = /** @type {(inputs: Docsclisummaryrustrustmessagequeue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`File d’attente de messages Rust.`)
-};
-
-const uk_docsclisummaryrustrustmessagequeue6 = /** @type {(inputs: Docsclisummaryrustrustmessagequeue6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Черга повідомлень для Rust.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummaryrustrustmessagequeue6 = /** @type {(inputs: Docsclisummar
 * @returns {LocalizedString}
 */
 const docsclisummaryrustrustmessagequeue6 = /** @type {((inputs?: Docsclisummaryrustrustmessagequeue6Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummaryrustrustmessagequeue6Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummaryrustrustmessagequeue6(inputs)
-	if (locale === "zh") return zh_docsclisummaryrustrustmessagequeue6(inputs)
-	if (locale === "ja") return ja_docsclisummaryrustrustmessagequeue6(inputs)
-	if (locale === "ko") return ko_docsclisummaryrustrustmessagequeue6(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummaryrustrustmessagequeue6(inputs)
-	if (locale === "de") return de_docsclisummaryrustrustmessagequeue6(inputs)
-	if (locale === "fr") return fr_docsclisummaryrustrustmessagequeue6(inputs)
-	if (locale === "uk") return uk_docsclisummaryrustrustmessagequeue6(inputs)
-	return en_docsclisummaryrustrustmessagequeue6(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Cola de mensajes en Rust.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Rust 消息队列。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Rust のメッセージキュー。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Rust 메시지 큐.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Rust 訊息佇列。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Nachrichtenwarteschlange für Rust.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("File d’attente de messages Rust.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Черга повідомлень для Rust.")
+	return /** @type {LocalizedString} */ ("Rust message queue.")
 });
 export { docsclisummaryrustrustmessagequeue6 as "docsCliSummaryRustRustMessageQueue" }

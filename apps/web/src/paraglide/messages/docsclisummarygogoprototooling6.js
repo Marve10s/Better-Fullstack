@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummarygogoprototooling6Inputs */
 
-const en_docsclisummarygogoprototooling6 = /** @type {(inputs: Docsclisummarygogoprototooling6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Go protobuf tooling.`)
-};
 
-const es_docsclisummarygogoprototooling6 = /** @type {(inputs: Docsclisummarygogoprototooling6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Herramientas protobuf Go.`)
-};
-
-const zh_docsclisummarygogoprototooling6 = /** @type {(inputs: Docsclisummarygogoprototooling6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Go protobuf 工具。`)
-};
-
-const ja_docsclisummarygogoprototooling6 = /** @type {(inputs: Docsclisummarygogoprototooling6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Go の protobuf ツール。`)
-};
-
-const ko_docsclisummarygogoprototooling6 = /** @type {(inputs: Docsclisummarygogoprototooling6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Go protobuf 도구.`)
-};
-
-const zh_hant1_docsclisummarygogoprototooling6 = /** @type {(inputs: Docsclisummarygogoprototooling6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Go protobuf 工具。`)
-};
-
-const de_docsclisummarygogoprototooling6 = /** @type {(inputs: Docsclisummarygogoprototooling6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`protobuf-Werkzeuge für Go.`)
-};
-
-const fr_docsclisummarygogoprototooling6 = /** @type {(inputs: Docsclisummarygogoprototooling6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Outils protobuf Go.`)
-};
-
-const uk_docsclisummarygogoprototooling6 = /** @type {(inputs: Docsclisummarygogoprototooling6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Інструменти protobuf для Go.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummarygogoprototooling6 = /** @type {(inputs: Docsclisummarygog
 * @returns {LocalizedString}
 */
 const docsclisummarygogoprototooling6 = /** @type {((inputs?: Docsclisummarygogoprototooling6Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummarygogoprototooling6Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummarygogoprototooling6(inputs)
-	if (locale === "zh") return zh_docsclisummarygogoprototooling6(inputs)
-	if (locale === "ja") return ja_docsclisummarygogoprototooling6(inputs)
-	if (locale === "ko") return ko_docsclisummarygogoprototooling6(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummarygogoprototooling6(inputs)
-	if (locale === "de") return de_docsclisummarygogoprototooling6(inputs)
-	if (locale === "fr") return fr_docsclisummarygogoprototooling6(inputs)
-	if (locale === "uk") return uk_docsclisummarygogoprototooling6(inputs)
-	return en_docsclisummarygogoprototooling6(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Herramientas protobuf Go.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Go protobuf 工具。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Go の protobuf ツール。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Go protobuf 도구.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Go protobuf 工具。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("protobuf-Werkzeuge für Go.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Outils protobuf Go.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Інструменти protobuf для Go.")
+	return /** @type {LocalizedString} */ ("Go protobuf tooling.")
 });
 export { docsclisummarygogoprototooling6 as "docsCliSummaryGoGoProtoTooling" }

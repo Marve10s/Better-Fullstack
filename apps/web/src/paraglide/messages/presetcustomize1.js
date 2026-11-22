@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Presetcustomize1Inputs */
 
-const en_presetcustomize1 = /** @type {(inputs: Presetcustomize1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Customize preset`)
-};
 
-const es_presetcustomize1 = /** @type {(inputs: Presetcustomize1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Personalizar plantilla`)
-};
-
-const zh_presetcustomize1 = /** @type {(inputs: Presetcustomize1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`自定义预设`)
-};
-
-const ja_presetcustomize1 = /** @type {(inputs: Presetcustomize1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プリセットをカスタマイズする`)
-};
-
-const ko_presetcustomize1 = /** @type {(inputs: Presetcustomize1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`사전 설정 사용자 정의`)
-};
-
-const zh_hant1_presetcustomize1 = /** @type {(inputs: Presetcustomize1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`自訂預設`)
-};
-
-const de_presetcustomize1 = /** @type {(inputs: Presetcustomize1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Voreinstellung anpassen`)
-};
-
-const fr_presetcustomize1 = /** @type {(inputs: Presetcustomize1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Personnaliser le préréglage`)
-};
-
-const uk_presetcustomize1 = /** @type {(inputs: Presetcustomize1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Налаштувати пресет`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_presetcustomize1 = /** @type {(inputs: Presetcustomize1Inputs) => Local
 * @returns {LocalizedString}
 */
 const presetcustomize1 = /** @type {((inputs?: Presetcustomize1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Presetcustomize1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_presetcustomize1(inputs)
-	if (locale === "zh") return zh_presetcustomize1(inputs)
-	if (locale === "ja") return ja_presetcustomize1(inputs)
-	if (locale === "ko") return ko_presetcustomize1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_presetcustomize1(inputs)
-	if (locale === "de") return de_presetcustomize1(inputs)
-	if (locale === "fr") return fr_presetcustomize1(inputs)
-	if (locale === "uk") return uk_presetcustomize1(inputs)
-	return en_presetcustomize1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Personalizar plantilla")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("自定义预设")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("プリセットをカスタマイズする")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("사전 설정 사용자 정의")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("自訂預設")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Voreinstellung anpassen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Personnaliser le préréglage")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Налаштувати пресет")
+	return /** @type {LocalizedString} */ ("Customize preset")
 });
 export { presetcustomize1 as "presetCustomize" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpheroeyebrow2Inputs */
 
-const en_mcpheroeyebrow2 = /** @type {(inputs: Mcpheroeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`agent integration`)
-};
 
-const es_mcpheroeyebrow2 = /** @type {(inputs: Mcpheroeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`integración de agentes`)
-};
-
-const zh_mcpheroeyebrow2 = /** @type {(inputs: Mcpheroeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`代理集成`)
-};
-
-const ja_mcpheroeyebrow2 = /** @type {(inputs: Mcpheroeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`エージェントの統合`)
-};
-
-const ko_mcpheroeyebrow2 = /** @type {(inputs: Mcpheroeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`에이전트 통합`)
-};
-
-const zh_hant1_mcpheroeyebrow2 = /** @type {(inputs: Mcpheroeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`代理整合`)
-};
-
-const de_mcpheroeyebrow2 = /** @type {(inputs: Mcpheroeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Agentenintegration`)
-};
-
-const fr_mcpheroeyebrow2 = /** @type {(inputs: Mcpheroeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`intégration d'agents`)
-};
-
-const uk_mcpheroeyebrow2 = /** @type {(inputs: Mcpheroeyebrow2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`інтеграція агентів`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpheroeyebrow2 = /** @type {(inputs: Mcpheroeyebrow2Inputs) => Localiz
 * @returns {LocalizedString}
 */
 const mcpheroeyebrow2 = /** @type {((inputs?: Mcpheroeyebrow2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpheroeyebrow2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpheroeyebrow2(inputs)
-	if (locale === "zh") return zh_mcpheroeyebrow2(inputs)
-	if (locale === "ja") return ja_mcpheroeyebrow2(inputs)
-	if (locale === "ko") return ko_mcpheroeyebrow2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpheroeyebrow2(inputs)
-	if (locale === "de") return de_mcpheroeyebrow2(inputs)
-	if (locale === "fr") return fr_mcpheroeyebrow2(inputs)
-	if (locale === "uk") return uk_mcpheroeyebrow2(inputs)
-	return en_mcpheroeyebrow2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("integración de agentes")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("代理集成")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("エージェントの統合")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("에이전트 통합")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("代理整合")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Agentenintegration")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("intégration d'agents")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("інтеграція агентів")
+	return /** @type {LocalizedString} */ ("agent integration")
 });
 export { mcpheroeyebrow2 as "mcpHeroEyebrow" }

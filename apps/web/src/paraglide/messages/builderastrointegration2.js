@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderastrointegration2Inputs */
 
-const en_builderastrointegration2 = /** @type {(inputs: Builderastrointegration2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Astro Integration`)
-};
 
-const es_builderastrointegration2 = /** @type {(inputs: Builderastrointegration2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Integración de Astro`)
-};
-
-const zh_builderastrointegration2 = /** @type {(inputs: Builderastrointegration2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Astro 集成`)
-};
-
-const ja_builderastrointegration2 = /** @type {(inputs: Builderastrointegration2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Astro 統合`)
-};
-
-const ko_builderastrointegration2 = /** @type {(inputs: Builderastrointegration2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Astro 통합`)
-};
-
-const zh_hant1_builderastrointegration2 = /** @type {(inputs: Builderastrointegration2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Astro 集成`)
-};
-
-const de_builderastrointegration2 = /** @type {(inputs: Builderastrointegration2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Astro Integration`)
-};
-
-const fr_builderastrointegration2 = /** @type {(inputs: Builderastrointegration2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Intégration Astro`)
-};
-
-const uk_builderastrointegration2 = /** @type {(inputs: Builderastrointegration2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Інтеграція Astro`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderastrointegration2 = /** @type {(inputs: Builderastrointegration2
 * @returns {LocalizedString}
 */
 const builderastrointegration2 = /** @type {((inputs?: Builderastrointegration2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderastrointegration2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderastrointegration2(inputs)
-	if (locale === "zh") return zh_builderastrointegration2(inputs)
-	if (locale === "ja") return ja_builderastrointegration2(inputs)
-	if (locale === "ko") return ko_builderastrointegration2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderastrointegration2(inputs)
-	if (locale === "de") return de_builderastrointegration2(inputs)
-	if (locale === "fr") return fr_builderastrointegration2(inputs)
-	if (locale === "uk") return uk_builderastrointegration2(inputs)
-	return en_builderastrointegration2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Integración de Astro")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Astro 集成")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Astro 統合")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Astro 통합")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Astro 集成")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Astro Integration")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Intégration Astro")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Інтеграція Astro")
+	return /** @type {LocalizedString} */ ("Astro Integration")
 });
 export { builderastrointegration2 as "builderAstroIntegration" }

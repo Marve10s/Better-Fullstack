@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpdocs1Inputs */
 
-const en_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Docs`)
-};
 
-const es_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Docs`)
-};
-
-const zh_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`文档`)
-};
-
-const ja_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ドキュメント`)
-};
-
-const ko_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`문서`)
-};
-
-const zh_hant1_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`文件`)
-};
-
-const de_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dokumente`)
-};
-
-const fr_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Docs`)
-};
-
-const uk_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Документація`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpdocs1 = /** @type {(inputs: Mcpdocs1Inputs) => LocalizedString} */ (
 * @returns {LocalizedString}
 */
 const mcpdocs1 = /** @type {((inputs?: Mcpdocs1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpdocs1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpdocs1(inputs)
-	if (locale === "zh") return zh_mcpdocs1(inputs)
-	if (locale === "ja") return ja_mcpdocs1(inputs)
-	if (locale === "ko") return ko_mcpdocs1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpdocs1(inputs)
-	if (locale === "de") return de_mcpdocs1(inputs)
-	if (locale === "fr") return fr_mcpdocs1(inputs)
-	if (locale === "uk") return uk_mcpdocs1(inputs)
-	return en_mcpdocs1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Docs")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("文档")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ドキュメント")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("문서")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("文件")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Dokumente")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Docs")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Документація")
+	return /** @type {LocalizedString} */ ("Docs")
 });
 export { mcpdocs1 as "mcpDocs" }

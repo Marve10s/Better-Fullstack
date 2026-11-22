@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Navcompare1Inputs */
 
-const en_navcompare1 = /** @type {(inputs: Navcompare1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Compare`)
-};
 
-const es_navcompare1 = /** @type {(inputs: Navcompare1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Comparar`)
-};
-
-const zh_navcompare1 = /** @type {(inputs: Navcompare1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`比较`)
-};
-
-const ja_navcompare1 = /** @type {(inputs: Navcompare1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`比較`)
-};
-
-const ko_navcompare1 = /** @type {(inputs: Navcompare1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`비교`)
-};
-
-const zh_hant1_navcompare1 = /** @type {(inputs: Navcompare1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`比較`)
-};
-
-const de_navcompare1 = /** @type {(inputs: Navcompare1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vergleichen`)
-};
-
-const fr_navcompare1 = /** @type {(inputs: Navcompare1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Comparer`)
-};
-
-const uk_navcompare1 = /** @type {(inputs: Navcompare1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Порівняння`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_navcompare1 = /** @type {(inputs: Navcompare1Inputs) => LocalizedString
 * @returns {LocalizedString}
 */
 const navcompare1 = /** @type {((inputs?: Navcompare1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navcompare1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_navcompare1(inputs)
-	if (locale === "zh") return zh_navcompare1(inputs)
-	if (locale === "ja") return ja_navcompare1(inputs)
-	if (locale === "ko") return ko_navcompare1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_navcompare1(inputs)
-	if (locale === "de") return de_navcompare1(inputs)
-	if (locale === "fr") return fr_navcompare1(inputs)
-	if (locale === "uk") return uk_navcompare1(inputs)
-	return en_navcompare1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Comparar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("比较")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("比較")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("비교")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("比較")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Vergleichen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Comparer")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Порівняння")
+	return /** @type {LocalizedString} */ ("Compare")
 });
 export { navcompare1 as "navCompare" }

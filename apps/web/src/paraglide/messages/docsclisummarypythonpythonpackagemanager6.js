@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummarypythonpythonpackagemanager6Inputs */
 
-const en_docsclisummarypythonpythonpackagemanager6 = /** @type {(inputs: Docsclisummarypythonpythonpackagemanager6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python package manager.`)
-};
 
-const es_docsclisummarypythonpythonpackagemanager6 = /** @type {(inputs: Docsclisummarypythonpythonpackagemanager6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Gestor de paquetes Python.`)
-};
-
-const zh_docsclisummarypythonpythonpackagemanager6 = /** @type {(inputs: Docsclisummarypythonpythonpackagemanager6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python 包管理器。`)
-};
-
-const ja_docsclisummarypythonpythonpackagemanager6 = /** @type {(inputs: Docsclisummarypythonpythonpackagemanager6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python のパッケージマネージャー。`)
-};
-
-const ko_docsclisummarypythonpythonpackagemanager6 = /** @type {(inputs: Docsclisummarypythonpythonpackagemanager6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python 패키지 매니저.`)
-};
-
-const zh_hant1_docsclisummarypythonpythonpackagemanager6 = /** @type {(inputs: Docsclisummarypythonpythonpackagemanager6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Python 套件管理器。`)
-};
-
-const de_docsclisummarypythonpythonpackagemanager6 = /** @type {(inputs: Docsclisummarypythonpythonpackagemanager6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Paketmanager für Python.`)
-};
-
-const fr_docsclisummarypythonpythonpackagemanager6 = /** @type {(inputs: Docsclisummarypythonpythonpackagemanager6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Gestionnaire de paquets Python.`)
-};
-
-const uk_docsclisummarypythonpythonpackagemanager6 = /** @type {(inputs: Docsclisummarypythonpythonpackagemanager6Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Менеджер пакетів Python.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummarypythonpythonpackagemanager6 = /** @type {(inputs: Docscli
 * @returns {LocalizedString}
 */
 const docsclisummarypythonpythonpackagemanager6 = /** @type {((inputs?: Docsclisummarypythonpythonpackagemanager6Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummarypythonpythonpackagemanager6Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummarypythonpythonpackagemanager6(inputs)
-	if (locale === "zh") return zh_docsclisummarypythonpythonpackagemanager6(inputs)
-	if (locale === "ja") return ja_docsclisummarypythonpythonpackagemanager6(inputs)
-	if (locale === "ko") return ko_docsclisummarypythonpythonpackagemanager6(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummarypythonpythonpackagemanager6(inputs)
-	if (locale === "de") return de_docsclisummarypythonpythonpackagemanager6(inputs)
-	if (locale === "fr") return fr_docsclisummarypythonpythonpackagemanager6(inputs)
-	if (locale === "uk") return uk_docsclisummarypythonpythonpackagemanager6(inputs)
-	return en_docsclisummarypythonpythonpackagemanager6(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Gestor de paquetes Python.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Python 包管理器。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Python のパッケージマネージャー。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Python 패키지 매니저.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Python 套件管理器。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Paketmanager für Python.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Gestionnaire de paquets Python.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Менеджер пакетів Python.")
+	return /** @type {LocalizedString} */ ("Python package manager.")
 });
 export { docsclisummarypythonpythonpackagemanager6 as "docsCliSummaryPythonPythonPackageManager" }

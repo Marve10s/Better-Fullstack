@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docssectionoverview2Inputs */
 
-const en_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Overview`)
-};
 
-const es_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Resumen`)
-};
-
-const zh_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`概览`)
-};
-
-const ja_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`概要`)
-};
-
-const ko_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`개요`)
-};
-
-const zh_hant1_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`概覽`)
-};
-
-const de_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Überblick`)
-};
-
-const fr_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aperçu`)
-};
-
-const uk_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Огляд`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docssectionoverview2 = /** @type {(inputs: Docssectionoverview2Inputs) 
 * @returns {LocalizedString}
 */
 const docssectionoverview2 = /** @type {((inputs?: Docssectionoverview2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssectionoverview2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docssectionoverview2(inputs)
-	if (locale === "zh") return zh_docssectionoverview2(inputs)
-	if (locale === "ja") return ja_docssectionoverview2(inputs)
-	if (locale === "ko") return ko_docssectionoverview2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docssectionoverview2(inputs)
-	if (locale === "de") return de_docssectionoverview2(inputs)
-	if (locale === "fr") return fr_docssectionoverview2(inputs)
-	if (locale === "uk") return uk_docssectionoverview2(inputs)
-	return en_docssectionoverview2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Resumen")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("概览")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("概要")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("개요")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("概覽")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Überblick")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Aperçu")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Огляд")
+	return /** @type {LocalizedString} */ ("Overview")
 });
 export { docssectionoverview2 as "docsSectionOverview" }

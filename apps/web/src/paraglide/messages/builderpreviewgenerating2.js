@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderpreviewgenerating2Inputs */
 
-const en_builderpreviewgenerating2 = /** @type {(inputs: Builderpreviewgenerating2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Generating preview...`)
-};
 
-const es_builderpreviewgenerating2 = /** @type {(inputs: Builderpreviewgenerating2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Generando vista previa...`)
-};
-
-const zh_builderpreviewgenerating2 = /** @type {(inputs: Builderpreviewgenerating2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`正在生成预览...`)
-};
-
-const ja_builderpreviewgenerating2 = /** @type {(inputs: Builderpreviewgenerating2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プレビューを生成中...`)
-};
-
-const ko_builderpreviewgenerating2 = /** @type {(inputs: Builderpreviewgenerating2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`미리보기 생성 중...`)
-};
-
-const zh_hant1_builderpreviewgenerating2 = /** @type {(inputs: Builderpreviewgenerating2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`正在生成預覽...`)
-};
-
-const de_builderpreviewgenerating2 = /** @type {(inputs: Builderpreviewgenerating2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vorschau wird erstellt...`)
-};
-
-const fr_builderpreviewgenerating2 = /** @type {(inputs: Builderpreviewgenerating2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Génération d'un aperçu...`)
-};
-
-const uk_builderpreviewgenerating2 = /** @type {(inputs: Builderpreviewgenerating2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Генеруємо попередній перегляд...`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderpreviewgenerating2 = /** @type {(inputs: Builderpreviewgeneratin
 * @returns {LocalizedString}
 */
 const builderpreviewgenerating2 = /** @type {((inputs?: Builderpreviewgenerating2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderpreviewgenerating2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderpreviewgenerating2(inputs)
-	if (locale === "zh") return zh_builderpreviewgenerating2(inputs)
-	if (locale === "ja") return ja_builderpreviewgenerating2(inputs)
-	if (locale === "ko") return ko_builderpreviewgenerating2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderpreviewgenerating2(inputs)
-	if (locale === "de") return de_builderpreviewgenerating2(inputs)
-	if (locale === "fr") return fr_builderpreviewgenerating2(inputs)
-	if (locale === "uk") return uk_builderpreviewgenerating2(inputs)
-	return en_builderpreviewgenerating2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Generando vista previa...")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("正在生成预览...")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("プレビューを生成中...")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("미리보기 생성 중...")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("正在生成預覽...")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Vorschau wird erstellt...")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Génération d'un aperçu...")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Генеруємо попередній перегляд...")
+	return /** @type {LocalizedString} */ ("Generating preview...")
 });
 export { builderpreviewgenerating2 as "builderPreviewGenerating" }

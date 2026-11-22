@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Savedload1Inputs */
 
-const en_savedload1 = /** @type {(inputs: Savedload1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Load`)
-};
 
-const es_savedload1 = /** @type {(inputs: Savedload1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cargar`)
-};
-
-const zh_savedload1 = /** @type {(inputs: Savedload1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`加载`)
-};
-
-const ja_savedload1 = /** @type {(inputs: Savedload1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`読み込む`)
-};
-
-const ko_savedload1 = /** @type {(inputs: Savedload1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`불러오기`)
-};
-
-const zh_hant1_savedload1 = /** @type {(inputs: Savedload1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`載入`)
-};
-
-const de_savedload1 = /** @type {(inputs: Savedload1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Laden`)
-};
-
-const fr_savedload1 = /** @type {(inputs: Savedload1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Charger`)
-};
-
-const uk_savedload1 = /** @type {(inputs: Savedload1Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Завантажити`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_savedload1 = /** @type {(inputs: Savedload1Inputs) => LocalizedString} 
 * @returns {LocalizedString}
 */
 const savedload1 = /** @type {((inputs?: Savedload1Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedload1Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_savedload1(inputs)
-	if (locale === "zh") return zh_savedload1(inputs)
-	if (locale === "ja") return ja_savedload1(inputs)
-	if (locale === "ko") return ko_savedload1(inputs)
-	if (locale === "zh-Hant") return zh_hant1_savedload1(inputs)
-	if (locale === "de") return de_savedload1(inputs)
-	if (locale === "fr") return fr_savedload1(inputs)
-	if (locale === "uk") return uk_savedload1(inputs)
-	return en_savedload1(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Cargar")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("加载")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("読み込む")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("불러오기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("載入")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Laden")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Charger")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Завантажити")
+	return /** @type {LocalizedString} */ ("Load")
 });
 export { savedload1 as "savedLoad" }

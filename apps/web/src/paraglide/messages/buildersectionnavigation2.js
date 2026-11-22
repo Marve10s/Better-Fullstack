@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Buildersectionnavigation2Inputs */
 
-const en_buildersectionnavigation2 = /** @type {(inputs: Buildersectionnavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Section navigation`)
-};
 
-const es_buildersectionnavigation2 = /** @type {(inputs: Buildersectionnavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Navegación de secciones`)
-};
-
-const zh_buildersectionnavigation2 = /** @type {(inputs: Buildersectionnavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`分区导航`)
-};
-
-const ja_buildersectionnavigation2 = /** @type {(inputs: Buildersectionnavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`セクションのナビゲーション`)
-};
-
-const ko_buildersectionnavigation2 = /** @type {(inputs: Buildersectionnavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`섹션 탐색`)
-};
-
-const zh_hant1_buildersectionnavigation2 = /** @type {(inputs: Buildersectionnavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`分區導航`)
-};
-
-const de_buildersectionnavigation2 = /** @type {(inputs: Buildersectionnavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abschnittsnavigation`)
-};
-
-const fr_buildersectionnavigation2 = /** @type {(inputs: Buildersectionnavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Navigation dans les sections`)
-};
-
-const uk_buildersectionnavigation2 = /** @type {(inputs: Buildersectionnavigation2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Навігація по розділах`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_buildersectionnavigation2 = /** @type {(inputs: Buildersectionnavigatio
 * @returns {LocalizedString}
 */
 const buildersectionnavigation2 = /** @type {((inputs?: Buildersectionnavigation2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Buildersectionnavigation2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_buildersectionnavigation2(inputs)
-	if (locale === "zh") return zh_buildersectionnavigation2(inputs)
-	if (locale === "ja") return ja_buildersectionnavigation2(inputs)
-	if (locale === "ko") return ko_buildersectionnavigation2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_buildersectionnavigation2(inputs)
-	if (locale === "de") return de_buildersectionnavigation2(inputs)
-	if (locale === "fr") return fr_buildersectionnavigation2(inputs)
-	if (locale === "uk") return uk_buildersectionnavigation2(inputs)
-	return en_buildersectionnavigation2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Navegación de secciones")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("分区导航")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("セクションのナビゲーション")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("섹션 탐색")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("分區導航")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Abschnittsnavigation")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Navigation dans les sections")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Навігація по розділах")
+	return /** @type {LocalizedString} */ ("Section navigation")
 });
 export { buildersectionnavigation2 as "builderSectionNavigation" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummaryjavajavalibraries5Inputs */
 
-const en_docsclisummaryjavajavalibraries5 = /** @type {(inputs: Docsclisummaryjavajavalibraries5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java libraries.`)
-};
 
-const es_docsclisummaryjavajavalibraries5 = /** @type {(inputs: Docsclisummaryjavajavalibraries5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bibliotecas Java.`)
-};
-
-const zh_docsclisummaryjavajavalibraries5 = /** @type {(inputs: Docsclisummaryjavajavalibraries5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java 库。`)
-};
-
-const ja_docsclisummaryjavajavalibraries5 = /** @type {(inputs: Docsclisummaryjavajavalibraries5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java のライブラリ。`)
-};
-
-const ko_docsclisummaryjavajavalibraries5 = /** @type {(inputs: Docsclisummaryjavajavalibraries5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java 라이브러리.`)
-};
-
-const zh_hant1_docsclisummaryjavajavalibraries5 = /** @type {(inputs: Docsclisummaryjavajavalibraries5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java 函式庫。`)
-};
-
-const de_docsclisummaryjavajavalibraries5 = /** @type {(inputs: Docsclisummaryjavajavalibraries5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Java-Bibliotheken.`)
-};
-
-const fr_docsclisummaryjavajavalibraries5 = /** @type {(inputs: Docsclisummaryjavajavalibraries5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bibliothèques Java.`)
-};
-
-const uk_docsclisummaryjavajavalibraries5 = /** @type {(inputs: Docsclisummaryjavajavalibraries5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Бібліотеки Java.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummaryjavajavalibraries5 = /** @type {(inputs: Docsclisummaryja
 * @returns {LocalizedString}
 */
 const docsclisummaryjavajavalibraries5 = /** @type {((inputs?: Docsclisummaryjavajavalibraries5Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummaryjavajavalibraries5Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummaryjavajavalibraries5(inputs)
-	if (locale === "zh") return zh_docsclisummaryjavajavalibraries5(inputs)
-	if (locale === "ja") return ja_docsclisummaryjavajavalibraries5(inputs)
-	if (locale === "ko") return ko_docsclisummaryjavajavalibraries5(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummaryjavajavalibraries5(inputs)
-	if (locale === "de") return de_docsclisummaryjavajavalibraries5(inputs)
-	if (locale === "fr") return fr_docsclisummaryjavajavalibraries5(inputs)
-	if (locale === "uk") return uk_docsclisummaryjavajavalibraries5(inputs)
-	return en_docsclisummaryjavajavalibraries5(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Bibliotecas Java.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Java 库。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Java のライブラリ。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Java 라이브러리.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Java 函式庫。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Java-Bibliotheken.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Bibliothèques Java.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Бібліотеки Java.")
+	return /** @type {LocalizedString} */ ("Java libraries.")
 });
 export { docsclisummaryjavajavalibraries5 as "docsCliSummaryJavaJavaLibraries" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Comparegobackends2Inputs */
 
-const en_comparegobackends2 = /** @type {(inputs: Comparegobackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Go backends (Gin, Echo)`)
-};
 
-const es_comparegobackends2 = /** @type {(inputs: Comparegobackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backends Go (Gin, Echo)`)
-};
-
-const zh_comparegobackends2 = /** @type {(inputs: Comparegobackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Go 后端（Gin、Echo）`)
-};
-
-const ja_comparegobackends2 = /** @type {(inputs: Comparegobackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Go バックエンド (Gin、Echo)`)
-};
-
-const ko_comparegobackends2 = /** @type {(inputs: Comparegobackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Go 백엔드(Gin, Echo)`)
-};
-
-const zh_hant1_comparegobackends2 = /** @type {(inputs: Comparegobackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Go 後端（Gin、Echo）`)
-};
-
-const de_comparegobackends2 = /** @type {(inputs: Comparegobackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Go-Backends (Gin, Echo)`)
-};
-
-const fr_comparegobackends2 = /** @type {(inputs: Comparegobackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Backends Go (Gin, Echo)`)
-};
-
-const uk_comparegobackends2 = /** @type {(inputs: Comparegobackends2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Go-бекенди (Gin, Echo)`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_comparegobackends2 = /** @type {(inputs: Comparegobackends2Inputs) => L
 * @returns {LocalizedString}
 */
 const comparegobackends2 = /** @type {((inputs?: Comparegobackends2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Comparegobackends2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_comparegobackends2(inputs)
-	if (locale === "zh") return zh_comparegobackends2(inputs)
-	if (locale === "ja") return ja_comparegobackends2(inputs)
-	if (locale === "ko") return ko_comparegobackends2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_comparegobackends2(inputs)
-	if (locale === "de") return de_comparegobackends2(inputs)
-	if (locale === "fr") return fr_comparegobackends2(inputs)
-	if (locale === "uk") return uk_comparegobackends2(inputs)
-	return en_comparegobackends2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Backends Go (Gin, Echo)")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Go 后端（Gin、Echo）")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Go バックエンド (Gin、Echo)")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Go 백엔드(Gin, Echo)")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Go 後端（Gin、Echo）")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Go-Backends (Gin, Echo)")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Backends Go (Gin, Echo)")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Go-бекенди (Gin, Echo)")
+	return /** @type {LocalizedString} */ ("Go backends (Gin, Echo)")
 });
 export { comparegobackends2 as "compareGoBackends" }

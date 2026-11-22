@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docssearchopen2Inputs */
 
-const en_docssearchopen2 = /** @type {(inputs: Docssearchopen2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Open`)
-};
 
-const es_docssearchopen2 = /** @type {(inputs: Docssearchopen2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abrir`)
-};
-
-const zh_docssearchopen2 = /** @type {(inputs: Docssearchopen2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打开`)
-};
-
-const ja_docssearchopen2 = /** @type {(inputs: Docssearchopen2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`開ける`)
-};
-
-const ko_docssearchopen2 = /** @type {(inputs: Docssearchopen2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`열기`)
-};
-
-const zh_hant1_docssearchopen2 = /** @type {(inputs: Docssearchopen2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打開`)
-};
-
-const de_docssearchopen2 = /** @type {(inputs: Docssearchopen2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Öffnen`)
-};
-
-const fr_docssearchopen2 = /** @type {(inputs: Docssearchopen2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ouvrir`)
-};
-
-const uk_docssearchopen2 = /** @type {(inputs: Docssearchopen2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкрити`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docssearchopen2 = /** @type {(inputs: Docssearchopen2Inputs) => Localiz
 * @returns {LocalizedString}
 */
 const docssearchopen2 = /** @type {((inputs?: Docssearchopen2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docssearchopen2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docssearchopen2(inputs)
-	if (locale === "zh") return zh_docssearchopen2(inputs)
-	if (locale === "ja") return ja_docssearchopen2(inputs)
-	if (locale === "ko") return ko_docssearchopen2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docssearchopen2(inputs)
-	if (locale === "de") return de_docssearchopen2(inputs)
-	if (locale === "fr") return fr_docssearchopen2(inputs)
-	if (locale === "uk") return uk_docssearchopen2(inputs)
-	return en_docssearchopen2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Abrir")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("打开")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("開ける")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("열기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("打開")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Öffnen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Ouvrir")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Відкрити")
+	return /** @type {LocalizedString} */ ("Open")
 });
 export { docssearchopen2 as "docsSearchOpen" }

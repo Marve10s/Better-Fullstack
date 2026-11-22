@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Footerpopularguides2Inputs */
 
-const en_footerpopularguides2 = /** @type {(inputs: Footerpopularguides2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Popular guides`)
-};
 
-const es_footerpopularguides2 = /** @type {(inputs: Footerpopularguides2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guías populares`)
-};
-
-const zh_footerpopularguides2 = /** @type {(inputs: Footerpopularguides2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`热门指南`)
-};
-
-const ja_footerpopularguides2 = /** @type {(inputs: Footerpopularguides2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`人気のガイド`)
-};
-
-const ko_footerpopularguides2 = /** @type {(inputs: Footerpopularguides2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`인기 가이드`)
-};
-
-const zh_hant1_footerpopularguides2 = /** @type {(inputs: Footerpopularguides2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`熱門指南`)
-};
-
-const de_footerpopularguides2 = /** @type {(inputs: Footerpopularguides2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Beliebte Leitfäden`)
-};
-
-const fr_footerpopularguides2 = /** @type {(inputs: Footerpopularguides2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guides populaires`)
-};
-
-const uk_footerpopularguides2 = /** @type {(inputs: Footerpopularguides2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Популярні гайди`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_footerpopularguides2 = /** @type {(inputs: Footerpopularguides2Inputs) 
 * @returns {LocalizedString}
 */
 const footerpopularguides2 = /** @type {((inputs?: Footerpopularguides2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Footerpopularguides2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_footerpopularguides2(inputs)
-	if (locale === "zh") return zh_footerpopularguides2(inputs)
-	if (locale === "ja") return ja_footerpopularguides2(inputs)
-	if (locale === "ko") return ko_footerpopularguides2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_footerpopularguides2(inputs)
-	if (locale === "de") return de_footerpopularguides2(inputs)
-	if (locale === "fr") return fr_footerpopularguides2(inputs)
-	if (locale === "uk") return uk_footerpopularguides2(inputs)
-	return en_footerpopularguides2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Guías populares")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("热门指南")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("人気のガイド")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("인기 가이드")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("熱門指南")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Beliebte Leitfäden")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Guides populaires")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Популярні гайди")
+	return /** @type {LocalizedString} */ ("Popular guides")
 });
 export { footerpopularguides2 as "footerPopularGuides" }

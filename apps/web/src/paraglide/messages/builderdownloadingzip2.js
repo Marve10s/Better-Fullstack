@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderdownloadingzip2Inputs */
 
-const en_builderdownloadingzip2 = /** @type {(inputs: Builderdownloadingzip2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Creating ZIP...`)
-};
 
-const es_builderdownloadingzip2 = /** @type {(inputs: Builderdownloadingzip2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Creando ZIP...`)
-};
-
-const zh_builderdownloadingzip2 = /** @type {(inputs: Builderdownloadingzip2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`正在创建 ZIP...`)
-};
-
-const ja_builderdownloadingzip2 = /** @type {(inputs: Builderdownloadingzip2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ZIPを作成中...`)
-};
-
-const ko_builderdownloadingzip2 = /** @type {(inputs: Builderdownloadingzip2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ZIP 생성 중...`)
-};
-
-const zh_hant1_builderdownloadingzip2 = /** @type {(inputs: Builderdownloadingzip2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`正在建立 ZIP...`)
-};
-
-const de_builderdownloadingzip2 = /** @type {(inputs: Builderdownloadingzip2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ZIP wird erstellt...`)
-};
-
-const fr_builderdownloadingzip2 = /** @type {(inputs: Builderdownloadingzip2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Création du ZIP...`)
-};
-
-const uk_builderdownloadingzip2 = /** @type {(inputs: Builderdownloadingzip2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Створюємо ZIP...`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderdownloadingzip2 = /** @type {(inputs: Builderdownloadingzip2Inpu
 * @returns {LocalizedString}
 */
 const builderdownloadingzip2 = /** @type {((inputs?: Builderdownloadingzip2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderdownloadingzip2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderdownloadingzip2(inputs)
-	if (locale === "zh") return zh_builderdownloadingzip2(inputs)
-	if (locale === "ja") return ja_builderdownloadingzip2(inputs)
-	if (locale === "ko") return ko_builderdownloadingzip2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderdownloadingzip2(inputs)
-	if (locale === "de") return de_builderdownloadingzip2(inputs)
-	if (locale === "fr") return fr_builderdownloadingzip2(inputs)
-	if (locale === "uk") return uk_builderdownloadingzip2(inputs)
-	return en_builderdownloadingzip2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Creando ZIP...")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("正在创建 ZIP...")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ZIPを作成中...")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("ZIP 생성 중...")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("正在建立 ZIP...")
+	if (locale === "de") return /** @type {LocalizedString} */ ("ZIP wird erstellt...")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Création du ZIP...")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Створюємо ZIP...")
+	return /** @type {LocalizedString} */ ("Creating ZIP...")
 });
 export { builderdownloadingzip2 as "builderDownloadingZip" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderruneditor2Inputs */
 
-const en_builderruneditor2 = /** @type {(inputs: Builderruneditor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Code editor`)
-};
 
-const es_builderruneditor2 = /** @type {(inputs: Builderruneditor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Editor de código`)
-};
-
-const zh_builderruneditor2 = /** @type {(inputs: Builderruneditor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`代码编辑器`)
-};
-
-const ja_builderruneditor2 = /** @type {(inputs: Builderruneditor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`コードエディター`)
-};
-
-const ko_builderruneditor2 = /** @type {(inputs: Builderruneditor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`코드 편집기`)
-};
-
-const zh_hant1_builderruneditor2 = /** @type {(inputs: Builderruneditor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`程式碼編輯器`)
-};
-
-const de_builderruneditor2 = /** @type {(inputs: Builderruneditor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Code-Editor`)
-};
-
-const fr_builderruneditor2 = /** @type {(inputs: Builderruneditor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Éditeur de code`)
-};
-
-const uk_builderruneditor2 = /** @type {(inputs: Builderruneditor2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Редактор коду`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderruneditor2 = /** @type {(inputs: Builderruneditor2Inputs) => Loc
 * @returns {LocalizedString}
 */
 const builderruneditor2 = /** @type {((inputs?: Builderruneditor2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderruneditor2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderruneditor2(inputs)
-	if (locale === "zh") return zh_builderruneditor2(inputs)
-	if (locale === "ja") return ja_builderruneditor2(inputs)
-	if (locale === "ko") return ko_builderruneditor2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderruneditor2(inputs)
-	if (locale === "de") return de_builderruneditor2(inputs)
-	if (locale === "fr") return fr_builderruneditor2(inputs)
-	if (locale === "uk") return uk_builderruneditor2(inputs)
-	return en_builderruneditor2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Editor de código")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("代码编辑器")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("コードエディター")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("코드 편집기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("程式碼編輯器")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Code-Editor")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Éditeur de code")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Редактор коду")
+	return /** @type {LocalizedString} */ ("Code editor")
 });
 export { builderruneditor2 as "builderRunEditor" }

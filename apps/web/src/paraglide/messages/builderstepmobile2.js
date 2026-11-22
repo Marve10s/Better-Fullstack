@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Builderstepmobile2Inputs */
 
-const en_builderstepmobile2 = /** @type {(inputs: Builderstepmobile2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Mobile`)
-};
 
-const es_builderstepmobile2 = /** @type {(inputs: Builderstepmobile2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Móvil`)
-};
-
-const zh_builderstepmobile2 = /** @type {(inputs: Builderstepmobile2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`移动`)
-};
-
-const ja_builderstepmobile2 = /** @type {(inputs: Builderstepmobile2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`モバイル`)
-};
-
-const ko_builderstepmobile2 = /** @type {(inputs: Builderstepmobile2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`모바일`)
-};
-
-const zh_hant1_builderstepmobile2 = /** @type {(inputs: Builderstepmobile2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`行動`)
-};
-
-const de_builderstepmobile2 = /** @type {(inputs: Builderstepmobile2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Mobile`)
-};
-
-const fr_builderstepmobile2 = /** @type {(inputs: Builderstepmobile2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Mobile`)
-};
-
-const uk_builderstepmobile2 = /** @type {(inputs: Builderstepmobile2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Мобільний`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_builderstepmobile2 = /** @type {(inputs: Builderstepmobile2Inputs) => L
 * @returns {LocalizedString}
 */
 const builderstepmobile2 = /** @type {((inputs?: Builderstepmobile2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Builderstepmobile2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_builderstepmobile2(inputs)
-	if (locale === "zh") return zh_builderstepmobile2(inputs)
-	if (locale === "ja") return ja_builderstepmobile2(inputs)
-	if (locale === "ko") return ko_builderstepmobile2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_builderstepmobile2(inputs)
-	if (locale === "de") return de_builderstepmobile2(inputs)
-	if (locale === "fr") return fr_builderstepmobile2(inputs)
-	if (locale === "uk") return uk_builderstepmobile2(inputs)
-	return en_builderstepmobile2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Móvil")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("移动")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("モバイル")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("모바일")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("行動")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Mobile")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Mobile")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Мобільний")
+	return /** @type {LocalizedString} */ ("Mobile")
 });
 export { builderstepmobile2 as "builderStepMobile" }

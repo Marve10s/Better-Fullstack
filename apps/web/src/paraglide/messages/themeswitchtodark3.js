@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Themeswitchtodark3Inputs */
 
-const en_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Switch to dark mode`)
-};
 
-const es_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cambiar al modo oscuro`)
-};
-
-const zh_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`切换到深色模式`)
-};
-
-const ja_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ダークモードに切り替える`)
-};
-
-const ko_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`어두운 모드로 전환`)
-};
-
-const zh_hant1_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`切換到深色模式`)
-};
-
-const de_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Wechseln Sie in den Dunkelmodus`)
-};
-
-const fr_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Passer en mode sombre`)
-};
-
-const uk_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Увімкнути темну тему`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_themeswitchtodark3 = /** @type {(inputs: Themeswitchtodark3Inputs) => L
 * @returns {LocalizedString}
 */
 const themeswitchtodark3 = /** @type {((inputs?: Themeswitchtodark3Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Themeswitchtodark3Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_themeswitchtodark3(inputs)
-	if (locale === "zh") return zh_themeswitchtodark3(inputs)
-	if (locale === "ja") return ja_themeswitchtodark3(inputs)
-	if (locale === "ko") return ko_themeswitchtodark3(inputs)
-	if (locale === "zh-Hant") return zh_hant1_themeswitchtodark3(inputs)
-	if (locale === "de") return de_themeswitchtodark3(inputs)
-	if (locale === "fr") return fr_themeswitchtodark3(inputs)
-	if (locale === "uk") return uk_themeswitchtodark3(inputs)
-	return en_themeswitchtodark3(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Cambiar al modo oscuro")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("切换到深色模式")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("ダークモードに切り替える")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("어두운 모드로 전환")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("切換到深色模式")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Wechseln Sie in den Dunkelmodus")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Passer en mode sombre")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Увімкнути темну тему")
+	return /** @type {LocalizedString} */ ("Switch to dark mode")
 });
 export { themeswitchtodark3 as "themeSwitchToDark" }

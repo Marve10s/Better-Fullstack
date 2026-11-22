@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Navopenmenu2Inputs */
 
-const en_navopenmenu2 = /** @type {(inputs: Navopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Open menu`)
-};
 
-const es_navopenmenu2 = /** @type {(inputs: Navopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abrir menú`)
-};
-
-const zh_navopenmenu2 = /** @type {(inputs: Navopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打开菜单`)
-};
-
-const ja_navopenmenu2 = /** @type {(inputs: Navopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`メニューを開く`)
-};
-
-const ko_navopenmenu2 = /** @type {(inputs: Navopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`메뉴 열기`)
-};
-
-const zh_hant1_navopenmenu2 = /** @type {(inputs: Navopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`開啟選單`)
-};
-
-const de_navopenmenu2 = /** @type {(inputs: Navopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Menü öffnen`)
-};
-
-const fr_navopenmenu2 = /** @type {(inputs: Navopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ouvrir le menu`)
-};
-
-const uk_navopenmenu2 = /** @type {(inputs: Navopenmenu2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Відкрити меню`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_navopenmenu2 = /** @type {(inputs: Navopenmenu2Inputs) => LocalizedStri
 * @returns {LocalizedString}
 */
 const navopenmenu2 = /** @type {((inputs?: Navopenmenu2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Navopenmenu2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_navopenmenu2(inputs)
-	if (locale === "zh") return zh_navopenmenu2(inputs)
-	if (locale === "ja") return ja_navopenmenu2(inputs)
-	if (locale === "ko") return ko_navopenmenu2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_navopenmenu2(inputs)
-	if (locale === "de") return de_navopenmenu2(inputs)
-	if (locale === "fr") return fr_navopenmenu2(inputs)
-	if (locale === "uk") return uk_navopenmenu2(inputs)
-	return en_navopenmenu2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Abrir menú")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("打开菜单")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("メニューを開く")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("메뉴 열기")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("開啟選單")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Menü öffnen")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Ouvrir le menu")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Відкрити меню")
+	return /** @type {LocalizedString} */ ("Open menu")
 });
 export { navopenmenu2 as "navOpenMenu" }

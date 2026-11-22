@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Mcpterminalexample2Inputs */
 
-const en_mcpterminalexample2 = /** @type {(inputs: Mcpterminalexample2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Create a fullstack TypeScript app with Next.js, Hono, Drizzle, and PostgreSQL.`)
-};
 
-const es_mcpterminalexample2 = /** @type {(inputs: Mcpterminalexample2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Crea una app fullstack TypeScript con Next.js, Hono, Drizzle y PostgreSQL.`)
-};
-
-const zh_mcpterminalexample2 = /** @type {(inputs: Mcpterminalexample2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`创建一个使用 Next.js、Hono、Drizzle 和 PostgreSQL 的 fullstack TypeScript 应用。`)
-};
-
-const ja_mcpterminalexample2 = /** @type {(inputs: Mcpterminalexample2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Next.js、Hono、Drizzle、および PostgreSQL を使用してフルスタック TypeScript アプリを作成します。`)
-};
-
-const ko_mcpterminalexample2 = /** @type {(inputs: Mcpterminalexample2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Next.js, Hono, Drizzle 및 PostgreSQL을 사용하여 풀 스택 TypeScript 앱을 만듭니다.`)
-};
-
-const zh_hant1_mcpterminalexample2 = /** @type {(inputs: Mcpterminalexample2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`建立一個使用 Next.js、Hono、Drizzle 和 PostgreSQL 的 fullstack TypeScript 應用。`)
-};
-
-const de_mcpterminalexample2 = /** @type {(inputs: Mcpterminalexample2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Erstellen Sie eine Fullstack-App TypeScript mit Next.js, Hono, Drizzle und PostgreSQL.`)
-};
-
-const fr_mcpterminalexample2 = /** @type {(inputs: Mcpterminalexample2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Créez une application fullstack TypeScript avec Next.js, Hono, Drizzle et PostgreSQL.`)
-};
-
-const uk_mcpterminalexample2 = /** @type {(inputs: Mcpterminalexample2Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Створіть фулстек-застосунок TypeScript з Next.js, Hono, Drizzle та PostgreSQL.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_mcpterminalexample2 = /** @type {(inputs: Mcpterminalexample2Inputs) =>
 * @returns {LocalizedString}
 */
 const mcpterminalexample2 = /** @type {((inputs?: Mcpterminalexample2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Mcpterminalexample2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_mcpterminalexample2(inputs)
-	if (locale === "zh") return zh_mcpterminalexample2(inputs)
-	if (locale === "ja") return ja_mcpterminalexample2(inputs)
-	if (locale === "ko") return ko_mcpterminalexample2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_mcpterminalexample2(inputs)
-	if (locale === "de") return de_mcpterminalexample2(inputs)
-	if (locale === "fr") return fr_mcpterminalexample2(inputs)
-	if (locale === "uk") return uk_mcpterminalexample2(inputs)
-	return en_mcpterminalexample2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Crea una app fullstack TypeScript con Next.js, Hono, Drizzle y PostgreSQL.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("创建一个使用 Next.js、Hono、Drizzle 和 PostgreSQL 的 fullstack TypeScript 应用。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Next.js、Hono、Drizzle、および PostgreSQL を使用してフルスタック TypeScript アプリを作成します。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Next.js, Hono, Drizzle 및 PostgreSQL을 사용하여 풀 스택 TypeScript 앱을 만듭니다.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("建立一個使用 Next.js、Hono、Drizzle 和 PostgreSQL 的 fullstack TypeScript 應用。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("Erstellen Sie eine Fullstack-App TypeScript mit Next.js, Hono, Drizzle und PostgreSQL.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Créez une application fullstack TypeScript avec Next.js, Hono, Drizzle et PostgreSQL.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Створіть фулстек-застосунок TypeScript з Next.js, Hono, Drizzle та PostgreSQL.")
+	return /** @type {LocalizedString} */ ("Create a fullstack TypeScript app with Next.js, Hono, Drizzle, and PostgreSQL.")
 });
 export { mcpterminalexample2 as "mcpTerminalExample" }

@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{ name: NonNullable<unknown> }} Savedpresetsaved2Inputs */
 
-const en_savedpresetsaved2 = /** @type {(inputs: Savedpresetsaved2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Saved preset: ${i?.name}`)
-};
 
-const es_savedpresetsaved2 = /** @type {(inputs: Savedpresetsaved2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Plantilla guardada: ${i?.name}`)
-};
-
-const zh_savedpresetsaved2 = /** @type {(inputs: Savedpresetsaved2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`已保存预设：${i?.name}`)
-};
-
-const ja_savedpresetsaved2 = /** @type {(inputs: Savedpresetsaved2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`保存されたプリセット: ${i?.name}`)
-};
-
-const ko_savedpresetsaved2 = /** @type {(inputs: Savedpresetsaved2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`저장된 사전 설정: ${i?.name}`)
-};
-
-const zh_hant1_savedpresetsaved2 = /** @type {(inputs: Savedpresetsaved2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`已儲存預設：${i?.name}`)
-};
-
-const de_savedpresetsaved2 = /** @type {(inputs: Savedpresetsaved2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Gespeicherte Voreinstellung: ${i?.name}`)
-};
-
-const fr_savedpresetsaved2 = /** @type {(inputs: Savedpresetsaved2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Préréglage enregistré : ${i?.name}`)
-};
-
-const uk_savedpresetsaved2 = /** @type {(inputs: Savedpresetsaved2Inputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Пресет збережено: ${i?.name}`)
-};
 
 /**
 * | output |
@@ -50,16 +16,16 @@ const uk_savedpresetsaved2 = /** @type {(inputs: Savedpresetsaved2Inputs) => Loc
 * @param {{ locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }} options
 * @returns {LocalizedString}
 */
-const savedpresetsaved2 = /** @type {((inputs: Savedpresetsaved2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedpresetsaved2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs, options = {}) => {
+const savedpresetsaved2 = /** @type {((inputs: Savedpresetsaved2Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Savedpresetsaved2Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((i, options = {}) => {
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_savedpresetsaved2(inputs)
-	if (locale === "zh") return zh_savedpresetsaved2(inputs)
-	if (locale === "ja") return ja_savedpresetsaved2(inputs)
-	if (locale === "ko") return ko_savedpresetsaved2(inputs)
-	if (locale === "zh-Hant") return zh_hant1_savedpresetsaved2(inputs)
-	if (locale === "de") return de_savedpresetsaved2(inputs)
-	if (locale === "fr") return fr_savedpresetsaved2(inputs)
-	if (locale === "uk") return uk_savedpresetsaved2(inputs)
-	return en_savedpresetsaved2(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ (`Plantilla guardada: ${i?.name}`)
+	if (locale === "zh") return /** @type {LocalizedString} */ (`已保存预设：${i?.name}`)
+	if (locale === "ja") return /** @type {LocalizedString} */ (`保存されたプリセット: ${i?.name}`)
+	if (locale === "ko") return /** @type {LocalizedString} */ (`저장된 사전 설정: ${i?.name}`)
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ (`已儲存預設：${i?.name}`)
+	if (locale === "de") return /** @type {LocalizedString} */ (`Gespeicherte Voreinstellung: ${i?.name}`)
+	if (locale === "fr") return /** @type {LocalizedString} */ (`Préréglage enregistré : ${i?.name}`)
+	if (locale === "uk") return /** @type {LocalizedString} */ (`Пресет збережено: ${i?.name}`)
+	return /** @type {LocalizedString} */ (`Saved preset: ${i?.name}`)
 });
 export { savedpresetsaved2 as "savedPresetSaved" }

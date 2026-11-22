@@ -5,41 +5,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 
 /** @typedef {{}} Docsclisummaryrustrustapi5Inputs */
 
-const en_docsclisummaryrustrustapi5 = /** @type {(inputs: Docsclisummaryrustrustapi5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust API layer.`)
-};
 
-const es_docsclisummaryrustrustapi5 = /** @type {(inputs: Docsclisummaryrustrustapi5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Capa API Rust.`)
-};
-
-const zh_docsclisummaryrustrustapi5 = /** @type {(inputs: Docsclisummaryrustrustapi5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust API 层。`)
-};
-
-const ja_docsclisummaryrustrustapi5 = /** @type {(inputs: Docsclisummaryrustrustapi5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust の API レイヤー。`)
-};
-
-const ko_docsclisummaryrustrustapi5 = /** @type {(inputs: Docsclisummaryrustrustapi5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust API 계층.`)
-};
-
-const zh_hant1_docsclisummaryrustrustapi5 = /** @type {(inputs: Docsclisummaryrustrustapi5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rust API 層。`)
-};
-
-const de_docsclisummaryrustrustapi5 = /** @type {(inputs: Docsclisummaryrustrustapi5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`API-Schicht für Rust.`)
-};
-
-const fr_docsclisummaryrustrustapi5 = /** @type {(inputs: Docsclisummaryrustrustapi5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Couche API Rust.`)
-};
-
-const uk_docsclisummaryrustrustapi5 = /** @type {(inputs: Docsclisummaryrustrustapi5Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Шар API для Rust.`)
-};
 
 /**
 * | output |
@@ -51,15 +17,16 @@ const uk_docsclisummaryrustrustapi5 = /** @type {(inputs: Docsclisummaryrustrust
 * @returns {LocalizedString}
 */
 const docsclisummaryrustrustapi5 = /** @type {((inputs?: Docsclisummaryrustrustapi5Inputs, options?: { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }) => LocalizedString) & import('../runtime.js').MessageMetadata<Docsclisummaryrustrustapi5Inputs, { locale?: "en" | "es" | "zh" | "ja" | "ko" | "zh-Hant" | "de" | "fr" | "uk" }, {}>} */ ((inputs = {}, options = {}) => {
+	void inputs;
 	const locale = experimentalStaticLocale ?? options.locale ?? getLocale()
-	if (locale === "es") return es_docsclisummaryrustrustapi5(inputs)
-	if (locale === "zh") return zh_docsclisummaryrustrustapi5(inputs)
-	if (locale === "ja") return ja_docsclisummaryrustrustapi5(inputs)
-	if (locale === "ko") return ko_docsclisummaryrustrustapi5(inputs)
-	if (locale === "zh-Hant") return zh_hant1_docsclisummaryrustrustapi5(inputs)
-	if (locale === "de") return de_docsclisummaryrustrustapi5(inputs)
-	if (locale === "fr") return fr_docsclisummaryrustrustapi5(inputs)
-	if (locale === "uk") return uk_docsclisummaryrustrustapi5(inputs)
-	return en_docsclisummaryrustrustapi5(inputs)
+	if (locale === "es") return /** @type {LocalizedString} */ ("Capa API Rust.")
+	if (locale === "zh") return /** @type {LocalizedString} */ ("Rust API 层。")
+	if (locale === "ja") return /** @type {LocalizedString} */ ("Rust の API レイヤー。")
+	if (locale === "ko") return /** @type {LocalizedString} */ ("Rust API 계층.")
+	if (locale === "zh-Hant") return /** @type {LocalizedString} */ ("Rust API 層。")
+	if (locale === "de") return /** @type {LocalizedString} */ ("API-Schicht für Rust.")
+	if (locale === "fr") return /** @type {LocalizedString} */ ("Couche API Rust.")
+	if (locale === "uk") return /** @type {LocalizedString} */ ("Шар API для Rust.")
+	return /** @type {LocalizedString} */ ("Rust API layer.")
 });
 export { docsclisummaryrustrustapi5 as "docsCliSummaryRustRustApi" }
