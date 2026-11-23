@@ -1,5 +1,4 @@
 import { motion } from "motion/react";
-import { TbQuote as Quote } from "react-icons/tb";
 
 import type { Testimonial } from "@/components/home/testimonials-data";
 
@@ -18,69 +17,55 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.4, delay: Math.min(index * 0.03, 0.36) }}
-      whileHover={{ y: -2 }}
-      className="group relative flex h-full flex-col gap-3 rounded-xl border border-border bg-background p-5 transition-colors hover:border-foreground/30"
+      className="flex flex-col gap-4 rounded-3xl bg-surface-raised p-5 sm:p-6"
     >
-      <Quote
-        className="absolute right-4 top-4 h-5 w-5 text-muted-foreground/15 transition-colors group-hover:text-ink/30 dark:group-hover:text-brand/40"
-        aria-hidden
-      />
-      <p className="text-pretty text-sm leading-relaxed text-muted-foreground">
-        &ldquo;{testimonial.comment}&rdquo;
-      </p>
+      <blockquote className="text-pretty text-[15px] leading-relaxed text-ink">
+        {testimonial.comment}
+      </blockquote>
       {testimonial.gif ? (
         <img
           src={testimonial.gif}
           alt=""
           loading="lazy"
           referrerPolicy="no-referrer"
-          className="w-full rounded-md border border-border"
+          className="w-full rounded-2xl"
         />
       ) : null}
-      <div className="mt-auto flex items-center gap-3 border-t border-border/60 pt-3">
+      <figcaption className="flex items-center gap-3">
         <img
           src={testimonial.avatar}
-          alt={testimonial.name}
+          alt=""
           loading="lazy"
           referrerPolicy="no-referrer"
-          className="h-8 w-8 rounded-full border border-border"
+          className="size-9 rounded-full"
         />
-        <div className="min-w-0 flex-1">
-          <span className="block truncate font-mono text-xs font-medium text-foreground">
-            {testimonial.name}
-          </span>
-        </div>
-      </div>
+        <span className="truncate text-sm font-semibold text-ink">{testimonial.name}</span>
+      </figcaption>
     </motion.figure>
   );
 }
 
 export default function TestimonialsSection() {
   return (
-    <section className="relative border-t border-border">
-      <div className="px-4 py-20 sm:px-8 sm:py-28">
-        <h2
-          className="text-balance font-mono font-bold tracking-[-0.04em]"
-          style={{ fontSize: "clamp(1.5rem, 3.2vw, 2.25rem)", lineHeight: 1 }}
-        >
-          {m.homeTestimonialsTitleA()}{" "}
-          <span className="italic text-muted-foreground">{m.homeTestimonialsTitleB()}</span>{" "}
-          {m.homeTestimonialsTitleC()}
+    <section className="mx-auto max-w-[1240px] px-4 pt-24 sm:px-6 sm:pt-32">
+      <div className="mx-auto max-w-3xl text-center">
+        <h2 className="text-balance text-4xl font-semibold leading-[1.04] tracking-[-0.04em] text-ink sm:text-5xl lg:text-6xl">
+          {m.homeTestimonialsTitleA()} {m.homeTestimonialsTitleB()} {m.homeTestimonialsTitleC()}
         </h2>
         <a
           href="https://app.daily.dev/posts/a42eCYoJk"
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 inline-block text-xs text-muted-foreground underline decoration-brand decoration-2 underline-offset-4 transition-colors hover:text-foreground"
+          className="mt-5 inline-block text-sm font-medium text-soft underline decoration-brand decoration-2 underline-offset-4 transition-colors hover:text-ink"
         >
           {m.homeTestimonialsSource()}
         </a>
+      </div>
 
-        <div className="mt-12 columns-1 gap-3 sm:columns-2 lg:columns-3 [&>*]:mb-3 [&>*]:break-inside-avoid">
-          {TESTIMONIALS.map((t, i) => (
-            <TestimonialCard key={`${t.name}-${i}`} testimonial={t} index={i} />
-          ))}
-        </div>
+      <div className="mt-10 columns-1 gap-3 sm:mt-14 sm:columns-2 lg:columns-3 [&>*]:mb-3 [&>*]:break-inside-avoid">
+        {TESTIMONIALS.map((t, i) => (
+          <TestimonialCard key={`${t.name}-${i}`} testimonial={t} index={i} />
+        ))}
       </div>
     </section>
   );
