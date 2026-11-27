@@ -447,7 +447,7 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
     ].map((name) => [
       name,
       {
-        pinnedVersion: "^3.93.0",
+        pinnedVersion: "3.93.0",
         reason:
           "Payload 3.94 narrows its React peer to ~19.2.9, so npm rejects the web templates' exact React 19.2.8 with ERESOLVE. Unpin when the React train moves to 19.2.9 or later.",
       },

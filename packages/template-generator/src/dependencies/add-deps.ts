@@ -790,14 +790,14 @@ export const dependencyVersionMap = {
   "@logtail/node": "^0.5.12",
 
   // Headless CMS - Payload
-  payload: "^3.93.0",
-  "@payloadcms/next": "^3.93.0",
-  "@payloadcms/richtext-lexical": "^3.93.0",
-  "@payloadcms/db-postgres": "^3.93.0",
-  "@payloadcms/db-mongodb": "^3.93.0",
-  "@payloadcms/db-sqlite": "^3.93.0",
-  "@payloadcms/plugin-seo": "^3.93.0",
-  "@payloadcms/storage-s3": "^3.93.0",
+  payload: "3.93.0",
+  "@payloadcms/next": "3.93.0",
+  "@payloadcms/richtext-lexical": "3.93.0",
+  "@payloadcms/db-postgres": "3.93.0",
+  "@payloadcms/db-mongodb": "3.93.0",
+  "@payloadcms/db-sqlite": "3.93.0",
+  "@payloadcms/plugin-seo": "3.93.0",
+  "@payloadcms/storage-s3": "3.93.0",
 
   // Headless CMS - Sanity
   sanity: "^6.24.0",
