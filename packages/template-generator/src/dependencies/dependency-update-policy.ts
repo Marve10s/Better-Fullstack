@@ -434,6 +434,25 @@ export const DEPENDENCY_UPDATE_POLICIES: Readonly<Record<string, DependencyUpdat
       { pinnedVersion: EXPO_SDK_VERSIONS[name], reason: EXPO_SDK_REASON },
     ]),
   ),
+  ...Object.fromEntries(
+    [
+      "payload",
+      "@payloadcms/next",
+      "@payloadcms/richtext-lexical",
+      "@payloadcms/db-postgres",
+      "@payloadcms/db-mongodb",
+      "@payloadcms/db-sqlite",
+      "@payloadcms/plugin-seo",
+      "@payloadcms/storage-s3",
+    ].map((name) => [
+      name,
+      {
+        pinnedVersion: "^3.93.0",
+        reason:
+          "Payload 3.94 narrows its React peer to ~19.2.9, so npm rejects the web templates' exact React 19.2.8 with ERESOLVE. Unpin when the React train moves to 19.2.9 or later.",
+      },
+    ]),
+  ),
   vitest: {
     pinnedVersion: "4.1.8",
     reason: "The Vitest family is exact-pinned to the latest reviewed Yarn-compatible patch.",
