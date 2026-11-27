@@ -156,7 +156,7 @@
     "@clack/core": "^0.5.0",
     "@clack/prompts": "^1.9.0",
     "@modelcontextprotocol/server": "^2.4.0",
-    "@orpc/server": "^1.16.2",
+    "@orpc/server": "^1.16.4",
     "consola": "^3.4.2",
     "env-paths": "^4.0.0",
     "execa": "^9.6.1",
@@ -173,7 +173,7 @@
   "devDependencies": {
     "@better-fullstack/project-lifecycle": "workspace:*",
     "@modelcontextprotocol/client": "^2.4.0",
-    "@types/bun": "^1.4.4",
+    "@types/bun": "^1.4.5",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.9.3",
     "publint": "^0.3.25",
