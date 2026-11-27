@@ -4663,7 +4663,7 @@ export const orpc = createTanstackQueryUtils(client)
     "@snapshot-astro-react-integration/env": "workspace:*",
     "@snapshot-astro-react-integration/db": "workspace:*",
     "@orpc/server": "^1.16.4",
-    "@orpc/client": "^1.16.2",
+    "@orpc/client": "^1.16.4",
     "@orpc/openapi": "^1.16.4",
     "@orpc/zod": "^1.16.4"
   }
@@ -5151,7 +5151,7 @@ export default defineNuxtConfig({
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
       "@orpc/server": "^1.16.4",
-      "@orpc/client": "^1.16.2",
+      "@orpc/client": "^1.16.4",
       "@orpc/openapi": "^1.16.4",
       "@orpc/zod": "^1.16.4"
     }
@@ -5796,7 +5796,7 @@ export default defineConfig({
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
       "@orpc/server": "^1.16.4",
-      "@orpc/client": "^1.16.2",
+      "@orpc/client": "^1.16.4",
       "@orpc/openapi": "^1.16.4",
       "@orpc/zod": "^1.16.4",
       "better-auth": "1.6.22"
@@ -7598,7 +7598,7 @@ export default defineConfig({
       "@orpc/zod": "^1.16.4",
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
-      "@orpc/client": "^1.16.2"
+      "@orpc/client": "^1.16.4"
     }
   },
   "scripts": {
@@ -12946,7 +12946,7 @@ export default defineConfig({
       "@libsql/client": "^0.17.4",
       "libsql": "^0.5.29",
       "@orpc/server": "^1.16.4",
-      "@orpc/client": "^1.16.2",
+      "@orpc/client": "^1.16.4",
       "@orpc/openapi": "^1.16.4",
       "@orpc/zod": "^1.16.4",
       "@clerk/tanstack-react-start": "^1.7.19"
@@ -21793,7 +21793,7 @@ export default app;
       "@orpc/server": "^1.16.4",
       "@orpc/openapi": "^1.16.4",
       "@orpc/zod": "^1.16.4",
-      "@orpc/client": "^1.16.2"
+      "@orpc/client": "^1.16.4"
     }
   },
   "scripts": {
