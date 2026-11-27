@@ -1,64 +1,95 @@
-<div align="center">
+<a href="https://better-fullstack.dev"><img src=".github/media/readme/hero.svg" width="100%" alt="Better Fullstack. A terminal shows the CLI banner and one --part flag per stack part. A rotating ASCII stack prints one layer for each part: a database, a backend, a frontend and a mobile app from different languages, written as one project."></a>
 
-<a href="https://better-fullstack.dev"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/readme-assets/hero-dark.svg"><img src="https://raw.githubusercontent.com/Marve10s/Better-Fullstack/readme-assets/hero-light.svg" width="100%" alt="Better Fullstack: start your next app in TypeScript, React Native, Rust, Go, Python, Java, Kotlin, .NET, Elixir, PHP, Ruby, or Crystal. Shows the current npm version and downloads last month."></picture></a>
+<p align="center">
+Scaffold fullstack projects from a catalog of Stack Parts.<br>
+Use the CLI, the Stack Builder in your browser, or an MCP server for AI agents.
+</p>
 
-</div>
+<p align="center"><a href="https://better-fullstack.dev">Website</a> &nbsp;·&nbsp; <a href="https://better-fullstack.dev/docs">Docs</a> &nbsp;·&nbsp; <a href="https://better-fullstack.dev/new">Stack Builder</a> &nbsp;·&nbsp; <a href="https://better-fullstack.dev/docs/ai/mcp">MCP</a> &nbsp;·&nbsp; <a href="https://better-fullstack.dev/changelog">Changelog</a> &nbsp;·&nbsp; <a href="https://www.npmjs.com/package/create-better-fullstack">npm</a></p>
 
-<picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme/h-start-dark.svg"><img src=".github/media/readme/h-start-light.svg" width="100%" alt="Press start"></picture>
+<p align="center">
+<a href="https://www.npmjs.com/package/create-better-fullstack"><img src="https://img.shields.io/npm/v/create-better-fullstack?style=flat-square&labelColor=0c0c0c&color=0c0c0c" alt="npm version"></a>
+&nbsp;
+<a href="https://www.npmjs.com/package/create-better-fullstack"><img src="https://img.shields.io/npm/dm/create-better-fullstack?style=flat-square&labelColor=0c0c0c&color=0c0c0c" alt="Monthly downloads"></a>
+</p>
 
-```sh
+## Quick start
+
+Run one command to scaffold a new project:
+
+```bash
+bun create better-fullstack@latest
+```
+
+```bash
 npm create better-fullstack@latest
+```
+
+```bash
+pnpm create better-fullstack@latest
+```
+
+```bash
+yarn create better-fullstack@latest
 ```
 
 After creating a project, use the CLI's `add`, `update`, `check`, and `gen` commands to maintain it. See the [lifecycle guide](https://better-fullstack.dev/docs/getting-started/lifecycle).
 
-<details>
-<summary><a name="package-managers"><img src=".github/media/readme/pm-pills.svg" height="32" alt="pnpm, yarn, bun" align="absmiddle"></a></summary>
+The Stack Builder runs in your browser and hands you the command to copy, or a ZIP download: **[Open the Stack Builder →](https://better-fullstack.dev/new)**
 
-<br>
+## What it covers
 
-```sh
-pnpm create better-fullstack@latest
+Multi-Ecosystem mode composes frontend, backend, database, and mobile parts from different languages into one project, like a TypeScript frontend with a Go backend.
+
+<a href="https://better-fullstack.dev/docs/ecosystems"><img src=".github/media/readme/ecosystems.svg" width="100%" alt="Ecosystems: TypeScript, React Native, Rust, Python, Go, Java, Kotlin, Elixir, .NET, PHP, Ruby and Crystal. PHP, Ruby and Crystal are experimental."></a>
+
+<p><a href="https://better-fullstack.dev/new"><img src=".github/media/readme/tile-builder.svg" width="33.33%" alt="Stack Builder. Pick parts in the browser, then copy the command or download a ZIP."></a><a href="https://better-fullstack.dev/docs/builder"><img src=".github/media/readme/tile-browser.svg" width="33.33%" alt="Runs in the browser. Preview the file tree, then edit and run TypeScript web stacks in a tab."></a><a href="https://better-fullstack.dev/docs/ai/mcp"><img src=".github/media/readme/tile-mcp.svg" width="33.33%" alt="MCP server. Agents plan, check and create projects through tool calls instead of flags."></a><a href="https://better-fullstack.dev/docs/choosing-a-stack"><img src=".github/media/readme/tile-compatibility.svg" width="33.33%" alt="Compatibility engine. Invalid combinations are rejected or adjusted before any file is written."></a><a href="https://better-fullstack.dev/docs/getting-started/lifecycle"><img src=".github/media/readme/tile-lifecycle.svg" width="33.33%" alt="add, update, check. bts.jsonc records the stack, so later commands can extend and repair it."></a><a href="https://better-fullstack.dev/docs/verification"><img src=".github/media/readme/tile-receipts.svg" width="33.33%" alt="Release receipts. Eight ecosystem recipes are generated, built and started for every release."></a></p>
+
+## AI agents
+
+Install the MCP server and both Better Fullstack skills for every coding agent on your machine:
+
+```bash
+npx create-better-fullstack@latest install
 ```
 
-```sh
-yarn create better-fullstack@latest
+Or add the MCP server to one agent:
+
+```bash
+claude mcp add --scope user better-fullstack -- npx -y create-better-fullstack@latest mcp
 ```
 
-```sh
-bun create better-fullstack@latest
+```bash
+codex mcp add better-fullstack -- npx -y create-better-fullstack@latest mcp
 ```
 
-</details>
+Agents can also read [`llms.txt`](llms.txt). The [MCP docs](https://better-fullstack.dev/docs/ai/mcp) cover other clients.
 
-<br>
+## Contributors
 
-<picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme/h-mix-dark.svg"><img src=".github/media/readme/h-mix-light.svg" width="100%" alt="Mix and match"></picture>
+Everyone with a pull request merged into Better Fullstack.
 
-<a href="https://better-fullstack.dev/docs/ecosystems/multi-ecosystem"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme/snap-dark.svg"><img src=".github/media/readme/snap-light.svg" width="100%" alt="Three stack parts in different languages snap into one project"></picture></a>
+<!-- contributors:start -->
+<p><a href="https://github.com/Alisha-21-cloud"><img src="https://github.com/Alisha-21-cloud.png?size=128" width="64" height="64" alt="Alisha-21-cloud" title="Alisha-21-cloud"></a><a href="https://github.com/taltas"><img src="https://github.com/taltas.png?size=128" width="64" height="64" alt="taltas" title="taltas"></a><a href="https://github.com/dinwwwh"><img src="https://github.com/dinwwwh.png?size=128" width="64" height="64" alt="dinwwwh" title="dinwwwh"></a><a href="https://github.com/Kavin-Bakyaraj"><img src="https://github.com/Kavin-Bakyaraj.png?size=128" width="64" height="64" alt="Kavin-Bakyaraj" title="Kavin-Bakyaraj"></a><a href="https://github.com/Divith123"><img src="https://github.com/Divith123.png?size=128" width="64" height="64" alt="Divith123" title="Divith123"></a></p>
+<!-- contributors:end -->
 
-<br>
+Want to join them? Read the [Contributing Guide](.github/CONTRIBUTING.md).
 
-<picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme/h-box-dark.svg"><img src=".github/media/readme/h-box-light.svg" width="100%" alt="What's in the box"></picture>
+## Community
 
-<a href="https://better-fullstack.dev/new"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/media/readme/bento-dark.svg"><img src=".github/media/readme/bento-light.svg" width="100%" alt="Terminal, Stack Builder, AI agents over MCP, mixed languages, one compatibility engine, and bts.jsonc"></picture></a>
-
-<br>
-
-> [!TIP]
-> Using an AI coding agent? Point it to [`llms.txt`](llms.txt). It explains MCP setup and links the docs written for agents.
-
-<div align="center">
-
-[Docs](https://better-fullstack.dev/docs) · [Stack Builder](https://better-fullstack.dev/new) · [MCP](https://better-fullstack.dev/docs/ai/mcp) · [Changelog](https://better-fullstack.dev/changelog) · [Contributing](.github/CONTRIBUTING.md) · [X](https://x.com/IbrahimElkamali) · [Telegram](https://t.me/TheCr1nge)
-
-<a href="https://github.com/sponsors/Marve10s"><img src="https://img.shields.io/badge/GitHub_Sponsors-Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor on GitHub"></a>
+[![X](https://img.shields.io/badge/X-@IbrahimElkamali-0c0c0c?style=flat-square&logo=x&logoColor=white)](https://x.com/IbrahimElkamali)
 &nbsp;
-<a href="https://www.patreon.com/c/marve10s"><img src="https://img.shields.io/badge/Patreon-Support-F96854?style=for-the-badge&logo=patreon&logoColor=white" alt="Support on Patreon"></a>
+[![Telegram](https://img.shields.io/badge/Telegram-chat-0c0c0c?style=flat-square&logo=telegram&logoColor=white)](https://t.me/TheCr1nge)
+&nbsp;
+[![GitHub](https://img.shields.io/badge/GitHub-Marve10s-0c0c0c?style=flat-square&logo=github&logoColor=white)](https://github.com/Marve10s)
 
-<sub>MIT license. Originally forked from <a href="https://github.com/AmanVarshney01/create-better-t-stack">Better T Stack</a> by <a href="https://github.com/AmanVarshney01">Aman Varshney</a>, now independently maintained.</sub>
+Found a bug? Open a [GitHub issue](https://github.com/Marve10s/Better-Fullstack/issues).
 
-</div>
+If Better Fullstack saves you time, consider sponsoring:
+
+<a href="https://github.com/sponsors/Marve10s"><img src="https://img.shields.io/badge/GitHub_Sponsors-Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white" height="40" alt="Sponsor on GitHub"></a>
+&nbsp;&nbsp;
+<a href="https://www.patreon.com/c/marve10s"><img src="https://img.shields.io/badge/Patreon-Support-F96854?style=for-the-badge&logo=patreon&logoColor=white" height="40" alt="Support on Patreon"></a>
 
 <!--
 Star History is hidden while GitHub restricts stargazer data to repo admins and
@@ -78,3 +109,7 @@ Restore this block once the API is public again.
   </a>
 </div>
 -->
+
+## License
+
+MIT. Better Fullstack was originally forked from [Better T Stack](https://github.com/AmanVarshney01/create-better-t-stack) by [Aman Varshney](https://github.com/AmanVarshney01) and is now independently maintained with its own direction.
