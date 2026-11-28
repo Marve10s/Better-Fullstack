@@ -154,6 +154,254 @@
   }
 }
 
+.home-grain {
+  --home-speck: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.7' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.4 -0.35'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23s)'/%3E%3C/svg%3E");
+  background-image: var(--home-speck);
+  background-size: 256px;
+  opacity: 0.09;
+  pointer-events: none;
+}
+
+.dark .home-grain {
+  opacity: 0.16;
+}
+
+.home-hero-art {
+  --hero-speck: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.7' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 11 -5.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+  --hero-speck-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.7' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 11 -5.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+  --hero-haze: rgb(250 204 128 / 0.85);
+  --hero-left: rgb(198 232 83 / 0.75);
+  --hero-right: rgb(242 140 96 / 0.7);
+  --hero-core: #c6e853;
+  --hero-core-soft: rgb(198 232 83 / 0.75);
+  --hero-core-center: rgb(255 255 255 / 0.9);
+  --hero-speck-opacity: 0.08;
+  --hero-speck-light-opacity: 0.22;
+}
+
+.dark .home-hero-art {
+  --hero-haze: rgb(58 80 152 / 0.8);
+  --hero-left: rgb(104 88 220 / 0.55);
+  --hero-right: rgb(44 140 150 / 0.6);
+  --hero-core: rgb(150 186 44 / 0.7);
+  --hero-core-soft: rgb(120 150 40 / 0.45);
+  --hero-core-center: rgb(226 250 150 / 0.4);
+  --hero-speck-opacity: 0.12;
+  --hero-speck-light-opacity: 0.14;
+}
+
+.home-hero-light > * {
+  position: absolute;
+  inset: -10% -14% -20%;
+  transform-origin: 50% 100%;
+}
+
+.home-hero-light-haze {
+  background: radial-gradient(86% 47.7% at 50% 95.4%, var(--hero-haze) 0%, transparent 100%);
+}
+
+.home-hero-light-left {
+  background: radial-gradient(40% 33.8% at 22% 93.8%, var(--hero-left) 0%, transparent 100%);
+}
+
+.home-hero-light-right {
+  background: radial-gradient(40% 33.8% at 78% 93.8%, var(--hero-right) 0%, transparent 100%);
+}
+
+.home-hero-light-core {
+  background:
+    radial-gradient(24% 11.5% at 50% 87.7%, var(--hero-core-center) 0%, transparent 100%),
+    radial-gradient(
+      52% 38.5% at 50% 93.8%,
+      var(--hero-core) 0%,
+      var(--hero-core-soft) 45%,
+      transparent 100%
+    );
+}
+
+.home-hero-art {
+  background-color: var(--surface-raised);
+}
+
+.home-hero-painting {
+  mask-image: linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 0.35) 22%, #000 52%);
+}
+
+.home-hero-glow {
+  mix-blend-mode: overlay;
+}
+
+.dark .home-hero-glow {
+  mix-blend-mode: screen;
+}
+
+.home-hero-grain::before,
+.home-hero-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-size: 256px;
+}
+
+.home-hero-grain::before {
+  background-image: var(--hero-speck-light);
+  opacity: var(--hero-speck-light-opacity);
+  mask-image: linear-gradient(to bottom, transparent 35%, #000 80%);
+}
+
+.home-hero-grain::after {
+  background-image: var(--hero-speck);
+  background-position: 97px 61px;
+  opacity: var(--hero-speck-opacity);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .home-hero-light {
+    animation: home-hero-light-rise 2.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .home-hero-light-core {
+    animation: home-hero-light-breathe 9s ease-in-out infinite alternate;
+  }
+
+  .home-hero-light-left {
+    animation: home-hero-light-sway 13s ease-in-out infinite alternate;
+  }
+
+  .home-hero-light-right {
+    animation: home-hero-light-sway 17s ease-in-out infinite alternate-reverse;
+  }
+}
+
+@keyframes home-hero-light-rise {
+  from {
+    opacity: 0;
+    translate: 0 36%;
+    scale: 0.8 1;
+  }
+}
+
+@keyframes home-hero-light-breathe {
+  to {
+    scale: 1.14 1.2;
+  }
+}
+
+@keyframes home-hero-light-sway {
+  from {
+    translate: -7% 0;
+  }
+  to {
+    translate: 7% -5%;
+  }
+}
+
+.home-stage-dots {
+  background-image: radial-gradient(circle, rgb(10 10 10 / 0.16) 1px, transparent 1.6px);
+  background-size: 14px 14px;
+  mask-image: radial-gradient(120% 90% at 50% 0%, #000 0%, transparent 78%);
+}
+
+.home-stage-progress {
+  animation: home-stage-progress 8s linear forwards;
+}
+
+@keyframes home-stage-progress {
+  from {
+    scale: 0 1;
+  }
+}
+
+.home-stage-panel,
+.home-stage-panel .home-stage-card {
+  transition:
+    opacity 0.25s ease,
+    translate 0.25s ease,
+    scale 0.25s ease;
+}
+
+.home-stage-panel[data-active="false"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.home-stage-panel[data-active="false"] .home-stage-card {
+  opacity: 0;
+  translate: 0 20px;
+  scale: 0.98;
+}
+
+.home-stage-panel[data-active="true"] {
+  transition-delay: 0.15s;
+}
+
+.home-stage-panel[data-active="true"] .home-stage-card {
+  transition-delay: calc(0.18s + var(--stage-order, 0) * 0.08s);
+  transition-duration: 0.6s, 0.8s, 0.8s;
+  transition-timing-function: ease, cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.home-stage-panel .home-stage-card:nth-child(2) {
+  --stage-order: 1;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .home-expand {
+      animation: home-expand linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+
+    .home-rise {
+      animation: home-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+
+    .home-hero {
+      animation: home-hero-exit linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+  }
+}
+
+@keyframes home-expand {
+  from {
+    clip-path: inset(0 max(12px, calc((100% - 1240px) / 2)) 0 round 36px);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 36px);
+  }
+}
+
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    translate: 0 40px;
+    scale: 0.97;
+  }
+}
+
+@keyframes home-hero-exit {
+  to {
+    scale: 0.96;
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-stage-progress {
+    display: none;
+  }
+
+  .home-stage-panel,
+  .home-stage-panel .home-stage-card {
+    transition: none;
+  }
+}
+
 /* Builder language switch: the options dissolve, the bar stays live so its
    sliding language pill is not ghosted by a snapshot of itself. */
 ::view-transition-old(builder-content),

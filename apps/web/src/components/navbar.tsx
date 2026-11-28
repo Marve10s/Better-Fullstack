@@ -1,5 +1,5 @@
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   TbArrowRight as ArrowRight,
   TbBlocks as Blocks,
@@ -49,6 +49,9 @@ const DOCS_SKILL_PARAMS = { _splat: "ai/overview" } as const;
 
 const NAV_LINK_CLASS =
   "font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground [&.active]:text-foreground sm:text-[12px]";
+const HOME_NAV_LINK_CLASS =
+  "rounded-full px-3 py-1.5 text-sm font-medium text-ink/70 transition-colors hover:bg-ink/5 hover:text-ink dark:hover:bg-white/8";
+const HOME_SCROLL_THRESHOLD = 24;
 const MOBILE_MENU_ITEM_CLASS =
   "cursor-pointer py-2.5 font-mono text-xs font-medium text-foreground/80 hover:text-foreground [&_svg]:text-muted-foreground";
 const MOBILE_MENU_LABEL_CLASS =
@@ -109,13 +112,13 @@ function DocsMenuItems() {
 
 // Split control: the "Docs" label navigates to /docs, while the adjacent chevron
 // opens a dropdown with the related entry points (MCP, Skill).
-function DocsMenu() {
+function DocsMenu({ linkClassName = NAV_LINK_CLASS }: { linkClassName?: string }) {
   return (
     <div className="inline-flex items-center">
       <Link
         to="/docs"
         activeOptions={DOCS_ACTIVE_OPTIONS}
-        className={cn(NAV_LINK_CLASS, "cursor-pointer")}
+        className={cn(linkClassName, "cursor-pointer")}
         activeProps={DOCS_ACTIVE_PROPS}
       >
         {m.navDocs()}
@@ -348,12 +351,113 @@ export function useOnBuilderRoute() {
 // On the docs grain the lime button needs an edge to separate it from the lime backdrop.
 const TRY_NOW_ON_GRAIN = "shadow-[0_0_0_1px_rgb(27_26_23/0.22)] dark:shadow-none";
 
+function subscribeToScroll(onChange: () => void) {
+  window.addEventListener("scroll", onChange, { passive: true });
+  return () => window.removeEventListener("scroll", onChange);
+}
+
+function useScrolledPast(threshold: number) {
+  return useSyncExternalStore(
+    subscribeToScroll,
+    () => window.scrollY > threshold,
+    () => false,
+  );
+}
+
+function HomeNavbar() {
+  const scrolled = useScrolledPast(HOME_SCROLL_THRESHOLD);
+
+  return (
+    <header className="pointer-events-none sticky top-0 z-50 w-full px-2 sm:px-3">
+      <nav
+        data-scrolled={scrolled}
+        className={cn(
+          "pointer-events-auto mx-auto flex h-14 items-center justify-between gap-3 rounded-full border border-transparent transition-[max-width,translate,padding,background-color,border-color,box-shadow] duration-500 ease-[cubic-bezier(0.2,0.7,0.2,1)] motion-reduce:transition-none",
+          scrolled
+            ? "max-w-[1080px] translate-y-2 border-ink/10 bg-surface/80 pr-2 pl-4 shadow-[0_16px_40px_-20px_rgb(27_26_23/0.45)] backdrop-blur-xl dark:border-white/12"
+            : "max-w-[1576px] px-3 sm:px-5",
+        )}
+      >
+        <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+          <Link
+            to="/"
+            className="flex shrink-0 items-center gap-2.5 rounded-full"
+            aria-label={`${SITE_NAME}, ${m.navHome()}`}
+          >
+            <img
+              src={logoLight}
+              alt=""
+              width={32}
+              height={32}
+              fetchPriority="high"
+              className="size-8 dark:hidden"
+            />
+            <img
+              src={logoDark}
+              alt=""
+              width={32}
+              height={32}
+              fetchPriority="high"
+              className="hidden size-8 dark:block"
+            />
+            <span
+              className={cn(
+                "hidden overflow-hidden whitespace-nowrap text-[15px] font-semibold tracking-[-0.02em] text-ink transition-[max-width,opacity] duration-500 motion-reduce:transition-none sm:block",
+                scrolled ? "max-w-0 opacity-0" : "max-w-40 opacity-100",
+              )}
+            >
+              {SITE_NAME}
+            </span>
+          </Link>
+          <div className="hidden items-center gap-1 lg:flex">
+            <Link to="/new" search={BUILDER_COMMAND_SEARCH} className={HOME_NAV_LINK_CLASS}>
+              {m.navBuilder()}
+            </Link>
+            <Link to="/new" search={BUILDER_PRESETS_SEARCH} className={HOME_NAV_LINK_CLASS}>
+              {m.navPresets()}
+            </Link>
+            <Link to="/mcp" className={HOME_NAV_LINK_CLASS}>
+              {m.navMcp()}
+            </Link>
+            <DocsMenu linkClassName={HOME_NAV_LINK_CLASS} />
+          </div>
+        </div>
+
+        <div className="hidden shrink-0 items-center gap-2 lg:flex">
+          <GithubStarButton />
+          <ThemeToggle />
+          <LocaleMenu />
+          <Link
+            to="/new"
+            search={BUILDER_COMMAND_SEARCH}
+            className="inline-flex h-10 items-center rounded-full bg-ink px-5 text-sm font-semibold text-surface transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+          >
+            {m.navTryNow()}
+          </Link>
+        </div>
+        <div className="flex shrink-0 items-center gap-1 lg:hidden">
+          <Link
+            to="/new"
+            search={BUILDER_COMMAND_SEARCH}
+            className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-sm font-semibold text-surface"
+          >
+            {m.navTryNow()}
+          </Link>
+          <MobileNavMenu />
+        </div>
+      </nav>
+    </header>
+  );
+}
+
 export function Navbar() {
   const onDocs = useRouterState({
     select: (state) => /^\/(docs|guides)(\/|$)/.test(state.location.pathname),
   });
+  const onHome = useRouterState({ select: (state) => state.location.pathname === "/" });
   // The builder folds the brand, languages and preferences into its own bar.
   if (useOnBuilderRoute()) return null;
+  if (onHome) return <HomeNavbar />;
 
   return (
     <header

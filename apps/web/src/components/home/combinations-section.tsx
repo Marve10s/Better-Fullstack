@@ -1,6 +1,7 @@
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
+import { cn } from "@/lib/platform/utils";
 import { HOME_COMBINATIONS_METRICS } from "@/lib/project/home-display-data";
 import { m } from "@/paraglide/messages.js";
 import { getLocale } from "@/paraglide/runtime.js";
@@ -50,7 +51,8 @@ const TOTAL_GROUPED = totalDigits.replace(/\B(?=(\d{3})+$)/g, ",");
 const PERCENT_PLACES = totalDigits.length + 4;
 
 const QUESTION =
-  "font-mono font-bold uppercase leading-none tracking-[-0.03em] text-ink [font-size:clamp(1.75rem,3.4vw,2.75rem)]";
+  "text-3xl font-semibold leading-[1.05] tracking-[-0.035em] text-ink sm:text-4xl lg:text-5xl";
+const CARD = "rounded-[28px] bg-surface-raised px-6 py-10 sm:rounded-[36px] sm:px-10 sm:py-14";
 
 /** Share of all combinations covered by `tried`, as a plain decimal percentage. */
 function percentDone(tried: number) {
@@ -82,13 +84,13 @@ function LiveTrial() {
     <div ref={ref}>
       <p className="text-sm text-muted-foreground sm:text-base">{m.homeCombosRate()}</p>
       <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-        <span className="font-mono font-black leading-none tracking-[-0.05em] tabular-nums text-ink [font-size:clamp(3rem,6.5vw,5.5rem)]">
+        <span className="font-semibold leading-none tracking-[-0.05em] tabular-nums text-ink [font-size:clamp(3rem,6.5vw,5.5rem)]">
           {tried.toLocaleString("en-US")}
         </span>
         <span className="text-sm text-muted-foreground sm:text-base">{m.homeCombosTried()}</span>
       </div>
 
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-ink/10 dark:bg-white/10">
         <div className="h-full w-px bg-ink dark:bg-brand" />
       </div>
       <p className="mt-3 font-mono text-xs tabular-nums text-muted-foreground sm:text-sm">
@@ -96,7 +98,7 @@ function LiveTrial() {
         <span className="whitespace-nowrap">{m.homeCombosDone()}</span>
       </p>
 
-      <p className="mt-5 font-mono text-base font-semibold sm:text-lg">
+      <p className="mt-5 text-base font-semibold tabular-nums sm:text-lg">
         {yearsAtOneMillisecondScientific.mantissa} × 10
         <sup>{yearsAtOneMillisecondScientific.exponent}</sup> {m.homeCombosYearsToGo()}
         <span className="font-normal text-muted-foreground">
@@ -111,15 +113,15 @@ function LiveTrial() {
 
 export default function CombinationsSection() {
   return (
-    <section className="grid border-t border-border lg:grid-cols-12">
-      <div className="border-b border-border px-4 py-10 sm:px-8 lg:col-span-5 lg:border-r lg:border-b-0">
+    <section className="mx-auto grid max-w-[calc(1576px+1.5rem)] gap-2 px-2 pt-2 sm:gap-3 sm:px-3 sm:pt-3 lg:grid-cols-12">
+      <div className={cn(CARD, "lg:col-span-5")}>
         <h2 className={QUESTION}>{m.homeCombosQuestion()}</h2>
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mt-5 flex items-baseline gap-2 font-mono font-black leading-none text-ink"
+          className="mt-6 flex items-baseline gap-2 font-semibold leading-none text-ink"
         >
           <span className="tracking-[-0.05em] [font-size:clamp(3.5rem,8vw,7rem)]">
             {totalScientific.mantissa}
@@ -127,13 +129,13 @@ export default function CombinationsSection() {
           <span className="tracking-[-0.04em] text-muted-foreground [font-size:clamp(1.75rem,4vw,3.5rem)]">
             ×&nbsp;10
           </span>
-          <span className="self-start text-ink dark:text-brand [font-size:clamp(1.5rem,3.2vw,2.75rem)]">
+          <span className="self-start text-ink [font-size:clamp(1.5rem,3.2vw,2.75rem)]">
             {totalScientific.exponent}
           </span>
         </motion.div>
         {/* Number names only follow this scale in English. */}
         {getLocale() === "en" && spokenTotal() && (
-          <p className="mt-4 font-mono text-lg font-semibold text-ink sm:text-xl">
+          <p className="mt-4 text-lg font-semibold text-ink sm:text-xl">
             <span className="font-normal italic text-muted-foreground">or</span> {spokenTotal()}
           </p>
         )}
@@ -142,9 +144,9 @@ export default function CombinationsSection() {
         </p>
       </div>
 
-      <div className="px-4 py-10 sm:px-8 lg:col-span-7">
+      <div className={cn(CARD, "lg:col-span-7")}>
         <h2 className={QUESTION}>{m.homeCombosTimeQuestion()}</h2>
-        <div className="mt-4">
+        <div className="mt-6">
           <LiveTrial />
         </div>
       </div>

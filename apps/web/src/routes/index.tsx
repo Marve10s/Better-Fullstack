@@ -8,6 +8,7 @@ import Footer from "@/components/home/footer";
 import { HERO_SCENE_PRELOAD_SCRIPT } from "@/components/home/hero-scene";
 import HeroSection from "@/components/home/hero-section";
 import LaunchRadarStrip from "@/components/home/launch-radar-strip";
+import StackStage from "@/components/home/stack-stage";
 import TestimonialsSection from "@/components/home/testimonials-section";
 import {
   DEFAULT_OG_IMAGE_ALT,
@@ -54,17 +55,16 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   return (
-    <main className="min-h-svh">
-      <div className="mx-auto max-w-[1480px] border-x border-border">
-        <LaunchRadarStrip />
-        <HeroSection />
-        <FeaturesSection />
-        <CombinationsSection />
-        <TestimonialsSection />
-        <AiAnswerSection />
-        <ContributorsSection />
-        <Footer />
-      </div>
+    <main className="min-h-svh overflow-x-clip">
+      <LaunchRadarStrip />
+      <HeroSection />
+      <StackStage />
+      <FeaturesSection />
+      <CombinationsSection />
+      <AiAnswerSection />
+      <TestimonialsSection />
+      <ContributorsSection />
+      <Footer />
     </main>
   );
 }

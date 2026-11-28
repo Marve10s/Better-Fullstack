@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { motion, useInView } from "motion/react";
 import { useRef, useState } from "react";
 import {
-  TbArrowRight as ArrowRight,
   TbPlayerPauseFilled as Pause,
   TbPlayerPlayFilled as Play,
 } from "react-icons/tb";
@@ -33,7 +32,7 @@ const BUILDER_SEARCH = { view: "command", file: "" } as const;
 const BUBBLE_EASE = [0.16, 1, 0.3, 1] as const;
 
 const LINK =
-  "group inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-ink underline decoration-brand decoration-2 underline-offset-4 dark:text-brand";
+  "inline-flex h-10 items-center rounded-full bg-ink px-5 text-sm font-semibold text-surface transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
 
 /** His words from the clip, kept in English in every locale because it is a quote. */
 const THEO_QUOTE = "The value of templates is going down.";
@@ -66,7 +65,7 @@ function Backdrop() {
         loading="lazy"
         className={cn(image, "opacity-0 dark:opacity-100")}
       />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--background)_0%,transparent_28%,transparent_72%,var(--background)_100%)]" />
+      <div className="home-grain absolute inset-0" />
     </div>
   );
 }
@@ -120,7 +119,8 @@ export default function AiAnswerSection() {
   const inView = useInView(ref, { once: true, margin: "-25%" });
 
   return (
-    <section className="relative isolate overflow-hidden border-t border-border px-4 py-14 sm:px-8 sm:py-20">
+    <section className="px-2 pt-24 sm:px-3 sm:pt-32">
+      <div className="home-expand relative isolate mx-auto max-w-[1576px] overflow-hidden rounded-[28px] bg-surface-raised px-4 py-14 sm:rounded-[36px] sm:px-8 sm:py-24">
       <Backdrop />
       <div ref={ref} className="mx-auto flex max-w-6xl flex-col gap-5">
         <motion.div
@@ -136,16 +136,16 @@ export default function AiAnswerSection() {
               "rounded-[2rem] rounded-bl-md bg-surface/55 px-6 py-5 shadow-xl shadow-black/5",
             )}
           >
-            <p className="font-mono font-bold leading-[1.05] tracking-[-0.035em] text-ink [font-size:clamp(1.5rem,3.6vw,3rem)]">
+            <p className="font-semibold leading-[1.05] tracking-[-0.035em] text-ink [font-size:clamp(1.5rem,3.6vw,3rem)]">
               &ldquo;{THEO_QUOTE}&rdquo;{" "}
               {/* He never says "AI" in the clip. The reason is ours, so it stays outside the quote
                   marks and looks different from his words. */}
-              <span className="whitespace-nowrap font-normal italic text-ink/55 [font-size:0.55em]">
+              <span className="whitespace-nowrap font-normal text-ink/55 [font-size:0.55em]">
                 {m.homeAiSkepticGloss()}
               </span>
             </p>
-            <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ink/70">
-              Theo Browne · {m.homeAiSkepticWhere()}
+            <p className="mt-3 text-sm font-medium text-ink/70">
+              Theo Browne, {m.homeAiSkepticWhere()}
             </p>
           </div>
         </motion.div>
@@ -162,11 +162,11 @@ export default function AiAnswerSection() {
               "rounded-[2rem] rounded-br-md bg-brand/80 px-6 py-6 text-[#0a0a0a] shadow-xl shadow-black/10 sm:px-8 sm:py-7",
             )}
           >
-            <p className="font-mono text-sm font-semibold sm:text-base">{m.homeAiReply()}</p>
+            <p className="text-sm font-semibold sm:text-base">{m.homeAiReply()}</p>
             <dl className="mt-4 grid gap-x-10 gap-y-4 sm:grid-cols-3">
               {GAINS.map((gain) => (
                 <div key={gain.value}>
-                  <dd className="font-mono font-black leading-none tracking-[-0.05em] [font-size:clamp(2.75rem,6.5vw,5.5rem)]">
+                  <dd className="font-semibold leading-none tracking-[-0.05em] [font-size:clamp(2.75rem,6.5vw,5.5rem)]">
                     {gain.value}
                   </dd>
                   <dt className="mt-2 max-w-[15ch] text-sm leading-snug text-[#0a0a0a]/75 sm:text-base">
@@ -191,19 +191,22 @@ export default function AiAnswerSection() {
         <div
           className={cn(
             GLASS,
-            "flex flex-wrap items-center gap-x-6 gap-y-3 self-end rounded-full bg-surface/55 px-5 py-3 max-sm:rounded-3xl",
+            "flex flex-wrap items-center gap-x-3 gap-y-3 self-end rounded-full bg-surface/55 py-2 pr-2 pl-5 max-sm:rounded-3xl max-sm:p-4",
           )}
         >
           <p className="text-sm text-ink/80">{m.homeAiBuilder()}</p>
-          <Link to="/new" search={BUILDER_SEARCH} className={LINK}>
-            {m.homeOpenBuilder()}
-            <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-          </Link>
           <Link to="/mcp" className={LINK}>
             {m.llmTryMcp()}
-            <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <Link
+            to="/new"
+            search={BUILDER_SEARCH}
+            className={cn(LINK, "bg-ink/10 text-ink hover:bg-ink/15 hover:opacity-100 dark:bg-white/12")}
+          >
+            {m.homeOpenBuilder()}
           </Link>
         </div>
+      </div>
       </div>
     </section>
   );

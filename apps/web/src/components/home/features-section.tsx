@@ -3,6 +3,7 @@ import { motion, useInView, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 import { TechIcon } from "@/components/ui/tech-icon";
+import { cn } from "@/lib/platform/utils";
 import { HOME_FEATURE_OPTIONS } from "@/lib/project/home-display-data";
 import { OPTION_ENTRY_COUNT } from "@/lib/project/project-stats";
 import { ICON_REGISTRY } from "@/lib/stack/tech-icons";
@@ -12,32 +13,21 @@ type Layer = { key: keyof typeof HOME_FEATURE_OPTIONS; word: () => string };
 
 const LAYERS: ReadonlyArray<Layer> = [
   { key: "ecosystems", word: m.homeLayerLanguageEcosystems },
-  {
-    key: "frontend",
-    word: m.homeLayerFrontendFrameworks,
-  },
-  {
-    key: "backend",
-    word: m.homeLayerBackendFrameworks,
-  },
-  {
-    key: "orm",
-    word: m.homeLayerDatabaseOrms,
-  },
-  {
-    key: "auth",
-    word: m.homeLayerAuthProviders,
-  },
-  {
-    key: "ai",
-    word: m.homeLayerAiIntegrations,
-  },
+  { key: "frontend", word: m.homeLayerFrontendFrameworks },
+  { key: "backend", word: m.homeLayerBackendFrameworks },
+  { key: "orm", word: m.homeLayerDatabaseOrms },
+  { key: "auth", word: m.homeLayerAuthProviders },
+  { key: "ai", word: m.homeLayerAiIntegrations },
 ];
 
 export default function FeaturesSection() {
   return (
-    <section className="relative border-t border-border bg-background">
-      <ul className="relative">
+    <section className="px-2 pt-24 sm:px-3 sm:pt-32">
+      <h2 className="mx-auto max-w-3xl text-balance px-2 text-center text-4xl font-semibold leading-[1.04] tracking-[-0.04em] text-ink sm:text-5xl lg:text-6xl">
+        {m.homeCatalogTitle()}
+      </h2>
+
+      <ul className="mx-auto mt-10 flex max-w-[1576px] flex-col gap-2 sm:mt-14 sm:gap-3">
         {LAYERS.map((layer, i) => (
           <LayerRow key={layer.key} layer={layer} index={i} />
         ))}
@@ -69,21 +59,19 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
   const options = HOME_FEATURE_OPTIONS[layer.key];
 
   return (
-    <li
-      ref={ref}
-      className="group relative z-10 overflow-hidden border-b border-border transition-colors hover:bg-muted/40"
-    >
+    <li ref={ref} className="overflow-hidden rounded-[28px] bg-surface-raised sm:rounded-[36px]">
       <div
-        className={`grid grid-cols-12 items-center gap-x-4 gap-y-6 px-4 py-12 sm:gap-x-6 sm:px-8 sm:py-16 ${
-          flip ? "sm:[direction:rtl]" : ""
-        }`}
+        className={cn(
+          "grid grid-cols-12 items-center gap-x-4 gap-y-6 px-6 py-10 sm:gap-x-8 sm:px-10 sm:py-14",
+          flip && "sm:[direction:rtl]",
+        )}
       >
-        <div className="col-span-12 sm:col-span-4 lg:col-span-3 sm:[direction:ltr]">
+        <div className="col-span-12 sm:col-span-4 sm:[direction:ltr] lg:col-span-3">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="font-mono font-black leading-[0.82] tracking-[-0.05em] text-ink"
+            className="font-semibold leading-[0.82] tracking-[-0.06em] tabular-nums text-ink"
             style={{ fontSize: "clamp(5rem, 14vw, 11rem)" }}
           >
             <NumberFlow
@@ -94,13 +82,13 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
           </motion.div>
         </div>
 
-        <div className="col-span-12 sm:col-span-8 lg:col-span-9 sm:[direction:ltr]">
+        <div className="col-span-12 sm:col-span-8 sm:[direction:ltr] lg:col-span-9">
           <motion.h3
             initial={{ opacity: 0, x: flip ? 16 : -16 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="font-mono font-bold uppercase leading-none tracking-[-0.03em] text-ink"
-            style={{ fontSize: "clamp(2.5rem, 6.5vw, 4.5rem)" }}
+            className="font-semibold leading-none tracking-[-0.04em] text-ink"
+            style={{ fontSize: "clamp(2rem, 5vw, 3.75rem)" }}
           >
             {layer.word()}
           </motion.h3>
@@ -109,7 +97,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
             initial={{ opacity: 0, y: 8 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="mt-6 flex flex-wrap items-center gap-6"
+            className="mt-6 flex flex-wrap items-center gap-5 sm:mt-8 sm:gap-6"
           >
             {iconOptions(options).map((opt, j) => (
               <motion.div
@@ -126,9 +114,7 @@ function LayerRow({ layer, index }: { layer: Layer; index: number }) {
                 {layer.key === "ecosystems" ? (
                   <>
                     <TechIcon techId={opt.id} name={opt.name} className="size-12 sm:size-14" />
-                    <span className="font-mono text-xs font-medium text-foreground">
-                      {opt.name}
-                    </span>
+                    <span className="text-sm font-medium text-ink">{opt.name}</span>
                   </>
                 ) : (
                   <TechIcon techId={opt.id} name={opt.name} className="size-9 sm:size-10" />
@@ -201,12 +187,12 @@ function TotalBlock() {
   }, [inView, reducedMotion]);
 
   return (
-    <div ref={ref} className="bg-foreground text-background">
-      <div className="grid grid-cols-12 items-center gap-x-6 gap-y-8 px-4 py-12 sm:px-8 sm:py-16">
-        <h3
-          className="col-span-12 font-mono font-bold uppercase leading-none tracking-[-0.03em] lg:col-span-3"
-          style={{ fontSize: "clamp(2.5rem, 6.5vw, 4.5rem)" }}
-        >
+    <div
+      ref={ref}
+      className="mx-auto mt-2 max-w-[1576px] rounded-[28px] bg-foreground text-background sm:mt-3 sm:rounded-[36px]"
+    >
+      <div className="grid grid-cols-12 items-center gap-x-6 gap-y-8 px-6 py-10 sm:px-10 sm:py-14">
+        <h3 className="col-span-12 text-5xl font-semibold leading-none tracking-[-0.04em] first-letter:uppercase sm:text-6xl lg:col-span-3">
           {m.homeTotal()}
         </h3>
         <span className="sr-only">{OPTION_ENTRY_COUNT}</span>

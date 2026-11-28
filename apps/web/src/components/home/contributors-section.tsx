@@ -58,17 +58,17 @@ function ContributorCard({ contributor, index }: { contributor: Contributor; ind
       href={contributor.github}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-colors hover:border-foreground/30"
+      className="group flex items-center gap-4 rounded-3xl bg-surface-raised p-4 transition-colors hover:bg-ink/10 dark:hover:bg-white/10"
     >
       <img
         src={`https://avatars.githubusercontent.com/${contributor.username}?s=112`}
         alt={contributor.name}
         loading="lazy"
-        className="h-14 w-14 rounded-full border-2 border-border transition-colors group-hover:border-brand/60"
+        className="h-14 w-14 rounded-full"
       />
       <div className="min-w-0 flex-1">
         <span className="block truncate font-medium text-foreground">{contributor.name}</span>
-        <span className="block truncate font-mono text-xs text-muted-foreground">
+        <span className="block truncate text-sm text-muted-foreground">
           @{contributor.username}
         </span>
         <span className="mt-1.5 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -82,43 +82,29 @@ function ContributorCard({ contributor, index }: { contributor: Contributor; ind
 
 export default function ContributorsSection() {
   return (
-    <section className="relative border-t border-border bg-muted/30">
-      <div className="px-4 py-20 sm:px-8 sm:py-28">
-        <div className="grid grid-cols-12 gap-x-4 gap-y-6">
-          <div className="col-span-12 sm:col-span-7">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink dark:text-brand">
-              {m.homeContributorsEyebrow()}
-            </p>
-            <h2
-              className="mt-4 max-w-[18ch] text-balance font-mono font-bold tracking-[-0.04em]"
-              style={{
-                fontSize: "clamp(1.85rem, 5vw, 3.4rem)",
-                lineHeight: 0.98,
-              }}
-            >
-              {m.homeContributorsTitleA()}{" "}
-              <span className="italic text-muted-foreground">{m.homeContributorsTitleB()}</span>
-            </h2>
-          </div>
-          <div className="col-span-12 sm:col-span-5 sm:flex sm:items-end sm:justify-end">
-            <p className="max-w-xs text-pretty text-sm text-muted-foreground sm:text-right">
-              {m.homeContributorsDescription()}
-            </p>
-          </div>
+    <section className="mx-auto max-w-[1240px] px-4 pt-24 pb-24 sm:px-6 sm:pt-32 sm:pb-32">
+      <div>
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-balance text-4xl font-semibold leading-[1.04] tracking-[-0.04em] text-ink sm:text-5xl lg:text-6xl">
+            {m.homeContributorsTitleA()} {m.homeContributorsTitleB()}
+          </h2>
+          <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-soft sm:text-lg">
+            {m.homeContributorsDescription()}
+          </p>
         </div>
 
-        <div className="mt-12 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="mt-10 grid grid-cols-1 gap-3 sm:mt-14 sm:grid-cols-2 lg:grid-cols-3">
           {contributors.map((contributor, i) => (
             <ContributorCard key={contributor.username} contributor={contributor} index={i} />
           ))}
         </div>
 
-        <div className="mt-12 flex flex-wrap items-center gap-3">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <a
             href="https://github.com/Marve10s/Better-Fullstack/issues"
             target="_blank"
             rel="noopener noreferrer"
-            className="group inline-flex items-center gap-2 rounded-md border border-border bg-background px-5 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+            className="inline-flex h-11 items-center gap-2 rounded-full bg-ink/[0.07] px-5 text-sm font-semibold text-ink transition-colors hover:bg-ink/[0.12] dark:bg-white/10 dark:hover:bg-white/15"
           >
             <GitPullRequest className="h-4 w-4" />
             {m.homeContributeGithub()}
@@ -127,7 +113,7 @@ export default function ContributorsSection() {
             href="https://github.com/sponsors/Marve10s"
             target="_blank"
             rel="noopener noreferrer"
-            className="group inline-flex items-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+            className="inline-flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-surface transition hover:opacity-90"
           >
             <Heart className="h-4 w-4" />
             {m.homeSponsorOnGithub()}
